@@ -1,0 +1,3 @@
+﻿function Credential([string]$credential) {
+
+}

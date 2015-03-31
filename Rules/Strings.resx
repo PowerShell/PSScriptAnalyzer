@@ -1,0 +1,630 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AvoidUsingCmdletAliasesDescription" xml:space="preserve">
+    <value>An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availability.</value>
+  </data>
+  <data name="AvoidUsingCmdletAliasesCommonName" xml:space="preserve">
+    <value>Avoid Using Cmdlet Aliases</value>
+  </data>
+  <data name="AvoidUsingEmptyCatchBlockDescription" xml:space="preserve">
+    <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, using Write-Error or throw statements in catch blocks.</value>
+  </data>
+  <data name="AvoidUsingEmptyCatchBlockCommonName" xml:space="preserve">
+    <value>Avoid Using Empty Catch Block</value>
+  </data>
+  <data name="AvoidUsingInvokeExpressionRuleDescription" xml:space="preserve">
+    <value>The Invoke-Expression cmdlet evaluates or runs a specified string as a command and returns the results of the expression or command. It can be extraordinarily powerful so it is not that you want to never use it but you need to be very careful about using it.  In particular, you are probably on safe ground if the data only comes from the program itself.  If you include any data provided from the user - you need to protect yourself from Code Injection. To fix a violation of this rule, please remove Invoke-Expression from script and find other options instead.</value>
+  </data>
+  <data name="AvoidUsingInvokeExpressionRuleCommonName" xml:space="preserve">
+    <value>Avoid Using Invoke-Expression</value>
+  </data>
+  <data name="AvoidUsingPositionalParametersDescription" xml:space="preserve">
+    <value>Readability and clarity should be the goal of any script we expect to maintain over time. When calling a command that takes parameters, where possible consider using name parameters as opposed to positional parameters. To fix a violation of this rule, please use named parameters instead of positional parameters when calling a command.</value>
+  </data>
+  <data name="AvoidUsingPositionalParametersCommonName" xml:space="preserve">
+    <value>Avoid Using Positional Parameters</value>
+  </data>
+  <data name="ProvideCommentHelpDescription" xml:space="preserve">
+    <value>Checks that all cmdlets have a help comment. This rule only checks existence. It does not check the content of the comment.</value>
+  </data>
+  <data name="ProvideCommentHelpError" xml:space="preserve">
+    <value>The cmdlet '{0}' does not have a help comment.</value>
+  </data>
+  <data name="ProvideCommentHelpCommonName" xml:space="preserve">
+    <value>Basic Comment Help</value>
+  </data>
+  <data name="UseApprovedVerbsDescription" xml:space="preserve">
+    <value>Checks that all defined cmdlets use approved verbs. This is in line with PowerShell's best practices.</value>
+  </data>
+  <data name="UseApprovedVerbsError" xml:space="preserve">
+    <value>The cmdlet '{0}' uses an unapproved verb.</value>
+  </data>
+  <data name="UseApprovedVerbsCommonName" xml:space="preserve">
+    <value>Cmdlet Verbs</value>
+  </data>
+  <data name="UseDeclaredVarsMoreThanAssignmentsDescription" xml:space="preserve">
+    <value>Checks that variables are used in more than just their assignment. Generally this is a red flag that a variable is not needed. This rule does not check if the assignment and usage are in the same function.</value>
+  </data>
+  <data name="UseDeclaredVarsMoreThanAssignmentsError" xml:space="preserve">
+    <value>The variable '{0}' is assigned but never used.</value>
+  </data>
+  <data name="UseDeclaredVarsMoreThanAssignmentsCommonName" xml:space="preserve">
+    <value>Extra Variables</value>
+  </data>
+  <data name="AvoidUninitializedVariableDescription" xml:space="preserve">
+    <value>Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables.</value>
+  </data>
+  <data name="AvoidUninitializedVariableCommonName" xml:space="preserve">
+    <value>Initializing non-global variables</value>
+  </data>
+  <data name="AvoidGlobalVarsDescription" xml:space="preserve">
+    <value>Checks that global variables are not used. Global variables are strongly discouraged as they can cause errors across different systems.</value>
+  </data>
+  <data name="AvoidGlobalVarsError" xml:space="preserve">
+    <value>Found global variable '{0}'.</value>
+  </data>
+  <data name="AvoidGlobalVarsCommonName" xml:space="preserve">
+    <value>No Global Variables</value>
+  </data>
+  <data name="AvoidTrapStatementDescription" xml:space="preserve">
+    <value>Avoid using Traps in the script.</value>
+  </data>
+  <data name="AvoidTrapStatementError" xml:space="preserve">
+    <value>Trap found.</value>
+  </data>
+  <data name="AvoidTrapStatementCommonName" xml:space="preserve">
+    <value>No traps in the script.</value>
+  </data>
+  <data name="PossibleIncorrectComparisonWithNullDescription" xml:space="preserve">
+    <value>Checks that $null is on the left side of any equaltiy comparisons (eq, ne, ceq, cne, ieq, ine). When there is an array on the left side of a null equality comparison, PowerShell will check for a $null IN the array rather than if the array is null. If the two sides of the comaprision are switched this is fixed. Therefore, $null should always be on the left side of equality comparisons just in case.</value>
+  </data>
+  <data name="PossibleIncorrectComparisonWithNullError" xml:space="preserve">
+    <value>$null should be on the left side of equality comparisons.</value>
+  </data>
+  <data name="PossibleIncorrectComparisonWithNullCommonName" xml:space="preserve">
+    <value>Null Comparison</value>
+  </data>
+  <data name="OneCharDescription" xml:space="preserve">
+    <value>Checks that cmdlets and parameters have more than one character.</value>
+  </data>
+  <data name="OneCharErrorCmdlet" xml:space="preserve">
+    <value>The cmdlet name '{0}' only has one character.</value>
+  </data>
+  <data name="OneCharErrorParameter" xml:space="preserve">
+    <value>The cmdlet '{0}' has a parameter '{1}' that only has one character.</value>
+  </data>
+  <data name="OneCharErrorParameterSB" xml:space="preserve">
+    <value>A script block has a parameter '{0}' that only has one character.</value>
+  </data>
+  <data name="OneCharCommonName" xml:space="preserve">
+    <value>One Char</value>
+  </data>
+  <data name="UsePSCredentialTypeDescription" xml:space="preserve">
+    <value>Checks that cmdlets that have a Credential parameter accept PSCredential. This comes from the PowerShell teams best practices.</value>
+  </data>
+  <data name="UsePSCredentialTypeError" xml:space="preserve">
+    <value>The Credential parameter in '{0}' must be of the type PSCredential.</value>
+  </data>
+  <data name="UsePSCredentialTypeErrorSB" xml:space="preserve">
+    <value>The Credential parameter in a found script block must be of the type PSCredential.</value>
+  </data>
+  <data name="UsePSCredentialTypeCommonName" xml:space="preserve">
+    <value>PSCredential</value>
+  </data>
+  <data name="ReservedCmdletCharDescription" xml:space="preserve">
+    <value>Checks for reserved characters in cmdlet names. These characters usually cause a parsing error. Otherwise they will generally cause runtime errors.</value>
+  </data>
+  <data name="ReservedCmdletCharError" xml:space="preserve">
+    <value>The cmdlet '{0}' uses a reserved char in its name.</value>
+  </data>
+  <data name="ReservedCmdletCharCommonName" xml:space="preserve">
+    <value>Reserved Cmdlet Chars</value>
+  </data>
+  <data name="ReservedParamsCmdletPrefix" xml:space="preserve">
+    <value>The cmdlet '{0}'</value>
+  </data>
+  <data name="ReservedParamsDescription" xml:space="preserve">
+    <value>Checks for reserved parameters in function definitions. If these parameters are defined by the user, an error generally occurs.</value>
+  </data>
+  <data name="ReservedParamsError" xml:space="preserve">
+    <value>'{0}' defines the reserved common parameter '{1}'.</value>
+  </data>
+  <data name="ReservedParamsCommonName" xml:space="preserve">
+    <value>Reserved Parameters</value>
+  </data>
+  <data name="ReservedParamsScriptPrefix" xml:space="preserve">
+    <value>The script</value>
+  </data>
+  <data name="ReserverCmdletChars" xml:space="preserve">
+    <value>#,(){}[]&amp;/\\$^;:\"'&lt;&gt;|?@`*%+=~</value>
+  </data>
+  <data name="ShouldProcessDescription" xml:space="preserve">
+    <value>Checks that if the SupportsShouldProcess is present, the function calls ShouldProcess/ShouldContinue and vice versa. Scripts with one or the other but not both will generally run into an error or unexpected behavior.</value>
+  </data>
+  <data name="ShouldProcessErrorHasAttribute" xml:space="preserve">
+    <value>'{0}' has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue.</value>
+  </data>
+  <data name="ShouldProcessErrorHasAttributeSB" xml:space="preserve">
+    <value>A script block has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue.</value>
+  </data>
+  <data name="ShouldProcessErrorHasCmdlet" xml:space="preserve">
+    <value>'{0}' calls ShouldProcess/ShouldContinue but does not have the ShouldProcess attribute.</value>
+  </data>
+  <data name="ShouldProcessErrorHasCmdletSB" xml:space="preserve">
+    <value>A script block calls ShouldProcess/ShouldContinue but does not have the ShouldProcess attribute.</value>
+  </data>
+  <data name="ShouldProcessCommonName" xml:space="preserve">
+    <value>Should Process</value>
+  </data>
+  <data name="SourceName" xml:space="preserve">
+    <value>PS</value>
+  </data>
+  <data name="ProvideVerboseMessageDescription" xml:space="preserve">
+    <value>Checks that Write-Verbose is called at least once in every cmdlet or script. This is in line with the PowerShell best practices.</value>
+  </data>
+  <data name="ProvideVerboseMessageErrorFunction" xml:space="preserve">
+    <value>There is no call to Write-Verbose in the function ‘{0}’.</value>
+  </data>
+  <data name="ProvideVerboseMessageCommonName" xml:space="preserve">
+    <value>Verbose</value>
+  </data>
+  <data name="ProvideVerboseMessageScript" xml:space="preserve">
+    <value>There is no call to Write-Verbose in the script.</value>
+  </data>
+  <data name="MissingModuleManifestFieldDescription" xml:space="preserve">
+    <value>Some fields of the module manifest (such as ModuleVersion) are required.</value>
+  </data>
+  <data name="MissingModuleManifestFieldCommonName" xml:space="preserve">
+    <value>Module Manifest Fields</value>
+  </data>
+  <data name="AvoidUnloadableModuleDescription" xml:space="preserve">
+    <value>If a script file is in a Powershell module folder, then that folder must be loadable.</value>
+  </data>
+  <data name="AvoidUnloadableModuleError" xml:space="preserve">
+    <value>Cannot load the module '{0}' that file '{1}' is in.</value>
+  </data>
+  <data name="AvoidUnloadableModuleCommonName" xml:space="preserve">
+    <value>Module Must Be Loadable</value>
+  </data>
+  <data name="AvoidUsingFilePathDescription" xml:space="preserve">
+    <value>If a rooted file path is used in a script that is published online, this may expose information about your computer. Furthermore, the file path may not work on other computer when they try to use the script.</value>
+  </data>
+  <data name="AvoidUsingFilePathError" xml:space="preserve">
+    <value>The file path '{0}' of '{1}' is rooted. This should be avoided if '{1}' is published online.</value>
+  </data>
+  <data name="AvoidUsingFilePathCommonName" xml:space="preserve">
+    <value>Avoid Using File Path</value>
+  </data>
+  <data name="NullErrorMessage" xml:space="preserve">
+    <value>Error Message is Null.</value>
+  </data>
+  <data name="AvoidUsingPlainTextForPasswordDescription" xml:space="preserve">
+    <value>Password parameters that take in plaintext will expose passwords and compromise the security of your system.</value>
+  </data>
+  <data name="AvoidUsingPlainTextForPasswordError" xml:space="preserve">
+    <value>Parameter '{0}' should use SecureString, otherwise this will expose sensitive information. See ConvertTo-SecureString for more information.</value>
+  </data>
+  <data name="AvoidUsingPlainTextForPasswordCommonName" xml:space="preserve">
+    <value>Avoid Using Plain Text For Password Parameter</value>
+  </data>
+  <data name="AvoidUsingConvertToSecureStringWithPlainTextDescription" xml:space="preserve">
+    <value>Using ConvertTo-SecureString with plain text will expose secure information.</value>
+  </data>
+  <data name="AvoidUsingConvertToSecureStringWithPlainTextError" xml:space="preserve">
+    <value>File '{0}' uses ConvertTo-SecureString with plaintext. This will expose secure information. Encrypted standard strings should be used instead.</value>
+  </data>
+  <data name="AvoidUsingConvertToSecureStringWithPlainTextCommonName" xml:space="preserve">
+    <value>Avoid Using SecureString With Plain Text</value>
+  </data>
+  <data name="AvoidDefaultValueSwitchParameterDescription" xml:space="preserve">
+    <value>Switch parameter should not default to true.</value>
+  </data>
+  <data name="AvoidDefaultValueSwitchParameterError" xml:space="preserve">
+    <value>File '{0}' has a switch parameter default to true.</value>
+  </data>
+  <data name="AvoidDefaultValueSwitchParameterCommonName" xml:space="preserve">
+    <value>Switch Parameters Should Not Default To True</value>
+  </data>
+  <data name="AvoidShouldContinueShouldProcessWithoutForceDescription" xml:space="preserve">
+    <value>Functions that use ShouldContinue or ShouldProcess should have a boolean force parameter to allow user to bypass it.</value>
+  </data>
+  <data name="AvoidShouldContinueShouldProcessWithoutForceError" xml:space="preserve">
+    <value>Function '{0}' in file '{1}' uses ShouldContinue or ShouldProcess but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt</value>
+  </data>
+  <data name="AvoidShouldContinueShouldProcessWithoutForceCommonName" xml:space="preserve">
+    <value>Avoid Using ShouldContinue Or ShouldProcess Without Boolean Force Parameter</value>
+  </data>
+  <data name="AvoidUsingClearHostDescription" xml:space="preserve">
+    <value>Using Clear-Host is not recommended because the cmdlet may not work in some hosts or there may even be no hosts at all.</value>
+  </data>
+  <data name="AvoidUsingClearHostError" xml:space="preserve">
+    <value>File '{0}' uses Clear-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all.</value>
+  </data>
+  <data name="AvoidUsingClearHostCommonName" xml:space="preserve">
+    <value>Avoid Using Clear-Host</value>
+  </data>
+  <data name="AvoidUsingConsoleWriteError" xml:space="preserve">
+    <value>File '{0}' uses Console.'{1}'. Using Console to write is not recommended because it may not work in all hosts or there may even be no hosts at all. Use Write-Output instead.</value>
+  </data>
+  <data name="AvoidUsingWriteHostDescription" xml:space="preserve">
+    <value>Write-Host or Console.Write should not be used because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead.</value>
+  </data>
+  <data name="AvoidUsingWriteHostError" xml:space="preserve">
+    <value>File '{0}' uses Write-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead.</value>
+  </data>
+  <data name="AvoidUsingWriteHostCommonName" xml:space="preserve">
+    <value>Avoid Using Write-Host</value>
+  </data>
+  <data name="UseSingularNounsDescription" xml:space="preserve">
+    <value>Cmdlet should use singular instead of plural nouns.</value>
+  </data>
+  <data name="UseSingularNounsError" xml:space="preserve">
+    <value>The cmdlet '{0}' uses a plural noun. A singular noun should be used instead.</value>
+  </data>
+  <data name="UseSingularNounsCommonName" xml:space="preserve">
+    <value>Cmdlet Singular Noun</value>
+  </data>
+  <data name="AvoidUsingCmdletAliasesName" xml:space="preserve">
+    <value>AvoidUsingCmdletAliases</value>
+  </data>
+  <data name="AvoidDefaultValueSwitchParameterName" xml:space="preserve">
+    <value>AvoidDefaultValueSwitchParameter</value>
+  </data>
+  <data name="AvoidGlobalVarsName" xml:space="preserve">
+    <value>AvoidGlobalVars</value>
+  </data>
+  <data name="AvoidShouldContinueShouldProcessWithoutForceName" xml:space="preserve">
+    <value>AvoidShouldContinueShouldProcessWithoutForce</value>
+  </data>
+  <data name="AvoidTrapStatementName" xml:space="preserve">
+    <value>AvoidTrapStatement</value>
+  </data>
+  <data name="AvoidUninitializedVariableName" xml:space="preserve">
+    <value>AvoidUninitializedVariable</value>
+  </data>
+  <data name="AvoidUnloadableModuleName" xml:space="preserve">
+    <value>AvoidUnloadableModule</value>
+  </data>
+  <data name="AvoidUsingClearHostName" xml:space="preserve">
+    <value>AvoidUsingClearHost</value>
+  </data>
+  <data name="AvoidUsingConvertToSecureStringWithPlainTextName" xml:space="preserve">
+    <value>AvoidUsingConvertToSecureStringWithPlainText</value>
+  </data>
+  <data name="AvoidUsingEmptyCatchBlockName" xml:space="preserve">
+    <value>AvoidUsingEmptyCatchBlock</value>
+  </data>
+  <data name="AvoidUsingFilePathName" xml:space="preserve">
+    <value>AvoidUsingFilePath</value>
+  </data>
+  <data name="AvoidUsingInvokeExpressionRuleName" xml:space="preserve">
+    <value>AvoidUsingInvokeExpression</value>
+  </data>
+  <data name="AvoidUsingPlainTextForPasswordName" xml:space="preserve">
+    <value>AvoidUsingPlainTextForPassword</value>
+  </data>
+  <data name="AvoidUsingPositionalParametersName" xml:space="preserve">
+    <value>AvoidUsingPositionalParameters</value>
+  </data>
+  <data name="AvoidUsingWriteHostName" xml:space="preserve">
+    <value>AvoidUsingWriteHost</value>
+  </data>
+  <data name="OneCharName" xml:space="preserve">
+    <value>OneChar</value>
+  </data>
+  <data name="PossibleIncorrectComparisonWithNullName" xml:space="preserve">
+    <value>PossibleIncorrectComparisonWithNull</value>
+  </data>
+  <data name="ProvideCommentHelpName" xml:space="preserve">
+    <value>ProvideCommentHelp</value>
+  </data>
+  <data name="ReservedCmdletCharName" xml:space="preserve">
+    <value>ReservedCmdletChar</value>
+  </data>
+  <data name="ReservedParamsName" xml:space="preserve">
+    <value>ReservedParams</value>
+  </data>
+  <data name="ShouldProcessName" xml:space="preserve">
+    <value>ShouldProcess</value>
+  </data>
+  <data name="UseApprovedVerbsName" xml:space="preserve">
+    <value>UseApprovedVerbs</value>
+  </data>
+  <data name="UseDeclaredVarsMoreThanAssignmentsName" xml:space="preserve">
+    <value>UseDeclaredVarsMoreThanAssigments</value>
+  </data>
+  <data name="UsePSCredentialTypeName" xml:space="preserve">
+    <value>UsePSCredentialType</value>
+  </data>
+  <data name="UseSingularNounsName" xml:space="preserve">
+    <value>UseSingularNouns</value>
+  </data>
+  <data name="MissingModuleManifestFieldName" xml:space="preserve">
+    <value>MissingModuleManifestField</value>
+  </data>
+  <data name="ProvideVerboseMessageName" xml:space="preserve">
+    <value>ProvideVerboseMessage</value>
+  </data>
+  <data name="CommandNotFoundCommonName" xml:space="preserve">
+    <value>Command Not Found</value>
+  </data>
+  <data name="CommandNotFoundDescription" xml:space="preserve">
+    <value>Commands that are undefined or do not exist should not be used.</value>
+  </data>
+  <data name="CommandNotFoundError" xml:space="preserve">
+    <value>Command '{0}' Is Not Found</value>
+  </data>
+  <data name="CommandNotFoundName" xml:space="preserve">
+    <value>CommandNotFound</value>
+  </data>
+  <data name="TypeNotFoundCommonName" xml:space="preserve">
+    <value>Type Not Found</value>
+  </data>
+  <data name="TypeNotFoundDescription" xml:space="preserve">
+    <value>Undefined type should not be used</value>
+  </data>
+  <data name="TypeNotFoundError" xml:space="preserve">
+    <value>Type '{0}' is not found. Please check that it is defined.</value>
+  </data>
+  <data name="TypeNotFoundName" xml:space="preserve">
+    <value>TypeNotFound</value>
+  </data>
+  <data name="UseCmdletCorrectlyCommonName" xml:space="preserve">
+    <value>Use Cmdlet Correctly</value>
+  </data>
+  <data name="UseCmdletCorrectlyDescription" xml:space="preserve">
+    <value>Cmdlet should be called with the mandatory parameters.</value>
+  </data>
+  <data name="UseCmdletCorrectlyError" xml:space="preserve">
+    <value>Cmdlet '{0}' may be used incorrectly. Please check that all mandatory parameters are supplied.</value>
+  </data>
+  <data name="UseCmdletCorrectlyName" xml:space="preserve">
+    <value>UseCmdletCorrectly</value>
+  </data>
+  <data name="UseTypeAtVariableAssignmentCommonName" xml:space="preserve">
+    <value>Use Type At Variable Assignment</value>
+  </data>
+  <data name="UseTypeAtVariableAssignmentDescription" xml:space="preserve">
+    <value>Types should be specified at variable assignments to maintain readability and maintainability of script.</value>
+  </data>
+  <data name="UseTypeAtVariableAssignmentError" xml:space="preserve">
+    <value>Specify type at the assignment of variable '{0}'</value>
+  </data>
+  <data name="UseTypeAtVariableAssignmentName" xml:space="preserve">
+    <value>UseTypeAtVariableAssignment</value>
+  </data>
+  <data name="AvoidUserNameAndPasswordParamsCommonName" xml:space="preserve">
+    <value>Avoid Using Username and Password Parameters</value>
+  </data>
+  <data name="AvoidUserNameAndPasswordParamsDescription" xml:space="preserve">
+    <value>Functions should only take in a credential parameter of type PSCredential instead of username and password parameters.</value>
+  </data>
+  <data name="AvoidUserNameAndPasswordParamsError" xml:space="preserve">
+    <value>Function '{0}' has both username and password parameters. A credential parameter of type PSCredential should be used.</value>
+  </data>
+  <data name="AvoidUserNameAndPasswordParamsName" xml:space="preserve">
+    <value>AvoidUsingUserNameAndPassWordParams</value>
+  </data>
+  <data name="AvoidInvokingEmptyMembersCommonName" xml:space="preserve">
+    <value>Avoid Invoking Empty Members</value>
+  </data>
+  <data name="AvoidInvokingEmptyMembersDescription" xml:space="preserve">
+    <value>Invoking non-constant members would cause potential bugs. Please double check the syntax to make sure members invoked are non-constant.</value>
+  </data>
+  <data name="AvoidInvokingEmptyMembersError" xml:space="preserve">
+    <value>'{0}' has non-constant members. Invoking empty members may cause bugs in the script.</value>
+  </data>
+  <data name="AvoidInvokingEmptyMembersName" xml:space="preserve">
+    <value>AvoidInvokingEmptyMembers</value>
+  </data>
+  <data name="AvoidComputerNameHardcodedCommonName" xml:space="preserve">
+    <value>Avoid Using ComputerName Hardcoded</value>
+  </data>
+  <data name="AvoidComputerNameHardcodedDescription" xml:space="preserve">
+    <value>The ComputerName parameter of a cmdlet should not be hardcoded as this will expose sensitive information about the system.</value>
+  </data>
+  <data name="AvoidComputerNameHardcodedError" xml:space="preserve">
+    <value>The ComputerName parameter of cmdlet '{0}' is hardcoded. This will expose sensitive information about the system if the script is shared.</value>
+  </data>
+  <data name="AvoidComputerNameHardcodedName" xml:space="preserve">
+    <value>AvoidUsingComputerNameHardcoded</value>
+  </data>
+  <data name="AvoidEmptyCatchBlockError" xml:space="preserve">
+    <value>Empty catch block is used. Please use Write-Error or throw statements in catch blocks.</value>
+  </data>
+  <data name="AvoidUsingCmdletAliasesError" xml:space="preserve">
+    <value>'{0}' is an alias of '{1}'. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content.</value>
+  </data>
+  <data name="AvoidUsingInvokeExpressionError" xml:space="preserve">
+    <value>Invoke-Expression is used. Please remove Invoke-Expression from script and find other options instead.</value>
+  </data>
+  <data name="AvoidUsingPositionalParametersError" xml:space="preserve">
+    <value>Cmdlet '{0}' has positional parameter. Please use named parameters instead of positional parameters when calling a command.</value>
+  </data>
+  <data name="NameSpaceFormat" xml:space="preserve">
+    <value>{0}{1}</value>
+  </data>
+  <data name="NullAstErrorMessage" xml:space="preserve">
+    <value>Cannot process null Ast</value>
+  </data>
+  <data name="NullCommandInfoError" xml:space="preserve">
+    <value>Cannot process null CommandInfo</value>
+  </data>
+  <data name="DSCSourceName" xml:space="preserve">
+    <value>PSDSC</value>
+  </data>
+  <data name="UseStandardDSCFunctionsInResourceCommonName" xml:space="preserve">
+    <value>Use Standard Get/Set/Test TargetResource functions in DSC Resource </value>
+  </data>
+  <data name="UseStandardDSCFunctionsInResourceDescription" xml:space="preserve">
+    <value>DSC Resource must implement Get, Set and Test-TargetResource functions. DSC Class must implement Get, Set and Test functions.</value>
+  </data>
+  <data name="UseStandardDSCFunctionsInResourceError" xml:space="preserve">
+    <value>Missing '{0}' function. DSC Resource must implement Get, Set and Test-TargetResource functions.</value>
+  </data>
+  <data name="UseStandardDSCFunctionsInResourceName" xml:space="preserve">
+    <value>StandardDSCFunctionsInResource</value>
+  </data>
+  <data name="AvoidUsingInternalURLsCommonName" xml:space="preserve">
+    <value>Avoid Using Internal URLs</value>
+  </data>
+  <data name="AvoidUsingInternalURLsDescription" xml:space="preserve">
+    <value>Using Internal URLs in the scripts may cause security problems.</value>
+  </data>
+  <data name="AvoidUsingInternalURLsError" xml:space="preserve">
+    <value>'{0}' could be an internal URL. Using internal URL directly in the script may cause potential information discloure.</value>
+  </data>
+  <data name="AvoidUsingInternalURLsName" xml:space="preserve">
+    <value>AvoidUsingInternalURLs</value>
+  </data>
+  <data name="SharepointURL" xml:space="preserve">
+    <value>www.sharepoint.com</value>
+  </data>
+  <data name="UseIdenticalParametersDSCCommonName" xml:space="preserve">
+    <value>Use Identical Parameters For DSC Test and Set Functions</value>
+  </data>
+  <data name="UseIdenticalParametersDSCDescription" xml:space="preserve">
+    <value>The Test and Set-TargetResource functions of DSC Resource must have the same parameters.</value>
+  </data>
+  <data name="UseIdenticalParametersDSCError" xml:space="preserve">
+    <value>The Test and Set-TargetResource functions of DSC Resource must have the same parameters.</value>
+  </data>
+  <data name="UseIdenticalParametersDSCName" xml:space="preserve">
+    <value>UseIdenticalParametersForDSC</value>
+  </data>
+  <data name="UseStandardDSCFunctionsInClassError" xml:space="preserve">
+    <value>Missing '{0}' function. DSC Class must implement Get, Set and Test functions.</value>
+  </data>
+  <data name="AvoidUninitializedVariableError" xml:space="preserve">
+    <value>Variable '{0}' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables.</value>
+  </data>
+  <data name="UseIdenticalMandatoryParametersDSCCommonName" xml:space="preserve">
+    <value>Use identical mandatory parameters for DSC Get/Test/Set TargetResource functions</value>
+  </data>
+  <data name="UseIdenticalMandatoryParametersDSCDescription" xml:space="preserve">
+    <value>The Get/Test/Set TargetResource functions of DSC resource must have the same mandatory parameters.</value>
+  </data>
+  <data name="UseIdenticalMandatoryParametersDSCError" xml:space="preserve">
+    <value>The mandatory parameter '{0}' is not present in '{1}' DSC resource function(s).</value>
+  </data>
+  <data name="UseIdenticalMandatoryParametersDSCName" xml:space="preserve">
+    <value>UseIdenticalMandatoryParametersForDSC</value>
+  </data>
+</root>
