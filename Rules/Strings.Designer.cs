@@ -214,38 +214,38 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Avoid Using ShouldContinue Or ShouldProcess Without Boolean Force Parameter.
+        ///   Looks up a localized string similar to Avoid Using ShouldContinue Without Boolean Force Parameter.
         /// </summary>
-        internal static string AvoidShouldContinueShouldProcessWithoutForceCommonName {
+        internal static string AvoidShouldContinueWithoutForceCommonName {
             get {
-                return ResourceManager.GetString("AvoidShouldContinueShouldProcessWithoutForceCommonName", resourceCulture);
+                return ResourceManager.GetString("AvoidShouldContinueWithoutForceCommonName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Functions that use ShouldContinue or ShouldProcess should have a boolean force parameter to allow user to bypass it..
+        ///   Looks up a localized string similar to Functions that use ShouldContinue should have a boolean force parameter to allow user to bypass it..
         /// </summary>
-        internal static string AvoidShouldContinueShouldProcessWithoutForceDescription {
+        internal static string AvoidShouldContinueWithoutForceDescription {
             get {
-                return ResourceManager.GetString("AvoidShouldContinueShouldProcessWithoutForceDescription", resourceCulture);
+                return ResourceManager.GetString("AvoidShouldContinueWithoutForceDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function &apos;{0}&apos; in file &apos;{1}&apos; uses ShouldContinue or ShouldProcess but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt.
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; in file &apos;{1}&apos; uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt.
         /// </summary>
-        internal static string AvoidShouldContinueShouldProcessWithoutForceError {
+        internal static string AvoidShouldContinueWithoutForceError {
             get {
-                return ResourceManager.GetString("AvoidShouldContinueShouldProcessWithoutForceError", resourceCulture);
+                return ResourceManager.GetString("AvoidShouldContinueWithoutForceError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to AvoidShouldContinueShouldProcessWithoutForce.
+        ///   Looks up a localized string similar to AvoidShouldContinueWithoutForce.
         /// </summary>
-        internal static string AvoidShouldContinueShouldProcessWithoutForceName {
+        internal static string AvoidShouldContinueWithoutForceName {
             get {
-                return ResourceManager.GetString("AvoidShouldContinueShouldProcessWithoutForceName", resourceCulture);
+                return ResourceManager.GetString("AvoidShouldContinueWithoutForceName", resourceCulture);
             }
         }
         
@@ -360,36 +360,36 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         /// <summary>
         ///   Looks up a localized string similar to Avoid Using Username and Password Parameters.
         /// </summary>
-        internal static string AvoidUserNameAndPasswordParamsCommonName {
+        internal static string AvoidUsernameAndPasswordParamsCommonName {
             get {
-                return ResourceManager.GetString("AvoidUserNameAndPasswordParamsCommonName", resourceCulture);
+                return ResourceManager.GetString("AvoidUsernameAndPasswordParamsCommonName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Functions should only take in a credential parameter of type PSCredential instead of username and password parameters..
         /// </summary>
-        internal static string AvoidUserNameAndPasswordParamsDescription {
+        internal static string AvoidUsernameAndPasswordParamsDescription {
             get {
-                return ResourceManager.GetString("AvoidUserNameAndPasswordParamsDescription", resourceCulture);
+                return ResourceManager.GetString("AvoidUsernameAndPasswordParamsDescription", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Function &apos;{0}&apos; has both username and password parameters. A credential parameter of type PSCredential should be used..
         /// </summary>
-        internal static string AvoidUserNameAndPasswordParamsError {
+        internal static string AvoidUsernameAndPasswordParamsError {
             get {
-                return ResourceManager.GetString("AvoidUserNameAndPasswordParamsError", resourceCulture);
+                return ResourceManager.GetString("AvoidUsernameAndPasswordParamsError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to AvoidUsingUserNameAndPassWordParams.
         /// </summary>
-        internal static string AvoidUserNameAndPasswordParamsName {
+        internal static string AvoidUsernameAndPasswordParamsName {
             get {
-                return ResourceManager.GetString("AvoidUserNameAndPasswordParamsName", resourceCulture);
+                return ResourceManager.GetString("AvoidUsernameAndPasswordParamsName", resourceCulture);
             }
         }
         
@@ -1357,6 +1357,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use identical mandatory parameters for DSC Get/Test/Set TargetResource functions.
+        /// </summary>
+        internal static string UseIdenticalMandatoryParametersDSCCommonName {
+            get {
+                return ResourceManager.GetString("UseIdenticalMandatoryParametersDSCCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Get/Test/Set TargetResource functions of DSC resource must have the same mandatory parameters..
+        /// </summary>
+        internal static string UseIdenticalMandatoryParametersDSCDescription {
+            get {
+                return ResourceManager.GetString("UseIdenticalMandatoryParametersDSCDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The mandatory parameter &apos;{0}&apos; is not present in &apos;{1}&apos; DSC resource function(s)..
+        /// </summary>
+        internal static string UseIdenticalMandatoryParametersDSCError {
+            get {
+                return ResourceManager.GetString("UseIdenticalMandatoryParametersDSCError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseIdenticalMandatoryParametersForDSC.
+        /// </summary>
+        internal static string UseIdenticalMandatoryParametersDSCName {
+            get {
+                return ResourceManager.GetString("UseIdenticalMandatoryParametersDSCName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use Identical Parameters For DSC Test and Set Functions.
         /// </summary>
         internal static string UseIdenticalParametersDSCCommonName {
@@ -1389,50 +1425,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         internal static string UseIdenticalParametersDSCName {
             get {
                 return ResourceManager.GetString("UseIdenticalParametersDSCName", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to the Get/Test/Set TargetResource functions of DSC Resource must have the mandatory same parameters.
-        /// </summary>
-        internal static string UseIdenticalMandatoryParametersDSCCommonName
-        {
-            get
-            {
-                return ResourceManager.GetString("UseIdenticalMandatoryParametersDSCCommonName", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to the Get/Test/Set TargetResource functions of DSC Resource must have the mandatory same parameters.
-        /// </summary>
-        internal static string UseIdenticalMandatoryParametersDSCDescription
-        {
-            get
-            {
-                return ResourceManager.GetString("UseIdenticalMandatoryParametersDSCDescription", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to the Get/Test/Set TargetResource functions of DSC Resource must have the mandatory same parameters.
-        /// </summary>
-        internal static string UseIdenticalMandatoryParametersDSCError
-        {
-            get
-            {
-                return ResourceManager.GetString("UseIdenticalMandatoryParametersDSCError", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to UseIdenticalMandatoryParametersForDSC.
-        /// </summary>
-        internal static string UseIdenticalMandatoryParametersDSCName
-        {
-            get
-            {
-                return ResourceManager.GetString("UseIdenticalMandatoryParametersDSCName", resourceCulture);
             }
         }
         

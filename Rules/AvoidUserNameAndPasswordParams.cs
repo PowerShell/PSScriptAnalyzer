@@ -16,11 +16,11 @@ using System.Reflection;
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidUserNameAndPasswordParams: Check that a function does not use both username and password
+    /// AvoidUsernameAndPasswordParams: Check that a function does not use both username and password
     /// parameters.
     /// </summary>
     [Export(typeof(IScriptRule))]
-    public class AvoidUserNameAndPasswordParams : IScriptRule
+    public class AvoidUsernameAndPasswordParams : IScriptRule
     {
         /// <summary>
         /// AnalyzeScript: Check that a function does not use both username
@@ -77,8 +77,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 if (hasUserName && hasPwd)
                 {
                     yield return new DiagnosticRecord(
-                        String.Format(CultureInfo.CurrentCulture, Strings.AvoidUserNameAndPasswordParamsError, funcAst.Name),
-                        funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsError, funcAst.Name),
+                        funcAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                 }
             }
         }
@@ -89,7 +89,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUserNameAndPasswordParamsName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsernameAndPasswordParamsName);
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUserNameAndPasswordParamsCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsCommonName);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUserNameAndPasswordParamsDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsDescription);
         }
 
         /// <summary>

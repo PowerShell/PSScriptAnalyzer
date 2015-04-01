@@ -342,14 +342,14 @@
   <data name="AvoidDefaultValueSwitchParameterCommonName" xml:space="preserve">
     <value>Switch Parameters Should Not Default To True</value>
   </data>
-  <data name="AvoidShouldContinueShouldProcessWithoutForceDescription" xml:space="preserve">
-    <value>Functions that use ShouldContinue or ShouldProcess should have a boolean force parameter to allow user to bypass it.</value>
+  <data name="AvoidShouldContinueWithoutForceDescription" xml:space="preserve">
+    <value>Functions that use ShouldContinue should have a boolean force parameter to allow user to bypass it.</value>
   </data>
-  <data name="AvoidShouldContinueShouldProcessWithoutForceError" xml:space="preserve">
-    <value>Function '{0}' in file '{1}' uses ShouldContinue or ShouldProcess but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt</value>
+  <data name="AvoidShouldContinueWithoutForceError" xml:space="preserve">
+    <value>Function '{0}' in file '{1}' uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt</value>
   </data>
-  <data name="AvoidShouldContinueShouldProcessWithoutForceCommonName" xml:space="preserve">
-    <value>Avoid Using ShouldContinue Or ShouldProcess Without Boolean Force Parameter</value>
+  <data name="AvoidShouldContinueWithoutForceCommonName" xml:space="preserve">
+    <value>Avoid Using ShouldContinue Without Boolean Force Parameter</value>
   </data>
   <data name="AvoidUsingClearHostDescription" xml:space="preserve">
     <value>Using Clear-Host is not recommended because the cmdlet may not work in some hosts or there may even be no hosts at all.</value>
@@ -390,8 +390,8 @@
   <data name="AvoidGlobalVarsName" xml:space="preserve">
     <value>AvoidGlobalVars</value>
   </data>
-  <data name="AvoidShouldContinueShouldProcessWithoutForceName" xml:space="preserve">
-    <value>AvoidShouldContinueShouldProcessWithoutForce</value>
+  <data name="AvoidShouldContinueWithoutForceName" xml:space="preserve">
+    <value>AvoidShouldContinueWithoutForce</value>
   </data>
   <data name="AvoidTrapStatementName" xml:space="preserve">
     <value>AvoidTrapStatement</value>
@@ -510,16 +510,16 @@
   <data name="UseTypeAtVariableAssignmentName" xml:space="preserve">
     <value>UseTypeAtVariableAssignment</value>
   </data>
-  <data name="AvoidUserNameAndPasswordParamsCommonName" xml:space="preserve">
+  <data name="AvoidUsernameAndPasswordParamsCommonName" xml:space="preserve">
     <value>Avoid Using Username and Password Parameters</value>
   </data>
-  <data name="AvoidUserNameAndPasswordParamsDescription" xml:space="preserve">
+  <data name="AvoidUsernameAndPasswordParamsDescription" xml:space="preserve">
     <value>Functions should only take in a credential parameter of type PSCredential instead of username and password parameters.</value>
   </data>
-  <data name="AvoidUserNameAndPasswordParamsError" xml:space="preserve">
+  <data name="AvoidUsernameAndPasswordParamsError" xml:space="preserve">
     <value>Function '{0}' has both username and password parameters. A credential parameter of type PSCredential should be used.</value>
   </data>
-  <data name="AvoidUserNameAndPasswordParamsName" xml:space="preserve">
+  <data name="AvoidUsernameAndPasswordParamsName" xml:space="preserve">
     <value>AvoidUsingUserNameAndPassWordParams</value>
   </data>
   <data name="AvoidInvokingEmptyMembersCommonName" xml:space="preserve">
