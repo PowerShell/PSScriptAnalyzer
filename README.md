@@ -35,7 +35,7 @@ To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell cons
 Building the Code
 =================
 
-Use Visual Studio or any C# compiler to build the code
+Use Visual Studio to build "ScriptAnalyzer.sln". Use ~/ScriptAnalyzer/ folder to load PSScriptAnalyzer.psd1
 
 Running Tests
 =============
