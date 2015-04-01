@@ -79,9 +79,6 @@
     <Compile Include="VariableAnalysisBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Microsoft.Windows.Powershell.ScriptAnalyzer.dll-Help.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="PSScriptAnalyzer.psd1" />
     <None Include="ScriptAnalyzer.format.ps1xml" />
     <None Include="ScriptAnalyzer.types.ps1xml" />
