@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>Microsoft.Windows.Powershell.ScriptAnalyzer</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Windows.Powershell.ScriptAnalyzer</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\fbl_srv2_ci_mgmt.binaries.amd64chk\monad\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Commands\GetScriptAnalyzerRuleCommand.cs" />
+    <Compile Include="Commands\InvokeScriptAnalyzerCommand.cs" />
+    <Compile Include="Generic\AvoidCmdletGeneric.cs" />
+    <Compile Include="Generic\AvoidParameterGeneric.cs" />
+    <Compile Include="Generic\DiagnosticRecord.cs" />
+    <Compile Include="Generic\ExternalRule.cs" />
+    <Compile Include="Generic\ICommandRule.cs" />
+    <Compile Include="Generic\IDSCResourceRule.cs" />
+    <Compile Include="Generic\IExternalRule.cs" />
+    <Compile Include="Generic\ILogger.cs" />
+    <Compile Include="Generic\IRule.cs" />
+    <Compile Include="Generic\IScriptRule.cs" />
+    <Compile Include="Generic\ITokenRule.cs" />
+    <Compile Include="Generic\LoggerInfo.cs" />
+    <Compile Include="Generic\RuleInfo.cs" />
+    <Compile Include="Generic\SkipNamedBlock.cs" />
+    <Compile Include="Generic\SkipTypeDefinition.cs" />
+    <Compile Include="Generic\SourceType.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="Loggers\WriteObjectsLogger.cs" />
+    <Compile Include="ScriptAnalyzer.cs" />
+    <Compile Include="SpecialVars.cs" />
+    <Compile Include="Strings.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="VariableAnalysis.cs" />
+    <Compile Include="VariableAnalysisBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Microsoft.Windows.Powershell.ScriptAnalyzer.dll-Help.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PSScriptAnalyzer.psd1" />
+    <None Include="ScriptAnalyzer.format.ps1xml" />
+    <None Include="ScriptAnalyzer.types.ps1xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>
