@@ -27,7 +27,7 @@ Installation
 
 3. In PowerShell Console:
 ```powershell
-Import-Module ScriptAnalyzer
+Import-Module PSScriptAnalyzer
 ```
 
 To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell console to obtain the built-in rules
