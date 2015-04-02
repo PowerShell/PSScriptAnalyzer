@@ -21,13 +21,13 @@ WS2012R2 / Windows 8.1 / Windows OS running PowerShell v5.0 which can be obtaine
 Installation
 ============
 
-1. Build the Code using Visual Studio
+1. Build the Code using Visual Studio [solution part of the repo]
 
-2. Copy following files to ```$env:ProgramFiles\WindowsPowerShell\Modules\ScriptAnalyzer```
+2. Copy files from  ``~/ProjectRoot/ScriptAnalyzer``  to ```$env:ProgramFiles\WindowsPowerShell\Modules\ScriptAnalyzer```
 
 3. In PowerShell Console:
 ```powershell
-Import-Module $env:ProgramFiles\WindowsPowerShell\Modules\ScriptAnalyzer\PSScriptAnalyzer.psd1
+Import-Module ScriptAnalyzer
 ```
 
 To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell console to obtain the built-in rules
