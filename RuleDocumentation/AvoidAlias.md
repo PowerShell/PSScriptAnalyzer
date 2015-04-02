@@ -8,7 +8,7 @@ An alias is an alternate name or nickname for a cmdlet or for a command element,
 
 ##Example
 
-iex "I want to use alias"
+gps | where-object {$_.WorkingSet -gt 20000000}
 
 cls
 
