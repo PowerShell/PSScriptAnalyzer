@@ -33,7 +33,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> paramAsts = ast.FindAll(testAst => testAst is ParameterAst, true);
             Ast parentAst;
 
-            string funcName;
             string paramName;
 
             PropertyInfo[] commonParams = typeof(CommonParameters).GetProperties();
@@ -55,14 +54,20 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                             parentAst = parentAst.Parent;
                         }
 
-                        if (parentAst is FunctionDefinitionAst) {
-                            funcName = string.Format(CultureInfo.CurrentCulture, Strings.ReservedParamsCmdletPrefix, (parentAst as FunctionDefinitionAst).Name);
+                        if (parentAst is FunctionDefinitionAst) 
+                        {
+                            IEnumerable<Ast> attrs = parentAst.FindAll(testAttr => testAttr is AttributeAst, true);
+                            foreach (AttributeAst attr in attrs)
+                            {
+                                if (string.Equals(attr.Extent.Text, "[CmdletBinding()]",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    string funcName = string.Format(CultureInfo.CurrentCulture,Strings.ReservedParamsCmdletPrefix, (parentAst as FunctionDefinitionAst).Name);
+                                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedParamsError, funcName,paramName), paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                                   
+                                }
+                            }
                         }
-                        else {
-                            funcName = Strings.ReservedParamsScriptPrefix;
-                        }
-
-                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedParamsError, funcName, paramName), paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
             }

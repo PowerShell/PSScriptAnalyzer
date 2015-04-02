@@ -34,8 +34,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
 
             List<String> passwords = new List<String>() {"Password", "Passphrase"};
-            List<String> usernames = new List<String>() { "Username", "User", "ID", "APIKey", "Key",
-                                                        "Account", "Name" };
+            List<String> usernames = new List<String>() { "Username", "User"};
 
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
