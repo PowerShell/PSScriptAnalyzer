@@ -11,16 +11,16 @@ To fix a violation of this rule, please consider to use other scope modifiers.
 
 ##Example
 Wrong:
-	$Global:var1 = $null
 
+	$Global:var1 = $null
 	function NotGlobal ($var)
 	{
     	$a = $var + $var1
 	}
 
 Correct:
-	$Global:var1 = $null
 
+	$Global:var1 = $null
 	function NotGlobal ($var1,$var2)
 	{
     	$a = $var1 + $var2

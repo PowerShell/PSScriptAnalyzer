@@ -11,16 +11,17 @@ To fix a violation of this rule, using Write-Error or throw statements in catch 
 
 ##Example
 Wrong:
+
 	try
 	{
 	    1/0
 	}
 	catch [DivideByZeroException]
 	{
-
 	}
 
 Correct:
+
 	try
 	{
 	    1/0
