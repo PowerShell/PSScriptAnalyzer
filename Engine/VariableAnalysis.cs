@@ -32,31 +32,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         private Dictionary<string, VariableAnalysisDetails> VariablesDictionary;
 
         /// <summary>
-        /// Used to analyze scriptbloct, functionmemberast or functiondefinitionast
-        /// </summary>
-        /// <param name="ast"></param>
-        /// <returns></returns>
-        public static void Analyze(Ast ast)
-        {
-            if (ast == null) return;
-
-            (new VariableAnalysis(new FlowGraph())).AnalyzeImpl(ast);
-        }
-
-        /// <summary>
-        /// Analyze a member function, marking variable references as "dynamic" (so they can be reported as errors)
-        /// and also analyze the control flow to make sure every block returns (or throws)
-        /// </summary>
-        /// <param name="ast"></param>
-        /// <returns></returns>
-        public static bool AnalyzeMemberFunction(Ast ast)
-        {
-            VariableAnalysis va = (new VariableAnalysis(new FlowGraph()));
-            va.AnalyzeImpl(ast);
-            return va.Exit._predecessors.All(b => b._returns || b._throws || b._unreachable);
-        }
-
-        /// <summary>
         /// Return parameters of a functionmemberast or functiondefinitionast
         /// </summary>
         /// <param name="ast"></param>
@@ -86,10 +61,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             }
         }
 
-        private Dictionary<String, VariableTarget> ProcessParameters(IEnumerable<ParameterAst> parameters)
+        private void ProcessParameters(IEnumerable<ParameterAst> parameters)
         {
-            Dictionary<String, VariableTarget> varTargets = new Dictionary<String, VariableTarget>();
-
             foreach (var parameter in parameters)
             {
                 var variablePath = parameter.Name.VariablePath;
@@ -128,7 +101,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
                 var varName = AssignmentTarget.GetUnaliasedVariableName(variablePath);
                 var details = _variables[varName];
-                type = type ?? details.Type ?? typeof(object);
+                details.Type = type ?? details.Type ?? typeof(object);
 
                 if (parameter.DefaultValue != null)
                 {
@@ -147,24 +120,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     // Consider switch or mandatory parameter as already initialized
                     Entry.AddAst(new AssignmentTarget(varName, type));
                 }
-                else if (type != typeof(object))
-                {
-                    VariableTarget varTarget = new VariableTarget(parameter.Name);
-                    varTarget.Type = type;
-                    if (!varTargets.ContainsKey(varTarget.Name))
-                    {
-                        varTargets.Add(varTarget.Name, varTarget);
-                    }
-
-                    Entry.AddAst(varTarget);
-                }
                 else
                 {
-                    Entry.AddAst(new VariableTarget(parameter.Name));
+                    VariableTarget varTarget = new VariableTarget(parameter.Name);
+                    varTarget.Type = details.Type;
+                    Entry.AddAst(varTarget);
                 }
             }
-
-            return varTargets;
         }
 
         /// <summary>
@@ -181,8 +143,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             _variables = FindAllVariablesVisitor.Visit(ast);
 
-            Dictionary<String, VariableTarget> varTargets = null;
-
             Init();
 
             if (ast is FunctionMemberAst || ast is FunctionDefinitionAst)
@@ -190,7 +150,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 IEnumerable<ParameterAst> parameters = FindParameters(ast, ast.GetType());
                 if (parameters != null)
                 {
-                    varTargets = ProcessParameters(parameters);
+                    ProcessParameters(parameters);
                 }
             }
             else
@@ -198,7 +158,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 ScriptBlockAst sbAst = ast as ScriptBlockAst;
                 if (sbAst != null && sbAst.ParamBlock != null && sbAst.ParamBlock.Parameters != null)
                 {
-                    varTargets = ProcessParameters(sbAst.ParamBlock.Parameters);
+                    ProcessParameters(sbAst.ParamBlock.Parameters);
                 }
             }
 
@@ -215,29 +175,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 ast.Visit(this.Decorator);
             }
 
-            VariablesDictionary = Block.SparseSimpleConstants(_variables, Entry);
+            Ast parent = ast;
 
-            // Update the type of variables in VariablesDictionary based on the param block
-            foreach (var entry in VariablesDictionary)
+            while (parent.Parent != null)
             {
-                var analysisDetails = entry.Value;
-                if (analysisDetails.Type != typeof(Unreached))
-                {
-                    continue;
-                }
-
-                // This regex is used to extracts the variable name from entry.Key. The key is of the form [varname]s[so]e[eo]
-                // where [varname] is name of variable [so] is the start offset number and [eo] is the end offset number
-                var result = Regex.Match(entry.Key, "^(.+)s[0-9]+e[0-9]+$");
-                if (result.Success && result.Groups.Count == 2)
-                {
-                    string varName = result.Groups[1].Value;
-                    if (varTargets.ContainsKey(varName))
-                    {
-                        analysisDetails.Type = varTargets[varName].Type;
-                    }
-                }
+                parent = parent.Parent;
             }
+
+            List<TypeDefinitionAst> classes = parent.FindAll(item =>
+                item is TypeDefinitionAst && (item as TypeDefinitionAst).IsClass, true)
+                .Cast<TypeDefinitionAst>().ToList();
+
+            VariablesDictionary = Block.SparseSimpleConstants(_variables, Entry, classes);
         }
 
         /// <summary>
@@ -292,7 +241,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             }
 
             var analysis = GetVariableAnalysis(varTarget);
-            
+
             if (analysis == null)
             {
                 return false;
@@ -315,9 +264,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 return (varTarget.VariablePath.IsGlobal
                         || String.Equals(varTarget.VariablePath.DriveName, "env", StringComparison.OrdinalIgnoreCase));
             }
-           
+
             return false;
-            
+
         }
 
         /// <summary>
@@ -391,7 +340,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     // We skip things like $a.test = 3. In this case we will just test
                     // for variable $a
                     assignTarget.Visit(this.Decorator);
-                }                
+                }
             }
 
             return null;
