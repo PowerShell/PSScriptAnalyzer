@@ -5,7 +5,7 @@
 ##Description
 
 You cannot use following reserved characters in a function name. These characters usually cause a parsing error. Otherwise they will generally cause runtime errors.
-#,(){}[]&/\\$^;:\"'<>|?@`*%+=~
+'#,(){}[]&/\\$^;:\"'<>|?@`*%+=~'
 
 
 ##How to Fix
