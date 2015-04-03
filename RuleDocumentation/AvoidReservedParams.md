@@ -16,14 +16,14 @@ Wrong：
 
 function test
 {
-	[CmdletBinding]
-	Param($ErrorVariable, $b)
+    [CmdletBinding]
+    Param($ErrorVariable, $b)
 }
 
 Correct:
 
 function test
 {
-	[CmdletBinding]
-	Param($err, $b)
+    [CmdletBinding]
+    Param($err, $b)
 }
