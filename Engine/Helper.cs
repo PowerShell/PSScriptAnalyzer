@@ -381,6 +381,23 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Checks whether all the code path of ast returns.
+        /// Runs InitializeVariableAnalysis before calling this method
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public bool AllCodePathReturns(Ast ast)
+        {
+            if (!VariableAnalysisDictionary.ContainsKey(ast))
+            {
+                return true;
+            }
+
+            var analysis = VariableAnalysisDictionary[ast];
+            return analysis.Exit._predecessors.All(block => block._returns || block._unreachable || block._throws);
+        }
+
+        /// <summary>
         /// Initialize Variable Analysis on Ast ast
         /// </summary>
         /// <param name="ast"></param>
@@ -400,6 +417,93 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             catch { }
         }
 
+        /// <summary>
+        /// Get the return type of ret, which is used in function funcAst in scriptAst ast
+        /// This function assumes that initialize variable analysis is already run on funcast
+        /// It also assumes that the pipeline of ret is not null
+        /// </summary>
+        /// <param name="funcAst"></param>
+        /// <param name="ret"></param>
+        /// <param name="classes"></param>
+        /// <param name="scriptAst"></param>
+        /// <returns></returns>
+        public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret, IEnumerable<TypeDefinitionAst> classes, Ast scriptAst)
+        {
+            if (ret == null)
+            {
+                return String.Empty;
+            }
+
+            PipelineAst pipe = ret.Pipeline as PipelineAst;
+
+            // Handle the case with 1 pipeline element first
+            if (pipe != null && pipe.PipelineElements.Count == 1)
+            {
+                CommandExpressionAst cmAst = pipe.PipelineElements[0] as CommandExpressionAst;
+                if (cmAst != null)
+                {
+                    if (cmAst.Expression.StaticType != typeof(object))
+                    {
+                        return cmAst.Expression.StaticType.FullName;
+                    }
+
+                    VariableExpressionAst varAst = cmAst.Expression as VariableExpressionAst;
+
+                    if (varAst != null)
+                    {
+                        return GetVariableTypeFromAnalysis(varAst, funcAst);
+                    }
+
+                    MemberExpressionAst memAst = cmAst.Expression as MemberExpressionAst;
+
+                    if (memAst != null)
+                    {
+                        VariableAnalysisDetails details = null;
+                        TypeDefinitionAst psClass = null;
+
+                        if (memAst.Expression is VariableExpressionAst && VariableAnalysisDictionary.ContainsKey(scriptAst))
+                        {
+                            VariableAnalysis VarTypeAnalysis = VariableAnalysisDictionary[scriptAst];
+                            details = VarTypeAnalysis.GetVariableAnalysis(memAst.Expression as VariableExpressionAst);
+
+                            if (details != null && classes != null)
+                            {
+                                psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
+                            }
+                        }
+
+                        return GetTypeFromMemberExpressionAst(memAst, psClass, details);
+                    }
+
+                }
+            }
+
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Retrieves the type from member expression ast
+        /// </summary>
+        /// <param name="memberAst"></param>
+        /// <param name="psClass"></param>
+        /// <param name="analysisDetails"></param>
+        /// <returns></returns>
+        public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, TypeDefinitionAst psClass, VariableAnalysisDetails analysisDetails)
+        {
+            Type result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst);
+
+            if (result == null && psClass != null && analysisDetails != null)
+            {
+                result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst, analysisDetails, psClass);
+            }
+
+            if (result != null)
+            {
+                return result.FullName;
+            }
+
+            return String.Empty;
+        }
 
         /// <summary>
         /// Get type of variable from the variable analysis
@@ -421,7 +525,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     return "";
                 }
             }
-            catch {
+            catch
+            {
                 return "";
             }
         }
@@ -439,8 +544,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             }
             return false;
         }
-
-       
 
         #endregion
     }

@@ -86,6 +86,7 @@
     <Compile Include="UseShouldProcessCorrectly.cs" />
     <Compile Include="UseSingularNouns.cs" />
     <Compile Include="UseStandardDSCFunctionsInResource.cs" />
+    <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Strings.resx">

@@ -627,4 +627,25 @@
   <data name="UseIdenticalMandatoryParametersDSCName" xml:space="preserve">
     <value>UseIdenticalMandatoryParametersForDSC</value>
   </data>
+  <data name="NotAllCodePathReturnsDSCFunctionsError" xml:space="preserve">
+    <value>Not all code path in {0} function in DSC Class {1} returns a value</value>
+  </data>
+  <data name="ReturnCorrectTypeDSCFunctionsName" xml:space="preserve">
+    <value>ReturnCorrectTypesForDSCFunctions</value>
+  </data>
+  <data name="ReturnCorrectTypesForDSCFunctionsCommonName" xml:space="preserve">
+    <value>Return Correct Types For DSC Functions</value>
+  </data>
+  <data name="ReturnCorrectTypesForDSCFunctionsDescription" xml:space="preserve">
+    <value>Set function in DSC class and Set-TargetResource in DSC resource must not return anything. Get function in DSC class must return an instance of the DSC class and Get-TargetResource function in DSC resource must return a hashtable. Test function in DSC class and Get-TargetResource function in DSC resource must return a boolean.</value>
+  </data>
+  <data name="ReturnCorrectTypesForDSCFunctionsNoTypeError" xml:space="preserve">
+    <value>{0} function in DSC Class {1} should return object of type {2}</value>
+  </data>
+  <data name="ReturnCorrectTypesForDSCFunctionsWrongTypeError" xml:space="preserve">
+    <value>{0} function in DSC Class {1} should return object of type {2} instead of type {3}</value>
+  </data>
+  <data name="ReturnCorrectTypesForSetFunctionsDSCError" xml:space="preserve">
+    <value>Set function in DSC Class {0} should not return anything</value>
+  </data>
 </root>
