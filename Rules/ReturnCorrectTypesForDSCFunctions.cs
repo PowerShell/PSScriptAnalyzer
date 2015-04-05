@@ -35,6 +35,20 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             List<string> resourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Get-TargetResource", "Test-TargetResource" });
 
             // TODO: Add logic for DSC Resources
+
+            IEnumerable<Ast> functionDefinitionAsts = ast.FindAll(item => item is FunctionDefinitionAst && resourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);
+
+            IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
+                item is TypeDefinitionAst
+                && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
+
+            foreach (FunctionDefinitionAst func in functionDefinitionAsts)
+            {
+                Helper.Instance.InitializeVariableAnalysis(func);
+                var test = new FindPipelineOutput(func, classes);
+                var test2 = test.OutputTypes;
+            }
+
             return Enumerable.Empty<DiagnosticRecord>();
         }
 
@@ -106,7 +120,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                                     ret.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
                             }
 
-                            string typeName = Helper.Instance.GetTypeFromReturnStatementAst(funcAst, ret, classes, ast);
+                            string typeName = Helper.Instance.GetTypeFromReturnStatementAst(funcAst, ret, classes);
 
                             // This also includes the case of return $this because the type of this is unreached.
                             if (String.IsNullOrEmpty(typeName)

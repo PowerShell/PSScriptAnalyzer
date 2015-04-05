@@ -427,9 +427,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <param name="classes"></param>
         /// <param name="scriptAst"></param>
         /// <returns></returns>
-        public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret, IEnumerable<TypeDefinitionAst> classes, Ast scriptAst)
+        public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret, IEnumerable<TypeDefinitionAst> classes)
         {
-            if (ret == null)
+            if (ret == null || funcAst == null)
             {
                 return String.Empty;
             }
@@ -454,31 +454,38 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                         return GetVariableTypeFromAnalysis(varAst, funcAst);
                     }
 
-                    MemberExpressionAst memAst = cmAst.Expression as MemberExpressionAst;
-
-                    if (memAst != null)
+                    if (cmAst.Expression is MemberExpressionAst)
                     {
-                        VariableAnalysisDetails details = null;
-                        TypeDefinitionAst psClass = null;
-
-                        if (memAst.Expression is VariableExpressionAst && VariableAnalysisDictionary.ContainsKey(scriptAst))
-                        {
-                            VariableAnalysis VarTypeAnalysis = VariableAnalysisDictionary[scriptAst];
-                            details = VarTypeAnalysis.GetVariableAnalysis(memAst.Expression as VariableExpressionAst);
-
-                            if (details != null && classes != null)
-                            {
-                                psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
-                            }
-                        }
-
-                        return GetTypeFromMemberExpressionAst(memAst, psClass, details);
+                        return GetTypeFromMemberExpressionAstHelper(cmAst.Expression as MemberExpressionAst, funcAst, classes);
                     }
-
                 }
             }
 
             return String.Empty;
+        }
+
+        internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, Ast scopeAst, IEnumerable<TypeDefinitionAst> classes)
+        {
+            if (memberAst == null)
+            {
+                return String.Empty;
+            }
+
+            VariableAnalysisDetails details = null;
+            TypeDefinitionAst psClass = null;
+
+            if (memberAst.Expression is VariableExpressionAst && VariableAnalysisDictionary.ContainsKey(scopeAst))
+            {
+                VariableAnalysis VarTypeAnalysis = VariableAnalysisDictionary[scopeAst];
+                details = VarTypeAnalysis.GetVariableAnalysis(memberAst.Expression as VariableExpressionAst);
+
+                if (details != null && classes != null)
+                {
+                    psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
+            return GetTypeFromMemberExpressionAst(memberAst, psClass, details);
         }
 
         /// <summary>
@@ -506,11 +513,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Get type of variable from the variable analysis
+        /// Get the type of varAst
         /// </summary>
         /// <param name="varAst"></param>
         /// <param name="ast"></param>
-        public string GetVariableTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
+        /// <returns></returns>
+        internal Type GetTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
         {
             try
             {
@@ -518,17 +526,33 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 {
                     VariableAnalysis VarTypeAnalysis = VariableAnalysisDictionary[ast];
                     VariableAnalysisDetails details = VarTypeAnalysis.GetVariableAnalysis(varAst);
-                    return details.Type.FullName;
+                    return details.Type;
                 }
                 else
                 {
-                    return "";
+                    return null;
                 }
             }
             catch
             {
-                return "";
+                return null;
             }
+        }
+
+        /// <summary>
+        /// Get type of variable from the variable analysis
+        /// </summary>
+        /// <param name="varAst"></param>
+        /// <param name="ast"></param>
+        public string GetVariableTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
+        {
+            Type result = GetTypeFromAnalysis(varAst, ast);
+            if (result != null)
+            {
+                return result.FullName;
+            }
+
+            return String.Empty;
         }
 
         /// <summary>
@@ -581,17 +605,67 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
     public class FindPipelineOutput : ICustomAstVisitor
     {
         List<string> outputTypes;
-        Ast myAst;
+
+        IEnumerable<TypeDefinitionAst> classes;
+
+        FunctionDefinitionAst myFunction;
+        /// <summary>
+        /// These binary operators will always return boolean value
+        /// </summary>
+        static TokenKind[] booleanBinaryOperators;
+
+        /// <summary>
+        /// These unary operator will return boolean value
+        /// </summary>
+        static TokenKind[] booleanUnaryOperators;
+
+        static FindPipelineOutput()
+        {
+            booleanBinaryOperators = new TokenKind[] {
+                TokenKind.Icontains,
+                TokenKind.Inotcontains,
+                TokenKind.Inotin,
+                TokenKind.Iin,
+                TokenKind.Is,
+                TokenKind.IsNot,
+                TokenKind.And,
+                TokenKind.Or,
+                TokenKind.Xor
+            };
+
+            booleanUnaryOperators = new TokenKind[] {
+                TokenKind.Not,
+                TokenKind.Exclaim
+            };
+        }
 
         /// <summary>
         /// Find the pipeline output
         /// </summary>
         /// <param name="ast"></param>
-        public FindPipelineOutput(Ast ast)
+        public FindPipelineOutput(FunctionDefinitionAst ast, IEnumerable<TypeDefinitionAst> classes)
         {
             outputTypes = new List<string>();
-            myAst = ast;
-            Helper.Instance.InitializeVariableAnalysis(myAst);
+            Helper.Instance.InitializeVariableAnalysis(ast);
+            this.classes = classes;
+            myFunction = ast;
+
+            if (myFunction != null)
+            {
+                myFunction.Body.Visit(this);
+            }
+        }
+
+        /// <summary>
+        /// Get list of outputTypes
+        /// </summary>
+        /// <returns></returns>
+        public List<string> OutputTypes
+        {
+            get
+            {
+                return outputTypes;
+            }
         }
 
         /// <summary>
@@ -609,7 +683,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="namedAAAst"></param>
         /// <returns></returns>
-        public object VisitNamedAttributeArgumentAst(NamedAttributeArgumentAst namedAAAst)
+        public object VisitNamedAttributeArgument(NamedAttributeArgumentAst namedAAAst)
         {
             return null;
         }
@@ -639,7 +713,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="functionDefinitionAst"></param>
         /// <returns></returns>
-        public object VisitFunctionDefinitionAst(FunctionDefinitionAst functionDefinitionAst)
+        public object VisitFunctionDefinition(FunctionDefinitionAst functionDefinitionAst)
         {
             return null;
         }
@@ -649,8 +723,23 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="parameterAst"></param>
         /// <returns></returns>
-        public object VisitParameterAst(ParameterAst parameterAst)
+        public object VisitParameter(ParameterAst parameterAst)
         {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit the pipeline of the paren ast
+        /// </summary>
+        /// <param name="parenAst"></param>
+        /// <returns></returns>
+        public object VisitParenExpression(ParenExpressionAst parenAst)
+        {
+            if (parenAst != null)
+            {
+                return parenAst.Pipeline.Visit(this);
+            }
+
             return null;
         }
 
@@ -659,7 +748,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="dataStatementAst"></param>
         /// <returns></returns>
-        public object VisitDataStatementAst(DataStatementAst dataStatementAst)
+        public object VisitDataStatement(DataStatementAst dataStatementAst)
         {
             return null;
         }
@@ -697,7 +786,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="namedBlockAst"></param>
         /// <returns></returns>
-        public object VisitNamedBlockAst(NamedBlockAst namedBlockAst)
+        public object VisitNamedBlock(NamedBlockAst namedBlockAst)
         {
             if (namedBlockAst != null)
             {
@@ -737,15 +826,21 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Visit the last element of pipeline
+        /// Only considers the case where there is one pipeline and it is command expression
         /// </summary>
         /// <param name="pipelineAst"></param>
         /// <returns></returns>
         public object VisitPipeline(PipelineAst pipelineAst)
         {
-            if (pipelineAst != null && pipelineAst.PipelineElements.Count != 0)
+            // Handle the case with 1 pipeline element
+            if (pipelineAst != null && pipelineAst.PipelineElements.Count == 1)
             {
-                return pipelineAst.PipelineElements.Last().Visit(this);
+                CommandExpressionAst cmAst = pipelineAst.PipelineElements[0] as CommandExpressionAst;
+
+                if (cmAst != null)
+                {
+                    return cmAst.Visit(this);
+                }
             }
 
             return null;
@@ -771,7 +866,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="ifStatementAst"></param>
         /// <returns></returns>
-        public object VisitIfStatementAst(IfStatementAst ifStatementAst)
+        public object VisitIfStatement(IfStatementAst ifStatementAst)
         {
             if (ifStatementAst == null || ifStatementAst.Clauses == null || ifStatementAst.Clauses.Count == 0)
             {
@@ -817,7 +912,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="loopStatementAst"></param>
         /// <returns></returns>
-        public object VisitForEachStatementAst(ForEachStatementAst foreachAst)
+        public object VisitForEachStatement(ForEachStatementAst foreachAst)
         {
             if (foreachAst != null)
             {
@@ -832,7 +927,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="doWhileAst"></param>
         /// <returns></returns>
-        public object VisitDoWhileStatementAst(DoWhileStatementAst doWhileAst)
+        public object VisitDoWhileStatement(DoWhileStatementAst doWhileAst)
         {
             if (doWhileAst != null)
             {
@@ -847,7 +942,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="doWhileAst"></param>
         /// <returns></returns>
-        public object VisitDoUntilStatementAst(DoUntilStatementAst doUntilAst)
+        public object VisitDoUntilStatement(DoUntilStatementAst doUntilAst)
         {
             if (doUntilAst != null)
             {
@@ -862,7 +957,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="doWhileAst"></param>
         /// <returns></returns>
-        public object VisitWhileStatementAst(WhileStatementAst whileAst)
+        public object VisitWhileStatement(WhileStatementAst whileAst)
         {
             if (whileAst != null)
             {
@@ -877,7 +972,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="forAst"></param>
         /// <returns></returns>
-        public object VisitForStatementAst(ForStatementAst forAst)
+        public object VisitForStatement(ForStatementAst forAst)
         {
             if (forAst != null)
             {
@@ -902,7 +997,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="convAst"></param>
         /// <returns></returns>
-        public object VisitConvertExpressionAst(ConvertExpressionAst convAst)
+        public object VisitConvertExpression(ConvertExpressionAst convAst)
         {
             if (convAst != null)
             {
@@ -917,8 +1012,23 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="fileRedirectionAst"></param>
         /// <returns></returns>
-        public object VisitFileRedictionaryAst(FileRedirectionAst fileRedirectionAst)
+        public object VisitFileRedirection(FileRedirectionAst fileRedirectionAst)
         {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit script block expression
+        /// </summary>
+        /// <param name="scriptBlockAst"></param>
+        /// <returns></returns>
+        public object VisitScriptBlockExpression(ScriptBlockExpressionAst scriptBlockAst)
+        {
+            if (scriptBlockAst != null)
+            {
+                return scriptBlockAst.ScriptBlock.Visit(this);
+            }
+
             return null;
         }
 
@@ -927,18 +1037,48 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="fileRedirectionAst"></param>
         /// <returns></returns>
-        public object VisitMergingRedirectionAst(MergingRedirectionAst mergingAst)
+        public object VisitMergingRedirection(MergingRedirectionAst mergingAst)
         {
             return null;
         }
 
         /// <summary>
-        /// Skip type constraint ast
+        /// Returns type of type constraint ast
         /// </summary>
         /// <param name="typeAst"></param>
         /// <returns></returns>
         public object VisitTypeConstraint(TypeConstraintAst typeAst)
         {
+            if (typeAst != null)
+            {
+                return typeAst.TypeName.FullName;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Skip throw statement.
+        /// </summary>
+        /// <param name="throwAst"></param>
+        /// <returns></returns>
+        public object VisitThrowStatement(ThrowStatementAst throwAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Returns type of typeExpressionAst
+        /// </summary>
+        /// <param name="typeExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitTypeExpression(TypeExpressionAst typeExpressionAst)
+        {
+            if (typeExpressionAst != null)
+            {
+                return typeExpressionAst.TypeName.FullName;
+            }
+
             return null;
         }
 
@@ -958,13 +1098,33 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Return the type of memberexpressionast
+        /// Return the type of return statement
+        /// </summary>
+        /// <param name="returnStatementAst"></param>
+        /// <returns></returns>
+        public object VisitReturnStatement(ReturnStatementAst returnStatementAst)
+        {
+            return Helper.Instance.GetTypeFromReturnStatementAst(myFunction, returnStatementAst, classes);
+        }
+
+        /// <summary>
+        /// Returns the type of memberexpressionast
         /// </summary>
         /// <param name="memAst"></param>
         /// <returns></returns>
         public object VisitMemberExpression(MemberExpressionAst memAst)
         {
-            return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, null, null);
+            return Helper.Instance.GetTypeFromMemberExpressionAstHelper(memAst, myFunction, classes);
+        }
+
+        /// <summary>
+        /// Returns the type of invoke member expression ast
+        /// </summary>
+        /// <param name="invokeAst"></param>
+        /// <returns></returns>
+        public object VisitInvokeMemberExpression(InvokeMemberExpressionAst invokeAst)
+        {
+            return Helper.Instance.GetTypeFromMemberExpressionAstHelper(invokeAst, myFunction, classes);
         }
 
         /// <summary>
@@ -972,11 +1132,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="strAst"></param>
         /// <returns></returns>
-        public object VisitStringConstantExpressionAst(StringConstantExpressionAst strAst)
+        public object VisitStringConstantExpression(StringConstantExpressionAst strAst)
         {
             if (strAst != null)
             {
-                return strAst.StaticType;
+                return strAst.StaticType.FullName;
             }
 
             return null;
@@ -997,17 +1157,83 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="constantExpressionAst"></param>
         /// <returns></returns>
-        public object VisitConstantExpressionAst(ConstantExpressionAst constantExpressionAst)
+        public object VisitConstantExpression(ConstantExpressionAst constantExpressionAst)
         {
             if (constantExpressionAst != null)
             {
-                return constantExpressionAst.StaticType;
+                return constantExpressionAst.StaticType.FullName;
             }
 
             return null;
         }
 
-        public object VisitSubExpressionAst(SubExpressionAst subExprAst)
+        /// <summary>
+        /// Skip break statement ast
+        /// </summary>
+        /// <param name="breakAst"></param>
+        /// <returns></returns>
+        public object VisitBreakStatement(BreakStatementAst breakAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body, catch and finally clause
+        /// </summary>
+        /// <param name="tryAst"></param>
+        /// <returns></returns>
+        public object VisitTryStatement(TryStatementAst tryAst)
+        {
+            if (tryAst != null)
+            {
+                if (tryAst.Body != null)
+                {
+                    tryAst.Body.Visit(this);
+                }
+
+                if (tryAst.CatchClauses != null)
+                {
+                    foreach (var catchClause in tryAst.CatchClauses)
+                    {
+                        catchClause.Visit(this);
+                    }
+                }
+
+                if (tryAst.Finally != null)
+                {
+                    tryAst.Finally.Visit(this);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body of catch clause
+        /// </summary>
+        /// <param name="catchAst"></param>
+        /// <returns></returns>
+        public object VisitCatchClause(CatchClauseAst catchAst)
+        {
+            if (catchAst != null)
+            {
+                return catchAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Skip continue statement;
+        /// </summary>
+        /// <param name="contAst"></param>
+        /// <returns></returns>
+        public object VisitContinueStatement(ContinueStatementAst contAst)
+        {
+            return null;
+        }
+
+        public object VisitSubExpression(SubExpressionAst subExprAst)
         {
             if (subExprAst != null)
             {
@@ -1022,7 +1248,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="blockAst"></param>
         /// <returns></returns>
-        public object VisitBlockStatementAst(BlockStatementAst blockAst)
+        public object VisitBlockStatement(BlockStatementAst blockAst)
         {
             return blockAst.Body.Visit(this);
         }
@@ -1064,7 +1290,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitVariableExpression(VariableExpressionAst varExpressionAst)
         {
-            return Helper.Instance.GetVariableTypeFromAnalysis(varExpressionAst, myAst);
+            return Helper.Instance.GetVariableTypeFromAnalysis(varExpressionAst, myFunction);
         }
 
         /// <summary>
@@ -1075,6 +1301,109 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public object VisitExpandableStringExpression(ExpandableStringExpressionAst expandableStringAst)
         {
             return typeof(string).FullName;
+        }
+
+        /// <summary>
+        /// Skip exit statement ast
+        /// </summary>
+        /// <param name="exitAst"></param>
+        /// <returns></returns>
+        public object VisitExitStatement(ExitStatementAst exitAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit attributedexpression
+        /// </summary>
+        /// <param name="attrExpr"></param>
+        /// <returns></returns>
+        public object VisitAttributedExpression(AttributedExpressionAst attrExpr)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip attribute ast
+        /// </summary>
+        /// <param name="attrAst"></param>
+        /// <returns></returns>
+        public object VisitAttribute(AttributeAst attrAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip param block
+        /// </summary>
+        /// <param name="paramBlockAst"></param>
+        /// <returns></returns>
+        public object VisitParamBlock(ParamBlockAst paramBlockAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Return type of the index expression
+        /// </summary>
+        /// <param name="indexAst"></param>
+        /// <returns></returns>
+        public object VisitIndexExpression(IndexExpressionAst indexAst)
+        {
+            if (indexAst != null && indexAst.Target is VariableExpressionAst)
+            {
+                Type type = Helper.Instance.GetTypeFromAnalysis(indexAst.Target as VariableExpressionAst, myFunction);
+                if (type != null)
+                {
+                    Type elemType = type.GetElementType();
+                    if (elemType != null)
+                    {
+                        return elemType.FullName;
+                    }
+                }
+            }
+
+            return null;
+        }
+        
+        /// <summary>
+        /// Only returns boolean type for unary operator that returns boolean
+        /// </summary>
+        /// <param name="unaryAst"></param>
+        /// <returns></returns>
+        public object VisitUnaryExpression(UnaryExpressionAst unaryAst)
+        {
+            if (unaryAst != null && booleanUnaryOperators.Contains(unaryAst.TokenKind))
+            {
+                return typeof(bool).FullName;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Only returns boolean type for binary operator that returns boolean
+        /// </summary>
+        /// <param name="binAst"></param>
+        /// <returns></returns>
+        public object VisitBinaryExpression(BinaryExpressionAst binAst)
+        {
+            if (binAst != null && booleanBinaryOperators.Contains(binAst.Operator))
+            {
+                return typeof(bool).FullName;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Skips using expression ast
+        /// </summary>
+        /// <param name="usingExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitUsingExpression(UsingExpressionAst usingExpressionAst)
+        {
+            return null;
         }
     }
 }
