@@ -574,4 +574,507 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             }
         }
     }
+
+    /// <summary>
+    /// This class is used to find elements in outputted in pipeline.
+    /// </summary>
+    public class FindPipelineOutput : ICustomAstVisitor
+    {
+        List<string> outputTypes;
+        Ast myAst;
+
+        /// <summary>
+        /// Find the pipeline output
+        /// </summary>
+        /// <param name="ast"></param>
+        public FindPipelineOutput(Ast ast)
+        {
+            outputTypes = new List<string>();
+            myAst = ast;
+            Helper.Instance.InitializeVariableAnalysis(myAst);
+        }
+
+        /// <summary>
+        /// Ignore assignment statement
+        /// </summary>
+        /// <param name="assignAst"></param>
+        /// <returns></returns>
+        public object VisitAssignmentStatement(AssignmentStatementAst assignAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip NamedAttributeArgumentAst
+        /// </summary>
+        /// <param name="namedAAAst"></param>
+        /// <returns></returns>
+        public object VisitNamedAttributeArgumentAst(NamedAttributeArgumentAst namedAAAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip Error Expression Ast
+        /// </summary>
+        /// <param name="errorAst"></param>
+        /// <returns></returns>
+        public object VisitErrorExpression(ErrorExpressionAst errorAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip error statement ast
+        /// </summary>
+        /// <param name="errorStatementAst"></param>
+        /// <returns></returns>
+        public object VisitErrorStatement(ErrorStatementAst errorStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skips function definition ast
+        /// </summary>
+        /// <param name="functionDefinitionAst"></param>
+        /// <returns></returns>
+        public object VisitFunctionDefinitionAst(FunctionDefinitionAst functionDefinitionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip ParameterAst
+        /// </summary>
+        /// <param name="parameterAst"></param>
+        /// <returns></returns>
+        public object VisitParameterAst(ParameterAst parameterAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skips data statement
+        /// </summary>
+        /// <param name="dataStatementAst"></param>
+        /// <returns></returns>
+        public object VisitDataStatementAst(DataStatementAst dataStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit scriptblockast
+        /// </summary>
+        /// <param name="scriptBlockAst"></param>
+        /// <returns></returns>
+        public object VisitScriptBlock(ScriptBlockAst scriptBlockAst)
+        {
+            if (scriptBlockAst != null)
+            {
+                if (scriptBlockAst.BeginBlock != null)
+                {
+                    scriptBlockAst.BeginBlock.Visit(this);
+                }
+
+                if (scriptBlockAst.ProcessBlock != null)
+                {
+                    scriptBlockAst.ProcessBlock.Visit(this);
+                }
+
+                if (scriptBlockAst.EndBlock != null)
+                {
+                    scriptBlockAst.EndBlock.Visit(this);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit named block ast. Returns list of types outputted to the stream
+        /// </summary>
+        /// <param name="namedBlockAst"></param>
+        /// <returns></returns>
+        public object VisitNamedBlockAst(NamedBlockAst namedBlockAst)
+        {
+            if (namedBlockAst != null)
+            {
+                foreach (var block in namedBlockAst.Statements)
+                {
+                    object type = block.Visit(this);
+                    if (type != null && type is string && !String.IsNullOrWhiteSpace(type as string))
+                    {
+                        outputTypes.Add(type as string);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit statement block
+        /// </summary>
+        /// <param name="statementBlockAst"></param>
+        /// <returns></returns>
+        public object VisitStatementBlock(StatementBlockAst statementBlockAst)
+        {
+            if (statementBlockAst != null)
+            {
+                foreach (var block in statementBlockAst.Statements)
+                {
+                    object type = block.Visit(this);
+                    if (type != null && type is string && !String.IsNullOrWhiteSpace(type as string))
+                    {
+                        outputTypes.Add(type as string);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit the last element of pipeline
+        /// </summary>
+        /// <param name="pipelineAst"></param>
+        /// <returns></returns>
+        public object VisitPipeline(PipelineAst pipelineAst)
+        {
+            if (pipelineAst != null && pipelineAst.PipelineElements.Count != 0)
+            {
+                return pipelineAst.PipelineElements.Last().Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body of trap
+        /// </summary>
+        /// <param name="trapAst"></param>
+        /// <returns></returns>
+        public object VisitTrap(TrapStatementAst trapAst)
+        {
+            if (trapAst != null)
+            {
+                return trapAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// In all the clauses, we skip the first item
+        /// </summary>
+        /// <param name="ifStatementAst"></param>
+        /// <returns></returns>
+        public object VisitIfStatementAst(IfStatementAst ifStatementAst)
+        {
+            if (ifStatementAst == null || ifStatementAst.Clauses == null || ifStatementAst.Clauses.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (var clause in ifStatementAst.Clauses)
+            {
+                clause.Item2.Visit(this);
+            }
+
+            if (ifStatementAst.ElseClause != null)
+            {
+                ifStatementAst.ElseClause.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit SwitchStatement. Skip the condition
+        /// </summary>
+        /// <param name="switchStatementAst"></param>
+        /// <returns></returns>
+        public object VisitSwitchStatement(SwitchStatementAst switchStatementAst)
+        {
+            if (switchStatementAst == null || switchStatementAst.Clauses == null || switchStatementAst.Clauses.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (var clause in switchStatementAst.Clauses)
+            {
+                // Skip item 1
+                clause.Item2.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit foreach statement. Skip condition
+        /// </summary>
+        /// <param name="loopStatementAst"></param>
+        /// <returns></returns>
+        public object VisitForEachStatementAst(ForEachStatementAst foreachAst)
+        {
+            if (foreachAst != null)
+            {
+                foreachAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit Do While Statement. Skip Condition
+        /// </summary>
+        /// <param name="doWhileAst"></param>
+        /// <returns></returns>
+        public object VisitDoWhileStatementAst(DoWhileStatementAst doWhileAst)
+        {
+            if (doWhileAst != null)
+            {
+                doWhileAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit Do Until Statement. Skip Condition
+        /// </summary>
+        /// <param name="doWhileAst"></param>
+        /// <returns></returns>
+        public object VisitDoUntilStatementAst(DoUntilStatementAst doUntilAst)
+        {
+            if (doUntilAst != null)
+            {
+                doUntilAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit While Statement. Skip Condition
+        /// </summary>
+        /// <param name="doWhileAst"></param>
+        /// <returns></returns>
+        public object VisitWhileStatementAst(WhileStatementAst whileAst)
+        {
+            if (whileAst != null)
+            {
+                whileAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit forstatement. Skip Condition, Initializer and Iterator
+        /// </summary>
+        /// <param name="forAst"></param>
+        /// <returns></returns>
+        public object VisitForStatementAst(ForStatementAst forAst)
+        {
+            if (forAst != null)
+            {
+                forAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Skip command ast
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <returns></returns>
+        public object VisitCommand(CommandAst cmdAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip if type of convert is void
+        /// </summary>
+        /// <param name="convAst"></param>
+        /// <returns></returns>
+        public object VisitConvertExpressionAst(ConvertExpressionAst convAst)
+        {
+            if (convAst != null)
+            {
+                return convAst.Type.TypeName.FullName;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Skip fileRedirectionAst
+        /// </summary>
+        /// <param name="fileRedirectionAst"></param>
+        /// <returns></returns>
+        public object VisitFileRedictionaryAst(FileRedirectionAst fileRedirectionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip fileRedirectionAst
+        /// </summary>
+        /// <param name="fileRedirectionAst"></param>
+        /// <returns></returns>
+        public object VisitMergingRedirectionAst(MergingRedirectionAst mergingAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Skip type constraint ast
+        /// </summary>
+        /// <param name="typeAst"></param>
+        /// <returns></returns>
+        public object VisitTypeConstraint(TypeConstraintAst typeAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// This is where we can get the type
+        /// </summary>
+        /// <param name="commandAst"></param>
+        /// <returns></returns>
+        public object VisitCommandExpression(CommandExpressionAst commandAst)
+        {
+            if (commandAst != null)
+            {
+                return commandAst.Expression.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Return the type of memberexpressionast
+        /// </summary>
+        /// <param name="memAst"></param>
+        /// <returns></returns>
+        public object VisitMemberExpression(MemberExpressionAst memAst)
+        {
+            return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, null, null);
+        }
+
+        /// <summary>
+        /// Visit a string constantexpressionast
+        /// </summary>
+        /// <param name="strAst"></param>
+        /// <returns></returns>
+        public object VisitStringConstantExpressionAst(StringConstantExpressionAst strAst)
+        {
+            if (strAst != null)
+            {
+                return strAst.StaticType;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Skip command parameter
+        /// </summary>
+        /// <param name="cmdParamAst"></param>
+        /// <returns></returns>
+        public object VisitCommandParameter(CommandParameterAst cmdParamAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit a constantexpressionast
+        /// </summary>
+        /// <param name="constantExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitConstantExpressionAst(ConstantExpressionAst constantExpressionAst)
+        {
+            if (constantExpressionAst != null)
+            {
+                return constantExpressionAst.StaticType;
+            }
+
+            return null;
+        }
+
+        public object VisitSubExpressionAst(SubExpressionAst subExprAst)
+        {
+            if (subExprAst != null)
+            {
+                return subExprAst.SubExpression.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit the body of blockstatementast
+        /// </summary>
+        /// <param name="blockAst"></param>
+        /// <returns></returns>
+        public object VisitBlockStatementAst(BlockStatementAst blockAst)
+        {
+            return blockAst.Body.Visit(this);
+        }
+
+        /// <summary>
+        /// Returns type of array
+        /// </summary>
+        /// <param name="arrayExprAst"></param>
+        /// <returns></returns>
+        public object VisitArrayExpression(ArrayExpressionAst arrayExprAst)
+        {
+            return typeof(System.Array).FullName;
+        }
+        
+        /// <summary>
+        /// Returns type of array
+        /// </summary>
+        /// <param name="arrayLiteral"></param>
+        /// <returns></returns>
+        public object VisitArrayLiteral(ArrayLiteralAst arrayLiteral)
+        {
+            return typeof(System.Array).FullName;
+        }
+
+        /// <summary>
+        /// Returns type of hashtable
+        /// </summary>
+        /// <param name="hashtableAst"></param>
+        /// <returns></returns>
+        public object VisitHashtable(HashtableAst hashtableAst)
+        {
+            return typeof(System.Collections.Hashtable).FullName;
+        }
+
+        /// <summary>
+        /// Returns type of variable
+        /// </summary>
+        /// <param name="varExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitVariableExpression(VariableExpressionAst varExpressionAst)
+        {
+            return Helper.Instance.GetVariableTypeFromAnalysis(varExpressionAst, myAst);
+        }
+
+        /// <summary>
+        /// Return string type
+        /// </summary>
+        /// <param name="expandableStringAst"></param>
+        /// <returns></returns>
+        public object VisitExpandableStringExpression(ExpandableStringExpressionAst expandableStringAst)
+        {
+            return typeof(string).FullName;
+        }
+    }
 }
