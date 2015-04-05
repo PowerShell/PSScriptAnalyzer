@@ -30,6 +30,10 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The results of the analysis</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
+            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+
+            List<string> resourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Get-TargetResource", "Test-TargetResource" });
+
             // TODO: Add logic for DSC Resources
             return Enumerable.Empty<DiagnosticRecord>();
         }
@@ -43,7 +47,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
-
 
             IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
                 item is TypeDefinitionAst
