@@ -624,7 +624,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
     /// </summary>
     public class FindPipelineOutput : ICustomAstVisitor
     {
+<<<<<<< HEAD
         List<Tuple<string, StatementAst>> outputTypes;
+=======
+        List<string> outputTypes;
+>>>>>>> 01a9d251e1344f53c7a881fccacc5123ce02827a
 
         IEnumerable<TypeDefinitionAst> classes;
 
@@ -665,7 +669,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <param name="ast"></param>
         public FindPipelineOutput(FunctionDefinitionAst ast, IEnumerable<TypeDefinitionAst> classes)
         {
+<<<<<<< HEAD
             outputTypes = new List<Tuple<string, StatementAst>>();
+=======
+            outputTypes = new List<string>();
+>>>>>>> 01a9d251e1344f53c7a881fccacc5123ce02827a
             Helper.Instance.InitializeVariableAnalysis(ast);
             this.classes = classes;
             myFunction = ast;
@@ -677,12 +685,24 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
+<<<<<<< HEAD
         /// Get list of outputTypes from functiondefinitionast funcast
         /// </summary>
         /// <returns></returns>
         public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst, IEnumerable<TypeDefinitionAst> classes)
         {
             return (new FindPipelineOutput(funcAst, classes)).outputTypes;
+=======
+        /// Get list of outputTypes
+        /// </summary>
+        /// <returns></returns>
+        public List<string> OutputTypes
+        {
+            get
+            {
+                return outputTypes;
+            }
+>>>>>>> 01a9d251e1344f53c7a881fccacc5123ce02827a
         }
 
         /// <summary>
@@ -807,12 +827,20 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             if (namedBlockAst != null)
             {
+<<<<<<< HEAD
                 foreach (StatementAst block in namedBlockAst.Statements)
+=======
+                foreach (var block in namedBlockAst.Statements)
+>>>>>>> 01a9d251e1344f53c7a881fccacc5123ce02827a
                 {
                     object type = block.Visit(this);
                     if (type != null && type is string && !String.IsNullOrWhiteSpace(type as string))
                     {
+<<<<<<< HEAD
                         outputTypes.Add(Tuple.Create(type as string, block));
+=======
+                        outputTypes.Add(type as string);
+>>>>>>> 01a9d251e1344f53c7a881fccacc5123ce02827a
                     }
                 }
             }
@@ -829,12 +857,20 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             if (statementBlockAst != null)
             {
+<<<<<<< HEAD
                 foreach (StatementAst block in statementBlockAst.Statements)
+=======
+                foreach (var block in statementBlockAst.Statements)
+>>>>>>> 01a9d251e1344f53c7a881fccacc5123ce02827a
                 {
                     object type = block.Visit(this);
                     if (type != null && type is string && !String.IsNullOrWhiteSpace(type as string))
                     {
+<<<<<<< HEAD
                         outputTypes.Add(Tuple.Create(type as string, block));
+=======
+                        outputTypes.Add(type as string);
+>>>>>>> 01a9d251e1344f53c7a881fccacc5123ce02827a
                     }
                 }
             }
