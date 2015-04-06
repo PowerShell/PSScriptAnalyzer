@@ -470,7 +470,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                         }
                         else if (cmAst.Expression is MemberExpressionAst)
                         {
-                            result = GetTypeFromMemberExpressionAstHelper(cmAst.Expression as MemberExpressionAst, funcAst, classes);
+                            result = GetTypeFromMemberExpressionAst(cmAst.Expression as MemberExpressionAst, funcAst, classes);
                         }
                     }
                 }
@@ -484,7 +484,16 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             return result;
         }
 
-        internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, Ast scopeAst, IEnumerable<TypeDefinitionAst> classes)
+        /// <summary>
+        /// Returns the type from member expression ast, which is inside scopeAst.
+        /// This function assumes that Initialize Variable Analysis is already run on scopeAst.
+        /// Classes represent the list of DSC classes in the script.
+        /// </summary>
+        /// <param name="memberAst"></param>
+        /// <param name="scopeAst"></param>
+        /// <param name="classes"></param>
+        /// <returns></returns>
+        public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst, IEnumerable<TypeDefinitionAst> classes)
         {
             if (memberAst == null)
             {
@@ -497,28 +506,33 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             if (memberAst.Expression is VariableExpressionAst && VariableAnalysisDictionary.ContainsKey(scopeAst))
             {
                 VariableAnalysis VarTypeAnalysis = VariableAnalysisDictionary[scopeAst];
+                // Get the analysis detail for the variable
                 details = VarTypeAnalysis.GetVariableAnalysis(memberAst.Expression as VariableExpressionAst);
 
                 if (details != null && classes != null)
                 {
+                    // Get the class that corresponds to the name of the type (if possible)
                     psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
                 }
             }
 
-            return GetTypeFromMemberExpressionAst(memberAst, psClass, details);
+            return GetTypeFromMemberExpressionAstHelper(memberAst, psClass, details);
         }
 
         /// <summary>
-        /// Retrieves the type from member expression ast
+        /// Retrieves the type from member expression ast. psClass is the powershell class
+        /// that represents the type of the object being invoked on (psClass may be null too).
         /// </summary>
         /// <param name="memberAst"></param>
         /// <param name="psClass"></param>
         /// <param name="analysisDetails"></param>
         /// <returns></returns>
-        public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, TypeDefinitionAst psClass, VariableAnalysisDetails analysisDetails)
+        internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, TypeDefinitionAst psClass, VariableAnalysisDetails analysisDetails)
         {
+            //Try to get the type without using psClass first
             Type result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst);
 
+            //If we can't get the type, then it may be that the type of the object being invoked on is a powershell class
             if (result == null && psClass != null && analysisDetails != null)
             {
                 result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst, analysisDetails, psClass);
@@ -1131,7 +1145,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitMemberExpression(MemberExpressionAst memAst)
         {
-            return Helper.Instance.GetTypeFromMemberExpressionAstHelper(memAst, myFunction, classes);
+            return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, myFunction, classes);
         }
 
         /// <summary>
@@ -1141,7 +1155,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitInvokeMemberExpression(InvokeMemberExpressionAst invokeAst)
         {
-            return Helper.Instance.GetTypeFromMemberExpressionAstHelper(invokeAst, myFunction, classes);
+            return Helper.Instance.GetTypeFromMemberExpressionAst(invokeAst, myFunction, classes);
         }
 
         /// <summary>
