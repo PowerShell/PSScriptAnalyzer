@@ -94,6 +94,12 @@ function Set-TargetResource
                -RetryCount $RetryCount `
                -ThrottleLimit $ThrottleLimit 
     }
+
+    $true -and $false
+    
+    if ($true) {
+        return 4;
+    }
 }
 
 # 
@@ -118,14 +124,22 @@ function Test-TargetResource
 
     Import-Module $PSScriptRoot\..\..\PSDSCxMachine.psm1
 
-    return PSDSCxMachine\Test-_InternalPSDscXMachineTR `
-             -RemoteResourceId $ResourceName `
-             -RemoteMachine $NodeName `
-             -RemoteCredential $Credential `
-             -MinimalNumberOfMachineInState $NodeName.Count `
-             -RetryIntervalSec $RetryIntervalSec `
-             -RetryCount $RetryCount `
-             -ThrottleLimit $ThrottleLimit
+    $b = @{"Test"=3}
+    $b
+
+    $c = [Math]::Sin(3)
+    $c
+
+    $d = [bool[]]@($true, $false)
+    
+    $d
+
+    foreach ($d in $b)
+    {
+         $test
+    }
+
+    return $true
 }
 
 

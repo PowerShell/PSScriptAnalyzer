@@ -648,4 +648,10 @@
   <data name="ReturnCorrectTypesForSetFunctionsDSCError" xml:space="preserve">
     <value>Set function in DSC Class {0} should not return anything</value>
   </data>
+  <data name="ReturnCorrectTypesForGetTestTargetResourceFunctionsDSCResourceError" xml:space="preserve">
+    <value>{0} function in DSC Resource should return object of type {1} instead of {2}</value>
+  </data>
+  <data name="ReturnCorrectTypesForSetTargetResourceFunctionsDSCError" xml:space="preserve">
+    <value>Set-TargetResource function in DSC Resource should not output anything to the pipeline.</value>
+  </data>
 </root>

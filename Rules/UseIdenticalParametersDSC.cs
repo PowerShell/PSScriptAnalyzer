@@ -32,14 +32,10 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Expected TargetResource functions in the DSC Resource module
-            List<string> expectedTargetResourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Test-TargetResource" });
-
             // parameters
             Dictionary<string, ParameterAst> paramNames = new Dictionary<string, ParameterAst>(StringComparer.OrdinalIgnoreCase);
 
-            IEnumerable<Ast> functionDefinitionAsts = ast.FindAll(item => item is FunctionDefinitionAst
-                && expectedTargetResourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);
+            IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
             if (functionDefinitionAsts.Count() == 2)
             {

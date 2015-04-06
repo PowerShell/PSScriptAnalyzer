@@ -30,8 +30,55 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The results of the analysis</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
+            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+
             // TODO: Add logic for DSC Resources
-            return Enumerable.Empty<DiagnosticRecord>();
+
+            IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
+
+            IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
+                item is TypeDefinitionAst
+                && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
+
+            foreach (FunctionDefinitionAst func in functionDefinitionAsts)
+            {
+                Helper.Instance.InitializeVariableAnalysis(func);
+                List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func, classes);
+
+                if (String.Equals(func.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach (Tuple<string, StatementAst> outputType in outputTypes)
+                    {
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReturnCorrectTypesForSetTargetResourceFunctionsDSCError),
+                            outputType.Item2.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
+                    }
+                }
+                else
+                {
+                    Dictionary<string, string> returnTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    returnTypes["Get-TargetResource"] = typeof(System.Collections.Hashtable).FullName;
+                    returnTypes["Test-TargetResource"] = typeof(bool).FullName;
+
+                    foreach (Tuple<string, StatementAst> outputType in outputTypes)
+                    {
+                        string type = outputType.Item1;
+
+                        if (String.IsNullOrEmpty(type)
+                            || String.Equals(typeof(Unreached).FullName, type, StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(typeof(Undetermined).FullName, type, StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(typeof(object).FullName, type, StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(type, returnTypes[func.Name], StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReturnCorrectTypesForGetTestTargetResourceFunctionsDSCResourceError,
+                                func.Name, returnTypes[func.Name], type), outputType.Item2.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -44,7 +91,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-
             IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
                 item is TypeDefinitionAst
                 && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
@@ -56,8 +102,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             foreach (TypeDefinitionAst dscClass in dscClasses)
             {
                 Dictionary<string, string> returnTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                returnTypes["Get"] = dscClass.Name;
                 returnTypes["Test"] = typeof(bool).FullName;
+                returnTypes["Get"] = dscClass.Name;
 
                 foreach (var member in dscClass.Members)
                 {
@@ -103,7 +149,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                                     ret.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
                             }
 
-                            string typeName = Helper.Instance.GetTypeFromReturnStatementAst(funcAst, ret, classes, ast);
+                            string typeName = Helper.Instance.GetTypeFromReturnStatementAst(funcAst, ret, classes);
 
                             // This also includes the case of return $this because the type of this is unreached.
                             if (String.IsNullOrEmpty(typeName)

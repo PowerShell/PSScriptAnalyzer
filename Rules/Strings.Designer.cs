@@ -1186,11 +1186,29 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} function in DSC Resource should return object of type {1} instead of {2}.
+        /// </summary>
+        internal static string ReturnCorrectTypesForGetTestTargetResourceFunctionsDSCResourceError {
+            get {
+                return ResourceManager.GetString("ReturnCorrectTypesForGetTestTargetResourceFunctionsDSCResourceError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Set function in DSC Class {0} should not return anything.
         /// </summary>
         internal static string ReturnCorrectTypesForSetFunctionsDSCError {
             get {
                 return ResourceManager.GetString("ReturnCorrectTypesForSetFunctionsDSCError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set-TargetResource function in DSC Resource should not output anything to the pipeline..
+        /// </summary>
+        internal static string ReturnCorrectTypesForSetTargetResourceFunctionsDSCError {
+            get {
+                return ResourceManager.GetString("ReturnCorrectTypesForSetTargetResourceFunctionsDSCError", resourceCulture);
             }
         }
         

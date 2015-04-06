@@ -1205,7 +1205,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     _rightHandSideVariable = new VariableTarget(cmExAst.Expression as VariableExpressionAst);
                     if (String.Equals((exprAst as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
                     {
-
+                        Constant = SpecialVars.ThisVariable;
                     }
                 }
                 //Store the type info for variable assignment from .Net type
