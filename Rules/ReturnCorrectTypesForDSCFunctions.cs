@@ -32,11 +32,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            List<string> resourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Get-TargetResource", "Test-TargetResource" });
-
             // TODO: Add logic for DSC Resources
 
-            IEnumerable<Ast> functionDefinitionAsts = ast.FindAll(item => item is FunctionDefinitionAst && resourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);
+            IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
             IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
                 item is TypeDefinitionAst
@@ -45,11 +43,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             foreach (FunctionDefinitionAst func in functionDefinitionAsts)
             {
                 Helper.Instance.InitializeVariableAnalysis(func);
-                var test = new FindPipelineOutput(func, classes);
-                var test2 = test.OutputTypes;
-            }
+                List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func, classes);
 
-            return Enumerable.Empty<DiagnosticRecord>();
+                if (String.Equals(func.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach (Tuple<string, StatementAst> outputType in outputTypes)
+                    {
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReturnCorrectTypesForSetTargetResourceFunctionsDSCError),
+                            outputType.Item2.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
+                    }
+                }
+                else
+                {
+                    Dictionary<string, string> returnTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    returnTypes["Get-TargetResource"] = typeof(System.Collections.Hashtable).FullName;
+                    returnTypes["Test-TargetResource"] = typeof(bool).FullName;
+
+                    foreach (Tuple<string, StatementAst> outputType in outputTypes)
+                    {
+                        string type = outputType.Item1;
+
+                        if (String.IsNullOrEmpty(type)
+                            || String.Equals(typeof(Unreached).FullName, type, StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(typeof(Undetermined).FullName, type, StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(typeof(object).FullName, type, StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(type, returnTypes[func.Name], StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReturnCorrectTypesForGetTestTargetResourceFunctionsDSCResourceError,
+                                func.Name, returnTypes[func.Name], type), outputType.Item2.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -73,8 +102,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             foreach (TypeDefinitionAst dscClass in dscClasses)
             {
                 Dictionary<string, string> returnTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                returnTypes["Get"] = dscClass.Name;
                 returnTypes["Test"] = typeof(bool).FullName;
+                returnTypes["Get"] = dscClass.Name;
 
                 foreach (var member in dscClass.Members)
                 {

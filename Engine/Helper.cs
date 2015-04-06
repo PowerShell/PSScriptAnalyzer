@@ -236,6 +236,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Returns the get, set and test targetresource dsc function
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public IEnumerable<Ast> DscResourceFunctions(Ast ast)
+        {
+            List<string> resourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Get-TargetResource", "Test-TargetResource" });
+            return ast.FindAll(item => item is FunctionDefinitionAst
+                && resourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);            
+        }
+
+        /// <summary>
         /// Returns true if the block should be skipped as it has a name
         /// that matches keyword
         /// </summary>
@@ -436,6 +448,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             PipelineAst pipe = ret.Pipeline as PipelineAst;
 
+            String result = String.Empty;
+
             // Handle the case with 1 pipeline element first
             if (pipe != null && pipe.PipelineElements.Count == 1)
             {
@@ -444,24 +458,30 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 {
                     if (cmAst.Expression.StaticType != typeof(object))
                     {
-                        return cmAst.Expression.StaticType.FullName;
+                        result = cmAst.Expression.StaticType.FullName;
                     }
-
-                    VariableExpressionAst varAst = cmAst.Expression as VariableExpressionAst;
-
-                    if (varAst != null)
+                    else
                     {
-                        return GetVariableTypeFromAnalysis(varAst, funcAst);
-                    }
+                        VariableExpressionAst varAst = cmAst.Expression as VariableExpressionAst;
 
-                    if (cmAst.Expression is MemberExpressionAst)
-                    {
-                        return GetTypeFromMemberExpressionAstHelper(cmAst.Expression as MemberExpressionAst, funcAst, classes);
+                        if (varAst != null)
+                        {
+                            result = GetVariableTypeFromAnalysis(varAst, funcAst);
+                        }
+                        else if (cmAst.Expression is MemberExpressionAst)
+                        {
+                            result = GetTypeFromMemberExpressionAstHelper(cmAst.Expression as MemberExpressionAst, funcAst, classes);
+                        }
                     }
                 }
             }
 
-            return String.Empty;
+            if (String.IsNullOrWhiteSpace(result) && pipe != null && pipe.PipelineElements.Count > 0)
+            {
+                result = typeof(object).FullName;
+            }
+
+            return result;
         }
 
         internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, Ast scopeAst, IEnumerable<TypeDefinitionAst> classes)
@@ -604,7 +624,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
     /// </summary>
     public class FindPipelineOutput : ICustomAstVisitor
     {
-        List<string> outputTypes;
+        List<Tuple<string, StatementAst>> outputTypes;
 
         IEnumerable<TypeDefinitionAst> classes;
 
@@ -645,7 +665,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <param name="ast"></param>
         public FindPipelineOutput(FunctionDefinitionAst ast, IEnumerable<TypeDefinitionAst> classes)
         {
-            outputTypes = new List<string>();
+            outputTypes = new List<Tuple<string, StatementAst>>();
             Helper.Instance.InitializeVariableAnalysis(ast);
             this.classes = classes;
             myFunction = ast;
@@ -657,15 +677,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Get list of outputTypes
+        /// Get list of outputTypes from functiondefinitionast funcast
         /// </summary>
         /// <returns></returns>
-        public List<string> OutputTypes
+        public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst, IEnumerable<TypeDefinitionAst> classes)
         {
-            get
-            {
-                return outputTypes;
-            }
+            return (new FindPipelineOutput(funcAst, classes)).outputTypes;
         }
 
         /// <summary>
@@ -790,12 +807,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             if (namedBlockAst != null)
             {
-                foreach (var block in namedBlockAst.Statements)
+                foreach (StatementAst block in namedBlockAst.Statements)
                 {
                     object type = block.Visit(this);
                     if (type != null && type is string && !String.IsNullOrWhiteSpace(type as string))
                     {
-                        outputTypes.Add(type as string);
+                        outputTypes.Add(Tuple.Create(type as string, block));
                     }
                 }
             }
@@ -812,12 +829,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             if (statementBlockAst != null)
             {
-                foreach (var block in statementBlockAst.Statements)
+                foreach (StatementAst block in statementBlockAst.Statements)
                 {
                     object type = block.Visit(this);
                     if (type != null && type is string && !String.IsNullOrWhiteSpace(type as string))
                     {
-                        outputTypes.Add(type as string);
+                        outputTypes.Add(Tuple.Create(type as string, block));
                     }
                 }
             }

@@ -103,9 +103,13 @@ class FileResource
         {
             return $present
         }
-        else
+        elseif ($true)
         {
             return -not $present
+        }
+        else
+        {
+            return 5
         }
     }
     
@@ -119,20 +123,27 @@ class FileResource
     [FileResource] Get()
     {
         $present = $this.TestFilePath($this.Path)        
+
+        $hashtable = @{"3"="4"}
         
         if ($present)
         {
             $file = Get-ChildItem -LiteralPath $this.Path
             $this.CreationTime = $file.CreationTime
             $this.Ensure = [Ensure]::Present
+            return $this.TestFilePath($this.Path)
         }
-        else
+        elseif ($true)
         {
             $this.CreationTime = $null
             $this.Ensure = [Ensure]::Absent
-        }        
+            return $present
+        }
+        else
+        {
+            return $hashtable
+        }
 
-        return $this
     }
 
     <#
