@@ -30,6 +30,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         private Dictionary<string, VariableAnalysisDetails> _variables;
         private readonly List<LoopGotoTargets> _loopTargets = new List<LoopGotoTargets>();
         private Dictionary<string, VariableAnalysisDetails> VariablesDictionary;
+        private Dictionary<string, VariableAnalysisDetails> InternalVariablesDictionary;
 
         /// <summary>
         /// Return parameters of a functionmemberast or functiondefinitionast
@@ -134,7 +135,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="ast"></param>
         /// <returns></returns>
-        public void AnalyzeImpl(Ast ast)
+        public void AnalyzeImpl(Ast ast, VariableAnalysis outerAnalysis)
         {
             if (!(ast is ScriptBlockAst || ast is FunctionMemberAst || ast is FunctionDefinitionAst))
             {
@@ -186,7 +187,55 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 item is TypeDefinitionAst && (item as TypeDefinitionAst).IsClass, true)
                 .Cast<TypeDefinitionAst>().ToList();
 
-            VariablesDictionary = Block.SparseSimpleConstants(_variables, Entry, classes);
+            if (outerAnalysis != null)
+            {
+                // Initialize the variables from outside
+                var outerDictionary = outerAnalysis.InternalVariablesDictionary;
+                foreach (var details in outerDictionary.Values)
+                {
+                    if (details.DefinedBlock != null)
+                    {
+                        var assignTarget = new AssignmentTarget(details.RealName, details.Type);
+                        assignTarget.Constant = details.Constant;
+                        Entry.AddFirstAst(assignTarget);
+                    }
+                }
+
+                foreach (var key in _variables.Keys)
+                {
+                    if (outerDictionary.ContainsKey(key))
+                    {
+                        var outerItem = outerDictionary[key];
+                        var innerItem = _variables[key];
+                        innerItem.Constant = outerItem.Constant;
+                        innerItem.Name = outerItem.Name;
+                        innerItem.RealName = outerItem.RealName;
+                        innerItem.Type = outerItem.Type;
+                    }
+                }
+            }
+
+            var dictionaries = Block.SparseSimpleConstants(_variables, Entry, classes);
+            VariablesDictionary = dictionaries.Item1;
+            InternalVariablesDictionary = new Dictionary<string, VariableAnalysisDetails>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var KVP in dictionaries.Item2)
+            {
+                var analysis = KVP.Value;
+                if (analysis == null)
+                {
+                    continue;
+                }
+
+                if (!InternalVariablesDictionary.ContainsKey(analysis.RealName))
+                {
+                    InternalVariablesDictionary.Add(analysis.RealName, analysis);
+                }
+                else
+                {
+                    InternalVariablesDictionary[analysis.RealName] = analysis;
+                }
+            }
         }
 
         /// <summary>

@@ -36,8 +36,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             // Finds all VariableExpressionAst
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is VariableExpressionAst, true);
 
-            Helper.Instance.InitializeVariableAnalysis(ast);
-
             // Iterates all VariableExpressionAst and check the command name.
             foreach (VariableExpressionAst varAst in foundAsts)
             {
@@ -52,8 +50,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
             foreach (var funcAst in funcAsts)
             {
-                Helper.Instance.InitializeVariableAnalysis(funcAst);
-
                 // Finds all VariableExpressionAst.
                 IEnumerable<Ast> varAsts = funcAst.FindAll(testAst => testAst is VariableExpressionAst, true);
 

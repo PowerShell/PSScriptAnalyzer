@@ -42,7 +42,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
             foreach (FunctionDefinitionAst func in functionDefinitionAsts)
             {
-                Helper.Instance.InitializeVariableAnalysis(func);
                 List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func, classes);
 
                 if (String.Equals(func.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase))
@@ -113,8 +112,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     {
                         continue;
                     }
-
-                    Helper.Instance.InitializeVariableAnalysis(funcAst);
 
                     if (!String.Equals(funcAst.Name, "Set") && !Helper.Instance.AllCodePathReturns(funcAst))
                     {
