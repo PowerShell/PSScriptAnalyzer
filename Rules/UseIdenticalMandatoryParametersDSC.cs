@@ -86,7 +86,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     List<string> functionsNotContainingParam = expectedTargetResourceFunctionNames.Except(mandatoryParameters[paramName]).ToList();
                     yield return new DiagnosticRecord(string.Format(CultureInfo.InvariantCulture, Strings.UseIdenticalMandatoryParametersDSCError, paramName, string.Join(", ", functionsNotContainingParam.ToArray())),
-                                    ast.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
+                                    ast.Extent, GetName(), DiagnosticSeverity.Information, fileName);
                 }                   
                 
             }

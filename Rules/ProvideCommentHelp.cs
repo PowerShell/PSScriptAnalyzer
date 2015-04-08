@@ -56,7 +56,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     DiagnosticRecords.Add(
                         new DiagnosticRecord(
                             string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpError, funcAst.Name),
-                            funcAst.Extent, GetName(), DiagnosticSeverity.Strict, fileName));
+                            funcAst.Extent, GetName(), DiagnosticSeverity.Information, fileName));
                 }
             }
 
