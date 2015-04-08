@@ -197,6 +197,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     {
                         var assignTarget = new AssignmentTarget(details.RealName, details.Type);
                         assignTarget.Constant = details.Constant;
+                        if (!_variables.ContainsKey(assignTarget.Name))
+                        {
+                            _variables.Add(assignTarget.Name, new VariableAnalysisDetails
+                            {
+                                Name = assignTarget.Name,
+                                RealName = assignTarget.Name,
+                                Type = assignTarget.Type
+                            });
+                        }
                         Entry.AddFirstAst(assignTarget);
                     }
                 }
