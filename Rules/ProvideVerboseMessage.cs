@@ -65,7 +65,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             if (!hasVerbose)
             {
                 DiagnosticRecords.Add(new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideVerboseMessageErrorFunction, funcAst.Name),
-                    funcAst.Extent, GetName(), DiagnosticSeverity.Strict, fileName));
+                    funcAst.Extent, GetName(), DiagnosticSeverity.Information, fileName));
             }
 
             return AstVisitAction.Continue;
