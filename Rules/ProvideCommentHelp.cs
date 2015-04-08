@@ -47,10 +47,17 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.SkipChildren;
             }
 
-            if (funcAst.GetHelpContent() == null)
+            if (!string.Equals(funcAst.Name, "Get-TargetResource", StringComparison.OrdinalIgnoreCase) && !string.Equals(funcAst.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(funcAst.Name, "Test-TargetResource", StringComparison.OrdinalIgnoreCase))
             {
-                DiagnosticRecords.Add(new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpError, funcAst.Name),
-                    funcAst.Extent, GetName(), DiagnosticSeverity.Strict, fileName));
+
+                if (funcAst.GetHelpContent() == null)
+                {
+                    DiagnosticRecords.Add(
+                        new DiagnosticRecord(
+                            string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpError, funcAst.Name),
+                            funcAst.Extent, GetName(), DiagnosticSeverity.Information, fileName));
+                }
             }
 
             return AstVisitAction.Continue;

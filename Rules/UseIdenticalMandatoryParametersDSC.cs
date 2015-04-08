@@ -26,9 +26,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             // Expected TargetResource functions in the DSC Resource module
-            List<string> expectedTargetResourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Test-TargetResource", "Get-TargetResource" });                       
-            
-            IEnumerable<Ast> functionDefinitionAsts = ast.FindAll(item => item is FunctionDefinitionAst && expectedTargetResourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);
+            List<string> expectedTargetResourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Test-TargetResource", "Get-TargetResource" });
+
+            IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
             // Dictionary to keep track of Mandatory parameters and their presence in Get/Test/Set TargetResource cmdlets
             Dictionary<string, List<string>> mandatoryParameters = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
@@ -86,7 +86,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     List<string> functionsNotContainingParam = expectedTargetResourceFunctionNames.Except(mandatoryParameters[paramName]).ToList();
                     yield return new DiagnosticRecord(string.Format(CultureInfo.InvariantCulture, Strings.UseIdenticalMandatoryParametersDSCError, paramName, string.Join(", ", functionsNotContainingParam.ToArray())),
-                                    ast.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
+                                    ast.Extent, GetName(), DiagnosticSeverity.Information, fileName);
                 }                   
                 
             }

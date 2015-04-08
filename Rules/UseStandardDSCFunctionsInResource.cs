@@ -49,7 +49,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 if (!targetResourceFunctionNamesInAst.Contains(expectedTargetResourceFunctionName, StringComparer.CurrentCultureIgnoreCase))
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInResourceError, expectedTargetResourceFunctionName),
-                        ast.Extent, GetName(), DiagnosticSeverity.Strict, fileName);      
+                        ast.Extent, GetName(), DiagnosticSeverity.Information, fileName);      
                 }
             }
         }
@@ -80,7 +80,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     if (!functions.Any(function => String.Equals(resourceFunctionName, (function as FunctionMemberAst).Name)))
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInClassError, resourceFunctionName),
-                            dscClass.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
+                            dscClass.Extent, GetName(), DiagnosticSeverity.Information, fileName);
                     }
                 }
             }

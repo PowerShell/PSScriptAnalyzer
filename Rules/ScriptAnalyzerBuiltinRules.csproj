@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -54,15 +54,13 @@
     <Compile Include="AvoidEmptyCatchBlock.cs" />
     <Compile Include="AvoidGlobalVars.cs" />
     <Compile Include="AvoidInvokingEmptyMembers.cs" />
-    <Compile Include="AvoidOneCharNames.cs" />
     <Compile Include="AvoidPositionalParameters.cs" />
     <Compile Include="AvoidReservedCharInCmdlet.cs" />
     <Compile Include="AvoidReservedParams.cs" />
     <Compile Include="AvoidShouldContinueWithoutForce.cs" />
     <Compile Include="AvoidTrapStatement.cs" />
     <Compile Include="AvoidUnitializedVariable.cs" />
-    <Compile Include="AvoidUserNameAndPasswordParams.cs" />
-    <Compile Include="AvoidUsingClearHost.cs" />
+    <Compile Include="AvoidUsernameAndPasswordParams.cs" />
     <Compile Include="AvoidUsingComputerNameHardcoded.cs" />
     <Compile Include="AvoidUsingConvertToSecureStringWithPlainText.cs" />
     <Compile Include="AvoidUsingInternalURLs.cs" />
@@ -87,6 +85,7 @@
     <Compile Include="UseShouldProcessCorrectly.cs" />
     <Compile Include="UseSingularNouns.cs" />
     <Compile Include="UseStandardDSCFunctionsInResource.cs" />
+    <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Strings.resx">
@@ -105,4 +104,8 @@
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>mkdir "$(SolutionDir)$(SolutionName)"
+copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

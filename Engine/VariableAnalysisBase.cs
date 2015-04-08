@@ -44,6 +44,29 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// Block that variable is initialized in
         /// </summary>
         public Block DefinedBlock;
+
+        /// <summary>
+        /// Returns true if the two variable details have the same constant and same type
+        /// </summary>
+        /// <param name="varDetailsA"></param>
+        /// <param name="varDetailsB"></param>
+        /// <returns></returns>
+        public static bool SameConstantAndType(VariableDetails varDetailsA, VariableDetails varDetailsB)
+        {
+            if (varDetailsA == null)
+            {
+                if (varDetailsB != null)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return ((varDetailsA.Constant == null && varDetailsB.Constant == null)
+                    || (varDetailsA.Constant != null && varDetailsA.Constant.Equals(varDetailsB.Constant)))
+                && varDetailsA.Type == varDetailsB.Type;
+        }
     }
 
     /// <summary>
@@ -55,11 +78,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             this.AssociatedAsts = new List<Ast>();
         }
-
-        /// <summary>
-        /// True if variable is initialized
-        /// </summary>
-        public bool Uninitialized { get; set; }
 
         /// <summary>
         /// The Asts associated with the variables
@@ -87,6 +105,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             }
 
             var visitor = new FindAllVariablesVisitor();
+
+            visitor.InitializeVariables(ast);
 
             // Visit the body before the parameters so we don't allocate any tuple slots for parameters
             // if we won't be optimizing because of a call to new-variable/remove-variable, etc.
@@ -118,6 +138,21 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
         internal readonly Dictionary<string, VariableAnalysisDetails> _variables
             = new Dictionary<string, VariableAnalysisDetails>(StringComparer.OrdinalIgnoreCase);
+
+        internal void InitializeVariables(Ast ast)
+        {
+            _variables.Add("true", new VariableAnalysisDetails { Name = "true", RealName = "true", Type = typeof(bool) });
+            _variables.Add("false", new VariableAnalysisDetails { Name = "false", RealName = "true", Type = typeof(bool) });
+
+            if (ast is FunctionMemberAst)
+            {
+                TypeDefinitionAst psClass = AssignmentTarget.FindClassAncestor(ast);
+                if (psClass != null)
+                {
+                    _variables.Add("this", new VariableAnalysisDetails { Name = "this", RealName = "this", Constant = SpecialVars.ThisVariable });
+                }
+            }
+        }
 
         internal void VisitParameters(ReadOnlyCollection<ParameterAst> parameters)
         {
@@ -179,7 +214,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             return AstVisitAction.Continue;
         }
-         
+
         /// <summary>
         /// Visit VariableExpression
         /// </summary>
@@ -289,12 +324,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         internal Block ContinueTarget { get; private set; }
     }
 
-    class Unreached
+    /// <summary>
+    /// Represents unreached variable
+    /// </summary>
+    public class Unreached
     {
         internal static object UnreachedConstant = new object();
     }
 
-    class Undetermined
+    /// <summary>
+    /// Represent undetermined variable
+    /// </summary>
+    public class Undetermined
     {
         internal static object UndeterminedConstant = new object();
     }
@@ -333,13 +374,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <summary>
         /// Asts in the block
         /// </summary>
-        public List<object> _asts = new List<object>();
+        public LinkedList<object> _asts = new LinkedList<object>();
         internal readonly List<Block> _successors = new List<Block>();
 
         /// <summary>
         /// Predecessor blocks
         /// </summary>
-        public  List<Block> _predecessors = new List<Block>();
+        public List<Block> _predecessors = new List<Block>();
         internal readonly HashSet<Block> SSASuccessors = new HashSet<Block>();
         internal List<Block> DominatorSuccessors = new List<Block>();
         internal static int count;
@@ -373,7 +414,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
         internal void AddAst(object ast)
         {
-            _asts.Add(ast);
+            _asts.AddLast(ast);
+        }
+
+        internal void AddFirstAst(object ast)
+        {
+            _asts.AddFirst(ast);
         }
 
         /// <summary>
@@ -688,25 +734,50 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             RenameVariables(Entry);
         }
-        
+
         /// <summary>
         /// Sparse simple constant algorithm using use-def chain from SSA graph.
         /// </summary>
         /// <param name="Variables"></param>
         /// <param name="Entry"></param>
+        /// <param name="Classes"></param>
         /// <returns></returns>
-        internal static Dictionary<string, VariableAnalysisDetails> SparseSimpleConstants(Dictionary<string, VariableAnalysisDetails> Variables, Block Entry)
+        internal static Tuple<Dictionary<string, VariableAnalysisDetails>, Dictionary<string, VariableAnalysisDetails>> SparseSimpleConstants(
+            Dictionary<string, VariableAnalysisDetails> Variables, Block Entry, List<TypeDefinitionAst> Classes)
         {
             List<Block> blocks = GenerateReverseDepthFirstOrder(Entry);
+
+            // Populate unreached variable with type from variables
+            foreach (var block in blocks)
+            {
+                foreach (var ast in block._asts)
+                {
+                    VariableTarget varTarget = (ast is AssignmentTarget) ? (ast as AssignmentTarget)._rightHandSideVariable : (ast as VariableTarget);
+
+                    if (varTarget != null && varTarget.Type == typeof(Unreached)
+                        && Variables.ContainsKey(varTarget.Name))
+                    {
+                        varTarget.Type = Variables[varTarget.Name].Type;
+                    }
+                }
+            }
+
             InitializeSSA(Variables, Entry, blocks);
 
             LinkedList<Tuple<Block, Block>> workLists = new LinkedList<Tuple<Block, Block>>();
 
             foreach (var block in blocks)
             {
+                // Add a worklist from a block to itself to force analysis when variable is initialized but not used.
+                // This is useful in the case where the variable is used in the inner function
+                workLists.AddLast(Tuple.Create(block, block));
+
                 foreach (var ssaSucc in block.SSASuccessors)
                 {
-                    workLists.AddLast(Tuple.Create(block, ssaSucc));
+                    if (ssaSucc != block)
+                    {
+                        workLists.AddLast(Tuple.Create(block, ssaSucc));
+                    }
                 }
             }
 
@@ -749,7 +820,16 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     var assigned = obj as AssignmentTarget;
                     if (assigned != null && assigned.Name != null && InternalVariablesDictionary.ContainsKey(assigned.Name))
                     {
-                        var varAnalysis = InternalVariablesDictionary[assigned.Name];
+                        VariableAnalysisDetails varAnalysis = InternalVariablesDictionary[assigned.Name];
+                        // For cases where the type or constant of the rhs is initialized not through assignment.
+                        if (assigned._rightHandSideVariable != null && !InternalVariablesDictionary.ContainsKey(assigned._rightHandSideVariable.Name)
+                            && Variables.ContainsKey(assigned._rightHandSideVariable.Name))
+                        {
+                            VariableAnalysisDetails rhsAnalysis = Variables[assigned._rightHandSideVariable.Name];
+                            assigned.Type = rhsAnalysis.Type;
+                            assigned.Constant = rhsAnalysis.Constant;
+                        }
+
                         varAnalysis.Constant = assigned.Constant;
                         varAnalysis.Type = assigned.Type;
                         defVariables.Add(assigned.Name);
@@ -778,9 +858,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     if (defVariables.Contains(varTarget.Name))
                     {
                         var analysisDetails = InternalVariablesDictionary[varTarget.Name];
-                        if ((varTarget.Constant == null && varTarget.Constant != analysisDetails.Constant)
-                            || (varTarget.Constant != null && !varTarget.Constant.Equals(analysisDetails.Constant))
-                            || varTarget.Type != analysisDetails.Type)
+
+                        if (!VariableDetails.SameConstantAndType(varTarget, analysisDetails))
                         {
                             updated = true;
                         }
@@ -795,23 +874,56 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 foreach (var ast in end._asts)
                 {
                     var assigned = ast as AssignmentTarget;
-                    if (assigned != null && assigned.Name != null && defVariables.Contains(assigned.Name)
-                        && assigned._rightHandSideVariable != null && assigned._leftHandSideVariable != null)
+                    if (assigned != null && assigned.Name != null && assigned._leftHandSideVariable != null)
                     {
-                        // Ignore assignments like $a = $a
-                        if (!String.Equals(assigned._rightHandSideVariable.Name, assigned.Name)
-                            && InternalVariablesDictionary.ContainsKey(assigned._rightHandSideVariable.Name))
+                        // Handle cases like $b = $a after we found out the value of $a
+                        if (assigned._rightHandSideVariable != null
+                            && defVariables.Contains(assigned._rightHandSideVariable.Name))
                         {
-                            var analysisDetails = InternalVariablesDictionary[assigned._rightHandSideVariable.Name];
-                            if ((assigned.Constant == null && assigned.Constant != analysisDetails.Constant)
-                                || (assigned.Constant != null && !assigned.Constant.Equals(analysisDetails.Constant))
-                                || assigned.Type != analysisDetails.Type)
+                            // Ignore assignments like $a = $a
+                            if (!String.Equals(assigned._rightHandSideVariable.Name, assigned.Name, StringComparison.OrdinalIgnoreCase))
                             {
-                                updated = true;
+                                if (!InternalVariablesDictionary.ContainsKey(assigned._rightHandSideVariable.Name))
+                                {
+                                    continue;
+                                }
+
+                                var analysisDetails = InternalVariablesDictionary[assigned._rightHandSideVariable.Name];
+
+                                if (!VariableDetails.SameConstantAndType(assigned, analysisDetails))
+                                {
+                                    updated = true;
+                                }
+
+                                assigned.Constant = analysisDetails.Constant;
+                                assigned.Type = analysisDetails.Type;
                             }
 
-                            assigned.Constant = analysisDetails.Constant;
-                            assigned.Type = analysisDetails.Type;
+                            continue;
+                        }
+
+                        //TODO
+                        // Handle cases like $b = $a.SomeMethod or $a.SomeType after we found out the value of $a
+
+                        if (assigned._rightAst != null)
+                        {
+                            CommandExpressionAst cmeAst = assigned._rightAst as CommandExpressionAst;
+                            MemberExpressionAst memAst = (cmeAst != null) ? (cmeAst.Expression as MemberExpressionAst) : null;
+                            // Don't handle the this case because this is handled in assignmenttarget
+
+                            if (memAst != null && memAst.Expression is VariableExpressionAst)
+                            {
+                                VariableAnalysisDetails analysis = VariablesDictionary[VariableAnalysis.AnalysisDictionaryKey(memAst.Expression as VariableExpressionAst)];
+                                TypeDefinitionAst psClass = Classes.FirstOrDefault(item => String.Equals(item.Name, analysis.Type.FullName, StringComparison.OrdinalIgnoreCase));
+                                Type possibleType = AssignmentTarget.GetTypeFromMemberExpressionAst(memAst, analysis, psClass);
+
+                                if (possibleType != null && possibleType != assigned.Type)
+                                {
+                                    assigned.Type = possibleType;
+                                    updated = true;
+                                    continue;
+                                }
+                            }
                         }
                     }
                 }
@@ -826,7 +938,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 }
             }
 
-            return VariablesDictionary;
+            return Tuple.Create(VariablesDictionary, InternalVariablesDictionary);
         }
 
         /// <summary>
@@ -961,7 +1073,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             VisitDepthFirstOrder(block, result);
             result.Reverse();
-         
+
             for (int i = 0; i < result.Count; i++)
             {
                 result[i]._visitData = null;
@@ -976,7 +1088,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 return;
 
             block._visitData = visitData;
-            
+
             foreach (Block succ in block._successors)
             {
                 VisitDepthFirstOrder(succ, visitData);
@@ -1038,7 +1150,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         internal readonly StatementAst _rightAst;
         internal VariableTarget _rightHandSideVariable;
         internal VariableExpressionAst _leftHandSideVariable;
-        internal bool OnlyTypeInitialized = false;
 
         public AssignmentTarget(ExpressionAst ast)
         {
@@ -1057,9 +1168,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 Type = typeof(Undetermined);
             }
 
-            if (_rightAst is CommandExpressionAst)
+            CommandExpressionAst cmExAst = _rightAst as CommandExpressionAst;
+
+            if (cmExAst != null)
             {
-                ExpressionAst exprAst = (_rightAst as CommandExpressionAst).Expression;
+                ExpressionAst exprAst = cmExAst.Expression;
                 Type = exprAst.StaticType;
 
                 if (exprAst is ConvertExpressionAst)
@@ -1073,17 +1186,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                         Constant = (convertAst.Child as ConstantExpressionAst).Value;
                     }
                 }
-                else if (exprAst is InvokeMemberExpressionAst)
-                {
-                    InvokeMemberExpressionAst imeAst = exprAst as InvokeMemberExpressionAst;
-                    if (imeAst.Member is StringConstantExpressionAst &&
-                        String.Equals((imeAst.Member as StringConstantExpressionAst).Value, "new", StringComparison.OrdinalIgnoreCase)
-                        && imeAst.Expression is TypeExpressionAst)
-                    {
-                        Type = DeepestRelatedDerivedClass(Type, (imeAst.Expression as TypeExpressionAst).TypeName.GetReflectionType());
-                    }
-                }
-                else
+                else if (exprAst is BinaryExpressionAst)
                 {
                     BinaryExpressionAst binAst = exprAst as BinaryExpressionAst;
                     if (binAst != null && binAst.Operator == TokenKind.As && binAst.Right is TypeExpressionAst)
@@ -1100,29 +1203,30 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                             _rightHandSideVariable = new VariableTarget(binAst.Left as VariableExpressionAst);
                         }
                     }
-                    else if ((_rightAst as CommandExpressionAst).Expression is ConstantExpressionAst)
+                }
+                else if (exprAst is ConstantExpressionAst)
+                {
+                    Constant = (cmExAst.Expression as ConstantExpressionAst).Value;
+                }
+                else if (exprAst is VariableExpressionAst)
+                {
+                    _rightHandSideVariable = new VariableTarget(cmExAst.Expression as VariableExpressionAst);
+                    if (String.Equals((exprAst as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
                     {
-                        Constant = ((_rightAst as CommandExpressionAst).Expression as ConstantExpressionAst).Value;
+                        Constant = SpecialVars.ThisVariable;
                     }
-                    else if ((_rightAst as CommandExpressionAst).Expression is VariableExpressionAst)
-                    {
-                        _rightHandSideVariable = new VariableTarget((_rightAst as CommandExpressionAst).Expression as VariableExpressionAst);
-                    }
-                    //Store the type info for variable assignment from .Net type
-                    else if ((_rightAst as CommandExpressionAst).Expression is MemberExpressionAst)
-                    {
-                        MemberExpressionAst memberAst = ((_rightAst as CommandExpressionAst).Expression) as MemberExpressionAst;
-                        //syntax like $a=[System.AppDomain]::CurrentDomain
-                        if (memberAst.Expression is TypeExpressionAst)
-                        {
-                            Type = DeepestRelatedDerivedClass(Type, (memberAst.Expression as TypeExpressionAst).TypeName.GetReflectionType());
-                        }
-                    }
+                }
+                //Store the type info for variable assignment from .Net type
+                else if (exprAst is MemberExpressionAst)
+                {
+
+                    Type = DeepestRelatedDerivedClass(Type, GetTypeFromMemberExpressionAst(exprAst as MemberExpressionAst));
                 }
             }
             // We'll consider case where there is only 1 pipeline element for now
             else if (_rightAst is PipelineAst && (_rightAst as PipelineAst).PipelineElements.Count == 1)
             {
+                #region Process New-Object command
                 CommandAst cmdAst = (_rightAst as PipelineAst).PipelineElements[0] as CommandAst;
 
                 if (cmdAst != null && cmdAst.CommandElements.Count > 1)
@@ -1162,9 +1266,319 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                         }
                     }
                 }
+
+                #endregion
             }
 
             SetVariableName();
+        }
+
+        public AssignmentTarget(string variableName, Type type)
+        {
+            this.Name = variableName;
+            this.Type = type;
+        }
+
+        /// <summary>
+        /// Get the type from member expression ast in the form of $variable.field/method
+        /// type is the type of variable. Class is the class that matches the type
+        /// </summary>
+        /// <param name="analysis"></param>
+        /// <param name="memAst"></param>
+        /// <param name="psClass"></param>
+        /// <returns></returns>
+        internal static Type GetTypeFromMemberExpressionAst(MemberExpressionAst memAst, VariableAnalysisDetails analysis, TypeDefinitionAst psClass)
+        {
+            if (memAst != null && memAst.Expression is VariableExpressionAst && memAst.Member is StringConstantExpressionAst
+                && !String.Equals((memAst.Expression as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
+            {
+                string fieldName = (memAst.Member as StringConstantExpressionAst).Value;
+
+                if (psClass == null && analysis.Constant == SpecialVars.ThisVariable)
+                {
+                    psClass = AssignmentTarget.FindClassAncestor(memAst);
+                }
+
+                if (psClass != null)
+                {
+                    Type typeFromClass = AssignmentTarget.GetTypeFromClass(psClass, memAst);
+                    {
+                        if (typeFromClass != null)
+                        {
+                            return typeFromClass;
+                        }
+                    }
+                }
+
+                // If the type is not a ps class or there are some types of the same name.
+                if (analysis != null && analysis.Type != null && analysis.Type != typeof(object)
+                    && analysis.Type != typeof(Unreached) && analysis.Type != typeof(Undetermined))
+                {
+                    if (memAst is InvokeMemberExpressionAst)
+                    {
+                        return AssignmentTarget.GetTypeFromInvokeMemberAst(analysis.Type, memAst as InvokeMemberExpressionAst, fieldName, false);
+                    }
+                    else
+                    {
+                        return AssignmentTarget.GetPropertyOrFieldTypeFromMemberExpressionAst(analysis.Type, fieldName);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Given a memberAst, try to return the type of the expression. This assumes that the memberAst is of the form
+        /// [Type]::method/field or $this.method/field
+        /// </summary>
+        /// <param name="memberAst"></param>
+        /// <returns></returns>
+        internal static Type GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst)
+        {
+            Type result = null;
+
+            StringConstantExpressionAst stringAst = memberAst.Member as StringConstantExpressionAst;
+
+            if (stringAst == null)
+            {
+                return result;
+            }
+
+            if (memberAst is InvokeMemberExpressionAst)
+            {
+                #region RHS is InvokeMemberExpressionAst
+
+                InvokeMemberExpressionAst imeAst = memberAst as InvokeMemberExpressionAst;
+                if (imeAst.Expression is TypeExpressionAst)
+                {
+                    string methodName = stringAst.Value;
+                    Type type = (imeAst.Expression as TypeExpressionAst).TypeName.GetReflectionType();
+
+                    if (String.Equals(methodName, "new", StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = type;
+                    }
+                    else if (type != null && type != typeof(object))
+                    {
+                        // isStatic is true
+                        result = GetTypeFromInvokeMemberAst(type, imeAst, methodName, true);
+                    }
+                    else
+                    {
+                        // Check for classes
+                        TypeDefinitionAst psClass = FindClass(memberAst, (imeAst.Expression as TypeExpressionAst).TypeName.FullName);
+
+                        if (psClass != null)
+                        {
+                            MemberAst funcMemberAst = psClass.Members.FirstOrDefault(item =>
+                                item is FunctionMemberAst && (item as FunctionMemberAst).IsStatic
+                                && String.Equals(item.Name, methodName, StringComparison.OrdinalIgnoreCase));
+
+                            if (funcMemberAst != null)
+                            {
+                                result = (funcMemberAst as FunctionMemberAst).ReturnType.TypeName.GetReflectionType();
+                            }
+                        }
+                    }
+                }
+
+                #endregion
+            }
+            else
+            {
+                #region RHS is MemberExpressionAst
+
+                //syntax like $a=[System.AppDomain]::CurrentDomain
+                string fieldName = stringAst.Value;
+
+                if (memberAst.Expression is TypeExpressionAst)
+                {
+                    Type expressionType = (memberAst.Expression is TypeExpressionAst) ? (memberAst.Expression as TypeExpressionAst).TypeName.GetReflectionType() : null;
+
+                    if (expressionType != null)
+                    {
+                        result = GetPropertyOrFieldTypeFromMemberExpressionAst(expressionType, fieldName);
+                    }
+                    else
+                    {
+                        // check for class type
+                        TypeDefinitionAst psClass = FindClass(memberAst, (memberAst.Expression as TypeExpressionAst).TypeName.FullName);
+
+                        if (psClass != null)
+                        {
+                            MemberAst memAst = psClass.Members.FirstOrDefault(item => String.Equals(item.Name, fieldName, StringComparison.OrdinalIgnoreCase));
+
+                            if (memAst != null && memAst is PropertyMemberAst && (memAst as PropertyMemberAst).IsStatic)
+                            {
+                                result = (memAst as PropertyMemberAst).PropertyType.TypeName.GetReflectionType();
+                            }
+                        }
+                    }
+                }
+
+                #endregion
+            }
+
+            if (result != null)
+            {
+                return result;
+            }
+
+            #region RHS contains $this variable
+
+            // For the case where variable is $this
+            if (memberAst.Expression is VariableExpressionAst
+                && String.Equals((memberAst.Expression as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check that we are in a class
+                TypeDefinitionAst psClass = FindClassAncestor(memberAst);
+
+                // Is static is false for this case
+                result = GetTypeFromClass(psClass, memberAst);
+            }
+
+            return result;
+            #endregion
+        }
+
+        /// <summary>
+        /// Get the type from an invoke member expression ast
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="imeAst"></param>
+        /// <param name="methodName"></param>
+        /// <param name="isStatic"></param>
+        /// <returns></returns>
+        internal static Type GetTypeFromInvokeMemberAst(Type type, InvokeMemberExpressionAst imeAst, string methodName, bool isStatic)
+        {
+            Type result = null;
+
+            MethodInfo[] methods = (isStatic) ? type.GetMethods(BindingFlags.Public | BindingFlags.Static) : type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            int argCounts = (imeAst.Arguments != null) ? imeAst.Arguments.Count : 0;
+
+            MethodInfo[] possibleMethods = methods.Where(method => String.Equals(method.Name, methodName, StringComparison.OrdinalIgnoreCase)
+                && method.GetParameters().Length == argCounts).ToArray();
+
+            if (possibleMethods.Length != 0)
+            {
+                Type first = possibleMethods[0].ReturnType;
+                if (first != typeof(void) && first != null
+                    && possibleMethods.All(method => method.ReturnType == first))
+                {
+                    result = first;
+                }
+            }
+
+            return result;
+        }
+
+        internal static Type GetPropertyOrFieldTypeFromMemberExpressionAst(Type type, string fieldName)
+        {
+            PropertyInfo property = type.GetProperty(fieldName);
+            Type result = null;
+
+            if (property != null)
+            {
+                result = property.PropertyType;
+            }
+            else
+            {
+                FieldInfo field = type.GetField(fieldName);
+                if (field != null)
+                {
+                    result = field.FieldType;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Checks whether a class with the name name exists in the script that contains ast
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        internal static TypeDefinitionAst FindClass(Ast ast, string name)
+        {
+            Ast parent = ast.Parent;
+            while (parent.Parent != null)
+            {
+                parent = parent.Parent;
+            }
+
+            Ast classAst = parent.Find(item =>
+                item is TypeDefinitionAst
+                && String.Equals((item as TypeDefinitionAst).Name, name, StringComparison.OrdinalIgnoreCase), true);
+
+            TypeDefinitionAst psClass = (classAst != null) ? (classAst as TypeDefinitionAst) : null;
+
+            if (psClass != null && psClass.IsClass)
+            {
+                return psClass;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Finds the closest class ancestor of ast
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        internal static TypeDefinitionAst FindClassAncestor(Ast ast)
+        {
+            Ast parent = ast.Parent;
+            TypeDefinitionAst psClass = null;
+
+            while (parent != null)
+            {
+                if (parent is TypeDefinitionAst)
+                {
+                    psClass = parent as TypeDefinitionAst;
+                    break;
+                }
+
+                parent = parent.Parent;
+            }
+
+            if (psClass != null && psClass.IsClass)
+            {
+                return psClass;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get the type for memberexpressionast assuming that the variable is a class
+        /// </summary>
+        /// <param name="psClass"></param>
+        /// <param name="memberExpressionAst"></param>
+        /// <returns></returns>
+        internal static Type GetTypeFromClass(TypeDefinitionAst psClass, MemberExpressionAst memberExpressionAst)
+        {
+            Type result = null;
+
+            if (psClass != null)
+            {
+                MemberAst memAst = psClass.Members.FirstOrDefault(item => String.Equals(item.Name, (memberExpressionAst.Member as StringConstantExpressionAst).Value, StringComparison.OrdinalIgnoreCase));
+
+                if (memAst != null)
+                {
+                    if (memAst is PropertyMemberAst)
+                    {
+                        result = (memAst as PropertyMemberAst).PropertyType.TypeName.GetReflectionType();
+                    }
+                    else if (memAst is FunctionMemberAst)
+                    {
+                        result = (memAst as FunctionMemberAst).ReturnType.TypeName.GetReflectionType();
+                    }
+                }
+            }
+
+            return result;
         }
 
         private void SetVariableName()
@@ -1180,12 +1594,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             Name = GetUnaliasedVariableName(_leftHandSideVariable.VariablePath);
             RealName = Name;
-        }
-
-        public AssignmentTarget(string variableName, Type type)
-        {
-            this.Name = variableName;
-            this.Type = type;
         }
 
         /// <summary>
@@ -1758,7 +2166,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             dataStatementAst.Body.Visit(this.Decorator);
             if (dataStatementAst.Variable != null)
             {
-                _currentBlock.AddAst(dataStatementAst);
+                _currentBlock.AddAst(new AssignmentTarget(dataStatementAst.Variable, null));
             }
             return null;
         }
@@ -2220,7 +2628,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             if (commandAst == null) return null;
 
             //Add the check for Tee-Object -Variable var 
-            if(string.Equals(commandAst.GetCommandName(),"Tee-Object",StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(commandAst.GetCommandName(), "Tee-Object", StringComparison.OrdinalIgnoreCase))
             {
                 foreach (CommandElementAst ceAst in commandAst.CommandElements)
                 {
@@ -2230,7 +2638,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                         if (string.Equals(paramName, "Variable", StringComparison.OrdinalIgnoreCase))
                         {
                             int index = commandAst.CommandElements.IndexOf(ceAst);
-                            if(commandAst.CommandElements.Count > (index+1))
+                            if (commandAst.CommandElements.Count > (index + 1))
                             {
                                 CommandElementAst paramConstant = commandAst.CommandElements[index + 1];
                                 if (paramConstant is StringConstantExpressionAst)
@@ -2238,7 +2646,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                                     //If common parameters are used, create a variable target and store the variable value
                                     _currentBlock.AddAst(new AssignmentTarget((paramConstant as StringConstantExpressionAst).Value, typeof(string)));
                                 }
-                            }            
+                            }
                         }
                     }
                 }

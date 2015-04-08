@@ -32,14 +32,10 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Expected TargetResource functions in the DSC Resource module
-            List<string> expectedTargetResourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Test-TargetResource" });
-
             // parameters
             Dictionary<string, ParameterAst> paramNames = new Dictionary<string, ParameterAst>(StringComparer.OrdinalIgnoreCase);
 
-            IEnumerable<Ast> functionDefinitionAsts = ast.FindAll(item => item is FunctionDefinitionAst
-                && expectedTargetResourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);
+            IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
             if (functionDefinitionAsts.Count() == 2)
             {
@@ -52,7 +48,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 if (funcParamAsts.Count() != funcParamAsts2.Count())
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCError),
-                        firstFunc.Extent, GetName(), DiagnosticSeverity.Strict, fileName);
+                        firstFunc.Extent, GetName(), DiagnosticSeverity.Information, fileName);
                 }
 
                 foreach (ParameterAst paramAst in funcParamAsts)
@@ -66,7 +62,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                         || !CompareParamAsts(paramAst, paramNames[paramAst.Name.VariablePath.UserPath]))
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCError),
-                            paramAst.Extent, GetName(), DiagnosticSeverity.Strict, fileName);   
+                            paramAst.Extent, GetName(), DiagnosticSeverity.Information, fileName);   
                     }
                 }
             }

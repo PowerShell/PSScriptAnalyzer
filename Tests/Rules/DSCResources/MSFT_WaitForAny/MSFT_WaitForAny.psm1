@@ -30,15 +30,22 @@ function Get-TargetResource
     )
 
     Import-Module $PSScriptRoot\..\..\PSDSCxMachine.psm1
+    
+    $b = @{"hash" = "table"}
 
-    return PSDSCxMachine\Get-_InternalPSDscXMachineTR `
-               -RemoteResourceId $ResourceName `
-               -RemoteMachine $NodeName `
-               -RemoteCredential $Credential `
-               -MinimalNumberOfMachineInState 1 `
-               -RetryIntervalSec $RetryIntervalSec `
-               -RetryCount $RetryCount `
-               -ThrottleLimit $ThrottleLimit
+    if ($true)
+    {
+        return $b;
+    }
+    elseif ($c)
+    {
+        return @{"hash2"="table2"}
+    }
+    else
+    {
+        # can't determine type of c so error should not be raised as we're trying to be conservative
+        return $c;
+    }
 }
 
 #
@@ -125,14 +132,25 @@ function Test-TargetResource
 
     Import-Module $PSScriptRoot\..\..\PSDSCxMachine.psm1
 
-    return PSDSCxMachine\Test-_InternalPSDscXMachineTR `
-               -RemoteResourceId $ResourceName `
-               -RemoteMachine $NodeName `
-               -RemoteCredential $Credential `
-               -MinimalNumberOfMachineInState 1 `
-               -RetryIntervalSec $RetryIntervalSec `
-               -RetryCount $RetryCount `
-               -ThrottleLimit $ThrottleLimit
+    $a = $true
+    $a
+
+    if ($true)
+    {
+        $false;
+    }
+    elseif ($b)
+    {
+        return $a -or $true
+    }
+    elseif ($c)
+    {
+        return $false;
+    }
+    else
+    {
+        return $true
+    }
 }
 
 

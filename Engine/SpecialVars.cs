@@ -16,6 +16,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 {
     internal class SpecialVars
     {
+        internal static object ThisVariable = new object();
         internal const string @foreach = "foreach";
         internal const string @switch = "switch";
         internal const string Question = "?";
@@ -100,28 +101,28 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                                                                     /* ConfirmPreference */ typeof(ConfirmImpact),  
                                                                 };
 
-        internal enum AutomaticVariable  
-        {  
-            Underbar = 0,  
-            Args = 1,  
-            This = 2,  
-            Input = 3,  
-            PSCmdlet = 4,  
-            PSBoundParameters = 5,  
-            MyInvocation = 6,  
-            PSScriptRoot = 7,  
-            PSCommandPath = 8,  
+        internal enum AutomaticVariable
+        {
+            Underbar = 0,
+            Args = 1,
+            This = 2,
+            Input = 3,
+            PSCmdlet = 4,
+            PSBoundParameters = 5,
+            MyInvocation = 6,
+            PSScriptRoot = 7,
+            PSCommandPath = 8,
             NumberOfAutomaticVariables // 1 + the last, used to initialize global scope.
-        }  
-  
-        internal enum PreferenceVariable  
-        {  
-            Debug = 9,  
-            Verbose = 10,  
-            Error = 11,  
-            WhatIf = 12,  
-            Warning = 13,  
-            Confirm = 14,  
+        }
+
+        internal enum PreferenceVariable
+        {
+            Debug = 9,
+            Verbose = 10,
+            Error = 11,
+            WhatIf = 12,
+            Warning = 13,
+            Confirm = 14,
         }
 
         internal const string HistorySize = "MaximumHistoryCount";
