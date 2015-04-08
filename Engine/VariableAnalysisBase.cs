@@ -80,11 +80,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// True if variable is initialized
-        /// </summary>
-        public bool Uninitialized { get; set; }
-
-        /// <summary>
         /// The Asts associated with the variables
         /// </summary>
         public List<Ast> AssociatedAsts { get; internal set; }
@@ -379,7 +374,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <summary>
         /// Asts in the block
         /// </summary>
-        public List<object> _asts = new List<object>();
+        public LinkedList<object> _asts = new LinkedList<object>();
         internal readonly List<Block> _successors = new List<Block>();
 
         /// <summary>
@@ -419,7 +414,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
         internal void AddAst(object ast)
         {
-            _asts.Add(ast);
+            _asts.AddLast(ast);
+        }
+
+        internal void AddFirstAst(object ast)
+        {
+            _asts.AddFirst(ast);
         }
 
         /// <summary>
@@ -742,7 +742,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <param name="Entry"></param>
         /// <param name="Classes"></param>
         /// <returns></returns>
-        internal static Dictionary<string, VariableAnalysisDetails> SparseSimpleConstants(Dictionary<string, VariableAnalysisDetails> Variables, Block Entry, List<TypeDefinitionAst> Classes)
+        internal static Tuple<Dictionary<string, VariableAnalysisDetails>, Dictionary<string, VariableAnalysisDetails>> SparseSimpleConstants(
+            Dictionary<string, VariableAnalysisDetails> Variables, Block Entry, List<TypeDefinitionAst> Classes)
         {
             List<Block> blocks = GenerateReverseDepthFirstOrder(Entry);
 
@@ -767,9 +768,16 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             foreach (var block in blocks)
             {
+                // Add a worklist from a block to itself to force analysis when variable is initialized but not used.
+                // This is useful in the case where the variable is used in the inner function
+                workLists.AddLast(Tuple.Create(block, block));
+
                 foreach (var ssaSucc in block.SSASuccessors)
                 {
-                    workLists.AddLast(Tuple.Create(block, ssaSucc));
+                    if (ssaSucc != block)
+                    {
+                        workLists.AddLast(Tuple.Create(block, ssaSucc));
+                    }
                 }
             }
 
@@ -930,7 +938,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 }
             }
 
-            return VariablesDictionary;
+            return Tuple.Create(VariablesDictionary, InternalVariablesDictionary);
         }
 
         /// <summary>
@@ -2158,7 +2166,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             dataStatementAst.Body.Visit(this.Decorator);
             if (dataStatementAst.Variable != null)
             {
-                _currentBlock.AddAst(dataStatementAst);
+                _currentBlock.AddAst(new AssignmentTarget(dataStatementAst.Variable, null));
             }
             return null;
         }

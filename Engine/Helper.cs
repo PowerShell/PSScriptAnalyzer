@@ -408,25 +408,26 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             var analysis = VariableAnalysisDictionary[ast];
             return analysis.Exit._predecessors.All(block => block._returns || block._unreachable || block._throws);
         }
-
+        
         /// <summary>
-        /// Initialize Variable Analysis on Ast ast
+        /// Initialize variable analysis on the script ast
         /// </summary>
         /// <param name="ast"></param>
         public void InitializeVariableAnalysis(Ast ast)
         {
-            if (VariableAnalysisDictionary.ContainsKey(ast))
-            {
-                return;
-            }
+            (new ScriptAnalysis()).AnalyzeScript(ast);
+        }
 
-            try
-            {
-                var VarAnalysis = new VariableAnalysis(new FlowGraph());
-                VarAnalysis.AnalyzeImpl(ast);
-                VariableAnalysisDictionary[ast] = VarAnalysis;
-            }
-            catch { }
+        /// <summary>
+        /// Initialize Variable Analysis on Ast ast with variables outside in outerAnalysis
+        /// </summary>
+        /// <param name="ast"></param>
+        internal VariableAnalysis InitializeVariableAnalysisHelper(Ast ast, VariableAnalysis outerAnalysis)
+        {
+            var VarAnalysis = new VariableAnalysis(new FlowGraph());
+            VarAnalysis.AnalyzeImpl(ast, outerAnalysis);
+            VariableAnalysisDictionary[ast] = VarAnalysis;
+            return VarAnalysis;
         }
 
         /// <summary>
@@ -632,6 +633,794 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             }
         }
     }
+    
+    /// <summary>
+    /// Class used to do variable analysis on the whole script
+    /// </summary>
+    public class ScriptAnalysis: ICustomAstVisitor2
+    {
+        private VariableAnalysis OuterAnalysis;
+
+        /// <summary>
+        /// Analyze the script
+        /// </summary>
+        /// <param name="ast"></param>
+        public void AnalyzeScript(Ast ast)
+        {
+            if (ast != null)
+            {
+                ast.Visit(this);
+            }
+        }
+
+        /// <summary>
+        /// Visit Script Block Ast. Sets outeranalysis to the ast before visiting others.
+        /// </summary>
+        /// <param name="scriptBlockAst"></param>
+        /// <returns></returns>
+        public object VisitScriptBlock(ScriptBlockAst scriptBlockAst)
+        {
+            if (scriptBlockAst == null) return null;
+
+            VariableAnalysis previousOuter = OuterAnalysis;
+            OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
+
+            if (scriptBlockAst.DynamicParamBlock != null)
+            {
+                scriptBlockAst.DynamicParamBlock.Visit(this);
+            }
+
+            if (scriptBlockAst.BeginBlock != null)
+            {
+                scriptBlockAst.BeginBlock.Visit(this);
+            }
+
+            if (scriptBlockAst.ProcessBlock != null)
+            {
+                scriptBlockAst.ProcessBlock.Visit(this);
+            }
+
+            if (scriptBlockAst.EndBlock != null)
+            {
+                scriptBlockAst.EndBlock.Visit(this);
+            }
+
+            OuterAnalysis = previousOuter;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="baseCtorInvokeMemberExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitBaseCtorInvokeMemberExpression(BaseCtorInvokeMemberExpressionAst baseCtorInvokeMemberExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="configurationDefinitionAst"></param>
+        /// <returns></returns>
+        public object VisitConfigurationDefinition(ConfigurationDefinitionAst configurationDefinitionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="dynamicKeywordAst"></param>
+        /// <returns></returns>
+        public object VisitDynamicKeywordStatement(DynamicKeywordStatementAst dynamicKeywordAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Set outer analysis before further visiting.
+        /// </summary>
+        /// <param name="functionMemberAst"></param>
+        /// <returns></returns>
+        public object VisitFunctionMember(FunctionMemberAst functionMemberAst)
+        {
+            var previousOuter = OuterAnalysis;
+            OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(functionMemberAst, OuterAnalysis);
+
+            if (functionMemberAst != null)
+            {
+                functionMemberAst.Body.Visit(this);
+            }
+
+            OuterAnalysis = previousOuter;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="propertyMemberAst"></param>
+        /// <returns></returns>
+        public object VisitPropertyMember(PropertyMemberAst propertyMemberAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit the functions defined in class
+        /// </summary>
+        /// <param name="typeDefinitionAst"></param>
+        /// <returns></returns>
+        public object VisitTypeDefinition(TypeDefinitionAst typeDefinitionAst)
+        {
+            if (typeDefinitionAst != null)
+            {
+                foreach (var member in typeDefinitionAst.Members)
+                {
+                    member.Visit(this);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="usingStatement"></param>
+        /// <returns></returns>
+        public object VisitUsingStatement(UsingStatementAst usingStatement)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="arrayExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitArrayExpression(ArrayExpressionAst arrayExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="arrayLiteralAst"></param>
+        /// <returns></returns>
+        public object VisitArrayLiteral(ArrayLiteralAst arrayLiteralAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="assignmentStatementAst"></param>
+        /// <returns></returns>
+        public object VisitAssignmentStatement(AssignmentStatementAst assignmentStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="attributeAst"></param>
+        /// <returns></returns>
+        public object VisitAttribute(AttributeAst attributeAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="attributedExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitAttributedExpression(AttributedExpressionAst attributedExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="binaryExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitBinaryExpression(BinaryExpressionAst binaryExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body of block statement
+        /// </summary>
+        /// <param name="blockStatementAst"></param>
+        /// <returns></returns>
+        public object VisitBlockStatement(BlockStatementAst blockStatementAst)
+        {
+            if (blockStatementAst != null)
+            {
+                blockStatementAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="breakStatementAst"></param>
+        /// <returns></returns>
+        public object VisitBreakStatement(BreakStatementAst breakStatementAst)
+        {
+            return null;
+        }
+        
+        /// <summary>
+        /// Visits body
+        /// </summary>
+        /// <param name="catchClauseAst"></param>
+        /// <returns></returns>
+        public object VisitCatchClause(CatchClauseAst catchClauseAst)
+        {
+            if (catchClauseAst != null)
+            {
+                catchClauseAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="commandAst"></param>
+        /// <returns></returns>
+        public object VisitCommand(CommandAst commandAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="commandExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitCommandExpression(CommandExpressionAst commandExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="commandParameterAst"></param>
+        /// <returns></returns>
+        public object VisitCommandParameter(CommandParameterAst commandParameterAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="constantExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitConstantExpression(ConstantExpressionAst constantExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="continueStatementAst"></param>
+        /// <returns></returns>
+        public object VisitContinueStatement(ContinueStatementAst continueStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="convertExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitConvertExpression(ConvertExpressionAst convertExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="dataStatementAst"></param>
+        /// <returns></returns>
+        public object VisitDataStatement(DataStatementAst dataStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body
+        /// </summary>
+        /// <param name="doUntilStatementAst"></param>
+        /// <returns></returns>
+        public object VisitDoUntilStatement(DoUntilStatementAst doUntilStatementAst)
+        {
+            if (doUntilStatementAst != null)
+            {
+                doUntilStatementAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body
+        /// </summary>
+        /// <param name="doWhileStatementAst"></param>
+        /// <returns></returns>
+        public object VisitDoWhileStatement(DoWhileStatementAst doWhileStatementAst)
+        {
+            if (doWhileStatementAst != null)
+            {
+                doWhileStatementAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="errorExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitErrorExpression(ErrorExpressionAst errorExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="errorStatementAst"></param>
+        /// <returns></returns>
+        public object VisitErrorStatement(ErrorStatementAst errorStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="exitStatementAst"></param>
+        /// <returns></returns>
+        public object VisitExitStatement(ExitStatementAst exitStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="expandableStringExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitExpandableStringExpression(ExpandableStringExpressionAst expandableStringExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="fileRedirectionAst"></param>
+        /// <returns></returns>
+        public object VisitFileRedirection(FileRedirectionAst fileRedirectionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body
+        /// </summary>
+        /// <param name="forEachStatementAst"></param>
+        /// <returns></returns>
+        public object VisitForEachStatement(ForEachStatementAst forEachStatementAst)
+        {
+            if (forEachStatementAst != null)
+            {
+                forEachStatementAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body
+        /// </summary>
+        /// <param name="forStatementAst"></param>
+        /// <returns></returns>
+        public object VisitForStatement(ForStatementAst forStatementAst)
+        {
+            if (forStatementAst != null)
+            {
+                forStatementAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Set outer analysis before visiting children
+        /// </summary>
+        /// <param name="functionDefinitionAst"></param>
+        /// <returns></returns>
+        public object VisitFunctionDefinition(FunctionDefinitionAst functionDefinitionAst)
+        {
+            var outer = OuterAnalysis;
+            OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(functionDefinitionAst, OuterAnalysis);
+
+            if (functionDefinitionAst != null)
+            {
+                functionDefinitionAst.Body.Visit(this);
+            }
+
+            OuterAnalysis = outer;
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="hashtableAst"></param>
+        /// <returns></returns>
+        public object VisitHashtable(HashtableAst hashtableAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit the body of each clauses
+        /// </summary>
+        /// <param name="ifStmtAst"></param>
+        /// <returns></returns>
+        public object VisitIfStatement(IfStatementAst ifStmtAst)
+        {
+            if (ifStmtAst != null)
+            {
+                if (ifStmtAst.Clauses != null)
+                {
+                    foreach (var clause in ifStmtAst.Clauses)
+                    {
+                        if (clause.Item2 != null)
+                        {
+                            clause.Item2.Visit(this);
+                        }
+                    }
+                }
+
+                if (ifStmtAst.ElseClause != null)
+                {
+                    ifStmtAst.ElseClause.Visit(this);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="indexExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitIndexExpression(IndexExpressionAst indexExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="invokeMemberExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitInvokeMemberExpression(InvokeMemberExpressionAst invokeMemberExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="memberExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitMemberExpression(MemberExpressionAst memberExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="mergingRedirectionAst"></param>
+        /// <returns></returns>
+        public object VisitMergingRedirection(MergingRedirectionAst mergingRedirectionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="namedAttributeArgumentAst"></param>
+        /// <returns></returns>
+        public object VisitNamedAttributeArgument(NamedAttributeArgumentAst namedAttributeArgumentAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit each statement
+        /// </summary>
+        /// <param name="namedBlockAst"></param>
+        /// <returns></returns>
+        public object VisitNamedBlock(NamedBlockAst namedBlockAst)
+        {
+            if (namedBlockAst != null)
+            {
+                foreach (var statement in namedBlockAst.Statements)
+                {
+                    statement.Visit(this);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="paramBlockAst"></param>
+        /// <returns></returns>
+        public object VisitParamBlock(ParamBlockAst paramBlockAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="parameterAst"></param>
+        /// <returns></returns>
+        public object VisitParameter(ParameterAst parameterAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="parenExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitParenExpression(ParenExpressionAst parenExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="pipelineAst"></param>
+        /// <returns></returns>
+        public object VisitPipeline(PipelineAst pipelineAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="returnStatementAst"></param>
+        /// <returns></returns>
+        public object VisitReturnStatement(ReturnStatementAst returnStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit the scriptblock
+        /// </summary>
+        /// <param name="scriptBlockExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitScriptBlockExpression(ScriptBlockExpressionAst scriptBlockExpressionAst)
+        {
+            if (scriptBlockExpressionAst != null)
+            {
+                scriptBlockExpressionAst.ScriptBlock.Visit(this);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Visit each statement
+        /// </summary>
+        /// <param name="statementBlockAst"></param>
+        /// <returns></returns>
+        public object VisitStatementBlock(StatementBlockAst statementBlockAst)
+        {
+            if (statementBlockAst != null)
+            {
+                foreach (var statement in statementBlockAst.Statements)
+                {
+                    statement.Visit(this);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="stringConstantExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitStringConstantExpression(StringConstantExpressionAst stringConstantExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="subExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitSubExpression(SubExpressionAst subExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit the body of each clause
+        /// </summary>
+        /// <param name="switchStatementAst"></param>
+        /// <returns></returns>
+        public object VisitSwitchStatement(SwitchStatementAst switchStatementAst)
+        {
+            if (switchStatementAst != null)
+            {
+                foreach (var clause in switchStatementAst.Clauses)
+                {
+                    if (clause.Item2 != null)
+                    {
+                        clause.Item2.Visit(this);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="throwStatementAst"></param>
+        /// <returns></returns>
+        public object VisitThrowStatement(ThrowStatementAst throwStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="trapStatementAst"></param>
+        /// <returns></returns>
+        public object VisitTrap(TrapStatementAst trapStatementAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body, catch and finally
+        /// </summary>
+        /// <param name="tryStatementAst"></param>
+        /// <returns></returns>
+        public object VisitTryStatement(TryStatementAst tryStatementAst)
+        {
+            if (tryStatementAst != null)
+            {
+                tryStatementAst.Body.Visit(this);
+
+                if (tryStatementAst.CatchClauses != null)
+                {
+                    foreach (var clause in tryStatementAst.CatchClauses)
+                    {
+                        clause.Visit(this);
+                    }
+                }
+
+                if (tryStatementAst.Finally != null)
+                {
+                    tryStatementAst.Finally.Visit(this);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="typeConstraintAst"></param>
+        /// <returns></returns>
+        public object VisitTypeConstraint(TypeConstraintAst typeConstraintAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="typeExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitTypeExpression(TypeExpressionAst typeExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="unaryExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitUnaryExpression(UnaryExpressionAst unaryExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="usingExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitUsingExpression(UsingExpressionAst usingExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="variableExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitVariableExpression(VariableExpressionAst variableExpressionAst)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Visit body
+        /// </summary>
+        /// <param name="whileStatementAst"></param>
+        /// <returns></returns>
+        public object VisitWhileStatement(WhileStatementAst whileStatementAst)
+        {
+            if (whileStatementAst != null)
+            {
+                whileStatementAst.Body.Visit(this);
+            }
+
+            return null;
+        }
+    }
 
     /// <summary>
     /// This class is used to find elements in outputted in pipeline.
@@ -680,7 +1469,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public FindPipelineOutput(FunctionDefinitionAst ast, IEnumerable<TypeDefinitionAst> classes)
         {
             outputTypes = new List<Tuple<string, StatementAst>>();
-            Helper.Instance.InitializeVariableAnalysis(ast);
             this.classes = classes;
             myFunction = ast;
 

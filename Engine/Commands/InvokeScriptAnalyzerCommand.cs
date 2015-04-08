@@ -294,7 +294,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             }
 
             #region Run VariableAnalysis
-            Helper.Instance.InitializeVariableAnalysis(ast);
+            try
+            {
+                Helper.Instance.InitializeVariableAnalysis(ast);
+            }
+            catch { }
             #endregion
 
             Helper.Instance.Tokens = tokens;
