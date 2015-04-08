@@ -98,9 +98,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
     public enum DiagnosticSeverity : uint
     {
         /// <summary>
-        /// STRICT: This diagnostic is trivial, but may be useful.
+        /// Information: This diagnostic is trivial, but may be useful.
         /// </summary>
-        Strict   = 0,
+        Information   = 0,
 
         /// <summary>
         /// WARNING: This diagnostic may cause a problem or does not follow PowerShell's recommended guidelines.
