@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
+using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 {
@@ -58,7 +59,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         public PSCmdlet MyCmdlet { get; set; }
 
-        private TupleComparer tupleComparer = new TupleComparer();
+        internal TupleComparer tupleComparer = new TupleComparer();
 
         /// <summary>
         /// My Tokens
@@ -602,6 +603,194 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Returns a dictionary of rule suppression from the ast.
+        /// Key of the dictionary is rule name.
+        /// Value is a list of tuple of integers that represents the interval to apply the rule
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public Dictionary<string, LinkedList<Tuple<int, int>>> GetRuleSuppression(Ast ast)
+        {
+            List<RuleSuppression> ruleSuppressionList = new List<RuleSuppression>();
+            
+            // Get rule suppression from functions
+            IEnumerable<FunctionDefinitionAst> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Cast<FunctionDefinitionAst>();
+
+            foreach (var funcAst in funcAsts)
+            {
+                ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
+            }
+
+            // Get rule suppression from classes
+            IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
+
+            foreach (var typeAst in typeAsts)
+            {
+                ruleSuppressionList.AddRange(GetSuppressionsClass(typeAst));
+            }
+
+            Dictionary<string, LinkedList<Tuple<int, int>>> results = new Dictionary<string, LinkedList<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
+            ruleSuppressionList.Sort((item, item2) => item.StartOffSet.CompareTo(item2.StartOffSet));
+
+            foreach (RuleSuppression ruleSuppression in ruleSuppressionList)
+            {
+                if (!results.ContainsKey(ruleSuppression.RuleName))
+                {
+                    LinkedList<Tuple<int, int>> intervals = new LinkedList<Tuple<int, int>>();
+                    intervals.AddLast(Tuple.Create(ruleSuppression.StartOffSet, ruleSuppression.EndOffset));
+                    results.Add(ruleSuppression.RuleName, intervals);
+                }
+                else
+                {
+                    LinkedList<Tuple<int, int>> intervals = results[ruleSuppression.RuleName];
+                    int previousEnd = intervals.Last.Value.Item2;
+
+                    // proccess the intervals so they do not overlap and is sorted in order
+                    if (ruleSuppression.StartOffSet <= previousEnd)
+                    {
+                        if (ruleSuppression.EndOffset <= previousEnd)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            intervals.Last.Value = Tuple.Create(intervals.Last.Value.Item1, ruleSuppression.EndOffset);
+                        }
+                    }
+                    else
+                    {
+                        intervals.AddLast(Tuple.Create(ruleSuppression.StartOffSet, ruleSuppression.EndOffset));
+                    }
+                }
+            }
+
+            return results;
+        }
+        
+        /// <summary>
+        /// Returns a list of rule suppressions from the function
+        /// </summary>
+        /// <param name="funcAst"></param>
+        /// <returns></returns>
+        internal List<RuleSuppression> GetSuppressionsFunction(FunctionDefinitionAst funcAst)
+        {
+            List<RuleSuppression> result = new List<RuleSuppression>();
+
+            if (funcAst != null && funcAst.Body != null
+                && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Attributes != null)
+            {
+                result.AddRange(RuleSuppression.GetSuppressions(funcAst.Body.ParamBlock.Attributes, funcAst.Extent.StartOffset, funcAst.Extent.EndOffset));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of rule suppression from the class
+        /// </summary>
+        /// <param name="typeAst"></param>
+        /// <returns></returns>
+        internal List<RuleSuppression> GetSuppressionsClass(TypeDefinitionAst typeAst)
+        {
+            List<RuleSuppression> result = new List<RuleSuppression>();
+
+            if (typeAst != null && typeAst.Attributes != null && typeAst.Attributes.Count != 0)
+            {
+                result.AddRange(RuleSuppression.GetSuppressions(typeAst.Attributes, typeAst.Extent.StartOffset, typeAst.Extent.EndOffset));
+            }
+
+            if (typeAst.Members == null)
+            {
+                return result;
+            }
+
+            foreach (var member in typeAst.Members)
+            {
+                FunctionMemberAst funcMemb = member as FunctionMemberAst;
+
+                if (funcMemb == null)
+                {
+                    continue;
+                }
+
+                result.AddRange(RuleSuppression.GetSuppressions(funcMemb.Attributes, funcMemb.Extent.StartOffset, funcMemb.Extent.EndOffset));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Suppress the rules from the diagnostic records list and return the result
+        /// </summary>
+        /// <param name="ruleSuppressions"></param>
+        /// <param name="diagnostics"></param>
+        public List<DiagnosticRecord> SuppressRule(string ruleName, Dictionary<string, LinkedList<Tuple<int, int>>> ruleSuppressions, List<DiagnosticRecord> diagnostics)
+        {
+            List<DiagnosticRecord> results = new List<DiagnosticRecord>();
+            if (!ruleSuppressions.ContainsKey(ruleName) || diagnostics.Count == 0)
+            {
+                return diagnostics;
+            }
+
+            LinkedList<Tuple<int, int>> intervals = ruleSuppressions[ruleName];
+
+            if (intervals.Count == 0)
+            {
+                return diagnostics;
+            }
+
+            int recordIndex = 0;
+            DiagnosticRecord record = diagnostics.First();
+            LinkedListNode<Tuple<int, int>> interval = intervals.First;
+
+            while (recordIndex < diagnostics.Count)
+            {
+                // the record precedes the interval so don't apply the suppression
+                if (record.Extent.StartOffset < interval.Value.Item1)
+                {
+                    results.Add(record);
+                    recordIndex += 1;
+
+                    if (recordIndex == diagnostics.Count)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        // move on to the next record
+                        record = diagnostics[recordIndex];
+                        continue;
+                    }
+                }
+
+                // end of the rule suppression is less than the record start offset so move on to next interval
+                if (interval.Value.Item2 < record.Extent.StartOffset)
+                {
+                    interval = interval.Next;
+
+                    if (interval == null)
+                    {
+                        break;
+                    }
+
+                    continue;
+                }
+
+                // here the record is inside the interval so we don't add it to the result
+                recordIndex += 1;
+
+                if (recordIndex == diagnostics.Count)
+                {
+                    break;
+                }
+
+                record = diagnostics[recordIndex];
+            }
+
+            return results;
         }
 
         #endregion

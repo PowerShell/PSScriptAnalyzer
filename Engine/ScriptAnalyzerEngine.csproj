@@ -63,6 +63,7 @@
     <Compile Include="Generic\ITokenRule.cs" />
     <Compile Include="Generic\LoggerInfo.cs" />
     <Compile Include="Generic\RuleInfo.cs" />
+    <Compile Include="Generic\RuleSuppression.cs" />
     <Compile Include="Generic\SkipNamedBlock.cs" />
     <Compile Include="Generic\SkipTypeDefinition.cs" />
     <Compile Include="Generic\SourceType.cs" />
