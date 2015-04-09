@@ -615,6 +615,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public Dictionary<string, List<RuleSuppression>> GetRuleSuppression(Ast ast)
         {
             List<RuleSuppression> ruleSuppressionList = new List<RuleSuppression>();
+            Dictionary<string, List<RuleSuppression>> results = new Dictionary<string, List<RuleSuppression>>(StringComparer.OrdinalIgnoreCase);
+
+            if (ast == null)
+            {
+                return results;
+            }
 
             ScriptBlockAst sbAst = ast as ScriptBlockAst;
 
@@ -640,7 +646,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsClass(typeAst));
             }
 
-            Dictionary<string, List<RuleSuppression>> results = new Dictionary<string, List<RuleSuppression>>(StringComparer.OrdinalIgnoreCase);
             ruleSuppressionList.Sort((item, item2) => item.StartOffset.CompareTo(item2.StartOffset));
 
             foreach (RuleSuppression ruleSuppression in ruleSuppressionList)
@@ -718,7 +723,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             List<DiagnosticRecord> results = new List<DiagnosticRecord>();
 
-            if (!ruleSuppressionsDict.ContainsKey(ruleName) || diagnostics.Count == 0)
+            if (ruleSuppressionsDict == null || !ruleSuppressionsDict.ContainsKey(ruleName)
+                || diagnostics == null || diagnostics.Count == 0)
             {
                 return diagnostics;
             }
