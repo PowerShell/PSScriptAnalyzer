@@ -16,7 +16,6 @@ Wrong：
 
 function Test
 {
-
     [CmdletBinding]
     Param($ErrorVariable, $b)
 }
@@ -25,7 +24,6 @@ Correct:
 
 function Test
 {
-
     [CmdletBinding]
     Param($err, $b)
 }
