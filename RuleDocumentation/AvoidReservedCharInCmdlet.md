@@ -16,10 +16,10 @@ To fix a violation of this rule, please remove reserved characters from your adv
 
 Wrong： 
 
-function test[1]
+function Test[1]
 {...}
 
 Correct:
 
-function test
+function Test
 {...}

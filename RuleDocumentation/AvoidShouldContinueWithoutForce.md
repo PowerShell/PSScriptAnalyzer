@@ -21,7 +21,7 @@ Wrong:
 	                  HelpUri = 'http://www.microsoft.com/',
 	                  ConfirmImpact='Medium')]
 	    [Alias()]
-	    [OutputType([String])]
+	    [OutputType([string])]
 	    Param
 	    (
 	        # Param1 help description
@@ -50,7 +50,7 @@ Wrong:
 	        [Parameter(ParameterSetName='Another Parameter Set')]
 	        [ValidatePattern("[a-z]*")]
 	        [ValidateLength(0,15)]
-	        [String]
+	        [string]
 	        $Param3
 	    )
 
@@ -79,7 +79,7 @@ Correct:
 	                  HelpUri = 'http://www.microsoft.com/',
 	                  ConfirmImpact='Medium')]
 	    [Alias()]
-	    [OutputType([String])]
+	    [OutputType([string])]
 	    Param
 	    (
 	        # Param1 help description
@@ -110,7 +110,7 @@ Correct:
 	        [Parameter(ParameterSetName='Another Parameter Set')]
 	        [ValidatePattern("[a-z]*")]
 	        [ValidateLength(0,15)]
-	        [String]
+	        [string]
 	        $Param3,
 	        [bool]
 	        $Force

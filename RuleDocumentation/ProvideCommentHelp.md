@@ -23,7 +23,7 @@ Wrong:
                       HelpUri = 'http://www.microsoft.com/',
                       ConfirmImpact='Medium')]
         [Alias()]
-        [OutputType([String])]
+        [OutputType([string])]
         Param
         (
             ...
@@ -63,7 +63,7 @@ Right:
                       HelpUri = 'http://www.microsoft.com/',
                       ConfirmImpact='Medium')]
         [Alias()]
-        [OutputType([String])]
+        [OutputType([string])]
         Param
         (
             ...

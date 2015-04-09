@@ -13,7 +13,7 @@ To fix a violation of this rule, please use SecurityString as the type of passwo
 ##Example
 
 Wrong： 
-
+```
     function Verb-Noun
     {
         [CmdletBinding()]
@@ -29,28 +29,29 @@ Wrong：
             # Param2 help description
             [int]
             $Param2,
-            [securestring]
+            [SecureString]
             $Password,
             [System.Security.SecureString]
-            $pass,
-            [securestring[]]
-            $passwords,
-            $passphrases,
-            $passwordparam
+            $Pass,
+            [SecureString[]]
+            $Passwords,
+            $Passphrases,
+            $Passwordparam
         )
     }
 
-    function TestFunction($password, [System.Security.SecureString[]]passphrases, [string]$passThru){
+    function TestFunction($password, [System.Security.SecureString[]]passphrases, [String]$passThru){
     }
-
+```
 
 Correct: 
 
+```
 	function Test-Script
 	{
 	    [CmdletBinding()]
 	    [Alias()]
-	    [OutputType([int])]
+	    [OutputType([Int])]
 	    Param
 	    (
 	        # Param1 help description
@@ -61,21 +62,22 @@ Correct:
 	        # Param2 help description
 	        [int]
 	        $Param2,
-	        [securestring]
+	        [SecureString]
 	        $Password,
 	        [System.Security.SecureString]
-	        $pass,
-		    [securestring[]]
-	        $passwords,
-	        [securestring]
-    		$passphrases,
-    	    [securestring]
-    		$passwordparam,
-    	    [string]
-    	    $PassThru
+	        $Pass,
+		[SecureString[]]
+	        $Passwords,
+	        [SecureString]
+    		$Passphrases,
+    	    	[SecureString]
+    		$PasswordParam,
+    	    	[string]
+    	    	$PassThru
     	    )
     	    ...
 	}
 
-	function TestFunction([securestring]$password, [System.Security.SecureString[]]$passphrases, [securestring[]]$passes){
+	function TestFunction([SecureString]$Password, [System.Security.SecureString[]]$Passphrases, [SecureString[]]$passes){
 	}
+```

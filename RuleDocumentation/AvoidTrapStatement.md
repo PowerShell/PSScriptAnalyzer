@@ -13,20 +13,20 @@ To fix a violation of this rule, please remove Trap statements and use try-catch
 ##Example
 
 Wrong：    
-
+```
     function TrapTest 
     {
     	trap {"Error found: $_"}
 	}
-
+```
 Correct:    
-
+```
     function TrapTest 
     {
     	try 
     	{
             $a = New-Object "dafdf"
-            $a | get-member
+            $a | Get-Member
         }
     	catch [System.Exception]
     	{
@@ -36,4 +36,5 @@ Correct:
     	{
             "End the script"
     	}
-	}
+     }
+ ```

@@ -15,8 +15,8 @@ To fix a violation of this rule, please remove Invoke-Expression from script and
 
 Wrong： 
 
-	Invoke-Expression "get-process"
+	Invoke-Expression "Get-Process"
 
 Correct: 
 
-	Get-process
+	Get-Process
