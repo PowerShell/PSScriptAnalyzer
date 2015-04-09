@@ -18,8 +18,8 @@ Wrong：
     Param
     (      …
         $Param1,
-        [switch]
-        $switch=$true
+        [Switch]
+        $Switch=$True
     )
 
 Correct:    
@@ -27,6 +27,6 @@ Correct:
     Param
     (      …
         $Param1,
-        [switch]
-        $switch=$false
+        [Switch]
+        $Switch=$False
     )
