@@ -257,6 +257,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             Token[] tokens = null;
             ParseError[] errors = null;
             List<DiagnosticRecord> diagnostics = new List<DiagnosticRecord>();
+
             IEnumerable<Ast> funcDefAsts;
 
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
@@ -293,6 +294,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                 return;
             }
 
+            Dictionary<string, LinkedList<Tuple<int, int>>> ruleSuppressions = Helper.Instance.GetRuleSuppression(ast);
+
             #region Run VariableAnalysis
             try
             {
@@ -319,7 +322,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(scriptRule.AnalyzeScript(ast, filePath));
+                            diagnostics.AddRange(Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(ast, filePath).ToList()));
                         }
                         catch (Exception scriptRuleException)
                         {
