@@ -615,10 +615,21 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public Dictionary<string, LinkedList<Tuple<int, int>>> GetRuleSuppression(Ast ast)
         {
             List<RuleSuppression> ruleSuppressionList = new List<RuleSuppression>();
+            
+            // Get rule suppression from functions
             IEnumerable<FunctionDefinitionAst> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Cast<FunctionDefinitionAst>();
+
             foreach (var funcAst in funcAsts)
             {
-                ruleSuppressionList.AddRange(GetSuppressionFunction(funcAst));
+                ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
+            }
+
+            // Get rule suppression from classes
+            IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
+
+            foreach (var typeAst in typeAsts)
+            {
+                ruleSuppressionList.AddRange(GetSuppressionsClass(typeAst));
             }
 
             Dictionary<string, LinkedList<Tuple<int, int>>> results = new Dictionary<string, LinkedList<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
@@ -664,24 +675,48 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="funcAst"></param>
         /// <returns></returns>
-        internal List<RuleSuppression> GetSuppressionFunction(FunctionDefinitionAst funcAst)
+        internal List<RuleSuppression> GetSuppressionsFunction(FunctionDefinitionAst funcAst)
         {
             List<RuleSuppression> result = new List<RuleSuppression>();
 
             if (funcAst != null && funcAst.Body != null
                 && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Attributes != null)
             {
-                IEnumerable<AttributeAst> suppressionAttribute = funcAst.Body.ParamBlock.Attributes.Where(
-                    item => item.TypeName.GetReflectionType() == typeof(System.Diagnostics.CodeAnalysis.SuppressMessageAttribute));
+                result.AddRange(RuleSuppression.GetSuppressions(funcAst.Body.ParamBlock.Attributes, funcAst.Extent.StartOffset, funcAst.Extent.EndOffset));
+            }
 
-                foreach (var attributeAst in suppressionAttribute)
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of rule suppression from the class
+        /// </summary>
+        /// <param name="typeAst"></param>
+        /// <returns></returns>
+        internal List<RuleSuppression> GetSuppressionsClass(TypeDefinitionAst typeAst)
+        {
+            List<RuleSuppression> result = new List<RuleSuppression>();
+
+            if (typeAst != null && typeAst.Attributes != null && typeAst.Attributes.Count != 0)
+            {
+                result.AddRange(RuleSuppression.GetSuppressions(typeAst.Attributes, typeAst.Extent.StartOffset, typeAst.Extent.EndOffset));
+            }
+
+            if (typeAst.Members == null)
+            {
+                return result;
+            }
+
+            foreach (var member in typeAst.Members)
+            {
+                FunctionMemberAst funcMemb = member as FunctionMemberAst;
+
+                if (funcMemb == null)
                 {
-                    RuleSuppression ruleSupp = new RuleSuppression(attributeAst, funcAst.Extent.StartOffset, funcAst.Extent.EndOffset);
-                    if (String.IsNullOrWhiteSpace(ruleSupp.Error))
-                    {
-                        result.Add(ruleSupp);
-                    }
+                    continue;
                 }
+
+                result.AddRange(RuleSuppression.GetSuppressions(funcMemb.Attributes, funcMemb.Extent.StartOffset, funcMemb.Extent.EndOffset));
             }
 
             return result;
@@ -841,6 +876,16 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             OuterAnalysis = previousOuter;
 
+            return null;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="baseCtorInvokeMemberExpressionAst"></param>
+        /// <returns></returns>
+        public object VisitBaseCtorInvokeMemberExpression(BaseCtorInvokeMemberExpressionAst baseCtorInvokeMemberExpressionAst)
+        {
             return null;
         }
 
