@@ -615,6 +615,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public Dictionary<string, List<RuleSuppression>> GetRuleSuppression(Ast ast)
         {
             List<RuleSuppression> ruleSuppressionList = new List<RuleSuppression>();
+
+            ScriptBlockAst sbAst = ast as ScriptBlockAst;
+
+            // Get rule suppression from the ast itself if it is scriptblockast
+            if (sbAst != null && sbAst.ParamBlock != null && sbAst.ParamBlock.Attributes != null)
+            {
+                ruleSuppressionList.AddRange(RuleSuppression.GetSuppressions(sbAst.ParamBlock.Attributes, sbAst.Extent.StartOffset, sbAst.Extent.EndOffset));
+            }
             
             // Get rule suppression from functions
             IEnumerable<FunctionDefinitionAst> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Cast<FunctionDefinitionAst>();
