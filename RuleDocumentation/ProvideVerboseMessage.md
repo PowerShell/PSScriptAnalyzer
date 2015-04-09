@@ -15,19 +15,16 @@ Correct
 ```
 Function TestFunction1
 {
- [cmdletbinding()]
-
- Param()
-
- Write-Verbose "Verbose output"
+    [cmdletbinding()]
+    Param()
+    Write-Verbose "Verbose output"
 
 }
 
 Function TestFunction2
 {
-  [cmdletbinding()]
-
-  Param(）
-  Write-Verbose "Verbose output"
+    [cmdletbinding()]
+    Param(）
+    Write-Verbose "Verbose output"
 }
 ```
