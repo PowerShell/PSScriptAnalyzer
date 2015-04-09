@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Collections.Generic;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 {
@@ -142,6 +143,39 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
             StartOffSet = start;
             EndOffset = end;
+        }
+
+        /// <summary>
+        /// Given a list of attribute asts, return a list of rule suppression
+        /// with startoffset at start and endoffset at end
+        /// </summary>
+        /// <param name="attrAsts"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public static List<RuleSuppression> GetSuppressions(IEnumerable<AttributeAst> attrAsts, int start, int end)
+        {
+            List<RuleSuppression> result = new List<RuleSuppression>();
+
+            if (attrAsts == null)
+            {
+                return result;
+            }
+
+            IEnumerable<AttributeAst> suppressionAttribute = attrAsts.Where(
+                item => item.TypeName.GetReflectionType() == typeof(System.Diagnostics.CodeAnalysis.SuppressMessageAttribute));
+
+            foreach (var attributeAst in suppressionAttribute)
+            {
+                RuleSuppression ruleSupp = new RuleSuppression(attributeAst, start, end);
+
+                if (string.IsNullOrWhiteSpace(ruleSupp.Error))
+                {
+                    result.Add(ruleSupp);
+                }
+            }
+
+            return result;
         }
     }
 }
