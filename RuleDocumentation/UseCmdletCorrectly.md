@@ -14,9 +14,9 @@ To fix a violation of this rule, please use mandatory parameters when calling cm
 
 Wrong： 
 
-	set-date
+	Set-Date
 
 Correct: 
 
-	$t = get-date
-	set-date -date $t
+	$date = Get-Date
+	Set-Date -Date $t
