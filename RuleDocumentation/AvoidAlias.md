@@ -14,4 +14,4 @@ Please consider using full cmdlet name instead of alias.
 
 Wrong： gps | Where-Object {$_.WorkingSet -gt 20000000}
 
-Correct: Get-Process | Where-Bbject {$_.WorkingSet -gt 20000000}
+Correct: Get-Process | Where-Object {$_.WorkingSet -gt 20000000}
