@@ -27,7 +27,7 @@ Wrong：
                        Position=0)]
             $Param1,
             # Param2 help description
-            [Int]
+            [int]
             $Param2,
             [SecureString]
             $Password,
@@ -60,7 +60,7 @@ Correct:
 	                   Position=0)]
 	        $Param1,
 	        # Param2 help description
-	        [Int]
+	        [int]
 	        $Param2,
 	        [SecureString]
 	        $Password,
@@ -72,7 +72,7 @@ Correct:
     		$Passphrases,
     	    	[SecureString]
     		$PasswordParam,
-    	    	[String]
+    	    	[string]
     	    	$PassThru
     	    )
     	    ...
