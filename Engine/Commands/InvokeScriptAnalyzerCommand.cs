@@ -257,6 +257,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             Token[] tokens = null;
             ParseError[] errors = null;
             List<DiagnosticRecord> diagnostics = new List<DiagnosticRecord>();
+
             IEnumerable<Ast> funcDefAsts;
 
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
@@ -291,6 +292,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                 return;
             }
 
+            Dictionary<string, List<RuleSuppression>> ruleSuppressions = Helper.Instance.GetRuleSuppression(ast);
+
             #region Run VariableAnalysis
             try
             {
@@ -317,11 +320,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(scriptRule.AnalyzeScript(ast, filePath));
+                            diagnostics.AddRange(Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(ast, filePath).ToList()));
                         }
                         catch (Exception scriptRuleException)
                         {
-                            WriteError(new ErrorRecord(scriptRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, filePath));
+                            WriteError(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
                             continue;
                         }
                     }
@@ -382,7 +385,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             }
                             catch (Exception commandRuleException)
                             {
-                                WriteError(new ErrorRecord(commandRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, fileName));
+                                WriteError(new ErrorRecord(commandRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
                                 continue;
                             }  
                         }
@@ -411,7 +414,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         }
                         catch (Exception tokenRuleException)
                         {
-                            WriteError(new ErrorRecord(tokenRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, fileName));
+                            WriteError(new ErrorRecord(tokenRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
                             continue;
                         } 
                     }
@@ -439,7 +442,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         }
                         catch (Exception dscResourceRuleException)
                         {
-                            WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, filePath));
+                            WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
                             continue;
                         }    
                     }
@@ -481,7 +484,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                                             }
                                             catch (Exception dscResourceRuleException)
                                             {
-                                                WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, filePath));
+                                                WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
                                                 continue;
                                             }  
                                         }
@@ -516,7 +519,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         }
                         catch (Exception externalRuleException)
                         {
-                            WriteError(new ErrorRecord(externalRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, fileName));
+                            WriteError(new ErrorRecord(externalRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
                         }
                     }
                 }

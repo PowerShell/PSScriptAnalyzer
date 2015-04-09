@@ -144,6 +144,12 @@
   <data name="MissingRuleExtension" xml:space="preserve">
     <value>Cannot find rule extension '{0}'.</value>
   </data>
+  <data name="NamedAndPositionalArgumentsConflictError" xml:space="preserve">
+    <value>{0} cannot be set by both positional and named arguments.</value>
+  </data>
+  <data name="NamedArgumentsBeforePositionalError" xml:space="preserve">
+    <value>Named arguments must always come after positional arguments.</value>
+  </data>
   <data name="ParserErrorFormat" xml:space="preserve">
     <value>Parse error in file {0}:  {1} at line {2} column {3}.</value>
   </data>
@@ -155,6 +161,9 @@
   </data>
   <data name="RulesNotFound" xml:space="preserve">
     <value>Cannot find analyzer rules.</value>
+  </data>
+  <data name="StringConstantArgumentsSuppressionAttributeError" xml:space="preserve">
+    <value>All the arguments of the suppression message attribute should be string constants.</value>
   </data>
   <data name="VerboseFileMessage" xml:space="preserve">
     <value>Analyzing file: {0}</value>
