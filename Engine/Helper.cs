@@ -612,7 +612,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="ast"></param>
         /// <returns></returns>
-        public Dictionary<string, LinkedList<Tuple<int, int>>> GetRuleSuppression(Ast ast)
+        public Dictionary<string, List<RuleSuppression>> GetRuleSuppression(Ast ast)
         {
             List<RuleSuppression> ruleSuppressionList = new List<RuleSuppression>();
             
@@ -632,39 +632,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsClass(typeAst));
             }
 
-            Dictionary<string, LinkedList<Tuple<int, int>>> results = new Dictionary<string, LinkedList<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
-            ruleSuppressionList.Sort((item, item2) => item.StartOffSet.CompareTo(item2.StartOffSet));
+            Dictionary<string, List<RuleSuppression>> results = new Dictionary<string, List<RuleSuppression>>(StringComparer.OrdinalIgnoreCase);
+            ruleSuppressionList.Sort((item, item2) => item.StartOffset.CompareTo(item2.StartOffset));
 
             foreach (RuleSuppression ruleSuppression in ruleSuppressionList)
             {
                 if (!results.ContainsKey(ruleSuppression.RuleName))
                 {
-                    LinkedList<Tuple<int, int>> intervals = new LinkedList<Tuple<int, int>>();
-                    intervals.AddLast(Tuple.Create(ruleSuppression.StartOffSet, ruleSuppression.EndOffset));
-                    results.Add(ruleSuppression.RuleName, intervals);
+                    List<RuleSuppression> ruleSuppressions = new List<RuleSuppression>();
+                    results.Add(ruleSuppression.RuleName, ruleSuppressions);
                 }
-                else
-                {
-                    LinkedList<Tuple<int, int>> intervals = results[ruleSuppression.RuleName];
-                    int previousEnd = intervals.Last.Value.Item2;
-
-                    // proccess the intervals so they do not overlap and is sorted in order
-                    if (ruleSuppression.StartOffSet <= previousEnd)
-                    {
-                        if (ruleSuppression.EndOffset <= previousEnd)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            intervals.Last.Value = Tuple.Create(intervals.Last.Value.Item1, ruleSuppression.EndOffset);
-                        }
-                    }
-                    else
-                    {
-                        intervals.AddLast(Tuple.Create(ruleSuppression.StartOffSet, ruleSuppression.EndOffset));
-                    }
-                }
+                
+                results[ruleSuppression.RuleName].Add(ruleSuppression);
             }
 
             return results;
@@ -727,59 +706,62 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         /// <param name="ruleSuppressions"></param>
         /// <param name="diagnostics"></param>
-        public List<DiagnosticRecord> SuppressRule(string ruleName, Dictionary<string, LinkedList<Tuple<int, int>>> ruleSuppressions, List<DiagnosticRecord> diagnostics)
+        public List<DiagnosticRecord> SuppressRule(string ruleName, Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict, List<DiagnosticRecord> diagnostics)
         {
             List<DiagnosticRecord> results = new List<DiagnosticRecord>();
-            if (!ruleSuppressions.ContainsKey(ruleName) || diagnostics.Count == 0)
+
+            if (!ruleSuppressionsDict.ContainsKey(ruleName) || diagnostics.Count == 0)
             {
                 return diagnostics;
             }
 
-            LinkedList<Tuple<int, int>> intervals = ruleSuppressions[ruleName];
+            List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
 
-            if (intervals.Count == 0)
+            if (ruleSuppressions.Count == 0)
             {
                 return diagnostics;
             }
 
             int recordIndex = 0;
+            int ruleSuppressionIndex = 0;
             DiagnosticRecord record = diagnostics.First();
-            LinkedListNode<Tuple<int, int>> interval = intervals.First;
+            RuleSuppression ruleSuppression = ruleSuppressions.First();
 
             while (recordIndex < diagnostics.Count)
             {
-                // the record precedes the interval so don't apply the suppression
-                if (record.Extent.StartOffset < interval.Value.Item1)
+                // the record precedes the rule suppression so don't apply the suppression
+                if (record.Extent.StartOffset < ruleSuppression.StartOffset)
                 {
                     results.Add(record);
-                    recordIndex += 1;
-
-                    if (recordIndex == diagnostics.Count)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        // move on to the next record
-                        record = diagnostics[recordIndex];
-                        continue;
-                    }
                 }
-
-                // end of the rule suppression is less than the record start offset so move on to next interval
-                if (interval.Value.Item2 < record.Extent.StartOffset)
+                // end of the rule suppression is less than the record start offset so move on to next rule suppression
+                else if (ruleSuppression.EndOffset < record.Extent.StartOffset)
                 {
-                    interval = interval.Next;
+                    ruleSuppressionIndex += 1;
 
-                    if (interval == null)
+                    if (ruleSuppressionIndex == ruleSuppressions.Count)
                     {
                         break;
                     }
+
+                    ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
 
                     continue;
                 }
+                // at this point, the record is inside the interval
+                else
+                {
+                    // if the rule suppression id from the rule suppression is not null and the one from diagnostic record is not null
+                    // and they are they are not the same then we cannot ignore the record
+                    if (!string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && !string.IsNullOrWhiteSpace(record.RuleSuppressionID)
+                        && !string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
+                    {
+                        results.Add(record);
+                    }
+                    // otherwise, we ignore the record, move on to the next.
+                }
 
-                // here the record is inside the interval so we don't add it to the result
+                // important assumption: this point is reached only if we want to move to the next record
                 recordIndex += 1;
 
                 if (recordIndex == diagnostics.Count)

@@ -13,7 +13,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// <summary>
         /// The start offset of the rule suppression
         /// </summary>
-        public int StartOffSet
+        public int StartOffset
         {
             get;
             set;
@@ -79,7 +79,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
                     if (positionalArguments.Any(item => !(item is StringConstantExpressionAst)))
                     {
-                        Error = "All the arguments of the suppression message attribute should be string constant";
+                        Error = Strings.StringConstantArgumentsSuppressionAttributeError;
                     }
                     else
                     {
@@ -105,12 +105,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                     {
                         if (name.Extent.StartOffset < lastPositionalArgumentsOffset)
                         {
-                            Error = "Named arguments must always come after positional arguments";
+                            Error = Strings.NamedArgumentsBeforePositionalError;
                             break;
                         }
                         else if (!(name.Argument is StringConstantExpressionAst))
                         {
-                            Error = "All the arguments of the suppression message attribute should be string constant";
+                            Error = Strings.StringConstantArgumentsSuppressionAttributeError;
                             break;
                         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                             case "rulename":
                                 if (!String.IsNullOrWhiteSpace(RuleName))
                                 {
-                                    Error = "RuleName cannot be set by both positional and named arguments";
+                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
                                 }
 
                                 RuleName = (name.Argument as StringConstantExpressionAst).Value;
@@ -128,7 +128,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                             case "rulesuppressionid":
                                 if (!String.IsNullOrWhiteSpace(RuleSuppressionID))
                                 {
-                                    Error = "RuleSuppressionID cannot be set by both positional and named arguments";
+                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
                                 }
 
                                 RuleSuppressionID = (name.Argument as StringConstantExpressionAst).Value;
@@ -141,7 +141,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                 }
             }
 
-            StartOffSet = start;
+            StartOffset = start;
             EndOffset = end;
         }
 
