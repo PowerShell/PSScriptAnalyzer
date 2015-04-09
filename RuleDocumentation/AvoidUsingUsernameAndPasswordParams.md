@@ -13,16 +13,18 @@ To fix a violation of this rule, please pass username and password as a PSCreden
 ##Example
 
 Wrong：    
-
-	[int]
+```
+    [Int]
     $Param2,
-    [securestring]
+    [SecureString]
     $Password,
-    [string]
-    $username
+    [String]
+    $Username
+```
 
 Correct:   
-
-	function MyFunction3 ([PSCredential]$username, $passwords)
-	{
-	}
+```
+    function MyFunction3 ([PSCredential]$Username, $Passwords)
+    {
+    }
+```
