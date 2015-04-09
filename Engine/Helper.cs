@@ -847,16 +847,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <summary>
         /// Do nothing
         /// </summary>
-        /// <param name="baseCtorInvokeMemberExpressionAst"></param>
-        /// <returns></returns>
-        public object VisitBaseCtorInvokeMemberExpression(BaseCtorInvokeMemberExpressionAst baseCtorInvokeMemberExpressionAst)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Do nothing
-        /// </summary>
         /// <param name="configurationDefinitionAst"></param>
         /// <returns></returns>
         public object VisitConfigurationDefinition(ConfigurationDefinitionAst configurationDefinitionAst)
