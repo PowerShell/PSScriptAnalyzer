@@ -14,16 +14,18 @@ To fix a violation of this rule, please change the name of your parameter.
 
 Wrong： 
 
-function test
+function Test
 {
+
     [CmdletBinding]
     Param($ErrorVariable, $b)
 }
 
 Correct:
 
-function test
+function Test
 {
+
     [CmdletBinding]
     Param($err, $b)
 }
