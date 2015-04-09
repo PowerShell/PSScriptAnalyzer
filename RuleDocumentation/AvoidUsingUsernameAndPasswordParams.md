@@ -14,11 +14,11 @@ To fix a violation of this rule, please pass username and password as a PSCreden
 
 Wrong：    
 ```
-    [Int]
+    [int]
     $Param2,
     [SecureString]
     $Password,
-    [String]
+    [string]
     $Username
 ```
 
