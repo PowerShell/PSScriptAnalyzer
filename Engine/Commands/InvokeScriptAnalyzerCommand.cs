@@ -274,21 +274,19 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                     ErrorCategory.InvalidArgument, filePath));
             }
 
-            if (errors != null && errors.Length > 0)
+             if (errors != null && errors.Length > 0)
             {
                 foreach (ParseError error in errors)
                 {
-                    WriteError(new ErrorRecord(new ParseException(), 
-                        String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, error.Extent.File, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber),
-                        ErrorCategory.ParserError, error.ErrorId));
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, error.Extent.File, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
+                    WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
                 }
             }
 
             if (errors.Length > 10)
             {
-                WriteError(new ErrorRecord(new ParseException(),
-                    String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath)),
-                    ErrorCategory.ParserError, filePath));
+                string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
+                WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));
 
                 return;
             }
