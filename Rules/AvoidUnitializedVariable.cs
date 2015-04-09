@@ -46,7 +46,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst || item is FunctionMemberAst, true);
 
             foreach (var funcAst in funcAsts)
             {
