@@ -14,14 +14,14 @@ Please change the parameter type to be PSCredential.
 
 Wrong:
 
-	function Credential([string]$credential) 
+	function Credential([String]$Credential) 
 	{
 		...
 	}
 
 Correct:
 
-	function Credential([PSCredential]$credential) 
+	function Credential([PSCredential]$Credential) 
 	{
 		...
 	}
