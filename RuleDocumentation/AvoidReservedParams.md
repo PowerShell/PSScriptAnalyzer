@@ -13,17 +13,19 @@ To fix a violation of this rule, please change the name of your parameter.
 ##Example
 
 Wrong： 
-
+```
 function Test
 {
     [CmdletBinding]
     Param($ErrorVariable, $b)
 }
+```
 
 Correct:
-
+```
 function Test
 {
     [CmdletBinding]
     Param($err, $b)
 }
+```
