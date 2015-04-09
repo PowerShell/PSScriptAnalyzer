@@ -15,13 +15,13 @@ Wrong:
 	$Global:var1 = $null
 	function NotGlobal ($var)
 	{
-    	$a = $var + $var1
+    		$a = $var + $var1
 	}
 
 Correct:
 
 	$Global:var1 = $null
-	function NotGlobal ($var1,$var2)
+	function NotGlobal ($var1, $var2)
 	{
-    	$a = $var1 + $var2
+    		$a = $var1 + $var2
 	}
