@@ -1,6 +1,6 @@
 ﻿Import-Module ScriptAnalyzer
-$nounViolationMessage = "The cmdlet Verb-Files uses a plural noun. A singular noun should be used instead."
-$verbViolationMessage = "The cmdlet Verb-Files uses an unapproved verb."
+$nounViolationMessage = "The cmdlet 'Verb-Files' uses a plural noun. A singular noun should be used instead."
+$verbViolationMessage = "The cmdlet 'Verb-Files' uses an unapproved verb."
 $nounViolationName = "PSUseSingularNouns"
 $verbViolationName = "PSUseApprovedVerbs"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

@@ -170,7 +170,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             #region Verify rules
 
             rules = ScriptAnalyzer.Instance.ScriptRules.Union<IRule>(
-                    ScriptAnalyzer.Instance.CommandRules).Union<IRule>(
                     ScriptAnalyzer.Instance.TokenRules).Union<IRule>(
                     ScriptAnalyzer.Instance.ExternalRules ?? Enumerable.Empty<IExternalRule>());
 
@@ -326,68 +325,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         {
                             WriteError(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
                             continue;
-                        }
-                    }
-                }
-            }
-
-            #endregion
-
-            #region Run Command Rules
-
-            funcDefAsts = ast.FindAll(new Func<Ast, bool>((testAst) => (testAst is FunctionDefinitionAst)), true);
-            if (funcDefAsts != null)
-            {
-                foreach (FunctionDefinitionAst funcDefAst in funcDefAsts)
-                {
-                    //Create command info object here
-                    var sb = new StringBuilder();
-                    sb.AppendLine(funcDefAst.Extent.Text);
-                    sb.AppendFormat("Get-Command –CommandType Function –Name {0}", funcDefAst.Name);
-
-                    var funcDefPS = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace);
-                    funcDefPS.AddScript(sb.ToString());
-
-                    try
-                    {
-                        var commandInfo = funcDefPS.Invoke<CommandInfo>();
-
-                        foreach (CommandInfo cmdInfo in commandInfo)
-                        {
-                            cmdInfoTable.Add(new KeyValuePair<CommandInfo, IScriptExtent>(cmdInfo as CommandInfo, funcDefAst.Extent));
-                        }
-                    }
-                    catch (ParseException)
-                    {
-                        WriteError(new ErrorRecord(new CommandNotFoundException(),
-                            string.Format(CultureInfo.CurrentCulture, Strings.CommandInfoNotFound, funcDefAst.Name), 
-                            ErrorCategory.SyntaxError, funcDefAst));
-                    }
-                }
-            }
-
-            if (ScriptAnalyzer.Instance.CommandRules != null)
-            {
-                foreach (ICommandRule commandRule in ScriptAnalyzer.Instance.CommandRules)
-                {
-                    if ((includeRule == null || includeRule.Contains(commandRule.GetName(), StringComparer.OrdinalIgnoreCase)) &&
-                        (excludeRule == null || !excludeRule.Contains(commandRule.GetName(), StringComparer.OrdinalIgnoreCase)))
-                    {
-                        foreach (KeyValuePair<CommandInfo, IScriptExtent> commandInfo in cmdInfoTable)
-                        {
-                            WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, commandRule.GetName()));
-
-                            // Ensure that any unhandled errors from Rules are converted to non-terminating errors
-                            // We want the Engine to continue functioning even if one or more Rules throws an exception
-                            try
-                            {
-                                diagnostics.AddRange(commandRule.AnalyzeCommand(commandInfo.Key, commandInfo.Value, fileName));
-                            }
-                            catch (Exception commandRuleException)
-                            {
-                                WriteError(new ErrorRecord(commandRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
-                                continue;
-                            }  
                         }
                     }
                 }

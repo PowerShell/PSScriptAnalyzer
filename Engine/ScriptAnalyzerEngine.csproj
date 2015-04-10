@@ -54,7 +54,6 @@
     <Compile Include="Generic\AvoidParameterGeneric.cs" />
     <Compile Include="Generic\DiagnosticRecord.cs" />
     <Compile Include="Generic\ExternalRule.cs" />
-    <Compile Include="Generic\ICommandRule.cs" />
     <Compile Include="Generic\IDSCResourceRule.cs" />
     <Compile Include="Generic\IExternalRule.cs" />
     <Compile Include="Generic\ILogger.cs" />
