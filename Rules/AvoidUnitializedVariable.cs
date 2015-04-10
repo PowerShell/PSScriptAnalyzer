@@ -42,7 +42,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 if (Helper.Instance.IsUninitialized(varAst, ast))
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUninitializedVariableError, varAst.VariablePath.UserPath),
-                        varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, string.Format(CultureInfo.CurrentCulture, "{0}{1}", GetName(), varAst.VariablePath.UserPath));
+                        varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, varAst.VariablePath.UserPath);
                 }
             }
 
@@ -59,7 +59,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     if (Helper.Instance.IsUninitialized(varAst, funcAst))
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUninitializedVariableError, varAst.VariablePath.UserPath),
-                            varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, string.Format(CultureInfo.CurrentCulture, "{0}{1}", GetName(), varAst.VariablePath.UserPath));
+                            varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, varAst.VariablePath.UserPath);
                     }
                 }
             }
