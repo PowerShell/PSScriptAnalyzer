@@ -16,33 +16,41 @@ using System.Reflection;
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// CmdletSingularNoun: Analyzes CommandInfos to check that all defined cmdlets use singular nouns.
+    /// CmdletSingularNoun: Analyzes scripts to check that all defined cmdlets use singular nouns.
     /// 
     /// </summary>
-    [Export(typeof(ICommandRule))]
-    public class CmdletSingularNoun : ICommandRule {
+    [Export(typeof(IScriptRule))]
+    public class CmdletSingularNoun : IScriptRule {
         /// <summary>
-        /// AnalyzeCommand: Analyzes command infos to check that all defined cmdlets use singular nouns.
+        /// Checks that all defined cmdlet use singular noun
         /// </summary>
-        /// <param name="commandInfo">The current command info from the script</param>
-        /// <param name="extent">The current position in the script</param>
-        /// <param name="fileName">The name of the script</param>
-        /// <returns>A List of diagnostic results of this rule</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeCommand(CommandInfo commandInfo, IScriptExtent extent, string fileName) {
-            if (commandInfo == null) throw new ArgumentNullException(Strings.NullCommandInfoError);
+        /// <param name="ast"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
+            if (ast == null) throw new ArgumentNullException(Strings.NullCommandInfoError);
+
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
             char[] funcSeperator = { '-' };
             string[] funcNamePieces = new string[2];
 
-            if (commandInfo.Name != null && commandInfo.Name.Contains('-')) {
-                funcNamePieces = commandInfo.Name.Split(funcSeperator);
-                String noun = funcNamePieces[1];
-                var ps = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
+            foreach (FunctionDefinitionAst funcAst in funcAsts)
+            {
+                if (funcAst.Name != null && funcAst.Name.Contains('-'))
+                {
+                    funcNamePieces = funcAst.Name.Split(funcSeperator);
+                    String noun = funcNamePieces[1];
+                    var ps = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
 
-                if (ps.IsPlural(noun)) {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, commandInfo.Name), extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    if (ps.IsPlural(noun))
+                    {
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
+                            funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    }
                 }
             }
+
         }
 
         /// <summary>

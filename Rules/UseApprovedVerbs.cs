@@ -16,19 +16,18 @@ using System.Reflection;
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// UseApprovedVerbs: Analyzes CommandInfos to check that all defined cmdlets use approved verbs.
+    /// UseApprovedVerbs: Analyzes scripts to check that all defined functions use approved verbs.
     /// </summary>
-    [Export(typeof(ICommandRule))]
-    public class UseApprovedVerbs : ICommandRule {
+    [Export(typeof(IScriptRule))]
+    public class UseApprovedVerbs : IScriptRule {
         /// <summary>
-        /// AnalyzeCommand: Analyzes command infos to check that all defined cmdlets use approved verbs.
+        /// Analyze script to check that all defined functions use approved verbs
         /// </summary>
-        /// <param name="commandInfo">The current command info from the script</param>
-        /// <param name="extent">The current position in the script</param>
-        /// <param name="fileName">The name of the script</param>
-        /// <returns>A List of diagnostic results of this rule</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeCommand(CommandInfo commandInfo, IScriptExtent extent, string fileName) {
-            if (commandInfo == null) throw new ArgumentNullException(Strings.NullCommandInfoError);
+        /// <param name="ast"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
+            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             List<string> approvedVerbs = typeof(VerbsCommon).GetFields().Concat<FieldInfo>(
                 typeof(VerbsCommunications).GetFields()).Concat<FieldInfo>(
@@ -44,14 +43,22 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             string[] funcNamePieces = new string[2];
             string verb;
 
-            funcName = commandInfo.Name;
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
-            if (funcName != null && funcName.Contains('-')) {
-                funcNamePieces = funcName.Split(funcSeperator);
-                verb = funcNamePieces[0];
+            foreach (FunctionDefinitionAst funcAst in funcAsts)
+            {
+                funcName = funcAst.Name;
 
-                if (!approvedVerbs.Contains(verb, StringComparer.OrdinalIgnoreCase)) {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseApprovedVerbsError, funcName), extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                if (funcName != null && funcName.Contains('-'))
+                {
+                    funcNamePieces = funcName.Split(funcSeperator);
+                    verb = funcNamePieces[0];
+
+                    if (!approvedVerbs.Contains(verb, StringComparer.OrdinalIgnoreCase))
+                    {
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseApprovedVerbsError, funcName),
+                            funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    }
                 }
             }
         }
