@@ -30,43 +30,30 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            IEnumerable<Ast> paramAsts = ast.FindAll(testAst => testAst is ParameterAst, true);
-            Ast parentAst;
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
-            string paramName;
+            List<string> commonParamNames = typeof(CommonParameters).GetProperties().Select(param => param.Name).ToList();
 
-            PropertyInfo[] commonParams = typeof(CommonParameters).GetProperties();
-            List<string> commonParamNames = new List<string>();
+            foreach (FunctionDefinitionAst funcAst in funcAsts)
+            {
+                // this rule only applies to function with param block
+                if (funcAst.Body != null && funcAst.Body.ParamBlock != null
+                    && funcAst.Body.ParamBlock.Attributes != null && funcAst.Body.ParamBlock.Parameters != null)
+                {
+                    // no cmdlet binding
+                    if (!funcAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
+                    {
+                        continue;
+                    }
 
-            if (commonParams != null) {
-                foreach (PropertyInfo commonParam in commonParams) {
-                    commonParamNames.Add("$" + commonParam.Name);
-                }
-            }
+                    foreach (ParameterAst paramAst in funcAst.Body.ParamBlock.Parameters)
+                    {
+                        string paramName = paramAst.Name.VariablePath.UserPath;
 
-            if (paramAsts != null) {
-                foreach (ParameterAst paramAst in paramAsts) {
-                    paramName = paramAst.Name.ToString();
-
-                    if (commonParamNames.Contains(paramName, StringComparer.OrdinalIgnoreCase)) {
-                        parentAst = paramAst.Parent;
-                        while (parentAst != null && !(parentAst is FunctionDefinitionAst)) {
-                            parentAst = parentAst.Parent;
-                        }
-
-                        if (parentAst is FunctionDefinitionAst) 
+                        if (commonParamNames.Contains(paramName, StringComparer.OrdinalIgnoreCase))
                         {
-                            IEnumerable<Ast> attrs = parentAst.FindAll(testAttr => testAttr is AttributeAst, true);
-                            foreach (AttributeAst attr in attrs)
-                            {
-                                if (string.Equals(attr.Extent.Text, "[CmdletBinding()]",
-                                    StringComparison.OrdinalIgnoreCase))
-                                {
-                                    string funcName = string.Format(CultureInfo.CurrentCulture,Strings.ReservedParamsCmdletPrefix, (parentAst as FunctionDefinitionAst).Name);
-                                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedParamsError, funcName,paramName), paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                                   
-                                }
-                            }
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedParamsError, funcAst.Name, paramName),
+                                paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                     }
                 }
