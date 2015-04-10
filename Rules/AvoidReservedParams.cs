@@ -32,31 +32,23 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
-            string paramName;
-
             List<string> commonParamNames = typeof(CommonParameters).GetProperties().Select(param => param.Name).ToList();
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
-                IEnumerable<ParameterAst> parameters = null;
-                if (funcAst.Parameters != null)
+                // this rule only applies to function with param block
+                if (funcAst.Body != null && funcAst.Body.ParamBlock != null
+                    && funcAst.Body.ParamBlock.Attributes != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
-                    parameters = funcAst.Parameters;
-                }
-                // Check param block
-                else
-                {
-                    if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Parameters != null)
+                    // no cmdlet binding
+                    if (!funcAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
                     {
-                        parameters = funcAst.Body.ParamBlock.Parameters;
+                        continue;
                     }
-                }
 
-                if (parameters != null)
-                {
-                    foreach (ParameterAst paramAst in parameters)
+                    foreach (ParameterAst paramAst in funcAst.Body.ParamBlock.Parameters)
                     {
-                        paramName = paramAst.Name.VariablePath.UserPath;
+                        string paramName = paramAst.Name.VariablePath.UserPath;
 
                         if (commonParamNames.Contains(paramName, StringComparer.OrdinalIgnoreCase))
                         {
