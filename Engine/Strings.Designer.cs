@@ -205,6 +205,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to For Suppression Message Attribute, if Target is specified, Scope must be specified..
+        /// </summary>
+        internal static string TargetWithoutScopeSuppressionAttributeError {
+            get {
+                return ResourceManager.GetString("TargetWithoutScopeSuppressionAttributeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Analyzing file: {0}.
         /// </summary>
         internal static string VerboseFileMessage {
@@ -219,6 +228,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         internal static string VerboseRunningMessage {
             get {
                 return ResourceManager.GetString("VerboseRunningMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scope can only be either function or class..
+        /// </summary>
+        internal static string WrongScopeArgumentSuppressionAttributeError {
+            get {
+                return ResourceManager.GetString("WrongScopeArgumentSuppressionAttributeError", resourceCulture);
             }
         }
     }

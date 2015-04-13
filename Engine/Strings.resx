@@ -165,10 +165,16 @@
   <data name="StringConstantArgumentsSuppressionAttributeError" xml:space="preserve">
     <value>All the arguments of the suppression message attribute should be string constants.</value>
   </data>
+  <data name="TargetWithoutScopeSuppressionAttributeError" xml:space="preserve">
+    <value>For Suppression Message Attribute, if Target is specified, Scope must be specified.</value>
+  </data>
   <data name="VerboseFileMessage" xml:space="preserve">
     <value>Analyzing file: {0}</value>
   </data>
   <data name="VerboseRunningMessage" xml:space="preserve">
     <value>Running {0} rule.</value>
+  </data>
+  <data name="WrongScopeArgumentSuppressionAttributeError" xml:space="preserve">
+    <value>Scope can only be either function or class.</value>
   </data>
 </root>
