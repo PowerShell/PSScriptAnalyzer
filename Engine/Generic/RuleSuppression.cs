@@ -3,6 +3,7 @@ using System.Linq;
 using System.Management.Automation.Language;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 {
@@ -11,6 +12,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
     /// </summary>
     public class RuleSuppression
     {
+        private string _ruleName;
+
         /// <summary>
         /// The start offset of the rule suppression
         /// </summary>
@@ -34,8 +37,24 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// </summary>
         public string RuleName
         {
-            get;
-            set;
+            get
+            {
+                return _ruleName;
+            }
+
+            set
+            {
+                _ruleName = value;
+                if ((ScriptAnalyzer.Instance.ScriptRules != null
+                        && ScriptAnalyzer.Instance.ScriptRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
+                    && (ScriptAnalyzer.Instance.TokenRules != null
+                        && ScriptAnalyzer.Instance.TokenRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
+                    && (ScriptAnalyzer.Instance.ExternalRules != null
+                        && ScriptAnalyzer.Instance.ExternalRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0))
+                {
+                    Error = String.Format(Strings.RuleSuppressionRuleNameNotFound, _ruleName);
+                }
+            }
         }
 
         /// <summary>
@@ -212,6 +231,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
             StartOffset = start;
             EndOffset = end;
+
+            if (!String.IsNullOrWhiteSpace(Error))
+            {
+                Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, attrAst.Extent.StartLineNumber,
+                    System.IO.Path.GetFileName(attrAst.Extent.File), Error);
+            }
         }
 
         /// <summary>
