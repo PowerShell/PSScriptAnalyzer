@@ -663,7 +663,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             if (scriptBlockAst == null) return null;
 
             VariableAnalysis previousOuter = OuterAnalysis;
-            OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
+
+            // We already run variable analysis in these cases so check
+            if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
+            {
+                OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
+            }
 
             if (scriptBlockAst.DynamicParamBlock != null)
             {
