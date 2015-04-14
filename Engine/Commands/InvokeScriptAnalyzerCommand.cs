@@ -257,8 +257,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             ParseError[] errors = null;
             List<DiagnosticRecord> diagnostics = new List<DiagnosticRecord>();
 
-            IEnumerable<Ast> funcDefAsts;
-
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
             List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();            
 
@@ -292,6 +290,17 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             }
 
             Dictionary<string, List<RuleSuppression>> ruleSuppressions = Helper.Instance.GetRuleSuppression(ast);
+
+            foreach (List<RuleSuppression> ruleSuppressionsList in ruleSuppressions.Values)
+            {
+                foreach (RuleSuppression ruleSuppression in ruleSuppressionsList)
+                {
+                    if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                    {
+                        WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    }
+                }
+            }
 
             #region Run VariableAnalysis
             try

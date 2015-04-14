@@ -196,11 +196,38 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All the arguments of the suppression message attribute should be string constants..
+        ///   Looks up a localized string similar to Suppression Message Attribute error at line {0} in {1} : {2}.
+        /// </summary>
+        internal static string RuleSuppressionErrorFormat {
+            get {
+                return ResourceManager.GetString("RuleSuppressionErrorFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rule {0} cannot be found..
+        /// </summary>
+        internal static string RuleSuppressionRuleNameNotFound {
+            get {
+                return ResourceManager.GetString("RuleSuppressionRuleNameNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All the arguments of the should be string constants..
         /// </summary>
         internal static string StringConstantArgumentsSuppressionAttributeError {
             get {
                 return ResourceManager.GetString("StringConstantArgumentsSuppressionAttributeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If Target is specified, Scope must be specified..
+        /// </summary>
+        internal static string TargetWithoutScopeSuppressionAttributeError {
+            get {
+                return ResourceManager.GetString("TargetWithoutScopeSuppressionAttributeError", resourceCulture);
             }
         }
         
@@ -219,6 +246,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         internal static string VerboseRunningMessage {
             get {
                 return ResourceManager.GetString("VerboseRunningMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scope can only be either function or class..
+        /// </summary>
+        internal static string WrongScopeArgumentSuppressionAttributeError {
+            get {
+                return ResourceManager.GetString("WrongScopeArgumentSuppressionAttributeError", resourceCulture);
             }
         }
     }

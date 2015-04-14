@@ -627,7 +627,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             // Get rule suppression from the ast itself if it is scriptblockast
             if (sbAst != null && sbAst.ParamBlock != null && sbAst.ParamBlock.Attributes != null)
             {
-                ruleSuppressionList.AddRange(RuleSuppression.GetSuppressions(sbAst.ParamBlock.Attributes, sbAst.Extent.StartOffset, sbAst.Extent.EndOffset));
+                ruleSuppressionList.AddRange(RuleSuppression.GetSuppressions(sbAst.ParamBlock.Attributes, sbAst.Extent.StartOffset, sbAst.Extent.EndOffset, sbAst));
             }
             
             // Get rule suppression from functions
@@ -674,7 +674,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             if (funcAst != null && funcAst.Body != null
                 && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Attributes != null)
             {
-                result.AddRange(RuleSuppression.GetSuppressions(funcAst.Body.ParamBlock.Attributes, funcAst.Extent.StartOffset, funcAst.Extent.EndOffset));
+                result.AddRange(RuleSuppression.GetSuppressions(funcAst.Body.ParamBlock.Attributes, funcAst.Extent.StartOffset, funcAst.Extent.EndOffset, funcAst));
             }
 
             return result;
@@ -691,7 +691,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             if (typeAst != null && typeAst.Attributes != null && typeAst.Attributes.Count != 0)
             {
-                result.AddRange(RuleSuppression.GetSuppressions(typeAst.Attributes, typeAst.Extent.StartOffset, typeAst.Extent.EndOffset));
+                result.AddRange(RuleSuppression.GetSuppressions(typeAst.Attributes, typeAst.Extent.StartOffset, typeAst.Extent.EndOffset, typeAst));
             }
 
             if (typeAst.Members == null)
@@ -708,7 +708,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     continue;
                 }
 
-                result.AddRange(RuleSuppression.GetSuppressions(funcMemb.Attributes, funcMemb.Extent.StartOffset, funcMemb.Extent.EndOffset));
+                result.AddRange(RuleSuppression.GetSuppressions(funcMemb.Attributes, funcMemb.Extent.StartOffset, funcMemb.Extent.EndOffset, funcMemb));
             }
 
             return result;

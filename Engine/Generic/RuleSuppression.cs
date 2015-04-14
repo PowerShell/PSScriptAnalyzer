@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 {
@@ -10,6 +12,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
     /// </summary>
     public class RuleSuppression
     {
+        private string _ruleName;
+
         /// <summary>
         /// The start offset of the rule suppression
         /// </summary>
@@ -33,8 +37,24 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// </summary>
         public string RuleName
         {
-            get;
-            set;
+            get
+            {
+                return _ruleName;
+            }
+
+            set
+            {
+                _ruleName = value;
+                if ((ScriptAnalyzer.Instance.ScriptRules != null
+                        && ScriptAnalyzer.Instance.ScriptRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
+                    && (ScriptAnalyzer.Instance.TokenRules != null
+                        && ScriptAnalyzer.Instance.TokenRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
+                    && (ScriptAnalyzer.Instance.ExternalRules != null
+                        && ScriptAnalyzer.Instance.ExternalRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0))
+                {
+                    Error = String.Format(Strings.RuleSuppressionRuleNameNotFound, _ruleName);
+                }
+            }
         }
 
         /// <summary>
@@ -47,12 +67,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// Scope of the rule suppression
+        /// </summary>
+        public string Scope
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Target of the rule suppression
+        /// </summary>
+        public string Target
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Returns error occurred in trying to parse the attribute
         /// </summary>
         public string Error
         {
             get;
             set;
+        }
+
+        private static HashSet<string> scopeSet;
+
+        /// <summary>
+        /// Initialize the scopeSet
+        /// </summary>
+        static RuleSuppression()
+        {
+            scopeSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            scopeSet.Add("function");
+            scopeSet.Add("class");
         }
 
         /// <summary>
@@ -85,6 +135,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                     {
                         switch (count)
                         {
+                            case 4:
+                                Target = (positionalArguments[3] as StringConstantExpressionAst).Value;
+                                goto case 3;
+
+                            case 3:
+                                Scope = (positionalArguments[2] as StringConstantExpressionAst).Value;
+                                goto case 2;
+
                             case 2:
                                 RuleSuppressionID = (positionalArguments[1] as StringConstantExpressionAst).Value;
                                 goto case 1;
@@ -134,13 +192,64 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                                 RuleSuppressionID = (name.Argument as StringConstantExpressionAst).Value;
                                 goto default;
 
+                            case "scope":
+                                if (!String.IsNullOrWhiteSpace(Scope))
+                                {
+                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
+                                }
+
+                                Scope = (name.Argument as StringConstantExpressionAst).Value;
+
+                                if (!scopeSet.Contains(Scope))
+                                {
+                                    Error = Strings.WrongScopeArgumentSuppressionAttributeError;
+                                }
+
+                                goto default;
+
+                            case "target":
+                                if (!String.IsNullOrWhiteSpace(Target))
+                                {
+                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
+                                }
+
+                                Target = (name.Argument as StringConstantExpressionAst).Value;
+                                goto default;
+
                             default:
                                 break;
                         }
                     }
                 }
+
+                // Must have scope and target together
+                if (String.IsNullOrWhiteSpace(Scope) && !String.IsNullOrWhiteSpace(Target))
+                {
+                    Error = Strings.TargetWithoutScopeSuppressionAttributeError;
+                }
             }
 
+            StartOffset = start;
+            EndOffset = end;
+
+            if (!String.IsNullOrWhiteSpace(Error))
+            {
+                Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, attrAst.Extent.StartLineNumber,
+                    System.IO.Path.GetFileName(attrAst.Extent.File), Error);
+            }
+        }
+
+        /// <summary>
+        /// Constructs rule expression from rule name, id, start and end
+        /// </summary>
+        /// <param name="ruleName"></param>
+        /// <param name="ruleSuppressionID"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        public RuleSuppression(string ruleName, string ruleSuppressionID, int start, int end)
+        {
+            RuleName = ruleName;
+            RuleSuppressionID = ruleSuppressionID;
             StartOffset = start;
             EndOffset = end;
         }
@@ -153,11 +262,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <returns></returns>
-        public static List<RuleSuppression> GetSuppressions(IEnumerable<AttributeAst> attrAsts, int start, int end)
+        public static List<RuleSuppression> GetSuppressions(IEnumerable<AttributeAst> attrAsts, int start, int end, Ast scopeAst)
         {
             List<RuleSuppression> result = new List<RuleSuppression>();
 
-            if (attrAsts == null)
+            if (attrAsts == null || scopeAst == null)
             {
                 return result;
             }
@@ -169,8 +278,44 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
             {
                 RuleSuppression ruleSupp = new RuleSuppression(attributeAst, start, end);
 
-                if (string.IsNullOrWhiteSpace(ruleSupp.Error))
+                // If there is no error and scope is not null
+                if (String.IsNullOrWhiteSpace(ruleSupp.Error) && !String.IsNullOrWhiteSpace(ruleSupp.Scope))
                 {
+                    if (String.IsNullOrWhiteSpace(ruleSupp.Target))
+                    {
+                        ruleSupp.Target = "*";
+                    }
+
+                    // regex for wild card *
+                    Regex reg = new Regex(String.Format("^{0}$", Regex.Escape(ruleSupp.Target).Replace(@"\*", ".*")));
+                    IEnumerable<Ast> targetAsts = null;
+
+                    switch (ruleSupp.Scope.ToLower())
+                    {
+                        case "function":
+                            targetAsts = scopeAst.FindAll(item => item is FunctionDefinitionAst && reg.IsMatch((item as FunctionDefinitionAst).Name), true);
+                            goto default;
+
+                        case "class":
+                            targetAsts = scopeAst.FindAll(item => item is TypeDefinitionAst && reg.IsMatch((item as TypeDefinitionAst).Name), true);
+                            goto default;
+
+                        default:
+                            break;
+                    }
+
+                    if (targetAsts != null)
+                    {
+                        foreach (Ast targetAst in targetAsts)
+                        {
+                            result.Add(new RuleSuppression(ruleSupp.RuleName, ruleSupp.RuleSuppressionID, targetAst.Extent.StartOffset, targetAst.Extent.EndOffset));
+                        }
+                    }
+
+                }
+                else
+                {
+                    // this may add rule suppression that contains erro but we will check for this in the engine to throw out error
                     result.Add(ruleSupp);
                 }
             }
