@@ -1,8 +1,8 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 Set-Alias ctss ConvertTo-SecureString
 $consoleWriteMessage = "File AvoidUsingClearHostWriteHost.ps1 uses Console.WriteLine. Using Console to write is not recommended because it may not work in all hosts or there may even be no hosts at all. Use Write-Output instead."
-$writeHostMessage = "File AvoidUsingClearHostWriteHost.ps1 uses Write-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead."
-$clearHostMessage = "File AvoidUsingClearHostWriteHost.ps1 uses Clear-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all."
+$writeHostMessage = "File 'AvoidUsingClearHostWriteHost.ps1' uses Write-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead."
+$clearHostMessage = "File 'AvoidUsingClearHostWriteHost.ps1' uses Clear-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all."
 $writeHostName = "PSAvoidUsingWriteHost"
 $clearHostName = "PSAvoidUsingClearHost"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

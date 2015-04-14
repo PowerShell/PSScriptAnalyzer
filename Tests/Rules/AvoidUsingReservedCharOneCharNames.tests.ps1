@@ -1,6 +1,6 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 $oneCharMessage = "The cmdlet name O only has one character."
-$reservedCharMessage = "The cmdlet Use-#Reserved uses a reserved char in its name."
+$reservedCharMessage = "The cmdlet 'Use-#Reserved' uses a reserved char in its name."
 $oneCharName = "PSOneChar"
 $reservedCharName = "PSReservedCmdletChar"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

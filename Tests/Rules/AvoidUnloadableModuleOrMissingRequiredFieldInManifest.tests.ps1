@@ -1,4 +1,4 @@
-﻿Import-Module ScriptAnalyzer 
+﻿Import-Module PSScriptAnalyzer 
 $missingMessage = "The member 'ModuleVersion' is not present in the module manifest."
 $missingName = "PSMissingModuleManifestField"
 $unloadableMessage = [regex]::Escape("Cannot load the module TestBadModule that the file TestBadModule.psd1 is in.")

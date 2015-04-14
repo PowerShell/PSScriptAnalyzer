@@ -1,4 +1,4 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 
 $violationMessage = "() has non-constant members. Invoking empty members may cause bugs in the script."
 $violationName = "PSAvoidInvokingEmptyMembers"
