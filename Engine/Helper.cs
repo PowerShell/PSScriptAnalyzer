@@ -637,7 +637,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
     /// <summary>
     /// Class used to do variable analysis on the whole script
     /// </summary>
-    public class ScriptAnalysis: ICustomAstVisitor2
+    public class ScriptAnalysis: ICustomAstVisitor
     {
         private VariableAnalysis OuterAnalysis;
 
@@ -663,7 +663,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             if (scriptBlockAst == null) return null;
 
             VariableAnalysis previousOuter = OuterAnalysis;
-            OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
+
+            // We already run variable analysis in these cases so check
+            if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
+            {
+                OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
+            }
 
             if (scriptBlockAst.DynamicParamBlock != null)
             {
@@ -691,77 +696,40 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Do nothing
+        /// perform special visiting action if statement is a typedefinitionast
         /// </summary>
-        /// <param name="baseCtorInvokeMemberExpressionAst"></param>
+        /// <param name="statementAst"></param>
         /// <returns></returns>
-        public object VisitBaseCtorInvokeMemberExpression(BaseCtorInvokeMemberExpressionAst baseCtorInvokeMemberExpressionAst)
+        private object VisitStatementHelper(StatementAst statementAst)
         {
-            return null;
-        }
-
-        /// <summary>
-        /// Do nothing
-        /// </summary>
-        /// <param name="configurationDefinitionAst"></param>
-        /// <returns></returns>
-        public object VisitConfigurationDefinition(ConfigurationDefinitionAst configurationDefinitionAst)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Do nothing
-        /// </summary>
-        /// <param name="dynamicKeywordAst"></param>
-        /// <returns></returns>
-        public object VisitDynamicKeywordStatement(DynamicKeywordStatementAst dynamicKeywordAst)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Set outer analysis before further visiting.
-        /// </summary>
-        /// <param name="functionMemberAst"></param>
-        /// <returns></returns>
-        public object VisitFunctionMember(FunctionMemberAst functionMemberAst)
-        {
-            var previousOuter = OuterAnalysis;
-            OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(functionMemberAst, OuterAnalysis);
-
-            if (functionMemberAst != null)
+            if (statementAst == null)
             {
-                functionMemberAst.Body.Visit(this);
+                return null;
             }
 
-            OuterAnalysis = previousOuter;
+            TypeDefinitionAst typeAst = statementAst as TypeDefinitionAst;
 
-            return null;
-        }
-
-        /// <summary>
-        /// Do nothing
-        /// </summary>
-        /// <param name="propertyMemberAst"></param>
-        /// <returns></returns>
-        public object VisitPropertyMember(PropertyMemberAst propertyMemberAst)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Visit the functions defined in class
-        /// </summary>
-        /// <param name="typeDefinitionAst"></param>
-        /// <returns></returns>
-        public object VisitTypeDefinition(TypeDefinitionAst typeDefinitionAst)
-        {
-            if (typeDefinitionAst != null)
+            if (typeAst == null)
             {
-                foreach (var member in typeDefinitionAst.Members)
+                statementAst.Visit(this);
+                return null;
+            }
+
+            foreach (var member in typeAst.Members)
+            {
+                FunctionMemberAst functionMemberAst = member as FunctionMemberAst;
+
+                if (functionMemberAst != null)
                 {
-                    member.Visit(this);
+                    var previousOuter = OuterAnalysis;
+                    OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(functionMemberAst, OuterAnalysis);
+
+                    if (functionMemberAst != null)
+                    {
+                        functionMemberAst.Body.Visit(this);
+                    }
+
+                    OuterAnalysis = previousOuter;
                 }
             }
 
@@ -1177,7 +1145,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             {
                 foreach (var statement in namedBlockAst.Statements)
                 {
-                    statement.Visit(this);
+                    VisitStatementHelper(statement);
                 }
             }
 
@@ -1260,7 +1228,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             {
                 foreach (var statement in statementBlockAst.Statements)
                 {
-                    statement.Visit(this);
+                    VisitStatementHelper(statement);
                 }
             }
 
