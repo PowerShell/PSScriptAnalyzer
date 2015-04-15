@@ -1557,6 +1557,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use ShouldProcess For State Changing Functions.
+        /// </summary>
+        internal static string UseShouldProcessForStateChangingFunctionsCommonName {
+            get {
+                return ResourceManager.GetString("UseShouldProcessForStateChangingFunctionsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Functions that have verbs like New, Start, Stop, Set, Reset that change systme state should support &apos;ShouldProcess&apos;.
+        /// </summary>
+        internal static string UseShouldProcessForStateChangingFunctionsDescrption {
+            get {
+                return ResourceManager.GetString("UseShouldProcessForStateChangingFunctionsDescrption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function ’{0}’ has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;.
+        /// </summary>
+        internal static string UseShouldProcessForStateChangingFunctionsError {
+            get {
+                return ResourceManager.GetString("UseShouldProcessForStateChangingFunctionsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseShouldProcessForStateChangingFunctions.
+        /// </summary>
+        internal static string UseShouldProcessForStateChangingFunctionsName {
+            get {
+                return ResourceManager.GetString("UseShouldProcessForStateChangingFunctionsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cmdlet Singular Noun.
         /// </summary>
         internal static string UseSingularNounsCommonName {
