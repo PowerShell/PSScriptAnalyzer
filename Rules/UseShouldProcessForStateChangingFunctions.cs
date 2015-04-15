@@ -44,12 +44,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 string funcName = funcDefAst.Name;
                 bool hasShouldProcessAttribute = false;
 
-                if (funcName.IndexOf("Get", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("Stop", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("New", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("Set", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("Update", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("Reset", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (funcName.IndexOf("Get-", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    funcName.IndexOf("Stop-", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    funcName.IndexOf("New-", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    funcName.IndexOf("Set-", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    funcName.IndexOf("Update-", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    funcName.IndexOf("Reset-", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     IEnumerable<Ast> attributeAsts = funcDefAst.FindAll(testAst => testAst is NamedAttributeArgumentAst, true);
                     if (funcDefAst.Body != null && funcDefAst.Body.ParamBlock != null
