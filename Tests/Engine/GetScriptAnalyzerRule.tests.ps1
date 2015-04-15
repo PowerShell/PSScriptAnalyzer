@@ -1,9 +1,8 @@
-﻿Import-Module -Verbose ScriptAnalyzer
+﻿Import-Module -Verbose PSScriptAnalyzer
 $sa = Get-Command Get-ScriptAnalyzerRule
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $singularNouns = "PSUseSingularNouns"
 $approvedVerbs = "PSUseApprovedVerbs"
-$unloadableModule = "PSAvoidUnloadableModule"
 $dscIdentical = "PSDSCUseIdenticalParametersForDSC"
 
 Describe "Test available parameters" {
@@ -45,9 +44,8 @@ Describe "Test Name parameters" {
         }
 
         It "works with 3 names" {
-            $rules = Get-ScriptAnalyzerRule -Name $unloadableModule, $approvedVerbs, $singularNouns
-            $rules.Count | Should Be 3
-            ($rules | Where-Object {$_.Name -eq $unloadableModule}).Count | Should Be 1
+            $rules = Get-ScriptAnalyzerRule -Name $approvedVerbs, $singularNouns
+            $rules.Count | Should Be 2
             ($rules | Where-Object {$_.Name -eq $singularNouns}).Count | Should Be 1
             ($rules | Where-Object {$_.Name -eq $approvedVerbs}).Count | Should Be 1
         }

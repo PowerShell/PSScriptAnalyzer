@@ -1,4 +1,4 @@
-﻿Import-Module -Verbose ScriptAnalyzer
+﻿Import-Module -Verbose PSScriptAnalyzer
 
 $violationMessageDSCResource = "Test-TargetResource function in DSC Resource should return object of type System.Boolean instead of System.Collections.Hashtable"
 $violationMessageDSCClass = "Test function in DSC Class FileResource should return object of type System.Boolean instead of type System.Int32"
