@@ -241,10 +241,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// Given a command's name, checks whether it exists
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="commandType"></param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name)
+        public CommandInfo GetCommandInfo(string name, CommandTypes commandType=CommandTypes.All)
         {
-            return Helper.Instance.MyCmdlet.InvokeCommand.GetCommand(name, CommandTypes.All);
+            return Helper.Instance.MyCmdlet.InvokeCommand.GetCommand(name, commandType);
         }
 
         /// <summary>
@@ -257,6 +258,29 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             List<string> resourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Get-TargetResource", "Test-TargetResource" });
             return ast.FindAll(item => item is FunctionDefinitionAst
                 && resourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);            
+        }
+
+        /// <summary>
+        /// Gets all the strings contained in an array literal ast
+        /// </summary>
+        /// <param name="alAst"></param>
+        /// <returns></returns>
+        public List<string> GetStringsFromArrayLiteral(ArrayLiteralAst alAst)
+        {
+            List<string> result = new List<string>();
+
+            if (alAst != null && alAst.Elements != null)
+            {
+                foreach (ExpressionAst eAst in alAst.Elements)
+                {
+                    if (eAst is StringConstantExpressionAst)
+                    {
+                        result.Add((eAst as StringConstantExpressionAst).Value);
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
