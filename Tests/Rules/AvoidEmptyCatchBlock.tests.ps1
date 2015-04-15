@@ -1,4 +1,4 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 $violationMessage = "Empty catch block is used. Please use Write-Error or throw statements in catch blocks."
 $violationName = "PSAvoidUsingEmptyCatchBlock"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

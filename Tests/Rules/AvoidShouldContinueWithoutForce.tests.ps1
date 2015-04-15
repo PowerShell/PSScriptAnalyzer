@@ -1,14 +1,14 @@
-﻿Import-Module ScriptAnalyzer
-$violationMessage = "Function Verb-Noun in file AvoidShouldContinueShouldProcessWithoutForce.ps1 uses ShouldContinue or ShouldProcess but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt"
-$violationName = "PSAvoidShouldContinueShouldProcessWithoutForce"
+﻿Import-Module PSScriptAnalyzer
+$violationMessage = "Function 'Verb-Noun' in file 'AvoidShouldContinueWithoutForce.ps1' uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt"
+$violationName = "PSAvoidShouldContinueWithoutForce"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer $directory\AvoidShouldContinueShouldProcessWithoutForce.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$violations = Invoke-ScriptAnalyzer $directory\AvoidShouldContinueWithoutForce.ps1 | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
-Describe "AvoidShouldContinueShouldProcessWithoutForce" {
+Describe "AvoidShouldContinueWithoutForce" {
     Context "When there are violations" {
-        It "has 4 avoid ShouldContinue or ShouldProcess without boolean Force parameter violations" {
-            $violations.Count | Should Be 4
+        It "has 2 avoid ShouldContinue without boolean Force parameter violations" {
+            $violations.Count | Should Be 2
         }
 
         It "has the correct description message" {

@@ -1,5 +1,5 @@
-﻿Import-Module ScriptAnalyzer
-$violationMessage = "The cmdlet Verb-Files does not have a help comment."
+﻿Import-Module PSScriptAnalyzer
+$violationMessage = "The cmdlet 'Verb-Files' does not have a help comment."
 $violationName = "PSProvideCommentHelp"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}

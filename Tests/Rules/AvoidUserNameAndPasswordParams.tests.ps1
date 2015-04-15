@@ -1,6 +1,6 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 
-$violationMessage = "Function TestFunction has both username and password parameters. A credential parameter of type PSCredential should be used."
+$violationMessage = "Function 'TestFunction' has both username and password parameters. A credential parameter of type PSCredential should be used."
 $violationName = "PSAvoidUsingUserNameAndPasswordParams"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidUserNameAndPasswordParams.ps1 | Where-Object {$_.RuleName -eq $violationName}
