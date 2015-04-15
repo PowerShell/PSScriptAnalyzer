@@ -1564,7 +1564,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Functions that have verbs like New, Start, Stop, Set, Reset that change systme state should support &apos;ShouldProcess&apos;.
+        ///   Looks up a localized string similar to Functions that have verbs like New, Start, Stop, Set, Reset that change system state should support &apos;ShouldProcess&apos;..
         /// </summary>
         internal static string UseShouldProcessForStateChangingFunctionsDescrption {
             get {
@@ -1573,7 +1573,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function ’{0}’ has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;.
+        ///   Looks up a localized string similar to Function ’{0}’ has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;..
         /// </summary>
         internal static string UseShouldProcessForStateChangingFunctionsError {
             get {
