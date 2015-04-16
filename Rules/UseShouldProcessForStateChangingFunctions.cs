@@ -1,4 +1,16 @@
-﻿using System;
+﻿//
+// Copyright (c) Microsoft Corporation.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
@@ -32,12 +44,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 string funcName = funcDefAst.Name;
                 bool hasShouldProcessAttribute = false;
 
-                if (funcName.IndexOf("Get", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("Stop", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("New", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("Set", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("Update", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    funcName.IndexOf("Reset", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (funcName.StartsWith("Get-", StringComparison.OrdinalIgnoreCase) ||
+                    funcName.StartsWith("Stop-", StringComparison.OrdinalIgnoreCase)||
+                    funcName.StartsWith("New-", StringComparison.OrdinalIgnoreCase) ||
+                    funcName.StartsWith("Set-", StringComparison.OrdinalIgnoreCase) ||
+                    funcName.StartsWith("Update-", StringComparison.OrdinalIgnoreCase) ||
+                    funcName.StartsWith("Reset-", StringComparison.OrdinalIgnoreCase))
                 {
                     IEnumerable<Ast> attributeAsts = funcDefAst.FindAll(testAst => testAst is NamedAttributeArgumentAst, true);
                     if (funcDefAst.Body != null && funcDefAst.Body.ParamBlock != null
@@ -51,9 +63,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
                         foreach (NamedAttributeArgumentAst attributeAst in attributeAsts)
                         {
-                            if (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase))
+                            if (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase))
                             {
-                                hasShouldProcessAttribute = true;
+                                if((attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase)) && !attributeAst.ExpressionOmitted || 
+                                    attributeAst.ExpressionOmitted)
+                                {
+                                    hasShouldProcessAttribute = true;
+                                }
                             }
                         }
 
