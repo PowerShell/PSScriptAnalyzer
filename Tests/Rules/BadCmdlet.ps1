@@ -51,3 +51,16 @@
     {
     }
 }
+
+# Provide comment help should not be raised here because this is not exported
+function NoComment
+{
+    Write-Verbose "No Comment"
+}
+
+function Comment
+{
+    Write-Verbose "Should raise providecommenthelp error"
+}
+
+Export-ModuleMember Verb-Files, Comment

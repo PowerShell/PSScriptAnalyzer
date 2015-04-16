@@ -8,8 +8,8 @@ $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {
 
 Describe "ProvideCommentHelp" {
     Context "When there are violations" {
-        It "has 1 provide comment help violation" {
-            $violations.Count | Should Be 1
+        It "has 2 provide comment help violations" {
+            $violations.Count | Should Be 2
         }
 
         It "has the correct description message" {
