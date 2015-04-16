@@ -63,9 +63,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
                         foreach (NamedAttributeArgumentAst attributeAst in attributeAsts)
                         {
-                            if (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase))
+                            if (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase))
                             {
-                                hasShouldProcessAttribute = true;
+                                if((attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase)) && !attributeAst.ExpressionOmitted || 
+                                    attributeAst.ExpressionOmitted)
+                                {
+                                    hasShouldProcessAttribute = true;
+                                }
                             }
                         }
 
