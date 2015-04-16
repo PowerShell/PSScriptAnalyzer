@@ -1,5 +1,6 @@
 ﻿Import-Module PSScriptAnalyzer
-$violationMessage = "File AvoidConvertToSecureStringWithPlainText.ps1 uses ConvertTo-SecureString with plaintext. This will expose secure information. Encrypted standard strings should be used instead."
+$violationMessage = "Function ’Get-Service’ has verb that could change system state. Therefore, the function has to support 'ShouldProcess'"
+$violationName = "PSUseShouldProcessForStateChangingFunctions"
 $violationName = "PS.UseShouldProcessForStateChangingFunctions"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\UseShouldProcessForStateChangingFunctions.ps1 | Where-Object {$_.RuleName -eq $violationName}
