@@ -169,7 +169,7 @@
     <value>Rule {0} cannot be found.</value>
   </data>
   <data name="StringConstantArgumentsSuppressionAttributeError" xml:space="preserve">
-    <value>All the arguments of the should be string constants.</value>
+    <value>All the arguments of the Suppress Message Attribute should be string constants.</value>
   </data>
   <data name="TargetWithoutScopeSuppressionAttributeError" xml:space="preserve">
     <value>If Target is specified, Scope must be specified.</value>
