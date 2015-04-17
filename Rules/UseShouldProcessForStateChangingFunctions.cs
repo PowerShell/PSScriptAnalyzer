@@ -44,8 +44,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 string funcName = funcDefAst.Name;
                 bool hasShouldProcessAttribute = false;
 
-                if (funcName.StartsWith("Get-", StringComparison.OrdinalIgnoreCase) ||
-                    funcName.StartsWith("Stop-", StringComparison.OrdinalIgnoreCase)||
+                if (funcName.StartsWith("Stop-", StringComparison.OrdinalIgnoreCase)||
                     funcName.StartsWith("New-", StringComparison.OrdinalIgnoreCase) ||
                     funcName.StartsWith("Set-", StringComparison.OrdinalIgnoreCase) ||
                     funcName.StartsWith("Update-", StringComparison.OrdinalIgnoreCase) ||
