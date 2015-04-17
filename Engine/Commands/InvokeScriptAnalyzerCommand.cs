@@ -356,7 +356,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(tokenRule.AnalyzeTokens(tokens, fileName));
+                            diagnostics.AddRange(Helper.Instance.SuppressRule(tokenRule.GetName(), ruleSuppressions, tokenRule.AnalyzeTokens(tokens, fileName).ToList()));
                         }
                         catch (Exception tokenRuleException)
                         {
@@ -384,7 +384,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(dscResourceRule.AnalyzeDSCClass(ast, filePath));
+                            diagnostics.AddRange(Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(ast, filePath).ToList()));
                         }
                         catch (Exception dscResourceRuleException)
                         {
@@ -426,7 +426,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                                             // We want the Engine to continue functioning even if one or more Rules throws an exception
                                             try
                                             {
-                                                diagnostics.AddRange(dscResourceRule.AnalyzeDSCResource(ast, filePath));
+                                                diagnostics.AddRange(Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCResource(ast, filePath).ToList()));
                                             }
                                             catch (Exception dscResourceRuleException)
                                             {
