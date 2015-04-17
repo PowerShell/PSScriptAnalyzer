@@ -44,7 +44,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 string funcName = funcDefAst.Name;
                 bool hasShouldProcessAttribute = false;
 
-                if (funcName.StartsWith("Stop-", StringComparison.OrdinalIgnoreCase)||
+                if (funcName.StartsWith("Restart-", StringComparison.OrdinalIgnoreCase) ||
+                    funcName.StartsWith("Stop-", StringComparison.OrdinalIgnoreCase)||
                     funcName.StartsWith("New-", StringComparison.OrdinalIgnoreCase) ||
                     funcName.StartsWith("Set-", StringComparison.OrdinalIgnoreCase) ||
                     funcName.StartsWith("Update-", StringComparison.OrdinalIgnoreCase) ||
@@ -75,7 +76,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                         if (!hasShouldProcessAttribute)
                         {
                             yield return
-                                new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture,Strings.UseShouldProcessForStateChangingFunctionsError, funcName),funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                                 new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture,Strings.UseShouldProcessForStateChangingFunctionsError, funcName),funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                     }
                 }
