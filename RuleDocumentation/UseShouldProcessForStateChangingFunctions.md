@@ -13,7 +13,7 @@ To fix a violation of this rule, please add attribute SupportsShouldProcess. eg:
 
 Wrong:
 ```
-	function Get-ServiceObject
+	function Set-ServiceObject
 	{
 	    [CmdletBinding()]
     	    param ([string]$c)
@@ -22,7 +22,7 @@ Wrong:
 
 Correct: 
 ```
-	function Get-ServiceObject
+	function Set-ServiceObject
 	{
 	    [CmdletBinding(SupportsShouldProcess = $true)]
 	    param ([string]$c)
