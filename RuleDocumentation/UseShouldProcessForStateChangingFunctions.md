@@ -21,10 +21,10 @@ Wrong:
 ```
 
 Correct: 
-'''
+```
 	function Get-ServiceObject
 	{
 	    [CmdletBinding(SupportsShouldProcess = $true)]
 	    param ([string]$c)
 	}
-'''
+```
