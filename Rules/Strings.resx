@@ -658,7 +658,7 @@
     <value>Use ShouldProcess For State Changing Functions</value>
   </data>
   <data name="UseShouldProcessForStateChangingFunctionsDescrption" xml:space="preserve">
-    <value>Functions that have verbs like New, Start, Stop, Set, Reset that change system state should support 'ShouldProcess'.</value>
+    <value>Functions that have verbs like New, Start, Stop, Set, Reset, Restart that change system state should support 'ShouldProcess'.</value>
   </data>
   <data name="UseShouldProcessForStateChangingFunctionsError" xml:space="preserve">
     <value>Function ’{0}’ has verb that could change system state. Therefore, the function has to support 'ShouldProcess'.</value>
