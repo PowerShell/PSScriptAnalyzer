@@ -1,4 +1,4 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 $sa = Get-Command Invoke-ScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $singularNouns = "PSUseSingularNouns"
@@ -23,16 +23,6 @@ Describe "Test available parameters" {
 
         It "accepts string array" {
             $params["CustomizedRulePath"].ParameterType.FullName | Should Be "System.String[]"
-        }
-    }
-
-    Context "LoggerPath parameters" {
-        It "has a LoggerPath parameter" {
-            $params.ContainsKey("LoggerPath") | Should Be $true
-        }
-
-        It "accepts string array" {
-            $params["LoggerPath"].ParameterType.FullName | Should Be "System.String[]"
         }
     }
 
@@ -72,21 +62,21 @@ Describe "Test Path" {
     }
 
     Context "When given a directory" {
-        $withoutPathWithDirectory = Invoke-ScriptAnalyzer $directory\RecursionDirectoryTest
-        $withPathWithDirectory = Invoke-ScriptAnalyzer -Path $directory\RecursionDirectoryTest
+        $withoutPathWithDirectory = Invoke-ScriptAnalyzer -Recurse $directory\RecursionDirectoryTest
+        $withPathWithDirectory = Invoke-ScriptAnalyzer -Recurse -Path $directory\RecursionDirectoryTest
     
         It "Has the same count as without Path parameter"{
             $withoutPathWithDirectory.Count -eq $withPathWithDirectory.Count | Should Be $true
         }
 
-        It "Analyzes all the file" {
+        It "Analyzes all the files" {
             $globalVarsViolation = $withPathWithDirectory | Where-Object {$_.RuleName -eq "PSAvoidGlobalVars"}
             $clearHostViolation = $withPathWithDirectory | Where-Object {$_.RuleName -eq "PSAvoidUsingClearHost"}
             $writeHostViolation = $withPathWithDirectory | Where-Object {$_.RuleName -eq "PSAvoidUsingWriteHost"}
             Write-Output $globalVarsViolation.Count
             Write-Output $clearHostViolation.Count
             Write-Output $writeHostViolation.Count
-            $globalVarsViolation.Count -eq 1 -and $clearHostViolation.Count -eq 1 -and $writeHostViolation.Count -eq 1 | Should Be $true
+            $globalVarsViolation.Count -eq 1 -and $writeHostViolation.Count -eq 1 | Should Be $true
         }
 
     }
@@ -151,12 +141,12 @@ Describe "Test Exclude And Include" {
 Describe "Test Severity" {
     Context "When used correctly" {
         It "works with one argument" {
-            $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity Strict
+            $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity Information
             $errors.Count | Should Be 0
         }
 
         It "works with 2 arguments" {
-            $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity Strict, Warning
+            $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity Information, Warning
             $errors.Count | Should Be 2
         }
     }

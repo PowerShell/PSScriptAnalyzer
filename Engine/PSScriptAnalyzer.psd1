@@ -23,7 +23,7 @@ Copyright = '(c) 2015. All rights reserved.'
 Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of builtin or customized rules on the scripts being analyzed.'
 
 # Minimum version of the Windows PowerShell engine required by this module
-# PowerShellVersion = ''
+PowerShellVersion = '5.0'
 
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''

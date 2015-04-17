@@ -1,4 +1,4 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 $violationMessage = [regex]::Escape("Verb-Files' defines the reserved common parameter 'Verbose'.")
 $violationName = "PSReservedParams"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

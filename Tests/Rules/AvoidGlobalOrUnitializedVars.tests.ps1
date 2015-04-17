@@ -1,8 +1,8 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 $globalMessage = "Found global variable 'Global:1'."
 $globalName = "PSAvoidGlobalVars"
 $nonInitializedName = "PSAvoidUninitializedVariable"
-$nonInitializedMessage = "Variable a is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables."
+$nonInitializedMessage = "Variable 'a' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables."
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidGlobalOrUnitializedVars.ps1
 $globalViolations = $violations | Where-Object {$_.RuleName -eq $globalName}
@@ -18,7 +18,7 @@ Describe "AvoidGlobalVars" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should Match $globalMessage
         }
     }
 

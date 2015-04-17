@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -83,6 +83,7 @@
     <Compile Include="UseIdenticalParametersDSC.cs" />
     <Compile Include="UsePSCredentialType.cs" />
     <Compile Include="UseShouldProcessCorrectly.cs" />
+    <Compile Include="UseShouldProcessForStateChangingFunctions.cs" />
     <Compile Include="UseSingularNouns.cs" />
     <Compile Include="UseStandardDSCFunctionsInResource.cs" />
     <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />

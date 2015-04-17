@@ -1,5 +1,5 @@
-﻿Import-Module ScriptAnalyzer
-$violationMessage = "iex is an alias of Invoke-Expression. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content."
+﻿Import-Module PSScriptAnalyzer
+$violationMessage = "'iex' is an alias of 'Invoke-Expression'. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content."
 $violationName = "PSAvoidUsingCmdletAliases"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidUsingAlias.ps1 | Where-Object {$_.RuleName -eq $violationName}
