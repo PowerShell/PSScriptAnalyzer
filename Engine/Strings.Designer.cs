@@ -160,6 +160,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RuleName must not be null..
+        /// </summary>
+        internal static string NullRuleNameError {
+            get {
+                return ResourceManager.GetString("NullRuleNameError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parse error in file {0}:  {1} at line {2} column {3}..
         /// </summary>
         internal static string ParserErrorFormat {
@@ -214,7 +223,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All the arguments of the should be string constants..
+        ///   Looks up a localized string similar to All the arguments of the Suppress Message Attribute should be string constants..
         /// </summary>
         internal static string StringConstantArgumentsSuppressionAttributeError {
             get {

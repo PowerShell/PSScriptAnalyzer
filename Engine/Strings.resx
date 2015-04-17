@@ -183,4 +183,7 @@
   <data name="WrongScopeArgumentSuppressionAttributeError" xml:space="preserve">
     <value>Scope can only be either function or class.</value>
   </data>
+  <data name="NullRuleNameError" xml:space="preserve">
+    <value>RuleName must not be null.</value>
+  </data>
 </root>

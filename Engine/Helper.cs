@@ -743,6 +743,20 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             while (recordIndex < diagnostics.Count)
             {
+                if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                {
+                    ruleSuppressionIndex += 1;
+
+                    if (ruleSuppressionIndex == ruleSuppressions.Count)
+                    {
+                        break;
+                    }
+
+                    ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
+
+                    continue;
+                }
+
                 // the record precedes the rule suppression so don't apply the suppression
                 if (record.Extent.StartOffset < ruleSuppression.StartOffset)
                 {

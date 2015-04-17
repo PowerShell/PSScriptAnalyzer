@@ -57,7 +57,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
             set
             {
                 _ruleName = value;
-                if ((ScriptAnalyzer.Instance.ScriptRules != null
+
+                if (!String.IsNullOrWhiteSpace(_ruleName)
+                    && (ScriptAnalyzer.Instance.ScriptRules != null
                         && ScriptAnalyzer.Instance.ScriptRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
                     && (ScriptAnalyzer.Instance.TokenRules != null
                         && ScriptAnalyzer.Instance.TokenRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
@@ -236,6 +238,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                     }
                 }
 
+                if (!String.IsNullOrWhiteSpace(Error))
+                {
+                    // May be cases where the rulename is null because we didn't look at the rulename after
+                    // we found out there is an error
+                    RuleName = String.Empty;
+                }
+                else if (String.IsNullOrWhiteSpace(RuleName))
+                {
+                    RuleName = String.Empty;
+                    Error = Strings.NullRuleNameError;
+                }
+                
                 // Must have scope and target together
                 if (String.IsNullOrWhiteSpace(Scope) && !String.IsNullOrWhiteSpace(Target))
                 {
@@ -329,7 +343,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                 }
                 else
                 {
-                    // this may add rule suppression that contains erro but we will check for this in the engine to throw out error
+                    // this may add rule suppression that contains error but we will check for this in the engine to throw out error
                     result.Add(ruleSupp);
                 }
             }
