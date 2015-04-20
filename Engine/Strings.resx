@@ -189,4 +189,7 @@
   <data name="TargetCannotBeFoundError" xml:space="preserve">
     <value>Cannot find any Targets {0} that match the Scope {1} to apply the SuppressMessageAttribute.</value>
   </data>
+  <data name="RuleSuppressionIDError" xml:space="preserve">
+    <value>Cannot find any DiagnosticRecord with the Rule Suppression ID {0}.</value>
+  </data>
 </root>

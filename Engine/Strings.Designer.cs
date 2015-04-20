@@ -214,6 +214,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot find any DiagnosticRecord with the Rule Suppression ID {0}..
+        /// </summary>
+        internal static string RuleSuppressionIDError {
+            get {
+                return ResourceManager.GetString("RuleSuppressionIDError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rule {0} cannot be found..
         /// </summary>
         internal static string RuleSuppressionRuleNameNotFound {
