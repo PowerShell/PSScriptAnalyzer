@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -63,6 +63,7 @@
     <Compile Include="AvoidUsernameAndPasswordParams.cs" />
     <Compile Include="AvoidUsingComputerNameHardcoded.cs" />
     <Compile Include="AvoidUsingConvertToSecureStringWithPlainText.cs" />
+    <Compile Include="AvoidUsingGetWMIObject.cs" />
     <Compile Include="AvoidUsingInternalURLs.cs" />
     <Compile Include="AvoidUsingInvokeExpression.cs" />
     <Compile Include="AvoidUsingPlainTextForPassword.cs" />

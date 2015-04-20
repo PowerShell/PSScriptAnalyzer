@@ -654,4 +654,16 @@
   <data name="ReturnCorrectTypesForSetTargetResourceFunctionsDSCError" xml:space="preserve">
     <value>Set-TargetResource function in DSC Resource should not output anything to the pipeline.</value>
   </data>
+  <data name="AvoidUsingGetWMIObjectCommonName" xml:space="preserve">
+    <value>Avoid Using Get-WMIObject</value>
+  </data>
+  <data name="AvoidUsingGetWMIObjectDescription" xml:space="preserve">
+    <value>Depricated. Starting in Windows PowerShell 3.0, this cmdlet has been superseded by Get-CimInstance.</value>
+  </data>
+  <data name="AvoidUsingGetWMIObjectError" xml:space="preserve">
+    <value>File '{0}' uses Get-WMIObject. This is not recommended because the cmdlet is based on a non-standard DCOM protocol. Use Get-CIMInstance instead. This is CIM and WS-Man standards compliant and works in a heterogeneous environment.</value>
+  </data>
+  <data name="AvoidUsingGetWMIObjectName" xml:space="preserve">
+    <value>AvoidUsingGetWMIObject</value>
+  </data>
 </root>
