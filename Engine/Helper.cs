@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
+using System.Globalization;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer
@@ -740,9 +741,25 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             int ruleSuppressionIndex = 0;
             DiagnosticRecord record = diagnostics.First();
             RuleSuppression ruleSuppression = ruleSuppressions.First();
+            int suppressionCount = 0;
 
             while (recordIndex < diagnostics.Count)
             {
+                if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                {
+                    ruleSuppressionIndex += 1;
+
+                    if (ruleSuppressionIndex == ruleSuppressions.Count)
+                    {
+                        break;
+                    }
+
+                    ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
+                    suppressionCount = 0;
+
+                    continue;
+                }
+
                 // the record precedes the rule suppression so don't apply the suppression
                 if (record.Extent.StartOffset < ruleSuppression.StartOffset)
                 {
@@ -753,12 +770,21 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 {
                     ruleSuppressionIndex += 1;
 
+                    // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
+                    if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
+                    {
+                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                                System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                        Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    }
+
                     if (ruleSuppressionIndex == ruleSuppressions.Count)
                     {
                         break;
                     }
 
                     ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
+                    suppressionCount = 0;
 
                     continue;
                 }
@@ -771,19 +797,36 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                         && !string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
                     {
                         results.Add(record);
+                        suppressionCount -= 1;
                     }
                     // otherwise, we ignore the record, move on to the next.
                 }
 
                 // important assumption: this point is reached only if we want to move to the next record
                 recordIndex += 1;
+                suppressionCount += 1;
 
                 if (recordIndex == diagnostics.Count)
                 {
+                    // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
+                    if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
+                    {
+                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                                System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                        Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    }
+
                     break;
                 }
 
                 record = diagnostics[recordIndex];
+            }
+
+            // Add all unprocessed records to results
+            while (recordIndex < diagnostics.Count)
+            {
+                results.Add(diagnostics[recordIndex]);
+                recordIndex += 1;
             }
 
             return results;

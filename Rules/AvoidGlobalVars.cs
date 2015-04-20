@@ -40,7 +40,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                         yield return
                             new DiagnosticRecord(
                                 string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalVarsError,
-                                    varAst.VariablePath.UserPath), varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                                    varAst.VariablePath.UserPath), varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, varAst.VariablePath.UserPath);
                     }
                 }
             }

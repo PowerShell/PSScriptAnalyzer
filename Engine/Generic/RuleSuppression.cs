@@ -27,6 +27,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         private string _ruleName;
 
         /// <summary>
+        /// The start offset of the rule suppression attribute (not where it starts to apply)
+        /// </summary>
+        public int StartAttributeLine
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// The start offset of the rule suppression
         /// </summary>
         public int StartOffset
@@ -57,7 +66,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
             set
             {
                 _ruleName = value;
-                if ((ScriptAnalyzer.Instance.ScriptRules != null
+
+                if (!String.IsNullOrWhiteSpace(_ruleName)
+                    && (ScriptAnalyzer.Instance.ScriptRules != null
                         && ScriptAnalyzer.Instance.ScriptRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
                     && (ScriptAnalyzer.Instance.TokenRules != null
                         && ScriptAnalyzer.Instance.TokenRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
@@ -131,6 +142,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
             if (attrAst != null)
             {
+                StartAttributeLine = attrAst.Extent.StartLineNumber;
                 var positionalArguments = attrAst.PositionalArguments;
                 var namedArguments = attrAst.NamedArguments;
 
@@ -236,6 +248,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                     }
                 }
 
+                if (!String.IsNullOrWhiteSpace(Error))
+                {
+                    // May be cases where the rulename is null because we didn't look at the rulename after
+                    // we found out there is an error
+                    RuleName = String.Empty;
+                }
+                else if (String.IsNullOrWhiteSpace(RuleName))
+                {
+                    RuleName = String.Empty;
+                    Error = Strings.NullRuleNameError;
+                }
+                
                 // Must have scope and target together
                 if (String.IsNullOrWhiteSpace(Scope) && !String.IsNullOrWhiteSpace(Target))
                 {
@@ -248,24 +272,26 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
             if (!String.IsNullOrWhiteSpace(Error))
             {
-                Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, attrAst.Extent.StartLineNumber,
+                Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, StartAttributeLine,
                     System.IO.Path.GetFileName(attrAst.Extent.File), Error);
             }
         }
 
         /// <summary>
-        /// Constructs rule expression from rule name, id, start and end
+        /// Constructs rule expression from rule name, id, start, end and startAttributeLine
         /// </summary>
         /// <param name="ruleName"></param>
         /// <param name="ruleSuppressionID"></param>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        public RuleSuppression(string ruleName, string ruleSuppressionID, int start, int end)
+        /// <param name="startAttributeLine"></param>
+        public RuleSuppression(string ruleName, string ruleSuppressionID, int start, int end, int startAttributeLine)
         {
             RuleName = ruleName;
             RuleSuppressionID = ruleSuppressionID;
             StartOffset = start;
             EndOffset = end;
+            StartAttributeLine = startAttributeLine;
         }
 
         /// <summary>
@@ -320,16 +346,24 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
                     if (targetAsts != null)
                     {
+                        if (targetAsts.Count() == 0)
+                        {
+                            ruleSupp.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSupp.StartAttributeLine,
+                                System.IO.Path.GetFileName(scopeAst.Extent.File), String.Format(Strings.TargetCannotBeFoundError, ruleSupp.Target, ruleSupp.Scope));
+                            result.Add(ruleSupp);
+                            continue;
+                        }
+
                         foreach (Ast targetAst in targetAsts)
                         {
-                            result.Add(new RuleSuppression(ruleSupp.RuleName, ruleSupp.RuleSuppressionID, targetAst.Extent.StartOffset, targetAst.Extent.EndOffset));
+                            result.Add(new RuleSuppression(ruleSupp.RuleName, ruleSupp.RuleSuppressionID, targetAst.Extent.StartOffset, targetAst.Extent.EndOffset, attributeAst.Extent.StartLineNumber));
                         }
                     }
 
                 }
                 else
                 {
-                    // this may add rule suppression that contains erro but we will check for this in the engine to throw out error
+                    // this may add rule suppression that contains error but we will check for this in the engine to throw out error
                     result.Add(ruleSupp);
                 }
             }
