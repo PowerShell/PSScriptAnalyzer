@@ -232,6 +232,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot find any Targets {0} that match the Scope {1} to apply the SuppressMessageAttribute..
+        /// </summary>
+        internal static string TargetCannotBeFoundError {
+            get {
+                return ResourceManager.GetString("TargetCannotBeFoundError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to If Target is specified, Scope must be specified..
         /// </summary>
         internal static string TargetWithoutScopeSuppressionAttributeError {

@@ -334,6 +334,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
                     if (targetAsts != null)
                     {
+                        if (targetAsts.Count() == 0)
+                        {
+                            ruleSupp.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSupp.StartOffset,
+                                System.IO.Path.GetFileName(scopeAst.Extent.File), String.Format(Strings.TargetCannotBeFoundError, ruleSupp.Target, ruleSupp.Scope));
+                            result.Add(ruleSupp);
+                            continue;
+                        }
+
                         foreach (Ast targetAst in targetAsts)
                         {
                             result.Add(new RuleSuppression(ruleSupp.RuleName, ruleSupp.RuleSuppressionID, targetAst.Extent.StartOffset, targetAst.Extent.EndOffset));

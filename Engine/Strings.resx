@@ -186,4 +186,7 @@
   <data name="NullRuleNameError" xml:space="preserve">
     <value>RuleName must not be null.</value>
   </data>
+  <data name="TargetCannotBeFoundError" xml:space="preserve">
+    <value>Cannot find any Targets {0} that match the Scope {1} to apply the SuppressMessageAttribute.</value>
+  </data>
 </root>
