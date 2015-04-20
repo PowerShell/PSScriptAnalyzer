@@ -13,15 +13,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Management.Automation.Language;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
-using System.Resources;
 using System.Globalization;
-using System.Threading;
-using System.Reflection;
 using System.IO;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
@@ -118,7 +113,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                             }
                             if (!firstPartURL.Contains("."))
                             {
-                                isInternalURL = true;
+                                //Add a check to exclude potential SDDL format. Check if a string have four components separated by ":"
+                                var count = firstPartURL.Count(x => x == ':');
+                                if (count !=3 )
+                                {
+                                    isInternalURL = true;
+                                }
                             }
                         }
                         if (isInternalURL)
