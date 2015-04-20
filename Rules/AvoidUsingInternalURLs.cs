@@ -115,7 +115,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                             {
                                 //Add a check to exclude potential SDDL format. Check if a string have four components separated by ":"
                                 var count = firstPartURL.Count(x => x == ':');
-                                if (count > 3 )
+                                if (count == 3 || count == 4 )
                                 {
                                     isInternalURL = true;
                                 }
