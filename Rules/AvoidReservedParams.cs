@@ -63,7 +63,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                                     StringComparison.OrdinalIgnoreCase))
                                 {
                                     string funcName = string.Format(CultureInfo.CurrentCulture,Strings.ReservedParamsCmdletPrefix, (parentAst as FunctionDefinitionAst).Name);
-                                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedParamsError, funcName,paramName), paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedParamsError, funcName,paramName),
+                                        paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramName);
                                    
                                 }
                             }

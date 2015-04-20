@@ -45,7 +45,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     && Helper.Instance.PositionalParameterUsed(cmdAst))
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
-                        cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
                 }
             }
         }

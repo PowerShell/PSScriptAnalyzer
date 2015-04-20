@@ -35,7 +35,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                     {
                         if (ParameterCondition(cmdAst, ceAst))
                         {
-                            yield return new DiagnosticRecord(GetError(fileName, cmdAst), cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                            yield return new DiagnosticRecord(GetError(fileName, cmdAst), cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
                         }
                     }
                 }
