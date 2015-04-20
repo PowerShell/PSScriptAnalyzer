@@ -3,7 +3,7 @@
 
 ##Description
 
-Functions that have verbs like New, Start, Stop, Set, Reset that change system state should support 'ShouldProcess'
+Functions that have verbs like New, Start, Stop, Set, Reset and Restart that change system state should support 'ShouldProcess'
 
 ##How to Fix
 
