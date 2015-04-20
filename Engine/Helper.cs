@@ -800,6 +800,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 record = diagnostics[recordIndex];
             }
 
+            // Add all unprocessed records to results
+            while (recordIndex < diagnostics.Count)
+            {
+                results.Add(diagnostics[recordIndex]);
+                recordIndex += 1;
+            }
+
             return results;
         }
 
