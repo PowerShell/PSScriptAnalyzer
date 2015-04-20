@@ -40,18 +40,45 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Finds all CommandAsts.
-            IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
-
-            // Iterrates all CommandAsts and check the command name.
-            foreach (CommandAst cmdAst in commandAsts)
+            // Rule is applicable only when PowerShell Version is < 3.0, since Get-CIMInstance was introduced in 3.0
+            int majorPSVersion = GetPSMajorVersion(ast);
+            if (!(3 > majorPSVersion && 0 < majorPSVersion))
             {
-                if (cmdAst.GetCommandName() != null && String.Equals(cmdAst.GetCommandName(), "get-wmiobject", StringComparison.OrdinalIgnoreCase))
+                // Finds all CommandAsts.
+                IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
+
+                // Iterate all CommandAsts and check the command name
+                foreach (CommandAst cmdAst in commandAsts)
                 {
-                    yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingGetWMIObjectError, System.IO.Path.GetFileName(fileName)),
-                        cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    if (cmdAst.GetCommandName() != null && String.Equals(cmdAst.GetCommandName(), "get-wmiobject", StringComparison.OrdinalIgnoreCase))
+                    {
+                        yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingGetWMIObjectError, System.IO.Path.GetFileName(fileName)),
+                            cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    }
                 }
-            }            
+            }
+        }
+
+        /// <summary>
+        /// GetPSMajorVersion: Retrieves Major PowerShell Version when supplied using #requires keyword in the script
+        /// </summary>
+        /// <returns>The name of this rule</returns>
+        private int GetPSMajorVersion(Ast ast)
+        {
+            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+
+            IEnumerable<Ast> scriptBlockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);
+            
+            foreach (ScriptBlockAst scriptBlockAst in scriptBlockAsts)
+            {
+                if (null != scriptBlockAst.ScriptRequirements && null != scriptBlockAst.ScriptRequirements.RequiredPSVersion)
+                {
+                    return scriptBlockAst.ScriptRequirements.RequiredPSVersion.Major;
+                }
+            }
+
+            // return a non valid Major version if #requires -Version is not supplied in the Script
+            return -1;
         }
 
         /// <summary>

@@ -592,7 +592,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File &apos;{0}&apos; uses Get-WMIObject. This is not recommended because the cmdlet is based on a non-standard DCOM protocol. Use Get-CIMInstance instead. This is CIM and WS-Man standards compliant and works in a heterogeneous environment..
+        ///   Looks up a localized string similar to File &apos;{0}&apos; uses Get-WMIObject. For PowerShell 3.0 and above, this is not recommended because the cmdlet is based on a non-standard DCOM protocol. Use Get-CIMInstance instead. This is CIM and WS-Man standards compliant and works in a heterogeneous environment..
         /// </summary>
         internal static string AvoidUsingGetWMIObjectError {
             get {
