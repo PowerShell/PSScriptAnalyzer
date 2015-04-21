@@ -275,7 +275,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
             List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();
 
-            //Check wild card input for the Include/ExcludRules and create regex match patterns
+            //Check wild card input for the Include/ExcludeRules and create regex match patterns
             List<Regex> includeRegexList = new List<Regex>();
             List<Regex> excludeRegexList = new List<Regex>();
             if (includeRule != null)
@@ -358,6 +358,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         if (exclude.IsMatch(scriptRule.GetName()))
                         {
                             excludeRegexMatch = true;
+                            break;
                         }
                     }
                     if ((includeRule == null || includeRule.Contains(scriptRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) && 
@@ -433,6 +434,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         if (exclude.IsMatch(commandRule.GetName()))
                         {
                             excludeRegexMatch = true;
+                            break;
                         }
                     }
                     if ((includeRule == null || includeRule.Contains(commandRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) &&
@@ -480,6 +482,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         if (exclude.IsMatch(tokenRule.GetName()))
                         {
                             excludeRegexMatch = true;
+                            break;
                         }
                     }
                     if ((includeRule == null || includeRule.Contains(tokenRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) && 
@@ -524,6 +527,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         if (exclude.IsMatch(dscResourceRule.GetName()))
                         {
                             excludeRegexMatch = true;
+                            break;
                         }
                     }
                     if ((includeRule == null || includeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) &&
