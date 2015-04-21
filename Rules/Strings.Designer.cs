@@ -574,42 +574,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Avoid Using Get-WMIObject.
-        /// </summary>
-        internal static string AvoidUsingGetWMIObjectCommonName {
-            get {
-                return ResourceManager.GetString("AvoidUsingGetWMIObjectCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Depricated. Starting in Windows PowerShell 3.0, this cmdlet has been superseded by Get-CimInstance..
-        /// </summary>
-        internal static string AvoidUsingGetWMIObjectDescription {
-            get {
-                return ResourceManager.GetString("AvoidUsingGetWMIObjectDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File &apos;{0}&apos; uses Get-WMIObject. For PowerShell 3.0 and above, this is not recommended because the cmdlet is based on a non-standard DCOM protocol. Use Get-CIMInstance instead. This is CIM and WS-Man standards compliant and works in a heterogeneous environment..
-        /// </summary>
-        internal static string AvoidUsingGetWMIObjectError {
-            get {
-                return ResourceManager.GetString("AvoidUsingGetWMIObjectError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidUsingGetWMIObject.
-        /// </summary>
-        internal static string AvoidUsingGetWMIObjectName {
-            get {
-                return ResourceManager.GetString("AvoidUsingGetWMIObjectName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Avoid Using Internal URLs.
         /// </summary>
         internal static string AvoidUsingInternalURLsCommonName {
@@ -750,6 +714,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidUsingPositionalParametersName {
             get {
                 return ResourceManager.GetString("AvoidUsingPositionalParametersName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid Using Get-WMIObject, Remove-WMIObject.
+        /// </summary>
+        internal static string AvoidUsingWMIObjectCmdletCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMIObjectCmdletCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Depricated. Starting in Windows PowerShell 3.0, these cmdlets have been superseded by CimInstance cmdlets..
+        /// </summary>
+        internal static string AvoidUsingWMIObjectCmdletDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMIObjectCmdletDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; uses WMIObject cmdlet. For PowerShell 3.0 and above, this is not recommended because the cmdlet is based on a non-standard DCOM protocol. Use CIMInstance cmdlet instead. This is CIM and WS-Man standards compliant and works in a heterogeneous environment..
+        /// </summary>
+        internal static string AvoidUsingWMIObjectCmdletError {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMIObjectCmdletError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUsingWMIObjectCmdlet.
+        /// </summary>
+        internal static string AvoidUsingWMIObjectCmdletName {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMIObjectCmdletName", resourceCulture);
             }
         }
         
