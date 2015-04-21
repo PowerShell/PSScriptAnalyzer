@@ -118,6 +118,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
             set;
         }
 
+        /// <summary>
+        /// Returns the justification for the suppression
+        /// </summary>
+        public string Justification
+        {
+            get;
+            set;
+        }
+
         private static HashSet<string> scopeSet;
 
         /// <summary>
@@ -161,6 +170,10 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                     {
                         switch (count)
                         {
+                            case 5:
+                                Justification = (positionalArguments[4] as StringConstantExpressionAst).Value;
+                                goto case 4;
+
                             case 4:
                                 Target = (positionalArguments[3] as StringConstantExpressionAst).Value;
                                 goto case 3;
@@ -242,6 +255,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                                 Target = (name.Argument as StringConstantExpressionAst).Value;
                                 goto default;
 
+                            case "justification":
+                                if (!String.IsNullOrWhiteSpace(Justification))
+                                {
+                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
+                                }
+
+                                Justification = (name.Argument as StringConstantExpressionAst).Value;
+                                goto default;
+
                             default:
                                 break;
                         }
@@ -278,20 +300,22 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
-        /// Constructs rule expression from rule name, id, start, end and startAttributeLine
+        /// Constructs rule expression from rule name, id, start, end, startAttributeLine and justification
         /// </summary>
         /// <param name="ruleName"></param>
         /// <param name="ruleSuppressionID"></param>
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <param name="startAttributeLine"></param>
-        public RuleSuppression(string ruleName, string ruleSuppressionID, int start, int end, int startAttributeLine)
+        /// <param name="justification"></param>
+        public RuleSuppression(string ruleName, string ruleSuppressionID, int start, int end, int startAttributeLine, string justification)
         {
             RuleName = ruleName;
             RuleSuppressionID = ruleSuppressionID;
             StartOffset = start;
             EndOffset = end;
             StartAttributeLine = startAttributeLine;
+            Justification = justification;
         }
 
         /// <summary>
@@ -356,7 +380,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
                         foreach (Ast targetAst in targetAsts)
                         {
-                            result.Add(new RuleSuppression(ruleSupp.RuleName, ruleSupp.RuleSuppressionID, targetAst.Extent.StartOffset, targetAst.Extent.EndOffset, attributeAst.Extent.StartLineNumber));
+                            result.Add(new RuleSuppression(ruleSupp.RuleName, ruleSupp.RuleSuppressionID, targetAst.Extent.StartOffset,
+                                targetAst.Extent.EndOffset, attributeAst.Extent.StartLineNumber, ruleSupp.Justification));
                         }
                     }
 

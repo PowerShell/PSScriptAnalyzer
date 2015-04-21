@@ -328,7 +328,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(ast, filePath).ToList()));
+                            var records = scriptRule.AnalyzeScript(ast, filePath).ToList();
+                            Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, records);
+                            diagnostics.AddRange(records.Where(record => record.Suppression == null));
                         }
                         catch (Exception scriptRuleException)
                         {
@@ -356,7 +358,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(Helper.Instance.SuppressRule(tokenRule.GetName(), ruleSuppressions, tokenRule.AnalyzeTokens(tokens, fileName).ToList()));
+                            var records = tokenRule.AnalyzeTokens(tokens, fileName).ToList();
+                            Helper.Instance.SuppressRule(tokenRule.GetName(), ruleSuppressions, records);
+                            diagnostics.AddRange(records.Where(record => record.Suppression == null));
                         }
                         catch (Exception tokenRuleException)
                         {
@@ -384,7 +388,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(ast, filePath).ToList()));
+                            var records = dscResourceRule.AnalyzeDSCClass(ast, filePath).ToList();
+                            Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, records);
+                            diagnostics.AddRange(records.Where(record => record.Suppression == null));
                         }
                         catch (Exception dscResourceRuleException)
                         {
@@ -426,7 +432,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                                             // We want the Engine to continue functioning even if one or more Rules throws an exception
                                             try
                                             {
-                                                diagnostics.AddRange(Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCResource(ast, filePath).ToList()));
+                                                var records = dscResourceRule.AnalyzeDSCResource(ast, filePath).ToList();
+                                                Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, records);
+                                                diagnostics.AddRange(records.Where(record => record.Suppression == null));
                                             }
                                             catch (Exception dscResourceRuleException)
                                             {

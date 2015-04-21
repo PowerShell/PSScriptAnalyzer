@@ -30,6 +30,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// The Rule Suppression that applies to this record (null if none is applied)
+        /// </summary>
+        public RuleSuppression Suppression
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Represents a span of text in a script.
         /// </summary>
         public IScriptExtent Extent
