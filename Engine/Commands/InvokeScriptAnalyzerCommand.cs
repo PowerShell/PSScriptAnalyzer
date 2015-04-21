@@ -99,6 +99,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
         }
         private bool recurse;
 
+        /// <summary>
+        /// ShowSuppressed: Show the suppressed message
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public SwitchParameter ShowSuppressed
+        {
+            get { return showSuppressed; }
+            set { showSuppressed = value; }
+        }
+        private bool showSuppressed;
+
         #endregion Parameters
 
         #region Private Members
@@ -256,6 +268,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             Token[] tokens = null;
             ParseError[] errors = null;
             List<DiagnosticRecord> diagnostics = new List<DiagnosticRecord>();
+            List<DiagnosticRecord> suppressed = new List<DiagnosticRecord>();
 
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
             List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();            
@@ -331,6 +344,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             var records = scriptRule.AnalyzeScript(ast, filePath).ToList();
                             Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, records);
                             diagnostics.AddRange(records.Where(record => record.Suppression == null));
+                            suppressed.AddRange(records.Where(record => record.Suppression != null));
                         }
                         catch (Exception scriptRuleException)
                         {
@@ -361,6 +375,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             var records = tokenRule.AnalyzeTokens(tokens, fileName).ToList();
                             Helper.Instance.SuppressRule(tokenRule.GetName(), ruleSuppressions, records);
                             diagnostics.AddRange(records.Where(record => record.Suppression == null));
+                            suppressed.AddRange(records.Where(record => record.Suppression != null));
                         }
                         catch (Exception tokenRuleException)
                         {
@@ -391,6 +406,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             var records = dscResourceRule.AnalyzeDSCClass(ast, filePath).ToList();
                             Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, records);
                             diagnostics.AddRange(records.Where(record => record.Suppression == null));
+                            suppressed.AddRange(records.Where(record => record.Suppression != null));
                         }
                         catch (Exception dscResourceRuleException)
                         {
@@ -435,6 +451,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                                                 var records = dscResourceRule.AnalyzeDSCResource(ast, filePath).ToList();
                                                 Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, records);
                                                 diagnostics.AddRange(records.Where(record => record.Suppression == null));
+                                                suppressed.AddRange(records.Where(record => record.Suppression != null));
                                             }
                                             catch (Exception dscResourceRuleException)
                                             {
@@ -492,9 +509,19 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             //Output through loggers
             foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
             {
-                foreach (DiagnosticRecord diagnostic in diagnostics)
+                if (ShowSuppressed)
                 {
-                    logger.LogMessage(diagnostic, this);
+                    foreach (DiagnosticRecord suppressRecord in suppressed)
+                    {
+                        logger.LogObject(suppressRecord, this);
+                    }
+                }
+                else
+                {
+                    foreach (DiagnosticRecord diagnostic in diagnostics)
+                    {
+                        logger.LogObject(diagnostic, this);
+                    }
                 }
             }
         }

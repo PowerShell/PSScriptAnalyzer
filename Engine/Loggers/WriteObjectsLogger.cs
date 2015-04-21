@@ -30,21 +30,21 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Loggers
         #region Methods
 
         /// <summary>
-        /// LogMessage: Logs the given diagnostic though WriteObject.
+        /// LogObject: Logs the given object though WriteObject.
         /// </summary>
-        /// <param name="diagnostic">The diagnostic to be logged</param>
+        /// <param name="obj">The object to be logged</param>
         /// <param name="command">The Invoke-PSLint command this logger is running through</param>
-        public void LogMessage(DiagnosticRecord diagnostic, InvokeScriptAnalyzerCommand command)
+        public void LogObject(Object obj, InvokeScriptAnalyzerCommand command)
         {
             if (command == null)
             {
                 throw new ArgumentNullException("command");
             }
-            if (diagnostic == null)
+            if (obj == null)
             {
                 throw new ArgumentNullException("diagnostic");
             }
-            command.WriteObject(diagnostic);
+            command.WriteObject(obj);
         }
 
         /// <summary>

@@ -15,9 +15,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// <summary>
         /// LogMessage: Logs the given diagnostic, using the command for Write methods if needed.
         /// </summary>
-        /// <param name="diagnostic">The DiagnosticRecord to be logged.</param>
+        /// <param name="obj">The object to be logged.</param>
         /// <param name="command">The InvokePSScriptAnalyzerCommand that this logger is running off of.</param>
-        void LogMessage(DiagnosticRecord diagnostic, InvokeScriptAnalyzerCommand command);
+        void LogObject(Object obj, InvokeScriptAnalyzerCommand command);
 
         /// <summary>
         /// GetName: Retrieves the name of the logger.
