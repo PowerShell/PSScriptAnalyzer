@@ -327,7 +327,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
                     }
 
                     // regex for wild card *
-                    Regex reg = new Regex(String.Format("^{0}$", Regex.Escape(ruleSupp.Target).Replace(@"\*", ".*")));
+                    Regex reg = new Regex(String.Format("^{0}$", Regex.Escape(ruleSupp.Target).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
                     IEnumerable<Ast> targetAsts = null;
 
                     switch (ruleSupp.Scope.ToLower())
