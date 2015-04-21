@@ -10,4 +10,4 @@ function TestFunction
 
 TestFunction
 
-Get-WmiObject -Class Win32_OperatingSystem -Verbose
+Remove-WmiObject -Class Win32_OperatingSystem -Verbose

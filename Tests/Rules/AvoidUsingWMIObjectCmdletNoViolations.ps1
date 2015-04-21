@@ -5,7 +5,7 @@
 
 function TestFunction
 {
-    Get-WmiObject -Class Win32_ComputerSystem
+    Remove-WmiObject -Class Win32_ComputerSystem
 
 }
 
