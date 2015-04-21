@@ -282,7 +282,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             {
                 foreach (string rule in includeRule)
                 {
-                    Regex includeRegex = new Regex(rule.Replace("*", ".*?"), RegexOptions.IgnoreCase);
+                    Regex includeRegex = new Regex(String.Format("^{0}$", Regex.Escape(rule).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
                     includeRegexList.Add(includeRegex);
                 }
             }
@@ -290,7 +290,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             {
                 foreach (string rule in excludeRule)
                 {
-                    Regex excludeRegex = new Regex(rule.Replace("*", ".*?"), RegexOptions.IgnoreCase);
+                    Regex excludeRegex = new Regex(String.Format("^{0}$", Regex.Escape(rule).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
                     excludeRegexList.Add(excludeRegex);
                 }
             }
@@ -361,8 +361,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             break;
                         }
                     }
-                    if ((includeRule == null || includeRule.Contains(scriptRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) && 
-                        (excludeRule == null || !excludeRule.Contains(scriptRule.GetName(), StringComparer.OrdinalIgnoreCase) || !excludeRegexMatch))
+                    if ((includeRule == null || includeRegexMatch) &&                         (excludeRule == null || !excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
 
@@ -435,10 +434,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         {
                             excludeRegexMatch = true;
                             break;
-                        }
+                         }
                     }
-                    if ((includeRule == null || includeRule.Contains(commandRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) &&
-                        (excludeRule == null || !excludeRule.Contains(commandRule.GetName(), StringComparer.OrdinalIgnoreCase) || !excludeRegexMatch))
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
                     {
                         foreach (KeyValuePair<CommandInfo, IScriptExtent> commandInfo in cmdInfoTable)
                         {
@@ -485,8 +483,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             break;
                         }
                     }
-                    if ((includeRule == null || includeRule.Contains(tokenRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) && 
-                        (excludeRule == null || !excludeRule.Contains(tokenRule.GetName(), StringComparer.OrdinalIgnoreCase)) || !excludeRegexMatch)
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null  || !excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, tokenRule.GetName()));
 
@@ -530,8 +527,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             break;
                         }
                     }
-                    if ((includeRule == null || includeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) &&
-                        (excludeRule == null || !excludeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase) || excludeRegexMatch))
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
@@ -588,8 +584,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                                                 excludeRegexMatch = true;
                                             }
                                         }
-                                        if ((includeRule == null || includeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase) || includeRegexMatch) &&
-                                            (excludeRule == null || !excludeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase) || !excludeRegexMatch))
+                                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
                                         {
                                             WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
