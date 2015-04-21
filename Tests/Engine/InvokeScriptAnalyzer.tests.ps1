@@ -3,6 +3,8 @@ $sa = Get-Command Invoke-ScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $singularNouns = "PSUseSingularNouns"
 $rules = $singularNouns, "PSUseApprovedVerbs"
+$avoidRules = "PSAvoid*"
+$useRules = "PSUse*"
 
 Describe "Test available parameters" {
     $params = $sa.Parameters
@@ -103,6 +105,12 @@ Describe "Test ExcludeRule" {
         }
     }
 
+    Context "Support wild card" {
+        It "supports wild card exclusions of input rules"{
+            $excludeWildCard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -ExcludeRule $avoidRules | Where-Object {$_.RuleName -match $avoidRules}
+        }
+    }
+
 }
 
 Describe "Test IncludeRule" {
@@ -122,6 +130,18 @@ Describe "Test IncludeRule" {
         It "does not include any rules" {
             $wrongInclude = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule "This is a wrong rule"
             $wrongInclude.Count | Should Be 0
+        }
+    }
+
+    Context "IncludeRule supports wild card" {
+        It "includes 1 wildcard rule"{
+            $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
+            $includeWildcard.Count | Should be 5
+        }
+
+        it "includes 2 wildcardrules" {
+            $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules, $useRules 
+            $includeWildcard.Count | Should be 7
         }
     }
 }
