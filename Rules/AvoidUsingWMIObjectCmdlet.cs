@@ -116,6 +116,17 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             return SourceType.Builtin;
         }
 
+
+        /// <summary>
+        /// GetSeverity:Retrieves the severity of the rule: error, warning of information.
+        /// </summary>
+        /// <returns></returns>
+        public RuleSeverity GetSeverity()
+        {
+            return RuleSeverity.Warning;
+        }
+
+
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>

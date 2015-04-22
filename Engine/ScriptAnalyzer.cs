@@ -33,7 +33,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         #region Private memebers
 
         private CompositionContainer container;
-        private const string baseName = "Microsoft.Windows.Powershell.ScriptAnalyzer.Properties.Strings";
 
         #endregion
 
@@ -91,7 +90,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public void Initialize()
         {
             // Clear external rules for each invoke.
-            this.ExternalRules = new List<ExternalRule>();
+            ExternalRules = new List<ExternalRule>();
 
             // Initialize helper
             Helper.Instance.Initialize();
@@ -129,7 +128,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             List<string> paths = new List<string>();
 
             // Clear external rules for each invoke.
-            this.ExternalRules = new List<ExternalRule>();
+            ExternalRules = new List<ExternalRule>();
 
             // Initialize helper
             Helper.Instance.Initialize();
