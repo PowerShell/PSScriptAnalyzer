@@ -46,7 +46,7 @@ Pester-based ScriptAnalyzer Tests are located in ```<branch>/PSScriptAnalyzer/Te
 .\InvokeScriptAnalyzer.tests.ps1
 * Run Tests for Built-in rules:
 .\*.ps1 (Example - .\ AvoidConvertToSecureStringWithPlainText.ps1)
-You can also run all tests under \Engine or \Rules by calling Invoke-Pester in the Engine/Rules directory.
+*You can also run all tests under \Engine or \Rules by calling Invoke-Pester in the Engine/Rules directory.
  
 
 Contributing to ScriptAnalyzer
