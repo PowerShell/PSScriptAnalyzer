@@ -1,6 +1,6 @@
-﻿function Get-Service
+﻿function Set-Service
 {
-    [CmdletBinding(SupportShouldSuppress= $false)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param ([string]$c)
 }
 
