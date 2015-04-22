@@ -716,23 +716,28 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Suppress the rules from the diagnostic records list by attaching rule suppression to the record that is suppressed
+        /// Suppress the rules from the diagnostic records list.
+        /// Returns a list of suppressed records as well as the ones that are not suppressed
         /// </summary>
         /// <param name="ruleSuppressions"></param>
         /// <param name="diagnostics"></param>
-        public void SuppressRule(string ruleName, Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict, List<DiagnosticRecord> diagnostics)
+        public Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(string ruleName, Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict, List<DiagnosticRecord> diagnostics)
         {
+            List<SuppressedRecord> suppressedRecords = new List<SuppressedRecord>();
+            List<DiagnosticRecord> unSuppressedRecords = new List<DiagnosticRecord>();
+            Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> result = Tuple.Create(suppressedRecords, unSuppressedRecords);
+
             if (ruleSuppressionsDict == null || !ruleSuppressionsDict.ContainsKey(ruleName)
                 || diagnostics == null || diagnostics.Count == 0)
             {
-                return;
+                return result;
             }
 
             List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
 
             if (ruleSuppressions.Count == 0)
             {
-                return;
+                return result;
             }
 
             int recordIndex = 0;
@@ -794,13 +799,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                             && !string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
                         {
                             suppressionCount -= 1;
+                            unSuppressedRecords.Add(record);
                         }
                         // otherwise, we suppress the record, move on to the next.
                         else
                         {
-                            record.Suppression = ruleSuppression;
+                            suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
                         }
                     }
+                }
+                else
+                {
+                    unSuppressedRecords.Add(record);
                 }
 
                 // important assumption: this point is reached only if we want to move to the next record
@@ -822,6 +832,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
                 record = diagnostics[recordIndex];
             }
+
+            while (recordIndex < diagnostics.Count)
+            {
+                unSuppressedRecords.Add(diagnostics[recordIndex]);
+                recordIndex += 1;
+            }
+
+            return result;
         }
 
         #endregion
@@ -910,15 +928,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             return null;
         }
 
-        /// <summary>
-        /// Do nothing
-        /// </summary>
-        /// <param name="baseCtorInvokeMemberExpressionAst"></param>
-        /// <returns></returns>
-        public object VisitBaseCtorInvokeMemberExpression(BaseCtorInvokeMemberExpressionAst baseCtorInvokeMemberExpressionAst)
-        {
-            return null;
-        }
 
         /// <summary>
         /// Do nothing

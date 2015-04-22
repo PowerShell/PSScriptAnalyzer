@@ -19,7 +19,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         private DiagnosticSeverity severity;
         private string scriptName;
         private string ruleSuppressionId;
-        private RuleSuppression suppression;
 
         /// <summary>
         /// Represents a string from the rule about why this diagnostic was created.
@@ -28,22 +27,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         {
             get { return message; }
             set { message = value; }
-        }
-
-        /// <summary>
-        /// The Rule Suppression that applies to this record (null if none is applied)
-        /// </summary>
-        public RuleSuppression Suppression
-        {
-            get { return suppression; }
-            set
-            {
-                suppression = value;
-                if (suppression != null)
-                {
-                    Message = suppression.Justification;
-                }
-            }
         }
 
         /// <summary>
