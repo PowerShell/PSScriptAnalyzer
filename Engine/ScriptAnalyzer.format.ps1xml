@@ -62,19 +62,19 @@
     <TableControl>
       <TableHeaders>
         <TableColumnHeader>
-          <Width>30</Width>
-          <Label>Name</Label>
+          <Width>35</Width>
+          <Label>Rule Name</Label>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>33</Width>
-          <Label>CommonName</Label>
+          <Width>15</Width>
+          <Label>Severity</Label>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>45</Width>
+          <Width>60</Width>
           <Label>Description</Label>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>8</Width>
+          <Width>10</Width>
           <Label>Source</Label>
         </TableColumnHeader>
       </TableHeaders>
@@ -86,7 +86,7 @@
               <PropertyName>Name</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
-              <PropertyName>CommonName</PropertyName>
+              <PropertyName>Severity</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Description</PropertyName>
