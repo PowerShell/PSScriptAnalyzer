@@ -8,7 +8,7 @@ PSScriptAnalyzer is shipped with a collection of built-in rules that checks vari
 PSScriptAnalyzer cmdlets
 ======================
 ```
-Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>]
+Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>] [-Severity <string[]>]
 
 Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [<CommonParameters>]
 ```
@@ -46,6 +46,7 @@ Pester-based ScriptAnalyzer Tests are located in ```<branch>/PSScriptAnalyzer/Te
 .\InvokeScriptAnalyzer.tests.ps1
 * Run Tests for Built-in rules:
 .\*.ps1 (Example - .\ AvoidConvertToSecureStringWithPlainText.ps1)
+You can also run all tests under \Engine or \Rules by calling Invoke-Pester in the Engine/Rules directory.
  
 
 Contributing to ScriptAnalyzer
