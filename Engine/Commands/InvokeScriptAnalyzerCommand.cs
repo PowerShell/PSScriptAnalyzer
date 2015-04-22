@@ -102,7 +102,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
         /// <summary>
         /// ShowSuppressed: Show the suppressed message
         /// </summary>
-        [Parameter(Mandatory = false)]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public SwitchParameter SuppressedOnly
         {
