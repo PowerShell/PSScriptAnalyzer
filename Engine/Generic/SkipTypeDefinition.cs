@@ -16,9 +16,9 @@ using System.Management.Automation.Language;
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 {
     /// <summary>
-    /// This class extends AstVisitor2 and will skip any typedefinitionast
+    /// This class extends AstVisitor and will skip any typedefinitionast
     /// </summary>
-    public class SkipTypeDefinition : AstVisitor2
+    public class SkipTypeDefinition : AstVisitor
     {
         /// <summary>
         /// File name
@@ -30,14 +30,5 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// </summary>
         public List<DiagnosticRecord> DiagnosticRecords = new List<DiagnosticRecord>();
 
-        /// <summary>
-        /// Skip typedefinition
-        /// </summary>
-        /// <param name="typeDefAst"></param>
-        /// <returns></returns>
-        public override AstVisitAction VisitTypeDefinition(TypeDefinitionAst typeDefAst)
-        {
-            return AstVisitAction.SkipChildren;
-        }
     }
 }
