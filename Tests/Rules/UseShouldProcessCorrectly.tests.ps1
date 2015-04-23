@@ -1,5 +1,5 @@
-﻿Import-Module ScriptAnalyzer
-$violationMessage = "Verb-Files has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue."
+﻿Import-Module PSScriptAnalyzer
+$violationMessage = "'Verb-Files' has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue."
 $violationName = "PSShouldProcess"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}

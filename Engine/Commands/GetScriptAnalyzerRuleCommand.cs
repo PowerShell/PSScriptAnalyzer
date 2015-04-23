@@ -1,14 +1,23 @@
-﻿using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+﻿//
+// Copyright (c) Microsoft Corporation.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+using Microsoft.PowerShell.Commands;
+using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
-using System.Resources;
-using System.Threading;
-using System.Reflection;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
 {
@@ -44,6 +53,21 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             set { name = value; }
         }
         private string[] name;
+
+        /// <summary>
+        /// Severity: Array of the severity types to be enabled.
+        /// </summary>
+        /// </summary>
+        [ValidateSet("Warning", "Error", "Information", IgnoreCase = true)]
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public string[] Severity
+        {
+            get { return severity; }
+            set { severity = value; }
+        }
+        private string[] severity;
+
         #endregion Parameters
 
         #region Private Members
@@ -116,9 +140,16 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             }
             else
             {
+                if (severity != null)
+                {
+                    var ruleSeverity = severity.Select(item => Enum.Parse(typeof (RuleSeverity), item));
+                    rules = rules.Where(item => ruleSeverity.Contains(item.GetSeverity())).ToList();
+                }
+
                 foreach (IRule rule in rules)
                 {
-                    WriteObject(new RuleInfo(rule.GetName(), rule.GetCommonName(), rule.GetDescription(), rule.GetSourceType(), rule.GetSourceName()));
+                    WriteObject(new RuleInfo(rule.GetName(), rule.GetCommonName(), rule.GetDescription(),
+                        rule.GetSourceType(), rule.GetSourceName(), rule.GetSeverity()));
                 }
             }
         }

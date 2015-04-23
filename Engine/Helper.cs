@@ -1,4 +1,16 @@
-﻿using System;
+﻿//
+// Copyright (c) Microsoft Corporation.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -231,10 +243,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// Given a command's name, checks whether it exists
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="commandType"></param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name)
+        public CommandInfo GetCommandInfo(string name, CommandTypes commandType=CommandTypes.All)
         {
-            return Helper.Instance.MyCmdlet.InvokeCommand.GetCommand(name, CommandTypes.All);
+            return Helper.Instance.MyCmdlet.InvokeCommand.GetCommand(name, commandType);
         }
 
         /// <summary>
@@ -247,6 +260,29 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             List<string> resourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Get-TargetResource", "Test-TargetResource" });
             return ast.FindAll(item => item is FunctionDefinitionAst
                 && resourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);            
+        }
+
+        /// <summary>
+        /// Gets all the strings contained in an array literal ast
+        /// </summary>
+        /// <param name="alAst"></param>
+        /// <returns></returns>
+        public List<string> GetStringsFromArrayLiteral(ArrayLiteralAst alAst)
+        {
+            List<string> result = new List<string>();
+
+            if (alAst != null && alAst.Elements != null)
+            {
+                foreach (ExpressionAst eAst in alAst.Elements)
+                {
+                    if (eAst is StringConstantExpressionAst)
+                    {
+                        result.Add((eAst as StringConstantExpressionAst).Value);
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -727,18 +763,19 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             List<DiagnosticRecord> unSuppressedRecords = new List<DiagnosticRecord>();
             Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> result = Tuple.Create(suppressedRecords, unSuppressedRecords);
 
-            if (ruleSuppressionsDict == null || !ruleSuppressionsDict.ContainsKey(ruleName)
-                || diagnostics == null || diagnostics.Count == 0)
+            if (diagnostics == null || diagnostics.Count == 0)
             {
+                return result;
+            }
+
+            if (ruleSuppressionsDict == null || !ruleSuppressionsDict.ContainsKey(ruleName)
+                || ruleSuppressionsDict[ruleName].Count == 0)
+            {
+                unSuppressedRecords.AddRange(diagnostics);
                 return result;
             }
 
             List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
-
-            if (ruleSuppressions.Count == 0)
-            {
-                return result;
-            }
 
             int recordIndex = 0;
             int ruleSuppressionIndex = 0;
@@ -875,7 +912,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
     /// <summary>
     /// Class used to do variable analysis on the whole script
     /// </summary>
-    public class ScriptAnalysis: ICustomAstVisitor2
+    public class ScriptAnalysis: ICustomAstVisitor
     {
         private VariableAnalysis OuterAnalysis;
 
@@ -901,7 +938,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             if (scriptBlockAst == null) return null;
 
             VariableAnalysis previousOuter = OuterAnalysis;
-            OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
+
+            // We already run variable analysis if the parent is a function so skip these.
+            // Otherwise, we have to do variable analysis using the outer scope variables.
+            if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
+            {
+                OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
+            }
 
             if (scriptBlockAst.DynamicParamBlock != null)
             {
@@ -923,74 +966,53 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 scriptBlockAst.EndBlock.Visit(this);
             }
 
+            VariableAnalysis innerAnalysis = OuterAnalysis;
             OuterAnalysis = previousOuter;
 
-            return null;
-        }
-
-
-        /// <summary>
-        /// Do nothing
-        /// </summary>
-        /// <param name="configurationDefinitionAst"></param>
-        /// <returns></returns>
-        public object VisitConfigurationDefinition(ConfigurationDefinitionAst configurationDefinitionAst)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Do nothing
-        /// </summary>
-        /// <param name="dynamicKeywordAst"></param>
-        /// <returns></returns>
-        public object VisitDynamicKeywordStatement(DynamicKeywordStatementAst dynamicKeywordAst)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Set outer analysis before further visiting.
-        /// </summary>
-        /// <param name="functionMemberAst"></param>
-        /// <returns></returns>
-        public object VisitFunctionMember(FunctionMemberAst functionMemberAst)
-        {
-            var previousOuter = OuterAnalysis;
-            OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(functionMemberAst, OuterAnalysis);
-
-            if (functionMemberAst != null)
+            if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
             {
-                functionMemberAst.Body.Visit(this);
+                // Update the variable analysis of the outer script block
+                VariableAnalysis.UpdateOuterAnalysis(OuterAnalysis, innerAnalysis);
             }
 
-            OuterAnalysis = previousOuter;
-
             return null;
         }
 
         /// <summary>
-        /// Do nothing
+        /// perform special visiting action if statement is a typedefinitionast
         /// </summary>
-        /// <param name="propertyMemberAst"></param>
+        /// <param name="statementAst"></param>
         /// <returns></returns>
-        public object VisitPropertyMember(PropertyMemberAst propertyMemberAst)
+        private object VisitStatementHelper(StatementAst statementAst)
         {
-            return null;
-        }
-
-        /// <summary>
-        /// Visit the functions defined in class
-        /// </summary>
-        /// <param name="typeDefinitionAst"></param>
-        /// <returns></returns>
-        public object VisitTypeDefinition(TypeDefinitionAst typeDefinitionAst)
-        {
-            if (typeDefinitionAst != null)
+            if (statementAst == null)
             {
-                foreach (var member in typeDefinitionAst.Members)
+                return null;
+            }
+
+            TypeDefinitionAst typeAst = statementAst as TypeDefinitionAst;
+
+            if (typeAst == null)
+            {
+                statementAst.Visit(this);
+                return null;
+            }
+
+            foreach (var member in typeAst.Members)
+            {
+                FunctionMemberAst functionMemberAst = member as FunctionMemberAst;
+
+                if (functionMemberAst != null)
                 {
-                    member.Visit(this);
+                    var previousOuter = OuterAnalysis;
+                    OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(functionMemberAst, OuterAnalysis);
+
+                    if (functionMemberAst != null)
+                    {
+                        functionMemberAst.Body.Visit(this);
+                    }
+
+                    OuterAnalysis = previousOuter;
                 }
             }
 
@@ -1114,6 +1136,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitCommand(CommandAst commandAst)
         {
+            if (commandAst == null) return null;
+
+            foreach (CommandElementAst ceAst in commandAst.CommandElements)
+            {
+                ceAst.Visit(this);
+            }
+
             return null;
         }
 
@@ -1406,7 +1435,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             {
                 foreach (var statement in namedBlockAst.Statements)
                 {
-                    statement.Visit(this);
+                    VisitStatementHelper(statement);
                 }
             }
 
@@ -1444,12 +1473,19 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Do nothing
+        /// Visit pipeline
         /// </summary>
         /// <param name="pipelineAst"></param>
         /// <returns></returns>
         public object VisitPipeline(PipelineAst pipelineAst)
         {
+            if (pipelineAst == null) return null;
+
+            foreach (var command in pipelineAst.PipelineElements)
+            {
+                command.Visit(this);
+            }
+
             return null;
         }
 
@@ -1489,7 +1525,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             {
                 foreach (var statement in statementBlockAst.Statements)
                 {
-                    statement.Visit(this);
+                    VisitStatementHelper(statement);
                 }
             }
 

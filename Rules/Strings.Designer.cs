@@ -718,6 +718,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid Using Get-WMIObject, Remove-WMIObject.
+        /// </summary>
+        internal static string AvoidUsingWMIObjectCmdletCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMIObjectCmdletCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Depricated. Starting in Windows PowerShell 3.0, these cmdlets have been superseded by CimInstance cmdlets..
+        /// </summary>
+        internal static string AvoidUsingWMIObjectCmdletDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMIObjectCmdletDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; uses WMIObject cmdlet. For PowerShell 3.0 and above, this is not recommended because the cmdlet is based on a non-standard DCOM protocol. Use CIMInstance cmdlet instead. This is CIM and WS-Man standards compliant and works in a heterogeneous environment..
+        /// </summary>
+        internal static string AvoidUsingWMIObjectCmdletError {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMIObjectCmdletError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUsingWMIObjectCmdlet.
+        /// </summary>
+        internal static string AvoidUsingWMIObjectCmdletName {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMIObjectCmdletName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using Write-Host.
         /// </summary>
         internal static string AvoidUsingWriteHostCommonName {
@@ -1551,6 +1587,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         internal static string UsePSCredentialTypeName {
             get {
                 return ResourceManager.GetString("UsePSCredentialTypeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use ShouldProcess For State Changing Functions.
+        /// </summary>
+        internal static string UseShouldProcessForStateChangingFunctionsCommonName {
+            get {
+                return ResourceManager.GetString("UseShouldProcessForStateChangingFunctionsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Functions that have verbs like New, Start, Stop, Set, Reset, Restart that change system state should support &apos;ShouldProcess&apos;..
+        /// </summary>
+        internal static string UseShouldProcessForStateChangingFunctionsDescrption {
+            get {
+                return ResourceManager.GetString("UseShouldProcessForStateChangingFunctionsDescrption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function ’{0}’ has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;..
+        /// </summary>
+        internal static string UseShouldProcessForStateChangingFunctionsError {
+            get {
+                return ResourceManager.GetString("UseShouldProcessForStateChangingFunctionsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseShouldProcessForStateChangingFunctions.
+        /// </summary>
+        internal static string UseShouldProcessForStateChangingFunctionsName {
+            get {
+                return ResourceManager.GetString("UseShouldProcessForStateChangingFunctionsName", resourceCulture);
             }
         }
         

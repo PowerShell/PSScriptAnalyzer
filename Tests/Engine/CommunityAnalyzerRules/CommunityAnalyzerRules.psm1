@@ -95,7 +95,7 @@ function Measure-RequiresRunAsAdministrator
                     $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresRunAsAdministrator; 
                                                 "Extent"   = $assignmentAst.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Strict"}
+                                                "Severity" = "Information"}
                     $results += $result               
                 }
             }
@@ -106,7 +106,7 @@ function Measure-RequiresRunAsAdministrator
                     $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresRunAsAdministrator; 
                                                 "Extent"   = $assignmentAst.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Strict"}
+                                                "Severity" = "Information"}
                     $results += $result               
                 }        
             }
@@ -195,7 +195,7 @@ function Measure-RequiresModules
                         $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresModules; 
                                                     "Extent"   = $ast.Extent;
                                                     "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                    "Severity" = "Strict"}
+                                                    "Severity" = "Information"}
                         $results += $result
                     }              
                 }
@@ -209,7 +209,7 @@ function Measure-RequiresModules
                         $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresModules; 
                                                     "Extent"   = $ast.Extent;
                                                     "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                    "Severity" = "Strict"}
+                                                    "Severity" = "Information"}
                         $results += $result
                     }            
                 }
@@ -288,7 +288,7 @@ function Measure-LongClassName
                     $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureLongClassName; 
                                                 "Extent"   = $sbResult.BoundParameters["TypeName"].Value.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Strict"}
+                                                "Severity" = "Information"}
                     $results += $result                
                 }
             }
@@ -346,7 +346,7 @@ function Measure-DeprecatedWMIClass
                 $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureDeprecatedWMIClass; 
                                             "Extent"   = $StringConstantExpressionAst.Extent;
                                             "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Strict"}
+                                            "Severity" = "Information"}
                 $results += $result             
             }
 
@@ -511,7 +511,7 @@ function Measure-CurlyBracket
                     $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureCurlyBracket; 
                                                 "Extent"   = $ast.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Strict"}
+                                                "Severity" = "Information"}
                     $results += $result                
                 }
             }

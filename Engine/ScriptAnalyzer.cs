@@ -1,4 +1,16 @@
-﻿using Microsoft.Windows.Powershell.ScriptAnalyzer.Commands;
+﻿//
+// Copyright (c) Microsoft Corporation.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+using Microsoft.Windows.Powershell.ScriptAnalyzer.Commands;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
@@ -21,7 +33,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         #region Private memebers
 
         private CompositionContainer container;
-        private const string baseName = "Microsoft.Windows.Powershell.ScriptAnalyzer.Properties.Strings";
 
         #endregion
 
@@ -76,7 +87,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public void Initialize()
         {
             // Clear external rules for each invoke.
-            this.ExternalRules = new List<ExternalRule>();
+            ExternalRules = new List<ExternalRule>();
 
             // Initialize helper
             Helper.Instance.Initialize();
@@ -114,7 +125,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             List<string> paths = new List<string>();
 
             // Clear external rules for each invoke.
-            this.ExternalRules = new List<ExternalRule>();
+            ExternalRules = new List<ExternalRule>();
 
             // Initialize helper
             Helper.Instance.Initialize();

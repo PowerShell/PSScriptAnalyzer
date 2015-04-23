@@ -1,4 +1,17 @@
-﻿using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+﻿//
+// Copyright (c) Microsoft Corporation.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+using System.Text.RegularExpressions;
+using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -102,6 +115,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
         /// <summary>
         /// ShowSuppressed: Show the suppressed message
         /// </summary>
+        [Parameter(Mandatory = false)]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public SwitchParameter SuppressedOnly
         {
@@ -270,7 +284,28 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             List<SuppressedRecord> suppressed = new List<SuppressedRecord>();
 
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
-            List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();            
+            List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();
+
+            //Check wild card input for the Include/ExcludeRules and create regex match patterns
+            List<Regex> includeRegexList = new List<Regex>();
+            List<Regex> excludeRegexList = new List<Regex>();
+            if (includeRule != null)
+            {
+                foreach (string rule in includeRule)
+                {
+                    Regex includeRegex = new Regex(String.Format("^{0}$", Regex.Escape(rule).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
+                    includeRegexList.Add(includeRegex);
+                }
+            }
+            if (excludeRule != null)
+            {
+                foreach (string rule in excludeRule)
+                {
+                    Regex excludeRegex = new Regex(String.Format("^{0}$", Regex.Escape(rule).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
+                    excludeRegexList.Add(excludeRegex);
+                }
+            }
+
 
             //Parse the file
             if (File.Exists(filePath))
@@ -327,12 +362,32 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             #region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
             string fileName = System.IO.Path.GetFileName(filePath);
+           
             if (ScriptAnalyzer.Instance.ScriptRules != null)
             {
                 foreach (IScriptRule scriptRule in ScriptAnalyzer.Instance.ScriptRules)
                 {
-                    if ((includeRule == null || includeRule.Contains(scriptRule.GetName(), StringComparer.OrdinalIgnoreCase)) && 
-                        (excludeRule == null || !excludeRule.Contains(scriptRule.GetName(), StringComparer.OrdinalIgnoreCase)))
+                    bool includeRegexMatch = false;
+                    bool excludeRegexMatch = false;
+                    foreach (Regex include in includeRegexList)
+                    {
+                        if (include.IsMatch(scriptRule.GetName()))
+                        {
+                            includeRegexMatch = true;
+                            break;
+                        }
+                    }
+
+                    foreach (Regex exclude in excludeRegexList)
+                    {
+                        if (exclude.IsMatch(scriptRule.GetName()))
+                        {
+                            excludeRegexMatch = true;
+                            break;
+                        }
+                    }
+
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
 
@@ -347,7 +402,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         catch (Exception scriptRuleException)
                         {
                             WriteError(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
-                            continue;
                         }
                     }
                 }
@@ -361,8 +415,25 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             {
                 foreach (ITokenRule tokenRule in ScriptAnalyzer.Instance.TokenRules)
                 {
-                    if ((includeRule == null || includeRule.Contains(tokenRule.GetName(), StringComparer.OrdinalIgnoreCase)) && 
-                        (excludeRule == null || !excludeRule.Contains(tokenRule.GetName(), StringComparer.OrdinalIgnoreCase)))
+                    bool includeRegexMatch = false;
+                    bool excludeRegexMatch = false;
+                    foreach (Regex include in includeRegexList)
+                    {
+                        if (include.IsMatch(tokenRule.GetName()))
+                        {
+                            includeRegexMatch = true;
+                            break;
+                        }
+                    }
+                    foreach (Regex exclude in excludeRegexList)
+                    {
+                        if (exclude.IsMatch(tokenRule.GetName()))
+                        {
+                            excludeRegexMatch = true;
+                            break;
+                        }
+                    }
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null  || !excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, tokenRule.GetName()));
 
@@ -377,7 +448,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         catch (Exception tokenRuleException)
                         {
                             WriteError(new ErrorRecord(tokenRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
-                            continue;
                         } 
                     }
                 }
@@ -391,8 +461,28 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                 // Run DSC Class rule
                 foreach (IDSCResourceRule dscResourceRule in ScriptAnalyzer.Instance.DSCResourceRules)
                 {
-                    if ((includeRule == null || includeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase)) &&
-                        (excludeRule == null || !excludeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase)))
+                    bool includeRegexMatch = false;
+                    bool excludeRegexMatch = false;
+
+                    foreach (Regex include in includeRegexList)
+                    {
+                        if (include.IsMatch(dscResourceRule.GetName()))
+                        {
+                            includeRegexMatch = true;
+                            break;
+                        }
+                    }
+
+                    foreach (Regex exclude in excludeRegexList)
+                    {
+                        if (exclude.IsMatch(dscResourceRule.GetName()))
+                        {
+                            excludeRegexMatch = true;
+                            break;
+                        }
+                    }
+
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
@@ -407,7 +497,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         catch (Exception dscResourceRuleException)
                         {
                             WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
-                            continue;
                         }    
                     }
                 }
@@ -435,8 +524,24 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                                     // Run all DSC Rules
                                     foreach (IDSCResourceRule dscResourceRule in ScriptAnalyzer.Instance.DSCResourceRules)
                                     {
-                                        if ((includeRule == null || includeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase)) &&
-                                            (excludeRule == null || !excludeRule.Contains(dscResourceRule.GetName(), StringComparer.OrdinalIgnoreCase)))
+                                        bool includeRegexMatch = false;
+                                        bool excludeRegexMatch = false;
+                                        foreach (Regex include in includeRegexList)
+                                        {
+                                            if (include.IsMatch(dscResourceRule.GetName()))
+                                            {
+                                                includeRegexMatch = true;
+                                                break;
+                                            }
+                                        }
+                                        foreach (Regex exclude in excludeRegexList)
+                                        {
+                                            if (exclude.IsMatch(dscResourceRule.GetName()))
+                                            {
+                                                excludeRegexMatch = true;
+                                            }
+                                        }
+                                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
                                         {
                                             WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
@@ -451,7 +556,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                                             catch (Exception dscResourceRuleException)
                                             {
                                                 WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
-                                                continue;
                                             }  
                                         }
                                     }

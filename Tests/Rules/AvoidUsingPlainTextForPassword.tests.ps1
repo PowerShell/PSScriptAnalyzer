@@ -1,6 +1,6 @@
-﻿Import-Module ScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 
-$violationMessage = [regex]::Escape('Parameter $passphrases should use SecureString, otherwise this will expose sensitive information. See ConvertTo-SecureString for more information.')
+$violationMessage = [regex]::Escape("Parameter '`$passphrases' should use SecureString, otherwise this will expose sensitive information. See ConvertTo-SecureString for more information.")
 $violationName = "PSAvoidUsingPlainTextForPassword"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidUsingPlainTextForPassword.ps1 | Where-Object {$_.RuleName -eq $violationName}

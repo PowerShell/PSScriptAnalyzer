@@ -1,6 +1,14 @@
-﻿/********************************************************************++
-Copyright (c) Microsoft Corporation.  All rights reserved.
---********************************************************************/
+﻿//
+// Copyright (c) Microsoft Corporation.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
 
 using System;
 using System.Collections;
@@ -2949,10 +2957,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             // Don't recurse into the script block, it's variables are distinct from the script block
             // we're currently analyzing.
-            if (scriptBlockExpressionAst != null)
-            {
-                scriptBlockExpressionAst.ScriptBlock.Visit(this.Decorator);
-            }
             return null;
         }
 
