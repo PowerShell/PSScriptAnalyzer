@@ -2957,10 +2957,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             // Don't recurse into the script block, it's variables are distinct from the script block
             // we're currently analyzing.
-            if (scriptBlockExpressionAst != null)
-            {
-                scriptBlockExpressionAst.ScriptBlock.Visit(this.Decorator);
-            }
             return null;
         }
 
