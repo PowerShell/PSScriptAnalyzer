@@ -37,6 +37,8 @@ Building the Code
 
 Use Visual Studio to build "ScriptAnalyzer.sln". Use ~/PSScriptAnalyzer/ folder to load PSScriptAnalyzer.psd1
 
+**Note: If there are any build errors, please refer to Requirements section and make sure all dependencies are properly installed**
+
 Running Tests
 =============
 
