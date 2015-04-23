@@ -16,7 +16,9 @@ Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-Exclud
 Requirements
 ============
 
-WS2012R2 / Windows 8.1 / Windows OS running PowerShell v5.0 which can be obtained using [Windows Management Framework 5.0 Preview February 2015](http://go.microsoft.com/fwlink/?LinkId=398175).
+WS2012R2 / Windows 8.1 / Windows OS running **PowerShell v5.0** and **Windows Management Framework 5.0 Preview**
+
+Download the latest WMF package from [Windows Management Framework 5.0 Preview February 2015](http://go.microsoft.com/fwlink/?LinkId=398175).
 
 Installation
 ============
