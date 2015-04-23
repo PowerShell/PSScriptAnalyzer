@@ -31,8 +31,8 @@ Describe "AvoidGlobalVars" {
 
 Describe "AvoidUnitializedVars" {
     Context "When there are violations" {
-        It "has 4 avoid using unitialized variable violations" {
-            $nonInitializedViolations.Count | Should Be 4
+        It "has 5 avoid using unitialized variable violations" {
+            $nonInitializedViolations.Count | Should Be 5
         }
 
         It "has the correct description message" {
