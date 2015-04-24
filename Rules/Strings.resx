@@ -666,4 +666,16 @@
   <data name="UseShouldProcessForStateChangingFunctionsName" xml:space="preserve">
     <value>UseShouldProcessForStateChangingFunctions</value>
   </data>
+  <data name="AvoidUsingWMIObjectCmdletCommonName" xml:space="preserve">
+    <value>Avoid Using Get-WMIObject, Remove-WMIObject</value>
+  </data>
+  <data name="AvoidUsingWMIObjectCmdletDescription" xml:space="preserve">
+    <value>Depricated. Starting in Windows PowerShell 3.0, these cmdlets have been superseded by CimInstance cmdlets.</value>
+  </data>
+  <data name="AvoidUsingWMIObjectCmdletError" xml:space="preserve">
+    <value>File '{0}' uses WMIObject cmdlet. For PowerShell 3.0 and above, this is not recommended because the cmdlet is based on a non-standard DCOM protocol. Use CIMInstance cmdlet instead. This is CIM and WS-Man standards compliant and works in a heterogeneous environment.</value>
+  </data>
+  <data name="AvoidUsingWMIObjectCmdletName" xml:space="preserve">
+    <value>AvoidUsingWMIObjectCmdlet</value>
+  </data>
 </root>

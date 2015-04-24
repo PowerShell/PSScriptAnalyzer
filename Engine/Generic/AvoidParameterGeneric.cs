@@ -104,5 +104,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// </summary>
         /// <returns>The source type of the rule.</returns>
         public abstract  SourceType GetSourceType();
+
+        public abstract RuleSeverity GetSeverity();
     }
 }

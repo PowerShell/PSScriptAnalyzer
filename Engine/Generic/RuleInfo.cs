@@ -29,12 +29,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         private string description;
         private SourceType sourceType;
         private string sourceName;
+        private RuleSeverity ruleSeverity;
 
         /// <summary>
         /// Name: The name of the rule.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public string Name
+        public string RuleName
         {
             get { return name; }
             private set { name = value; }
@@ -82,6 +83,16 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// Severity : The severity of the rule violation.
+        /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public RuleSeverity Severity
+        {
+            get { return ruleSeverity; }
+            private set { ruleSeverity = value; }
+        }
+
+        /// <summary>
         /// Constructor for a RuleInfo.
         /// </summary>
         /// <param name="name">Name of the rule.</param>
@@ -89,13 +100,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// <param name="description">Description of the rule.</param>
         /// <param name="sourceType">Source type of the rule.</param>
         /// <param name="sourceName">Source name of the rule.</param>
-        public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName)
+        public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity)
         {
-            Name        = name;
+            RuleName        = name;
             CommonName  = commonName;
             Description = description;
             SourceType  = sourceType;
             SourceName  = sourceName;
+            Severity = severity;
         }
     }
 }

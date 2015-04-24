@@ -66,6 +66,7 @@
     <Compile Include="AvoidUsingInternalURLs.cs" />
     <Compile Include="AvoidUsingInvokeExpression.cs" />
     <Compile Include="AvoidUsingPlainTextForPassword.cs" />
+    <Compile Include="AvoidUsingWMIObjectCmdlet.cs" />
     <Compile Include="AvoidUsingWriteHost.cs" />
     <Compile Include="MissingModuleManifestField.cs" />
     <Compile Include="PossibleIncorrectComparisonWithNull.cs" />

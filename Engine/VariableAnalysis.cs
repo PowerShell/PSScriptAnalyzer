@@ -256,6 +256,31 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Updates the variablesdictionary of the outeranalysis based on that of the inneranalysis
+        /// </summary>
+        /// <param name="OuterAnalysis"></param>
+        /// <param name="InnerAnalysis"></param>
+        internal static void UpdateOuterAnalysis(VariableAnalysis OuterAnalysis, VariableAnalysis InnerAnalysis)
+        {
+            if (OuterAnalysis == null || InnerAnalysis == null)
+            {
+                return;
+            }
+
+            foreach (var key in InnerAnalysis.VariablesDictionary.Keys)
+            {
+                if (OuterAnalysis.VariablesDictionary.ContainsKey(key))
+                {
+                    OuterAnalysis.VariablesDictionary[key] = InnerAnalysis.VariablesDictionary[key];
+                }
+                else
+                {
+                    OuterAnalysis.VariablesDictionary.Add(key, InnerAnalysis.VariablesDictionary[key]);
+                }
+            }
+        }
+
+        /// <summary>
         /// Return variableanalysisdetails for VarTarget.
         /// This function should only be called after Block.SparseSimpleConstants are called.
         /// </summary>

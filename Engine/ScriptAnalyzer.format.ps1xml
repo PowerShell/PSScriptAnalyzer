@@ -10,15 +10,15 @@
       <TableHeaders>
         <TableColumnHeader>
           <Width>35</Width>
-          <Label>Rule Name</Label>
+          <Label>RuleName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>10</Width>
+          <Width>12</Width>
           <Label>Severity</Label>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>10</Width>
-          <Label>File Name</Label>
+          <Label>FileName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>5</Width>
@@ -62,19 +62,19 @@
     <TableControl>
       <TableHeaders>
         <TableColumnHeader>
-          <Width>30</Width>
-          <Label>Name</Label>
+          <Width>35</Width>
+          <Label>RuleName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>33</Width>
-          <Label>CommonName</Label>
+          <Width>15</Width>
+          <Label>Severity</Label>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>45</Width>
+          <Width>60</Width>
           <Label>Description</Label>
         </TableColumnHeader>
         <TableColumnHeader>
-          <Width>8</Width>
+          <Width>10</Width>
           <Label>Source</Label>
         </TableColumnHeader>
       </TableHeaders>
@@ -83,10 +83,10 @@
           <Wrap/>
           <TableColumnItems>
             <TableColumnItem>
-              <PropertyName>Name</PropertyName>
+              <PropertyName>RuleName</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
-              <PropertyName>CommonName</PropertyName>
+              <PropertyName>Severity</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Description</PropertyName>

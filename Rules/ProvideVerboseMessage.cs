@@ -12,16 +12,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Management.Automation.Language;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
-using System.Resources;
 using System.Globalization;
-using System.Threading;
-using System.Reflection;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
@@ -115,6 +109,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         public SourceType GetSourceType()
         {
             return SourceType.Builtin;
+        }
+
+        /// <summary>
+        /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
+        /// </summary>
+        /// <returns></returns>
+        public RuleSeverity GetSeverity()
+        {
+            return RuleSeverity.Information;
         }
 
         /// <summary>

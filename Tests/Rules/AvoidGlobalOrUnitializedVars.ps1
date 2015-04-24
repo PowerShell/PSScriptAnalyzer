@@ -20,3 +20,6 @@ $a;
 
 # $d may not be initialized too
 $d;
+
+# error must be raised here
+Invoke-Command -ScriptBlock {$a; }
