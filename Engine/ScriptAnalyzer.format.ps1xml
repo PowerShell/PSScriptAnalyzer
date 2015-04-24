@@ -10,7 +10,7 @@
       <TableHeaders>
         <TableColumnHeader>
           <Width>35</Width>
-          <Label>Rule Name</Label>
+          <Label>RuleName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>12</Width>
@@ -18,7 +18,7 @@
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>10</Width>
-          <Label>File Name</Label>
+          <Label>FileName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>5</Width>
@@ -63,7 +63,7 @@
       <TableHeaders>
         <TableColumnHeader>
           <Width>35</Width>
-          <Label>Rule Name</Label>
+          <Label>RuleName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>15</Width>
@@ -83,7 +83,7 @@
           <Wrap/>
           <TableColumnItems>
             <TableColumnItem>
-              <PropertyName>Name</PropertyName>
+              <PropertyName>RuleName</PropertyName>
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Severity</PropertyName>
