@@ -2085,6 +2085,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             if (convAst != null)
             {
+                if (convAst.Type.TypeName.GetReflectionType() != null)
+                {
+                    return convAst.Type.TypeName.GetReflectionType().FullName;
+                }
+
                 return convAst.Type.TypeName.FullName;
             }
 
@@ -2135,6 +2140,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             if (typeAst != null)
             {
+                if (typeAst.TypeName.GetReflectionType() != null)
+                {
+                    return typeAst.TypeName.GetReflectionType().FullName;
+                }
+
                 return typeAst.TypeName.FullName;
             }
 
@@ -2160,6 +2170,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             if (typeExpressionAst != null)
             {
+                if (typeExpressionAst.TypeName.GetReflectionType() != null)
+                {
+                    return typeExpressionAst.TypeName.GetReflectionType().FullName;
+                }
+
                 return typeExpressionAst.TypeName.FullName;
             }
 

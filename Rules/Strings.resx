@@ -678,4 +678,16 @@
   <data name="AvoidUsingWMIObjectCmdletName" xml:space="preserve">
     <value>AvoidUsingWMIObjectCmdlet</value>
   </data>
+  <data name="UseOutputTypeCorrectlyCommonName" xml:space="preserve">
+    <value>Use OutputType Correctly</value>
+  </data>
+  <data name="UseOutputTypeCorrectlyDescription" xml:space="preserve">
+    <value>The return types of a cmdlet should be declared using the OutputType attribute.</value>
+  </data>
+  <data name="UseOutputTypeCorrectlyError" xml:space="preserve">
+    <value>The cmdlet '{0}' returns an object of type '{1}' but this type is not declared in the OutputType attribute.</value>
+  </data>
+  <data name="UseOutputTypeCorrectlyName" xml:space="preserve">
+    <value>UseOutputTypeCorrectly</value>
+  </data>
 </root>

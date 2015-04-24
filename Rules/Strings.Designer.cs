@@ -1546,6 +1546,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use OutputType Correctly.
+        /// </summary>
+        internal static string UseOutputTypeCorrectlyCommonName {
+            get {
+                return ResourceManager.GetString("UseOutputTypeCorrectlyCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The return types of a cmdlet should be declared using the OutputType attribute..
+        /// </summary>
+        internal static string UseOutputTypeCorrectlyDescription {
+            get {
+                return ResourceManager.GetString("UseOutputTypeCorrectlyDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The cmdlet &apos;{0}&apos; returns an object of type &apos;{1}&apos; but this type is not declared in the OutputType attribute..
+        /// </summary>
+        internal static string UseOutputTypeCorrectlyError {
+            get {
+                return ResourceManager.GetString("UseOutputTypeCorrectlyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseOutputTypeCorrectly.
+        /// </summary>
+        internal static string UseOutputTypeCorrectlyName {
+            get {
+                return ResourceManager.GetString("UseOutputTypeCorrectlyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PSCredential.
         /// </summary>
         internal static string UsePSCredentialTypeCommonName {
