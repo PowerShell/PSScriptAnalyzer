@@ -22,7 +22,7 @@ using System.Management.Automation;
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// ProvideCommentHelp: Analyzes ast to check that cmdlets have help.
+    /// ProvideCommentHelp: Checks that objects return in a cmdlet have their types declared in OutputType Attribute
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UseOutputTypeCorrectly : SkipTypeDefinition, IScriptRule
@@ -30,7 +30,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         private IEnumerable<TypeDefinitionAst> _classes;
 
         /// <summary>
-        /// AnalyzeScript: Analyzes the ast to check that cmdlets have help.
+        /// AnalyzeScript: Checks that objects return in a cmdlet have their types declared in OutputType Attribute
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The name of the script</param>
@@ -165,7 +165,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Information;
+            return RuleSeverity.Warning;
         }
 
         /// <summary>
