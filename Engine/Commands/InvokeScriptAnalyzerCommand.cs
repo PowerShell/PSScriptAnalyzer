@@ -112,6 +112,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
         }
         private bool recurse;
 
+        /// <summary>
+        /// ShowSuppressed: Show the suppressed message
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public SwitchParameter SuppressedOnly
+        {
+            get { return suppressedOnly; }
+            set { suppressedOnly = value; }
+        }
+        private bool suppressedOnly;
+
         #endregion Parameters
 
         #region Private Members
@@ -183,7 +195,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             #region Verify rules
 
             rules = ScriptAnalyzer.Instance.ScriptRules.Union<IRule>(
-                    ScriptAnalyzer.Instance.CommandRules).Union<IRule>(
                     ScriptAnalyzer.Instance.TokenRules).Union<IRule>(
                     ScriptAnalyzer.Instance.ExternalRules ?? Enumerable.Empty<IExternalRule>());
 
@@ -270,7 +281,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             Token[] tokens = null;
             ParseError[] errors = null;
             List<DiagnosticRecord> diagnostics = new List<DiagnosticRecord>();
-            IEnumerable<Ast> funcDefAsts;
+            List<SuppressedRecord> suppressed = new List<SuppressedRecord>();
 
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
             List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();
@@ -325,6 +336,19 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                 return;
             }
 
+            Dictionary<string, List<RuleSuppression>> ruleSuppressions = Helper.Instance.GetRuleSuppression(ast);
+
+            foreach (List<RuleSuppression> ruleSuppressionsList in ruleSuppressions.Values)
+            {
+                foreach (RuleSuppression ruleSuppression in ruleSuppressionsList)
+                {
+                    if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                    {
+                        WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    }
+                }
+            }
+
             #region Run VariableAnalysis
             try
             {
@@ -353,6 +377,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             break;
                         }
                     }
+
                     foreach (Regex exclude in excludeRegexList)
                     {
                         if (exclude.IsMatch(scriptRule.GetName()))
@@ -361,7 +386,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             break;
                         }
                     }
-                    if ((includeRule == null || includeRegexMatch) &&                         (excludeRule == null || !excludeRegexMatch))
+
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
 
@@ -369,89 +395,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(scriptRule.AnalyzeScript(ast, filePath));
+                            var records = Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(ast, filePath).ToList());
+                            diagnostics.AddRange(records.Item2);
+                            suppressed.AddRange(records.Item1);
                         }
                         catch (Exception scriptRuleException)
                         {
-                            WriteError(new ErrorRecord(scriptRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, filePath));
-                        }
-                    }
-                }
-            }
-
-            #endregion
-
-            #region Run Command Rules
-
-            funcDefAsts = ast.FindAll(new Func<Ast, bool>((testAst) => (testAst is FunctionDefinitionAst)), true);
-            if (funcDefAsts != null)
-            {
-                foreach (FunctionDefinitionAst funcDefAst in funcDefAsts)
-                {
-                    //Create command info object here
-                    var sb = new StringBuilder();
-                    sb.AppendLine(funcDefAst.Extent.Text);
-                    sb.AppendFormat("Get-Command –CommandType Function –Name {0}", funcDefAst.Name);
-
-                    var funcDefPS = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace);
-                    funcDefPS.AddScript(sb.ToString());
-
-                    try
-                    {
-                        var commandInfo = funcDefPS.Invoke<CommandInfo>();
-
-                        foreach (CommandInfo cmdInfo in commandInfo)
-                        {
-                            cmdInfoTable.Add(new KeyValuePair<CommandInfo, IScriptExtent>(cmdInfo as CommandInfo, funcDefAst.Extent));
-                        }
-                    }
-                    catch (ParseException)
-                    {
-                        WriteError(new ErrorRecord(new CommandNotFoundException(),
-                            string.Format(CultureInfo.CurrentCulture, Strings.CommandInfoNotFound, funcDefAst.Name), 
-                            ErrorCategory.SyntaxError, funcDefAst));
-                    }
-                }
-            }
-
-            if (ScriptAnalyzer.Instance.CommandRules != null)
-            {
-                foreach (ICommandRule commandRule in ScriptAnalyzer.Instance.CommandRules)
-                {
-                    bool includeRegexMatch = false;
-                    bool excludeRegexMatch = false;
-                    foreach (Regex include in includeRegexList)
-                    {
-                        if (include.IsMatch(commandRule.GetName()))
-                        {
-                            includeRegexMatch = true;
-                            break;
-                        }
-                    }
-                    foreach (Regex exclude in excludeRegexList)
-                    {
-                        if (exclude.IsMatch(commandRule.GetName()))
-                        {
-                            excludeRegexMatch = true;
-                            break;
-                         }
-                    }
-                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
-                    {
-                        foreach (KeyValuePair<CommandInfo, IScriptExtent> commandInfo in cmdInfoTable)
-                        {
-                            WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, commandRule.GetName()));
-
-                            // Ensure that any unhandled errors from Rules are converted to non-terminating errors
-                            // We want the Engine to continue functioning even if one or more Rules throws an exception
-                            try
-                            {
-                                diagnostics.AddRange(commandRule.AnalyzeCommand(commandInfo.Key, commandInfo.Value, fileName));
-                            }
-                            catch (Exception commandRuleException)
-                            {
-                                WriteError(new ErrorRecord(commandRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, fileName));
-                            }  
+                            WriteError(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
                         }
                     }
                 }
@@ -491,11 +441,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(tokenRule.AnalyzeTokens(tokens, fileName));
+                            var records = Helper.Instance.SuppressRule(tokenRule.GetName(), ruleSuppressions, tokenRule.AnalyzeTokens(tokens, filePath).ToList());
+                            diagnostics.AddRange(records.Item2);
+                            suppressed.AddRange(records.Item1);
                         }
                         catch (Exception tokenRuleException)
                         {
-                            WriteError(new ErrorRecord(tokenRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, fileName));
+                            WriteError(new ErrorRecord(tokenRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
                         } 
                     }
                 }
@@ -511,6 +463,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                 {
                     bool includeRegexMatch = false;
                     bool excludeRegexMatch = false;
+
                     foreach (Regex include in includeRegexList)
                     {
                         if (include.IsMatch(dscResourceRule.GetName()))
@@ -519,6 +472,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             break;
                         }
                     }
+
                     foreach (Regex exclude in excludeRegexList)
                     {
                         if (exclude.IsMatch(dscResourceRule.GetName()))
@@ -527,6 +481,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             break;
                         }
                     }
+
                     if ((includeRule == null || includeRegexMatch) && (excludeRule == null || excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
@@ -535,11 +490,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            diagnostics.AddRange(dscResourceRule.AnalyzeDSCClass(ast, filePath));
+                            var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(ast, filePath).ToList());
+                            diagnostics.AddRange(records.Item2);
+                            suppressed.AddRange(records.Item1);
                         }
                         catch (Exception dscResourceRuleException)
                         {
-                            WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, filePath));
+                            WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
                         }    
                     }
                 }
@@ -592,11 +549,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                                             // We want the Engine to continue functioning even if one or more Rules throws an exception
                                             try
                                             {
-                                                diagnostics.AddRange(dscResourceRule.AnalyzeDSCResource(ast, filePath));
+                                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCResource(ast, filePath).ToList());
+                                                diagnostics.AddRange(records.Item2);
+                                                suppressed.AddRange(records.Item1);
                                             }
                                             catch (Exception dscResourceRuleException)
                                             {
-                                                WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, filePath));
+                                                WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
                                             }  
                                         }
                                     }
@@ -630,7 +589,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         }
                         catch (Exception externalRuleException)
                         {
-                            WriteError(new ErrorRecord(externalRuleException, Strings.RuleError, ErrorCategory.InvalidOperation, fileName));
+                            WriteError(new ErrorRecord(externalRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
                         }
                     }
                 }
@@ -649,9 +608,19 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             //Output through loggers
             foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
             {
-                foreach (DiagnosticRecord diagnostic in diagnostics)
+                if (SuppressedOnly)
                 {
-                    logger.LogMessage(diagnostic, this);
+                    foreach (DiagnosticRecord suppressRecord in suppressed)
+                    {
+                        logger.LogObject(suppressRecord, this);
+                    }
+                }
+                else
+                {
+                    foreach (DiagnosticRecord diagnostic in diagnostics)
+                    {
+                        logger.LogObject(diagnostic, this);
+                    }
                 }
             }
         }

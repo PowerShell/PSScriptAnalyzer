@@ -55,6 +55,59 @@
   </View>
 
   <View>
+    <Name>PSScriptAnalyzerView</Name>
+    <ViewSelectedBy>
+      <TypeName>Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.SuppressedRecord</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+      <TableHeaders>
+        <TableColumnHeader>
+          <Width>35</Width>
+          <Label>Rule Name</Label>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>10</Width>
+          <Label>Severity</Label>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>10</Width>
+          <Label>File Name</Label>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>5</Width>
+          <Label>Line</Label>
+        </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>60</Width>
+          <Label>Justification</Label>
+        </TableColumnHeader>
+      </TableHeaders>
+      <TableRowEntries>
+        <TableRowEntry>
+          <Wrap/>
+          <TableColumnItems>
+            <TableColumnItem>
+              <PropertyName>RuleName</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Severity</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>ScriptName</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Line</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Justification</PropertyName>
+            </TableColumnItem>
+          </TableColumnItems>
+        </TableRowEntry>
+      </TableRowEntries>
+    </TableControl>
+  </View>
+
+  <View>
     <Name>ScriptAnalyzerRules</Name>
     <ViewSelectedBy>
       <TypeName>Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.RuleInfo</TypeName>

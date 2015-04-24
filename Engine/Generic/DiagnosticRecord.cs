@@ -30,6 +30,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         private string ruleName;
         private DiagnosticSeverity severity;
         private string scriptName;
+        private string ruleSuppressionId;
 
         /// <summary>
         /// Represents a string from the rule about why this diagnostic was created.
@@ -74,7 +75,16 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         {
             get { return scriptName; }
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
-            set { scriptName = System.IO.Path.GetFileName(value); ; }
+            set { scriptName = System.IO.Path.GetFileName(value); }
+        }
+
+        /// <summary>
+        /// Returns the rule id for this record
+        /// </summary>
+        public string RuleSuppressionID
+        {
+            get { return ruleSuppressionId; }
+            set { ruleSuppressionId = value; }
         }
 
         /// <summary>
@@ -93,13 +103,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// <param name="ruleName">The name of the rule that created this diagnostic</param>
         /// <param name="severity">The severity of this diagnostic</param>
         /// <param name="scriptName">The name of the script file being analyzed</param>
-        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptName)
+        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptName, string ruleId = null)
         {
             Message  = string.IsNullOrEmpty(message)  ? string.Empty : message;
             RuleName = string.IsNullOrEmpty(ruleName) ? string.Empty : ruleName;
             Extent   = extent;
             Severity = severity;
             ScriptName = string.IsNullOrEmpty(scriptName) ? string.Empty : scriptName;
+            ruleSuppressionId = ruleId;
         }
     }
 
