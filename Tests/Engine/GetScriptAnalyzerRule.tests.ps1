@@ -9,11 +9,11 @@ Describe "Test available parameters" {
     $params = $sa.Parameters
     Context "Name parameter" {
         It "has a RuleName parameter" {
-            $params.ContainsKey("RuleName") | Should Be $true
+            $params.ContainsKey("Name") | Should Be $true
         }
         
         It "accepts string" {
-            $params["RuleName"].ParameterType.FullName | Should Be "System.String[]"
+            $params["Name"].ParameterType.FullName | Should Be "System.String[]"
         }
     }
 
@@ -32,19 +32,19 @@ Describe "Test available parameters" {
 Describe "Test Name parameters" {
     Context "When used correctly" {
         It "works with 1 name" {
-            $rule = Get-ScriptAnalyzerRule -RuleName $singularNouns
+            $rule = Get-ScriptAnalyzerRule -Name $singularNouns
             $rule.Count | Should Be 1
             $rule[0].RuleName | Should Be $singularNouns
         }
 
         It "works for DSC Rule" {
-            $rule = Get-ScriptAnalyzerRule -RuleName $dscIdentical
+            $rule = Get-ScriptAnalyzerRule -Name $dscIdentical
             $rule.Count | Should Be 1
             $rule[0].RuleName | Should Be $dscIdentical
         }
 
         It "works with 3 names" {
-            $rules = Get-ScriptAnalyzerRule -RuleName $approvedVerbs, $singularNouns
+            $rules = Get-ScriptAnalyzerRule -Name $approvedVerbs, $singularNouns
             $rules.Count | Should Be 2
             ($rules | Where-Object {$_.RuleName -eq $singularNouns}).Count | Should Be 1
             ($rules | Where-Object {$_.RuleName -eq $approvedVerbs}).Count | Should Be 1
@@ -53,12 +53,12 @@ Describe "Test Name parameters" {
 
     Context "When used incorrectly" {
         It "1 incorrect name" {
-            $rule = Get-ScriptAnalyzerRule -RuleName "This is a wrong name"
+            $rule = Get-ScriptAnalyzerRule -Name "This is a wrong name"
             $rule.Count | Should Be 0
         }
 
         It "1 incorrect and 1 correct" {
-            $rule = Get-ScriptAnalyzerRule -RuleName $singularNouns, "This is a wrong name"
+            $rule = Get-ScriptAnalyzerRule -Name $singularNouns, "This is a wrong name"
             $rule.Count | Should Be 1
             $rule[0].RuleName | Should Be $singularNouns
         }
@@ -86,13 +86,13 @@ Describe "Test RuleExtension" {
         }
 
         It "with Name of a built-in rules" {
-            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -RuleName $singularNouns
+            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns
             $ruleExtension.Count | Should Be 1
             $ruleExtension[0].RuleName | Should Be $singularNouns
         }
 
         It "with Names of built-in, DSC and non-built-in rules" {
-            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -RuleName $singularNouns, $measureRequired, $dscIdentical
+            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns, $measureRequired, $dscIdentical
             $ruleExtension.Count | Should be 3
             ($ruleExtension | Where-Object {$_.RuleName -eq $measureRequired}).Count | Should Be 1
             ($ruleExtension | Where-Object {$_.RuleName -eq $singularNouns}).Count | Should Be 1
@@ -123,13 +123,13 @@ Describe "TestSeverity" {
 }
 
 Describe "TestWildCard" {
-    It "filters rules based on the -RuleName wild card input" {
-        $rules = Get-ScriptAnalyzerRule -RuleName PSDSC*
+    It "filters rules based on the -Name wild card input" {
+        $rules = Get-ScriptAnalyzerRule -Name PSDSC*
         $rules.Count | Should be 4
     }
 
     It "filters rules based on wild card input and severity"{
-        $rules = Get-ScriptAnalyzerRule -RuleName PSDSC*　-Severity Information
+        $rules = Get-ScriptAnalyzerRule -Name PSDSC*　-Severity Information
         $rules.Count | Should be 2
     }
 }
