@@ -117,7 +117,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 else
                 {
                     DiagnosticRecords.Add(new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseOutputTypeCorrectlyError,
-                        funcAst.Name, typeName), returnType.Item2.Extent, GetName(), DiagnosticSeverity.Warning, fileName));
+                        funcAst.Name, typeName), returnType.Item2.Extent, GetName(), DiagnosticSeverity.Information, fileName));
                 }
             }
 
@@ -165,7 +165,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Warning;
+            return RuleSeverity.Information;
         }
 
         /// <summary>

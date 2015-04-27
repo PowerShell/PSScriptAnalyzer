@@ -1,5 +1,5 @@
 ﻿#UseOutputTypeCorrectly 
-**Severity Level: Warning**
+**Severity Level: Information**
 
 
 ##Description
@@ -17,7 +17,7 @@ Wrong:
 
 	function Get-Foo
 	{
-	    [CmdletBinding()]
+            [CmdletBinding()]
             [OutputType([String])]
             Param(
             )
@@ -28,7 +28,7 @@ Correct:
 
 	function Get-Foo
 	{
-	    [CmdletBinding()]
+            [CmdletBinding()]
             [OutputType([String])]
             Param(
             )
