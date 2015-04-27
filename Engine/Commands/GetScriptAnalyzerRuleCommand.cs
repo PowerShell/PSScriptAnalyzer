@@ -47,7 +47,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
         [Parameter(Mandatory = false)]
         [ValidateNotNullOrEmpty]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public string[] RuleName
+        public string[] Name
         {
             get { return name; }
             set { name = value; }
