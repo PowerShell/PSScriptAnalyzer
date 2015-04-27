@@ -91,3 +91,55 @@ The following guidelines come from a combined effort from both the PowerShell te
     - Avoid using $?
     - Avoid testing for a null variable as an error condition
     - Copy $Error[0] to your own variable
+
+
+##By PowerShell team members
+
+1. Required Rules for publishing
+    - Module must be loadable
+    - No syntax errors
+    - Module Manifest Fields
+    - Version
+    - Author
+    - Description
+    - LicenseUri (for PowerShell Gallery)
+    - Unresolved dependencies are an error
+    - Must call ShouldProcess when ShouldProcess attribute is present and vice versa.
+    - Switch parameters should not default to true 
+     
+ 
+2. Script
+    - Non-global variables must be initialized. Those that are supposed to be global and not initialized must have “global:” (includes for loop initializations)
+    - Declared variables must be used in more than just their assignment.
+    - No traps
+    - No Invoke-Expression 
+    - If a return type is declared, the cmdlet must return that type. If a type is returned, a return type must be declared.
+    - Cmdlets should have ShouldProcess/ShouldContinue  and Force param if certain system-modding verbs are present (Update, Set, Remove, New)
+    -  Should never have both -Username and -Password parameters (should take credentials)
+    -  Should not use Write-Host or Console.Writeline
+    -  -Credential should take PSCredential as an argument, -Force is switch 
+    -  Nouns should be singular
+    -  Should have help on every exported command (including parameter documentation)
+    - “global:” (global scope) should not be used on variables.
+    - Password = 'string' should not be used. (information disclosure)
+    -  ConvertTo-SecureString with plaintext should be warning (information disclosure)
+    -  APIKey and Credentials variables that are initialized (information disclosure)
+    -  Internal URLs should not be used (information disclosure)
+    -  -ComputerName hardcoded should not be used (information disclosure)
+    -  -Password should be secure string
+    -  Clear-Host should not be used
+    -  File paths should not be used (UNC)
+
+3. DSC
+    - For PowerShell V4: Resource module contains .psd1 file and schema.mof for every resource 
+    - For PowerShell V5: MOF has description for each element
+    - PowerShell V5: support class-based resources. If class-based resource, no MOF needed. (need to support these at same time as schema.mof test exists) 
+    - Resource module contains Resources folder which contains the resources
+    - Using standard DSC methods
+    - Using identical mandatory parameters for all DSC methods
+    - Using identical parameters for Set and Test DSC methods
+    - Using ShouldProcess for a Set DSC method
+    - Avoid return any object from a Set-TargetResource function
+    - Returning a Boolean object from a Test-TargetResource function
+    - Returning an object from a Get-TargetResource function
+
