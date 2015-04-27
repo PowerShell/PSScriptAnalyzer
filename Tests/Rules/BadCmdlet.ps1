@@ -7,6 +7,8 @@
                   ConfirmImpact='Medium')]
     [Alias()]
     [OutputType([String])]
+    [OutputType("System.Int32", ParameterSetName="ID")]
+
     Param
     (
         # Param1 help description
@@ -46,6 +48,14 @@
     }
     Process
     {
+        $a = 4.5
+
+        if ($true)
+        {
+            $a
+        }
+
+        return @{"hash"="true"}
     }
     End
     {
@@ -53,6 +63,7 @@
 }
 
 # Provide comment help should not be raised here because this is not exported
+#Output type rule should also not be raised here as this is not a cmdlet
 function NoComment
 {
     Write-Verbose "No Comment"
