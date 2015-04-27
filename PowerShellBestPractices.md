@@ -135,10 +135,10 @@ The following guidelines come from a combined effort from both the PowerShell te
     - For PowerShell V5: MOF has description for each element
     - PowerShell V5: support class-based resources. If class-based resource, no MOF needed. (need to support these at same time as schema.mof test exists) 
     - Resource module contains Resources folder which contains the resources
-    - Using standard DSC methods
-    - Using identical mandatory parameters for all DSC methods
-    - Using identical parameters for Set and Test DSC methods
-    - Using ShouldProcess for a Set DSC method
+    - Use standard DSC methods
+    - Use identical mandatory parameters for all DSC methods
+    - Use identical parameters for Set and Test DSC methods
+    - Use ShouldProcess for a Set DSC method
     - Avoid return any object from a Set-TargetResource function
     - Returning a Boolean object from a Test-TargetResource function
     - Returning an object from a Get-TargetResource function
