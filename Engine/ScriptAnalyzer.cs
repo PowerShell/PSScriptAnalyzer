@@ -10,6 +10,7 @@
 // THE SOFTWARE.
 //
 
+using System.Text.RegularExpressions;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Commands;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System;
@@ -192,8 +193,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             if (ruleNames != null)
             {
-                results = rules.Where<IRule>(item =>
-                    ruleNames.Contains(item.GetName(), StringComparer.OrdinalIgnoreCase));
+                //Check wild card input for -Name parameter and create regex match patterns
+                List<Regex> regexList = new List<Regex>();
+                foreach (string ruleName in ruleNames)
+                {
+                    Regex includeRegex = new Regex(String.Format("^{0}$", Regex.Escape(ruleName).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
+                    regexList.Add(includeRegex);
+                }
+
+                results = from rule in rules
+                    from regex in regexList
+                    where regex.IsMatch(rule.GetName())
+                    select rule;
             }
             else
             {
