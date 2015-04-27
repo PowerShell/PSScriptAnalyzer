@@ -34,7 +34,9 @@ The following guidelines come from a combined effort from both the PowerShell te
     - Make Cmdlets Case-Insensitive and Case-Preserving 
 
 
-##The Community Book of PowerShell Practices(Compiled by Don Jones and Matt Penny and the Windows PowerShell Community)
+##The Community Book of PowerShell Practices
+
+(Compiled by Don Jones and Matt Penny and the Windows PowerShell Community)
 
 1. Write Help and Comments
     - Write comment-based help 
