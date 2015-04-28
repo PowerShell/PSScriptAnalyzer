@@ -27,7 +27,7 @@ Installation
 
 2. In PowerShell Console:
 ```powershell
-Import-Module PSScriptAnalyzer
+Import-Module ScriptAnalyzer
 ```
 If you have previous version of PSScriptAnalyzer installed on your machine, you may need to override old binaries by copying content of [``~/ProjectRoot/ScriptAnalyzer``] to PSModulePath. 
 
