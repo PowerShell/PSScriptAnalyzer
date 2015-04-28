@@ -690,4 +690,13 @@
   <data name="UseOutputTypeCorrectlyName" xml:space="preserve">
     <value>UseOutputTypeCorrectly</value>
   </data>
+  <data name="DscExamplesPresent" xml:space="preserve">
+    <value>DscExamplesPresent</value>
+  </data>
+  <data name="DscExamplesPresentCommonName" xml:space="preserve">
+    <value>DSC examples are present</value>
+  </data>
+  <data name="DscExamplesPresentDescription" xml:space="preserve">
+    <value>Every DSC resource module should contain folder "Examples" with sample configurations for every resource. Sample configurations should have resource name they are demonstrating in the title.</value>
+  </data>
 </root>
