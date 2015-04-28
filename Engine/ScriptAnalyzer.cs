@@ -68,9 +68,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public IEnumerable<IScriptRule> ScriptRules { get; private set; }
 
         [ImportMany]
-        public IEnumerable<ICommandRule> CommandRules { get; private set; }
-
-        [ImportMany]
         public IEnumerable<ITokenRule> TokenRules { get; private set; }
 
         [ImportMany]
@@ -180,8 +177,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             IEnumerable<IExternalRule> externalRules = null;
 
             // Combines C# rules.
-            IEnumerable<IRule> rules = ScriptRules.Union<IRule>(CommandRules)
-                                                  .Union<IRule>(TokenRules)
+            IEnumerable<IRule> rules = ScriptRules.Union<IRule>(TokenRules)
                                                   .Union<IRule>(DSCResourceRules);
 
             // Gets PowerShell Rules.

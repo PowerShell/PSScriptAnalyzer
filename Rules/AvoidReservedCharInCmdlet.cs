@@ -23,27 +23,33 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
 
     /// <summary>
-    /// AvoidReservedCharInCmdlet: Analyzes CommandInfos to check for reserved characters in cmdlet names.
+    /// AvoidReservedCharInCmdlet: Analyzes script to check for reserved characters in cmdlet names.
     /// </summary>
-    [Export(typeof(ICommandRule))]
-    public class AvoidReservedCharInCmdlet : ICommandRule
+    [Export(typeof(IScriptRule))]
+    public class AvoidReservedCharInCmdlet : IScriptRule
     {
         /// <summary>
-        /// AnalyzeCommand: Analyzes command infos to check for reserved characters in cmdlet names.
+        /// Analyze ast to check that all the cmdlet does not use reserved char
         /// </summary>
-        /// <param name="commandInfo">The current command info from the script</param>
-        /// <param name="extent">The current position in the script</param>
-        /// <param name="fileName">The script's file name</param>
-        /// <returns>A List of diagnostic results of this rule</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeCommand(CommandInfo commandInfo, IScriptExtent extent, string fileName) {
-            if (commandInfo == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+        /// <param name="ast"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        {
+            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            string funcName = commandInfo.Name;
-            string reservedChars = Strings.ReserverCmdletChars; //Localize yes or no?
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
-            if (funcName.Intersect(reservedChars).Count() > 0) {
-                yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedCmdletCharError, funcName), extent, GetName(), DiagnosticSeverity.Warning, fileName);
-            }
+            string reservedChars = Strings.ReserverCmdletChars;
+
+            foreach (FunctionDefinitionAst funcAst in funcAsts)
+            {
+                if (funcAst.Name != null && funcAst.Name.Intersect(reservedChars).Count() > 0)
+                {
+                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedCmdletCharError, funcAst.Name),
+                        funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                }
+            }            
         }
 
         /// <summary>

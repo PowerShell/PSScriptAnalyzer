@@ -17,6 +17,8 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
+using System.Globalization;
+using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 {
@@ -70,7 +72,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         public PSCmdlet MyCmdlet { get; set; }
 
-        private TupleComparer tupleComparer = new TupleComparer();
+        internal TupleComparer tupleComparer = new TupleComparer();
 
         /// <summary>
         /// My Tokens
@@ -638,6 +640,243 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Returns a dictionary of rule suppression from the ast.
+        /// Key of the dictionary is rule name.
+        /// Value is a list of tuple of integers that represents the interval to apply the rule
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public Dictionary<string, List<RuleSuppression>> GetRuleSuppression(Ast ast)
+        {
+            List<RuleSuppression> ruleSuppressionList = new List<RuleSuppression>();
+            Dictionary<string, List<RuleSuppression>> results = new Dictionary<string, List<RuleSuppression>>(StringComparer.OrdinalIgnoreCase);
+
+            if (ast == null)
+            {
+                return results;
+            }
+
+            ScriptBlockAst sbAst = ast as ScriptBlockAst;
+
+            // Get rule suppression from the ast itself if it is scriptblockast
+            if (sbAst != null && sbAst.ParamBlock != null && sbAst.ParamBlock.Attributes != null)
+            {
+                ruleSuppressionList.AddRange(RuleSuppression.GetSuppressions(sbAst.ParamBlock.Attributes, sbAst.Extent.StartOffset, sbAst.Extent.EndOffset, sbAst));
+            }
+            
+            // Get rule suppression from functions
+            IEnumerable<FunctionDefinitionAst> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Cast<FunctionDefinitionAst>();
+
+            foreach (var funcAst in funcAsts)
+            {
+                ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
+            }
+
+            // Get rule suppression from classes
+            IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
+
+            foreach (var typeAst in typeAsts)
+            {
+                ruleSuppressionList.AddRange(GetSuppressionsClass(typeAst));
+            }
+
+            ruleSuppressionList.Sort((item, item2) => item.StartOffset.CompareTo(item2.StartOffset));
+
+            foreach (RuleSuppression ruleSuppression in ruleSuppressionList)
+            {
+                if (!results.ContainsKey(ruleSuppression.RuleName))
+                {
+                    List<RuleSuppression> ruleSuppressions = new List<RuleSuppression>();
+                    results.Add(ruleSuppression.RuleName, ruleSuppressions);
+                }
+                
+                results[ruleSuppression.RuleName].Add(ruleSuppression);
+            }
+
+            return results;
+        }
+        
+        /// <summary>
+        /// Returns a list of rule suppressions from the function
+        /// </summary>
+        /// <param name="funcAst"></param>
+        /// <returns></returns>
+        internal List<RuleSuppression> GetSuppressionsFunction(FunctionDefinitionAst funcAst)
+        {
+            List<RuleSuppression> result = new List<RuleSuppression>();
+
+            if (funcAst != null && funcAst.Body != null
+                && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Attributes != null)
+            {
+                result.AddRange(RuleSuppression.GetSuppressions(funcAst.Body.ParamBlock.Attributes, funcAst.Extent.StartOffset, funcAst.Extent.EndOffset, funcAst));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of rule suppression from the class
+        /// </summary>
+        /// <param name="typeAst"></param>
+        /// <returns></returns>
+        internal List<RuleSuppression> GetSuppressionsClass(TypeDefinitionAst typeAst)
+        {
+            List<RuleSuppression> result = new List<RuleSuppression>();
+
+            if (typeAst != null && typeAst.Attributes != null && typeAst.Attributes.Count != 0)
+            {
+                result.AddRange(RuleSuppression.GetSuppressions(typeAst.Attributes, typeAst.Extent.StartOffset, typeAst.Extent.EndOffset, typeAst));
+            }
+
+            if (typeAst.Members == null)
+            {
+                return result;
+            }
+
+            foreach (var member in typeAst.Members)
+            {
+                FunctionMemberAst funcMemb = member as FunctionMemberAst;
+
+                if (funcMemb == null)
+                {
+                    continue;
+                }
+
+                result.AddRange(RuleSuppression.GetSuppressions(funcMemb.Attributes, funcMemb.Extent.StartOffset, funcMemb.Extent.EndOffset, funcMemb));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Suppress the rules from the diagnostic records list.
+        /// Returns a list of suppressed records as well as the ones that are not suppressed
+        /// </summary>
+        /// <param name="ruleSuppressions"></param>
+        /// <param name="diagnostics"></param>
+        public Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(string ruleName, Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict, List<DiagnosticRecord> diagnostics)
+        {
+            List<SuppressedRecord> suppressedRecords = new List<SuppressedRecord>();
+            List<DiagnosticRecord> unSuppressedRecords = new List<DiagnosticRecord>();
+            Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> result = Tuple.Create(suppressedRecords, unSuppressedRecords);
+
+            if (diagnostics == null || diagnostics.Count == 0)
+            {
+                return result;
+            }
+
+            if (ruleSuppressionsDict == null || !ruleSuppressionsDict.ContainsKey(ruleName)
+                || ruleSuppressionsDict[ruleName].Count == 0)
+            {
+                unSuppressedRecords.AddRange(diagnostics);
+                return result;
+            }
+
+            List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
+
+            int recordIndex = 0;
+            int ruleSuppressionIndex = 0;
+            DiagnosticRecord record = diagnostics.First();
+            RuleSuppression ruleSuppression = ruleSuppressions.First();
+            int suppressionCount = 0;
+
+            while (recordIndex < diagnostics.Count)
+            {
+                if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                {
+                    ruleSuppressionIndex += 1;
+
+                    if (ruleSuppressionIndex == ruleSuppressions.Count)
+                    {
+                        break;
+                    }
+
+                    ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
+                    suppressionCount = 0;
+
+                    continue;
+                }
+
+                // if the record precedes the rule suppression then we don't apply the suppression
+                // so we check that start of record is greater than start of suppression
+                if (record.Extent.StartOffset >= ruleSuppression.StartOffset)
+                {
+                    // end of the rule suppression is less than the record start offset so move on to next rule suppression
+                    if (ruleSuppression.EndOffset < record.Extent.StartOffset)
+                    {
+                        ruleSuppressionIndex += 1;
+
+                        // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
+                        if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
+                        {
+                            ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                                    System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                            Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                        }
+
+                        if (ruleSuppressionIndex == ruleSuppressions.Count)
+                        {
+                            break;
+                        }
+
+                        ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
+                        suppressionCount = 0;
+
+                        continue;
+                    }
+                    // at this point, the record is inside the interval
+                    else
+                    {
+                        // if the rule suppression id from the rule suppression is not null and the one from diagnostic record is not null
+                        // and they are they are not the same then we cannot ignore the record
+                        if (!string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && !string.IsNullOrWhiteSpace(record.RuleSuppressionID)
+                            && !string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
+                        {
+                            suppressionCount -= 1;
+                            unSuppressedRecords.Add(record);
+                        }
+                        // otherwise, we suppress the record, move on to the next.
+                        else
+                        {
+                            suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
+                        }
+                    }
+                }
+                else
+                {
+                    unSuppressedRecords.Add(record);
+                }
+
+                // important assumption: this point is reached only if we want to move to the next record
+                recordIndex += 1;
+                suppressionCount += 1;
+
+                if (recordIndex == diagnostics.Count)
+                {
+                    // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
+                    if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
+                    {
+                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                                System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                        Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    }
+
+                    break;
+                }
+
+                record = diagnostics[recordIndex];
+            }
+
+            while (recordIndex < diagnostics.Count)
+            {
+                unSuppressedRecords.Add(diagnostics[recordIndex]);
+                recordIndex += 1;
+            }
+
+            return result;
         }
 
         #endregion

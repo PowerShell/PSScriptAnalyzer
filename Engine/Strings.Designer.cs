@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Microsoft Corporation.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -144,6 +144,33 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} cannot be set by both positional and named arguments..
+        /// </summary>
+        internal static string NamedAndPositionalArgumentsConflictError {
+            get {
+                return ResourceManager.GetString("NamedAndPositionalArgumentsConflictError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Named arguments must always come after positional arguments..
+        /// </summary>
+        internal static string NamedArgumentsBeforePositionalError {
+            get {
+                return ResourceManager.GetString("NamedArgumentsBeforePositionalError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RuleName must not be null..
+        /// </summary>
+        internal static string NullRuleNameError {
+            get {
+                return ResourceManager.GetString("NullRuleNameError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parse error in file {0}:  {1} at line {2} column {3}..
         /// </summary>
         internal static string ParserErrorFormat {
@@ -162,11 +189,74 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RULE_ERROR.
+        /// </summary>
+        internal static string RuleErrorMessage {
+            get {
+                return ResourceManager.GetString("RuleErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find analyzer rules..
         /// </summary>
         internal static string RulesNotFound {
             get {
                 return ResourceManager.GetString("RulesNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Suppression Message Attribute error at line {0} in {1} : {2}.
+        /// </summary>
+        internal static string RuleSuppressionErrorFormat {
+            get {
+                return ResourceManager.GetString("RuleSuppressionErrorFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot find any DiagnosticRecord with the Rule Suppression ID {0}..
+        /// </summary>
+        internal static string RuleSuppressionIDError {
+            get {
+                return ResourceManager.GetString("RuleSuppressionIDError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rule {0} cannot be found..
+        /// </summary>
+        internal static string RuleSuppressionRuleNameNotFound {
+            get {
+                return ResourceManager.GetString("RuleSuppressionRuleNameNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All the arguments of the Suppress Message Attribute should be string constants..
+        /// </summary>
+        internal static string StringConstantArgumentsSuppressionAttributeError {
+            get {
+                return ResourceManager.GetString("StringConstantArgumentsSuppressionAttributeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot find any Targets {0} that match the Scope {1} to apply the SuppressMessageAttribute..
+        /// </summary>
+        internal static string TargetCannotBeFoundError {
+            get {
+                return ResourceManager.GetString("TargetCannotBeFoundError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If Target is specified, Scope must be specified..
+        /// </summary>
+        internal static string TargetWithoutScopeSuppressionAttributeError {
+            get {
+                return ResourceManager.GetString("TargetWithoutScopeSuppressionAttributeError", resourceCulture);
             }
         }
         
@@ -187,15 +277,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer {
                 return ResourceManager.GetString("VerboseRunningMessage", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Rule Error &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Scope can only be either function or class..
         /// </summary>
-        internal static string RuleError
-        {
-            get
-            {
-                return ResourceManager.GetString("RuleErrorMessage", resourceCulture);
+        internal static string WrongScopeArgumentSuppressionAttributeError {
+            get {
+                return ResourceManager.GetString("WrongScopeArgumentSuppressionAttributeError", resourceCulture);
             }
         }
     }

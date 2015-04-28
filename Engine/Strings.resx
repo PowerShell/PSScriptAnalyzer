@@ -144,6 +144,12 @@
   <data name="MissingRuleExtension" xml:space="preserve">
     <value>Cannot find rule extension '{0}'.</value>
   </data>
+  <data name="NamedAndPositionalArgumentsConflictError" xml:space="preserve">
+    <value>{0} cannot be set by both positional and named arguments.</value>
+  </data>
+  <data name="NamedArgumentsBeforePositionalError" xml:space="preserve">
+    <value>Named arguments must always come after positional arguments.</value>
+  </data>
   <data name="ParserErrorFormat" xml:space="preserve">
     <value>Parse error in file {0}:  {1} at line {2} column {3}.</value>
   </data>
@@ -156,10 +162,34 @@
   <data name="RulesNotFound" xml:space="preserve">
     <value>Cannot find analyzer rules.</value>
   </data>
+  <data name="RuleSuppressionErrorFormat" xml:space="preserve">
+    <value>Suppression Message Attribute error at line {0} in {1} : {2}</value>
+  </data>
+  <data name="RuleSuppressionRuleNameNotFound" xml:space="preserve">
+    <value>Rule {0} cannot be found.</value>
+  </data>
+  <data name="StringConstantArgumentsSuppressionAttributeError" xml:space="preserve">
+    <value>All the arguments of the Suppress Message Attribute should be string constants.</value>
+  </data>
+  <data name="TargetWithoutScopeSuppressionAttributeError" xml:space="preserve">
+    <value>If Target is specified, Scope must be specified.</value>
+  </data>
   <data name="VerboseFileMessage" xml:space="preserve">
     <value>Analyzing file: {0}</value>
   </data>
   <data name="VerboseRunningMessage" xml:space="preserve">
     <value>Running {0} rule.</value>
+  </data>
+  <data name="WrongScopeArgumentSuppressionAttributeError" xml:space="preserve">
+    <value>Scope can only be either function or class.</value>
+  </data>
+  <data name="NullRuleNameError" xml:space="preserve">
+    <value>RuleName must not be null.</value>
+  </data>
+  <data name="TargetCannotBeFoundError" xml:space="preserve">
+    <value>Cannot find any Targets {0} that match the Scope {1} to apply the SuppressMessageAttribute.</value>
+  </data>
+  <data name="RuleSuppressionIDError" xml:space="preserve">
+    <value>Cannot find any DiagnosticRecord with the Rule Suppression ID {0}.</value>
   </data>
 </root>

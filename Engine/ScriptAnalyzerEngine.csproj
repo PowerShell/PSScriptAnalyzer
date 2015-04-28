@@ -52,9 +52,9 @@
     <Compile Include="Commands\InvokeScriptAnalyzerCommand.cs" />
     <Compile Include="Generic\AvoidCmdletGeneric.cs" />
     <Compile Include="Generic\AvoidParameterGeneric.cs" />
+    <Compile Include="Generic\SuppressedRecord.cs" />
     <Compile Include="Generic\DiagnosticRecord.cs" />
     <Compile Include="Generic\ExternalRule.cs" />
-    <Compile Include="Generic\ICommandRule.cs" />
     <Compile Include="Generic\IDSCResourceRule.cs" />
     <Compile Include="Generic\IExternalRule.cs" />
     <Compile Include="Generic\ILogger.cs" />
@@ -63,6 +63,7 @@
     <Compile Include="Generic\ITokenRule.cs" />
     <Compile Include="Generic\LoggerInfo.cs" />
     <Compile Include="Generic\RuleInfo.cs" />
+    <Compile Include="Generic\RuleSuppression.cs" />
     <Compile Include="Generic\RuleSeverity.cs" />
     <Compile Include="Generic\SkipNamedBlock.cs" />
     <Compile Include="Generic\SkipTypeDefinition.cs" />
@@ -71,7 +72,7 @@
     <Compile Include="Loggers\WriteObjectsLogger.cs" />
     <Compile Include="ScriptAnalyzer.cs" />
     <Compile Include="SpecialVars.cs" />
-    <Compile Include="Strings.cs">
+    <Compile Include="Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
@@ -87,7 +88,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.cs</LastGenOutput>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
