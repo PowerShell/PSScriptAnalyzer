@@ -10,6 +10,7 @@
 // THE SOFTWARE.
 //
 
+using System.Text.RegularExpressions;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Commands;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System;
@@ -33,7 +34,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         #region Private memebers
 
         private CompositionContainer container;
-        private const string baseName = "Microsoft.Windows.Powershell.ScriptAnalyzer.Properties.Strings";
 
         #endregion
 
@@ -91,7 +91,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         public void Initialize()
         {
             // Clear external rules for each invoke.
-            this.ExternalRules = new List<ExternalRule>();
+            ExternalRules = new List<ExternalRule>();
 
             // Initialize helper
             Helper.Instance.Initialize();
@@ -129,7 +129,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             List<string> paths = new List<string>();
 
             // Clear external rules for each invoke.
-            this.ExternalRules = new List<ExternalRule>();
+            ExternalRules = new List<ExternalRule>();
 
             // Initialize helper
             Helper.Instance.Initialize();
@@ -193,8 +193,18 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             if (ruleNames != null)
             {
-                results = rules.Where<IRule>(item =>
-                    ruleNames.Contains(item.GetName(), StringComparer.OrdinalIgnoreCase));
+                //Check wild card input for -Name parameter and create regex match patterns
+                List<Regex> regexList = new List<Regex>();
+                foreach (string ruleName in ruleNames)
+                {
+                    Regex includeRegex = new Regex(String.Format("^{0}$", Regex.Escape(ruleName).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
+                    regexList.Add(includeRegex);
+                }
+
+                results = from rule in rules
+                    from regex in regexList
+                    where regex.IsMatch(rule.GetName())
+                    select rule;
             }
             else
             {

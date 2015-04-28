@@ -10,25 +10,26 @@
 // THE SOFTWARE.
 //
 
-using System.Collections.Generic;
-using System.Management.Automation.Language;
-
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 {
     /// <summary>
-    /// This class extends AstVisitor and will skip any typedefinitionast
+    /// Represents the severity of a PSScriptAnalyzer rule
     /// </summary>
-    public class SkipTypeDefinition : AstVisitor
+    public enum RuleSeverity : uint
     {
         /// <summary>
-        /// File name
+        /// Information: This warning is trivial, but may be useful. They are recommended by PowerShell best practice.
         /// </summary>
-        public string fileName;
+        Information = 0,
 
         /// <summary>
-        /// My Diagnostic Records
+        /// WARNING: This warning may cause a problem or does not follow PowerShell's recommended guidelines.
         /// </summary>
-        public List<DiagnosticRecord> DiagnosticRecords = new List<DiagnosticRecord>();
+        Warning = 1,
 
-    }
+        /// <summary>
+        /// ERROR: This warning is likely to cause a problem or does not follow PowerShell's required guidelines.
+        /// </summary>
+        Error = 2,
+    };
 }

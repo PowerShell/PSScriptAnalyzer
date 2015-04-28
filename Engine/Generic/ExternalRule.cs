@@ -55,6 +55,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
             return SourceType.Module;
         }
 
+        //Set the community rule level as warning as the current implementation does not require user to specify rule severity when defining their functions in PS scripts
+        public RuleSeverity GetSeverity()
+        {
+            return RuleSeverity.Warning;
+        }
+
         public string GetSourceName()
         {
             return this.srcName;

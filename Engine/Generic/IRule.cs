@@ -10,12 +10,6 @@
 // THE SOFTWARE.
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 {
     /// <summary>
@@ -52,5 +46,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// </summary>
         /// <returns>The source type of the rule.</returns>
         SourceType GetSourceType();
+
+        /// <summary>
+        /// GetSeverity: Retrieves severity of the rule.
+        /// </summary>
+        /// <returns></returns>
+        RuleSeverity GetSeverity();
+
     }
 }

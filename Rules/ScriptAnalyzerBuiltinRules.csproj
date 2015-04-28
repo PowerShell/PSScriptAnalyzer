@@ -59,13 +59,14 @@
     <Compile Include="AvoidReservedParams.cs" />
     <Compile Include="AvoidShouldContinueWithoutForce.cs" />
     <Compile Include="AvoidTrapStatement.cs" />
-    <Compile Include="AvoidUnitializedVariable.cs" />
+    <Compile Include="AvoidUninitializedVariable.cs" />
     <Compile Include="AvoidUsernameAndPasswordParams.cs" />
     <Compile Include="AvoidUsingComputerNameHardcoded.cs" />
     <Compile Include="AvoidUsingConvertToSecureStringWithPlainText.cs" />
     <Compile Include="AvoidUsingInternalURLs.cs" />
     <Compile Include="AvoidUsingInvokeExpression.cs" />
     <Compile Include="AvoidUsingPlainTextForPassword.cs" />
+    <Compile Include="AvoidUsingWMIObjectCmdlet.cs" />
     <Compile Include="AvoidUsingWriteHost.cs" />
     <Compile Include="MissingModuleManifestField.cs" />
     <Compile Include="PossibleIncorrectComparisonWithNull.cs" />

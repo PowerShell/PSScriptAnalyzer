@@ -42,7 +42,7 @@
             <Name>DefaultDisplayPropertySet</Name>
             <ReferencedProperties>
               <Name>Name</Name>
-              <Name>CommonName</Name>
+              <Name>Severity</Name>
               <Name>Description</Name>
               <Name>SourceName</Name>
             </ReferencedProperties>

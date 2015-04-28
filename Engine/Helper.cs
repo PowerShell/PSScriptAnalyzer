@@ -700,7 +700,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             VariableAnalysis previousOuter = OuterAnalysis;
 
-            // We already run variable analysis in these cases so check
+            // We already run variable analysis if the parent is a function so skip these.
+            // Otherwise, we have to do variable analysis using the outer scope variables.
             if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
             {
                 OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
@@ -726,7 +727,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 scriptBlockAst.EndBlock.Visit(this);
             }
 
+            VariableAnalysis innerAnalysis = OuterAnalysis;
             OuterAnalysis = previousOuter;
+
+            if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
+            {
+                // Update the variable analysis of the outer script block
+                VariableAnalysis.UpdateOuterAnalysis(OuterAnalysis, innerAnalysis);
+            }
 
             return null;
         }
@@ -889,6 +897,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitCommand(CommandAst commandAst)
         {
+            if (commandAst == null) return null;
+
+            foreach (CommandElementAst ceAst in commandAst.CommandElements)
+            {
+                ceAst.Visit(this);
+            }
+
             return null;
         }
 
@@ -1219,12 +1234,19 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Do nothing
+        /// Visit pipeline
         /// </summary>
         /// <param name="pipelineAst"></param>
         /// <returns></returns>
         public object VisitPipeline(PipelineAst pipelineAst)
         {
+            if (pipelineAst == null) return null;
+
+            foreach (var command in pipelineAst.PipelineElements)
+            {
+                command.Visit(this);
+            }
+
             return null;
         }
 
