@@ -23,13 +23,13 @@ Download the latest WMF package from [Windows Management Framework 5.0 Preview F
 Installation
 ============
 
-1. Build the Code using Visual Studio [solution part of the repo] and navigate to the binplace location [``~/ProjectRoot/ScriptAnalyzer``]
+1. Build the Code using Visual Studio [solution part of the repo] and navigate to the binplace location [``~/ProjectRoot/PSScriptAnalyzer``]
 
 2. In PowerShell Console:
 ```powershell
-Import-Module ScriptAnalyzer
+Import-Module PSScriptAnalyzer
 ```
-If you have previous version of PSScriptAnalyzer installed on your machine, you may need to override old binaries by copying content of [``~/ProjectRoot/ScriptAnalyzer``] to PSModulePath. 
+If you have previous version of PSScriptAnalyzer installed on your machine, you may need to override old binaries by copying content of [``~/ProjectRoot/PSScriptAnalyzer``] to PSModulePath. 
 
 To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell console to obtain the built-in rules
 
