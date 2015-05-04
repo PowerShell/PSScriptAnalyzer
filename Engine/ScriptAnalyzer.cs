@@ -242,7 +242,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                         FunctionInfo funcInfo = (FunctionInfo)psobject.ImmediateBaseObject;
                         ParameterMetadata param = funcInfo.Parameters.Values
                             .First<ParameterMetadata>(item => item.Name.EndsWith("ast", StringComparison.OrdinalIgnoreCase) ||
-                                item.Name.EndsWith("token", StringComparison.CurrentCulture));
+                                item.Name.EndsWith("token", StringComparison.OrdinalIgnoreCase));
                         
                         //Only add functions that are defined as rules.
                         if (param != null)
