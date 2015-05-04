@@ -5,7 +5,7 @@
 @{
  
 # Author of this module
-Author = 'PowerShell ScriptAnalyzer Team'
+Author = 'Microsoft Corporation'
 
 # Script module or binary module file associated with this manifest.
 RootModule = 'Microsoft.Windows.Powershell.ScriptAnalyzer.dll'
@@ -17,10 +17,10 @@ ModuleVersion = '1.0'
 GUID = '324fc715-36bf-4aee-8e58-72e9b4a08ad9'
 
 # Company or vendor of this module
-CompanyName = 'Microsoft'
+CompanyName = 'Microsoft Corporation'
 
 # Copyright statement for this module
-Copyright = '(c) 2015. All rights reserved.'
+Copyright = '(c) Microsoft Corporation 2015. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of builtin or customized rules on the scripts being analyzed.'
