@@ -3,7 +3,7 @@ $oneCharMessage = "The cmdlet name O only has one character."
 $oneCharName = "PSOneChar"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $invoke = Invoke-ScriptAnalyzer $directory\AvoidUsingReservedCharOneCharNames.ps1 | Where-Object {$_.RuleName -eq $oneCharName}
-$noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $oneCharName}
+$noViolations = Invoke-ScriptAnalyzer $directory\..\Rules\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $oneCharName}
 
 Describe "Avoid Using One Char" {
     Context "When there are violations" {

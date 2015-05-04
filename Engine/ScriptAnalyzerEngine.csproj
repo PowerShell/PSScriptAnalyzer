@@ -82,7 +82,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PSScriptAnalyzer.psd1" />
-    <None Include="ScriptAnalyzer.format.ps1xml" />
+    <None Include="ScriptAnalyzer.format.ps1xml">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="ScriptAnalyzer.types.ps1xml" />
   </ItemGroup>
   <ItemGroup>

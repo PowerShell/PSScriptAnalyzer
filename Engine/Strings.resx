@@ -135,6 +135,9 @@
   <data name="FileNotFound" xml:space="preserve">
     <value>Cannot find file '{0}'.</value>
   </data>
+  <data name="ImportCustomizedRuleSuccess" xml:space="preserve">
+    <value>Customized rules found. Imported to PSScriptAnalyzer rule collections successfully...</value>
+  </data>
   <data name="InvalidPath" xml:space="preserve">
     <value>Cannot find the path '{0}'.</value>
   </data>
