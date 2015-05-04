@@ -45,6 +45,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 CommandAst cmdAst = (CommandAst)foundAst;
 
+                // Handles the exception caused by commands like, {& $PLINK $args 2> $TempErrorFile}.
+                // You can also review the remark section in following document,
+                // MSDN: CommandAst.GetCommandName Method
                 if (cmdAst.GetCommandName() == null) continue;
 
                 // Checks mandatory parameters.

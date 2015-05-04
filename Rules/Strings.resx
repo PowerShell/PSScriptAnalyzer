@@ -678,7 +678,4 @@
   <data name="AvoidUsingWMIObjectCmdletName" xml:space="preserve">
     <value>AvoidUsingWMIObjectCmdlet</value>
   </data>
-  <data name="ImportCustomizedRuleSuccess" xml:space="preserve">
-    <value>Customized rules found. Imported to PSScriptAnalyzer engine successfully...</value>
-  </data>
 </root>
