@@ -251,7 +251,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                             string desc =posh.AddScript(script).Invoke()[0].ImmediateBaseObject.ToString()
                                     .Replace("\r\n", " ").Trim();
 
-                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.ParameterType.FullName,
+                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.ParameterType.Name,
                                 funcInfo.ModuleName, funcInfo.Module.Path));
                         }
                     }
@@ -289,12 +289,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             // Groups rules by AstType and Tokens.
             Dictionary<string, List<ExternalRule>> astRuleGroups = rules
-                .Where<ExternalRule>(item => item.GetParameter().EndsWith("ast", true, CultureInfo.CurrentCulture))
+                .Where<ExternalRule>(item => item.GetParameter().EndsWith("ast", StringComparison.OrdinalIgnoreCase))
                 .GroupBy<ExternalRule, string>(item => item.GetParameter())
                 .ToDictionary(item => item.Key, item => item.ToList());
 
             Dictionary<string, List<ExternalRule>> tokenRuleGroups = rules
-                .Where<ExternalRule>(item => item.GetParameter().EndsWith("token", true, CultureInfo.CurrentCulture))
+                .Where<ExternalRule>(item => item.GetParameter().EndsWith("token", StringComparison.OrdinalIgnoreCase))
                 .GroupBy<ExternalRule, string>(item => item.GetParameter())
                 .ToDictionary(item => item.Key, item => item.ToList());
 
@@ -337,7 +337,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 {
                     // Find all AstTypes that appeared in rule groups.
                     IEnumerable<Ast> childAsts = ast.FindAll(new Func<Ast, bool>((testAst) =>
-                        (testAst.GetType().Name.ToLower(CultureInfo.CurrentCulture) == astRuleGroup.Key.ToLower(CultureInfo.CurrentCulture))), false);
+                        (String.Equals(testAst.GetType().Name, astRuleGroup.Key, StringComparison.OrdinalIgnoreCase))), false);
 
                     foreach (Ast childAst in childAsts)
                     {
@@ -365,52 +365,63 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 }
 
                 #endregion
-
                 #region Collects the results from commands.
-
-                for (int i = 0; i < powerShellCommands.Count; i++)
+                List<DiagnosticRecord> diagnostics = new List<DiagnosticRecord>();
+                try
                 {
-                    // EndInvoke will wait for each command to finish, so we will be getting the commands
-                    // in the same order that they have been invoked withy BeginInvoke.
-                    PSDataCollection<PSObject> psobjects = powerShellCommands[i].EndInvoke(powerShellCommandResults[i]);
-
-                    foreach (var psobject in psobjects)
+                    for (int i = 0; i < powerShellCommands.Count; i++)
                     {
-                        DiagnosticSeverity severity;
-                        IScriptExtent extent;
-                        string message = string.Empty;
-                        string ruleName = string.Empty;
+                        // EndInvoke will wait for each command to finish, so we will be getting the commands
+                        // in the same order that they have been invoked withy BeginInvoke.
+                        PSDataCollection<PSObject> psobjects = powerShellCommands[i].EndInvoke(powerShellCommandResults[i]);
 
-                        if (psobject != null && psobject.ImmediateBaseObject != null)
+                        foreach (var psobject in psobjects)
                         {
-                            // Because error stream is merged to output stream,
-                            // we need to handle the error records.
-                            if (psobject.ImmediateBaseObject is ErrorRecord)
-                            {
-                                ErrorRecord record = (ErrorRecord)psobject.ImmediateBaseObject;
-                                command.WriteError(record);
-                                continue;
-                            }
+                            DiagnosticSeverity severity;
+                            IScriptExtent extent;
+                            string message = string.Empty;
+                            string ruleName = string.Empty;
 
-                            // DiagnosticRecord may not be correctly returned from external rule.
-                            try
+                            if (psobject != null && psobject.ImmediateBaseObject != null)
                             {
-                                Enum.TryParse<DiagnosticSeverity>(psobject.Properties["Severity"].Value.ToString().ToUpper(), out severity);
-                                message = psobject.Properties["Message"].Value.ToString();
-                                extent = (IScriptExtent)psobject.Properties["Extent"].Value;
-                                ruleName = psobject.Properties["RuleName"].Value.ToString();
-                            }
-                            catch (Exception ex)
-                            {
-                                command.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
-                                continue;
-                            }
+                                // Because error stream is merged to output stream,
+                                // we need to handle the error records.
+                                if (psobject.ImmediateBaseObject is ErrorRecord)
+                                {
+                                    ErrorRecord record = (ErrorRecord)psobject.ImmediateBaseObject;
+                                    command.WriteError(record);
+                                    continue;
+                                }
 
-                            if (!string.IsNullOrEmpty(message)) yield return new DiagnosticRecord(message, extent, ruleName, severity, null);
+                                // DiagnosticRecord may not be correctly returned from external rule.
+                                try
+                                {
+                                    Enum.TryParse<DiagnosticSeverity>(psobject.Properties["Severity"].Value.ToString().ToUpper(), out severity);
+                                    message = psobject.Properties["Message"].Value.ToString();
+                                    extent = (IScriptExtent)psobject.Properties["Extent"].Value;
+                                    ruleName = psobject.Properties["RuleName"].Value.ToString();
+                                }
+                                catch (Exception ex)
+                                {
+                                    command.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
+                                    continue;
+                                }
+
+                                if (!string.IsNullOrEmpty(message))
+                                {
+                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, null));
+                                }
+                            }
                         }
                     }
                 }
+                //Catch exception where customized defined rules have exceptins when doing invoke
+                catch(Exception ex)
+                {
+                    command.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
+                }
 
+                return diagnostics;
                 #endregion
             }
         }
