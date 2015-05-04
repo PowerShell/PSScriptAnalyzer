@@ -251,7 +251,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                             string desc =posh.AddScript(script).Invoke()[0].ImmediateBaseObject.ToString()
                                     .Replace("\r\n", " ").Trim();
 
-                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.ParameterType.Name,
+                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.ParameterType.FullName,
                                 funcInfo.ModuleName, funcInfo.Module.Path));
                         }
                     }
@@ -481,7 +481,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
                     cmdlet.WriteDebug(string.Format(CultureInfo.CurrentCulture, Strings.CheckAssemblyFile, resolvedPath));
 
-                    if (String.Equals(Path.GetExtension(resolvedPath),".dll"))
+                    if (String.Equals(Path.GetExtension(resolvedPath),".dll", StringComparison.OrdinalIgnoreCase))
                     {
                         if (!File.Exists(resolvedPath))
                         {
