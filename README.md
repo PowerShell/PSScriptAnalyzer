@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=ready&title=Ready)](https://waffle.io/PowerShell/PSScriptAnalyzer)
 ﻿Introduction
 ============
 
