@@ -142,7 +142,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 paths = result.ContainsKey("ValidDllPaths") ? result["ValidDllPaths"] : result["ValidPaths"];
                 foreach (string path in paths)
                 {
-                    if (Path.GetExtension(path).ToLower(CultureInfo.CurrentCulture) == ".dll")
+                    if (String.Equals(Path.GetExtension(path),".dll",StringComparison.OrdinalIgnoreCase))
                     {
                         catalog.Catalogs.Add(new AssemblyCatalog(path));
                     }
@@ -241,8 +241,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
                         FunctionInfo funcInfo = (FunctionInfo)psobject.ImmediateBaseObject;
                         ParameterMetadata param = funcInfo.Parameters.Values
-                            .First<ParameterMetadata>(item => item.Name.ToLower(CultureInfo.CurrentCulture).EndsWith("ast", StringComparison.CurrentCulture) ||
-                                                              item.Name.ToLower(CultureInfo.CurrentCulture).EndsWith("token", StringComparison.CurrentCulture));
+                            .First<ParameterMetadata>(item => item.Name.EndsWith("ast", StringComparison.OrdinalIgnoreCase) ||
+                                item.Name.EndsWith("token", StringComparison.CurrentCulture));
                         
                         //Only add functions that are defined as rules.
                         if (param != null)
@@ -251,7 +251,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                             string desc =posh.AddScript(script).Invoke()[0].ImmediateBaseObject.ToString()
                                     .Replace("\r\n", " ").Trim();
 
-                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.Name,
+                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.ParameterType.Name,
                                 funcInfo.ModuleName, funcInfo.Module.Path));
                         }
                     }
@@ -381,30 +381,33 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                         string message = string.Empty;
                         string ruleName = string.Empty;
 
-                        // Because error stream is merged to output stream,
-                        // we need to handle the error records.
-                        if (psobject.ImmediateBaseObject is ErrorRecord)
+                        if (psobject != null && psobject.ImmediateBaseObject != null)
                         {
-                            ErrorRecord record = (ErrorRecord)psobject.ImmediateBaseObject;
-                            command.WriteError(record);
-                            continue;
-                        }
+                            // Because error stream is merged to output stream,
+                            // we need to handle the error records.
+                            if (psobject.ImmediateBaseObject is ErrorRecord)
+                            {
+                                ErrorRecord record = (ErrorRecord)psobject.ImmediateBaseObject;
+                                command.WriteError(record);
+                                continue;
+                            }
 
-                        // DiagnosticRecord may not be correctly returned from external rule.
-                        try
-                        {
-                            Enum.TryParse<DiagnosticSeverity>(psobject.Properties["Severity"].Value.ToString().ToUpper(), out severity);
-                            message = psobject.Properties["Message"].Value.ToString();
-                            extent = (IScriptExtent)psobject.Properties["Extent"].Value;
-                            ruleName = psobject.Properties["RuleName"].Value.ToString();
-                        }
-                        catch (Exception ex)
-                        {
-                            command.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
-                            continue;
-                        }
+                            // DiagnosticRecord may not be correctly returned from external rule.
+                            try
+                            {
+                                Enum.TryParse<DiagnosticSeverity>(psobject.Properties["Severity"].Value.ToString().ToUpper(), out severity);
+                                message = psobject.Properties["Message"].Value.ToString();
+                                extent = (IScriptExtent)psobject.Properties["Extent"].Value;
+                                ruleName = psobject.Properties["RuleName"].Value.ToString();
+                            }
+                            catch (Exception ex)
+                            {
+                                command.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
+                                continue;
+                            }
 
-                        if (!string.IsNullOrEmpty(message)) yield return new DiagnosticRecord(message, extent, ruleName, severity, null);
+                            if (!string.IsNullOrEmpty(message)) yield return new DiagnosticRecord(message, extent, ruleName, severity, null);
+                        }
                     }
                 }
 
@@ -478,7 +481,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
                     cmdlet.WriteDebug(string.Format(CultureInfo.CurrentCulture, Strings.CheckAssemblyFile, resolvedPath));
 
-                    if (Path.GetExtension(resolvedPath).ToLower(CultureInfo.CurrentCulture) == ".dll")
+                    if (String.Equals(Path.GetExtension(resolvedPath),".dll"))
                     {
                         if (!File.Exists(resolvedPath))
                         {
