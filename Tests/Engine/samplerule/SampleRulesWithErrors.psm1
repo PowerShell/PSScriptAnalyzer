@@ -26,20 +26,13 @@ function Measure-RequiresRunAsAdministrator
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.Language.ScriptBlockAst]
-        $testAst
+        $ScriptBlockAst
     )
 
     
         $results = @()
-       
-        $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "this is help"; 
-                                            "Extent"   = $ast.Extent;
-                                            "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Warning"}
 
-        $results += $result             
-                
-      
+        $results += $null           
         return $results
 
            

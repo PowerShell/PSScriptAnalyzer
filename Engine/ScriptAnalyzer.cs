@@ -251,7 +251,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                             string desc =posh.AddScript(script).Invoke()[0].ImmediateBaseObject.ToString()
                                     .Replace("\r\n", " ").Trim();
 
-                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.ParameterType.Name,
+                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.Name,param.ParameterType.FullName,
                                 funcInfo.ModuleName, funcInfo.Module.Path));
                         }
                     }
@@ -290,12 +290,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             // Groups rules by AstType and Tokens.
             Dictionary<string, List<ExternalRule>> astRuleGroups = rules
                 .Where<ExternalRule>(item => item.GetParameter().EndsWith("ast", StringComparison.OrdinalIgnoreCase))
-                .GroupBy<ExternalRule, string>(item => item.GetParameter())
+                .GroupBy<ExternalRule, string>(item => item.GetParameterType())
                 .ToDictionary(item => item.Key, item => item.ToList());
 
             Dictionary<string, List<ExternalRule>> tokenRuleGroups = rules
                 .Where<ExternalRule>(item => item.GetParameter().EndsWith("token", StringComparison.OrdinalIgnoreCase))
-                .GroupBy<ExternalRule, string>(item => item.GetParameter())
+                .GroupBy<ExternalRule, string>(item => item.GetParameterType())
                 .ToDictionary(item => item.Key, item => item.ToList());
 
             using (rsp)
@@ -337,7 +337,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 {
                     // Find all AstTypes that appeared in rule groups.
                     IEnumerable<Ast> childAsts = ast.FindAll(new Func<Ast, bool>((testAst) =>
-                        (String.Equals(testAst.GetType().Name, astRuleGroup.Key, StringComparison.OrdinalIgnoreCase))), false);
+                        (astRuleGroup.Key.IndexOf(testAst.GetType().FullName,StringComparison.OrdinalIgnoreCase) != -1)), false);
 
                     foreach (Ast childAst in childAsts)
                     {
