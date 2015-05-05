@@ -1,10 +1,10 @@
 ##Documentation for Customized Rules in PowerShell Scripts
-PSScriptAnalyzer uses MEF(Managed Extensibility Framework) to import all rules defined in the assembly. It can also consume rules written in PowerShell scripts. When calling Invoke-ScriptAnalyzer, users can pass customized rules using parameter -CustomizedRule to apply rule checkings on the scripts. 
+PSScriptAnalyzer uses MEF(Managed Extensibility Framework) to import all rules defined in the assembly. It can also consume rules written in PowerShell scripts. When calling Invoke-ScriptAnalyzer, users can pass customized rules using parameter -CustomizedRulePath to apply rule checkings on the scripts. 
 
 This documentation serves as a basic guideline on how to define customized rules.
 
 ###Basics
-1. Function should have comment-based help. Make sure .DESCRIPTION field is there, as it will be consumed as rule description for the customized rule.
+1. Functions should have comment-based help. Make sure .DESCRIPTION field is there, as it will be consumed as rule description for the customized rule.
 ```
 <#
 .SYNOPSIS
@@ -21,7 +21,7 @@ This documentation serves as a basic guideline on how to define customized rules
 2. Output type should be DiagnosticRecord:
 [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
 
-3. Make sure the function takes either a Token or an Ast as a parameter
+3. Make sure each function takes either a Token or an Ast as a parameter
 ```
 Param
     (
