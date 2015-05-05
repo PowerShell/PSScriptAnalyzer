@@ -28,19 +28,19 @@ using System.Reflection;
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidUsingWMIObjectCmdlet: Verify that Get-WMIObject, Remove-WMIObject are not used
+    /// AvoidUsingWMICmdlet: Avoid Using Get-WMIObject, Remove-WMIObject, Invoke-WmiMethod, Register-WmiEvent, Set-WmiInstance
     /// </summary>
     [Export(typeof(IScriptRule))]
-    public class AvoidUsingWMIObjectCmdlet : IScriptRule
+    public class AvoidUsingWMICmdlet : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Verify that Get-WMIObject, Remove-WMIObject are not used
+        /// AnalyzeScript: Avoid Using Get-WMIObject, Remove-WMIObject, Invoke-WmiMethod, Register-WmiEvent, Set-WmiInstance
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Rule is applicable only when PowerShell Version is < 3.0, since Get-CIMInstance was introduced in 3.0
+            // Rule is applicable only when PowerShell Version is < 3.0, since CIM cmdlet was introduced in 3.0
             int majorPSVersion = GetPSMajorVersion(ast);
             if (!(3 > majorPSVersion && 0 < majorPSVersion))
             {
@@ -50,9 +50,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 // Iterate all CommandAsts and check the command name
                 foreach (CommandAst cmdAst in commandAsts)
                 {
-                    if (cmdAst.GetCommandName() != null && (String.Equals(cmdAst.GetCommandName(), "get-wmiobject", StringComparison.OrdinalIgnoreCase) || String.Equals(cmdAst.GetCommandName(), "remove-wmiobject", StringComparison.OrdinalIgnoreCase)))
+                    if (cmdAst.GetCommandName() != null && 
+                        (String.Equals(cmdAst.GetCommandName(), "get-wmiobject", StringComparison.OrdinalIgnoreCase) 
+                            || String.Equals(cmdAst.GetCommandName(), "remove-wmiobject", StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(cmdAst.GetCommandName(), "invoke-wmimethod", StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(cmdAst.GetCommandName(), "register-wmievent", StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(cmdAst.GetCommandName(), "set-wmiinstance", StringComparison.OrdinalIgnoreCase))
+                        )
                     {
-                        yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMIObjectCmdletError, System.IO.Path.GetFileName(fileName)),
+                        yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMICmdletError, System.IO.Path.GetFileName(fileName)),
                             cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
@@ -87,7 +93,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingWMIObjectCmdletName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingWMICmdletName);
         }
 
         /// <summary>
@@ -96,7 +102,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMIObjectCmdletCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMICmdletCommonName);
         }
 
         /// <summary>
@@ -105,7 +111,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMIObjectCmdletDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMICmdletDescription);
         }
 
         /// <summary>
