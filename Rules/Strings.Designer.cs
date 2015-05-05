@@ -835,6 +835,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DscTestsPresent.
+        /// </summary>
+        internal static string DscTestsPresent {
+            get {
+                return ResourceManager.GetString("DscTestsPresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dsc tests are present.
+        /// </summary>
+        internal static string DscTestsPresentCommonName {
+            get {
+                return ResourceManager.GetString("DscTestsPresentCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Every DSC resource module should contain folder &quot;Tests&quot; with tests for every resource. Test scripts should have resource name they are testing in the file name..
+        /// </summary>
+        internal static string DscTestsPresentDescription {
+            get {
+                return ResourceManager.GetString("DscTestsPresentDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No tests found for resource &apos;{0}&apos;.
+        /// </summary>
+        internal static string DscTestsPresentNoTestsError {
+            get {
+                return ResourceManager.GetString("DscTestsPresentNoTestsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Module Manifest Fields.
         /// </summary>
         internal static string MissingModuleManifestFieldCommonName {

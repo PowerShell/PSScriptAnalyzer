@@ -690,4 +690,16 @@
   <data name="UseOutputTypeCorrectlyName" xml:space="preserve">
     <value>UseOutputTypeCorrectly</value>
   </data>
+  <data name="DscTestsPresent" xml:space="preserve">
+    <value>DscTestsPresent</value>
+  </data>
+  <data name="DscTestsPresentCommonName" xml:space="preserve">
+    <value>Dsc tests are present</value>
+  </data>
+  <data name="DscTestsPresentDescription" xml:space="preserve">
+    <value>Every DSC resource module should contain folder "Tests" with tests for every resource. Test scripts should have resource name they are testing in the file name.</value>
+  </data>
+  <data name="DscTestsPresentNoTestsError" xml:space="preserve">
+    <value>No tests found for resource '{0}'</value>
+  </data>
 </root>

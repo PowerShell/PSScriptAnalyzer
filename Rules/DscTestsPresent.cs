@@ -30,7 +30,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
     /// Tests folder should contain test script for given resource - file name should contain resource's name.
     /// </summary>
     [Export(typeof(IDSCResourceRule))]
-    public class DscExamplesPresent : IDSCResourceRule
+    public class DscTestsPresent : IDSCResourceRule
     {
         /// <summary>
         /// AnalyzeDSCResource: Analyzes given DSC Resource
@@ -40,7 +40,29 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The results of the analysis</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
-            
+            String fileNameOnly = Path.GetFileName(fileName);
+            String resourceName = Path.GetFileNameWithoutExtension(fileNameOnly);
+            String testsQuery = String.Format("*{0}*", resourceName);
+            Boolean testsPresent = false;
+            String expectedTestsPath = Path.Combine(new String[] { fileName, "..", "..", "..", "Tests" });
+
+            // Verify tests are present
+            if (Directory.Exists(expectedTestsPath))
+            {
+                DirectoryInfo testsFolder = new DirectoryInfo(expectedTestsPath);
+                FileInfo[] testFiles = testsFolder.GetFiles(testsQuery);
+                if (testFiles.Length != 0)
+                {
+                    testsPresent = true;
+                }
+            }
+
+            // Return error if no tests present
+            if (!testsPresent)
+            {
+                yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscTestsPresentNoTestsError, resourceName),
+                            ast.Extent, GetName(), DiagnosticSeverity.Information, fileName);
+            }
         }
 
         /// <summary>
@@ -60,7 +82,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.DscExamplesPresent);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.DscTestsPresent);
         }
 
         /// <summary>
@@ -69,7 +91,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.DscTestsPresentCommonName);
         }
 
         /// <summary>
@@ -78,7 +100,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.DscTestsPresentDescription);
         }
 
         /// <summary>
