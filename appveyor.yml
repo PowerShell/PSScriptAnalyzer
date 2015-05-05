@@ -12,14 +12,10 @@ init:
 - ps: $confirmationPage = 'http://www.microsoft.com/en-us/download/' +  $((invoke-webrequest 'http://aka.ms/wmf5latest' -UseBasicParsing).links | ? Class -eq 'mscom-link download-button dl' | % href)
 - ps: $directURL = (invoke-webrequest $confirmationPage -UseBasicParsing).Links | ? Class -eq 'mscom-link' | ? href -match "WindowsBlue-KB\d\d\d\d\d\d\d-x64.msu" | % href | select -first 1
 - ps: $download = invoke-webrequest $directURL -OutFile $env:Temp\wmf5latest.msu
-- ps: if (test-path $env:Temp\wmf5latest.msu)
-- ps: {
-- ps:   start -wait $env:Temp\wmf5latest.msu -argumentlist '/quiet /norestart'
-- ps: }
-- ps: else
-- ps: {
-- ps:   throw 'the update file is not available at the specified location'
-- ps: }
+- ps: if (test-path $env:Temp\wmf5latest.msu) {
+- ps:   start -wait $env:Temp\wmf5latest.msu -argumentlist '/quiet /norestart' }
+- ps: else {
+- ps:   throw 'the update file is not available at the specified location' }
 - ps: Remove-Item $env:Temp\wmf5latest.msu
 - ps: Restart-Computer -Force
 - ps: $PSVersionTable
