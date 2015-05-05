@@ -4,7 +4,7 @@ PSScriptAnalyzer uses MEF(Managed Extensibility Framework) to import all rules d
 This documentation serves as a basic guideline on how to define customized rules.
 
 ###Basics
-1. Functions should have comment-based help. Make sure .DESCRIPTION field is there, as it will be consumed as rule description for the customized rule.
+- Functions should have comment-based help. Make sure .DESCRIPTION field is there, as it will be consumed as rule description for the customized rule.
 ```
 <#
 .SYNOPSIS
@@ -17,9 +17,10 @@ This documentation serves as a basic guideline on how to define customized rules
 .NOTES
 #>
 ```
-2. Output type should be DiagnosticRecord:
+- Output type should be DiagnosticRecord:
 [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
-3. Make sure each function takes either a Token or an Ast as a parameter
+
+- Make sure each function takes either a Token or an Ast as a parameter
 ```
 Param
     (
@@ -29,14 +30,14 @@ Param
         $testAst
     )
 ```
-4. DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
+- DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
 ```
 $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "This is a sample rule"; 
      "Extent"   = $ast.Extent;
      "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
      "Severity" = "Warning"}
 ```
-5. Make sure you export the function(s) at the end of the script using Export-ModuleMember
+- Make sure you export the function(s) at the end of the script using Export-ModuleMember
 ```
 Export-ModuleMember -Function (FunctionName)
 ```
