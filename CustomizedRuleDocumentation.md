@@ -17,8 +17,11 @@ This documentation serves as a basic guideline on how to define customized rules
 .NOTES
 #>
 ```
+
 - Output type should be DiagnosticRecord:
+```
 [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+```
 
 - Make sure each function takes either a Token or an Ast as a parameter
 ```
@@ -30,6 +33,7 @@ Param
         $testAst
     )
 ```
+
 - DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
 ```
 $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "This is a sample rule"; 
@@ -37,6 +41,7 @@ $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[
      "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
      "Severity" = "Warning"}
 ```
+
 - Make sure you export the function(s) at the end of the script using Export-ModuleMember
 ```
 Export-ModuleMember -Function (FunctionName)
