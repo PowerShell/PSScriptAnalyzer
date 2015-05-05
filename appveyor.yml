@@ -14,11 +14,11 @@ init:
 - ps: $download = invoke-webrequest $directURL -OutFile $env:Temp\wmf5latest.msu
 - ps: if (test-path $env:Temp\wmf5latest.msu)
 - ps: {
-- ps: start -wait $env:Temp\wmf5latest.msu -argumentlist '/quiet /norestart'
+- ps:   start -wait $env:Temp\wmf5latest.msu -argumentlist '/quiet /norestart'
 - ps: }
 - ps: else
 - ps: {
-- ps:    throw 'the update file is not available at the specified location' 
+- ps:    throw 'the update file is not available at the specified location'
 - ps: }
 - ps: Remove-Item $env:Temp\wmf5latest.msu
 - ps: Restart-Computer -Force
