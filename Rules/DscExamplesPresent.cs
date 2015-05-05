@@ -40,11 +40,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The results of the analysis</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
-            String fileNameOnly = fileName.Substring(fileName.LastIndexOf("\\", StringComparison.Ordinal) + 1);
-            String resourceName = fileNameOnly.Substring(0, fileNameOnly.Length - ".psm1".Length);
-            String examplesQuery = "*" + resourceName + "*";
+            String fileNameOnly = Path.GetFileName(fileName);
+            String resourceName = Path.GetFileNameWithoutExtension(fileNameOnly);
+            String examplesQuery = String.Format("*{0}*", resourceName);
             Boolean examplesPresent = false; 
-            String expectedExamplesPath = fileName + "\\..\\..\\..\\Examples";
+            String expectedExamplesPath = Path.Combine(new String[] {fileName, "..", "..", "..", "Examples"});
 
             // Verify examples are present
             if (Directory.Exists(expectedExamplesPath))
@@ -84,9 +84,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 resourceName = dscClass.Name;
 
-                String examplesQuery = "*" + resourceName + "*";
+                String examplesQuery = String.Format("*{0}*", resourceName);
                 Boolean examplesPresent = false;
-                String expectedExamplesPath = fileName + "\\..\\Examples";
+                String expectedExamplesPath = Path.Combine(new String[] {fileName, "..", "Examples"});
 
                 // Verify examples are present
                 if (Directory.Exists(expectedExamplesPath))
