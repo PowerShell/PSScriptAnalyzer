@@ -17,7 +17,7 @@ init:
         start -wait $env:Temp\wmf5latest.msu -argumentlist "/quiet /norestart"
     }
     else {
-        throw "the update file is not available at the specified location"
+        throw "WMF5.0 update file is not available at the specified location"
     }
     Remove-Item $env:Temp\wmf5latest.msu
     Restart-Computer -Force
