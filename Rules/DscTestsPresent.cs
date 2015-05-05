@@ -73,7 +73,39 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
         {
-            
+            String resourceName = null;
+
+            IEnumerable<Ast> dscClasses = ast.FindAll(item =>
+                item is TypeDefinitionAst
+                && ((item as TypeDefinitionAst).IsClass)
+                && (item as TypeDefinitionAst).Attributes.Any(attr => String.Equals("DSCResource", attr.TypeName.FullName, StringComparison.OrdinalIgnoreCase)), true);
+
+            foreach (TypeDefinitionAst dscClass in dscClasses)
+            {
+                resourceName = dscClass.Name;
+
+                String testsQuery = String.Format("*{0}*", resourceName);
+                Boolean testsPresent = false;
+                String expectedTestsPath = Path.Combine(new String[] { fileName, "..", "Tests" });
+
+                // Verify tests are present
+                if (Directory.Exists(expectedTestsPath))
+                {
+                    DirectoryInfo testsFolder = new DirectoryInfo(expectedTestsPath);
+                    FileInfo[] testFiles = testsFolder.GetFiles(testsQuery);
+                    if (testFiles.Length != 0)
+                    {
+                        testsPresent = true;
+                    }
+                }
+
+                // Return error if no tests present
+                if (!testsPresent)
+                {
+                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscTestsPresentNoTestsError, resourceName),
+                                dscClass.Extent, GetName(), DiagnosticSeverity.Information, fileName);
+                }
+            }
         }
 
         /// <summary>
