@@ -61,7 +61,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             if (!examplesPresent)
             {
                 yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentNoExamplesError, resourceName),
-                            null, GetName(), DiagnosticSeverity.Information, fileName);
+                            ast.Extent, GetName(), DiagnosticSeverity.Information, fileName);
             }
         }
 
@@ -103,7 +103,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 if (!examplesPresent)
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentNoExamplesError, resourceName),
-                                null, GetName(), DiagnosticSeverity.Information, fileName);
+                                dscClass.Extent, GetName(), DiagnosticSeverity.Information, fileName);
                 }
             }       
         }
