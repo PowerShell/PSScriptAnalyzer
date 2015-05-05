@@ -31,14 +31,15 @@ Param
         $testAst
     )
 ```
-5. DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
+
+4. DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
 ```
 $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "This is a sample rule"; 
      "Extent"   = $ast.Extent;
      "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
      "Severity" = "Warning"}
 ```
-6. Make sure you export the function(s) at the end of the script using Export-ModuleMember
+5. Make sure you export the function(s) at the end of the script using Export-ModuleMember
 ```
 Export-ModuleMember -Function (FunctionName)
 ```
