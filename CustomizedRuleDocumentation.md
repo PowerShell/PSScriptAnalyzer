@@ -5,6 +5,7 @@ This documentation serves as a basic guideline on how to define customized rules
 
 ###Basics
 1. Function should have comment-based help. Make sure .DESCRIPTION field is there, as it will be consumed as rule description for the customized rule.
+```
 <#
 .SYNOPSIS
     Name of your rule.
@@ -15,11 +16,13 @@ This documentation serves as a basic guideline on how to define customized rules
 .OUTPUTS
 .NOTES
 #>
+```
 
 2. Output type should be DiagnosticRecord:
 [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
 
 3. Make sure the function takes either a Token or an Ast as a parameter
+```
 Param
     (
         [Parameter(Mandatory = $true)]
@@ -27,18 +30,21 @@ Param
         [System.Management.Automation.Language.ScriptBlockAst]
         $testAst
     )
-
+```
 5. DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
-$result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "this is help"; 
-                                            "Extent"   = $ast.Extent;
-                                            "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Warning"}
-
+```
+$result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "This is a sample rule"; 
+     "Extent"   = $ast.Extent;
+     "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
+     "Severity" = "Warning"}
+```
 6. Make sure you export the function(s) at the end of the script using Export-ModuleMember
+```
 Export-ModuleMember -Function (FunctionName)
+```
 
 ###Example
-
+```
 <#
 .SYNOPSIS
     Uses #Requires -RunAsAdministrator instead of your own methods.
@@ -144,5 +150,5 @@ function Measure-RequiresRunAsAdministrator
         }
     }
 }
-
+```
 More examples can be found in *Tests\Engine\CommunityRules*
