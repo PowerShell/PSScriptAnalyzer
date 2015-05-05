@@ -17,11 +17,17 @@ using System.Management.Automation.Language;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.IO;
+using System.Management.Automation;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// DscExamplesExist: Checks that DSC examples for given resource are present
+    /// DscExamplesPresent: Checks that DSC examples for given resource are present.
+    /// Rule expects directory Examples to be present:
+    ///     For non-class based resources it should exist at the same folder level as DSCResources folder.
+    ///     For class based resources it should be present at the same folder level as resource psm1 file. 
+    /// Examples folder should contain sample configuration for given resource - file name should contain resource's name.
     /// </summary>
     [Export(typeof(IDSCResourceRule))]
     public class DscExamplesPresent : IDSCResourceRule
@@ -34,7 +40,29 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The results of the analysis</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
+            String fileNameOnly = fileName.Substring(fileName.LastIndexOf("\\", StringComparison.Ordinal) + 1);
+            String resourceName = fileNameOnly.Substring(0, fileNameOnly.Length - ".psm1".Length);
+            String examplesQuery = "*" + resourceName + "*";
+            Boolean examplesPresent = false; 
+            String expectedExamplesPath = fileName + "\\..\\..\\..\\Examples";
 
+            // Verify examples are present
+            if (Directory.Exists(expectedExamplesPath))
+            {
+                DirectoryInfo examplesFolder = new DirectoryInfo(expectedExamplesPath);
+                FileInfo[] exampleFiles = examplesFolder.GetFiles(examplesQuery);
+                if (exampleFiles.Length != 0)
+                {
+                    examplesPresent = true;
+                }
+            }
+
+            // Return error if no examples present
+            if (!examplesPresent)
+            {
+                yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentNoExamplesError, resourceName),
+                            null, GetName(), DiagnosticSeverity.Information, fileName);
+            }
         }
 
         /// <summary>
@@ -45,9 +73,44 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
         {
+            String resourceName = null;
 
+            // Obtain class based resource name
+            IEnumerable<Ast> typeDefinitionAsts = (ast.FindAll(dscAst => dscAst is TypeDefinitionAst, true));
+            foreach (TypeDefinitionAst typeDefinitionAst in typeDefinitionAsts)
+            {
+                var attributes = typeDefinitionAst.Attributes;
+                foreach(var attribute in attributes)
+                {
+                    if (attribute.TypeName.FullName.Equals("DscResource"))
+                    {
+                        resourceName = typeDefinitionAst.Name;
+                    }
+                }
+            }
+
+            String examplesQuery = "*" + resourceName + "*";
+            Boolean examplesPresent = false;
+            String expectedExamplesPath = fileName + "\\..\\Examples";
+
+            // Verify examples are present
+            if (Directory.Exists(expectedExamplesPath))
+            {
+                DirectoryInfo examplesFolder = new DirectoryInfo(expectedExamplesPath);
+                FileInfo[] exampleFiles = examplesFolder.GetFiles(examplesQuery);
+                if (exampleFiles.Length != 0)
+                {
+                    examplesPresent = true;
+                }
+            }
+
+            // Return error if no examples present
+            if (!examplesPresent)
+            {
+                yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentNoExamplesError, resourceName),
+                            null, GetName(), DiagnosticSeverity.Information, fileName);
+            }
         }
-
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.

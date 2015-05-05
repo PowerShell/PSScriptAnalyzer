@@ -853,6 +853,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No examples found for resource &apos;{0}&apos;.
+        /// </summary>
+        internal static string DscExamplesPresentNoExamplesError {
+            get {
+                return ResourceManager.GetString("DscExamplesPresentNoExamplesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PSDSC.
         /// </summary>
         internal static string DSCSourceName {

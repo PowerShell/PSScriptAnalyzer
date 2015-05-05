@@ -699,4 +699,7 @@
   <data name="DscExamplesPresentDescription" xml:space="preserve">
     <value>Every DSC resource module should contain folder "Examples" with sample configurations for every resource. Sample configurations should have resource name they are demonstrating in the title.</value>
   </data>
+  <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
+    <value>No examples found for resource '{0}'</value>
+  </data>
 </root>
