@@ -18,7 +18,7 @@ init:
 - ps: }
 - ps: else
 - ps: {
-- ps:    throw 'the update file is not available at the specified location'
+- ps:   throw 'the update file is not available at the specified location'
 - ps: }
 - ps: Remove-Item $env:Temp\wmf5latest.msu
 - ps: Restart-Computer -Force
