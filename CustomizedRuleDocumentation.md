@@ -17,10 +17,8 @@ This documentation serves as a basic guideline on how to define customized rules
 .NOTES
 #>
 ```
-
 2. Output type should be DiagnosticRecord:
 [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
-
 3. Make sure each function takes either a Token or an Ast as a parameter
 ```
 Param
@@ -31,7 +29,6 @@ Param
         $testAst
     )
 ```
-
 4. DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
 ```
 $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "This is a sample rule"; 
