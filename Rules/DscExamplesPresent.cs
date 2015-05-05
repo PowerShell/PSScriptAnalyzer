@@ -75,41 +75,37 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         {
             String resourceName = null;
 
-            // Obtain class based resource name
-            IEnumerable<Ast> typeDefinitionAsts = (ast.FindAll(dscAst => dscAst is TypeDefinitionAst, true));
-            foreach (TypeDefinitionAst typeDefinitionAst in typeDefinitionAsts)
+            IEnumerable<Ast> dscClasses = ast.FindAll(item =>
+                item is TypeDefinitionAst
+                && ((item as TypeDefinitionAst).IsClass)
+                && (item as TypeDefinitionAst).Attributes.Any(attr => String.Equals("DSCResource", attr.TypeName.FullName, StringComparison.OrdinalIgnoreCase)), true);
+
+            foreach (TypeDefinitionAst dscClass in dscClasses)
             {
-                var attributes = typeDefinitionAst.Attributes;
-                foreach(var attribute in attributes)
+                resourceName = dscClass.Name;
+
+                String examplesQuery = "*" + resourceName + "*";
+                Boolean examplesPresent = false;
+                String expectedExamplesPath = fileName + "\\..\\Examples";
+
+                // Verify examples are present
+                if (Directory.Exists(expectedExamplesPath))
                 {
-                    if (attribute.TypeName.FullName.Equals("DscResource"))
+                    DirectoryInfo examplesFolder = new DirectoryInfo(expectedExamplesPath);
+                    FileInfo[] exampleFiles = examplesFolder.GetFiles(examplesQuery);
+                    if (exampleFiles.Length != 0)
                     {
-                        resourceName = typeDefinitionAst.Name;
+                        examplesPresent = true;
                     }
                 }
-            }
 
-            String examplesQuery = "*" + resourceName + "*";
-            Boolean examplesPresent = false;
-            String expectedExamplesPath = fileName + "\\..\\Examples";
-
-            // Verify examples are present
-            if (Directory.Exists(expectedExamplesPath))
-            {
-                DirectoryInfo examplesFolder = new DirectoryInfo(expectedExamplesPath);
-                FileInfo[] exampleFiles = examplesFolder.GetFiles(examplesQuery);
-                if (exampleFiles.Length != 0)
+                // Return error if no examples present
+                if (!examplesPresent)
                 {
-                    examplesPresent = true;
+                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentNoExamplesError, resourceName),
+                                null, GetName(), DiagnosticSeverity.Information, fileName);
                 }
-            }
-
-            // Return error if no examples present
-            if (!examplesPresent)
-            {
-                yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentNoExamplesError, resourceName),
-                            null, GetName(), DiagnosticSeverity.Information, fileName);
-            }
+            }       
         }
 
         /// <summary>
