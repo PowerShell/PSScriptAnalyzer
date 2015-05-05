@@ -8,7 +8,7 @@ branches:
     - BugFixes
   
 # scripts that are called at very beginning, before repo cloning  
-init:
+install:
  ps: |
     $confirmationPage = "http://www.microsoft.com/en-us/download/" +  $((invoke-webrequest "http://aka.ms/wmf5latest" -UseBasicParsing).links | ? Class -eq "mscom-link download-button dl" | % href)
     $directURL = (invoke-webrequest $confirmationPage -UseBasicParsing).Links | ? Class -eq "mscom-link" | ? href -match "WindowsBlue-KB\d\d\d\d\d\d\d-x64.msu" | % href | select -first 1
@@ -22,9 +22,6 @@ init:
     Remove-Item $env:Temp\wmf5latest.msu
     Restart-Computer -Force
     $PSVersionTable
-    
-install: 
-    - cinst -y pester
     
 build:
   verbosity: normal
