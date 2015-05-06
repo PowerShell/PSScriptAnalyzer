@@ -28,7 +28,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         string param   = string.Empty;
         string srcName = string.Empty;
         string modPath = string.Empty;
-        
+        string paramType = string.Empty;
 
         public string GetName()
         {
@@ -53,6 +53,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         public SourceType GetSourceType()
         {
             return SourceType.Module;
+        }
+
+        public string GetParameterType()
+        {
+            return this.paramType;
         }
 
         //Set the community rule level as warning as the current implementation does not require user to specify rule severity when defining their functions in PS scripts
@@ -80,7 +85,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
 
         }
 
-        public ExternalRule(string name, string commonName, string desc, string param, string srcName, string modPath)
+        public ExternalRule(string name, string commonName, string desc, string param, string paramType, string srcName, string modPath)
         {
             this.name    = name;
             this.commonName = commonName;
@@ -88,6 +93,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
             this.param   = param;
             this.srcName = srcName;
             this.modPath = modPath;
+            this.paramType = paramType;
         }
 
         #endregion
