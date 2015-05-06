@@ -15,9 +15,12 @@ Use corresponding CIM cmdlets such as Get-CIMInstance, Remove-CIMInstance, Invok
 ##Example
 
 Wrong:
+```
 Get-WmiObject -Query 'Select * from Win32_Process where name LIKE "myprocess%"' | Remove-WmiObject
 Invoke-WmiMethod –Class Win32_Process –Name "Create" –ArgumentList @{ CommandLine = "notepad.exe" }
-
+```
 Correct:
+```
 Get-CimInstance -Query 'Select * from Win32_Process where name LIKE "myprocess%"' | Remove-CIMInstance
 Invoke-CimMethod –ClassName Win32_Process –MethodName "Create" –Arguments @{ CommandLine = "notepad.exe" }
+```
