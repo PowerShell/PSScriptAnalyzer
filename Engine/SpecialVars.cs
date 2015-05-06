@@ -38,6 +38,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         internal const string MyInvocation = "MyInvocation";
         internal const string PSScriptRoot = "PSScriptRoot";
         internal const string PSCommandPath = "PSCommandPath";
+        internal const string ExecutionContext = "ExecutionContext";
 
         internal static readonly string[] InitializedVariables;
 
@@ -66,7 +67,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                                                                    PSBoundParameters,  
                                                                    MyInvocation,  
                                                                    PSScriptRoot,  
-                                                                   PSCommandPath,  
+                                                                   PSCommandPath,
+                                                                   ExecutionContext
                                                                };
         internal static readonly Type[] AutomaticVariableTypes = new Type[]  
                                                                  {  
@@ -79,6 +81,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                                                                    /* MyInvocation */      typeof(InvocationInfo),  
                                                                    /* PSScriptRoot */      typeof(string),  
                                                                    /* PSCommandPath */     typeof(string),  
+                                                                   /* ExecutionContext */  typeof(EngineIntrinsics), 
                                                                  };
 
 

@@ -1,4 +1,5 @@
-Introduction
+
+﻿Introduction
 ============
 
 PSScriptAnalyzer is a static code checker for Windows PowerShell modules and scripts. PSScriptAnalyzer checks the quality of Windows PowerShell code by running a set of rules. The rules are based on PowerShell best practices identified by PowerShell Team and the community. It generates DiagnosticResults (errors and warnings) to inform users about potential code defects and suggests possible solutions for improvements.
@@ -16,7 +17,9 @@ Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-Exclud
 Requirements
 ============
 
-WS2012R2 / Windows 8.1 / Windows OS running PowerShell v5.0 which can be obtained using [Windows Management Framework 5.0 Preview February 2015](http://go.microsoft.com/fwlink/?LinkId=398175).
+WS2012R2 / Windows 8.1 / Windows OS running **PowerShell v5.0** and **Windows Management Framework 5.0 Preview**
+
+Download the latest WMF package from [Windows Management Framework 5.0 Preview](http://go.microsoft.com/fwlink/?LinkId=398175).
 
 Installation
 ============
@@ -27,6 +30,7 @@ Installation
 ```powershell
 Import-Module PSScriptAnalyzer
 ```
+If you have previous version of PSScriptAnalyzer installed on your machine, you may need to override old binaries by copying content of [``~/ProjectRoot/PSScriptAnalyzer``] to PSModulePath. 
 
 To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell console to obtain the built-in rules
 
@@ -34,6 +38,8 @@ Building the Code
 =================
 
 Use Visual Studio to build "ScriptAnalyzer.sln". Use ~/PSScriptAnalyzer/ folder to load PSScriptAnalyzer.psd1
+
+**Note: If there are any build errors, please refer to Requirements section and make sure all dependencies are properly installed**
 
 Running Tests
 =============
@@ -48,6 +54,13 @@ Pester-based ScriptAnalyzer Tests are located in ```<branch>/PSScriptAnalyzer/Te
 .\*.ps1 (Example - .\ AvoidConvertToSecureStringWithPlainText.ps1)
 *You can also run all tests under \Engine or \Rules by calling Invoke-Pester in the Engine/Rules directory.
  
+Project Management Dashboard
+==============================
+
+You can track issues, pull requests, backlog items here:
+
+[![Stories in Ready](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=ready&title=Ready)](https://waffle.io/PowerShell/PSScriptAnalyzer)
+
 
 Contributing to ScriptAnalyzer
 ==============================

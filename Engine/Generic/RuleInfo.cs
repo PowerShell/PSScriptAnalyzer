@@ -35,7 +35,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// Name: The name of the rule.
         /// </summary>
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public string Name
+        public string RuleName
         {
             get { return name; }
             private set { name = value; }
@@ -102,7 +102,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// <param name="sourceName">Source name of the rule.</param>
         public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity)
         {
-            Name        = name;
+            RuleName        = name;
             CommonName  = commonName;
             Description = description;
             SourceType  = sourceType;

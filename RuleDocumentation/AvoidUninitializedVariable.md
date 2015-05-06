@@ -17,8 +17,8 @@ Wrong：
 
 	function NotGlobal {
 	    $localVars = "Localization?"
-	    $unitialized
-	    Write-Output $unitialized
+	    $uninitialized
+	    Write-Output $uninitialized
 	}
 
 
