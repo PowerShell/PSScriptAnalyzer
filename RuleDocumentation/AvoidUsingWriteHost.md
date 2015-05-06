@@ -14,15 +14,17 @@ PTo fix a violation of this rule, please replace Write-Host with Write-Output.
 
 Wrong： 
 
-'''
+```
 function Test
 {
 	...
 	Write-Host "Executing.."
 }
-'''
+```
+
 Correct: 
-'''
+
+```
 function Test
 {
 	...
@@ -33,5 +35,4 @@ function Show-Something
 {
     Write-Host "show something on screen";
 }
-
-'''
+```
