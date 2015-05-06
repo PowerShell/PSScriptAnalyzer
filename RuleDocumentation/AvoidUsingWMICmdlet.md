@@ -1,17 +1,18 @@
-#AvoidAlias 
+#AvoidUsingWMICmdlet
 **Severity Level: Warning**
 
 
 ##Description
 
-An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availability.
+Avoid Using Get-WMIObject, Remove-WMIObject, Invoke-WmiMethod, Register-WmiEvent, Set-WmiInstance
+
+For PowerShell 3.0 and above, use CIM cmdlet which perform the same tasks as the WMI cmdlets. The CIM cmdlets comply with WS-Management (WSMan) standards and with the Common Information Model (CIM) standard, which enables the cmdlets to use the same techniques to manage Windows computers and those running other operating systems.
 
 ##How to Fix
 
-Please consider using full cmdlet name instead of alias. 
+Use corresponding CIM cmdlets such as Get-CIMInstance, Remove-CIMInstance, Invoke-CIMMethod, Register-CimIndicationEvent, Set-CimInstance 
 
 ##Example
 
-Wrong： gps | Where-Object {$_.WorkingSet -gt 20000000}
-
-Correct: Get-Process | Where-Object {$_.WorkingSet -gt 20000000}
+Get-CimInstance -Query 'Select * from Win32_Process where name LIKE "myprocess%"' | Remove-CIMInstance
+Invoke-CimMethod –ClassName Win32_Process –MethodName "Create" –Arguments @{ CommandLine = "notepad.exe" }
