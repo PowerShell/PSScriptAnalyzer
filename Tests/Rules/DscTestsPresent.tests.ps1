@@ -18,7 +18,7 @@ Describe "DscTestsPresent rule in class based resource" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should Be $violationMessage
         }
     }
 
@@ -51,7 +51,7 @@ Describe "DscTestsPresent rule in regular (non-class) based resource" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should Be $violationMessage
         }
     }
 
