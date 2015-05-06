@@ -826,6 +826,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DscExamplesPresent.
+        /// </summary>
+        internal static string DscExamplesPresent {
+            get {
+                return ResourceManager.GetString("DscExamplesPresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DSC examples are present.
+        /// </summary>
+        internal static string DscExamplesPresentCommonName {
+            get {
+                return ResourceManager.GetString("DscExamplesPresentCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Every DSC resource module should contain folder &quot;Examples&quot; with sample configurations for every resource. Sample configurations should have resource name they are demonstrating in the title..
+        /// </summary>
+        internal static string DscExamplesPresentDescription {
+            get {
+                return ResourceManager.GetString("DscExamplesPresentDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No examples found for resource &apos;{0}&apos;.
+        /// </summary>
+        internal static string DscExamplesPresentNoExamplesError {
+            get {
+                return ResourceManager.GetString("DscExamplesPresentNoExamplesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PSDSC.
         /// </summary>
         internal static string DSCSourceName {
