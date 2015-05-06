@@ -502,68 +502,48 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                 }
 
                 // Check if the supplied artifact is indeed part of the DSC resource
-                // Step 1: Check if the artifact is under the "DSCResources" folder                
-                DirectoryInfo dscResourceParent = Directory.GetParent(filePath);
-                if (null != dscResourceParent)
+                if (Helper.Instance.IsDscResourceModule(filePath))
                 {
-                    DirectoryInfo dscResourcesFolder = Directory.GetParent(dscResourceParent.ToString());
-                    if (null != dscResourcesFolder)
-                    {                        
-                        if (String.Equals(dscResourcesFolder.Name, "dscresources",StringComparison.OrdinalIgnoreCase))
+                    // Run all DSC Rules
+                    foreach (IDSCResourceRule dscResourceRule in ScriptAnalyzer.Instance.DSCResourceRules)
+                    {
+                        bool includeRegexMatch = false;
+                        bool excludeRegexMatch = false;
+                        foreach (Regex include in includeRegexList)
                         {
-                            // Step 2: Ensure there is a Schema.mof in the same folder as the artifact
-                            string schemaMofParentFolder = Directory.GetParent(filePath).ToString();
-                            string[] schemaMofFile = Directory.GetFiles(schemaMofParentFolder, "*.schema.mof");
-
-                            // Ensure Schema file exists and is the only one in the DSCResource folder
-                            if (schemaMofFile != null && schemaMofFile.Count() == 1)
+                            if (include.IsMatch(dscResourceRule.GetName()))
                             {
-                                // Run DSC Rules only on module that matches the schema.mof file name without extension
-                                if (schemaMofFile[0].Replace("schema.mof", "psm1") == filePath)
-                                {
-                                    // Run all DSC Rules
-                                    foreach (IDSCResourceRule dscResourceRule in ScriptAnalyzer.Instance.DSCResourceRules)
-                                    {
-                                        bool includeRegexMatch = false;
-                                        bool excludeRegexMatch = false;
-                                        foreach (Regex include in includeRegexList)
-                                        {
-                                            if (include.IsMatch(dscResourceRule.GetName()))
-                                            {
-                                                includeRegexMatch = true;
-                                                break;
-                                            }
-                                        }
-                                        foreach (Regex exclude in excludeRegexList)
-                                        {
-                                            if (exclude.IsMatch(dscResourceRule.GetName()))
-                                            {
-                                                excludeRegexMatch = true;
-                                            }
-                                        }
-                                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
-                                        {
-                                            WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
+                                includeRegexMatch = true;
+                                break;
+                            }
+                        }
+                        foreach (Regex exclude in excludeRegexList)
+                        {
+                            if (exclude.IsMatch(dscResourceRule.GetName()))
+                            {
+                                excludeRegexMatch = true;
+                            }
+                        }
+                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                        {
+                            WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
-                                            // Ensure that any unhandled errors from Rules are converted to non-terminating errors
-                                            // We want the Engine to continue functioning even if one or more Rules throws an exception
-                                            try
-                                            {
-                                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCResource(ast, filePath).ToList());
-                                                diagnostics.AddRange(records.Item2);
-                                                suppressed.AddRange(records.Item1);
-                                            }
-                                            catch (Exception dscResourceRuleException)
-                                            {
-                                                WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
-                                            }  
-                                        }
-                                    }
-                                }
+                            // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                            // We want the Engine to continue functioning even if one or more Rules throws an exception
+                            try
+                            {
+                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCResource(ast, filePath).ToList());
+                                diagnostics.AddRange(records.Item2);
+                                suppressed.AddRange(records.Item1);
+                            }
+                            catch (Exception dscResourceRuleException)
+                            {
+                                WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
                             }
                         }
                     }
-                }                
+
+                }         
             }
             #endregion
 
