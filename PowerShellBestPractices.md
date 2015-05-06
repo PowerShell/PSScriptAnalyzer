@@ -62,7 +62,7 @@ The following guidelines come from a combined effort from both the PowerShell te
     - Avoid backticks
 
 5. Output
-    - Don't use write-host unless writing to the host is all you want to do 
+    - Don't use write-host unless writing to the host is all you want to do [AvoidUsingWriteHost](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingWriteHost.md)
     - Use write-verbose to give information to someone running your script [ProvideVerboseMessage](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/ProvideVerboseMessage.md)
 
 6. Tools vs. Controller
@@ -104,7 +104,7 @@ The following guidelines come from a combined effort from both the PowerShell te
       - LicenseUri (for PowerShell Gallery)
     - Unresolved dependencies are an error
     - Must call ShouldProcess when ShouldProcess attribute is present and vice versa.
-    - Switch parameters should not default to true 
+    - Switch parameters should not default to true  [AvoidDefaultTrueValueSwtichParameter](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidDefaultTrueValueSwitchParameter.md)
      
  
 2. Script
@@ -130,6 +130,9 @@ The following guidelines come from a combined effort from both the PowerShell te
     - Emtpy catch block should not be used [AvoidEmptyCatchBlock](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidEmptyCatchBlock.md)
     - Avoid using alias [AvoidAlias](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidAlias.md)
     - Avoid using deprecated WMI cmdlets [AvoidUsingWMICmdlet](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingWMICmdlet.md)
+    - Invoke existing cmdlet with correct parameters [UseCmdletCorrectly](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseCmdletCorrectly.md)
+    - Avoid using positional parameters [AvoidUsingPositionalParameters](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingPositionalParameters.md)
+    - Avoid using uninitialized varaibles [AvoidUninitializedVariable](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUninitializedVariable.md)
 
 3. DSC
     - For PowerShell V4: Resource module contains .psd1 file and schema.mof for every resource 
