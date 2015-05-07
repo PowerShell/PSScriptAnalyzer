@@ -8,7 +8,7 @@ if NOT [%ERRORLEVEL%]==[0] pause
 GOTO END
 
 :NOTOOLS
-echo The Visual Studio 2012 tools are not installed
+echo The Visual Studio 2013 tools are not installed
 pause
 
 :END
