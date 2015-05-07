@@ -678,4 +678,40 @@
   <data name="AvoidUsingWMICmdletName" xml:space="preserve">
     <value>AvoidUsingWMICmdlet</value>
   </data>
+  <data name="UseOutputTypeCorrectlyCommonName" xml:space="preserve">
+    <value>Use OutputType Correctly</value>
+  </data>
+  <data name="UseOutputTypeCorrectlyDescription" xml:space="preserve">
+    <value>The return types of a cmdlet should be declared using the OutputType attribute.</value>
+  </data>
+  <data name="UseOutputTypeCorrectlyError" xml:space="preserve">
+    <value>The cmdlet '{0}' returns an object of type '{1}' but this type is not declared in the OutputType attribute.</value>
+  </data>
+  <data name="UseOutputTypeCorrectlyName" xml:space="preserve">
+    <value>UseOutputTypeCorrectly</value>
+  </data>
+  <data name="DscTestsPresent" xml:space="preserve">
+    <value>DscTestsPresent</value>
+  </data>
+  <data name="DscTestsPresentCommonName" xml:space="preserve">
+    <value>Dsc tests are present</value>
+  </data>
+  <data name="DscTestsPresentDescription" xml:space="preserve">
+    <value>Every DSC resource module should contain folder "Tests" with tests for every resource. Test scripts should have resource name they are testing in the file name.</value>
+  </data>
+  <data name="DscTestsPresentNoTestsError" xml:space="preserve">
+    <value>No tests found for resource '{0}'</value>
+  </data>
+  <data name="DscExamplesPresent" xml:space="preserve">
+    <value>DscExamplesPresent</value>
+  </data>
+  <data name="DscExamplesPresentCommonName" xml:space="preserve">
+    <value>DSC examples are present</value>
+  </data>
+  <data name="DscExamplesPresentDescription" xml:space="preserve">
+    <value>Every DSC resource module should contain folder "Examples" with sample configurations for every resource. Sample configurations should have resource name they are demonstrating in the title.</value>
+  </data>
+  <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
+    <value>No examples found for resource '{0}'</value>
+  </data>
 </root>

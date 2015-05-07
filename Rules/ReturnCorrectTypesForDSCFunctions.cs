@@ -210,7 +210,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
+        /// GetSeverity: Retrieves the severity of the rule: error, warning or information.
         /// </summary>
         /// <returns></returns>
         public RuleSeverity GetSeverity()

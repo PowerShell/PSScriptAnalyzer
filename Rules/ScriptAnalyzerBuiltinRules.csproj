@@ -68,6 +68,9 @@
     <Compile Include="AvoidUsingPlainTextForPassword.cs" />
     <Compile Include="AvoidUsingWMICmdlet.cs" />
     <Compile Include="AvoidUsingWriteHost.cs" />
+    <Compile Include="DscTestsPresent.cs" />
+    <Compile Include="DscExamplesPresent.cs" />
+    <Compile Include="UseOutputTypeCorrectly.cs" />
     <Compile Include="MissingModuleManifestField.cs" />
     <Compile Include="PossibleIncorrectComparisonWithNull.cs" />
     <Compile Include="ProvideCommentHelp.cs" />
