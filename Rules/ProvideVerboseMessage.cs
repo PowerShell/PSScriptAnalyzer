@@ -12,10 +12,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Management.Automation;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
@@ -55,6 +57,15 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             if (funcAst == null)
             {
                 return AstVisitAction.SkipChildren;
+            }
+
+            //Write-Verbose is not required for non-advanced functions
+            if (funcAst.Body == null || funcAst.Body.ParamBlock == null
+           || funcAst.Body.ParamBlock.Attributes == null ||
+           funcAst.Body.ParamBlock.Parameters == null ||
+                !funcAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
+            {
+                return AstVisitAction.Continue;
             }
 
             var commandAsts = funcAst.Body.FindAll(testAst => testAst is CommandAst, false);
