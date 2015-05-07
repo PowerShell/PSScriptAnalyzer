@@ -93,3 +93,9 @@ function Get-File
         }
     }
 }
+
+#Write-Verbose should not be required because this is not an advanced function
+function Get-SimpleFunc
+{
+
+}

@@ -157,6 +157,41 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Given a file path, checks whether the file is part of a dsc resource module
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public bool IsDscResourceModule(string filePath)
+        {
+            DirectoryInfo dscResourceParent = Directory.GetParent(filePath);
+            if (null != dscResourceParent)
+            {
+                DirectoryInfo dscResourcesFolder = Directory.GetParent(dscResourceParent.ToString());
+                if (null != dscResourcesFolder)
+                {
+                    if (String.Equals(dscResourcesFolder.Name, "dscresources", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Step 2: Ensure there is a Schema.mof in the same folder as the artifact
+                        string schemaMofParentFolder = Directory.GetParent(filePath).ToString();
+                        string[] schemaMofFile = Directory.GetFiles(schemaMofParentFolder, "*.schema.mof");
+
+                        // Ensure Schema file exists and is the only one in the DSCResource folder
+                        if (schemaMofFile != null && schemaMofFile.Count() == 1)
+                        {
+                            // Run DSC Rules only on module that matches the schema.mof file name without extension
+                            if (String.Equals(schemaMofFile[0].Replace("schema.mof", "psm1"), filePath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Given a commandast, checks whether positional parameters are used or not.
         /// </summary>
         /// <param name="cmdAst"></param>
