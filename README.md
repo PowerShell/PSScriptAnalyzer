@@ -1,3 +1,4 @@
+
 ﻿Introduction
 ============
 
@@ -18,7 +19,7 @@ Requirements
 
 WS2012R2 / Windows 8.1 / Windows OS running **PowerShell v5.0** and **Windows Management Framework 5.0 Preview**
 
-Download the latest WMF package from [Windows Management Framework 5.0 Preview February 2015](http://go.microsoft.com/fwlink/?LinkId=398175).
+Download the latest WMF package from [Windows Management Framework 5.0 Preview](http://go.microsoft.com/fwlink/?LinkId=398175).
 
 Installation
 ============
@@ -53,6 +54,13 @@ Pester-based ScriptAnalyzer Tests are located in ```<branch>/PSScriptAnalyzer/Te
 .\*.ps1 (Example - .\ AvoidConvertToSecureStringWithPlainText.ps1)
 *You can also run all tests under \Engine or \Rules by calling Invoke-Pester in the Engine/Rules directory.
  
+Project Management Dashboard
+==============================
+
+You can track issues, pull requests, backlog items here:
+
+[![Stories in Ready](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=ready&title=Ready)](https://waffle.io/PowerShell/PSScriptAnalyzer)
+
 
 Contributing to ScriptAnalyzer
 ==============================

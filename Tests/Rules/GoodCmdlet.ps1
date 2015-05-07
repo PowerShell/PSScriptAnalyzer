@@ -28,7 +28,9 @@ function Get-File
                   HelpUri = 'http://www.microsoft.com/',
                   ConfirmImpact='Medium')]
     [Alias()]
-    [OutputType([String])]
+    [OutputType([String], [System.Double], [Hashtable])]
+    [OutputType("System.Int32", ParameterSetName="ID")]
+
     Param
     (
         # Param1 help description
@@ -75,6 +77,15 @@ function Get-File
             Write-Verbose "Write Verbose"
             Get-Process
         }
+
+        $a = 4.5
+
+        if ($true)
+        {
+            $a
+        }
+
+        return @{"hash"="true"}
     }
     End
     {

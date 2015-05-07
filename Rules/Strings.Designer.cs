@@ -826,11 +826,83 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DscExamplesPresent.
+        /// </summary>
+        internal static string DscExamplesPresent {
+            get {
+                return ResourceManager.GetString("DscExamplesPresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DSC examples are present.
+        /// </summary>
+        internal static string DscExamplesPresentCommonName {
+            get {
+                return ResourceManager.GetString("DscExamplesPresentCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Every DSC resource module should contain folder &quot;Examples&quot; with sample configurations for every resource. Sample configurations should have resource name they are demonstrating in the title..
+        /// </summary>
+        internal static string DscExamplesPresentDescription {
+            get {
+                return ResourceManager.GetString("DscExamplesPresentDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No examples found for resource &apos;{0}&apos;.
+        /// </summary>
+        internal static string DscExamplesPresentNoExamplesError {
+            get {
+                return ResourceManager.GetString("DscExamplesPresentNoExamplesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PSDSC.
         /// </summary>
         internal static string DSCSourceName {
             get {
                 return ResourceManager.GetString("DSCSourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DscTestsPresent.
+        /// </summary>
+        internal static string DscTestsPresent {
+            get {
+                return ResourceManager.GetString("DscTestsPresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dsc tests are present.
+        /// </summary>
+        internal static string DscTestsPresentCommonName {
+            get {
+                return ResourceManager.GetString("DscTestsPresentCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Every DSC resource module should contain folder &quot;Tests&quot; with tests for every resource. Test scripts should have resource name they are testing in the file name..
+        /// </summary>
+        internal static string DscTestsPresentDescription {
+            get {
+                return ResourceManager.GetString("DscTestsPresentDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No tests found for resource &apos;{0}&apos;.
+        /// </summary>
+        internal static string DscTestsPresentNoTestsError {
+            get {
+                return ResourceManager.GetString("DscTestsPresentNoTestsError", resourceCulture);
             }
         }
         
@@ -1542,6 +1614,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         internal static string UseIdenticalParametersDSCName {
             get {
                 return ResourceManager.GetString("UseIdenticalParametersDSCName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use OutputType Correctly.
+        /// </summary>
+        internal static string UseOutputTypeCorrectlyCommonName {
+            get {
+                return ResourceManager.GetString("UseOutputTypeCorrectlyCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The return types of a cmdlet should be declared using the OutputType attribute..
+        /// </summary>
+        internal static string UseOutputTypeCorrectlyDescription {
+            get {
+                return ResourceManager.GetString("UseOutputTypeCorrectlyDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The cmdlet &apos;{0}&apos; returns an object of type &apos;{1}&apos; but this type is not declared in the OutputType attribute..
+        /// </summary>
+        internal static string UseOutputTypeCorrectlyError {
+            get {
+                return ResourceManager.GetString("UseOutputTypeCorrectlyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseOutputTypeCorrectly.
+        /// </summary>
+        internal static string UseOutputTypeCorrectlyName {
+            get {
+                return ResourceManager.GetString("UseOutputTypeCorrectlyName", resourceCulture);
             }
         }
         
