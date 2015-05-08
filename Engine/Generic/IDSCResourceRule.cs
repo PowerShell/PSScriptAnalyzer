@@ -28,6 +28,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// <returns>The results of the analysis</returns>
         IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName);
 
+#if !PSV3
         /// <summary>
         /// Analyze dsc classes (if any) in the file
         /// </summary>
@@ -35,6 +36,6 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
         /// <param name="fileName"></param>
         /// <returns></returns>
         IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName);
- 
+#endif
     }
 }

@@ -32,21 +32,22 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
     /// InvokeScriptAnalyzerCommand: Cmdlet to statically check PowerShell scripts.
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "ScriptAnalyzer", HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
+    [OutputType("Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet
     {
         #region Parameters
         /// <summary>
         /// Path: The path to the file or folder to invoke PSScriptAnalyzer on.
         /// </summary>
-        [Parameter(Position = 0, Mandatory = true)]
+        [Parameter(Position = 0, Mandatory = true, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
         [ValidateNotNull]
         [Alias("PSPath")]
-        public string Path
+        public string[] Path
         {
             get { return path; }
             set { path = value; }
         }
-        private string path;
+        private string[] path;
 
         /// <summary>
         /// CustomRulePath: The path to the file containing custom rules to run.
@@ -212,8 +213,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
         protected override void ProcessRecord()
         {
             // throws Item Not Found Exception
-            path = this.SessionState.Path.GetResolvedPSPathFromPSPath(path).First().ToString();
-            ProcessPath(path);
+            ProviderInfo provider = null;
+            foreach (string psPath in path)
+            {
+                foreach (string resolvedPath in this.SessionState.Path.GetResolvedProviderPathFromPSPath(psPath, out provider))
+                {
+                    ProcessPath(resolvedPath);
+                }
+            }
         }
 
         #endregion
@@ -490,7 +497,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
+#if PSV3
+                            var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, null);
+#else
                             var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(ast, filePath).ToList());
+#endif
                             diagnostics.AddRange(records.Item2);
                             suppressed.AddRange(records.Item1);
                         }

@@ -65,6 +65,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+#if !PSV3
         /// <summary>
         /// AnalyzeDSCClass: Analyzes given DSC class
         /// </summary>
@@ -107,6 +108,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 }
             }
         }
+#endif
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.

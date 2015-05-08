@@ -27,7 +27,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
     [Export(typeof(IScriptRule))]
     public class UseOutputTypeCorrectly : SkipTypeDefinition, IScriptRule
     {
+#if !PSV3
         private IEnumerable<TypeDefinitionAst> _classes;
+#endif
 
         /// <summary>
         /// AnalyzeScript: Checks that objects return in a cmdlet have their types declared in OutputType Attribute
@@ -42,7 +44,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             DiagnosticRecords.Clear();
             this.fileName = fileName;
 
+#if !PSV3
             _classes = ast.FindAll(item => item is TypeDefinitionAst && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
+#endif
 
             ast.Visit(this);
 
@@ -100,7 +104,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
+#if PSV3
+            List<Tuple<string, StatementAst>> returnTypes = FindPipelineOutput.OutputTypes(funcAst);
+#else
             List<Tuple<string, StatementAst>> returnTypes = FindPipelineOutput.OutputTypes(funcAst, _classes);
+#endif
 
             foreach (Tuple<string, StatementAst> returnType in returnTypes)
             {
