@@ -1,4 +1,4 @@
-## Unreleased (May.7, 2015)
+## Released (May.8, 2015)
 ###Features:
 - Integrated with waffle.io for Project Management.
 - Added documentation for writing script rules.
@@ -12,11 +12,12 @@
 
 - PSProvideVerboseMessage only throws warnings in non-advanced functions.
 - Fix the issue in importing customized rule
+- Fix Function Member Ast cast error
 
 
 
 
-##Relesed on Apr.24, 2015
+##Released on Apr.24, 2015
 
 ###Features:
 - Finalized three levels of Severity - Error/Warning/Information. 
