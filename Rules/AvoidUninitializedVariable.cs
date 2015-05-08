@@ -50,7 +50,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst || item is FunctionMemberAst, true);
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
+            IEnumerable<Ast> funcMemberAsts = ast.FindAll(item => item is FunctionMemberAst, true);
 
             // Checks whether this is a dsc resource file (we don't raise this rule for get, set and test-target resource
             bool isDscResourceFile = Helper.Instance.IsDscResourceModule(fileName);
@@ -82,6 +83,23 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                             varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, varAst.VariablePath.UserPath);
                     }
                 }
+            }
+
+            foreach (FunctionMemberAst funcMemAst in funcMemberAsts)
+            {
+                // Finds all VariableExpressionAst.
+                IEnumerable<Ast> varAsts = funcMemAst.FindAll(testAst => testAst is VariableExpressionAst, true);
+
+                // Iterates all VariableExpressionAst and check the command name.
+                foreach (VariableExpressionAst varAst in varAsts)
+                {
+                    if (Helper.Instance.IsUninitialized(varAst, funcMemAst))
+                    {
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUninitializedVariableError, varAst.VariablePath.UserPath),
+                            varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, varAst.VariablePath.UserPath);
+                    }
+                }
+
             }
         }
 
