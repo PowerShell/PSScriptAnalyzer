@@ -714,4 +714,43 @@
   <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
     <value>No examples found for resource '{0}'</value>
   </data>
+  <data name="CmdletNotAvailableOnNanoCommonName" xml:space="preserve">
+    <value>Cmdlet Not Available On Nano Server</value>
+  </data>
+  <data name="CmdletNotAvailableOnNanoDescription" xml:space="preserve">
+    <value>Some cmdlets are not available on Core CLR therefore scripts with those cmdlets won't run properly.</value>
+  </data>
+  <data name="CmdletNotAvailableOnNanoError" xml:space="preserve">
+    <value>Cmdlet '{0}' is not available on NanoServer</value>
+  </data>
+  <data name="CmdletNotAvailableOnNanoName" xml:space="preserve">
+    <value>CmdletNotAvailableOnNano</value>
+  </data>
+  <data name="DotNetTypeMemberUnavailableError" xml:space="preserve">
+    <value>Type '{0} does not contain member '{1}' on NanoServer</value>
+  </data>
+  <data name="DotNetTypeUnavailableCommonName" xml:space="preserve">
+    <value>Dot Net Type Unavailable</value>
+  </data>
+  <data name="DotNetTypeUnavailableDescription" xml:space="preserve">
+    <value>Some .Net types are not working on CoreCLR.</value>
+  </data>
+  <data name="DotNetTypeUnavailableError" xml:space="preserve">
+    <value>.NET does not contain type '{0}'</value>
+  </data>
+  <data name="DotNetTypeUnavailableName" xml:space="preserve">
+    <value>DotNetTypeUnavailable</value>
+  </data>
+  <data name="NoWorkflowFunctionsOnNanoCommonName" xml:space="preserve">
+    <value>No Workflow Functions On Nano</value>
+  </data>
+  <data name="NoWorkflowFunctionsOnNanoDescription" xml:space="preserve">
+    <value>Workflow functions are not supported on NanoServer</value>
+  </data>
+  <data name="NoWorkflowFunctionsOnNanoName" xml:space="preserve">
+    <value>NoWorkflowFunctionsOnNano</value>
+  </data>
+  <data name="WorkFlowFunctionNotSupportedOnNanoError" xml:space="preserve">
+    <value>Function '{0}' is a workflow function. Workflow is not supported on NanoServer.</value>
+  </data>
 </root>
