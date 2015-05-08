@@ -1,4 +1,4 @@
-## Released (May.8, 2015)
+## Released v1.0.1 (May.8, 2015)
 ###Features:
 - Integrated with waffle.io for Project Management.
 - Added documentation for writing script rules.
@@ -17,7 +17,7 @@
 
 
 
-##Released on Apr.24, 2015
+##Released v1.0.0 on Apr.24, 2015
 
 ###Features:
 - Finalized three levels of Severity - Error/Warning/Information. 
