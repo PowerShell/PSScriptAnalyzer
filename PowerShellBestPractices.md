@@ -98,4 +98,6 @@ The following guidelines come from a combined effort from both the PowerShell te
 
 
 ###Reference:
-Cmdlet Development Guidelines from MSDN site (Cmdlet Development Guidelines)The Community Book of PowerShell Practices (Compiled by Don Jones and Matt Penny and the Windows PowerShell Community)
+Cmdlet Development Guidelines from MSDN site (Cmdlet Development Guidelines)
+
+The Community Book of PowerShell Practices (Compiled by Don Jones and Matt Penny and the Windows PowerShell Community)
