@@ -862,6 +862,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Configuration Block Not Supported On NanoServer.
+        /// </summary>
+        internal static string ConfigurationBlockNotSupportedOnNanoCommonName {
+            get {
+                return ResourceManager.GetString("ConfigurationBlockNotSupportedOnNanoCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration blocks are not supported on NanoServer. .
+        /// </summary>
+        internal static string ConfigurationBlockNotSupportedOnNanoDescription {
+            get {
+                return ResourceManager.GetString("ConfigurationBlockNotSupportedOnNanoDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; is a Configuration function. Configuration is not supported on NanoServer. Please remove the function.
+        /// </summary>
+        internal static string ConfigurationBlockNotSupportedOnNanoError {
+            get {
+                return ResourceManager.GetString("ConfigurationBlockNotSupportedOnNanoError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ConfigurationBlockNotSupportedOnNano.
+        /// </summary>
+        internal static string ConfigurationBlockNotSupportedOnNanoName {
+            get {
+                return ResourceManager.GetString("ConfigurationBlockNotSupportedOnNanoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Type &apos;{0} does not contain member &apos;{1}&apos; on NanoServer.
         /// </summary>
         internal static string DotNetTypeMemberUnavailableError {

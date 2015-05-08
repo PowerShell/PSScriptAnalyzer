@@ -10,7 +10,6 @@
 // THE SOFTWARE.
 //
 
-
 using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
@@ -21,10 +20,10 @@ using System.Globalization;
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// NoWorkflowFunction: Check if workflow block is used. Workflow is not supported on NanoServer.
+    /// NoConfigurationBlock: Check if any configuration block is used. Workflow is not supported on NanoServer.
     /// </summary>
     [Export(typeof(IScriptRule))]
-    public class NoWorkflowFunction : IScriptRule
+    public class NoConfigurationBlock : IScriptRule
     {
         /// <summary>
         /// AnalyzeScript: Check if workflow block is used.
@@ -35,12 +34,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> funcs = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
             foreach (FunctionDefinitionAst func in funcs)
             {
-                if(func.IsWorkflow)
+                if (String.Equals(func.Name,"Configuration",StringComparison.CurrentCultureIgnoreCase))
                 {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.WorkFlowFunctionNotSupportedOnNanoError, func.Name),
+                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ConfigurationBlockNotSupportedOnNanoError, func.Name),
     func.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
-            }        
+            }
 
         }
 
@@ -51,7 +50,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NoWorkflowFunctionsOnNanoName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.ConfigurationBlockNotSupportedOnNanoName);
         }
 
         /// <summary>
@@ -60,7 +59,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.CmdletNotAvailableOnNanoCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.ConfigurationBlockNotSupportedOnNanoCommonName);
         }
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NoWorkflowFunctionsOnNanoDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.ConfigurationBlockNotSupportedOnNanoDescription);
         }
 
         /// <summary>

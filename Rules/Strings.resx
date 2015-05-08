@@ -726,6 +726,18 @@
   <data name="CmdletNotAvailableOnNanoName" xml:space="preserve">
     <value>CmdletNotAvailableOnNano</value>
   </data>
+  <data name="ConfigurationBlockNotSupportedOnNanoCommonName" xml:space="preserve">
+    <value>Configuration Block Not Supported On NanoServer</value>
+  </data>
+  <data name="ConfigurationBlockNotSupportedOnNanoDescription" xml:space="preserve">
+    <value>Configuration blocks are not supported on NanoServer. </value>
+  </data>
+  <data name="ConfigurationBlockNotSupportedOnNanoError" xml:space="preserve">
+    <value>Function '{0}' is a Configuration function. Configuration is not supported on NanoServer. Please remove the function</value>
+  </data>
+  <data name="ConfigurationBlockNotSupportedOnNanoName" xml:space="preserve">
+    <value>ConfigurationBlockNotSupportedOnNano</value>
+  </data>
   <data name="DotNetTypeMemberUnavailableError" xml:space="preserve">
     <value>Type '{0} does not contain member '{1}' on NanoServer</value>
   </data>

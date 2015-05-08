@@ -13,7 +13,6 @@ namespace NanoServerCompliance
     {
         public Dictionary<string, List<string>> typeMethod { get; set; }
         public Dictionary<string, List<string>> typeProperties { get; set; }
-
         public Dictionary<string, List<string>> typeFields { get; set; } 
 
         private static object syncRoot = new Object();
@@ -38,6 +37,11 @@ namespace NanoServerCompliance
                 return instance;
             }
         }
+
+        /// <summary>
+        /// Get available types from reading the assembly
+        /// </summary>
+        /// <param name="assemblyDir"></param>
         public void GetTypeFromAssembly(string assemblyDir)
         {
             //Initalize the type dictionaries
@@ -135,7 +139,12 @@ namespace NanoServerCompliance
             return fullName;
         }
 
-
+        /// <summary>
+        /// Get all public methods from a given type
+        /// </summary>
+        /// <param name="typeDefinition"></param>
+        /// <param name="metadataReader"></param>
+        /// <returns></returns>
         public List<string> GetTypeMethod(TypeDefinition typeDefinition, MetadataReader metadataReader)
         {
             List<string> methodNames = new List<string>();
@@ -150,6 +159,12 @@ namespace NanoServerCompliance
             return methodNames;
         }
 
+        /// <summary>
+        /// Get all properties from a type
+        /// </summary>
+        /// <param name="typeDefinition"></param>
+        /// <param name="metadataReader"></param>
+        /// <returns></returns>
         public List<string> GetTypeProperties(TypeDefinition typeDefinition, MetadataReader metadataReader)
         {
             List<string> propertyNames = new List<string>();
@@ -163,7 +178,13 @@ namespace NanoServerCompliance
             }
             return propertyNames;
         }
-
+        
+        /// <summary>
+        /// Get all fields from a given type
+        /// </summary>
+        /// <param name="typeDefinition"></param>
+        /// <param name="metadataReader"></param>
+        /// <returns></returns>
         public List<string> GetTypeFields(TypeDefinition typeDefinition, MetadataReader metadataReader)
         {
             List<string> fieldNames = new List<string>();
