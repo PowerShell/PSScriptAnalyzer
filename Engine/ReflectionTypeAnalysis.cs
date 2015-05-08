@@ -113,7 +113,7 @@ namespace NanoServerCompliance
         /// </summary>
         private string GetTypeFullName(MetadataReader metadataReader, TypeDefinition typeDefinition)
         {
-            string fullName;
+            string fullName = String.Empty;
             string typeName = metadataReader.GetString(typeDefinition.Name);
             string nsName = metadataReader.GetString(typeDefinition.Namespace);
 
