@@ -69,7 +69,6 @@
     <Compile Include="AvoidUsingWMICmdlet.cs" />
     <Compile Include="AvoidUsingWriteHost.cs" />
     <Compile Include="CheckDotNetTypes.cs" />
-    <Compile Include="CheckNanoCmdletAvailability.cs" />
     <Compile Include="DscTestsPresent.cs" />
     <Compile Include="DscExamplesPresent.cs" />
     <Compile Include="NoWorkflowFunction.cs" />
