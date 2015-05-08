@@ -70,7 +70,7 @@ The following guidelines come from a combined effort from both the PowerShell te
   - Avoid backticks
 
 
-### Script Security
+##Script Security
 
 - Password = 'string' should not be used. (information disclosure) [AvoidUsingUsernameAndPasswordParams](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingUsernameAndPasswordParams.md)
   - ConvertTo-SecureString with plaintext should be warning (information disclosure) 
@@ -81,10 +81,10 @@ The following guidelines come from a combined effort from both the PowerShell te
   -Password should be secure string [AvoidUsingPlainTextForPassword](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingPlainTextForPassword.md)- Should never have both -Username and -Password parameters (should take credentials)[UsePSCredentialType](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UsePSCredentialType.md)
 
 
-### DSC Related Rules
+##DSC Related Rules
 
   - For PowerShell V4: Resource module contains .psd1 file and schema.mof for every resource 
-  - For PowerShell V5: MOF has description for each element
+  - MOF has description for each element
   - PowerShell V5: support class-based resources. If class-based resource, no MOF needed. (need to support these at same time as schema.mof test exists) 
   - Resource module contains Resources folder which contains the resources
   - Use standard DSC methods [UseStandardDSCFunctionsInResource](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseStandardDSC FunctionsInResource.md)
