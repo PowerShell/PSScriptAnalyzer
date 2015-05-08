@@ -50,7 +50,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
+#if PSV3
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
+#else
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst || item is FunctionMemberAst, true);
+#endif
 
             // Checks whether this is a dsc resource file (we don't raise this rule for get, set and test-target resource
             bool isDscResourceFile = Helper.Instance.IsDscResourceModule(fileName);

@@ -40,13 +40,19 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
+#if !PSV3
             IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
                 item is TypeDefinitionAst
                 && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
+#endif
 
             foreach (FunctionDefinitionAst func in functionDefinitionAsts)
             {
+#if PSV3
+                List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func);
+#else
                 List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func, classes);
+#endif
 
                 if (String.Equals(func.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase))
                 {
@@ -70,7 +76,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                             || String.Equals(typeof(Unreached).FullName, type, StringComparison.OrdinalIgnoreCase)
                             || String.Equals(typeof(Undetermined).FullName, type, StringComparison.OrdinalIgnoreCase)
                             || String.Equals(typeof(object).FullName, type, StringComparison.OrdinalIgnoreCase)
-                            || String.Equals(type, returnTypes[func.Name], StringComparison.OrdinalIgnoreCase))
+                           || String.Equals(type, returnTypes[func.Name], StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
                         }
@@ -84,6 +90,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+#if !PSV3
         /// <summary>
         /// AnalyzeDSCClass: Analyzes given DSC Resource
         /// </summary>
@@ -173,6 +180,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             }
         }
         
+#endif
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
