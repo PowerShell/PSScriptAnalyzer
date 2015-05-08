@@ -1,4 +1,6 @@
 
+##We are still working on the release of first NanoServer version. 
+Will update teh contents as soon as possible.
 ﻿Introduction
 ============
 
