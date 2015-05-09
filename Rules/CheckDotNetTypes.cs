@@ -44,11 +44,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 IEnumerable<Ast> memberExpressions = func.FindAll(testAst => testAst is MemberExpressionAst, true);
 
-                
-
-                //Get the type of the variable before checking if the type has the underliend methods/properties
+                 //Get the type of the variable before checking if the type has the underliend methods/properties
                 string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                ReflectionTypeAnalysis.Instance.GetTypeFromAssembly(path +"../../Engine/ReferenceAssembly");
+                ReflectionTypeAnalysis.Instance.GetTypeFromAssembly(string.Format(CultureInfo.CurrentUICulture,path,"../../Engine/ReferenceAssembly"));
                 typeMethod = ReflectionTypeAnalysis.Instance.typeMethod;
                 typeProperty = ReflectionTypeAnalysis.Instance.typeProperties;
                 typeFields = ReflectionTypeAnalysis.Instance.typeFields;
