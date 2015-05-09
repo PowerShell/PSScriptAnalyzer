@@ -31,14 +31,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
-            IEnumerable<Ast> funcs = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
-            foreach (FunctionDefinitionAst func in funcs)
+            IEnumerable<Ast> funcs = ast.FindAll(testAst => testAst is ConfigurationDefinitionAst, true);
+            foreach (ConfigurationDefinitionAst configDef in funcs)
             {
-                if (String.Equals(func.Name,"Configuration",StringComparison.CurrentCultureIgnoreCase))
-                {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ConfigurationBlockNotSupportedOnNanoError, func.Name),
-    func.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                }
+                yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ConfigurationBlockNotSupportedOnNanoError, configDef.InstanceName),
+    configDef.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
             }
 
         }
