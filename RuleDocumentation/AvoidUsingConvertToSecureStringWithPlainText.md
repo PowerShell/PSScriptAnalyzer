@@ -1,4 +1,4 @@
-#AvoidUsingConvertToSecureStringWithPlainTextNoViolations
+#AvoidUsingConvertToSecureStringWithPlainText
 **Severity Level: Error**
 
 
