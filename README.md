@@ -65,6 +65,10 @@ You can track issues, pull requests, backlog items here:
 
 [![Stories in backlog](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=BackLog&title=BackLog)](https://waffle.io/PowerShell/PSScriptAnalyzer)
 
+Throughput Graph
+
+[![Throughput Graph](https://graphs.waffle.io/powershell/psscriptanalyzer/throughput.svg)](https://waffle.io/powershell/psscriptanalyzer/metrics)
+
 
 Contributing to ScriptAnalyzer
 ==============================
