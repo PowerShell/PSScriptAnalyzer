@@ -22,18 +22,18 @@ The following guidelines come from a combined effort from both the PowerShell te
 ###Severity: Information
 
 ###Severity: TBD
-    - Support Force Parameter for Interactive Session
-      - If your cmdlet is used interactively, always provide a Force parameter to override the interactive actions, such as prompts or reading lines of input). This is important because it allows your cmdlet to be used in non-interactive scripts and hosts. The following methods can be implemented by an interactive host.
-    - Document Output Objects
-    - Module must be loadable
-    - No syntax errors
-    - Unresolved dependencies are an error
-    - Derive from the Cmdlet or PSCmdlet Classes
-    - Specify the Cmdlet Attribute
-    - Override an Input Processing Method
-    - Specify the OutputType Attribute
-    - Write Single Records to the Pipeline 
-    - Make Cmdlets Case-Insensitive and Case-Preserving 
+  - Support Force Parameter for Interactive Session
+  - If your cmdlet is used interactively, always provide a Force parameter to override the interactive actions, such as prompts or reading lines of input). This is important because it allows your cmdlet to be used in non-interactive scripts and hosts. The following methods can be implemented by an interactive host.
+  - Document Output Objects
+  - Module must be loadable
+  - No syntax errors
+  - Unresolved dependencies are an error
+  - Derive from the Cmdlet or PSCmdlet Classes
+  - Specify the Cmdlet Attribute
+  - Override an Input Processing Method
+  - Specify the OutputType Attribute
+  - Write Single Records to the Pipeline 
+  - Make Cmdlets Case-Insensitive and Case-Preserving 
     
 
 ##Script Functions
