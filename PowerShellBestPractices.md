@@ -12,10 +12,10 @@ The following guidelines come from a combined effort from both the PowerShell te
   - Support Confirmation Requests [UseShouldProcessCorrectly](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseShouldProcessCorrectly.md) and [UseShouldProcessForStateChangingFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseShouldProcessForStateChangingFunctions.md)
   - Nouns should be singular [UseSingularNouns](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseSingularNouns.md)
   - Module Manifest Fields [MissingModuleManifestField](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/MissingModuleManifestField.md)
-      - Version
-      - Author
-      - Description
-      - LicenseUri (for PowerShell Gallery)
+    - Version
+    - Author
+    - Description
+    - LicenseUri (for PowerShell Gallery)
   - Must call ShouldProcess when ShouldProcess attribute is present and vice versa.[UseShouldProcessCorrectly](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseShouldProcessCorrectly.md)
   - Switch parameters should not default to true  [AvoidDefaultTrueValueSwtichParameter](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidDefaultTrueValueSwitchParameter.md)
   
@@ -34,7 +34,6 @@ The following guidelines come from a combined effort from both the PowerShell te
   - Specify the OutputType Attribute
   - Write Single Records to the Pipeline 
   - Make Cmdlets Case-Insensitive and Case-Preserving 
-    
 
 ##Script Functions
 ###Severity: Error
@@ -91,8 +90,8 @@ The following guidelines come from a combined effort from both the PowerShell te
 ###Severity: Error
   - Password should be secure string [AvoidUsingPlainTextForPassword](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingPlainTextForPassword.md)- Should never have both -Username and -Password parameters (should take credentials)[UsePSCredentialType](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UsePSCredentialType.md)
   - -ComputerName hardcoded should not be used (information disclosure)[AvoidUsingComputerNameHardcoded](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingComputerNameHardcoded.md)
-  - - ConvertTo-SecureString with plaintext should not be used (information disclosure) 
-  - 
+  - ConvertTo-SecureString with plaintext should not be used (information disclosure) 
+  
 ###Severity: Warning
 - Password = 'string' should not be used. (information disclosure) [AvoidUsingUsernameAndPasswordParams](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingUsernameAndPasswordParams.md)
 - Internal URLs should not be used (information disclosure)[AvoidUsingFilePath](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingFilePath.md)
