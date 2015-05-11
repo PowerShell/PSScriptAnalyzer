@@ -90,7 +90,7 @@ The following guidelines come from a combined effort from both the PowerShell te
 ###Severity: Error
   - Password should be secure string [AvoidUsingPlainTextForPassword](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingPlainTextForPassword.md)- Should never have both -Username and -Password parameters (should take credentials)[UsePSCredentialType](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UsePSCredentialType.md)
   - -ComputerName hardcoded should not be used (information disclosure)[AvoidUsingComputerNameHardcoded](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingComputerNameHardcoded.md)
-  - ConvertTo-SecureString with plaintext should not be used (information disclosure) 
+  - ConvertTo-SecureString with plaintext should not be used (information disclosure) [AvoidUsingConvertToSecureStringWithPlainText](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingConvertToSecureStringWithPlainText.md)
   
 ###Severity: Warning
 - Password = 'string' should not be used. (information disclosure) [AvoidUsingUsernameAndPasswordParams](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingUsernameAndPasswordParams.md)
