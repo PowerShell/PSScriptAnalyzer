@@ -91,6 +91,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         internal const string WhatIfPreference = "WhatIfPreference";
         internal const string WarningPreference = "WarningPreference";
         internal const string ConfirmPreference = "ConfirmPreference";
+        internal const string ProgressPreference = "ProgressPreference";
 
         internal static readonly string[] PreferenceVariables = new string[]  
                                                                 {  
@@ -99,7 +100,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                                                                     ErrorActionPreference,  
                                                                     WhatIfPreference,  
                                                                     WarningPreference,  
-                                                                    ConfirmPreference,  
+                                                                    ConfirmPreference,
+                                                                    ProgressPreference
                                                                 };
 
         internal static readonly Type[] PreferenceVariableTypes = new Type[]  
@@ -109,7 +111,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                                                                     /* ErrorPreference */   typeof(ActionPreference),  
                                                                     /* WhatIfPreference */  typeof(SwitchParameter),  
                                                                     /* WarningPreference */ typeof(ActionPreference),  
-                                                                    /* ConfirmPreference */ typeof(ConfirmImpact),  
+                                                                    /* ConfirmPreference */ typeof(ConfirmImpact), 
+                                                                    /* ProgressPreference */ typeof(Enum),
                                                                 };
 
         internal enum AutomaticVariable
