@@ -169,6 +169,11 @@ Describe "Test Severity" {
             $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity Information, Warning
             $errors.Count | Should Be 2
         }
+
+        It "works with lowercase argument"{
+             $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity information, warning
+            $errors.Count | Should Be 2
+        }
     }
 
     Context "When used incorrectly" {
