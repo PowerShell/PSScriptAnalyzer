@@ -26,7 +26,7 @@ namespace NanoServerCompliance
         public Dictionary<string, List<string>> typeFields { get; set; } 
 
         private static object syncRoot = new Object();
-        private static ReflectionTypeAnalysis instance;
+        private static ReflectionTypeAnalysis instance = null;
 
         /// <summary>
         /// The helper instance that handles utility functions
