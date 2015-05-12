@@ -61,7 +61,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                         string type = Helper.Instance.GetVariableTypeFromAnalysis(varAst, func);
                         string field = member.Member.Extent.Text;
 
-                        if (!typeMethod.ContainsKey(type))
+                        if (!typeMethod.ContainsKey(type) && !typeFields.ContainsKey(type) && !typeProperty.ContainsKey(type))
                         {
                             if (
                                 !string.IsNullOrEmpty(type) &&
@@ -93,23 +93,32 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     {
                         TypeExpressionAst typeAst = member.Expression as TypeExpressionAst;
                         Type type = typeAst.TypeName.GetReflectionType();
-                        string field = member.Member.Extent.Text;
-                        string typeName = type.FullName;
-                        if (!typeMethod.ContainsKey(typeName))
+                        if (type != null)
                         {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DotNetTypeUnavailableError, type),
-                                typeAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                        }
-                        else
-                        {
-                            if (!typeMethod[typeName].Contains(field, StringComparer.OrdinalIgnoreCase) && !typeProperty[typeName].Contains(field, StringComparer.OrdinalIgnoreCase)
-                                && !typeFields[typeName].Contains(field, StringComparer.OrdinalIgnoreCase))
+                            string field = member.Member.Extent.Text;
+                            string typeName = type.FullName;
+                            if (!typeMethod.ContainsKey(typeName))
                             {
-                                yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DotNetTypeMemberUnavailableError, type, field),
-                                typeAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                                yield return
+                                    new DiagnosticRecord(
+                                        string.Format(CultureInfo.CurrentCulture, Strings.DotNetTypeUnavailableError,
+                                            type),
+                                        typeAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                            }
+                            else
+                            {
+                                if (!typeMethod[typeName].Contains(field, StringComparer.OrdinalIgnoreCase) &&
+                                    !typeProperty[typeName].Contains(field, StringComparer.OrdinalIgnoreCase)
+                                    && !typeFields[typeName].Contains(field, StringComparer.OrdinalIgnoreCase))
+                                {
+                                    yield return
+                                        new DiagnosticRecord(
+                                            string.Format(CultureInfo.CurrentCulture,
+                                                Strings.DotNetTypeMemberUnavailableError, type, field),
+                                            typeAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                                }
                             }
                         }
-      
                     }
                 }
 
