@@ -3,6 +3,14 @@
 Please refer to ExtraStepsSettingUpNanoServerScriptAnalyzer.md for extra steps in setting up PSScriptAnalyzer for NanoServer.
 Please submit any pull requests regarding the NanoServer version to NanoServer branch.
 
+Current implemented rules for NanoServer version are:
+- NoWorkFlowOnNanoServer
+- CheckDotNetTypes
+- NoConfigurationBlock
+
+Rules under development:
+- CmdletAvailableOnNanoServer
+
 ﻿Introduction
 ============
 
