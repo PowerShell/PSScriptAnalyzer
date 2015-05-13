@@ -1,6 +1,8 @@
 
-##We are still working on the release of first NanoServer version. 
-Will update the contents as soon as possible.
+##NanoServer Version Deployment
+Please refer to ExtraStepsSettingUpNanoServerScriptAnalyzer.md for extra steps in setting up PSScriptAnalyzer for NanoServer.
+Please submit any pull requests regarding the NanoServer version to NanoServer branch.
+
 ﻿Introduction
 ============
 
