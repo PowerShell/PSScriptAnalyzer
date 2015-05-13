@@ -3,8 +3,7 @@ os: unstable
 
 install: 
     - cinst -y pester
-    - git clone https://github.com/PowerShell/PSScriptAnalyzer
-
+    
 build: true
 
 test_script:
