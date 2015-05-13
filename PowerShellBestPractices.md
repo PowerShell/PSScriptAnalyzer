@@ -121,13 +121,15 @@ The following guidelines come from a combined effort from both the PowerShell te
 ###Severity: TBD
   - For PowerShell V4: Resource module contains .psd1 file and schema.mof for every resource 
   - MOF has description for each element [IssueOpened](https://github.com/PowerShell/PSScriptAnalyzer/issues/131)
-  - Resource module must alwasy contain  .psd1 file  and schema.mof (for non-class resource).
+  - Resource module must contain .psd1 file (always) and schema.mof (for non-class resource). [IssueOpened](https://github.com/PowerShell/PSScriptAnalyzer/issues/116)
   - Use ShouldProcess for a Set DSC method
-  - Resource module contains Resources folder which contains the resources [IssueOpened](https://github.com/PowerShell/PSScriptAnalyzer/issues/130)
+  - Resource module contains DscResources folder which contains the resources [IssueOpened](https://github.com/PowerShell/PSScriptAnalyzer/issues/130)
 
 
 
 ###Reference:
-Cmdlet Development Guidelines from MSDN site (Cmdlet Development Guidelines)
+* Cmdlet Development Guidelines from MSDN site (Cmdlet Development Guidelines)
 
-The Community Book of PowerShell Practices (Compiled by Don Jones and Matt Penny and the Windows PowerShell Community)
+* The Community Book of PowerShell Practices (Compiled by Don Jones and Matt Penny and the Windows PowerShell Community)
+
+* [PowerShell DSC Resource Design and Testing Checklist](http://blogs.msdn.com/b/powershell/archive/2014/11/18/powershell-dsc-resource-design-and-testing-checklist.aspx)
