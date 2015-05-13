@@ -1,5 +1,5 @@
 #UseDeclaredVarsMoreThanAssignments 
-**Severity Level: Info**
+**Severity Level: Warning**
 
 
 ##Description

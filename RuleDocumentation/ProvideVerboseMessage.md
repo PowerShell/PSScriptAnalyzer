@@ -1,5 +1,5 @@
 #ProvideVerboseMessage 
-**Severity Level: Warning**
+**Severity Level: Information**
 
 
 ##Description

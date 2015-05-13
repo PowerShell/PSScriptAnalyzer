@@ -98,7 +98,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     List<string> functionsNotContainingParam = expectedTargetResourceFunctionNames.Except(mandatoryParameters[paramName]).ToList();
                     yield return new DiagnosticRecord(string.Format(CultureInfo.InvariantCulture, Strings.UseIdenticalMandatoryParametersDSCError, paramName, string.Join(", ", functionsNotContainingParam.ToArray())),
-                                    ast.Extent, GetName(), DiagnosticSeverity.Information, fileName);
+                                    ast.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                 }                   
                 
             }
@@ -159,7 +159,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Information;
+            return RuleSeverity.Error;
         }
 
         /// <summary>
