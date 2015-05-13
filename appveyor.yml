@@ -1,19 +1,32 @@
 # WS2012R2 image with April WMF5.0
 os: unstable
 
+# Install Pester
 install: 
     - cinst -y pester
     
+# Build PSScriptAnalyzer using msbuild
 build: true
 
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+    - bugfixes
+    - development
+
+# Run Pester tests and store the results
 test_script:
     - ps: |
-        $testResultsFile = ".\TestsResults.xml"
+        $testResultsFile = ".\TestResults.xml"
         $res = Invoke-Pester -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
         (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
         if ($res.FailedCount -gt 0) { 
             throw "$($res.FailedCount) tests failed."
         }
+        
+# Upload the project along with TestResults as a zip archive
 on_finish:
     - ps: |
         $stagingDirectory = (Resolve-Path ..).Path
