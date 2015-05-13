@@ -1,77 +1,24 @@
-install:
-    - ps: |
-        function Write-Log($message)
-        {
-            $now = [datetime]::Now
-            Write-Host "$now $message"
-        }
-        <#
-        .Synopsis
-           Tests whether the given hotfix is installed
-        #>
-        function Test-Hotfix
-        {
-            [CmdletBinding()]
-            [OutputType([bool])]
-            param(
-                [Parameter(Mandatory=$true,Position = 0)]
-                    [string] $HotfixId
-            )
-            [bool](Get-Hotfix -Id $HotfixId -ErrorAction SilentlyContinue)
-        }
-        #
-        # Downloads the given URL to a local file and outputs the path to the file
-        #
-        function Download
-        {
-            param([Parameter(Mandatory=$true)][string] $Url)
-            $webClient = $null
-            try
-            {
-                $uri = [URI] $url
-                $localFile = '{0}\{1}' -f $pwd, $uri.Segments[$uri.Segments.Count - 1]
-                Write-Log "Downloading $Url ..."
-                $webClient = New-Object System.Net.WebClient
-                $webClient.DownloadFile($Url, $localFile)
-                $localFile
-            }
-            finally
-            {
-                if ($webClient) {
-                    $webClient.Dispose()
-                }
-            }
-        }
-        <#
-        .Synopsis
-            Installs the given hotfix
-        #>
-        function Install-Hotfix
-        {
-            param(
-                [Parameter(Mandatory=$true)]
-                    [string] $Url,
-                [Parameter(Mandatory=$true)]
-                    [string] $HotfixId
-            )
-            $downloadedFile = Download -Url $Url
-            Write-Log "Installing $downloadedFile..."
-            $logFile = "$pwd\install.log"
-            $process = [System.Diagnostics.Process]::Start('wusa.exe', "/quiet /norestart /log:$logFile $downloadedFile")
-            if (!$process.WaitForExit(20* 60 * 1000)) {
-                throw 'Install timed out; exiting...'
-            }
-            Write-Log "Done with installing"
-        }
-        #    
-        $HotfixId = 'KB3037315'
-        $Url = 'http://download.microsoft.com/download/B/5/1/B5130F9A-6F07-481A-B4A6-CEDED7C96AE2/WindowsBlue-KB3037315-x64.msu'
-        Install-Hotfix -HotfixId $HotfixId -Url $Url
-        Write-Log "Call reboot"
-        Restart-Computer -Force -Verbose
-        Write-Log "End call reboot, start sleeping"
-        sleep 60        
-        Write-Log "end sleeping, proceed to build"
-        
-        Write-Log $PSVersionTable
+install: 
+    - cinst -y pester
+    - git clone https://github.com/PowerShell/PSScriptAnalyzer
 
+build: true
+
+test_script:
+    - ps: |
+        $testResultsFile = ".\TestsResults.xml"
+        $res = Invoke-Pester -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
+        (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
+        if ($res.FailedCount -gt 0) { 
+            throw "$($res.FailedCount) tests failed."
+        }
+on_finish:
+    - ps: |
+        $stagingDirectory = (Resolve-Path ..).Path
+        $zipFile = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
+        Add-Type -assemblyname System.IO.Compression.FileSystem
+        [System.IO.Compression.ZipFile]::CreateFromDirectory($pwd, $zipFile)
+        @(
+            # You can add other artifacts here
+            (ls $zipFile)
+        ) | % { Push-AppveyorArtifact $_.FullName }
