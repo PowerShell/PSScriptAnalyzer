@@ -1,3 +1,6 @@
+# WS2012R2 image with April WMF5.0
+os: unstable
+
 install: 
     - cinst -y pester
     - git clone https://github.com/PowerShell/PSScriptAnalyzer
