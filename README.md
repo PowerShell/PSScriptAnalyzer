@@ -1,4 +1,12 @@
 
+Build Status
+------------
+
+|         |Master Branch |
+|---------|:------:|:------:|:-------:|:-------:|
+|**Debug Version**|[![Build status](https://ci.appveyor.com/api/projects/status/6anth3x81y6bd5dr/branch/master?svg=true)](https://ci.appveyor.com/project/raghushantha/psscriptanalyzer-pfrhl/branch/master) |
+
+
 ﻿Introduction
 ============
 
