@@ -1,6 +1,9 @@
 # WS2012R2 image with April WMF5.0
 os: unstable
 
+# clone directory
+clone_folder: c:\projects\psscriptanalyzer
+ 
 # Install Pester
 install: 
     - cinst -y pester
