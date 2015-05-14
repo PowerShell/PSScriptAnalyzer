@@ -141,7 +141,7 @@ Describe "Test IncludeRule" {
 
         it "includes 2 wildcardrules" {
             $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules, $useRules 
-            $includeWildcard.Count | Should be 7
+            $includeWildcard.Count | Should be 9
         }
     }
 }
