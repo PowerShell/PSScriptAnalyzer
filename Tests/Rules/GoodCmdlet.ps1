@@ -91,6 +91,7 @@ function Get-File
     {
         if ($pscmdlet.ShouldContinue("Yes", "No")) {
         }
+        [System.Void] $Param3
     }
 }
 
