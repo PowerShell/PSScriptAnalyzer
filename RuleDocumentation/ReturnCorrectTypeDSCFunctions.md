@@ -1,5 +1,5 @@
 #ReturnCorrectTypeDSCFunctions 
-**Severity Level: Error**
+**Severity Level: Information**
 
 
 ##Description
