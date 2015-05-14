@@ -49,7 +49,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     String noun = funcNamePieces[1];
                     var ps = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
 
-                    if (ps.IsPlural(noun))
+                    if (!ps.IsSingular(noun))
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
                             funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);

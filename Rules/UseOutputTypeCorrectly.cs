@@ -110,6 +110,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     || String.Equals(typeof(Unreached).FullName, typeName, StringComparison.OrdinalIgnoreCase)
                     || String.Equals(typeof(Undetermined).FullName, typeName, StringComparison.OrdinalIgnoreCase)
                     || String.Equals(typeof(object).FullName, typeName, StringComparison.OrdinalIgnoreCase)
+                    || String.Equals(typeof(void).FullName, typeName, StringComparison.OrdinalIgnoreCase)
                     || outputTypes.Contains(typeName, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;

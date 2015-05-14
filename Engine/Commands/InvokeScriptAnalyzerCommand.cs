@@ -581,7 +581,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
 
             if (severity != null)
             {
-                var diagSeverity = severity.Select(item => Enum.Parse(typeof(DiagnosticSeverity), item));
+                var diagSeverity = severity.Select(item => Enum.Parse(typeof(DiagnosticSeverity), item, true));
                 diagnostics = diagnostics.Where(item => diagSeverity.Contains(item.Severity)).ToList();
             }
 

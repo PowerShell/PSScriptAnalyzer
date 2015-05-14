@@ -28,3 +28,14 @@ if($null -ne $ev)
 
 get-process notepad | tee-object -variable proc 
 $proc[0]
+
+function Test-PreferenceVariable
+{
+
+   if (-not $PSBoundParameters.ContainsKey('Verbose')) {
+       $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') -as 
+        [System.Management.Automation.ActionPreference]
+        }
+
+        $VerbosePreference
+    }
