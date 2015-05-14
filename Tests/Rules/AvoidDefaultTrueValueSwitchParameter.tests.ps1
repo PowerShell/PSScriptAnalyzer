@@ -7,8 +7,8 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidDefaultTrueValueSwitchPara
 
 Describe "AvoidDefaultTrueValueSwitchParameter" {
     Context "When there are violations" {
-        It "has 1 avoid using switch parameter default to true violation" {
-            $violations.Count | Should Be 1
+        It "has 2 avoid using switch parameter default to true violation" {
+            $violations.Count | Should Be 2
         }
 
         It "has the correct description message" {

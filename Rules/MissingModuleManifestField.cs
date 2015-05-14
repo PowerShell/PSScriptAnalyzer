@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Management.Automation.Language;
 using System.Management.Automation;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
@@ -44,6 +45,10 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     ps.AddCommand("Test-ModuleManifest");
                     ps.AddParameter("Path", fileName);
+                    
+                    // Suppress warnings emitted during the execution of Test-ModuleManifest
+                    // ModuleManifest rule must catch any violations (warnings/errors) and generate DiagnosticRecord(s)
+                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);                    
                     ps.Invoke();
 
                 } catch { }

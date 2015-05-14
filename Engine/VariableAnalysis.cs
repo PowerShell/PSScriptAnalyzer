@@ -339,7 +339,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             }
 
             return analysis.DefinedBlock == null
-                && !SpecialVars.InitializedVariables.Contains(analysis.Name, StringComparer.OrdinalIgnoreCase)
+                && !(SpecialVars.InitializedVariables.Contains(analysis.Name, StringComparer.OrdinalIgnoreCase) || 
+                SpecialVars.InitializedVariables.Contains(analysis.RealName, StringComparer.OrdinalIgnoreCase)) 
                 && !IsGlobalOrEnvironment(varTarget);
         }
 
