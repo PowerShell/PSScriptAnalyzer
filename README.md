@@ -37,9 +37,18 @@ To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell cons
 Building the Code
 =================
 
-Use Visual Studio to build "ScriptAnalyzer.sln". Use ~/PSScriptAnalyzer/ folder to load PSScriptAnalyzer.psd1
+Use Visual Studio to build "PSScriptAnalyzer.sln". Use ~/PSScriptAnalyzer/ folder to load PSScriptAnalyzer.psd1
 
 **Note: If there are any build errors, please refer to Requirements section and make sure all dependencies are properly installed**
+
+
+Build Status
+==============
+
+|         |Master Branch |
+|---------|:------:|:------:|:-------:|:-------:|
+|**Debug Version**|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer) |
+
 
 Running Tests
 =============
@@ -69,13 +78,6 @@ Throughput Graph
 
 [![Throughput Graph](https://graphs.waffle.io/powershell/psscriptanalyzer/throughput.svg)](https://waffle.io/powershell/psscriptanalyzer/metrics)
 
-
-Build Status
-------------
-
-|         |Master Branch |
-|---------|:------:|:------:|:-------:|:-------:|
-|**Debug Version**|[![Build status](https://ci.appveyor.com/api/projects/status/6anth3x81y6bd5dr/branch/master?svg=true)](https://ci.appveyor.com/project/powershell/psscriptanalyzer/branch/master) |
 
 
 Contributing to ScriptAnalyzer
