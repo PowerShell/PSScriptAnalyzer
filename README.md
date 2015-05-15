@@ -1,4 +1,10 @@
 
+|Master   |BugFixes |Development |
+|:------:|:------:|:-------:|:-------:|
+[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/bugfixes?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/bugfixes)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/development?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/development) |
+
+
+
 ﻿Introduction
 ============
 
@@ -40,15 +46,6 @@ Building the Code
 Use Visual Studio to build "PSScriptAnalyzer.sln". Use ~/PSScriptAnalyzer/ folder to load PSScriptAnalyzer.psd1
 
 **Note: If there are any build errors, please refer to Requirements section and make sure all dependencies are properly installed**
-
-
-
-Build Status
-=============
-
-|         |Master   |BugFixes |Development |
-|---------|:------:|:------:|:-------:|:-------:|
-|**Debug Version**|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/bugfixes?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/bugfixes)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/development?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/development) |
 
 
 Running Tests
