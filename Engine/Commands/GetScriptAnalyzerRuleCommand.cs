@@ -142,7 +142,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             {
                 if (severity != null)
                 {
-                    var ruleSeverity = severity.Select(item => Enum.Parse(typeof (RuleSeverity), item));
+                    var ruleSeverity = severity.Select(item => Enum.Parse(typeof (RuleSeverity), item, true));
                     rules = rules.Where(item => ruleSeverity.Contains(item.GetSeverity())).ToList();
                 }
 
