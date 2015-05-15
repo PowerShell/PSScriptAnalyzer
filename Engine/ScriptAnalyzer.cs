@@ -231,6 +231,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     string script = string.Format(CultureInfo.CurrentCulture, "Get-Module -Name '{0}' -ListAvailable", moduleName);
                     shortModuleName = posh.AddScript(script).Invoke<PSModuleInfo>().First().Name;
 
+                    // Invokes Update-Help for this module
+                    // Required since when invoking Get-Help later on, the cmdlet prompts for Update-Help interactively
+                    // By invoking Update-Help first, Get-Help will not prompt for downloading help later
+                    script = string.Format(CultureInfo.CurrentCulture, "Update-Help -Module '{0}' -Force", shortModuleName);
+                    posh.AddScript(script).Invoke();
+
                     // Invokes Get-Command and Get-Help for each functions in the module.
                     script = string.Format(CultureInfo.CurrentCulture, "Get-Command -Module '{0}'", shortModuleName);
                     var psobjects = posh.AddScript(script).Invoke();
