@@ -1,10 +1,14 @@
 ﻿function GoodFunc
 {
     param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]    
+        [string]
+        $Param1,
         [Parameter(Mandatory=$false)]
         [ValidateNotNullOrEmpty()]    
         [string]
-        $Param1=$null
+        $Param2=$null
     )
     $Param1
 }

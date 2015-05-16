@@ -1,6 +1,6 @@
 ﻿Import-Module PSScriptAnalyzer
 $violationName = "PSProvideDefaultParameterValue"
-$violationMessage = "Parameter 'Param1' is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters"
+$violationMessage = "Parameter 'Param2' is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\ProvideDefaultParameterValue.ps1 | Where-Object {$_.RuleName -match $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\ProvideDefaultParameterValueNoViolations.ps1

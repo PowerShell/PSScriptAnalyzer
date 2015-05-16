@@ -1,10 +1,14 @@
 ﻿function BadFunc
 {
     param(
-        [Parameter()]
+        [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]    
         [string]
-        $Param1
+        $Param1,
+        [Parameter(Mandatory=$false)]
+        [ValidateNotNullOrEmpty()]    
+        [string]
+        $Param2
     )
     $Param1
     $Param1 = "test"
