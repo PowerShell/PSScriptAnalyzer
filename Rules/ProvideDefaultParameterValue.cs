@@ -31,7 +31,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-           if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             // Finds all functionAst
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
@@ -40,28 +40,32 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 // Finds all ParamAsts.
                 IEnumerable<Ast> varAsts = funcAst.FindAll(testAst => testAst is VariableExpressionAst, true);
-                
+
                 // Iterrates all ParamAsts and check if their names are on the list.
 
                 HashSet<string> paramVariables = new HashSet<string>();
                 // only raise the rules for variables in the param block.
                 if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
-                    paramVariables.UnionWith(funcAst.Body.ParamBlock.Parameters.Select(paramAst => paramAst.Name.VariablePath.UserPath));
+                    foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
+                    {
+                        if (Helper.Instance.IsUninitialized(paramAst.Name, funcAst))
+                        {
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueError, paramAst.Name.VariablePath.UserPath),
+                            paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
+                        }
+                    }
                 }
 
                 if (funcAst.Parameters != null)
                 {
-                    paramVariables.UnionWith(funcAst.Parameters.Select(paramAst => paramAst.Name.VariablePath.UserPath));
-                }
-
-                // Iterates all VariableExpressionAst and check the command name.
-                foreach (VariableExpressionAst varAst in varAsts)
-                {
-                    if (Helper.Instance.IsUninitialized(varAst, funcAst) && paramVariables.Contains(varAst.VariablePath.UserPath))
+                    foreach (var paramAst in funcAst.Parameters)
                     {
-                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueError, varAst.VariablePath.UserPath),
-                            varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, varAst.VariablePath.UserPath);
+                        if (Helper.Instance.IsUninitialized(paramAst.Name, funcAst))
+                        {
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueError, paramAst.Name.VariablePath.UserPath),
+                            paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
+                        }
                     }
                 }
             }
