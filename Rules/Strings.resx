@@ -718,10 +718,10 @@
     <value>Default Parameter Values</value>
   </data>
   <data name="ProvideDefaultParameterValueDescription" xml:space="preserve">
-    <value>Parameters must have a default value. To fix a violation of this rule, please initialize non-global variables.</value>
+    <value>Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
   </data>
   <data name="ProvideDefaultParameterValueError" xml:space="preserve">
-    <value>Parameter '{0}' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables.</value>
+    <value>Parameter '{0}' is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
   </data>
   <data name="ProvideDefaultParameterValueName" xml:space="preserve">
     <value>ProvideDefaultParameterValue</value>

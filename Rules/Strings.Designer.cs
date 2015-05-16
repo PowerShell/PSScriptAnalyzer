@@ -1114,7 +1114,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameters must have a default value. To fix a violation of this rule, please initialize non-global variables..
+        ///   Looks up a localized string similar to Parameters must have a default value. To fix a violation of this rule, please specify a default value for parameters.
         /// </summary>
         internal static string ProvideDefaultParameterValueDescription {
             get {
@@ -1123,7 +1123,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables..
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for parameters.
         /// </summary>
         internal static string ProvideDefaultParameterValueError {
             get {
