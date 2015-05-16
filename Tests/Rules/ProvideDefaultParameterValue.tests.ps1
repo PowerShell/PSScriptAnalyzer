@@ -1,14 +1,14 @@
 ﻿Import-Module PSScriptAnalyzer
 $violationName = "PSProvideDefaultParameterValue"
-$violationMessage = "Parameter 'Param1' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables."
+$violationMessage = "Parameter 'Param1' is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\ProvideDefaultParameterValue.ps1 | Where-Object {$_.RuleName -match $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\ProvideDefaultParameterValueNoViolations.ps1
 
 Describe "ProvideDefaultParameters" {
     Context "When there are violations" {
-        It "has 1 provide default parameter value violation" {
-            $violations.Count | Should Be 1
+        It "has 2 provide default parameter value violation" {
+            $violations.Count | Should Be 2
         }
 
         It "has the correct description message" {

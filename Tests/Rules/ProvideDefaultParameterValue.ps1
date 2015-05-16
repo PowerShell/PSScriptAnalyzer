@@ -7,3 +7,7 @@
         $Param1
     )
 }
+
+function BadFunc2($Param1)
+{
+}
