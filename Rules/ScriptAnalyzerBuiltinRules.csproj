@@ -59,6 +59,7 @@
     <Compile Include="AvoidReservedParams.cs" />
     <Compile Include="AvoidShouldContinueWithoutForce.cs" />
     <Compile Include="AvoidTrapStatement.cs" />
+    <Compile Include="ProvideDefaultParameterValue.cs" />
     <Compile Include="AvoidUninitializedVariable.cs" />
     <Compile Include="AvoidUsernameAndPasswordParams.cs" />
     <Compile Include="AvoidUsingComputerNameHardcoded.cs" />

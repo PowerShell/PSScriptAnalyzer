@@ -714,4 +714,16 @@
   <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
     <value>No examples found for resource '{0}'</value>
   </data>
+  <data name="ProvideDefaultParameterValueCommonName" xml:space="preserve">
+    <value>Default Parameter Values</value>
+  </data>
+  <data name="ProvideDefaultParameterValueDescription" xml:space="preserve">
+    <value>Parameters must have a default value. To fix a violation of this rule, please initialize non-global variables.</value>
+  </data>
+  <data name="ProvideDefaultParameterValueError" xml:space="preserve">
+    <value>Parameter '{0}' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables.</value>
+  </data>
+  <data name="ProvideDefaultParameterValueName" xml:space="preserve">
+    <value>ProvideDefaultParameterValue</value>
+  </data>
 </root>
