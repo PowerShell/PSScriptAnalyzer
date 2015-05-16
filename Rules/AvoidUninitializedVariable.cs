@@ -70,6 +70,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     paramVariables.UnionWith(funcAst.Body.ParamBlock.Parameters.Select(paramAst => paramAst.Name.VariablePath.UserPath));
                 }
+                
+                //don't raise the rules for parameters outside the param block
+                if(funcAst.Parameters != null)
+                {
+                    paramVariables.UnionWith(funcAst.Parameters.Select(paramAst => paramAst.Name.VariablePath.UserPath));
+                }
 
                 // Iterates all VariableExpressionAst and check the command name.
                 foreach (VariableExpressionAst varAst in varAsts)
