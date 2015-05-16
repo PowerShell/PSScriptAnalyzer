@@ -11,4 +11,5 @@
 
 function GoodFunc2($Param1 = $null)
 {
+    $Param1
 }
