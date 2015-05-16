@@ -56,7 +56,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             // Checks whether this is a dsc resource file (we don't raise this rule for get, set and test-target resource
             bool isDscResourceFile = Helper.Instance.IsDscResourceModule(fileName);
 
-            List<string> targetResourcesFunctions = new List<string>( new string[] { "get-targetresource", "set-targetresource", "test-targetresource" });
+            List<string> targetResourcesFunctions = new List<string>(new string[] { "get-targetresource", "set-targetresource", "test-targetresource" });
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
@@ -65,13 +65,10 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
                 HashSet<string> paramVariables = new HashSet<string>();
 
-                if (isDscResourceFile && targetResourcesFunctions.Contains(funcAst.Name, StringComparer.OrdinalIgnoreCase))
+                // don't raise the rules for variables in the param block.
+                if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
-                    // don't raise the rules for variables in the param block.
-                    if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Parameters != null)
-                    {
-                        paramVariables.UnionWith(funcAst.Body.ParamBlock.Parameters.Select(paramAst => paramAst.Name.VariablePath.UserPath));
-                    }
+                    paramVariables.UnionWith(funcAst.Body.ParamBlock.Parameters.Select(paramAst => paramAst.Name.VariablePath.UserPath));
                 }
 
                 // Iterates all VariableExpressionAst and check the command name.
