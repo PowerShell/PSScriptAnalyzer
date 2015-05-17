@@ -52,12 +52,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
             IEnumerable<Ast> funcMemberAsts = ast.FindAll(item => item is FunctionMemberAst, true);
-
-            // Checks whether this is a dsc resource file (we don't raise this rule for get, set and test-target resource
-            bool isDscResourceFile = Helper.Instance.IsDscResourceModule(fileName);
-
-            List<string> targetResourcesFunctions = new List<string>(new string[] { "get-targetresource", "set-targetresource", "test-targetresource" });
-
+            
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
                 // Finds all VariableExpressionAst.
