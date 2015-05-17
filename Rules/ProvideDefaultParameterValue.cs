@@ -36,6 +36,12 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             // Finds all functionAst
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
 
+            // Checks whether this is a dsc resource file (we don't raise this rule for get, set and test-target resource
+            bool isDscResourceFile = Helper.Instance.IsDscResourceModule(fileName);
+
+            List<string> targetResourcesFunctions = new List<string>(new string[] { "get-targetresource", "set-targetresource", "test-targetresource" });
+
+
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
                 // Finds all ParamAsts.
@@ -43,13 +49,21 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
                 // Iterrates all ParamAsts and check if their names are on the list.
 
-                HashSet<string> paramVariables = new HashSet<string>();
+                HashSet<string> dscVariables = new HashSet<string>();
+                if (isDscResourceFile && targetResourcesFunctions.Contains(funcAst.Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    // don't raise the rules for variables in the param block.
+                    if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Parameters != null)
+                    {
+                        dscVariables.UnionWith(funcAst.Body.ParamBlock.Parameters.Select(paramAst => paramAst.Name.VariablePath.UserPath));
+                    }
+                }
                 // only raise the rules for variables in the param block.
                 if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
                     foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
                     {
-                        if (Helper.Instance.IsUninitialized(paramAst.Name, funcAst))
+                        if (Helper.Instance.IsUninitialized(paramAst.Name, funcAst) && !dscVariables.Contains(paramAst.Name.VariablePath.UserPath))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueError, paramAst.Name.VariablePath.UserPath),
                             paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
@@ -61,7 +75,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (var paramAst in funcAst.Parameters)
                     {
-                        if (Helper.Instance.IsUninitialized(paramAst.Name, funcAst))
+                        if (Helper.Instance.IsUninitialized(paramAst.Name, funcAst) && !dscVariables.Contains(paramAst.Name.VariablePath.UserPath))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueError, paramAst.Name.VariablePath.UserPath),
                             paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
