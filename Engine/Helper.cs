@@ -194,7 +194,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <summary>
         /// Given an AST, checks whether dsc resource is class based or not
         /// </summary>
-        /// <param name="fileName"></param>
+        /// <param name="ast"></param>
         /// <returns></returns>
         public bool IsDscResourceClassBased(ScriptBlockAst ast)
         {
