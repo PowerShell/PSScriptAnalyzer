@@ -21,7 +21,7 @@ using System.Globalization;
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// MissingModuleManifestField: Run Test Module Manifest to check that no deprecated fields are being used.
+    /// AvoidUsingDeprecatedManifestFields: Run Test Module Manifest to check that no deprecated fields are being used.
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class AvoidUsingDeprecatedManifestFields : IScriptRule
@@ -60,7 +60,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (var warning in result)
                     {
-                       yield return new DiagnosticRecord(warning.BaseObject.ToString(), ast.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                       yield return new DiagnosticRecord(String.Format((CultureInfo.CurrentCulture, warning.BaseObject.ToString()), ast.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
 
