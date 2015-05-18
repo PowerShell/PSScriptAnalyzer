@@ -730,7 +730,7 @@
     <value>Avoid Using Deprecated Manifest Fields</value>
   </data>
   <data name="AvoidUsingDeprecatedManifestFieldsDescription" xml:space="preserve">
-    <value>Some manifest fields are obsolte in the latest PowerShell version. Please update with the latest manifest fields in modules to avoid PowerShell version inconsistency.</value>
+    <value>Some manifest fields are obsolete in the latest PowerShell version. Please update with the latest manifest fields in modules to avoid PowerShell version inconsistency.</value>
   </data>
   <data name="AvoidUsingDeprecatedManifestFieldsName" xml:space="preserve">
     <value>AvoidUsingDeprecatedManifestFields</value>

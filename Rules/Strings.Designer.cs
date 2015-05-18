@@ -520,7 +520,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some manifest fields are obsolte in the latest PowerShell version. Please update with the latest manifest fields in modules to avoid PowerShell version inconsistency..
+        ///   Looks up a localized string similar to Some manifest fields are obsolete in the latest PowerShell version. Please update with the latest manifest fields in modules to avoid PowerShell version inconsistency..
         /// </summary>
         internal static string AvoidUsingDeprecatedManifestFieldsDescription {
             get {
