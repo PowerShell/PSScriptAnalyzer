@@ -63,7 +63,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (var warning in result)
                     {
-                       yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, warning.BaseObject.ToString()), ast.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        if (warning.BaseObject != null)
+                        {
+                            yield return
+                                new DiagnosticRecord(
+                                    String.Format(CultureInfo.CurrentCulture, warning.BaseObject.ToString()), ast.Extent,
+                                    GetName(), DiagnosticSeverity.Warning, fileName);
+                        }
                     }
                 }
 
