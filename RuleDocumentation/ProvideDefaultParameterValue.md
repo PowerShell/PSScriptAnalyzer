@@ -7,7 +7,7 @@ Parameters must have a default value as uninitialized parameters will lead to po
 
 ##How to Fix
 
-To fix a violation of this rule, please specify a default value for all parameters
+To fix a violation of this rule, please specify a default value for all parameters.
 
 ##Example
 
@@ -23,7 +23,7 @@ function Test($Param1)
 Correct: 
 
 ```
-ffunction Test($Param1 = $null)
+function Test($Param1 = $null)
 {
 	$Param1
 }
