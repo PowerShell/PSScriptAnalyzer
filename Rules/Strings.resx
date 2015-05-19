@@ -726,4 +726,13 @@
   <data name="ProvideDefaultParameterValueName" xml:space="preserve">
     <value>ProvideDefaultParameterValue</value>
   </data>
+  <data name="AvoidUsingDeprecatedManifestFieldsCommonName" xml:space="preserve">
+    <value>Avoid Using Deprecated Manifest Fields</value>
+  </data>
+  <data name="AvoidUsingDeprecatedManifestFieldsDescription" xml:space="preserve">
+    <value>"ModuleToProcess" is obsolete in the latest PowerShell version. Please update with the latest field "RootModule" in manifest files to avoid PowerShell version inconsistency.</value>
+  </data>
+  <data name="AvoidUsingDeprecatedManifestFieldsName" xml:space="preserve">
+    <value>AvoidUsingDeprecatedManifestFields</value>
+  </data>
 </root>
