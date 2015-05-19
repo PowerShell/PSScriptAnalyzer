@@ -53,7 +53,10 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                         foreach (InvokeMemberExpressionAst ieAst in invocation)
                         {
                             if (String.Equals(ieAst.Member.ToString(), "SelectSingleNode",StringComparison.OrdinalIgnoreCase) ||
-                                String.Equals(ieAst.Member.ToString(), "SelectNodes",StringComparison.OrdinalIgnoreCase))
+                                String.Equals(ieAst.Member.ToString(), "SelectNodes",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(ieAst.Member.ToString(), "Select",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(ieAst.Member.ToString(), "Evaluate",StringComparison.OrdinalIgnoreCase) ||
+                                    String.Equals(ieAst.Member.ToString(), "Matches",StringComparison.OrdinalIgnoreCase))
                             {
                                 hasXPath = true;
                                 break;
