@@ -44,6 +44,26 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 foreach (StringConstantExpressionAst expressionAst in expressionAsts)
                 {
+                    //Check if XPath is used. If XPath is used, then we don't throw warnings.
+                    Ast parentAst = expressionAst.Parent;
+                    if (parentAst is InvokeMemberExpressionAst)
+                    {
+                        InvokeMemberExpressionAst invocation = parentAst as InvokeMemberExpressionAst;
+                        if (invocation != null)
+                        {
+                            if (String.Equals(invocation.Member.ToString(), "SelectSingleNode",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Member.ToString(), "SelectNodes",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Member.ToString(), "Select", StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Member.ToString(), "Evaluate",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Member.ToString(), "Matches",StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
+                        }
+                    }
+
+
                     bool isPathValid = false;
                     bool isInternalURL = false;
                     //make sure there is no path 
@@ -128,7 +148,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                                 new DiagnosticRecord(
                                     String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingInternalURLsError,
                                         expressionAst.Value), expressionAst.Extent,
-                                    GetName(), DiagnosticSeverity.Warning, fileName);
+                                    GetName(), DiagnosticSeverity.Information, fileName);
 
                         }
                     }
@@ -177,7 +197,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Warning;
+            return RuleSeverity.Information;
         }
 
         /// <summary>
