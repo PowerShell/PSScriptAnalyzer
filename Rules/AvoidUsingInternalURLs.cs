@@ -12,7 +12,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
@@ -149,7 +148,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                                 new DiagnosticRecord(
                                     String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingInternalURLsError,
                                         expressionAst.Value), expressionAst.Extent,
-                                    GetName(), DiagnosticSeverity.Warning, fileName);
+                                    GetName(), DiagnosticSeverity.Information, fileName);
 
                         }
                     }
@@ -198,7 +197,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Warning;
+            return RuleSeverity.Information;
         }
 
         /// <summary>
