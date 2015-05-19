@@ -10,7 +10,7 @@
 // THE SOFTWARE.
 //
 
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -22,7 +22,7 @@ using System.Resources;
 using System.Threading;
 using System.Reflection;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
     /// <summary>
     /// GetScriptAnalyzerLoggerCommand: Cmdlet that lists the PSScriptAnalyzer logger names and descriptions.
@@ -63,7 +63,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
         #region Private Members
 
         Dictionary<string, List<string>> validationResults = new Dictionary<string, List<string>>();
-        private const string baseName                      = "Microsoft.Windows.Powershell.ScriptAnalyzer.Strings";
+        private const string baseName                      = "Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings";
         private CultureInfo cul                            = Thread.CurrentThread.CurrentCulture;
         private ResourceManager rm                         = new ResourceManager(baseName, Assembly.GetExecutingAssembly());
 

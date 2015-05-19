@@ -22,7 +22,7 @@ using System.Management.Automation;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     /// <summary>
     /// This class is used to analyze variable based on data flow

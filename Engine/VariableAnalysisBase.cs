@@ -21,7 +21,7 @@ using System.Management.Automation.Language;
 using System.Management.Automation;
 using System.Globalization;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     /// <summary>
     /// Base class for variable details

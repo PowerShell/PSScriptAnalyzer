@@ -11,7 +11,7 @@
 //
 
 using System.Text.RegularExpressions;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -26,13 +26,13 @@ using System.Reflection;
 using System.IO;
 using System.Text;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
     /// <summary>
     /// InvokeScriptAnalyzerCommand: Cmdlet to statically check PowerShell scripts.
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "ScriptAnalyzer", HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
-    [OutputType("Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord")]
+    [OutputType("Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet
     {
         #region Parameters

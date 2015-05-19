@@ -14,11 +14,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// AvoidUnitializedVariable: Check if any uninitialized variable is used.
@@ -50,10 +50,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-#if PSV3
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
-#else
-            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst || item is FunctionMemberAst, true);
+#if !PSV3
+            IEnumerable<Ast> funcMemberAsts = ast.FindAll(item => item is FunctionMemberAst, true);
 #endif
 
             // Checks whether this is a dsc resource file (we don't raise this rule for get, set and test-target resource
@@ -87,6 +86,25 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
+
+#if !PSV3
+            foreach (FunctionMemberAst funcMemAst in funcMemberAsts)
+            {
+                // Finds all VariableExpressionAst.
+                IEnumerable<Ast> varAsts = funcMemAst.FindAll(testAst => testAst is VariableExpressionAst, true);
+
+                // Iterates all VariableExpressionAst and check the command name.
+                foreach (VariableExpressionAst varAst in varAsts)
+                {
+                    if (Helper.Instance.IsUninitialized(varAst, funcMemAst))
+                    {
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUninitializedVariableError, varAst.VariablePath.UserPath),
+                            varAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, varAst.VariablePath.UserPath);
+                    }
+                }
+
+            }
+#endif
         }
 
         /// <summary>

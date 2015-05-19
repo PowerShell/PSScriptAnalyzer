@@ -11,7 +11,7 @@
 //
 
 using Microsoft.PowerShell.Commands;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -19,12 +19,13 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
     /// <summary>
     /// GetScriptAnalyzerRuleCommand: Cmdlet to list all the analyzer rule names and descriptions.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "ScriptAnalyzerRule", HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525913")]
+    [OutputType("Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleInfo")]
     public class GetScriptAnalyzerRuleCommand : PSCmdlet
     {
         #region Parameters

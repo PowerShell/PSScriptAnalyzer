@@ -16,14 +16,14 @@ Import-LocalizedData -BindingVariable Messages
 .INPUTS
     [System.Management.Automation.Language.ScriptBlockAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     None
 #>
 function Measure-RequiresRunAsAdministrator
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -92,7 +92,7 @@ function Measure-RequiresRunAsAdministrator
                 if ((!$ScriptBlockAst.ScriptRequirements.IsElevationRequired) -and 
                     ($methodAst.Count -ne 0) -and ($assignmentAst.Count -ne 0))
                 {
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresRunAsAdministrator; 
+                    $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresRunAsAdministrator; 
                                                 "Extent"   = $assignmentAst.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                                 "Severity" = "Information"}
@@ -103,7 +103,7 @@ function Measure-RequiresRunAsAdministrator
             {
                 if (($methodAst.Count -ne 0) -and ($assignmentAst.Count -ne 0))
                 {
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresRunAsAdministrator; 
+                    $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresRunAsAdministrator; 
                                                 "Extent"   = $assignmentAst.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                                 "Severity" = "Information"}
@@ -134,14 +134,14 @@ function Measure-RequiresRunAsAdministrator
 .INPUTS
     [System.Management.Automation.Language.ScriptBlockAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     None
 #>
 function Measure-RequiresModules
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -192,7 +192,7 @@ function Measure-RequiresModules
                 {
                     foreach ($ast in $asts)
                     {
-                        $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresModules; 
+                        $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresModules; 
                                                     "Extent"   = $ast.Extent;
                                                     "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                                     "Severity" = "Information"}
@@ -206,7 +206,7 @@ function Measure-RequiresModules
                 {
                     foreach ($ast in $asts)
                     {
-                        $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresModules; 
+                        $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresModules; 
                                                     "Extent"   = $ast.Extent;
                                                     "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                                     "Severity" = "Information"}
@@ -238,14 +238,14 @@ function Measure-RequiresModules
 .INPUTS
     [System.Management.Automation.Language.CommandAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: 3.11. Reduce Typying for Long Class Names, Windows PowerShell Cookbook, Third Edition
 #>
 function Measure-LongClassName
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -285,7 +285,7 @@ function Measure-LongClassName
                 if ($sbResult.BoundParameters["TypeName"].ConstantValue.ToString().Split('.').Length -ge 3)
                 {
                     # $sbResult.BoundParameters["TypeName"].Value is a CommandElementAst, so we can return an extent.
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureLongClassName; 
+                    $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureLongClassName; 
                                                 "Extent"   = $sbResult.BoundParameters["TypeName"].Value.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                                 "Severity" = "Information"}
@@ -316,14 +316,14 @@ function Measure-LongClassName
 .INPUTS
     [System.Management.Automation.Language.StringConstantExpressionAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: Filtering classes by qualifier, Windows PowerShell Best Practics
 #>
 function Measure-DeprecatedWMIClass
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -343,7 +343,7 @@ function Measure-DeprecatedWMIClass
         {
             if ($StringConstantExpressionAst.Value -in $deprecatedWMIClasses)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureDeprecatedWMIClass; 
+                $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureDeprecatedWMIClass; 
                                             "Extent"   = $StringConstantExpressionAst.Extent;
                                             "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                             "Severity" = "Information"}
@@ -371,14 +371,14 @@ function Measure-DeprecatedWMIClass
 .INPUTS
     [System.Management.Automation.Language.CommandAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: The Purity Laws, The Community Book of PowerShell Practices.
 #>
 function Measure-ComObject
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -415,7 +415,7 @@ function Measure-ComObject
                 if ($sbResults.BoundParameters.ContainsKey("ComObject"))
                 {
                     # $sbResult.BoundParameters["TypeName"].Value is a CommandElementAst, so we can return an extent.
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureComObject; 
+                    $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureComObject; 
                                                 "Extent"   = $sbResult.BoundParameters["ComObject"].Value.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                                 "Severity" = "Warning"}
@@ -446,14 +446,14 @@ function Measure-ComObject
 .INPUTS
     [System.Management.Automation.Language.ScriptBlockAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: Document nested structures, Windows PowerShell Best Practices.
 #>
 function Measure-CurlyBracket
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -508,7 +508,7 @@ function Measure-CurlyBracket
 
                 if ($needComment -and $nestingASTs)
                 {
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureCurlyBracket; 
+                    $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureCurlyBracket; 
                                                 "Extent"   = $ast.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                                 "Severity" = "Information"}
@@ -540,14 +540,14 @@ function Measure-CurlyBracket
 .INPUTS
     [System.Management.Automation.Language.Token[]]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: DOC-07 Don't over-comment, The Community Book of PowerShell Practices.
 #>
 function Measure-OverComment
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -580,7 +580,7 @@ function Measure-OverComment
 
             if ($actualPercentage -ge 80)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureOverComment; 
+                $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureOverComment; 
                                             "Extent"   = $Token[0].Extent;
                                             "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                             "Severity" = "Warning"}
@@ -608,14 +608,14 @@ function Measure-OverComment
 .INPUTS
     [System.Management.Automation.Language.Token[]]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: Document nested structures, Windows PowerShell Best Practices.
 #>
 function Measure-Backtick
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -635,7 +635,7 @@ function Measure-Backtick
 
             foreach ($lcToken in $lcTokens)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureBacktick; 
+                $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureBacktick; 
                                             "Extent"   = $lcToken.Extent;
                                             "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                             "Severity" = "Warning"}
@@ -663,14 +663,14 @@ function Measure-Backtick
 .INPUTS
     [System.Management.Automation.Language.CommandAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: Output, The Community Book of PowerShell Practices.
 #>
 function Measure-WriteHost
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -695,7 +695,7 @@ function Measure-WriteHost
                 if (($CommandAst.GetCommandName() -eq "Write-Host") -or 
                     ($CommandAst.GetCommandName() -eq $alias))
                 {
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureWriteHost; 
+                    $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureWriteHost; 
                                                 "Extent"   = $CommandAst.Extent;
                                                 "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                                 "Severity" = "Warning"}
@@ -723,14 +723,14 @@ function Measure-WriteHost
 .INPUTS
     [System.Management.Automation.Language.ScriptBlockAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: Trapping and Capturing Errors, Windows PowerShell Best Practices.
 #>
 function Measure-ErrorActionPreference
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -772,7 +772,7 @@ function Measure-ErrorActionPreference
 
             if ($asts.Count % 2 -ne 0)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureErrorActionPreference; 
+                $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureErrorActionPreference; 
                                             "Extent"   = $asts[0].Extent;
                                             "RuleName" = "Measure-ErrorActionPreference";
                                             "Severity" = "Warning"}
@@ -803,14 +803,14 @@ function Measure-ErrorActionPreference
 .INPUTS
     [System.Management.Automation.Language.ScriptBlockAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: Trapping and Capturing Errors, Windows PowerShell Best Practices.
 #>
 function Measure-QuestionVariable
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -836,7 +836,7 @@ function Measure-QuestionVariable
 
             foreach ($questionVariable in $questionVariables)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureQuestionVariable; 
+                $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureQuestionVariable; 
                                             "Extent"   = $questionVariable.Extent;
                                             "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                             "Severity" = "Warning"}
@@ -863,14 +863,14 @@ function Measure-QuestionVariable
 .INPUTS
     [System.Management.Automation.Language.FunctionDefinitionAst]
 .OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 .NOTES
     Reference: Writing Help and Comments, Windows PowerShell Best Practices.
 #>
 function Measure-HelpNote
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -916,7 +916,7 @@ function Measure-HelpNote
 
             if (!$FunctionDefinitionAst.GetHelpContent().Notes)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureHelpNote; 
+                $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureHelpNote; 
                                             "Extent"   = $FunctionDefinitionAst.Extent;
                                             "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
                                             "Severity" = "Warning"}

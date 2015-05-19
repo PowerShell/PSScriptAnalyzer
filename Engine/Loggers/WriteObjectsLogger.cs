@@ -15,15 +15,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Commands;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using System.Threading;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Loggers
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Loggers
 {
     /// <summary>
     /// WriteObjectsLogger: Logs Diagnostics though WriteObject.
@@ -34,7 +34,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Loggers
         #region Private members
 
         private CultureInfo cul = Thread.CurrentThread.CurrentCulture;
-        private ResourceManager rm = new ResourceManager("Microsoft.Windows.Powershell.ScriptAnalyzer.Strings",
+        private ResourceManager rm = new ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings",
                                                                   Assembly.GetExecutingAssembly());
 
         #endregion

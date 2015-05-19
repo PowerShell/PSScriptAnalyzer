@@ -15,9 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Commands;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     /// <summary>
     /// ILogger: An interface for a PSScriptAnalyzer logger to output the results of PSScriptAnalyzer rules.

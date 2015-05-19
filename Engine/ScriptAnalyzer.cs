@@ -11,8 +11,8 @@
 //
 
 using System.Text.RegularExpressions;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Commands;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -27,7 +27,7 @@ using System.Resources;
 using System.Globalization;
 using System.Threading;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     internal class ScriptAnalyzer
     {

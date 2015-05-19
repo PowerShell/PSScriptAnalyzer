@@ -17,7 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Management.Automation.Language;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     /// <summary>
     /// This class extends AstVisitor2 and will skip any namedblockast and commandast

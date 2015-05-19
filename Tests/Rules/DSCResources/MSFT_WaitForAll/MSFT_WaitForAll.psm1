@@ -26,7 +26,7 @@ function NotGet-TargetResource
 
         [Uint32] $RetryCount = 0,
 
-        [Uint32] $ThrottleLimit = 32 #Powershell New-CimSession default throttle value
+        [Uint32] $ThrottleLimit = 32 #PowerShell New-CimSession default throttle value
     )
 
 
@@ -66,7 +66,7 @@ function Set-TargetResource
 
         [Uint32] $RetryCount = 0,
 
-        [Uint32] $ThrottleLimit = 32 #Powershell New-CimSession default throttle value
+        [Uint32] $ThrottleLimit = 32 #PowerShell New-CimSession default throttle value
     )
 
     Import-Module $PSScriptRoot\..\..\PSDSCxMachine.psm1
@@ -119,7 +119,7 @@ function Test-TargetResource
 
         [Uint32] $RetryCount = 0,
 
-        [Uint32] $ThrottleLimit = 32 #Powershell New-CimSession default throttle value
+        [Uint32] $ThrottleLimit = 32 #PowerShell New-CimSession default throttle value
     )
 
     Import-Module $PSScriptRoot\..\..\PSDSCxMachine.psm1

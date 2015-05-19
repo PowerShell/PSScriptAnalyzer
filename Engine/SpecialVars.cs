@@ -20,7 +20,7 @@ using System.Reflection;
 using System.Management.Automation.Language;
 using System.Management.Automation;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     internal class SpecialVars
     {
