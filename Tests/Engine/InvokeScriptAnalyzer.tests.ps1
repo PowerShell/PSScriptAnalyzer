@@ -136,12 +136,12 @@ Describe "Test IncludeRule" {
     Context "IncludeRule supports wild card" {
         It "includes 1 wildcard rule"{
             $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
-            $includeWildcard.Count | Should be 5
+            $includeWildcard.Count | Should be 3
         }
 
         it "includes 2 wildcardrules" {
             $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules, $useRules 
-            $includeWildcard.Count | Should be 9
+            $includeWildcard.Count | Should be 7
         }
     }
 }
