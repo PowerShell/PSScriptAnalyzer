@@ -86,7 +86,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                             type = paramAst.TypeName.GetReflectionType();
                         }
 
-                        if (String.Equals(paramAst.TypeName.FullName, "switch", StringComparison.OrdinalIgnoreCase))
+                        if (paramAst.TypeName.GetReflectionType() == typeof(System.Management.Automation.SwitchParameter))
                         {
                             isSwitchOrMandatory = true;
                         }
