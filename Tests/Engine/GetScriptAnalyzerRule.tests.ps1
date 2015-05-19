@@ -118,7 +118,7 @@ Describe "TestSeverity" {
 
     It "filters rules based on multiple severity inputs"{
         $rules = Get-ScriptAnalyzerRule -Severity Error,Information
-        $rules.Count | Should be 9
+        $rules.Count | Should be 13
     }
 
         It "takes lower case inputs" {
@@ -130,11 +130,11 @@ Describe "TestSeverity" {
 Describe "TestWildCard" {
     It "filters rules based on the -Name wild card input" {
         $rules = Get-ScriptAnalyzerRule -Name PSDSC*
-        $rules.Count | Should be 4
+        $rules.Count | Should be 6
     }
 
     It "filters rules based on wild card input and severity"{
         $rules = Get-ScriptAnalyzerRule -Name PSDSC*　-Severity Information
-        $rules.Count | Should be 1
+        $rules.Count | Should be 3
     }
 }
