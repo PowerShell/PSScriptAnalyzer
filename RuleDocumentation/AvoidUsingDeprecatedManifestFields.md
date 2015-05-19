@@ -20,8 +20,8 @@ ModuleVersion = '1.0'
 ```
 
 Correct: 
-'''
+```
 RootModule ='psscriptanalyzer'
 
 ModuleVersion = '1.0'
-'''
+```
