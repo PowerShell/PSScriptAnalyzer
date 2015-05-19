@@ -44,6 +44,27 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 foreach (StringConstantExpressionAst expressionAst in expressionAsts)
                 {
+                    //Check if XPath is used. If XPath is used, then we don't throw warnings.
+                    Ast parentAst = expressionAst.Parent;
+                    IEnumerable<Ast> invocation = parentAst.FindAll(test => test is InvokeMemberExpressionAst, true);
+                    bool hasXPath = false;
+                    if (invocation != null)
+                    {
+                        foreach (InvokeMemberExpressionAst ieAst in invocation)
+                        {
+                            if (String.Equals(ieAst.Member.ToString(), "SelectSingleNode",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(ieAst.Member.ToString(), "SelectNodes",StringComparison.OrdinalIgnoreCase))
+                            {
+                                hasXPath = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hasXPath)
+                    {
+                        continue;
+                    }
+                    
                     bool isPathValid = false;
                     bool isInternalURL = false;
                     //make sure there is no path 
