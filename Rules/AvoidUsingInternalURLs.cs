@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
@@ -46,28 +47,24 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 {
                     //Check if XPath is used. If XPath is used, then we don't throw warnings.
                     Ast parentAst = expressionAst.Parent;
-                    IEnumerable<Ast> invocation = parentAst.FindAll(test => test is InvokeMemberExpressionAst, true);
-                    bool hasXPath = false;
-                    if (invocation != null)
+                    if (parentAst is InvokeMemberExpressionAst)
                     {
-                        foreach (InvokeMemberExpressionAst ieAst in invocation)
+                        InvokeMemberExpressionAst invocation = parentAst as InvokeMemberExpressionAst;
+                        if (invocation != null)
                         {
-                            if (String.Equals(ieAst.Member.ToString(), "SelectSingleNode",StringComparison.OrdinalIgnoreCase) ||
-                                String.Equals(ieAst.Member.ToString(), "SelectNodes",StringComparison.OrdinalIgnoreCase) ||
-                                String.Equals(ieAst.Member.ToString(), "Select",StringComparison.OrdinalIgnoreCase) ||
-                                String.Equals(ieAst.Member.ToString(), "Evaluate",StringComparison.OrdinalIgnoreCase) ||
-                                    String.Equals(ieAst.Member.ToString(), "Matches",StringComparison.OrdinalIgnoreCase))
+                            if (String.Equals(invocation.Member.ToString(), "SelectSingleNode",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Member.ToString(), "SelectNodes",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Member.ToString(), "Select", StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Member.ToString(), "Evaluate",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Member.ToString(), "Matches",StringComparison.OrdinalIgnoreCase))
                             {
-                                hasXPath = true;
-                                break;
+                                continue;
                             }
+
                         }
                     }
-                    if (hasXPath)
-                    {
-                        continue;
-                    }
-                    
+
+
                     bool isPathValid = false;
                     bool isInternalURL = false;
                     //make sure there is no path 
