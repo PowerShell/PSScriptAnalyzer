@@ -1,4 +1,7 @@
-﻿function Test {
+﻿$Global:DebugPreference
+
+
+function Test {
     $initialized = "Initialized"
     $noglobal = "local"
     $env:ShouldNotRaiseError
@@ -31,13 +34,6 @@ $proc[0]
 
 function Test-PreferenceVariable
 {
-    Param(
-        [switch]
-        $a,
-
-        [System.Management.Automation.SwitchParameter]
-        $b
-    )
 
    if (-not $PSBoundParameters.ContainsKey('Verbose')) {
        $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') -as 
@@ -45,4 +41,4 @@ function Test-PreferenceVariable
         }
 
         $VerbosePreference
-}
+    }
