@@ -99,7 +99,7 @@
     <Compile Include="VariableAnalysisBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PSV3\PSScriptAnalyzer.psd1" />
+    <None Include="PSScriptAnalyzer.psm1" />
     <None Include="PSScriptAnalyzer.psd1" />
     <None Include="ScriptAnalyzer.format.ps1xml" />
     <None Include="ScriptAnalyzer.types.ps1xml" />
@@ -116,17 +116,22 @@
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>mkdir "$(SolutionDir)$(SolutionName)"
-copy /y "$(ProjectDir)\*.ps1xml" "$(SolutionDir)$(SolutionName)"
-if "PSV3 Release" == "$(ConfigurationName)" (
-    copy /y "$(ProjectDir)\PSV3\*.psd1" "$(SolutionDir)$(SolutionName)"
+    <PostBuildEvent>if "PSV3 Release" == "$(ConfigurationName)" (
+    mkdir "$(SolutionDir)$(SolutionName)\PSv3"
+    copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)\PSv3"
 ) else (
     if "PSV3 Debug" == "$(ConfigurationName)" (
-        copy /y "$(ProjectDir)\PSV3\*.psd1" "$(SolutionDir)$(SolutionName)"
+        mkdir "$(SolutionDir)$(SolutionName)\PSv3"
+        copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)\PSv3"
     ) else (
-        copy /y "$(ProjectDir)\*.psd1" "$(SolutionDir)$(SolutionName)"
+        copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
     )
-)
-copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"</PostBuildEvent>
+)</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>mkdir "$(SolutionDir)$(SolutionName)"
+copy /y "$(ProjectDir)\*.ps1xml" "$(SolutionDir)$(SolutionName)"
+copy /y "$(ProjectDir)\*.psd1" "$(SolutionDir)$(SolutionName)"
+copy /y "$(ProjectDir)\*.psm1" "$(SolutionDir)$(SolutionName)"</PreBuildEvent>
   </PropertyGroup>
 </Project>

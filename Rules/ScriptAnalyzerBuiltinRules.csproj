@@ -129,6 +129,16 @@
   </ProjectExtensions>
   <PropertyGroup>
     <PostBuildEvent>mkdir "$(SolutionDir)$(SolutionName)"
-copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"</PostBuildEvent>
+if "PSV3 Release" == "$(ConfigurationName)" (
+    mkdir "$(SolutionDir)$(SolutionName)\PSv3"
+    copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)\PSv3"
+) else (
+    if "PSV3 Debug" == "$(ConfigurationName)" (
+        mkdir "$(SolutionDir)$(SolutionName)\PSv3"
+        copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)\PSv3"
+    ) else (
+        copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
+    )
+)</PostBuildEvent>
   </PropertyGroup>
 </Project>
