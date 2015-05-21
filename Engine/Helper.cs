@@ -496,12 +496,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
 
         /// <summary>
-        /// Checks whether a variable is a built-in variable.
+        /// Checks whether a variable is a global variable.
         /// </summary>
         /// <param name="ast"></param>
         /// <returns></returns>
         public bool IsVariableGlobal(VariableExpressionAst varAst)
         {
+            //We ignore the use of built-in variable as global variable
             if (varAst.VariablePath.IsGlobal)
             {
                 string varName = varAst.VariablePath.UserPath.Remove(varAst.VariablePath.UserPath.IndexOf("global:", StringComparison.OrdinalIgnoreCase), "global:".Length);
