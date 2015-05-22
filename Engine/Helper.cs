@@ -494,6 +494,24 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             return VariableAnalysisDictionary[ast].IsGlobalOrEnvironment(varAst);
         }
 
+
+        /// <summary>
+        /// Checks whether a variable is a global variable.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public bool IsVariableGlobal(VariableExpressionAst varAst)
+        {
+            //We ignore the use of built-in variable as global variable
+            if (varAst.VariablePath.IsGlobal)
+            {
+                string varName = varAst.VariablePath.UserPath.Remove(varAst.VariablePath.UserPath.IndexOf("global:", StringComparison.OrdinalIgnoreCase), "global:".Length);
+                return !SpecialVars.InitializedVariables.Contains(varName, StringComparer.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+
+
         /// <summary>
         /// Checks whether all the code path of ast returns.
         /// Runs InitializeVariableAnalysis before calling this method

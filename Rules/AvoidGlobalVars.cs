@@ -41,7 +41,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 foreach (VariableExpressionAst varAst in varAsts)
                 {
-                    if (varAst.VariablePath.IsGlobal)
+                    if (Helper.Instance.IsVariableGlobal(varAst))
                     {
                         yield return
                             new DiagnosticRecord(
