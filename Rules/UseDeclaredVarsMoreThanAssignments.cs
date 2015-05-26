@@ -49,12 +49,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 foreach (AssignmentStatementAst assignmentAst in assignmentAsts)
                 {
-                    assingmentVarAsts = assignmentAst.Left.FindAll(testAst => testAst is VariableExpressionAst, true); ;
+                    // Only checks for the case where lhs is a variable. Ignore things like $foo.property
+                    VariableExpressionAst assignmentVarAst = assignmentAst.Left as VariableExpressionAst;
 
-                    foreach (VariableExpressionAst assignmentVarAst in assingmentVarAsts)
+                    if (assignmentVarAst != null)
                     {
-                         //Ignore if variable is global or environment variable
-                        if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst, ast))
+                        //Ignore if variable is global or environment variable
+                        if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst, ast)
+                            && !assignmentVarAst.VariablePath.IsScript)
                         {
                             if (!assignments.ContainsKey(assignmentVarAst.VariablePath.UserPath))
                             {
