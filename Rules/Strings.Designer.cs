@@ -331,7 +331,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a script file is in a Powershell module folder, then that folder must be loadable..
+        ///   Looks up a localized string similar to If a script file is in a PowerShell module folder, then that folder must be loadable..
         /// </summary>
         internal static string AvoidUnloadableModuleDescription {
             get {
