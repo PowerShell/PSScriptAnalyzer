@@ -10,7 +10,8 @@
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
         $Param1,
-
+        [int]
+        $passwordinteger,
         # Param2 help description
         [int]
         $Param2,
