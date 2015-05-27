@@ -16,11 +16,10 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
-using System.Management.Automation.Runspaces;
 using System.Globalization;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
 
     /// <summary>

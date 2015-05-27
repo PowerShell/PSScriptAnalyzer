@@ -11,22 +11,17 @@
 //
 
 using System.Text.RegularExpressions;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
-using System.Resources;
-using System.Threading;
-using System.Reflection;
 using System.IO;
-using System.Text;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
     /// <summary>
     /// InvokeScriptAnalyzerCommand: Cmdlet to statically check PowerShell scripts.
