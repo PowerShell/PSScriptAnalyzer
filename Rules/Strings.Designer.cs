@@ -799,7 +799,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some cmdlets are not available on Core CLR therefore scripts with those cmdlets won&apos;t run properly..
+        ///   Looks up a localized string similar to Some cmdlets are not available on Core CLR and therefore scripts with those cmdlets won&apos;t run properly on NanoServer. Please change/remove the unavailable cmdlets..
         /// </summary>
         internal static string CmdletNotAvailableOnNanoDescription {
             get {
@@ -907,7 +907,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dot Net Type Unavailable.
+        ///   Looks up a localized string similar to Dot Net Type Unavailable On NanoServer.
         /// </summary>
         internal static string DotNetTypeUnavailableCommonName {
             get {
@@ -916,7 +916,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some .Net types are not working on CoreCLR..
+        ///   Looks up a localized string similar to Some .Net types are not available on NanoServer. Please consider removing these types or change to some other available types on NanoServer..
         /// </summary>
         internal static string DotNetTypeUnavailableDescription {
             get {
@@ -925,7 +925,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .NET does not contain type &apos;{0}&apos;.
+        ///   Looks up a localized string similar to .NET does not contain type &apos;{0}&apos; on NanoServer..
         /// </summary>
         internal static string DotNetTypeUnavailableError {
             get {
@@ -934,7 +934,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DotNetTypeUnavailable.
+        ///   Looks up a localized string similar to DotNetTypeUnavailableOnNano.
         /// </summary>
         internal static string DotNetTypeUnavailableName {
             get {

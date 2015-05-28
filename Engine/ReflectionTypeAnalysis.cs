@@ -63,7 +63,7 @@ namespace NanoServerCompliance
                 if (!filePath.EndsWith(".METADATA_DLL", StringComparison.OrdinalIgnoreCase))
                 {
                     string message = string.Format(CultureInfo.CurrentCulture, "Unexpected file path");
-                    throw new InvalidOperationException(message);
+                    //throw new InvalidOperationException(message);
                 }
 
                 using (Stream stream = File.OpenRead(filePath))
