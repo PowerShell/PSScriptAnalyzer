@@ -2,11 +2,9 @@
 We have created a few rules to help check script compliance on NanoServer. To be able to run PSScriptAnalyzer NanoServer version, there are a few extra steps needed to set up the PSScriptAnalyzer module.
 
 ###Requirements
-```
-1. You will need to download extra assemblies [System.Reflection.Metadata](https://www.nuget.org/packages/System.Reflection.Metadata/) from NuGet.
 
+1. You will need to download extra assemblies [System.Reflection.Metadata](https://www.nuget.org/packages/System.Reflection.Metadata/) from NuGet.
 Follow the instructions on NuGet to install the assemblies into your forked PSScriptAnalyzer NanoServer local repository. After that, you will find "packages.config" in your Engine folder as well as a new /packages folder with the installed binaries under the project folder.
-```
 
 2. Open the solution file and compile the solution. After successfully compiling the project, you will have to copy the .dlls from Reflection.Metadata (System.Collections.Immutable.dll and System.Reflection.Metadata.dll) to the binplaced PSScriptAnalyzer folder. Otherwise, the module will not be imported properly.
 
