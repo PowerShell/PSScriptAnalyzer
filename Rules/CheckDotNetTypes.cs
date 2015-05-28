@@ -46,7 +46,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
 
                  //Get the type of the variable before checking if the type has the underliend methods/properties
                 string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                ReflectionTypeAnalysis.Instance.GetTypeFromAssembly(string.Format(CultureInfo.CurrentUICulture,path+"../../Engine/ReferenceAssembly"));
+                ReflectionTypeAnalysis.Instance.GetTypeFromAssembly(string.Format(CultureInfo.CurrentUICulture,Path.Combine(path,"../../Engine/ReferenceAssembly")));
                 typeMethod = ReflectionTypeAnalysis.Instance.typeMethod;
                 typeProperty = ReflectionTypeAnalysis.Instance.typeProperties;
                 typeFields = ReflectionTypeAnalysis.Instance.typeFields;

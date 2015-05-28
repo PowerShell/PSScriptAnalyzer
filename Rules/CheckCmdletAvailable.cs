@@ -37,7 +37,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> cmdletAsts = ast.FindAll(testAst => testAst is CommandAst, true);
             if (cmdletAsts.Count() != 0)
             {
-                List<string> availableCmdlets = GetAvailableCommands();
+                List<string> availableCmdlets = Helper.Instance.AvailableCmdletsOnNano;
                 foreach (CommandAst cmdletAst in cmdletAsts)
                 {
                     //Check if the command name is in the whitelist.
@@ -52,21 +52,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             
         }
 
-        /// <summary>
-        /// GetAvailableCommands: Retrieve the list of commands that are available from the white list.
-        /// </summary>
-        /// <returns></returns>
-        public List<string> GetAvailableCommands()
-        {
-            List<string> availableCmdlets = new List<string>();
-            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string[] lines = File.ReadAllLines(string.Format(CultureInfo.CurrentCulture, path+"../../Rules/CommandOnNano.txt"));
-            foreach (string line in lines)
-            {
-                availableCmdlets.Add(line);
-            }
-            return availableCmdlets;
-        }
+        
 
         
 
