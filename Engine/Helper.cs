@@ -94,7 +94,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         private Dictionary<Ast, VariableAnalysis> VariableAnalysisDictionary;
 
 
-        public List<String> AvailableCmdletsOnNano; 
+        public HashSet<String> AvailableCmdletsOnNano; 
         #endregion
 
         #region Methods
@@ -107,7 +107,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             AliasToCmdletDictionary = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
-            AvailableCmdletsOnNano = new List<string>();
+            AvailableCmdletsOnNano = new HashSet<string>();
 
             IEnumerable<CommandInfo> aliases = MyCmdlet.InvokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -133,7 +133,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// GetAvailableCommands: Retrieve the list of commands that are available from the white list.
         /// </summary>
         /// <returns></returns>
-        public void GetAvailableCommands(List<String> availableCmdlets)
+        public void GetAvailableCommands(HashSet<String> availableCmdlets)
         {
             string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string[] lines = File.ReadAllLines(string.Format(CultureInfo.CurrentCulture, path + "../../Rules/CommandOnNano.txt"));
