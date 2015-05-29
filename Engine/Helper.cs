@@ -17,12 +17,8 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Globalization;
-<<<<<<< HEAD
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-=======
 using System.Reflection;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
->>>>>>> origin/NanoServer
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
