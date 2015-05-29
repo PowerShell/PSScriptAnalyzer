@@ -724,7 +724,7 @@
     <value>Cmdlet '{0}' is not available on NanoServer</value>
   </data>
   <data name="CmdletNotAvailableOnNanoName" xml:space="preserve">
-    <value>CmdletNotAvailableOnNano</value>
+    <value>CmdletNotAvailableOnNanoServer</value>
   </data>
   <data name="ConfigurationBlockNotSupportedOnNanoCommonName" xml:space="preserve">
     <value>Configuration Block Not Supported On NanoServer</value>
@@ -751,16 +751,16 @@
     <value>.NET does not contain type '{0}' on NanoServer.</value>
   </data>
   <data name="DotNetTypeUnavailableName" xml:space="preserve">
-    <value>DotNetTypeUnavailableOnNano</value>
+    <value>NetFrameworkTypeNotAvailableOnNanoServer</value>
   </data>
   <data name="NoWorkflowFunctionsOnNanoCommonName" xml:space="preserve">
-    <value>No Workflow Functions On Nano</value>
+    <value>No Workflow Functions On NanoServer</value>
   </data>
   <data name="NoWorkflowFunctionsOnNanoDescription" xml:space="preserve">
     <value>Workflow functions are not supported on NanoServer</value>
   </data>
   <data name="NoWorkflowFunctionsOnNanoName" xml:space="preserve">
-    <value>NoWorkflowFunctionsOnNano</value>
+    <value>NoWorkflowFunctionsOnNanoServer</value>
   </data>
   <data name="WorkFlowFunctionNotSupportedOnNanoError" xml:space="preserve">
     <value>Function '{0}' is a workflow function. Workflow is not supported on NanoServer.</value>

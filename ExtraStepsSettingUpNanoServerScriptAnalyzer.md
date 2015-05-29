@@ -16,4 +16,5 @@ Follow the instructions on NuGet to install the assemblies into your forked PSSc
 PSScriptAnalyzer still works the same way when you invoke rules. 
 To make PSScriptAnalyzer only run NanoServer rules, you can choose to add -IncludeRule parameter to Invoke-ScriptAnalyzer, eg:
 
-Invoke-ScriptAnalyzer -IncludeRule *Nano
+Invoke-ScriptAnalyzer -IncludeRule *NanoServer*
+Get-ScriptAnalyzerRule -Name *NanoServer*

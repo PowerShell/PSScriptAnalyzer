@@ -817,7 +817,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CmdletNotAvailableOnNano.
+        ///   Looks up a localized string similar to CmdletNotAvailableOnNanoServer.
         /// </summary>
         internal static string CmdletNotAvailableOnNanoName {
             get {
@@ -934,7 +934,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DotNetTypeUnavailableOnNano.
+        ///   Looks up a localized string similar to NetFrameworkTypeNotAvailableOnNanoServer.
         /// </summary>
         internal static string DotNetTypeUnavailableName {
             get {
@@ -1069,7 +1069,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Workflow Functions On Nano.
+        ///   Looks up a localized string similar to No Workflow Functions On NanoServer.
         /// </summary>
         internal static string NoWorkflowFunctionsOnNanoCommonName {
             get {
@@ -1087,7 +1087,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NoWorkflowFunctionsOnNano.
+        ///   Looks up a localized string similar to NoWorkflowFunctionsOnNanoServer.
         /// </summary>
         internal static string NoWorkflowFunctionsOnNanoName {
             get {
