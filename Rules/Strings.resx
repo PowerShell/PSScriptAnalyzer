@@ -714,7 +714,6 @@
   <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
     <value>No examples found for resource '{0}'</value>
   </data>
-<<<<<<< HEAD
   <data name="ProvideDefaultParameterValueCommonName" xml:space="preserve">
     <value>Default Parameter Values</value>
   </data>
@@ -735,7 +734,7 @@
   </data>
   <data name="AvoidUsingDeprecatedManifestFieldsName" xml:space="preserve">
     <value>AvoidUsingDeprecatedManifestFields</value>
-=======
+  </data>
   <data name="CmdletNotAvailableOnNanoCommonName" xml:space="preserve">
     <value>Cmdlet Not Available On Nano Server</value>
   </data>
@@ -786,6 +785,5 @@
   </data>
   <data name="WorkFlowFunctionNotSupportedOnNanoError" xml:space="preserve">
     <value>Function '{0}' is a workflow function. Workflow is not supported on NanoServer.</value>
->>>>>>> origin/NanoServer
   </data>
 </root>
