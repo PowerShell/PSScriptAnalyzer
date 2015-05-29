@@ -859,102 +859,64 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
 
             int recordIndex = 0;
-            int ruleSuppressionIndex = 0;
-            DiagnosticRecord record = diagnostics.First();
-            RuleSuppression ruleSuppression = ruleSuppressions.First();
-            int suppressionCount = 0;
+            int startRecord = 0;
+            bool[] suppressed = new bool[diagnostics.Count];
 
-            while (recordIndex < diagnostics.Count)
+            foreach (RuleSuppression ruleSuppression in ruleSuppressions)
             {
-                if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                int suppressionCount = 0;
+                while (startRecord < diagnostics.Count && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
                 {
-                    ruleSuppressionIndex += 1;
+                    startRecord += 1;
+                }
 
-                    if (ruleSuppressionIndex == ruleSuppressions.Count)
+                // at this point, start offset of startRecord is greater or equals to rulesuppression.startoffset
+                recordIndex = startRecord;
+
+                while (recordIndex < diagnostics.Count)
+                {
+                    DiagnosticRecord record = diagnostics[recordIndex];
+
+                    if (record.Extent.EndOffset > ruleSuppression.EndOffset)
                     {
                         break;
                     }
 
-                    ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
-                    suppressionCount = 0;
-
-                    continue;
-                }
-
-                // if the record precedes the rule suppression then we don't apply the suppression
-                // so we check that start of record is greater than start of suppression
-                if (record.Extent.StartOffset >= ruleSuppression.StartOffset)
-                {
-                    // end of the rule suppression is less than the record start offset so move on to next rule suppression
-                    if (ruleSuppression.EndOffset < record.Extent.StartOffset)
+                    if (string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID))
                     {
-                        ruleSuppressionIndex += 1;
-
-                        // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
-                        if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
-                        {
-                            ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                                    System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                            Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
-                        }
-
-                        if (ruleSuppressionIndex == ruleSuppressions.Count)
-                        {
-                            break;
-                        }
-
-                        ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
-                        suppressionCount = 0;
-
-                        continue;
+                        suppressed[recordIndex] = true;
+                        suppressionCount += 1;
                     }
-                    // at this point, the record is inside the interval
                     else
                     {
-                        // if the rule suppression id from the rule suppression is not null and the one from diagnostic record is not null
-                        // and they are they are not the same then we cannot ignore the record
-                        if (!string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && !string.IsNullOrWhiteSpace(record.RuleSuppressionID)
-                            && !string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
+                        //if there is a rule suppression id, we only suppressed if it matches
+                        if (!String.IsNullOrWhiteSpace(record.RuleSuppressionID) &&
+                            string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
                         {
-                            suppressionCount -= 1;
-                            unSuppressedRecords.Add(record);
-                        }
-                        // otherwise, we suppress the record, move on to the next.
-                        else
-                        {
+                            suppressed[recordIndex] = true;
                             suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
+                            suppressionCount += 1;
                         }
                     }
+
+                    recordIndex += 1;
                 }
-                else
+
+                // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
+                if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
                 {
-                    unSuppressedRecords.Add(record);
+                    ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                            System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
                 }
-
-                // important assumption: this point is reached only if we want to move to the next record
-                recordIndex += 1;
-                suppressionCount += 1;
-
-                if (recordIndex == diagnostics.Count)
-                {
-                    // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
-                    if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
-                    {
-                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                                System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                        Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
-                    }
-
-                    break;
-                }
-
-                record = diagnostics[recordIndex];
             }
 
-            while (recordIndex < diagnostics.Count)
+            for (int i = 0; i < suppressed.Length; i += 1)
             {
-                unSuppressedRecords.Add(diagnostics[recordIndex]);
-                recordIndex += 1;
+                if (!suppressed[i])
+                {
+                    unSuppressedRecords.Add(diagnostics[i]);
+                }
             }
 
             return result;
