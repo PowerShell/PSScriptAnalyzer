@@ -889,7 +889,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration Block Not Supported On NanoServer.
+        ///   Looks up a localized string similar to No Configuration Definitions On NanoServer.
         /// </summary>
         internal static string ConfigurationBlockNotSupportedOnNanoCommonName {
             get {
@@ -898,7 +898,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Configuration blocks are not supported on NanoServer. .
+        ///   Looks up a localized string similar to Configuration definitions are not supported on NanoServer. .
         /// </summary>
         internal static string ConfigurationBlockNotSupportedOnNanoDescription {
             get {
@@ -907,7 +907,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function &apos;{0}&apos; is a Configuration function. Configuration is not supported on NanoServer. Please remove the function.
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; is a Configuration definition. Configuration is not supported on NanoServer. Please remove the function.
         /// </summary>
         internal static string ConfigurationBlockNotSupportedOnNanoError {
             get {
@@ -916,7 +916,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ConfigurationBlockNotSupportedOnNano.
+        ///   Looks up a localized string similar to NoConfigurationDefinitionsOnNanoServer.
         /// </summary>
         internal static string ConfigurationBlockNotSupportedOnNanoName {
             get {
@@ -934,7 +934,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dot Net Type Unavailable On NanoServer.
+        ///   Looks up a localized string similar to Net Framework Type Not Available On NanoServer.
         /// </summary>
         internal static string DotNetTypeUnavailableCommonName {
             get {
