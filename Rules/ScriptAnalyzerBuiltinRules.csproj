@@ -68,6 +68,7 @@
     <Compile Include="AvoidUsingPlainTextForPassword.cs" />
     <Compile Include="AvoidUsingWMICmdlet.cs" />
     <Compile Include="AvoidUsingWriteHost.cs" />
+    <Compile Include="CheckCmdletAvailable.cs" />
     <Compile Include="CheckDotNetTypes.cs" />
     <Compile Include="DscTestsPresent.cs" />
     <Compile Include="DscExamplesPresent.cs" />

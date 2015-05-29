@@ -18,6 +18,7 @@ using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.Globalization;
+using System.Reflection;
 using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.Powershell.ScriptAnalyzer
@@ -92,6 +93,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// </summary>
         private Dictionary<Ast, VariableAnalysis> VariableAnalysisDictionary;
 
+
+        public List<String> AvailableCmdletsOnNano; 
         #endregion
 
         #region Methods
@@ -104,6 +107,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             AliasToCmdletDictionary = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
+            AvailableCmdletsOnNano = new List<string>();
 
             IEnumerable<CommandInfo> aliases = MyCmdlet.InvokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -119,6 +123,23 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                 }
 
                 AliasToCmdletDictionary.Add(aliasInfo.Name, aliasInfo.Definition);
+            }
+
+            //Read the availalbe cmdlets from the white list and store them in the list
+            GetAvailableCommands(AvailableCmdletsOnNano);
+        }
+
+        /// <summary>
+        /// GetAvailableCommands: Retrieve the list of commands that are available from the white list.
+        /// </summary>
+        /// <returns></returns>
+        public void GetAvailableCommands(List<String> availableCmdlets)
+        {
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string[] lines = File.ReadAllLines(string.Format(CultureInfo.CurrentCulture, path + "../../Rules/CommandOnNano.txt"));
+            foreach (string line in lines)
+            {
+                availableCmdlets.Add(line);
             }
         }
 

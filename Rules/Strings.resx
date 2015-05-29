@@ -718,13 +718,13 @@
     <value>Cmdlet Not Available On Nano Server</value>
   </data>
   <data name="CmdletNotAvailableOnNanoDescription" xml:space="preserve">
-    <value>Some cmdlets are not available on Core CLR therefore scripts with those cmdlets won't run properly.</value>
+    <value>Some cmdlets are not available on Core CLR and therefore scripts with those cmdlets won't run properly on NanoServer. Please change/remove the unavailable cmdlets.</value>
   </data>
   <data name="CmdletNotAvailableOnNanoError" xml:space="preserve">
     <value>Cmdlet '{0}' is not available on NanoServer</value>
   </data>
   <data name="CmdletNotAvailableOnNanoName" xml:space="preserve">
-    <value>CmdletNotAvailableOnNano</value>
+    <value>CmdletNotAvailableOnNanoServer</value>
   </data>
   <data name="ConfigurationBlockNotSupportedOnNanoCommonName" xml:space="preserve">
     <value>Configuration Block Not Supported On NanoServer</value>
@@ -742,25 +742,25 @@
     <value>Type '{0} does not contain member '{1}' on NanoServer</value>
   </data>
   <data name="DotNetTypeUnavailableCommonName" xml:space="preserve">
-    <value>Dot Net Type Unavailable</value>
+    <value>Dot Net Type Unavailable On NanoServer</value>
   </data>
   <data name="DotNetTypeUnavailableDescription" xml:space="preserve">
-    <value>Some .Net types are not working on CoreCLR.</value>
+    <value>Some .Net types are not available on NanoServer. Please consider removing these types or change to some other available types on NanoServer.</value>
   </data>
   <data name="DotNetTypeUnavailableError" xml:space="preserve">
-    <value>.NET does not contain type '{0}'</value>
+    <value>.NET does not contain type '{0}' on NanoServer.</value>
   </data>
   <data name="DotNetTypeUnavailableName" xml:space="preserve">
-    <value>DotNetTypeUnavailable</value>
+    <value>NetFrameworkTypeNotAvailableOnNanoServer</value>
   </data>
   <data name="NoWorkflowFunctionsOnNanoCommonName" xml:space="preserve">
-    <value>No Workflow Functions On Nano</value>
+    <value>No Workflow Functions On NanoServer</value>
   </data>
   <data name="NoWorkflowFunctionsOnNanoDescription" xml:space="preserve">
     <value>Workflow functions are not supported on NanoServer</value>
   </data>
   <data name="NoWorkflowFunctionsOnNanoName" xml:space="preserve">
-    <value>NoWorkflowFunctionsOnNano</value>
+    <value>NoWorkflowFunctionsOnNanoServer</value>
   </data>
   <data name="WorkFlowFunctionNotSupportedOnNanoError" xml:space="preserve">
     <value>Function '{0}' is a workflow function. Workflow is not supported on NanoServer.</value>
