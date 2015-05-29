@@ -1,4 +1,7 @@
-﻿function Test {
+﻿$Global:DebugPreference
+
+
+function Test {
     $initialized = "Initialized"
     $noglobal = "local"
     $env:ShouldNotRaiseError

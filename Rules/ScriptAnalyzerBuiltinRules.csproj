@@ -6,7 +6,7 @@
     <ProjectGuid>{C33B6B9D-E61C-45A3-9103-895FD82A5C1E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
-    <AssemblyName>Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules</AssemblyName>
+    <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -31,7 +31,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules</RootNamespace>
+    <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -58,7 +58,6 @@
     <Compile Include="AvoidReservedCharInCmdlet.cs" />
     <Compile Include="AvoidReservedParams.cs" />
     <Compile Include="AvoidShouldContinueWithoutForce.cs" />
-    <Compile Include="AvoidTrapStatement.cs" />
     <Compile Include="AvoidUninitializedVariable.cs" />
     <Compile Include="AvoidUsernameAndPasswordParams.cs" />
     <Compile Include="AvoidUsingComputerNameHardcoded.cs" />
