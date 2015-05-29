@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Types>
   <Type>
-    <Name>Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord</Name>
+    <Name>Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord</Name>
     <Members>
       <ScriptProperty>
         <Name>Line</Name>
@@ -33,7 +33,7 @@
     </Members>
   </Type>
   <Type>
-    <Name>Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.SuppressedRecord</Name>
+    <Name>Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.SuppressedRecord</Name>
     <Members>
       <ScriptProperty>
         <Name>Line</Name>
@@ -71,7 +71,7 @@
     </Members>
   </Type>
   <Type>
-    <Name>Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.RuleInfo</Name>
+    <Name>Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleInfo</Name>
     <Members>
       <MemberSet>
         <Name>PSStandardMembers</Name>

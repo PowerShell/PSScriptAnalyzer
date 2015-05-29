@@ -6,7 +6,7 @@ Param(
 function SuppressMe ()
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideVerboseMessage")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUninitializedVariable", "unused1")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "unused1")]
     Param([string]$unUsed1, [int] $unUsed2)
     {
         Write-Host "I do nothing"

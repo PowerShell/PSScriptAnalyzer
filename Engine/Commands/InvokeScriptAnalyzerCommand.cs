@@ -11,22 +11,17 @@
 //
 
 using System.Text.RegularExpressions;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
-using System.Resources;
-using System.Threading;
-using System.Reflection;
 using System.IO;
-using System.Text;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
     /// <summary>
     /// InvokeScriptAnalyzerCommand: Cmdlet to statically check PowerShell scripts.
@@ -129,8 +124,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
         #region Private Members
 
         Dictionary<string, List<string>> validationResults = new Dictionary<string, List<string>>();
-        private ScriptBlockAst ast                         = null;
-        private IEnumerable<IRule> rules                   = null;
+        private ScriptBlockAst ast = null;
+        private IEnumerable<IRule> rules = null;
 
         #endregion
 
@@ -163,9 +158,9 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             }
             else
             {
-                validationResults.Add("InvalidPaths",  new List<string>());
+                validationResults.Add("InvalidPaths", new List<string>());
                 validationResults.Add("ValidModPaths", new List<string>());
-                validationResults.Add("ValidDllPaths", new List<string>());                 
+                validationResults.Add("ValidDllPaths", new List<string>());
             }
 
             #endregion
@@ -174,7 +169,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
 
             try
             {
-                if (validationResults["ValidDllPaths"].Count == 0 && 
+                if (validationResults["ValidDllPaths"].Count == 0 &&
                     validationResults["ValidModPaths"].Count == 0)
                 {
                     ScriptAnalyzer.Instance.Initialize();
@@ -185,7 +180,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                 }
             }
             catch (Exception ex)
-            {  
+            {
                 ThrowTerminatingError(new ErrorRecord(ex, ex.HResult.ToString("X", CultureInfo.CurrentCulture),
                     ErrorCategory.NotSpecified, this));
             }
@@ -228,8 +223,8 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
 
             if (path == null)
             {
-                ThrowTerminatingError(new ErrorRecord(new FileNotFoundException(), 
-                    string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path), 
+                ThrowTerminatingError(new ErrorRecord(new FileNotFoundException(),
+                    string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path),
                     ErrorCategory.InvalidArgument, this));
             }
 
@@ -315,11 +310,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             else
             {
                 ThrowTerminatingError(new ErrorRecord(new FileNotFoundException(),
-                    string.Format(CultureInfo.CurrentCulture, Strings.InvalidPath, filePath), 
+                    string.Format(CultureInfo.CurrentCulture, Strings.InvalidPath, filePath),
                     ErrorCategory.InvalidArgument, filePath));
             }
 
-             if (errors != null && errors.Length > 0)
+            if (errors != null && errors.Length > 0)
             {
                 foreach (ParseError error in errors)
                 {
@@ -362,7 +357,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             #region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
             string fileName = System.IO.Path.GetFileName(filePath);
-           
+
             if (ScriptAnalyzer.Instance.ScriptRules != null)
             {
                 foreach (IScriptRule scriptRule in ScriptAnalyzer.Instance.ScriptRules)
@@ -433,7 +428,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                             break;
                         }
                     }
-                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null  || !excludeRegexMatch))
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
                     {
                         WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, tokenRule.GetName()));
 
@@ -448,7 +443,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         catch (Exception tokenRuleException)
                         {
                             WriteError(new ErrorRecord(tokenRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
-                        } 
+                        }
                     }
                 }
             }
@@ -458,46 +453,50 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
             #region DSC Resource Rules
             if (ScriptAnalyzer.Instance.DSCResourceRules != null)
             {
-                // Run DSC Class rule
-                foreach (IDSCResourceRule dscResourceRule in ScriptAnalyzer.Instance.DSCResourceRules)
+                // Invoke AnalyzeDSCClass only if the ast is a class based resource
+                if (Helper.Instance.IsDscResourceClassBased(ast))
                 {
-                    bool includeRegexMatch = false;
-                    bool excludeRegexMatch = false;
-
-                    foreach (Regex include in includeRegexList)
+                    // Run DSC Class rule
+                    foreach (IDSCResourceRule dscResourceRule in ScriptAnalyzer.Instance.DSCResourceRules)
                     {
-                        if (include.IsMatch(dscResourceRule.GetName()))
-                        {
-                            includeRegexMatch = true;
-                            break;
-                        }
-                    }
+                        bool includeRegexMatch = false;
+                        bool excludeRegexMatch = false;
 
-                    foreach (Regex exclude in excludeRegexList)
-                    {
-                        if (exclude.IsMatch(dscResourceRule.GetName()))
+                        foreach (Regex include in includeRegexList)
                         {
-                            excludeRegexMatch = true;
-                            break;
+                            if (include.IsMatch(dscResourceRule.GetName()))
+                            {
+                                includeRegexMatch = true;
+                                break;
+                            }
                         }
-                    }
 
-                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || excludeRegexMatch))
-                    {
-                        WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
-
-                        // Ensure that any unhandled errors from Rules are converted to non-terminating errors
-                        // We want the Engine to continue functioning even if one or more Rules throws an exception
-                        try
+                        foreach (Regex exclude in excludeRegexList)
                         {
-                            var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(ast, filePath).ToList());
-                            diagnostics.AddRange(records.Item2);
-                            suppressed.AddRange(records.Item1);
+                            if (exclude.IsMatch(dscResourceRule.GetName()))
+                            {
+                                excludeRegexMatch = true;
+                                break;
+                            }
                         }
-                        catch (Exception dscResourceRuleException)
+
+                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || excludeRegexMatch))
                         {
-                            WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
-                        }    
+                            WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
+
+                            // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                            // We want the Engine to continue functioning even if one or more Rules throws an exception
+                            try
+                            {
+                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(ast, filePath).ToList());
+                                diagnostics.AddRange(records.Item2);
+                                suppressed.AddRange(records.Item1);
+                            }
+                            catch (Exception dscResourceRuleException)
+                            {
+                                WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
+                            }
+                        }
                     }
                 }
 
@@ -543,7 +542,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
                         }
                     }
 
-                }         
+                }
             }
             #endregion
 
