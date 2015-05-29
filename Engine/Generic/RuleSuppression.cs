@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Globalization;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     /// <summary>
     /// 

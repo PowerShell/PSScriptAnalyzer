@@ -10,16 +10,15 @@
 // THE SOFTWARE.
 //
 
-using Microsoft.PowerShell.Commands;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Commands
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
     /// <summary>
     /// GetScriptAnalyzerRuleCommand: Cmdlet to list all the analyzer rule names and descriptions.

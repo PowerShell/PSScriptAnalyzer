@@ -13,11 +13,11 @@
 using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// ExtraVarsRule: Analyzes the ast to check that variables are used in more than just their assignment.
@@ -49,12 +49,14 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             {
                 foreach (AssignmentStatementAst assignmentAst in assignmentAsts)
                 {
-                    assingmentVarAsts = assignmentAst.Left.FindAll(testAst => testAst is VariableExpressionAst, true); ;
+                    // Only checks for the case where lhs is a variable. Ignore things like $foo.property
+                    VariableExpressionAst assignmentVarAst = assignmentAst.Left as VariableExpressionAst;
 
-                    foreach (VariableExpressionAst assignmentVarAst in assingmentVarAsts)
+                    if (assignmentVarAst != null)
                     {
-                         //Ignore if variable is global or environment variable
-                        if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst, ast))
+                        //Ignore if variable is global or environment variable
+                        if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst, ast)
+                            && !assignmentVarAst.VariablePath.IsScript)
                         {
                             if (!assignments.ContainsKey(assignmentVarAst.VariablePath.UserPath))
                             {

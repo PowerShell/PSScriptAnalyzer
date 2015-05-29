@@ -6,7 +6,7 @@
     <ProjectGuid>{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}</ProjectGuid>
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
-    <AssemblyName>Microsoft.Windows.Powershell.ScriptAnalyzer</AssemblyName>
+    <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -31,7 +31,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>Microsoft.Windows.Powershell.ScriptAnalyzer</RootNamespace>
+    <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

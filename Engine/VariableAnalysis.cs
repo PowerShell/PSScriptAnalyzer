@@ -11,18 +11,12 @@
 //
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Concurrent;
 using System.Linq;
-using System.Reflection;
 using System.Management.Automation.Language;
-using System.Management.Automation;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     /// <summary>
     /// This class is used to analyze variable based on data flow
@@ -86,7 +80,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                             type = paramAst.TypeName.GetReflectionType();
                         }
 
-                        if (String.Equals(paramAst.TypeName.FullName, "switch", StringComparison.OrdinalIgnoreCase))
+                        if (paramAst.TypeName.GetReflectionType() == typeof(System.Management.Automation.SwitchParameter))
                         {
                             isSwitchOrMandatory = true;
                         }

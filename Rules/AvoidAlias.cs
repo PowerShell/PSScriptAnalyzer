@@ -13,11 +13,11 @@
 using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// AvoidAlias: Check if cmdlet alias is used.
@@ -45,7 +45,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                 // MSDN: CommandAst.GetCommandName Method
                 if (aliasName == null) continue;
 
-                string cmdletName = Microsoft.Windows.Powershell.ScriptAnalyzer.Helper.Instance.GetCmdletNameFromAlias(aliasName);
+                string cmdletName = Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper.Instance.GetCmdletNameFromAlias(aliasName);
 
                 if (!String.IsNullOrEmpty(cmdletName))
                 {

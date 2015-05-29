@@ -10,7 +10,8 @@
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
         $Param1,
-
+        [int]
+        $passwordinteger,
         # Param2 help description
         [int]
         $Param2,
@@ -25,7 +26,9 @@
     [securestring]
 	$passwordparam,
     [string]
-    $PassThru
+    $PassThru,
+    [string[]]
+    $shouldnotraiseerror
     )
 
     Begin

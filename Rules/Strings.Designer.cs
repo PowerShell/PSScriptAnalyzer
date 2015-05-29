@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules.Strings", typeof(Strings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -331,7 +331,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a script file is in a Powershell module folder, then that folder must be loadable..
+        ///   Looks up a localized string similar to If a script file is in a PowerShell module folder, then that folder must be loadable..
         /// </summary>
         internal static string AvoidUnloadableModuleDescription {
             get {
@@ -507,6 +507,33 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidUsingConvertToSecureStringWithPlainTextName {
             get {
                 return ResourceManager.GetString("AvoidUsingConvertToSecureStringWithPlainTextName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid Using Deprecated Manifest Fields.
+        /// </summary>
+        internal static string AvoidUsingDeprecatedManifestFieldsCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUsingDeprecatedManifestFieldsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;ModuleToProcess&quot; is obsolete in the latest PowerShell version. Please update with the latest field &quot;RootModule&quot; in manifest files to avoid PowerShell version inconsistency..
+        /// </summary>
+        internal static string AvoidUsingDeprecatedManifestFieldsDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingDeprecatedManifestFieldsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUsingDeprecatedManifestFields.
+        /// </summary>
+        internal static string AvoidUsingDeprecatedManifestFieldsName {
+            get {
+                return ResourceManager.GetString("AvoidUsingDeprecatedManifestFieldsName", resourceCulture);
             }
         }
         
@@ -1245,6 +1272,42 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         internal static string ProvideCommentHelpName {
             get {
                 return ResourceManager.GetString("ProvideCommentHelpName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default Parameter Values.
+        /// </summary>
+        internal static string ProvideDefaultParameterValueCommonName {
+            get {
+                return ResourceManager.GetString("ProvideDefaultParameterValueCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters.
+        /// </summary>
+        internal static string ProvideDefaultParameterValueDescription {
+            get {
+                return ResourceManager.GetString("ProvideDefaultParameterValueDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters.
+        /// </summary>
+        internal static string ProvideDefaultParameterValueError {
+            get {
+                return ResourceManager.GetString("ProvideDefaultParameterValueError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ProvideDefaultParameterValue.
+        /// </summary>
+        internal static string ProvideDefaultParameterValueName {
+            get {
+                return ResourceManager.GetString("ProvideDefaultParameterValueName", resourceCulture);
             }
         }
         

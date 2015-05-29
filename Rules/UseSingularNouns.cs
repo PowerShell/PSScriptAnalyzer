@@ -13,13 +13,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Management.Automation;
 using System.Management.Automation.Language;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// CmdletSingularNoun: Analyzes scripts to check that all defined cmdlets use singular nouns.
@@ -49,7 +48,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
                     String noun = funcNamePieces[1];
                     var ps = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
 
-                    if (!ps.IsSingular(noun))
+                    if (!ps.IsSingular(noun) && ps.IsPlural(noun))
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
                             funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);

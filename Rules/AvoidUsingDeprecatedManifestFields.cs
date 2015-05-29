@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
+using System.Management.Automation;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
@@ -20,37 +21,60 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidPositionalParameters: Check to make sure that positional parameters are not used.
+    /// AvoidUsingDeprecatedManifestFields: Run Test Module Manifest to check that no deprecated fields are being used.
     /// </summary>
     [Export(typeof(IScriptRule))]
-    public class AvoidPositionalParameters : IScriptRule
+    public class AvoidUsingDeprecatedManifestFields : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyze the ast to check that positional parameters are not used.
+        /// AnalyzeScript: Run Test Module Manifest to check that no deprecated fields are being used.
         /// </summary>
+        /// <param name="ast">The script's ast</param>
+        /// <param name="fileName">The script's file name</param>
+        /// <returns>A List of diagnostic results of this rule</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
-
-            // Finds all CommandAsts.
-            IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
-
-            // Iterrates all CommandAsts and check the command name.
-            foreach (Ast foundAst in foundAsts)
+            if (ast == null)
             {
-                CommandAst cmdAst = (CommandAst)foundAst;
-                // Handles the exception caused by commands like, {& $PLINK $args 2> $TempErrorFile}.
-                // You can also review the remark section in following document,
-                // MSDN: CommandAst.GetCommandName Method
-                if (cmdAst.GetCommandName() == null) continue;
-                
-                if (Helper.Instance.GetCommandInfo(cmdAst.GetCommandName()) != null
-                    && Helper.Instance.PositionalParameterUsed(cmdAst))
-                {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
-                        cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
-                }
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
+
+            if (String.Equals(System.IO.Path.GetExtension(fileName), ".psd1", StringComparison.OrdinalIgnoreCase))
+            {
+                var ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace);
+                IEnumerable<PSObject> result = null;
+                try
+                {
+                    ps.AddCommand("Test-ModuleManifest");
+                    ps.AddParameter("Path", fileName);
+
+                    // Suppress warnings emitted during the execution of Test-ModuleManifest
+                    // ModuleManifest rule must catch any violations (warnings/errors) and generate DiagnosticRecord(s)
+                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                    ps.AddParameter("WarningVariable", "Message");
+                    ps.AddScript("$Message");
+                    result = ps.Invoke();
+
+                }
+                catch
+                {}
+
+                if (result != null)
+                {
+                    foreach (var warning in result)
+                    {
+                        if (warning.BaseObject != null)
+                        {
+                            yield return
+                                new DiagnosticRecord(
+                                    String.Format(CultureInfo.CurrentCulture, warning.BaseObject.ToString()), ast.Extent,
+                                    GetName(), DiagnosticSeverity.Warning, fileName);
+                        }
+                    }
+                }
+
+            }
+
         }
 
         /// <summary>
@@ -59,7 +83,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingPositionalParametersName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingDeprecatedManifestFieldsName);
         }
 
         /// <summary>
@@ -68,7 +92,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersCommonName);
+            return String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingDeprecatedManifestFieldsCommonName);
         }
 
         /// <summary>
@@ -77,7 +101,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersDescription);
+            return String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingDeprecatedManifestFieldsDescription);
         }
 
         /// <summary>

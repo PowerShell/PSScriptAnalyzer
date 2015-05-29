@@ -13,15 +13,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
-using System.Reflection;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// CheckCmdletAvailable: Check if cmdlet is available on NanoServer.
@@ -37,7 +35,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> cmdletAsts = ast.FindAll(testAst => testAst is CommandAst, true);
             if (cmdletAsts.Count() != 0)
             {
-                List<string> availableCmdlets = Helper.Instance.AvailableCmdletsOnNano;
+                HashSet<string> availableCmdlets = Helper.Instance.AvailableCmdletsOnNano;
                 foreach (CommandAst cmdletAst in cmdletAsts)
                 {
                     //Check if the command name is in the whitelist.

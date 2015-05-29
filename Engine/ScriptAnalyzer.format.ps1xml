@@ -4,7 +4,7 @@
   <View>
     <Name>PSScriptAnalyzerView</Name>
     <ViewSelectedBy>
-      <TypeName>Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord</TypeName>
+      <TypeName>Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord</TypeName>
     </ViewSelectedBy>
     <TableControl>
       <TableHeaders>
@@ -57,7 +57,7 @@
   <View>
     <Name>PSScriptAnalyzerView</Name>
     <ViewSelectedBy>
-      <TypeName>Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.SuppressedRecord</TypeName>
+      <TypeName>Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.SuppressedRecord</TypeName>
     </ViewSelectedBy>
     <TableControl>
       <TableHeaders>
@@ -110,7 +110,7 @@
   <View>
     <Name>ScriptAnalyzerRules</Name>
     <ViewSelectedBy>
-      <TypeName>Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.RuleInfo</TypeName>
+      <TypeName>Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleInfo</TypeName>
     </ViewSelectedBy>
     <TableControl>
       <TableHeaders>
