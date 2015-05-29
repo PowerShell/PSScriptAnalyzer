@@ -26,7 +26,9 @@
     [securestring]
 	$passwordparam,
     [string]
-    $PassThru
+    $PassThru,
+    [string[]]
+    $shouldnotraiseerror
     )
 
     Begin
