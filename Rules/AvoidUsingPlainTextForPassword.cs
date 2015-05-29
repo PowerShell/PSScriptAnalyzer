@@ -55,8 +55,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
 
-                if (hasPwd && (!paramType.IsArray && (paramType == typeof(String) || paramType == typeof(object)))
-                              || (paramType.IsArray && (paramType.GetElementType() == typeof(String) || paramType.GetElementType() == typeof(object))))
+                if (hasPwd && ((!paramType.IsArray && (paramType == typeof(String) || paramType == typeof(object)))
+                              || (paramType.IsArray && (paramType.GetElementType() == typeof(String) || paramType.GetElementType() == typeof(object)))))
                 {
                     yield return new DiagnosticRecord(
                         String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPlainTextForPasswordError, paramAst.Name),
