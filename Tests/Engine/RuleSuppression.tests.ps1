@@ -33,7 +33,7 @@ Describe "RuleSuppressionWithoutScope" {
 
     Context "RuleSuppressionID" {
         It "Only suppress violations for that ID" {
-            $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidUninitializedVariable" }
+            $suppression = $violations | Where-Object {$_.RuleName -eq "PSProvideDefaultParameterValue" }
             $suppression.Count | Should Be 1
         }
     }
