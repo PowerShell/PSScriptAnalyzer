@@ -41,4 +41,21 @@ function Test-PreferenceVariable
         }
 
         $VerbosePreference
+}
+
+function Test-Throw
+{
+    if ($true)
+    {
+        throw "First time"
     }
+
+    $a = 4
+
+    if ($false)
+    {
+        throw "Second time"
+    }
+
+    $a
+}
