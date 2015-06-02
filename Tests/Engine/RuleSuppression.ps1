@@ -16,8 +16,8 @@ function SuppressMe ()
 
 function SuppressTwoVariables()
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUninitializedVariable", "b")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUninitializedVariable", "a")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "b")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "a")]
     Param([string]$a, [int]$b)
     {
     }
