@@ -714,4 +714,25 @@
   <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
     <value>No examples found for resource '{0}'</value>
   </data>
+  <data name="ProvideDefaultParameterValueCommonName" xml:space="preserve">
+    <value>Default Parameter Values</value>
+  </data>
+  <data name="ProvideDefaultParameterValueDescription" xml:space="preserve">
+    <value>Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
+  </data>
+  <data name="ProvideDefaultParameterValueError" xml:space="preserve">
+    <value>Parameter '{0}' is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
+  </data>
+  <data name="ProvideDefaultParameterValueName" xml:space="preserve">
+    <value>ProvideDefaultParameterValue</value>
+  </data>
+  <data name="AvoidUsingDeprecatedManifestFieldsCommonName" xml:space="preserve">
+    <value>Avoid Using Deprecated Manifest Fields</value>
+  </data>
+  <data name="AvoidUsingDeprecatedManifestFieldsDescription" xml:space="preserve">
+    <value>"ModuleToProcess" is obsolete in the latest PowerShell version. Please update with the latest field "RootModule" in manifest files to avoid PowerShell version inconsistency.</value>
+  </data>
+  <data name="AvoidUsingDeprecatedManifestFieldsName" xml:space="preserve">
+    <value>AvoidUsingDeprecatedManifestFields</value>
+  </data>
 </root>
