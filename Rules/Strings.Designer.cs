@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules.Strings", typeof(Strings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -331,7 +331,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a script file is in a Powershell module folder, then that folder must be loadable..
+        ///   Looks up a localized string similar to If a script file is in a PowerShell module folder, then that folder must be loadable..
         /// </summary>
         internal static string AvoidUnloadableModuleDescription {
             get {

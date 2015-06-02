@@ -295,7 +295,7 @@
     <value>Module Manifest Fields</value>
   </data>
   <data name="AvoidUnloadableModuleDescription" xml:space="preserve">
-    <value>If a script file is in a Powershell module folder, then that folder must be loadable.</value>
+    <value>If a script file is in a PowerShell module folder, then that folder must be loadable.</value>
   </data>
   <data name="AvoidUnloadableModuleError" xml:space="preserve">
     <value>Cannot load the module '{0}' that file '{1}' is in.</value>

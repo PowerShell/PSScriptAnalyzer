@@ -8,7 +8,7 @@
 Author = 'Microsoft Corporation'
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'Microsoft.Windows.Powershell.ScriptAnalyzer.dll'
+RootModule = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.dll'
 
 # Version number of this module.
 ModuleVersion = '1.0.1'

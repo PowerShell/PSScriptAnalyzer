@@ -1,4 +1,7 @@
-﻿$Global:1 = "Globalization?"
+﻿$Global:1 = "globalVar“
+$Global:DebugPreference
+
+
 
 function NotGlobal {
     $localVars = "Localization?"

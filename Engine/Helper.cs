@@ -16,11 +16,10 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
-using System.Management.Automation.Runspaces;
 using System.Globalization;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
 
     /// <summary>
@@ -192,6 +191,35 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Given an AST, checks whether dsc resource is class based or not
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public bool IsDscResourceClassBased(ScriptBlockAst ast)
+        {
+            if (null == ast)
+            {
+                return false;
+            }
+
+            List<string> dscResourceFunctionNames = new List<string>(new string[] { "Test", "Get", "Set" });
+
+            IEnumerable<Ast> dscClasses = ast.FindAll(item =>
+                item is TypeDefinitionAst
+                && ((item as TypeDefinitionAst).IsClass)
+                && (item as TypeDefinitionAst).Attributes.Any(attr => String.Equals("DSCResource", attr.TypeName.FullName, StringComparison.OrdinalIgnoreCase)), true);
+
+            // Found one or more classes marked with DscResource attribute
+            // So this might be a DscResource. Further validation will be performed by the individual rules
+            if (null != dscClasses && 0 < dscClasses.Count())
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Given a commandast, checks whether positional parameters are used or not.
         /// </summary>
         /// <param name="cmdAst"></param>
@@ -280,7 +308,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         /// <param name="name"></param>
         /// <param name="commandType"></param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name, CommandTypes commandType=CommandTypes.All)
+        public CommandInfo GetCommandInfo(string name, CommandTypes commandType = CommandTypes.All)
         {
             return Helper.Instance.MyCmdlet.InvokeCommand.GetCommand(name, commandType);
         }
@@ -294,7 +322,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             List<string> resourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Get-TargetResource", "Test-TargetResource" });
             return ast.FindAll(item => item is FunctionDefinitionAst
-                && resourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);            
+                && resourceFunctionNames.Contains((item as FunctionDefinitionAst).Name, StringComparer.OrdinalIgnoreCase), true);
         }
 
         /// <summary>
@@ -465,6 +493,24 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             return VariableAnalysisDictionary[ast].IsGlobalOrEnvironment(varAst);
         }
 
+
+        /// <summary>
+        /// Checks whether a variable is a global variable.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public bool IsVariableGlobal(VariableExpressionAst varAst)
+        {
+            //We ignore the use of built-in variable as global variable
+            if (varAst.VariablePath.IsGlobal)
+            {
+                string varName = varAst.VariablePath.UserPath.Remove(varAst.VariablePath.UserPath.IndexOf("global:", StringComparison.OrdinalIgnoreCase), "global:".Length);
+                return !SpecialVars.InitializedVariables.Contains(varName, StringComparer.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+
+
         /// <summary>
         /// Checks whether all the code path of ast returns.
         /// Runs InitializeVariableAnalysis before calling this method
@@ -481,7 +527,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             var analysis = VariableAnalysisDictionary[ast];
             return analysis.Exit._predecessors.All(block => block._returns || block._unreachable || block._throws);
         }
-        
+
         /// <summary>
         /// Initialize variable analysis on the script ast
         /// </summary>
@@ -701,7 +747,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             {
                 ruleSuppressionList.AddRange(RuleSuppression.GetSuppressions(sbAst.ParamBlock.Attributes, sbAst.Extent.StartOffset, sbAst.Extent.EndOffset, sbAst));
             }
-            
+
             // Get rule suppression from functions
             IEnumerable<FunctionDefinitionAst> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Cast<FunctionDefinitionAst>();
 
@@ -727,13 +773,13 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
                     List<RuleSuppression> ruleSuppressions = new List<RuleSuppression>();
                     results.Add(ruleSuppression.RuleName, ruleSuppressions);
                 }
-                
+
                 results[ruleSuppression.RuleName].Add(ruleSuppression);
             }
 
             return results;
         }
-        
+
         /// <summary>
         /// Returns a list of rule suppressions from the function
         /// </summary>
@@ -813,102 +859,64 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
 
             int recordIndex = 0;
-            int ruleSuppressionIndex = 0;
-            DiagnosticRecord record = diagnostics.First();
-            RuleSuppression ruleSuppression = ruleSuppressions.First();
-            int suppressionCount = 0;
+            int startRecord = 0;
+            bool[] suppressed = new bool[diagnostics.Count];
 
-            while (recordIndex < diagnostics.Count)
+            foreach (RuleSuppression ruleSuppression in ruleSuppressions)
             {
-                if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                int suppressionCount = 0;
+                while (startRecord < diagnostics.Count && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
                 {
-                    ruleSuppressionIndex += 1;
+                    startRecord += 1;
+                }
 
-                    if (ruleSuppressionIndex == ruleSuppressions.Count)
+                // at this point, start offset of startRecord is greater or equals to rulesuppression.startoffset
+                recordIndex = startRecord;
+
+                while (recordIndex < diagnostics.Count)
+                {
+                    DiagnosticRecord record = diagnostics[recordIndex];
+
+                    if (record.Extent.EndOffset > ruleSuppression.EndOffset)
                     {
                         break;
                     }
 
-                    ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
-                    suppressionCount = 0;
-
-                    continue;
-                }
-
-                // if the record precedes the rule suppression then we don't apply the suppression
-                // so we check that start of record is greater than start of suppression
-                if (record.Extent.StartOffset >= ruleSuppression.StartOffset)
-                {
-                    // end of the rule suppression is less than the record start offset so move on to next rule suppression
-                    if (ruleSuppression.EndOffset < record.Extent.StartOffset)
+                    if (string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID))
                     {
-                        ruleSuppressionIndex += 1;
-
-                        // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
-                        if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
-                        {
-                            ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                                    System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                            Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
-                        }
-
-                        if (ruleSuppressionIndex == ruleSuppressions.Count)
-                        {
-                            break;
-                        }
-
-                        ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
-                        suppressionCount = 0;
-
-                        continue;
+                        suppressed[recordIndex] = true;
+                        suppressionCount += 1;
                     }
-                    // at this point, the record is inside the interval
                     else
                     {
-                        // if the rule suppression id from the rule suppression is not null and the one from diagnostic record is not null
-                        // and they are they are not the same then we cannot ignore the record
-                        if (!string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && !string.IsNullOrWhiteSpace(record.RuleSuppressionID)
-                            && !string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
+                        //if there is a rule suppression id, we only suppressed if it matches
+                        if (!String.IsNullOrWhiteSpace(record.RuleSuppressionID) &&
+                            string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
                         {
-                            suppressionCount -= 1;
-                            unSuppressedRecords.Add(record);
-                        }
-                        // otherwise, we suppress the record, move on to the next.
-                        else
-                        {
+                            suppressed[recordIndex] = true;
                             suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
+                            suppressionCount += 1;
                         }
                     }
+
+                    recordIndex += 1;
                 }
-                else
+
+                // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
+                if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
                 {
-                    unSuppressedRecords.Add(record);
+                    ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                            System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
                 }
-
-                // important assumption: this point is reached only if we want to move to the next record
-                recordIndex += 1;
-                suppressionCount += 1;
-
-                if (recordIndex == diagnostics.Count)
-                {
-                    // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
-                    if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
-                    {
-                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                                System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                        Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
-                    }
-
-                    break;
-                }
-
-                record = diagnostics[recordIndex];
             }
 
-            while (recordIndex < diagnostics.Count)
+            for (int i = 0; i < suppressed.Length; i += 1)
             {
-                unSuppressedRecords.Add(diagnostics[recordIndex]);
-                recordIndex += 1;
+                if (!suppressed[i])
+                {
+                    unSuppressedRecords.Add(diagnostics[i]);
+                }
             }
 
             return result;
@@ -943,11 +951,11 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
             }
         }
     }
-    
+
     /// <summary>
     /// Class used to do variable analysis on the whole script
     /// </summary>
-    public class ScriptAnalysis: ICustomAstVisitor
+    public class ScriptAnalysis : ICustomAstVisitor
     {
         private VariableAnalysis OuterAnalysis;
 
@@ -1148,7 +1156,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             return null;
         }
-        
+
         /// <summary>
         /// Visits body
         /// </summary>
@@ -2396,7 +2404,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
         {
             return typeof(System.Array).FullName;
         }
-        
+
         /// <summary>
         /// Returns type of array
         /// </summary>
@@ -2499,7 +2507,7 @@ namespace Microsoft.Windows.Powershell.ScriptAnalyzer
 
             return null;
         }
-        
+
         /// <summary>
         /// Only returns boolean type for unary operator that returns boolean
         /// </summary>

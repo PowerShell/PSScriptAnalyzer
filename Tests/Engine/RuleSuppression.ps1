@@ -14,6 +14,15 @@ function SuppressMe ()
 
 }
 
+function SuppressTwoVariables()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "b")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "a")]
+    Param([string]$a, [int]$b)
+    {
+    }
+}
+
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Scope="Class")]
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("pSAvoidUsingInvokeExpression", "")]
 class TestClass 

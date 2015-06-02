@@ -1,4 +1,7 @@
-﻿function Test {
+﻿$Global:DebugPreference
+
+
+function Test {
     $initialized = "Initialized"
     $noglobal = "local"
     $env:ShouldNotRaiseError
@@ -38,4 +41,21 @@ function Test-PreferenceVariable
         }
 
         $VerbosePreference
+}
+
+function Test-Throw
+{
+    if ($true)
+    {
+        throw "First time"
     }
+
+    $a = 4
+
+    if ($false)
+    {
+        throw "Second time"
+    }
+
+    $a
+}

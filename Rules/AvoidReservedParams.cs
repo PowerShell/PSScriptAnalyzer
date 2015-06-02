@@ -14,13 +14,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
-using Microsoft.Windows.Powershell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.BuiltinRules
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// AvoidReservedParams: Analyzes the ast to check for reserved parameters in function definitions.

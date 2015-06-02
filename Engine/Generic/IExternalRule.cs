@@ -10,13 +10,8 @@
 // THE SOFTWARE.
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Microsoft.Windows.Powershell.ScriptAnalyzer.Generic
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     /// <summary>
     /// Represents an interface for an external analyzer rule.
