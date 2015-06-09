@@ -276,17 +276,14 @@
   <data name="SourceName" xml:space="preserve">
     <value>PS</value>
   </data>
-  <data name="ProvideVerboseMessageDescription" xml:space="preserve">
-    <value>Checks that Write-Verbose is called at least once in every cmdlet or script. This is in line with the PowerShell best practices.</value>
+  <data name="UseVerboseMessageInDSCResourceDescription" xml:space="preserve">
+    <value>It is a best practice to emit informative, verbose messages in DSC resource functions. This helps in debugging issues when a DSC configuration is executed.</value>
   </data>
-  <data name="ProvideVerboseMessageErrorFunction" xml:space="preserve">
-    <value>There is no call to Write-Verbose in the function ‘{0}’.</value>
+  <data name="UseVerboseMessageInDSCResourceErrorFunction" xml:space="preserve">
+    <value>There is no call to Write-Verbose in DSC function ‘{0}’. If you are using Write-Verbose in a helper function, suppress this rule application.</value>
   </data>
-  <data name="ProvideVerboseMessageCommonName" xml:space="preserve">
-    <value>Verbose</value>
-  </data>
-  <data name="ProvideVerboseMessageScript" xml:space="preserve">
-    <value>There is no call to Write-Verbose in the script.</value>
+  <data name="UseVerboseMessageInDSCResourceCommonName" xml:space="preserve">
+    <value>Use verbose message in DSC resource</value>
   </data>
   <data name="MissingModuleManifestFieldDescription" xml:space="preserve">
     <value>Some fields of the module manifest (such as ModuleVersion) are required.</value>
@@ -459,8 +456,8 @@
   <data name="MissingModuleManifestFieldName" xml:space="preserve">
     <value>MissingModuleManifestField</value>
   </data>
-  <data name="ProvideVerboseMessageName" xml:space="preserve">
-    <value>ProvideVerboseMessage</value>
+  <data name="UseVerboseMessageInDSCResourceName" xml:space="preserve">
+    <value>UseVerboseMessageInDSCResource</value>
   </data>
   <data name="CommandNotFoundCommonName" xml:space="preserve">
     <value>Command Not Found</value>
