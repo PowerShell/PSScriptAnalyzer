@@ -25,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// ProvideVerboseMessage: Analyzes the ast to check that Write-Verbose is called for DSC Resources
     /// </summary>
     [Export(typeof(IDSCResourceRule))]
-    public class UseVerboseMessageInDSCResouce : SkipNamedBlock, IDSCResourceRule
+    public class UseVerboseMessageInDSCResource : SkipNamedBlock, IDSCResourceRule
     {
         /// <summary>
         /// AnalyzeDSCResource: Analyzes the ast to check that Write-Verbose is called for DSC Resources
