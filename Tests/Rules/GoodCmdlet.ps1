@@ -85,6 +85,12 @@ function Get-File
             $a
         }
 
+        $a | Write-Warning
+
+        $b = @{"hash"="table"}
+
+        Write-Debug @b
+
         return @{"hash"="true"}
     }
     End
