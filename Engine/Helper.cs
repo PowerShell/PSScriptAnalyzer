@@ -220,6 +220,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Given a commandast, checks whether it uses splatted variable
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <returns></returns>
+        public bool HasSplattedVariable(CommandAst cmdAst)
+        {
+            if (cmdAst == null || cmdAst.CommandElements == null)
+            {
+                return false;
+            }
+
+            return cmdAst.CommandElements.Any(cmdElem => cmdElem is VariableExpressionAst && (cmdElem as VariableExpressionAst).Splatted);
+        }
+
+        /// <summary>
         /// Given a commandast, checks whether positional parameters are used or not.
         /// </summary>
         /// <param name="cmdAst"></param>
@@ -236,6 +251,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<ParameterMetadata> switchParams = null;
             IEnumerable<CommandParameterSetInfo> scriptBlocks = null;
             bool hasScriptBlockSet = false;
+
+            if (HasSplattedVariable(cmdAst))
+            {
+                return false;
+            }
 
             if (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet)
             {
@@ -286,17 +306,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                     else
                     {
-                        //Skip if splatting "@" is used
-                        if (ceAst is VariableExpressionAst)
-                        {
-                            if ((ceAst as VariableExpressionAst).Splatted)
-                            {
-                                continue;
-                            }
-                        }
                         arguments += 1;
                     }
                 }
+            }
+
+            // if not the first element in a pipeline, increase the number of arguments by 1
+            PipelineAst parent = cmdAst.Parent as PipelineAst;
+
+            if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
+            {
+                arguments += 1;
             }
 
             return arguments > parameters;
