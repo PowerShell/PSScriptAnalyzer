@@ -37,9 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null)
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
-            }
-
-            List<string> expectedTargetResourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Test-TargetResource", "Get-TargetResource" });            
+            }            
 
             IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
