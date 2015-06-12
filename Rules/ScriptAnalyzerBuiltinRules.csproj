@@ -75,7 +75,7 @@
     <Compile Include="MissingModuleManifestField.cs" />
     <Compile Include="PossibleIncorrectComparisonWithNull.cs" />
     <Compile Include="ProvideCommentHelp.cs" />
-    <Compile Include="ProvideVerboseMessage.cs" />
+    <Compile Include="UseVerboseMessageInDSCResource.cs" />
     <Compile Include="Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

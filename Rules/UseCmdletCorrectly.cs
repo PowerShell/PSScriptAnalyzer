@@ -92,6 +92,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true;
             }
 
+            // ignores if splatted variable is used
+            if (Helper.Instance.HasSplattedVariable(cmdAst))
+            {
+                return true;
+            }
+
             // Gets parameters from command elements.
             ceAsts = cmdAst.CommandElements.Where<CommandElementAst>(foundParamASTs);
 
