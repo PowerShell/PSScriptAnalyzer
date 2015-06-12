@@ -9,6 +9,11 @@ function Test {
 
 $a = 3;
 
+"hi there!" -match "hi" | Out-Null;
+$matches[0];
+
+$PSVersionTable;
+
 if ($true) {
     $a = 4;
     $c = 3;
