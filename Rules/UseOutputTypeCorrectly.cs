@@ -102,15 +102,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             List<Tuple<string, StatementAst>> returnTypes = FindPipelineOutput.OutputTypes(funcAst, _classes);
 
+            HashSet<string> specialTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            specialTypes.Add(typeof(Unreached).FullName);
+            specialTypes.Add(typeof(Undetermined).FullName);
+            specialTypes.Add(typeof(object).FullName);
+            specialTypes.Add(typeof(void).FullName);
+            specialTypes.Add(typeof(PSCustomObject).FullName);
+            specialTypes.Add(typeof(PSObject).FullName);
+
             foreach (Tuple<string, StatementAst> returnType in returnTypes)
             {
                 string typeName = returnType.Item1;
 
                 if (String.IsNullOrEmpty(typeName)
-                    || String.Equals(typeof(Unreached).FullName, typeName, StringComparison.OrdinalIgnoreCase)
-                    || String.Equals(typeof(Undetermined).FullName, typeName, StringComparison.OrdinalIgnoreCase)
-                    || String.Equals(typeof(object).FullName, typeName, StringComparison.OrdinalIgnoreCase)
-                    || String.Equals(typeof(void).FullName, typeName, StringComparison.OrdinalIgnoreCase)
+                    || specialTypes.Contains(typeName)
                     || outputTypes.Contains(typeName, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
