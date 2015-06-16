@@ -249,8 +249,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             CommandInfo commandInfo = GetCommandInfo(GetCmdletNameFromAlias(cmdAst.GetCommandName())) ?? GetCommandInfo(cmdAst.GetCommandName());
 
             IEnumerable<ParameterMetadata> switchParams = null;
-            IEnumerable<CommandParameterSetInfo> scriptBlocks = null;
-            bool hasScriptBlockSet = false;
 
             if (HasSplattedVariable(cmdAst))
             {
@@ -262,15 +260,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 try
                 {
                     switchParams = commandInfo.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter);
-                    scriptBlocks = commandInfo.ParameterSets;
-                    foreach (CommandParameterSetInfo cmdParaset in scriptBlocks)
-                    {
-                        if (String.Equals(cmdParaset.Name, "ScriptBlockSet", StringComparison.OrdinalIgnoreCase))
-                        {
-                            hasScriptBlockSet = true;
-                        }
-                    }
-
                 }
                 catch (Exception)
                 {
@@ -284,8 +273,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             foreach (CommandElementAst ceAst in cmdAst.CommandElements)
             {
-                if (!hasScriptBlockSet)
-                {
                     if (ceAst is CommandParameterAst)
                     {
                         // Skip if it's a switch parameter
@@ -308,7 +295,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         arguments += 1;
                     }
-                }
+                
             }
 
             // if not the first element in a pipeline, increase the number of arguments by 1
