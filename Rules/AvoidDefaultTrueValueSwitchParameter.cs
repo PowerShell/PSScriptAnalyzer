@@ -39,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Iterrates all ParamAsts and check if any are switch.
             foreach (ParameterAst paramAst in paramAsts)
             {
-                if (paramAst.Attributes.Any(attr => string.Equals(attr.TypeName.GetReflectionType().FullName, "system.management.automation.switchparameter", StringComparison.OrdinalIgnoreCase))
+                if (paramAst.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(System.Management.Automation.SwitchParameter))
                     && paramAst.DefaultValue != null && String.Equals(paramAst.DefaultValue.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase))
                 {
                     yield return new DiagnosticRecord(
