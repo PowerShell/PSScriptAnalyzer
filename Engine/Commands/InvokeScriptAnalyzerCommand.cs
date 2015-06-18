@@ -399,7 +399,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         {
                             List<object> result = new List<object>();
 
-                            //WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
                             result.Add(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
 
                             // Ensure that any unhandled errors from Rules are converted to non-terminating errors
