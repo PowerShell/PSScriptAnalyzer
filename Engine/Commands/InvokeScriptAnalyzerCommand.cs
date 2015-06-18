@@ -271,6 +271,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         }
 
+        ConcurrentBag<DiagnosticRecord> diagnostics;
+        ConcurrentBag<SuppressedRecord> suppressed;
+        Dictionary<string, List<RuleSuppression>> ruleSuppressions;
+        List<Regex> includeRegexList;
+        List<Regex> excludeRegexList;
+        CountdownEvent cde;
+        ConcurrentDictionary<string, List<object>> ruleDictionary;
+
         /// <summary>
         /// Analyzes a single script file.
         /// </summary>
@@ -287,8 +295,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();
 
             //Check wild card input for the Include/ExcludeRules and create regex match patterns
-            List<Regex> includeRegexList = new List<Regex>();
-            List<Regex> excludeRegexList = new List<Regex>();
+            includeRegexList = new List<Regex>();
+            excludeRegexList = new List<Regex>();
             if (includeRule != null)
             {
                 foreach (string rule in includeRule)
@@ -336,7 +344,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 return;
             }
 
-            Dictionary<string, List<RuleSuppression>> ruleSuppressions = Helper.Instance.GetRuleSuppression(ast);
+            ruleSuppressions = Helper.Instance.GetRuleSuppression(ast);
 
             foreach (List<RuleSuppression> ruleSuppressionsList in ruleSuppressions.Values)
             {
@@ -663,6 +671,65 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     }
                 }
             }
+        }
+
+        void bg_DoWork(object sender, DoWorkEventArgs e)
+        {
+            bool includeRegexMatch = false;
+            bool excludeRegexMatch = false;
+
+            object[] parameters = e.Argument as object[];
+
+            IScriptRule scriptRule = parameters[0] as IScriptRule;
+
+            foreach (Regex include in includeRegexList)
+            {
+                if (include.IsMatch(scriptRule.GetName()))
+                {
+                    includeRegexMatch = true;
+                    break;
+                }
+            }
+
+            foreach (Regex exclude in excludeRegexList)
+            {
+                if (exclude.IsMatch(scriptRule.GetName()))
+                {
+                    excludeRegexMatch = true;
+                    break;
+                }
+            }
+
+            List<object> result = new List<object>();
+
+            if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+            {
+                //WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
+                result.Add(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
+
+                // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                // We want the Engine to continue functioning even if one or more Rules throws an exception
+                try
+                {
+                    var records = Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(ast, ast.Extent.File).ToList());
+                    foreach (var record in records.Item2)
+                    {
+                        diagnostics.Add(record);
+                    }
+                    foreach (var suppressedRec in records.Item1)
+                    {
+                        suppressed.Add(suppressedRec);
+                    }
+                }
+                catch (Exception scriptRuleException)
+                {
+                    result.Add(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, ast.Extent.File));
+                }
+            }
+
+            ruleDictionary[scriptRule.GetName()] = result;
+
+            cde.Signal();
         }
 
         #endregion
