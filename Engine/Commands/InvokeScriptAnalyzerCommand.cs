@@ -271,14 +271,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         }
 
-        ConcurrentBag<DiagnosticRecord> diagnostics;
-        ConcurrentBag<SuppressedRecord> suppressed;
-        Dictionary<string, List<RuleSuppression>> ruleSuppressions;
-        List<Regex> includeRegexList;
-        List<Regex> excludeRegexList;
-        CountdownEvent cde;
-        ConcurrentDictionary<string, List<object>> ruleDictionary;
-
         /// <summary>
         /// Analyzes a single script file.
         /// </summary>
@@ -287,16 +279,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             Token[] tokens = null;
             ParseError[] errors = null;
-            diagnostics = new ConcurrentBag<DiagnosticRecord>();
-            suppressed = new ConcurrentBag<SuppressedRecord>();
-            ruleDictionary = new ConcurrentDictionary<string, List<object>>();
+            ConcurrentBag<DiagnosticRecord> diagnostics = new ConcurrentBag<DiagnosticRecord>();
+            ConcurrentBag<SuppressedRecord> suppressed = new ConcurrentBag<SuppressedRecord>();
+            BlockingCollection<List<object>> verboseOrErrors = new BlockingCollection<List<object>>();
 
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
             List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();
 
             //Check wild card input for the Include/ExcludeRules and create regex match patterns
-            includeRegexList = new List<Regex>();
-            excludeRegexList = new List<Regex>();
+            List<Regex> includeRegexList = new List<Regex>();
+            List<Regex> excludeRegexList = new List<Regex>();
             if (includeRule != null)
             {
                 foreach (string rule in includeRule)
@@ -344,7 +336,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 return;
             }
 
-            ruleSuppressions = Helper.Instance.GetRuleSuppression(ast);
+            Dictionary<string, List<RuleSuppression>> ruleSuppressions = Helper.Instance.GetRuleSuppression(ast);
 
             foreach (List<RuleSuppression> ruleSuppressionsList in ruleSuppressions.Values)
             {
@@ -373,24 +365,77 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             if (ScriptAnalyzer.Instance.ScriptRules != null)
             {
-                cde = new CountdownEvent(ScriptAnalyzer.Instance.ScriptRules.Count());
-
-                foreach (var scriptRule in ScriptAnalyzer.Instance.ScriptRules)
-                {
-                    BackgroundWorker bg = new BackgroundWorker();
-                    bg.DoWork += bg_DoWork;
-                    bg.RunWorkerAsync(new object[] { scriptRule });
-                }
-
-                cde.Wait();
-
-                foreach (var rule in ruleDictionary.Keys)
-                {
-                    List<object> verboseOrErrors = ruleDictionary[rule];
-                    WriteVerbose(verboseOrErrors[0] as string);
-                    if (verboseOrErrors.Count == 2)
+                var tasks = ScriptAnalyzer.Instance.ScriptRules.Select(scriptRule => Task.Factory.StartNew(() =>
                     {
-                        WriteError(verboseOrErrors[1] as ErrorRecord);
+                        bool includeRegexMatch = false;
+                        bool excludeRegexMatch = false;
+
+                        foreach (Regex include in includeRegexList)
+                        {
+                            if (include.IsMatch(scriptRule.GetName()))
+                            {
+                                includeRegexMatch = true;
+                                break;
+                            }
+                        }
+
+                        foreach (Regex exclude in excludeRegexList)
+                        {
+                            if (exclude.IsMatch(scriptRule.GetName()))
+                            {
+                                excludeRegexMatch = true;
+                                break;
+                            }
+                        }
+
+                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                        {
+                            List<object> result = new List<object>();
+
+                            //WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
+                            result.Add(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
+
+                            // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                            // We want the Engine to continue functioning even if one or more Rules throws an exception
+                            try
+                            {
+                                var records = Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(ast, ast.Extent.File).ToList());
+                                foreach (var record in records.Item2)
+                                {
+                                    diagnostics.Add(record);
+                                }
+                                foreach (var suppressedRec in records.Item1)
+                                {
+                                    suppressed.Add(suppressedRec);
+                                }
+                            }
+                            catch (Exception scriptRuleException)
+                            {
+                                result.Add(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, ast.Extent.File));
+                            }
+
+                            verboseOrErrors.Add(result);
+                        }
+                }));
+
+                Task.Factory.ContinueWhenAll(tasks.ToArray(), t => verboseOrErrors.CompleteAdding());
+
+                while (!verboseOrErrors.IsCompleted)
+                {
+                    List<object> data = null;
+                    try
+                    {
+                        data = verboseOrErrors.Take();
+                    }
+                    catch (InvalidOperationException) { }
+
+                    if (data != null)
+                    {
+                        WriteVerbose(data[0] as string);
+                        if (data.Count == 2)
+                        {
+                            WriteError(data[1] as ErrorRecord);
+                        }
                     }
                 }
             }
@@ -618,65 +663,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     }
                 }
             }
-        }
-
-        void bg_DoWork(object sender, DoWorkEventArgs e)
-        {
-            bool includeRegexMatch = false;
-            bool excludeRegexMatch = false;
-
-            object[] parameters = e.Argument as object[];
-
-            IScriptRule scriptRule = parameters[0] as IScriptRule;
-
-            foreach (Regex include in includeRegexList)
-            {
-                if (include.IsMatch(scriptRule.GetName()))
-                {
-                    includeRegexMatch = true;
-                    break;
-                }
-            }
-
-            foreach (Regex exclude in excludeRegexList)
-            {
-                if (exclude.IsMatch(scriptRule.GetName()))
-                {
-                    excludeRegexMatch = true;
-                    break;
-                }
-            }
-
-            List<object> result = new List<object>();
-
-            if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
-            {
-                //WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
-                result.Add(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
-
-                // Ensure that any unhandled errors from Rules are converted to non-terminating errors
-                // We want the Engine to continue functioning even if one or more Rules throws an exception
-                try
-                {
-                    var records = Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(ast, ast.Extent.File).ToList());
-                    foreach (var record in records.Item2)
-                    {
-                        diagnostics.Add(record);
-                    }
-                    foreach (var suppressedRec in records.Item1)
-                    {
-                        suppressed.Add(suppressedRec);
-                    }
-                }
-                catch (Exception scriptRuleException)
-                {
-                    result.Add(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, ast.Extent.File));
-                }
-            }
-
-            ruleDictionary[scriptRule.GetName()] = result;
-
-            cde.Signal();
         }
 
         #endregion
