@@ -1,6 +1,6 @@
 ﻿Import-Module PSScriptAnalyzer
 
-$violationMessage = "There is no call to Write-Verbose in DSC function ‘Set-TargetResource’. If you are using Write-Verbose in a helper function, suppress this rule application."
+$violationMessage = "There is no call to Write-Verbose in DSC function ‘Test-TargetResource’. If you are using Write-Verbose in a helper function, suppress this rule application."
 $violationName = "PSDSCUseVerboseMessageInDSCResource"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1 | Where-Object {$_.RuleName -eq $violationName}
