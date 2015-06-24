@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
@@ -33,17 +34,67 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            IEnumerable<Ast> binExpressionAsts = ast.FindAll(testAst => testAst is BinaryExpressionAst, true);
+            IEnumerable<Ast> binExpressionAsts = ast.FindAll(testAst => testAst is BinaryExpressionAst, false);
 
-            if (binExpressionAsts != null) {
-                foreach (BinaryExpressionAst binExpressionAst in binExpressionAsts) {
-                    if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq) 
-                        || binExpressionAst.Operator.Equals(TokenKind.Cne) || binExpressionAst.Operator.Equals(TokenKind.Ine) || binExpressionAst.Operator.Equals(TokenKind.Ieq))
-                        && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase)) {
-                            yield return new DiagnosticRecord(Strings.PossibleIncorrectComparisonWithNullError, binExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+            foreach (BinaryExpressionAst binExpressionAst in binExpressionAsts) {
+                if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq) 
+                    || binExpressionAst.Operator.Equals(TokenKind.Cne) || binExpressionAst.Operator.Equals(TokenKind.Ine) || binExpressionAst.Operator.Equals(TokenKind.Ieq))
+                    && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase)) 
+                {
+                    if (IncorrectComparisonWithNull(binExpressionAst, ast))
+                    {
+                        yield return new DiagnosticRecord(Strings.PossibleIncorrectComparisonWithNullError, binExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
             }
+
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Union(ast.FindAll(item => item is FunctionMemberAst, true));
+            foreach (Ast funcAst in funcAsts)
+            {
+                IEnumerable<Ast> binAsts = funcAst.FindAll(item => item is BinaryExpressionAst, true);
+                foreach (BinaryExpressionAst binAst in binAsts)
+                {
+                    if (IncorrectComparisonWithNull(binAst, funcAst))
+                    {
+                        yield return new DiagnosticRecord(Strings.PossibleIncorrectComparisonWithNullError, binAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    }
+                }
+            }
+        }
+
+        private bool IncorrectComparisonWithNull(BinaryExpressionAst binExpressionAst, Ast ast)
+        {
+            if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq) 
+                || binExpressionAst.Operator.Equals(TokenKind.Cne) || binExpressionAst.Operator.Equals(TokenKind.Ine) || binExpressionAst.Operator.Equals(TokenKind.Ieq))
+                && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase)) 
+            {
+                if (binExpressionAst.Left.StaticType.IsArray)
+                {
+                    return true;
+                }
+                else if (binExpressionAst.Left is VariableExpressionAst)
+                {
+                    // ignores if the variable is a special variable
+                    if (!Helper.Instance.HasSpecialVars((binExpressionAst.Left as VariableExpressionAst).VariablePath.UserPath))
+                    {
+                        Type lhsType = Helper.Instance.GetTypeFromAnalysis(binExpressionAst.Left as VariableExpressionAst, ast);
+                        if (lhsType == null)
+                        {
+                            return true;
+                        }
+                        else if (lhsType.IsArray || lhsType == typeof(object) || lhsType == typeof(Undetermined) || lhsType == typeof(Unreached))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                else if (binExpressionAst.Left.StaticType == typeof(object))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

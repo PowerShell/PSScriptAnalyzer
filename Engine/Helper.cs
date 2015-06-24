@@ -679,7 +679,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="varAst"></param>
         /// <param name="ast"></param>
         /// <returns></returns>
-        internal Type GetTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
+        public Type GetTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
         {
             try
             {
