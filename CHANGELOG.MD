@@ -1,3 +1,30 @@
+## Released v1.0.2 (June.25, 2015)
+###Features:
+- Perf improvements in the Engine to execute rules concurrently.
+
+
+###Rules:
+- New rule to validate the presence of deprecated module manifest fields.
+- Removed PSAvoidTrapStatement rule from the builtin set – since this is not deprecated and using trap is a better choice in certain scenarios.
+
+
+###Fixes:
+- Verbose Message rule applies to only DSC cmdlet based resources.
+- Multiple fixes to AvoidUninitializedVariable to work with non-mandatory parameters, fix in the flow graphs for throw statements;  support for missing preference variables; support for automatic variables.
+- PSAvoidUsingInternalsURLs to work with xPath expressions.
+- UseSingularNouns rule to raise warnings for plural phrases.
+- Added .gitignore to exclude certain files from being reported as untracked.
+- Revisited severity for DSC rules.
+- PSUseOutputTypeCorrectly rule not to get triggered for functions returning system.void type.
+- PSAvoidDefaultTrueValueSwitchParameter to work with switch attribute when supplied as fully qualified.
+- Ignore PSObject and PSCustomObject for UseOutputTypeCorrectly rule.
+- Only raise NullComparisonRule if the RHS is an array or has unknown type.
+- PSUseDeclaredVarsMoreThanAssignments rule to be raised for script variables and for setting the property of a variable.
+- Support for using PSUseCmdletCorrectly rule when mandatory parameters are supplied in a splatted hashtable.
+- AvoidUsingPlainTextForPassword rule to be raised only strings or object types.
+- Fix for PositionalParameterUsed method (Helper.cs) uses unsafe method to exclude ForEach-Object and Where-Object.
+
+
 ## Released v1.0.1 (May.8, 2015)
 ###Features:
 - Integrated with waffle.io for Project Management.
@@ -18,7 +45,6 @@
 
 
 ##Released v1.0.0 on Apr.24, 2015
-
 ###Features:
 - Finalized three levels of Severity - Error/Warning/Information. 
 - Improved PSScriptAnalyzer engine behavior: emits non-terminating errors (Ex: for failed ast parse) and continues rule application when running on multiple scripts.
