@@ -220,6 +220,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Given a commandast, checks whether it uses splatted variable
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <returns></returns>
+        public bool HasSplattedVariable(CommandAst cmdAst)
+        {
+            if (cmdAst == null || cmdAst.CommandElements == null)
+            {
+                return false;
+            }
+
+            return cmdAst.CommandElements.Any(cmdElem => cmdElem is VariableExpressionAst && (cmdElem as VariableExpressionAst).Splatted);
+        }
+
+        /// <summary>
         /// Given a commandast, checks whether positional parameters are used or not.
         /// </summary>
         /// <param name="cmdAst"></param>
@@ -234,23 +249,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             CommandInfo commandInfo = GetCommandInfo(GetCmdletNameFromAlias(cmdAst.GetCommandName())) ?? GetCommandInfo(cmdAst.GetCommandName());
 
             IEnumerable<ParameterMetadata> switchParams = null;
-            IEnumerable<CommandParameterSetInfo> scriptBlocks = null;
-            bool hasScriptBlockSet = false;
+
+            if (HasSplattedVariable(cmdAst))
+            {
+                return false;
+            }
 
             if (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet)
             {
                 try
                 {
                     switchParams = commandInfo.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter);
-                    scriptBlocks = commandInfo.ParameterSets;
-                    foreach (CommandParameterSetInfo cmdParaset in scriptBlocks)
-                    {
-                        if (String.Equals(cmdParaset.Name, "ScriptBlockSet", StringComparison.OrdinalIgnoreCase))
-                        {
-                            hasScriptBlockSet = true;
-                        }
-                    }
-
                 }
                 catch (Exception)
                 {
@@ -264,8 +273,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             foreach (CommandElementAst ceAst in cmdAst.CommandElements)
             {
-                if (!hasScriptBlockSet)
-                {
                     if (ceAst is CommandParameterAst)
                     {
                         // Skip if it's a switch parameter
@@ -286,17 +293,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                     else
                     {
-                        //Skip if splatting "@" is used
-                        if (ceAst is VariableExpressionAst)
-                        {
-                            if ((ceAst as VariableExpressionAst).Splatted)
-                            {
-                                continue;
-                            }
-                        }
                         arguments += 1;
                     }
-                }
+                
+            }
+
+            // if not the first element in a pipeline, increase the number of arguments by 1
+            PipelineAst parent = cmdAst.Parent as PipelineAst;
+
+            if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
+            {
+                arguments += 1;
             }
 
             return arguments > parameters;
@@ -672,7 +679,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="varAst"></param>
         /// <param name="ast"></param>
         /// <returns></returns>
-        internal Type GetTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
+        public Type GetTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
         {
             try
             {

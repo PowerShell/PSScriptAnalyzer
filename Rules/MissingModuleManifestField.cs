@@ -38,7 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             if (String.Equals(System.IO.Path.GetExtension(fileName), ".psd1", StringComparison.OrdinalIgnoreCase))
             {
-                var ps = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace);
+                var ps = System.Management.Automation.PowerShell.Create();
 
                 try
                 {
@@ -68,6 +68,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
 
+                ps.Dispose();
             }
 
         }

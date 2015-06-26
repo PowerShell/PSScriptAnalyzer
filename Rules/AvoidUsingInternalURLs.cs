@@ -11,8 +11,10 @@
 //
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
@@ -44,8 +46,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 foreach (StringConstantExpressionAst expressionAst in expressionAsts)
                 {
-                    //Check if XPath is used. If XPath is used, then we don't throw warnings.
+                    
                     Ast parentAst = expressionAst.Parent;
+                    //Check if -replace is used, if it is string replace, we don't throw warnings.
+                    Ast grandParentAst = parentAst.Parent;
+                    if (grandParentAst is BinaryExpressionAst)
+                    {
+                        if ((grandParentAst as BinaryExpressionAst).Operator.Equals(TokenKind.Ireplace))
+                        {
+                            continue;
+                        }
+                    }
+
+                    //Check if XPath is used. If XPath is used, then we don't throw warnings.
                     if (parentAst is InvokeMemberExpressionAst)
                     {
                         InvokeMemberExpressionAst invocation = parentAst as InvokeMemberExpressionAst;
@@ -55,7 +68,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 String.Equals(invocation.Member.ToString(), "SelectNodes",StringComparison.OrdinalIgnoreCase) ||
                                 String.Equals(invocation.Member.ToString(), "Select", StringComparison.OrdinalIgnoreCase) ||
                                 String.Equals(invocation.Member.ToString(), "Evaluate",StringComparison.OrdinalIgnoreCase) ||
-                                String.Equals(invocation.Member.ToString(), "Matches",StringComparison.OrdinalIgnoreCase))
+                                String.Equals(invocation.Member.ToString(), "Matches",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Expression.ToString(), "[System.String]",StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(invocation.Expression.ToString(), "[String]", StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }

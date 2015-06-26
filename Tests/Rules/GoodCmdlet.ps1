@@ -28,7 +28,7 @@ function Get-File
                   HelpUri = 'http://www.microsoft.com/',
                   ConfirmImpact='Medium')]
     [Alias()]
-    [OutputType([String], [System.Double], [Hashtable])]
+    [OutputType([String], [System.Double], [Hashtable], "MyCustom.OutputType")]
     [OutputType("System.Int32", ParameterSetName="ID")]
 
     Param
@@ -83,6 +83,18 @@ function Get-File
         if ($true)
         {
             $a
+        }
+
+        $a | Write-Warning
+
+        $b = @{"hash"="table"}
+
+        Write-Debug @b
+
+        [pscustomobject]@{
+            PSTypeName = 'MyCustom.OutputType'
+            Prop1 = 'SomeValue'
+            Prop2 = 'OtherValue'
         }
 
         return @{"hash"="true"}

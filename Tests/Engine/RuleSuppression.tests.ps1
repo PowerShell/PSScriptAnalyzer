@@ -5,7 +5,7 @@ $violations = Invoke-ScriptAnalyzer $directory\RuleSuppression.ps1
 Describe "RuleSuppressionWithoutScope" {
     Context "Function" {
         It "Does not raise violations" {
-            $suppression = $violations | Where-Object { $_.RuleName -eq "PSProvideVerboseMessage" }
+            $suppression = $violations | Where-Object { $_.RuleName -eq "PSProvideCommentHelp" }
             $suppression.Count | Should Be 0
         }
     }

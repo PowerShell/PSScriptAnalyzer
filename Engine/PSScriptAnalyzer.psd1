@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.dll'
 
 # Version number of this module.
-ModuleVersion = '1.0.1'
+ModuleVersion = '1.0.2'
 
 # ID used to uniquely identify this module
 GUID = '324fc715-36bf-4aee-8e58-72e9b4a08ad9'

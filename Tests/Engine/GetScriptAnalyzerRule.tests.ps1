@@ -130,11 +130,11 @@ Describe "TestSeverity" {
 Describe "TestWildCard" {
     It "filters rules based on the -Name wild card input" {
         $rules = Get-ScriptAnalyzerRule -Name PSDSC*
-        $rules.Count | Should be 6
+        $rules.Count | Should be 7
     }
 
     It "filters rules based on wild card input and severity"{
         $rules = Get-ScriptAnalyzerRule -Name PSDSC*　-Severity Information
-        $rules.Count | Should be 3
+        $rules.Count | Should be 4
     }
 }
