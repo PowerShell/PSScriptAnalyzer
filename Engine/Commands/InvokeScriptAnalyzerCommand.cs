@@ -255,12 +255,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 }
             }
             else if (File.Exists(path))
-            {
-                WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, path));
+            {                
                 if ((path.Length > ps1Suffix.Length && path.Substring(path.Length - ps1Suffix.Length).Equals(ps1Suffix, StringComparison.OrdinalIgnoreCase)) ||
                     (path.Length > psm1Suffix.Length && path.Substring(path.Length - psm1Suffix.Length).Equals(psm1Suffix, StringComparison.OrdinalIgnoreCase)) ||
                     (path.Length > psd1Suffix.Length && path.Substring(path.Length - psd1Suffix.Length).Equals(psd1Suffix, StringComparison.OrdinalIgnoreCase)))
                 {
+                    WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, path));
                     AnalyzeFile(path);
                 }
             }
