@@ -69,6 +69,7 @@
     <Compile Include="Generic\SkipTypeDefinition.cs" />
     <Compile Include="Generic\SourceType.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="IOutputWriter.cs" />
     <Compile Include="Loggers\WriteObjectsLogger.cs" />
     <Compile Include="ScriptAnalyzer.cs" />
     <Compile Include="SpecialVars.cs" />

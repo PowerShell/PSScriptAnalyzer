@@ -24,14 +24,24 @@ using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Globalization;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
-    internal class ScriptAnalyzer
+    public sealed class ScriptAnalyzer
     {
-        #region Private memebers
+        #region Private members
 
+        private IOutputWriter outputWriter;
         private CompositionContainer container;
+        Dictionary<string, List<string>> validationResults = new Dictionary<string, List<string>>();
+        string[] includeRule;
+        string[] excludeRule;
+        string[] severity;
+        List<Regex> includeRegexList;
+        List<Regex> excludeRegexList;
+        bool suppressedOnly;
 
         #endregion
 
@@ -74,7 +84,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         [ImportMany]
         public IEnumerable<IDSCResourceRule> DSCResourceRules { get; private set; }
 
-        public List<ExternalRule> ExternalRules { get; private set; }
+        internal List<ExternalRule> ExternalRules { get; set; }
 
         #endregion
 
@@ -83,43 +93,177 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// Initialize : Initializes default rules, loggers and helper.
         /// </summary>
-        public void Initialize()
+        internal void Initialize<TCmdlet>(
+            TCmdlet cmdlet, 
+            string[] customizedRulePath = null,
+            string[] includeRuleNames = null, 
+            string[] excludeRuleNames = null,
+            string[] severity = null,
+            bool suppressedOnly = false)
+            where TCmdlet : PSCmdlet, IOutputWriter
         {
-            // Clear external rules for each invoke.
-            ExternalRules = new List<ExternalRule>();
-
-            // Initialize helper
-            Helper.Instance.Initialize();
-
-            // An aggregate catalog that combines multiple catalogs.
-            using (AggregateCatalog catalog = new AggregateCatalog())
+            if (cmdlet == null)
             {
-                // Adds all the parts found in the same directory.
-                string dirName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-                // Assembly.GetExecutingAssembly().Location
-                catalog.Catalogs.Add(new DirectoryCatalog(dirName));
-
-                // Create the CompositionContainer with the parts in the catalog.
-                container = new CompositionContainer(catalog);
-
-                // Fill the imports of this object.
-                try
-                {
-                    container.ComposeParts(this);
-                }
-                catch (CompositionException compositionException)
-                {
-                    Console.WriteLine(compositionException.ToString());
-                }
+                throw new ArgumentNullException("cmdlet");
             }
+
+            this.Initialize(
+                cmdlet,
+                cmdlet.SessionState.Path,
+                cmdlet.SessionState.InvokeCommand,
+                customizedRulePath,
+                includeRuleNames,
+                excludeRuleNames,
+                severity,
+                suppressedOnly);
         }
 
         /// <summary>
-        /// Initilaize : Initializes default rules, external rules and loggers.
+        /// Initialize : Initializes default rules, loggers and helper.
         /// </summary>
-        /// <param name="result">Path validation result.</param>
-        public void Initilaize(Dictionary<string, List<string>> result)
+        public void Initialize(
+            Runspace runspace, 
+            IOutputWriter outputWriter, 
+            string[] customizedRulePath = null, 
+            string[] includeRuleNames = null, 
+            string[] excludeRuleNames = null,
+            string[] severity = null,
+            bool suppressedOnly = false)
+        {
+            if (runspace == null)
+            {
+                throw new ArgumentNullException("runspace");
+            }
+
+            this.Initialize(
+                outputWriter,
+                runspace.SessionStateProxy.Path,
+                runspace.SessionStateProxy.InvokeCommand,
+                customizedRulePath,
+                includeRuleNames,
+                excludeRuleNames,
+                severity,
+                suppressedOnly);
+        }
+
+        private void Initialize(
+            IOutputWriter outputWriter, 
+            PathIntrinsics path, 
+            CommandInvocationIntrinsics invokeCommand, 
+            string[] customizedRulePath, 
+            string[] includeRuleNames, 
+            string[] excludeRuleNames,
+            string[] severity,
+            bool suppressedOnly = false)
+        {
+            if (outputWriter == null)
+            {
+                throw new ArgumentNullException("outputWriter");
+            }
+
+            this.outputWriter = outputWriter;
+
+            #region Verifies rule extensions and loggers path
+
+            List<string> paths = this.GetValidCustomRulePaths(customizedRulePath, path);
+
+            #endregion
+
+            #region Initializes Rules
+
+            this.severity = severity;
+            this.suppressedOnly = suppressedOnly;
+            this.includeRule = includeRuleNames;
+            this.excludeRule = excludeRuleNames;
+            this.includeRegexList = new List<Regex>();
+            this.excludeRegexList = new List<Regex>();
+
+            //Check wild card input for the Include/ExcludeRules and create regex match patterns
+            if (this.includeRule != null)
+            {
+                foreach (string rule in includeRule)
+                {
+                    Regex includeRegex = new Regex(String.Format("^{0}$", Regex.Escape(rule).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
+                    this.includeRegexList.Add(includeRegex);
+                }
+            }
+            if (this.excludeRule != null)
+            {
+                foreach (string rule in excludeRule)
+                {
+                    Regex excludeRegex = new Regex(String.Format("^{0}$", Regex.Escape(rule).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
+                    this.excludeRegexList.Add(excludeRegex);
+                }
+            }
+
+            try
+            {
+                this.LoadRules(this.validationResults, invokeCommand);
+            }
+            catch (Exception ex)
+            {
+                this.outputWriter.ThrowTerminatingError(
+                    new ErrorRecord(
+                        ex, 
+                        ex.HResult.ToString("X", CultureInfo.CurrentCulture),
+                        ErrorCategory.NotSpecified, this));
+            }
+
+            #endregion
+
+            #region Verify rules
+
+            IEnumerable<IRule> rules =
+                this.ScriptRules.Union<IRule>(
+                    this.TokenRules).Union<IRule>(
+                    this.ExternalRules ?? Enumerable.Empty<IExternalRule>());
+
+            // Ensure that rules were actually loaded
+            if (rules == null || rules.Count() == 0)
+            {
+                this.outputWriter.ThrowTerminatingError(
+                    new ErrorRecord(
+                        new Exception(), 
+                        string.Format(
+                            CultureInfo.CurrentCulture, 
+                            Strings.RulesNotFound), 
+                        ErrorCategory.ResourceExists, 
+                        this));
+            }
+
+            #endregion
+        }
+
+        private List<string> GetValidCustomRulePaths(string[] customizedRulePath, PathIntrinsics path)
+        {
+            List<string> paths = new List<string>();
+
+            if (customizedRulePath != null)
+            {
+                paths.AddRange(
+                    customizedRulePath.ToList());
+            }
+
+            if (paths.Count > 0)
+            {
+                this.validationResults = this.CheckRuleExtension(paths.ToArray(), path);
+                foreach (string extension in this.validationResults["InvalidPaths"])
+                {
+                    this.outputWriter.WriteWarning(string.Format(CultureInfo.CurrentCulture, Strings.MissingRuleExtension, extension));
+                }
+            }
+            else
+            {
+                this.validationResults = new Dictionary<string, List<string>>();
+                this.validationResults.Add("InvalidPaths", new List<string>());
+                this.validationResults.Add("ValidModPaths", new List<string>());
+                this.validationResults.Add("ValidDllPaths", new List<string>());
+            }
+
+            return paths;
+        }
+
+        private void LoadRules(Dictionary<string, List<string>> result, CommandInvocationIntrinsics invokeCommand)
         {
             List<string> paths = new List<string>();
 
@@ -127,7 +271,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ExternalRules = new List<ExternalRule>();
 
             // Initialize helper
+            Helper.Instance = new Helper(invokeCommand, this.outputWriter);
             Helper.Instance.Initialize();
+
+            // Clear external rules for each invoke.
+            ExternalRules = new List<ExternalRule>();
 
             // An aggregate catalog that combines multiple catalogs.
             using (AggregateCatalog catalog = new AggregateCatalog())
@@ -140,7 +288,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 paths = result.ContainsKey("ValidDllPaths") ? result["ValidDllPaths"] : result["ValidPaths"];
                 foreach (string path in paths)
                 {
-                    if (String.Equals(Path.GetExtension(path),".dll",StringComparison.OrdinalIgnoreCase))
+                    if (String.Equals(Path.GetExtension(path), ".dll", StringComparison.OrdinalIgnoreCase))
                     {
                         catalog.Catalogs.Add(new AssemblyCatalog(path));
                     }
@@ -160,13 +308,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 catch (CompositionException compositionException)
                 {
-                    Console.WriteLine(compositionException.ToString());
+                    this.outputWriter.WriteWarning(compositionException.ToString());
                 }
             }
 
             // Gets external rules.
             if (result.ContainsKey("ValidModPaths") && result["ValidModPaths"].Count > 0)
                 ExternalRules = GetExternalRule(result["ValidModPaths"].ToArray());
+        }
+
+        internal string[] GetValidModulePaths()
+        {
+            List<string> validModulePaths = null;
+
+            if (!this.validationResults.TryGetValue("ValidModPaths", out validModulePaths))
+            {
+                validModulePaths = new List<string>();
+            }
+
+            return validModulePaths.ToArray();
         }
 
         public IEnumerable<IRule> GetRule(string[] moduleNames, string[] ruleNames)
@@ -196,9 +356,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 results = from rule in rules
-                    from regex in regexList
-                    where regex.IsMatch(rule.GetName())
-                    select rule;
+                          from regex in regexList
+                          where regex.IsMatch(rule.GetName())
+                          select rule;
             }
             else
             {
@@ -208,7 +368,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return results;
         }
 
-        public List<ExternalRule> GetExternalRule(string[] moduleNames)
+        private List<ExternalRule> GetExternalRule(string[] moduleNames)
         {
             List<ExternalRule> rules = new List<ExternalRule>();
 
@@ -247,15 +407,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         ParameterMetadata param = funcInfo.Parameters.Values
                             .First<ParameterMetadata>(item => item.Name.EndsWith("ast", StringComparison.OrdinalIgnoreCase) ||
                                 item.Name.EndsWith("token", StringComparison.OrdinalIgnoreCase));
-                        
+
                         //Only add functions that are defined as rules.
                         if (param != null)
                         {
                             script = string.Format(CultureInfo.CurrentCulture, "(Get-Help -Name {0}).Description | Out-String", funcInfo.Name);
-                            string desc =posh.AddScript(script).Invoke()[0].ImmediateBaseObject.ToString()
+                            string desc = posh.AddScript(script).Invoke()[0].ImmediateBaseObject.ToString()
                                     .Replace("\r\n", " ").Trim();
 
-                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.Name,param.ParameterType.FullName,
+                            rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.Name, param.ParameterType.FullName,
                                 funcInfo.ModuleName, funcInfo.Module.Path));
                         }
                     }
@@ -274,7 +434,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="command"></param>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> GetExternalRecord(Ast ast, Token[] token, ExternalRule[] rules, InvokeScriptAnalyzerCommand command, string filePath)
+        internal IEnumerable<DiagnosticRecord> GetExternalRecord(Ast ast, Token[] token, ExternalRule[] rules, string filePath)
         {
             // Defines InitialSessionState.
             InitialSessionState state = InitialSessionState.CreateDefault2();
@@ -341,7 +501,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     // Find all AstTypes that appeared in rule groups.
                     IEnumerable<Ast> childAsts = ast.FindAll(new Func<Ast, bool>((testAst) =>
-                        (astRuleGroup.Key.IndexOf(testAst.GetType().FullName,StringComparison.OrdinalIgnoreCase) != -1)), false);
+                        (astRuleGroup.Key.IndexOf(testAst.GetType().FullName, StringComparison.OrdinalIgnoreCase) != -1)), false);
 
                     foreach (Ast childAst in childAsts)
                     {
@@ -393,7 +553,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 if (psobject.ImmediateBaseObject is ErrorRecord)
                                 {
                                     ErrorRecord record = (ErrorRecord)psobject.ImmediateBaseObject;
-                                    command.WriteError(record);
+                                    this.outputWriter.WriteError(record);
                                     continue;
                                 }
 
@@ -407,7 +567,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 }
                                 catch (Exception ex)
                                 {
-                                    command.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
+                                    this.outputWriter.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
                                     continue;
                                 }
 
@@ -420,9 +580,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
                 //Catch exception where customized defined rules have exceptins when doing invoke
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    command.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
+                    this.outputWriter.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
                 }
 
                 return diagnostics;
@@ -430,7 +590,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        public Dictionary<string, List<string>> CheckRuleExtension(string[] path, PSCmdlet cmdlet)
+        public Dictionary<string, List<string>> CheckRuleExtension(string[] path, PathIntrinsics basePath)
         {
             Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
 
@@ -443,7 +603,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 try
                 {
-                    cmdlet.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.CheckModuleName, childPath));
+                    this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.CheckModuleName, childPath));
 
                     string resolvedPath = string.Empty;
 
@@ -458,7 +618,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                     else
                     {
-                        resolvedPath = cmdlet.SessionState.Path
+                        resolvedPath = basePath
                             .GetResolvedPSPathFromPSPath(childPath).First().ToString();
                     }
 
@@ -491,12 +651,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 try
                 {
-                    string resolvedPath = cmdlet.SessionState.Path
+                    string resolvedPath = basePath
                         .GetResolvedPSPathFromPSPath(childPath).First().ToString();
 
-                    cmdlet.WriteDebug(string.Format(CultureInfo.CurrentCulture, Strings.CheckAssemblyFile, resolvedPath));
+                    this.outputWriter.WriteDebug(string.Format(CultureInfo.CurrentCulture, Strings.CheckAssemblyFile, resolvedPath));
 
-                    if (String.Equals(Path.GetExtension(resolvedPath),".dll", StringComparison.OrdinalIgnoreCase))
+                    if (String.Equals(Path.GetExtension(resolvedPath), ".dll", StringComparison.OrdinalIgnoreCase))
                     {
                         if (!File.Exists(resolvedPath))
                         {
@@ -526,12 +686,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 for (int i = 0; i < validModPaths.Count; i++)
                 {
-                    validModPaths[i] = cmdlet.SessionState.Path
+                    validModPaths[i] = basePath
                         .GetResolvedPSPathFromPSPath(validModPaths[i]).First().ToString();
                 }
                 for (int i = 0; i < validDllPaths.Count; i++)
                 {
-                    validDllPaths[i] = cmdlet.SessionState.Path
+                    validDllPaths[i] = basePath
                         .GetResolvedPSPathFromPSPath(validDllPaths[i]).First().ToString();
                 }
             }
@@ -550,5 +710,470 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         #endregion
+
+
+        /// <summary>
+        /// Analyzes a script file or a directory containing script files.
+        /// </summary>
+        /// <param name="path">The path of the file or directory to analyze.</param>
+        /// <param name="searchRecursively">
+        /// If true, recursively searches the given file path and analyzes any 
+        /// script files that are found.
+        /// </param>
+        /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
+        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false)
+        {
+            List<string> scriptFilePaths = new List<string>();
+
+            if (path == null)
+            {
+                this.outputWriter.ThrowTerminatingError(
+                    new ErrorRecord(
+                        new FileNotFoundException(),
+                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path),
+                        ErrorCategory.InvalidArgument, 
+                        this));
+            }
+
+            // Precreate the list of script file paths to analyze.  This
+            // is an optimization over doing the whole operation at once
+            // and calling .Concat on IEnumerables to join results.
+            this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
+
+            foreach (string scriptFilePath in scriptFilePaths)
+            {
+                // Yield each record in the result so that the 
+                // caller can pull them one at a time
+                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                {
+                    yield return diagnosticRecord;
+                }
+            }
+        }
+
+        private void BuildScriptPathList(
+            string path, 
+            bool searchRecursively, 
+            IList<string> scriptFilePaths)
+        {
+            const string ps1Suffix = "ps1";
+            const string psm1Suffix = "psm1";
+            const string psd1Suffix = "psd1";
+
+            if (Directory.Exists(path))
+            {
+                if (searchRecursively)
+                {
+                    foreach (string filePath in Directory.GetFiles(path))
+                    {
+                        this.BuildScriptPathList(filePath, searchRecursively, scriptFilePaths);
+                    }
+                    foreach (string filePath in Directory.GetDirectories(path))
+                    {
+                        this.BuildScriptPathList(filePath, searchRecursively, scriptFilePaths);
+                    }
+                }
+                else
+                {
+                    foreach (string filePath in Directory.GetFiles(path))
+                    {
+                        this.BuildScriptPathList(filePath, searchRecursively, scriptFilePaths);
+                    }
+                }
+            }
+            else if (File.Exists(path))
+            {
+                if ((path.Length > ps1Suffix.Length && path.Substring(path.Length - ps1Suffix.Length).Equals(ps1Suffix, StringComparison.OrdinalIgnoreCase)) ||
+                    (path.Length > psm1Suffix.Length && path.Substring(path.Length - psm1Suffix.Length).Equals(psm1Suffix, StringComparison.OrdinalIgnoreCase)) ||
+                    (path.Length > psd1Suffix.Length && path.Substring(path.Length - psd1Suffix.Length).Equals(psd1Suffix, StringComparison.OrdinalIgnoreCase)))
+                {
+                    scriptFilePaths.Add(path);
+                }
+            }
+            else
+            {
+                this.outputWriter.WriteError(
+                    new ErrorRecord(
+                        new FileNotFoundException(), 
+                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path), 
+                        ErrorCategory.InvalidArgument, 
+                        this));
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> AnalyzeFile(string filePath)
+        {
+            ScriptBlockAst scriptAst = null;
+            Token[] scriptTokens = null;
+            ParseError[] errors;
+
+            this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, filePath));
+
+            //Parse the file
+            if (File.Exists(filePath))
+            {
+                scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+            }
+            else
+            {
+                this.outputWriter.ThrowTerminatingError(new ErrorRecord(new FileNotFoundException(),
+                    string.Format(CultureInfo.CurrentCulture, Strings.InvalidPath, filePath),
+                    ErrorCategory.InvalidArgument, filePath));
+
+                return null;
+            }
+
+            if (errors != null && errors.Length > 0)
+            {
+                foreach (ParseError error in errors)
+                {
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, error.Extent.File, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
+                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
+                }
+            }
+
+            if (errors.Length > 10)
+            {
+                string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
+                this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));
+
+                return new List<DiagnosticRecord>();
+            }
+
+            return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath);
+        }
+
+        /// <summary>
+        /// Analyzes the syntax tree of a script file that has already been parsed.
+        /// </summary>
+        /// <param name="scriptAst">The ScriptBlockAst from the parsed script.</param>
+        /// <param name="scriptTokens">The tokens found in the script.</param>
+        /// <param name="filePath">The path to the file that was parsed.</param>
+        /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeSyntaxTree(
+            ScriptBlockAst scriptAst, 
+            Token[] scriptTokens, 
+            string filePath)
+        {
+            Dictionary<string, List<RuleSuppression>> ruleSuppressions;
+            ConcurrentBag<DiagnosticRecord> diagnostics = new ConcurrentBag<DiagnosticRecord>();
+            ConcurrentBag<SuppressedRecord> suppressed = new ConcurrentBag<SuppressedRecord>();
+            BlockingCollection<List<object>> verboseOrErrors = new BlockingCollection<List<object>>();
+
+            // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
+            List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();
+
+            ruleSuppressions = Helper.Instance.GetRuleSuppression(scriptAst);
+
+            foreach (List<RuleSuppression> ruleSuppressionsList in ruleSuppressions.Values)
+            {
+                foreach (RuleSuppression ruleSuppression in ruleSuppressionsList)
+                {
+                    if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                    {
+                        this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    }
+                }
+            }
+
+            #region Run VariableAnalysis
+            try
+            {
+                Helper.Instance.InitializeVariableAnalysis(scriptAst);
+            }
+            catch { }
+            #endregion
+
+            Helper.Instance.Tokens = scriptTokens;
+
+            #region Run ScriptRules
+            //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
+            string fileName = System.IO.Path.GetFileName(filePath);
+
+            if (this.ScriptRules != null)
+            {
+                var tasks = this.ScriptRules.Select(scriptRule => Task.Factory.StartNew(() =>
+                {
+                    bool includeRegexMatch = false;
+                    bool excludeRegexMatch = false;
+
+                    foreach (Regex include in includeRegexList)
+                    {
+                        if (include.IsMatch(scriptRule.GetName()))
+                        {
+                            includeRegexMatch = true;
+                            break;
+                        }
+                    }
+
+                    foreach (Regex exclude in excludeRegexList)
+                    {
+                        if (exclude.IsMatch(scriptRule.GetName()))
+                        {
+                            excludeRegexMatch = true;
+                            break;
+                        }
+                    }
+
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                    {
+                        List<object> result = new List<object>();
+
+                        result.Add(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
+
+                        // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                        // We want the Engine to continue functioning even if one or more Rules throws an exception
+                        try
+                        {
+                            var records = Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(scriptAst, scriptAst.Extent.File).ToList());
+                            foreach (var record in records.Item2)
+                            {
+                                diagnostics.Add(record);
+                            }
+                            foreach (var suppressedRec in records.Item1)
+                            {
+                                suppressed.Add(suppressedRec);
+                            }
+                        }
+                        catch (Exception scriptRuleException)
+                        {
+                            result.Add(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, scriptAst.Extent.File));
+                        }
+
+                        verboseOrErrors.Add(result);
+                    }
+                }));
+
+                Task.Factory.ContinueWhenAll(tasks.ToArray(), t => verboseOrErrors.CompleteAdding());
+
+                while (!verboseOrErrors.IsCompleted)
+                {
+                    List<object> data = null;
+                    try
+                    {
+                        data = verboseOrErrors.Take();
+                    }
+                    catch (InvalidOperationException) { }
+
+                    if (data != null)
+                    {
+                        this.outputWriter.WriteVerbose(data[0] as string);
+                        if (data.Count == 2)
+                        {
+                            this.outputWriter.WriteError(data[1] as ErrorRecord);
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            #region Run Token Rules
+
+            if (this.TokenRules != null)
+            {
+                foreach (ITokenRule tokenRule in this.TokenRules)
+                {
+                    bool includeRegexMatch = false;
+                    bool excludeRegexMatch = false;
+                    foreach (Regex include in includeRegexList)
+                    {
+                        if (include.IsMatch(tokenRule.GetName()))
+                        {
+                            includeRegexMatch = true;
+                            break;
+                        }
+                    }
+                    foreach (Regex exclude in excludeRegexList)
+                    {
+                        if (exclude.IsMatch(tokenRule.GetName()))
+                        {
+                            excludeRegexMatch = true;
+                            break;
+                        }
+                    }
+                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                    {
+                        this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, tokenRule.GetName()));
+
+                        // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                        // We want the Engine to continue functioning even if one or more Rules throws an exception
+                        try
+                        {
+                            var records = Helper.Instance.SuppressRule(tokenRule.GetName(), ruleSuppressions, tokenRule.AnalyzeTokens(scriptTokens, filePath).ToList());
+                            foreach (var record in records.Item2)
+                            {
+                                diagnostics.Add(record);
+                            }
+                            foreach (var suppressedRec in records.Item1)
+                            {
+                                suppressed.Add(suppressedRec);
+                            }
+                        }
+                        catch (Exception tokenRuleException)
+                        {
+                            this.outputWriter.WriteError(new ErrorRecord(tokenRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
+                        }
+                    }
+                }
+            }
+
+            #endregion
+
+            #region DSC Resource Rules
+            if (this.DSCResourceRules != null)
+            {
+                // Invoke AnalyzeDSCClass only if the ast is a class based resource
+                if (Helper.Instance.IsDscResourceClassBased(scriptAst))
+                {
+                    // Run DSC Class rule
+                    foreach (IDSCResourceRule dscResourceRule in this.DSCResourceRules)
+                    {
+                        bool includeRegexMatch = false;
+                        bool excludeRegexMatch = false;
+
+                        foreach (Regex include in includeRegexList)
+                        {
+                            if (include.IsMatch(dscResourceRule.GetName()))
+                            {
+                                includeRegexMatch = true;
+                                break;
+                            }
+                        }
+
+                        foreach (Regex exclude in excludeRegexList)
+                        {
+                            if (exclude.IsMatch(dscResourceRule.GetName()))
+                            {
+                                excludeRegexMatch = true;
+                                break;
+                            }
+                        }
+
+                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || excludeRegexMatch))
+                        {
+                            this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
+
+                            // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                            // We want the Engine to continue functioning even if one or more Rules throws an exception
+                            try
+                            {
+                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(scriptAst, filePath).ToList());
+                                foreach (var record in records.Item2)
+                                {
+                                    diagnostics.Add(record);
+                                }
+                                foreach (var suppressedRec in records.Item1)
+                                {
+                                    suppressed.Add(suppressedRec);
+                                }
+                            }
+                            catch (Exception dscResourceRuleException)
+                            {
+                                this.outputWriter.WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
+                            }
+                        }
+                    }
+                }
+
+                // Check if the supplied artifact is indeed part of the DSC resource
+                if (Helper.Instance.IsDscResourceModule(filePath))
+                {
+                    // Run all DSC Rules
+                    foreach (IDSCResourceRule dscResourceRule in this.DSCResourceRules)
+                    {
+                        bool includeRegexMatch = false;
+                        bool excludeRegexMatch = false;
+                        foreach (Regex include in includeRegexList)
+                        {
+                            if (include.IsMatch(dscResourceRule.GetName()))
+                            {
+                                includeRegexMatch = true;
+                                break;
+                            }
+                        }
+                        foreach (Regex exclude in excludeRegexList)
+                        {
+                            if (exclude.IsMatch(dscResourceRule.GetName()))
+                            {
+                                excludeRegexMatch = true;
+                            }
+                        }
+                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                        {
+                            this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
+
+                            // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                            // We want the Engine to continue functioning even if one or more Rules throws an exception
+                            try
+                            {
+                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCResource(scriptAst, filePath).ToList());
+                                foreach (var record in records.Item2)
+                                {
+                                    diagnostics.Add(record);
+                                }
+                                foreach (var suppressedRec in records.Item1)
+                                {
+                                    suppressed.Add(suppressedRec);
+                                }
+                            }
+                            catch (Exception dscResourceRuleException)
+                            {
+                                this.outputWriter.WriteError(new ErrorRecord(dscResourceRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, filePath));
+                            }
+                        }
+                    }
+
+                }
+            }
+            #endregion
+
+            #region Run External Rules
+
+            if (this.ExternalRules != null)
+            {
+                List<ExternalRule> exRules = new List<ExternalRule>();
+
+                foreach (ExternalRule exRule in this.ExternalRules)
+                {
+                    if ((includeRule == null || includeRule.Contains(exRule.GetName(), StringComparer.OrdinalIgnoreCase)) &&
+                        (excludeRule == null || !excludeRule.Contains(exRule.GetName(), StringComparer.OrdinalIgnoreCase)))
+                    {
+                        string ruleName = string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", exRule.GetSourceName(), exRule.GetName());
+                        this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, ruleName));
+
+                        // Ensure that any unhandled errors from Rules are converted to non-terminating errors
+                        // We want the Engine to continue functioning even if one or more Rules throws an exception
+                        try
+                        {
+                            exRules.Add(exRule);
+                        }
+                        catch (Exception externalRuleException)
+                        {
+                            this.outputWriter.WriteError(new ErrorRecord(externalRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
+                        }
+                    }
+                }
+
+                foreach (var record in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), fileName))
+                {
+                    diagnostics.Add(record);
+                }
+            }
+
+            #endregion
+
+            IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics;
+
+            if (severity != null)
+            {
+                var diagSeverity = severity.Select(item => Enum.Parse(typeof(DiagnosticSeverity), item, true));
+                diagnosticsList = diagnostics.Where(item => diagSeverity.Contains(item.Severity));
+            }
+
+            return this.suppressedOnly ?
+                suppressed.OfType<DiagnosticRecord>() :
+                diagnosticsList;
+        }
     }
 }
