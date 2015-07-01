@@ -530,7 +530,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                             }
                         }
 
-                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || excludeRegexMatch))
+                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
                         {
                             WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
