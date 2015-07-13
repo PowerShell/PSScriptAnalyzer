@@ -53,6 +53,8 @@ You can suppress a rule by decorating a script/function or script/function param
         
     }
     
+All rule violations within the scope of the script/function/parameter you decorate will be suppressed.
+    
 To suppress a message on a specific parameter, set the `SuppressMessageAttribute`'s `CheckId` parameter to the name of the parameter:
 
     function SuppressTwoVariables()
@@ -63,25 +65,24 @@ To suppress a message on a specific parameter, set the `SuppressMessageAttribute
         {
         }
     }
-    
-To suppress a rule for an entire function/script, decorate the `param` block of the script/function and set the `SuppressMessageAttribute's` `Scope` property to `Function`:
+
+Use the `SuppressMessageAttribute`'s `Scope` property to limit rule suppression to functions or classes within the attribute's scope. Use the value `Function` to suppress violations on all functions within the attribute's scope. Use the value `Class` to suppress violoations on all classes within the attribute's scope:
+
 
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp", "", Scope="Function")]
     param(
     )
     
-
-You can also suppress a rule for an entire class using `Class` as the value of the `Scope` property:
-
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Scope="Class")]
-    class TestClass 
+    function InternalFunction
     {
-        <#
-        ... snip ...
-        #>
+        param()
+        
+        Write-Verbose -Message "I am invincible!"
     }
+    
+The above example demonstrates how to suppress rule violations for internal functions using the `SuppressMessageAttribute`'s `Scope` property.
 
-Finally, you can restrict suppression inside a scope by setting the `SuppressMessageAttribute's` `Target` property to a regular expression that causes the script analyzer to skip functions/variables/parameters/objects whose names match the regular expression. 
+You can further restrict suppression based on a function/parameter/class/variable/object's name by setting the `SuppressMessageAttribute's` `Target` property to a regular expression. Any function/parameter/class/variable/object whose name matches the regular expression is skipped.
 
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPositionalParameters", Scope="Function", Target="PositionalParametersAllowed")]
     Param(
