@@ -140,6 +140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Confirm = 14,
         }
 
+        internal const string Host = "Host";
         internal const string HistorySize = "MaximumHistoryCount";
         internal const string OutputEncoding = "OutputEncoding";
         internal const string NestedPromptLevel = "NestedPromptLevel";
@@ -159,6 +160,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         internal static readonly string[] OtherInitializedVariables = new string[]
                                                                 {
+                                                                    Host,
                                                                     HistorySize,
                                                                     OutputEncoding,
                                                                     NestedPromptLevel,
