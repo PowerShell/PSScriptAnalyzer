@@ -39,6 +39,86 @@ If you have previous version of PSScriptAnalyzer installed on your machine, you 
 
 To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell console to obtain the built-in rules
 
+Suppressing Rules
+=================
+
+You can suppress a rule by decorating a script/function or script/function parameter with .NET's [SuppressMessageAttribute](https://msdn.microsoft.com/en-us/library/system.diagnostics.codeanalysis.suppressmessageattribute.aspx).  `SuppressMessageAttribute`'s constructor takes two parameters: a category and a check ID. Set the `categoryID` parameter to the name of the rule you want to suppress (you may omit the `checkID` parameter):
+
+    function SuppressMe()
+    {
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp")]
+        param()
+
+        Write-Verbose -Message "I'm making a difference!"
+        
+    }
+    
+To suppress a message on a specific parameter, set the `SuppressMessageAttribute`'s `CheckId` parameter to the name of the parameter:
+
+    function SuppressTwoVariables()
+    {
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "b")]
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "a")]
+        param([string]$a, [int]$b)
+        {
+        }
+    }
+    
+To suppress a rule for an entire function/script, decorate the `param` block of the script/function and set the `SuppressMessageAttribute's` `Scope` property to `Function`:
+
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp", "", Scope="Function")]
+    param(
+    )
+    
+
+You can also suppress a rule for an entire class using `Class` as the value of the `Scope` property:
+
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Scope="Class")]
+    class TestClass 
+    {
+        <#
+        ... snip ...
+        #>
+    }
+
+Finally, you can restrict suppression inside a scope by setting the `SuppressMessageAttribute's` `Target` property to a regular expression that causes the script analyzer to skip functions/variables/parameters/objects whose names match the regular expression. 
+
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPositionalParameters", Scope="Function", Target="PositionalParametersAllowed")]
+    Param(
+    )
+     
+    function PositionalParametersAllowed()
+    {
+        Param([string]$Parameter1)
+        {
+            Write-Verbose $Parameter1
+        }
+    
+    }
+    
+    function PositionalParametersNotAllowed()
+    {
+        param([string]$Parameter1)
+        {
+            Write-Verbose $Parameter1
+        }
+    }
+    
+    # The script analyzer will skip this violation
+    PositionalParametersAllowed 'value1'
+    
+    # The script analyzer will report this violation
+    PositionalParametersNotAllowed 'value1
+    
+To match all functions/variables/parameters/objects, use `*` as the value of the Target parameter:
+
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPositionalParameters", Scope="Function", Target="*")]
+    Param(
+    )
+
+
+
+
 Building the Code
 =================
 
