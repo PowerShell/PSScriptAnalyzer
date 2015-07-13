@@ -9,6 +9,9 @@ function Test {
 
 $a = 3;
 
+#should not raise error
+$Host
+
 "hi there!" -match "hi" | Out-Null;
 $matches[0];
 
