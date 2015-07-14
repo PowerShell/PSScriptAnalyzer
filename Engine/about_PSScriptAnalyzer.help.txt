@@ -38,11 +38,11 @@ RUNNING SCRIPT ANALYZER
         That will analyze your script against every built-in rule.  As you may find
         if your script is sufficiently large, that could result in a lot of warnings
         and/or errors. See the next section on recommendations for running against
-        an existing script or module.
+        an existing script, module or DSC resource.
         
         To run the script analyzer against a whole directory, specify the folder
         containing the script, module and DSC files you want analyzed.  Specify
-        the Recurse parameter if you also want sub-directories searched for scripts 
+        the Recurse parameter if you also want sub-directories searched for files 
         to analyze.
         
         PS C:\> Invoke-ScriptAnalyzer -Path . -Recurse
@@ -59,9 +59,9 @@ RUNNING SCRIPT ANALYZER ON A NEW SCRIPT, MODULE OR DSC RESOURCE
         soon as they occur.  
         
         Over time, you may find rules that you don't find value in or have a need to 
-        violate the rule.  Suppress those rules as necessary but try to avoid 
-        "knee jerk" rule suppression.  Analyze the diagnostic output and the part of 
-        your script that violates the rule to be sure you understand the reason for 
+        explicitly violate.  Suppress those rules as necessary but try to avoid 
+        "knee jerk" suppression of rules.  Analyze the diagnostic output and the part
+        of your script that violates the rule to be sure you understand the reason for 
         the warning and that it is indeed OK to suppress the rule.
         
         There are several ways to suppress rules.  You can suppress a rule globally 
@@ -70,11 +70,11 @@ RUNNING SCRIPT ANALYZER ON A NEW SCRIPT, MODULE OR DSC RESOURCE
         PS C:\> Invoke-ScriptAnalyzer -Path . -ExcludeRule `
                     PSProvideDefaultParameterValue, PSAvoidUsingWMICmdlet
                    
-        Note that ExcludeRule parameter takes an array of strings i.e. rule names.
+        Note that the ExcludeRule parameter takes an array of strings i.e. rule names.
         
-        Sometimes you want to suppress a rule for part of your script but not for
+        Sometimes you will want to suppress a rule for part of your script but not for
         the entire script.  PSScriptAnalyzer allows you to suppress rules at the 
-        function level as well.  You can use the .NET Framework 
+        script, function and class scope.  You can use the .NET Framework 
         System.Diagnoctics.CodeAnalysis.SuppressMesssageAttribute in your script 
         like so:
         
