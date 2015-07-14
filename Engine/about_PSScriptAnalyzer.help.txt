@@ -62,28 +62,8 @@ RUNNING SCRIPT ANALYZER ON A NEW SCRIPT, MODULE OR DSC RESOURCE
         explicitly violate.  Suppress those rules as necessary but try to avoid 
         "knee jerk" suppression of rules.  Analyze the diagnostic output and the part
         of your script that violates the rule to be sure you understand the reason for 
-        the warning and that it is indeed OK to suppress the rule.
-        
-        There are several ways to suppress rules.  You can suppress a rule globally 
-        by using the ExcludeRule parameter when invoking the script analyzer e.g.:
-        
-        PS C:\> Invoke-ScriptAnalyzer -Path . -ExcludeRule `
-                    PSProvideDefaultParameterValue, PSAvoidUsingWMICmdlet
-                   
-        Note that the ExcludeRule parameter takes an array of strings i.e. rule names.
-        
-        Sometimes you will want to suppress a rule for part of your script but not for
-        the entire script.  PSScriptAnalyzer allows you to suppress rules at the 
-        script, function and class scope.  You can use the .NET Framework 
-        System.Diagnoctics.CodeAnalysis.SuppressMesssageAttribute in your script 
-        like so:
-        
-        function Commit-Change() {
-            [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseApprovedVerbs", 
-                                                               "", Scope="Function", 
-                                                               Target="*")]
-            param() 
-        }
+        the warning and that it is indeed OK to suppress the rule.  For information on 
+        how to suppress rules see the RULE SUPPRESSION section below.
         
 RUNNING SCRIPT ANALYZER ON AN EXISTING SCRIPT, MODULE OR DSC RESOURCE
 
@@ -150,17 +130,49 @@ RUNNING SCRIPT ANALYZER ON AN EXISTING SCRIPT, MODULE OR DSC RESOURCE
             3 PSPossibleIncorrectComparisonWithNull
             1 PSAvoidUsingComputerNameHardcoded
             
-        I may decide to table the PSAvoidUsingInvokeExpression for the moment and 
-        focus on the rest, especially the PSUseDeclaredVarsMoreThanAssigments, 
+        I may decide to exclude the PSAvoidUsingInvokeExpression rule for the moment 
+        and focus on the rest, especially the PSUseDeclaredVarsMoreThanAssigments, 
         PSAvoidUninitializedVariable and PSPossibleIncorrectComparisonWithNull rules.
         
         As you fix rules, go back and enable more rules as you have time to address 
-        the issues.  While getting a completely clean run through every rule is a 
+        the associated issues.  In some cases, you may want to suppress a rule at
+        the function, script or class scope instead of globally excluding rule.  See
+        the RULE SUPPRESSION section below.
+        
+        While getting a completely clean run through every rule is a 
         noble goal, it may not always be feasible. You have to weigh the gain of
         passing the rule and eliminating a "potential" issue with changing script
         and possibly introducing a new problem.  In the end, for existing scripts,
         it is usually best to have evaluated the rule violations that you deem the 
         most valuable to address.
+
+RULE SUPPRESSSION
+
+        Rule suppression allows you to turn off rule verification on a function, 
+        scripts or class definition.  This allows you to exclude only specified 
+        scripts or functions from verification of a rule instead of globally 
+        excluding the rule.  
+
+        There are several ways to suppress rules.  You can suppress a rule globally 
+        by using the ExcludeRule parameter when invoking the script analyzer e.g.:
+        
+        PS C:\> Invoke-ScriptAnalyzer -Path . -ExcludeRule `
+                    PSProvideDefaultParameterValue, PSAvoidUsingWMICmdlet
+                   
+        Note that the ExcludeRule parameter takes an array of strings i.e. rule names.
+        
+        Sometimes you will want to suppress a rule for part of your script but not for
+        the entire script.  PSScriptAnalyzer allows you to suppress rules at the 
+        script, function and class scope.  You can use the .NET Framework 
+        System.Diagnoctics.CodeAnalysis.SuppressMesssageAttribute in your script 
+        like so:
+        
+        function Commit-Change() {
+            [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseApprovedVerbs", 
+                                                               "", Scope="Function", 
+                                                               Target="*")]
+            param() 
+        }
         
 EXTENSIBILITY
 
