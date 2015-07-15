@@ -754,7 +754,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Depricated. Starting in Windows PowerShell 3.0, these cmdlets have been superseded by CIM cmdlets..
+        ///   Looks up a localized string similar to Deprecated. Starting in Windows PowerShell 3.0, these cmdlets have been superseded by CIM cmdlets..
         /// </summary>
         internal static string AvoidUsingWMICmdletDescription {
             get {
