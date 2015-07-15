@@ -2,21 +2,31 @@
         about_PSScriptAnalyzer
         
 SHORT DESCRIPTION
-        PSScriptAnalyzer is a static code checker for PowerShell modules and scripts.
+        PSScriptAnalyzer is a static code checker for PowerShell script.
 
 LONG DESCRIPTION
-        PSScriptAnalyzer checks the quality of Windows PowerShell code by running a 
-        set of rules. The rules are based on PowerShell best practices identified by 
+        PSScriptAnalyzer checks the quality of Windows PowerShell script by evaluating
+        that script against a set of rules.  The script can be in the form of a
+        stand-alone script (.ps1 files), a module (.psm1, .psd1 and .ps1 files) or
+        a DSC Resource (.psm1, .psd1 and .ps1 files).
+        
+        The rules are based on PowerShell best practices identified by the 
         PowerShell Team and the community. These rules can help you create more 
         readable, maintainable and reliable scripts. PSScriptAnalyzer generates 
-        DiagnosticResults (errors and warnings) to inform users about potential code 
-        defects and suggests possible solutions for improvements.
+        DiagnosticResults (errors and warnings) to inform you about potential script 
+        issues, including the reason why there might be an issue, and provide you  
+        with guidance on how to fix the issue.
 
-        PSScriptAnalyzer is shipped with a collection of built-in rules that checks 
+        PSScriptAnalyzer is shipped with a collection of built-in rules that check 
         various aspects of PowerShell code such as presence of uninitialized 
-        variables, usage of PSCredential Type, usage of Invoke-Expression etc. 
-        Additional functionalities such as exclude/include specific rules are also 
-        supported.
+        variables, usage of the PSCredential Type, usage of Invoke-Expression, etc.
+         
+        The following additional functionality is also supported:
+        
+        * Including and/or excluding specific rules globally
+        * Suppression of rules within script
+        * Creation of custom rules
+        * Creation of loggers
         
 RUNNING SCRIPT ANALYZER
 
@@ -35,7 +45,7 @@ RUNNING SCRIPT ANALYZER
         
         PS C:\> Invoke-ScriptAnalyzer -Path myscript.ps1
         
-        That will analyze your script against every built-in rule.  As you may find
+        This will analyze your script against every built-in rule.  As you may find
         if your script is sufficiently large, that could result in a lot of warnings
         and/or errors. See the next section on recommendations for running against
         an existing script, module or DSC resource.
@@ -106,7 +116,7 @@ RUNNING SCRIPT ANALYZER ON AN EXISTING SCRIPT, MODULE OR DSC RESOURCE
         are likely to generate prodigious amounts of output.  While these rules have 
         their reason for being many existing scripts violate these rules over and 
         over again.  It would be a shame if you let a flood of warnings from these two 
-        rules, dissuade you from looking at potentially more serious warnings.
+        rules, keep you from addressing more potentially serious warnings.
         
         There may be other rules that generate a lot of output that you don't care 
         about - at least not yet.  As you examine the remaining diagnostics output, 
@@ -130,21 +140,21 @@ RUNNING SCRIPT ANALYZER ON AN EXISTING SCRIPT, MODULE OR DSC RESOURCE
             3 PSPossibleIncorrectComparisonWithNull
             1 PSAvoidUsingComputerNameHardcoded
             
-        I may decide to exclude the PSAvoidUsingInvokeExpression rule for the moment 
+        You may decide to exclude the PSAvoidUsingInvokeExpression rule for the moment
         and focus on the rest, especially the PSUseDeclaredVarsMoreThanAssigments, 
         PSAvoidUninitializedVariable and PSPossibleIncorrectComparisonWithNull rules.
         
         As you fix rules, go back and enable more rules as you have time to address 
         the associated issues.  In some cases, you may want to suppress a rule at
-        the function, script or class scope instead of globally excluding rule.  See
-        the RULE SUPPRESSION section below.
+        the function, script or class scope instead of globally excluding the rule.  
+        See the RULE SUPPRESSION section below.
         
-        While getting a completely clean run through every rule is a 
-        noble goal, it may not always be feasible. You have to weigh the gain of
-        passing the rule and eliminating a "potential" issue with changing script
-        and possibly introducing a new problem.  In the end, for existing scripts,
-        it is usually best to have evaluated the rule violations that you deem the 
-        most valuable to address.
+        While getting a completely clean run through every rule is a noble goal, it 
+        may not always be feasible. You have to weigh the gain of passing the rule 
+        and eliminating a "potential" issue with changing script and possibly 
+        introducing a new problem.  In the end, for existing scripts, it is usually 
+        best to have evaluated the rule violations that you deem the most valuable to 
+        address.
 
 RULE SUPPRESSSION
 
@@ -198,4 +208,3 @@ SEE ALSO
         Invoke-ScriptAnalyzer
         Set-StrictMode        
         about_Pester
-        
