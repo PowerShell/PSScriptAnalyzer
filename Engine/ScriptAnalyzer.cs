@@ -99,7 +99,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] includeRuleNames = null, 
             string[] excludeRuleNames = null,
             string[] severity = null,
-            bool suppressedOnly = false)
+            bool suppressedOnly = false,
+            string profile = null)
             where TCmdlet : PSCmdlet, IOutputWriter
         {
             if (cmdlet == null)
@@ -115,7 +116,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 includeRuleNames,
                 excludeRuleNames,
                 severity,
-                suppressedOnly);
+                suppressedOnly,
+                profile);
         }
 
         /// <summary>
@@ -128,7 +130,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] includeRuleNames = null, 
             string[] excludeRuleNames = null,
             string[] severity = null,
-            bool suppressedOnly = false)
+            bool suppressedOnly = false,
+            string profile = null)
         {
             if (runspace == null)
             {
@@ -143,7 +146,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 includeRuleNames,
                 excludeRuleNames,
                 severity,
-                suppressedOnly);
+                suppressedOnly,
+                profile);
         }
 
         private void Initialize(
@@ -154,7 +158,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] includeRuleNames, 
             string[] excludeRuleNames,
             string[] severity,
-            bool suppressedOnly = false)
+            bool suppressedOnly = false,
+            string profile = null)
         {
             if (outputWriter == null)
             {
@@ -177,6 +182,145 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.excludeRule = excludeRuleNames;
             this.includeRegexList = new List<Regex>();
             this.excludeRegexList = new List<Regex>();
+
+            if (!String.IsNullOrWhiteSpace(profile))
+            {
+                try
+                {
+                    profile = path.GetResolvedPSPathFromPSPath(profile).First().Path;
+                }
+                catch
+                {
+                    this.outputWriter.WriteError(new ErrorRecord(new FileNotFoundException(),
+                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, profile),
+                        ErrorCategory.InvalidArgument, this));
+                }
+
+                if (File.Exists(profile))
+                {
+                    Token[] parserTokens = null;
+                    ParseError[] parserErrors = null;
+                    Ast profileAst = Parser.ParseFile(profile, out parserTokens, out parserErrors);
+                    IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
+                    foreach (HashtableAst hashTableAst in hashTableAsts)
+                    {
+                        foreach (var kvp in hashTableAst.KeyValuePairs)
+                        {
+                            if (!(kvp.Item1 is StringConstantExpressionAst))
+                            {
+                                this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(),
+                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile),
+                                    ErrorCategory.InvalidArgument, this));
+                                continue;
+                            }
+
+                            // parse the item2 as array
+                            PipelineAst pipeAst = kvp.Item2 as PipelineAst;
+                            List<string> rhsList = new List<string>();
+                            if (pipeAst != null)
+                            {
+                                ExpressionAst pureExp = pipeAst.GetPureExpression();
+                                if (pureExp is StringConstantExpressionAst)
+                                {
+                                    rhsList.Add((pureExp as StringConstantExpressionAst).Value);
+                                }
+                                else
+                                {
+                                    ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
+                                    if (arrayLitAst == null && pureExp is ArrayExpressionAst)
+                                    {
+                                        ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
+                                        // Statements property is never null
+                                        if (arrayExp.SubExpression != null)
+                                        {
+                                            StatementAst stateAst = arrayExp.SubExpression.Statements.First();
+                                            if (stateAst != null && stateAst is PipelineAst)
+                                            {
+                                                CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.First();
+                                                if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
+                                                {
+                                                    CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
+                                                    if (cmdExpAst.Expression is StringConstantExpressionAst)
+                                                    {
+                                                        rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (arrayLitAst != null)
+                                    {
+                                        foreach (var element in arrayLitAst.Elements)
+                                        {
+                                            if (!(element is StringConstantExpressionAst))
+                                            {
+                                                this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(),
+                                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile),
+                                                    ErrorCategory.InvalidArgument, this));
+                                                continue;
+                                            }
+
+                                            rhsList.Add((element as StringConstantExpressionAst).Value);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (rhsList.Count == 0)
+                            {
+                                this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(),
+                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile),
+                                    ErrorCategory.InvalidArgument, this));
+                                break;
+                            }
+
+                            switch ((kvp.Item1 as StringConstantExpressionAst).Value.ToLower())
+                            {
+                                case "severity":
+                                    if (this.severity == null)
+                                    {
+                                        this.severity = rhsList.ToArray();
+                                    }
+                                    else
+                                    {
+                                        this.severity = this.severity.Union(rhsList).ToArray();
+                                    }
+                                    break;
+                                case "includerules":
+                                    if (this.includeRule == null)
+                                    {
+                                        this.includeRule = rhsList.ToArray();
+                                    }
+                                    else
+                                    {
+                                        this.includeRule = this.includeRule.Union(rhsList).ToArray();
+                                    }
+                                    break;
+                                case "excluderules":
+                                    if (this.excludeRule == null)
+                                    {
+                                        this.excludeRule = rhsList.ToArray();
+                                    }
+                                    else
+                                    {
+                                        this.excludeRule = this.excludeRule.Union(rhsList).ToArray();
+                                    }
+                                    break;
+                                default:
+                                    this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(),
+                                        string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile),
+                                        ErrorCategory.InvalidArgument, this));
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
 
             //Check wild card input for the Include/ExcludeRules and create regex match patterns
             if (this.includeRule != null)

@@ -123,13 +123,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         }
         private bool suppressedOnly;
 
+        /// <summary>
+        /// Returns path to the file that contains user profile for ScriptAnalyzer
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [ValidateNotNull]
+        public string Profile
+        {
+            get { return profile; }
+            set { profile = value; }
+        }
+        private string profile;
+
         #endregion Parameters
-
-        #region Private Members
-
-        Dictionary<string, List<string>> validationResults = new Dictionary<string, List<string>>();
-
-        #endregion
 
         #region Overrides
 
@@ -144,7 +150,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.includeRule,
                 this.excludeRule,
                 this.severity,
-                this.suppressedOnly);
+                this.suppressedOnly,
+                this.profile);
         }
 
         /// <summary>
