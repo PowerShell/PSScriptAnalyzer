@@ -357,13 +357,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             #region Verify rules
 
+            // Safely get one non-duplicated list of rules
             IEnumerable<IRule> rules =
-                this.ScriptRules.Union<IRule>(
-                    this.TokenRules).Union<IRule>(
+                Enumerable.Union<IRule>(
+                    Enumerable.Union<IRule>(
+                        this.ScriptRules ?? Enumerable.Empty<IRule>(),
+                        this.TokenRules ?? Enumerable.Empty<IRule>()),
                     this.ExternalRules ?? Enumerable.Empty<IExternalRule>());
 
             // Ensure that rules were actually loaded
-            if (rules == null || rules.Count() == 0)
+            if (rules == null || rules.Any() == false)
             {
                 this.outputWriter.ThrowTerminatingError(
                     new ErrorRecord(
@@ -411,22 +414,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             List<string> paths = new List<string>();
 
-            // Clear external rules for each invoke.
-            ExternalRules = new List<ExternalRule>();
-
             // Initialize helper
             Helper.Instance = new Helper(invokeCommand, this.outputWriter);
             Helper.Instance.Initialize();
 
             // Clear external rules for each invoke.
-            ExternalRules = new List<ExternalRule>();
+            this.ScriptRules = null;
+            this.TokenRules = null;
+            this.ExternalRules = null;
 
             // An aggregate catalog that combines multiple catalogs.
             using (AggregateCatalog catalog = new AggregateCatalog())
             {
                 // Adds all the parts found in the same directory.
                 string dirName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                catalog.Catalogs.Add(new DirectoryCatalog(dirName));
+                catalog.Catalogs.Add(
+                    new SafeDirectoryCatalog(
+                        dirName,
+                        this.outputWriter));
 
                 // Adds user specified directory
                 paths = result.ContainsKey("ValidDllPaths") ? result["ValidDllPaths"] : result["ValidPaths"];
@@ -438,7 +443,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                     else
                     {
-                        catalog.Catalogs.Add(new DirectoryCatalog(path));
+                        catalog.Catalogs.Add(
+                            new SafeDirectoryCatalog(
+                                path,
+                                this.outputWriter));
                     }
                 }
 
