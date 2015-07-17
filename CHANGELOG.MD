@@ -1,4 +1,4 @@
-## Released v1.0.2 (June.25, 2015)
+## Released v1.0.2 (June.24, 2015)
 ###Features:
 - Perf improvements in the Engine to execute rules concurrently.
 
