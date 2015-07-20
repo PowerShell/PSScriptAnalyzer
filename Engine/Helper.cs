@@ -225,6 +225,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Given a filePath. Returns true if it is a powershell help file
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public bool IsHelpFile(string filePath)
+        {
+            return filePath != null && File.Exists(filePath) && Path.GetFileName(filePath).StartsWith("about_", StringComparison.OrdinalIgnoreCase)
+                && Path.GetFileName(filePath).EndsWith(".help.txt", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Given an AST, checks whether dsc resource is class based or not
         /// </summary>
         /// <param name="ast"></param>

@@ -91,6 +91,7 @@
     <Compile Include="UseShouldProcessForStateChangingFunctions.cs" />
     <Compile Include="UseSingularNouns.cs" />
     <Compile Include="UseStandardDSCFunctionsInResource.cs" />
+    <Compile Include="UseUTF8EncodingForHelpFile.cs" />
     <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
   </ItemGroup>
   <ItemGroup>

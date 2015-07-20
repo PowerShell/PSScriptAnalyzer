@@ -732,4 +732,16 @@
   <data name="AvoidUsingDeprecatedManifestFieldsName" xml:space="preserve">
     <value>AvoidUsingDeprecatedManifestFields</value>
   </data>
+  <data name="UseUTF8EncodingForHelpFileCommonName" xml:space="preserve">
+    <value>Use UTF8 Encoding For Help File</value>
+  </data>
+  <data name="UseUTF8EncodingForHelpFileDescription" xml:space="preserve">
+    <value>PowerShell help file needs to use UTF8 Encoding.</value>
+  </data>
+  <data name="UseUTF8EncodingForHelpFileError" xml:space="preserve">
+    <value>File {0} has to use UTF8 instead of {1} encoding because it is a powershell help file.</value>
+  </data>
+  <data name="UseUTF8EncodingForHelpFileName" xml:space="preserve">
+    <value>UseUTF8EncodingForHelpFile</value>
+  </data>
 </root>
