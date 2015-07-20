@@ -24,7 +24,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// GetScriptAnalyzerRuleCommand: Cmdlet to list all the analyzer rule names and descriptions.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "ScriptAnalyzerRule", HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525913")]
-    public class GetScriptAnalyzerRuleCommand : PSCmdlet
+    public class GetScriptAnalyzerRuleCommand : PSCmdlet, IOutputWriter
     {
         #region Parameters
         /// <summary>
@@ -69,12 +69,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         #endregion Parameters
 
-        #region Private Members
-
-        Dictionary<string, List<string>> validationResults = new Dictionary<string, List<string>>();
-
-        #endregion
-
         #region Overrides
 
         /// <summary>
@@ -82,43 +76,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void BeginProcessing()
         {
-            #region Set PSCmdlet property of Helper
-
-            Helper.Instance.MyCmdlet = this;
-
-            #endregion
-            // Verifies rule extensions
-            if (customizedRulePath != null)
-            {
-                validationResults = ScriptAnalyzer.Instance.CheckRuleExtension(customizedRulePath, this);
-                foreach (string extension in validationResults["InvalidPaths"])
-                {
-                    WriteWarning(string.Format(CultureInfo.CurrentCulture,Strings.MissingRuleExtension, extension));
-                }
-            }
-            else
-            {
-                validationResults.Add("InvalidPaths", new List<string>());
-                validationResults.Add("ValidModPaths", new List<string>());
-                validationResults.Add("ValidDllPaths", new List<string>());            
-            }
-
-            try
-            {
-                if (validationResults["ValidDllPaths"].Count == 0)
-                {
-                    ScriptAnalyzer.Instance.Initialize();
-                }
-                else
-                {
-                    ScriptAnalyzer.Instance.Initilaize(validationResults);
-                }
-            }
-            catch (Exception ex)
-            {
-                ThrowTerminatingError(new ErrorRecord(ex, ex.HResult.ToString("X", CultureInfo.CurrentCulture), 
-                    ErrorCategory.NotSpecified, this));
-            }
+            ScriptAnalyzer.Instance.Initialize(this, customizedRulePath);
         }
 
         /// <summary>
@@ -126,11 +84,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void ProcessRecord()
         {
-            string[] modNames = null;
-            if (validationResults["ValidModPaths"].Count > 0)
-            {
-                modNames = validationResults["ValidModPaths"].ToArray<string>();
-            }
+            string[] modNames = ScriptAnalyzer.Instance.GetValidModulePaths();
 
             IEnumerable<IRule> rules = ScriptAnalyzer.Instance.GetRule(modNames, name);
             if (rules == null)
