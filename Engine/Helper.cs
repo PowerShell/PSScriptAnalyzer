@@ -349,7 +349,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="name"></param>
         /// <param name="commandType"></param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name, CommandTypes commandType = CommandTypes.All)
+        public CommandInfo GetCommandInfo(string name, CommandTypes commandType = CommandTypes.Alias | CommandTypes.Cmdlet | CommandTypes.Configuration | CommandTypes.ExternalScript | CommandTypes.Filter | CommandTypes.Function | CommandTypes.Script | CommandTypes.Workflow)
         {
             return this.invokeCommand.GetCommand(name, commandType);
         }
