@@ -27,6 +27,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class Helper
     {
+        #region Private members
+
+        private CommandInvocationIntrinsics invokeCommand;
+        private IOutputWriter outputWriter;
+
+        #endregion
+
         #region Singleton
         private static object syncRoot = new Object();
 
@@ -41,14 +48,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 if (instance == null)
                 {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                            instance = new Helper();
-                    }
+                    Instance = new Helper();
                 }
 
                 return instance;
+            }
+            internal set
+            {
+                lock (syncRoot)
+                {
+                    if (instance == null)
+                    {
+                        instance = value;
+                    }
+                }
             }
         }
 
@@ -65,11 +78,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Dictionary contains mapping of alias to cmdlet
         /// </summary>
         private Dictionary<String, String> AliasToCmdletDictionary;
-
-        /// <summary>
-        /// ScriptAnalyzer Cmdlet, used for getting commandinfos of other commands.
-        /// </summary>
-        public PSCmdlet MyCmdlet { get; set; }
 
         internal TupleComparer tupleComparer = new TupleComparer();
 
@@ -93,6 +101,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         #endregion
 
+        /// <summary>
+        /// Initializes the Helper class.
+        /// </summary>
+        private Helper()
+        {
+        }
+
+        /// <summary>
+        /// Initializes the Helper class.
+        /// </summary>
+        /// <param name="invokeCommand">
+        /// A CommandInvocationIntrinsics instance for use in gathering 
+        /// information about available commands and aliases.
+        /// </param>
+        /// <param name="outputWriter">
+        /// An IOutputWriter instance for use in writing output
+        /// to the PowerShell environment.
+        /// </param>
+        public Helper(
+            CommandInvocationIntrinsics invokeCommand,
+            IOutputWriter outputWriter)
+        {
+            this.invokeCommand = invokeCommand;
+            this.outputWriter = outputWriter;
+        }
+
         #region Methods
         /// <summary>
         /// Initialize : Initializes dictionary of alias.
@@ -104,7 +138,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
 
-            IEnumerable<CommandInfo> aliases = MyCmdlet.InvokeCommand.GetCommands("*", CommandTypes.Alias, true);
+            IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
             foreach (AliasInfo aliasInfo in aliases)
             {
@@ -317,7 +351,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public CommandInfo GetCommandInfo(string name, CommandTypes commandType = CommandTypes.Alias | CommandTypes.Cmdlet | CommandTypes.Configuration | CommandTypes.ExternalScript | CommandTypes.Filter | CommandTypes.Function | CommandTypes.Script | CommandTypes.Workflow)
         {
-            return Helper.Instance.MyCmdlet.InvokeCommand.GetCommand(name, commandType);
+            return this.invokeCommand.GetCommand(name, commandType);
         }
 
         /// <summary>
@@ -914,7 +948,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
                             System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                    Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
                 }
             }
 

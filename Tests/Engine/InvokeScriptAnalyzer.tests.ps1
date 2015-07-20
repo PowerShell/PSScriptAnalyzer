@@ -1,4 +1,11 @@
-﻿Import-Module PSScriptAnalyzer
+﻿# Check if PSScriptAnalyzer is already loaded so we don't
+# overwrite a test version of Invoke-ScriptAnalyzer by
+# accident
+if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
+{
+	Import-Module PSScriptAnalyzer
+}
+
 $sa = Get-Command Invoke-ScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $singularNouns = "PSUseSingularNouns"
@@ -216,7 +223,17 @@ Describe "Test CustomizedRulePath" {
     Context "When used incorrectly" {
         It "file cannot be found" {
             $wrongRule = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath "This is a wrong rule" 3>&1 | Select-Object -First 1
-            $wrongRule | Should Match "Cannot find rule extension 'This is a wrong rule'."
+
+			if ($testingLibraryUsage)
+			{
+				# Special case for library usage testing: warning output written
+				# with PSHost.UI.WriteWarningLine does not get redirected correctly
+				# so we can't use this approach for checking the warning message.
+				# Instead, reach into the test IOutputWriter implementation to find it.
+				$wrongRule = $testOutputWriter.MostRecentWarningMessage
+			}
+
+			$wrongRule | Should Match "Cannot find rule extension 'This is a wrong rule'."
         }
     }
 }

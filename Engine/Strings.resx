@@ -192,4 +192,13 @@
   <data name="RuleSuppressionIDError" xml:space="preserve">
     <value>Cannot find any DiagnosticRecord with the Rule Suppression ID {0}.</value>
   </data>
+  <data name="WrongKey" xml:space="preserve">
+    <value>{0} is not a valid key in the profile hashtable: line {0} column {1} in file {2}</value>
+  </data>
+  <data name="WrongKeyFormat" xml:space="preserve">
+    <value>Key in the profile hashtable should be a string: line {0} column {1} in file {2}</value>
+  </data>
+  <data name="WrongValueFormat" xml:space="preserve">
+    <value>Value in the profile hashtable should be a string or an array of strings: line {0} column {1} in file {2}</value>
+  </data>
 </root>
