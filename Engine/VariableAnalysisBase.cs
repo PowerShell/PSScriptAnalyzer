@@ -405,15 +405,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal bool _returns;
         internal bool _unreachable;
 
+        // Only Entry block, that can be constructed via NewEntryBlock() is reachable initially.
+        // all other blocks are unreachable.
+        // reachability of block should be proved with FlowsTo() calls.
+        public Block()
+        {
+            this._unreachable = true;
+        }
+
+        public static Block NewEntryBlock()
+        {
+            return new Block(unreachable: false);
+        }
+
+        private Block(bool unreachable)
+        {
+            this._unreachable = unreachable;
+        }
+
+        /// <summary>
+        /// Tell flow analysis that this block can flow to next block.
+        /// </summary>
+        /// <param name="next"></param>
         internal void FlowsTo(Block next)
         {
             if (_successors.IndexOf(next) < 0)
             {
-                if (_unreachable)
+                if (!_unreachable)
                 {
-                    next._unreachable = true;
+                    next._unreachable = false;
                 }
-
                 _successors.Add(next);
                 next._predecessors.Add(this);
             }
@@ -725,6 +746,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal static void InitializeSSA(Dictionary<string, VariableAnalysisDetails> VariableAnalysis, Block Entry, List<Block> Blocks)
         {
             VariablesDictionary = new Dictionary<string, VariableAnalysisDetails>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var block in Blocks)
+            {
+                List<Block> _unreachables = new List<Block>();
+                foreach (var pred in block._predecessors)
+                {
+                    if (pred._unreachable)
+                    {
+                        _unreachables.Add(pred);
+                        pred._successors.Remove(block);
+                    }
+                }
+
+                foreach (var pred in _unreachables)
+                {
+                    block._predecessors.Remove(pred);
+                }
+            }
+
             InternalVariablesDictionary.Clear();
             SSADictionary.Clear();
             Counters.Clear();
@@ -1877,7 +1917,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public void Init()
         {
-            _entryBlock = new Block();
+            _entryBlock = Block.NewEntryBlock();
             _exitBlock = new Block();
         }
 
@@ -2057,6 +2097,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (ifStmtAst == null) return null;
 
             Block afterStmt = new Block();
+
+            if (ifStmtAst.ElseClause == null)
+            {
+                // There is no else, flow can go straight to afterStmt.
+                _currentBlock.FlowsTo(afterStmt);
+            }
+
             int clauseCount = ifStmtAst.Clauses.Count;
             for (int i = 0; i < clauseCount; i++)
             {
@@ -2403,52 +2450,62 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             tryStatementAst.Body.Visit(this.Decorator);
 
-            // This is either the first block in the finally, or the first block after all the catches if there is no finally.
-            // For return analysis, we start off assuming this block is reachable only if the end of the try body
-            // is reachable, but that can change if we find a catch that falls through.
-            var afterTry = new Block { _unreachable = _currentBlock._unreachable };
+            Block lastBlockInTry = _currentBlock;
+            var finallyFirstBlock = tryStatementAst.Finally == null ? null : new Block();
+            Block finallyLastBlock = null;
+
+            // This is the first block after all the catches and finally (if present).
+            var afterTry = new Block();
+
+            bool isCatchAllPresent = false;
 
             foreach (var catchAst in tryStatementAst.CatchClauses)
             {
+                if (catchAst.IsCatchAll)
+                {
+                    isCatchAllPresent = true;
+                }
+
                 // Any statement in the try block could throw and reach the catch, so assume the worst (from a data
                 // flow perspective) and make the predecessor to the catch the block before entering the try.
                 _currentBlock = new Block();
                 blockBeforeTry.FlowsTo(_currentBlock);
-
                 catchAst.Visit(this.Decorator);
-
-                if (!_currentBlock._unreachable)
-                {
-                    // The last block of the catch falls through, so we can get reach blocks after the try.
-                    afterTry._unreachable = false;
-                }
+                _currentBlock.FlowsTo(finallyFirstBlock ?? afterTry);
             }
 
-            // Assume nothing in the try was executed, so flow comes from before the try.  We could have the catch blocks
-            // also flow to this block, but that won't improve the analysis any, so skip that.
-            _currentBlock = afterTry;
-            blockBeforeTry.FlowsTo(_currentBlock);
-
-            if (tryStatementAst.Finally != null)
+            if (finallyFirstBlock != null)
             {
+                lastBlockInTry.FlowsTo(finallyFirstBlock);
+
+                _currentBlock = finallyFirstBlock;
                 tryStatementAst.Finally.Visit(this.Decorator);
+                _currentBlock.FlowsTo(afterTry);
 
-                if (!_currentBlock._unreachable)
+                finallyLastBlock = _currentBlock;
+
+                // For finally block, there are 2 cases: when try-body throw and when it doesn't.
+                // For these two cases value of 'finallyLastBlock._throws' would be different.
+                if (!isCatchAllPresent)
                 {
-                    // If the finally throws (it can't have other flow like return, break, or continue)
-                    // then after the try/catch/finally is unreachable, otherwise it is reachable.
-                    afterTry._unreachable = false;
-                }
-                // We can assume that flow from the finally reaches the code following the finally.  Of course, if an exception occurs,
-                // then the code can't be reached, but our conservative data flow modeling assures us correctness, the exception will
-                // either leave the current function (meaning it doesn't matter that we assumed flow reached after the finally), or
-                // it will be caught and handled by a containing catch, and our conversative data flow ensures the correctness of the
-                // generated code.
+                    // This flow exist only, if there is no catch for all exceptions.
+                    blockBeforeTry.FlowsTo(finallyFirstBlock);
 
-                var newBlock = new Block();
-                _currentBlock.FlowsTo(newBlock);
-                _currentBlock = newBlock;
+                    var rethrowAfterFinallyBlock = new Block();
+                    finallyLastBlock.FlowsTo(rethrowAfterFinallyBlock);
+                    rethrowAfterFinallyBlock._throws = true;
+                    rethrowAfterFinallyBlock.FlowsTo(_exitBlock);
+                }
+
+                // This flow always exists.
+                finallyLastBlock.FlowsTo(afterTry);
             }
+            else
+            {
+                lastBlockInTry.FlowsTo(afterTry);
+            }
+
+            _currentBlock = afterTry;
 
             return null;
         }
@@ -2486,7 +2543,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             // The next block is unreachable, but is necessary to keep the flow graph correct.
-            _currentBlock = new Block { _unreachable = true };
+            _currentBlock = new Block();
         }
 
         /// <summary>
@@ -2525,7 +2582,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var lastBlockInStatement = _currentBlock;
 
             // The next block is unreachable, but is necessary to keep the flow graph correct.
-            _currentBlock = new Block { _unreachable = true };
+            _currentBlock = new Block();
             return lastBlockInStatement;
         }
 

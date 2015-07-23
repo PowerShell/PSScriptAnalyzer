@@ -47,8 +47,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (Helper.Instance.GetCommandInfo(cmdAst.GetCommandName()) != null
                     && Helper.Instance.PositionalParameterUsed(cmdAst))
                 {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
-                        cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
+                    PipelineAst parent = cmdAst.Parent as PipelineAst;
+
+                    if (parent != null && parent.PipelineElements.Count > 1)
+                    {
+                        // raise if it's the first element in pipeline. otherwise no.
+                        if (parent.PipelineElements[0] == cmdAst)
+                        {
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
+                                cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
+                        }
+                    }
+                    // not in pipeline so just raise it normally
+                    else
+                    {
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
+                            cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
+                    }
                 }
             }
         }

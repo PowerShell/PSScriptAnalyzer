@@ -5,13 +5,22 @@ Param(
  
 function SuppressMe ()
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideVerboseMessage")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "unused1")]
     Param([string]$unUsed1, [int] $unUsed2)
     {
         Write-Host "I do nothing"
     }
 
+}
+
+function SuppressTwoVariables()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "b")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "a")]
+    Param([string]$a, [int]$b)
+    {
+    }
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Scope="Class")]

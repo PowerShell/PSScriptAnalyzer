@@ -1,11 +1,18 @@
-﻿Import-Module -Verbose PSScriptAnalyzer
+﻿# Check if PSScriptAnalyzer is already loaded so we don't
+# overwrite a test version of Invoke-ScriptAnalyzer by
+# accident
+if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
+{
+	Import-Module -Verbose PSScriptAnalyzer
+}
+
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\RuleSuppression.ps1
 
 Describe "RuleSuppressionWithoutScope" {
     Context "Function" {
         It "Does not raise violations" {
-            $suppression = $violations | Where-Object { $_.RuleName -eq "PSProvideVerboseMessage" }
+            $suppression = $violations | Where-Object { $_.RuleName -eq "PSProvideCommentHelp" }
             $suppression.Count | Should Be 0
         }
     }

@@ -76,7 +76,9 @@
     <Compile Include="Generic\SkipTypeDefinition.cs" />
     <Compile Include="Generic\SourceType.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="IOutputWriter.cs" />
     <Compile Include="Loggers\WriteObjectsLogger.cs" />
+    <Compile Include="SafeDirectoryCatalog.cs" />
     <Compile Include="ReflectionTypeAnalysis.cs" />
     <Compile Include="ScriptAnalyzer.cs" />
     <Compile Include="SpecialVars.cs" />
@@ -100,6 +102,9 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="about_PSScriptAnalyzer.help.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
@@ -108,6 +113,8 @@
     <PostBuildEvent>mkdir "$(SolutionDir)$(SolutionName)"
 copy /y "$(ProjectDir)\*.ps1xml" "$(SolutionDir)$(SolutionName)"
 copy /y "$(ProjectDir)\*.psd1" "$(SolutionDir)$(SolutionName)"
-copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"</PostBuildEvent>
+copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
+mkdir "$(SolutionDir)$(SolutionName)\en-US"
+copy /y "$(ProjectDir)\about_*.help.txt" "$(SolutionDir)$(SolutionName)\en-US"</PostBuildEvent>
   </PropertyGroup>
 </Project>

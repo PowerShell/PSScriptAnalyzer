@@ -28,6 +28,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class Helper
     {
+        #region Private members
+
+        private CommandInvocationIntrinsics invokeCommand;
+        private IOutputWriter outputWriter;
+
+        #endregion
+
         #region Singleton
         private static object syncRoot = new Object();
 
@@ -42,14 +49,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 if (instance == null)
                 {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                            instance = new Helper();
-                    }
+                    Instance = new Helper();
                 }
 
                 return instance;
+            }
+            internal set
+            {
+                lock (syncRoot)
+                {
+                    if (instance == null)
+                    {
+                        instance = value;
+                    }
+                }
             }
         }
 
@@ -66,11 +79,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Dictionary contains mapping of alias to cmdlet
         /// </summary>
         private Dictionary<String, String> AliasToCmdletDictionary;
-
-        /// <summary>
-        /// ScriptAnalyzer Cmdlet, used for getting commandinfos of other commands.
-        /// </summary>
-        public PSCmdlet MyCmdlet { get; set; }
 
         internal TupleComparer tupleComparer = new TupleComparer();
 
@@ -96,6 +104,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public HashSet<String> AvailableCmdletsOnNano; 
         #endregion
 
+        /// <summary>
+        /// Initializes the Helper class.
+        /// </summary>
+        private Helper()
+        {
+        }
+
+        /// <summary>
+        /// Initializes the Helper class.
+        /// </summary>
+        /// <param name="invokeCommand">
+        /// A CommandInvocationIntrinsics instance for use in gathering 
+        /// information about available commands and aliases.
+        /// </param>
+        /// <param name="outputWriter">
+        /// An IOutputWriter instance for use in writing output
+        /// to the PowerShell environment.
+        /// </param>
+        public Helper(
+            CommandInvocationIntrinsics invokeCommand,
+            IOutputWriter outputWriter)
+        {
+            this.invokeCommand = invokeCommand;
+            this.outputWriter = outputWriter;
+        }
+
         #region Methods
         /// <summary>
         /// Initialize : Initializes dictionary of alias.
@@ -108,7 +142,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
             AvailableCmdletsOnNano = new HashSet<string>();
 
-            IEnumerable<CommandInfo> aliases = MyCmdlet.InvokeCommand.GetCommands("*", CommandTypes.Alias, true);
+            IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
             foreach (AliasInfo aliasInfo in aliases)
             {
@@ -241,6 +275,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Given a commandast, checks whether it uses splatted variable
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <returns></returns>
+        public bool HasSplattedVariable(CommandAst cmdAst)
+        {
+            if (cmdAst == null || cmdAst.CommandElements == null)
+            {
+                return false;
+            }
+
+            return cmdAst.CommandElements.Any(cmdElem => cmdElem is VariableExpressionAst && (cmdElem as VariableExpressionAst).Splatted);
+        }
+
+        /// <summary>
         /// Given a commandast, checks whether positional parameters are used or not.
         /// </summary>
         /// <param name="cmdAst"></param>
@@ -255,23 +304,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             CommandInfo commandInfo = GetCommandInfo(GetCmdletNameFromAlias(cmdAst.GetCommandName())) ?? GetCommandInfo(cmdAst.GetCommandName());
 
             IEnumerable<ParameterMetadata> switchParams = null;
-            IEnumerable<CommandParameterSetInfo> scriptBlocks = null;
-            bool hasScriptBlockSet = false;
+
+            if (HasSplattedVariable(cmdAst))
+            {
+                return false;
+            }
 
             if (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet)
             {
                 try
                 {
                     switchParams = commandInfo.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter);
-                    scriptBlocks = commandInfo.ParameterSets;
-                    foreach (CommandParameterSetInfo cmdParaset in scriptBlocks)
-                    {
-                        if (String.Equals(cmdParaset.Name, "ScriptBlockSet", StringComparison.OrdinalIgnoreCase))
-                        {
-                            hasScriptBlockSet = true;
-                        }
-                    }
-
                 }
                 catch (Exception)
                 {
@@ -285,8 +328,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             foreach (CommandElementAst ceAst in cmdAst.CommandElements)
             {
-                if (!hasScriptBlockSet)
-                {
                     if (ceAst is CommandParameterAst)
                     {
                         // Skip if it's a switch parameter
@@ -307,17 +348,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                     else
                     {
-                        //Skip if splatting "@" is used
-                        if (ceAst is VariableExpressionAst)
-                        {
-                            if ((ceAst as VariableExpressionAst).Splatted)
-                            {
-                                continue;
-                            }
-                        }
                         arguments += 1;
                     }
-                }
+                
+            }
+
+            // if not the first element in a pipeline, increase the number of arguments by 1
+            PipelineAst parent = cmdAst.Parent as PipelineAst;
+
+            if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
+            {
+                arguments += 1;
             }
 
             return arguments > parameters;
@@ -329,9 +370,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="name"></param>
         /// <param name="commandType"></param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name, CommandTypes commandType = CommandTypes.All)
+        public CommandInfo GetCommandInfo(string name, CommandTypes commandType = CommandTypes.Alias | CommandTypes.Cmdlet | CommandTypes.Configuration | CommandTypes.ExternalScript | CommandTypes.Filter | CommandTypes.Function | CommandTypes.Script | CommandTypes.Workflow)
         {
-            return Helper.Instance.MyCmdlet.InvokeCommand.GetCommand(name, commandType);
+            return this.invokeCommand.GetCommand(name, commandType);
         }
 
         /// <summary>
@@ -693,7 +734,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="varAst"></param>
         /// <param name="ast"></param>
         /// <returns></returns>
-        internal Type GetTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
+        public Type GetTypeFromAnalysis(VariableExpressionAst varAst, Ast ast)
         {
             try
             {
@@ -880,102 +921,64 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
 
             int recordIndex = 0;
-            int ruleSuppressionIndex = 0;
-            DiagnosticRecord record = diagnostics.First();
-            RuleSuppression ruleSuppression = ruleSuppressions.First();
-            int suppressionCount = 0;
+            int startRecord = 0;
+            bool[] suppressed = new bool[diagnostics.Count];
 
-            while (recordIndex < diagnostics.Count)
+            foreach (RuleSuppression ruleSuppression in ruleSuppressions)
             {
-                if (!String.IsNullOrWhiteSpace(ruleSuppression.Error))
+                int suppressionCount = 0;
+                while (startRecord < diagnostics.Count && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
                 {
-                    ruleSuppressionIndex += 1;
+                    startRecord += 1;
+                }
 
-                    if (ruleSuppressionIndex == ruleSuppressions.Count)
+                // at this point, start offset of startRecord is greater or equals to rulesuppression.startoffset
+                recordIndex = startRecord;
+
+                while (recordIndex < diagnostics.Count)
+                {
+                    DiagnosticRecord record = diagnostics[recordIndex];
+
+                    if (record.Extent.EndOffset > ruleSuppression.EndOffset)
                     {
                         break;
                     }
 
-                    ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
-                    suppressionCount = 0;
-
-                    continue;
-                }
-
-                // if the record precedes the rule suppression then we don't apply the suppression
-                // so we check that start of record is greater than start of suppression
-                if (record.Extent.StartOffset >= ruleSuppression.StartOffset)
-                {
-                    // end of the rule suppression is less than the record start offset so move on to next rule suppression
-                    if (ruleSuppression.EndOffset < record.Extent.StartOffset)
+                    if (string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID))
                     {
-                        ruleSuppressionIndex += 1;
-
-                        // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
-                        if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
-                        {
-                            ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                                    System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                            Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
-                        }
-
-                        if (ruleSuppressionIndex == ruleSuppressions.Count)
-                        {
-                            break;
-                        }
-
-                        ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
-                        suppressionCount = 0;
-
-                        continue;
+                        suppressed[recordIndex] = true;
+                        suppressionCount += 1;
                     }
-                    // at this point, the record is inside the interval
                     else
                     {
-                        // if the rule suppression id from the rule suppression is not null and the one from diagnostic record is not null
-                        // and they are they are not the same then we cannot ignore the record
-                        if (!string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && !string.IsNullOrWhiteSpace(record.RuleSuppressionID)
-                            && !string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
+                        //if there is a rule suppression id, we only suppressed if it matches
+                        if (!String.IsNullOrWhiteSpace(record.RuleSuppressionID) &&
+                            string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
                         {
-                            suppressionCount -= 1;
-                            unSuppressedRecords.Add(record);
-                        }
-                        // otherwise, we suppress the record, move on to the next.
-                        else
-                        {
+                            suppressed[recordIndex] = true;
                             suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
+                            suppressionCount += 1;
                         }
                     }
+
+                    recordIndex += 1;
                 }
-                else
+
+                // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
+                if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
                 {
-                    unSuppressedRecords.Add(record);
+                    ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                            System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
                 }
-
-                // important assumption: this point is reached only if we want to move to the next record
-                recordIndex += 1;
-                suppressionCount += 1;
-
-                if (recordIndex == diagnostics.Count)
-                {
-                    // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
-                    if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
-                    {
-                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                                System.IO.Path.GetFileName(record.Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                        Helper.Instance.MyCmdlet.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
-                    }
-
-                    break;
-                }
-
-                record = diagnostics[recordIndex];
             }
 
-            while (recordIndex < diagnostics.Count)
+            for (int i = 0; i < suppressed.Length; i += 1)
             {
-                unSuppressedRecords.Add(diagnostics[recordIndex]);
-                recordIndex += 1;
+                if (!suppressed[i])
+                {
+                    unSuppressedRecords.Add(diagnostics[i]);
+                }
             }
 
             return result;
