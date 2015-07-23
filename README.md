@@ -3,8 +3,16 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/bugfixes?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/bugfixes)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/development?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/development) |
 
 
+##NanoServer Version Deployment
+Please refer to ExtraStepsSettingUpNanoServerScriptAnalyzer.md for extra steps in setting up PSScriptAnalyzer for NanoServer.
+Please submit any pull requests regarding the NanoServer version to NanoServer branch.
 
-Introduction
+Current implemented rules for NanoServer version are:
+- NoWorkflowFunctionsOnNanoServer
+- CmdletNotAvailableOnNanoServer
+- NetFrameworkTypeNotAvailableOnNanoServer
+
+﻿Introduction
 ============
 
 PSScriptAnalyzer is a static code checker for Windows PowerShell modules and scripts. PSScriptAnalyzer checks the quality of Windows PowerShell code by running a set of rules. The rules are based on PowerShell best practices identified by PowerShell Team and the community. It generates DiagnosticResults (errors and warnings) to inform users about potential code defects and suggests possible solutions for improvements.

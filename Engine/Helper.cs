@@ -18,6 +18,7 @@ using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -99,6 +100,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Dictionary<Ast, VariableAnalysis> VariableAnalysisDictionary;
 
+
+        public HashSet<String> AvailableCmdletsOnNano; 
         #endregion
 
         /// <summary>
@@ -137,6 +140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             AliasToCmdletDictionary = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
+            AvailableCmdletsOnNano = new HashSet<string>();
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -152,6 +156,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 AliasToCmdletDictionary.Add(aliasInfo.Name, aliasInfo.Definition);
+            }
+
+            //Read the availalbe cmdlets from the white list and store them in the list
+            GetAvailableCommands(AvailableCmdletsOnNano);
+        }
+
+        /// <summary>
+        /// GetAvailableCommands: Retrieve the list of commands that are available from the white list.
+        /// </summary>
+        /// <returns></returns>
+        public void GetAvailableCommands(HashSet<String> availableCmdlets)
+        {
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string[] lines = File.ReadAllLines(string.Format(CultureInfo.CurrentCulture, path + "../../Rules/CommandOnNano.txt"));
+            foreach (string line in lines)
+            {
+                availableCmdlets.Add(line);
             }
         }
 

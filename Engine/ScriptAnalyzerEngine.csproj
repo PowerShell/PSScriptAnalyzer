@@ -36,6 +36,10 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.36.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\System.Collections.Immutable.1.1.36\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -43,6 +47,9 @@
     <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\fbl_srv2_ci_mgmt.binaries.amd64chk\monad\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata">
+      <HintPath>..\packages\System.Reflection.Metadata.1.0.21\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -72,6 +79,7 @@
     <Compile Include="IOutputWriter.cs" />
     <Compile Include="Loggers\WriteObjectsLogger.cs" />
     <Compile Include="SafeDirectoryCatalog.cs" />
+    <Compile Include="ReflectionTypeAnalysis.cs" />
     <Compile Include="ScriptAnalyzer.cs" />
     <Compile Include="SpecialVars.cs" />
     <Compile Include="Strings.Designer.cs">
@@ -83,6 +91,7 @@
     <Compile Include="VariableAnalysisBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="PSScriptAnalyzer.psd1" />
     <None Include="ScriptAnalyzer.format.ps1xml" />
     <None Include="ScriptAnalyzer.types.ps1xml" />

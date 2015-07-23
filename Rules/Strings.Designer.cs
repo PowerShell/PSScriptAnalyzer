@@ -817,6 +817,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cmdlet Not Available On Nano Server.
+        /// </summary>
+        internal static string CmdletNotAvailableOnNanoCommonName {
+            get {
+                return ResourceManager.GetString("CmdletNotAvailableOnNanoCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some cmdlets are not available on Core CLR and therefore scripts with those cmdlets won&apos;t run properly on NanoServer. Please change/remove the unavailable cmdlets..
+        /// </summary>
+        internal static string CmdletNotAvailableOnNanoDescription {
+            get {
+                return ResourceManager.GetString("CmdletNotAvailableOnNanoDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cmdlet &apos;{0}&apos; is not available on NanoServer.
+        /// </summary>
+        internal static string CmdletNotAvailableOnNanoError {
+            get {
+                return ResourceManager.GetString("CmdletNotAvailableOnNanoError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CmdletNotAvailableOnNanoServer.
+        /// </summary>
+        internal static string CmdletNotAvailableOnNanoName {
+            get {
+                return ResourceManager.GetString("CmdletNotAvailableOnNanoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Command Not Found.
         /// </summary>
         internal static string CommandNotFoundCommonName {
@@ -849,6 +885,87 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string CommandNotFoundName {
             get {
                 return ResourceManager.GetString("CommandNotFoundName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration Block Not Supported On NanoServer.
+        /// </summary>
+        internal static string ConfigurationBlockNotSupportedOnNanoCommonName {
+            get {
+                return ResourceManager.GetString("ConfigurationBlockNotSupportedOnNanoCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration blocks are not supported on NanoServer. .
+        /// </summary>
+        internal static string ConfigurationBlockNotSupportedOnNanoDescription {
+            get {
+                return ResourceManager.GetString("ConfigurationBlockNotSupportedOnNanoDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; is a Configuration function. Configuration is not supported on NanoServer. Please remove the function.
+        /// </summary>
+        internal static string ConfigurationBlockNotSupportedOnNanoError {
+            get {
+                return ResourceManager.GetString("ConfigurationBlockNotSupportedOnNanoError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ConfigurationBlockNotSupportedOnNano.
+        /// </summary>
+        internal static string ConfigurationBlockNotSupportedOnNanoName {
+            get {
+                return ResourceManager.GetString("ConfigurationBlockNotSupportedOnNanoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type &apos;{0} does not contain member &apos;{1}&apos; on NanoServer.
+        /// </summary>
+        internal static string DotNetTypeMemberUnavailableError {
+            get {
+                return ResourceManager.GetString("DotNetTypeMemberUnavailableError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dot Net Type Unavailable On NanoServer.
+        /// </summary>
+        internal static string DotNetTypeUnavailableCommonName {
+            get {
+                return ResourceManager.GetString("DotNetTypeUnavailableCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some .Net types are not available on NanoServer. Please consider removing these types or change to some other available types on NanoServer..
+        /// </summary>
+        internal static string DotNetTypeUnavailableDescription {
+            get {
+                return ResourceManager.GetString("DotNetTypeUnavailableDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .NET does not contain type &apos;{0}&apos; on NanoServer..
+        /// </summary>
+        internal static string DotNetTypeUnavailableError {
+            get {
+                return ResourceManager.GetString("DotNetTypeUnavailableError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NetFrameworkTypeNotAvailableOnNanoServer.
+        /// </summary>
+        internal static string DotNetTypeUnavailableName {
+            get {
+                return ResourceManager.GetString("DotNetTypeUnavailableName", resourceCulture);
             }
         }
         
@@ -975,6 +1092,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string NotAllCodePathReturnsDSCFunctionsError {
             get {
                 return ResourceManager.GetString("NotAllCodePathReturnsDSCFunctionsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No Workflow Functions On NanoServer.
+        /// </summary>
+        internal static string NoWorkflowFunctionsOnNanoCommonName {
+            get {
+                return ResourceManager.GetString("NoWorkflowFunctionsOnNanoCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workflow functions are not supported on NanoServer.
+        /// </summary>
+        internal static string NoWorkflowFunctionsOnNanoDescription {
+            get {
+                return ResourceManager.GetString("NoWorkflowFunctionsOnNanoDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NoWorkflowFunctionsOnNanoServer.
+        /// </summary>
+        internal static string NoWorkflowFunctionsOnNanoName {
+            get {
+                return ResourceManager.GetString("NoWorkflowFunctionsOnNanoName", resourceCulture);
             }
         }
         
@@ -1902,6 +2046,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string UseVerboseMessageInDSCResourceName {
             get {
                 return ResourceManager.GetString("UseVerboseMessageInDSCResourceName", resourceCulture);
+
+        /// </summary>
+        internal static string WorkFlowFunctionNotSupportedOnNanoError {
+            get {
+                return ResourceManager.GetString("WorkFlowFunctionNotSupportedOnNanoError", resourceCulture);
+
             }
         }
     }
