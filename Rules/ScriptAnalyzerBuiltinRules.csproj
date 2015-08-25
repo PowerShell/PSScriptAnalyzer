@@ -60,7 +60,6 @@
     <Compile Include="AvoidShouldContinueWithoutForce.cs" />
     <Compile Include="AvoidUsingDeprecatedManifestFields.cs" />
     <Compile Include="ProvideDefaultParameterValue.cs" />
-    <Compile Include="AvoidUninitializedVariable.cs" />
     <Compile Include="AvoidUsernameAndPasswordParams.cs" />
     <Compile Include="AvoidUsingComputerNameHardcoded.cs" />
     <Compile Include="AvoidUsingConvertToSecureStringWithPlainText.cs" />
