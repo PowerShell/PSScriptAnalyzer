@@ -21,7 +21,9 @@
 	[securestring[]]
         $passwords,
 	$passphrases,
-	$passwordparam
+	$passwordparam,
+    $credential,
+    $auth
     )
 
     Begin

@@ -9,7 +9,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingPlainTextForPasswordN
 Describe "AvoidUsingPlainTextForPassword" {
     Context "When there are violations" {
         It "has 3 avoid using plain text for password violations" {
-            $violations.Count | Should Be 3
+            $violations.Count | Should Be 5
         }
 
         It "has the correct violation message" {
