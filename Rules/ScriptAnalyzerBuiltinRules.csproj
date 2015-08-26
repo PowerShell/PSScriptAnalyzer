@@ -60,7 +60,6 @@
     <Compile Include="AvoidShouldContinueWithoutForce.cs" />
     <Compile Include="AvoidUsingDeprecatedManifestFields.cs" />
     <Compile Include="ProvideDefaultParameterValue.cs" />
-    <Compile Include="AvoidUninitializedVariable.cs" />
     <Compile Include="AvoidUsernameAndPasswordParams.cs" />
     <Compile Include="AvoidUsingComputerNameHardcoded.cs" />
     <Compile Include="AvoidUsingConvertToSecureStringWithPlainText.cs" />
@@ -91,6 +90,7 @@
     <Compile Include="UseShouldProcessForStateChangingFunctions.cs" />
     <Compile Include="UseSingularNouns.cs" />
     <Compile Include="UseStandardDSCFunctionsInResource.cs" />
+    <Compile Include="UseUTF8EncodingForHelpFile.cs" />
     <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
   </ItemGroup>
   <ItemGroup>
