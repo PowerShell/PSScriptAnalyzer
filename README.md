@@ -118,6 +118,26 @@ To match all functions/variables/parameters/objects, use `*` as the value of the
     )
 
 
+Profile support in ScriptAnalyzer
+========================================
+
+Profiles that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to `Invoke-ScriptAnalyzer` using the `-profile` parameter. This enables a user to create custom configuration for a specific environment.
+
+Using Profile support:
+
+```powershell
+$myProfile = @{
+    Severity='Warning'
+    IncludeRules=@('PSAvoidUsingCmdletAliases',
+                    'PSAvoidUsingPositionalParameters',
+                    'PSAvoidUsingInternalURLs'
+                    'PSAvoidUninitializedVariable')
+    ExcludeRules=@('PSAvoidUsingCmdletAliases'
+                   'PSAvoidUninitializedVariable')
+}
+
+Invoke-ScriptAnalyzer -path MyScript.ps1 -Profile $myProfile
+```
 
 
 Building the Code
