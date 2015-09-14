@@ -45,7 +45,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (cmdAst.GetCommandName() == null) continue;
                 
                 if (Helper.Instance.GetCommandInfo(cmdAst.GetCommandName()) != null
-                    && Helper.Instance.PositionalParameterUsed(cmdAst))
+                    && Helper.Instance.PositionalParameterUsed(cmdAst, true))
                 {
                     PipelineAst parent = cmdAst.Parent as PipelineAst;
 
@@ -55,14 +55,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (parent.PipelineElements[0] == cmdAst)
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
-                                cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
+                                cmdAst.Extent, GetName(), DiagnosticSeverity.Information, fileName, cmdAst.GetCommandName());
                         }
                     }
                     // not in pipeline so just raise it normally
                     else
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
-                            cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
+                            cmdAst.Extent, GetName(), DiagnosticSeverity.Information, fileName, cmdAst.GetCommandName());
                     }
                 }
             }
@@ -109,7 +109,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Warning;
+            return RuleSeverity.Information;
         }
 
         /// <summary>
