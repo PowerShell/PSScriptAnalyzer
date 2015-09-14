@@ -283,8 +283,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Given a commandast, checks whether positional parameters are used or not.
         /// </summary>
         /// <param name="cmdAst"></param>
+        /// <param name="moreThanThreePositional">only return true if more than three positional parameters are used</param>
         /// <returns></returns>
-        public bool PositionalParameterUsed(CommandAst cmdAst)
+        public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanThreePositional = false)
         {
             if (cmdAst == null || cmdAst.GetCommandName() == null)
             {
@@ -349,6 +350,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
             {
                 arguments += 1;
+            }
+
+            if (moreThanThreePositional && arguments < 3)
+            {
+                return false;
             }
 
             return arguments > parameters;
