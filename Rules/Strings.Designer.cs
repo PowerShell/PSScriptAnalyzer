@@ -1492,7 +1492,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to test.
+        ///   Looks up a localized string similar to Use BOM encoding for non-ASCII files.
         /// </summary>
         internal static string UseBOMForUnicodeEncodedFileCommonName {
             get {
@@ -1501,7 +1501,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to test.
+        ///   Looks up a localized string similar to For a file encoded with a format other than ASCII, ensure BOM is present to ensure that any application consuming this file can interpret it correctly..
         /// </summary>
         internal static string UseBOMForUnicodeEncodedFileDescription {
             get {
@@ -1510,7 +1510,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to test.
+        ///   Looks up a localized string similar to Missing BOM encoding for non-ASCII encoded file &apos;{0}&apos;.
         /// </summary>
         internal static string UseBOMForUnicodeEncodedFileError {
             get {
