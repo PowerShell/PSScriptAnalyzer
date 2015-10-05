@@ -744,4 +744,16 @@
   <data name="UseUTF8EncodingForHelpFileName" xml:space="preserve">
     <value>UseUTF8EncodingForHelpFile</value>
   </data>
+  <data name="UseBOMForUnicodeEncodedFileCommonName" xml:space="preserve">
+    <value>test</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileDescription" xml:space="preserve">
+    <value>test</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileError" xml:space="preserve">
+    <value>test</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileName" xml:space="preserve">
+    <value>UseBOMForUnicodeEncodedFile</value>
+  </data>
 </root>
