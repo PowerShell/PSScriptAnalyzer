@@ -744,4 +744,16 @@
   <data name="UseUTF8EncodingForHelpFileName" xml:space="preserve">
     <value>UseUTF8EncodingForHelpFile</value>
   </data>
+  <data name="UseBOMForUnicodeEncodedFileCommonName" xml:space="preserve">
+    <value>Use BOM encoding for non-ASCII files</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileDescription" xml:space="preserve">
+    <value>For a file encoded with a format other than ASCII, ensure BOM is present to ensure that any application consuming this file can interpret it correctly.</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileError" xml:space="preserve">
+    <value>Missing BOM encoding for non-ASCII encoded file '{0}'</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileName" xml:space="preserve">
+    <value>UseBOMForUnicodeEncodedFile</value>
+  </data>
 </root>
