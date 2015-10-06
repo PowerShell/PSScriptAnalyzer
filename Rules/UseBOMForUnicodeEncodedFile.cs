@@ -40,9 +40,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Did not detect the presence of BOM
                 // Make sure there is no byte > 127 (0x7F) to ensure file is ASCII encoded
                 // Else emit rule violation
-
-                var byteList = byteStream.Where(o => o > 0x7F).ToList();
-                if (0 != byteList.Count)
+                                
+                if (0 != byteStream.Count(o => o > 0x7F))
                 { 
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseBOMForUnicodeEncodedFileError, System.IO.Path.GetFileName(fileName), null),
                                 null, GetName(), DiagnosticSeverity.Warning, fileName);
@@ -55,7 +54,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private Encoding GetByteStreamEncoding(byte[] byteStream)
         {
-            //// Analyze BOM
+            // Analyze BOM
             if (byteStream.Length >= 4 && byteStream[0] == 0x00 && byteStream[1] == 0x00 && byteStream[2] == 0xFE && byteStream[3] == 0xFF)
             {
                 // UTF-32, big-endian 
@@ -89,6 +88,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Did not detect BOM OR Unknown File encoding
             return null;
+            
         }
 
         /// <summary>
