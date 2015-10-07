@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -159,9 +160,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void ProcessRecord()
         {
-            // throws Item Not Found Exception
-            path = this.SessionState.Path.GetResolvedPSPathFromPSPath(path).First().ToString();
-            ProcessPath(path);
+            // throws Item Not Found Exception                        
+            Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
+            foreach (PathInfo p in paths)
+            {
+                ProcessPath(this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path));
+            }
         }
 
         #endregion
