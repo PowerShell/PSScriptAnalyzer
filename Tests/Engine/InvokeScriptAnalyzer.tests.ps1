@@ -72,7 +72,7 @@ Describe "Test Path" {
 
 	if (!$testingLibraryUsage)
 	{
-		#There is probably a more consice way to do this but for now we will settle for this!
+		#There is probably a more concise way to do this but for now we will settle for this!
 		Function GetFreeDrive ($freeDriveLen) { 
 			$ordA = 65
 			$ordZ = 90
