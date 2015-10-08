@@ -70,23 +70,41 @@ Describe "Test Path" {
         }
     }
 
-    Context "When given a glob" {
-    	It "Invokes on all the matching files" {
-	   $numFilesResult = (Invoke-ScriptAnalyzer -Path $directory\Rule*.ps1 | Select-Object -Property ScriptName -Unique).Count
-	   $numFilesExpected = (Get-ChildItem -Path $directory\Rule*.ps1).Count
-	   $numFilesResult | Should be $numFilesExpected
-	}
-    }
+	if (!$testingLibraryUsage)
+	{
+		#There is probably a more consice way to do this but for now we will settle for this!
+		Function GetFreeDrive ($freeDriveLen) { 
+			$ordA = 65
+			$ordZ = 90
+			$freeDrive = ""
+			$freeDriveName = ""
+			do{
+				$freeDriveName = (1..$freeDriveLen | %{[char](Get-Random -Maximum $ordZ -Minimum $ordA)}) -join ''
+				$freeDrive = $freeDriveName + ":"    
+			}while(Test-Path $freeDrive)
+			$freeDrive, $freeDriveName
+		}
 
-    Context "When given a FileSystem PSDrive" {
-    	It "Recognizes the path" {
-	   $freeDrive = 69..90 | %{([char]$_)+":"} | ?{!(Test-Path $_)} | Select-Object -First 1
-	   New-PSDrive -Name $freeDrive[0] -PSProvider FileSystem -Root $directory
-	   $numFilesExpected = (Get-ChildItem -Path $freeDrive\R*.ps1).Count
-	   $numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\Rule*.ps1 | Select-Object -Property ScriptName -Unique).Count
-	   $numFilesResult | Should Be $numFilesExpected
+		Context "When given a glob" {
+    		It "Invokes on all the matching files" {
+			$numFilesResult = (Invoke-ScriptAnalyzer -Path $directory\Rule*.ps1 | Select-Object -Property ScriptName -Unique).Count
+			$numFilesExpected = (Get-ChildItem -Path $directory\Rule*.ps1).Count
+			$numFilesResult | Should be $numFilesExpected
+			}
+		}
+
+		Context "When given a FileSystem PSDrive" {
+    		It "Recognizes the path" {
+			$freeDriveNameLen = 2
+			$freeDrive, $freeDriveName = GetFreeDrive $freeDriveNameLen
+			New-PSDrive -Name $freeDriveName -PSProvider FileSystem -Root $directory
+			$numFilesExpected = (Get-ChildItem -Path $freeDrive\R*.ps1).Count
+			$numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\Rule*.ps1 | Select-Object -Property ScriptName -Unique).Count
+			Remove-PSDrive $freeDriveName
+			$numFilesResult | Should Be $numFilesExpected
+			}
+		}
 	}
-    }
 
     Context "When given a directory" {
         $withoutPathWithDirectory = Invoke-ScriptAnalyzer -Recurse $directory\RecursionDirectoryTest
