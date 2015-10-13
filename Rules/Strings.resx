@@ -586,7 +586,7 @@
     <value>Using Internal URLs in the scripts may cause security problems.</value>
   </data>
   <data name="AvoidUsingInternalURLsError" xml:space="preserve">
-    <value>'{0}' could be an internal URL. Using internal URL directly in the script may cause potential information discloure.</value>
+    <value>'{0}' could be an internal URL. Using internal URL directly in the script may cause potential information disclosure.</value>
   </data>
   <data name="AvoidUsingInternalURLsName" xml:space="preserve">
     <value>AvoidUsingInternalURLs</value>
