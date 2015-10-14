@@ -619,7 +619,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; could be an internal URL. Using internal URL directly in the script may cause potential information discloure..
+        ///   Looks up a localized string similar to &apos;{0}&apos; could be an internal URL. Using internal URL directly in the script may cause potential information disclosure..
         /// </summary>
         internal static string AvoidUsingInternalURLsError {
             get {
