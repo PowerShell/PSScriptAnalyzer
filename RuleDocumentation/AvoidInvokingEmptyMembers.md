@@ -4,7 +4,7 @@
 
 ##Description
 
-Invoking non-constant members would cause potential bugs. Please double check the syntax to make sure members invoked are non-constant.
+Invoking non-constant members would cause potential bugs. Please double check the syntax to make sure that invoked members are constants.
 
 
 ##How to Fix
