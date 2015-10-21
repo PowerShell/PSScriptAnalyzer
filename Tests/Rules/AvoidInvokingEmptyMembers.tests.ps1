@@ -1,6 +1,6 @@
 ﻿Import-Module PSScriptAnalyzer
 
-$violationMessage = "() has non-constant members. Invoking empty members may cause bugs in the script."
+$violationMessage = "() has non-constant members. Invoking non-constant members may cause bugs in the script."
 $violationName = "PSAvoidInvokingEmptyMembers"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidInvokingEmptyMembers.ps1 | Where-Object {$_.RuleName -eq $violationName}
