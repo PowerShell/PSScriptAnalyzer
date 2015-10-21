@@ -526,7 +526,7 @@
     <value>Invoking non-constant members would cause potential bugs. Please double check the syntax to make sure members invoked are non-constant.</value>
   </data>
   <data name="AvoidInvokingEmptyMembersError" xml:space="preserve">
-    <value>'{0}' has non-constant members. Invoking empty members may cause bugs in the script.</value>
+    <value>'{0}' has non-constant members. Invoking non-constant members may cause bugs in the script.</value>
   </data>
   <data name="AvoidInvokingEmptyMembersName" xml:space="preserve">
     <value>AvoidInvokingEmptyMembers</value>

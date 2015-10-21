@@ -196,7 +196,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; has non-constant members. Invoking empty members may cause bugs in the script..
+        ///   Looks up a localized string similar to &apos;{0}&apos; has non-constant members. Invoking non-constant members may cause bugs in the script..
         /// </summary>
         internal static string AvoidInvokingEmptyMembersError {
             get {
