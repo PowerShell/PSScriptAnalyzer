@@ -23,7 +23,7 @@ using System.Linq;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidAlias: Check if help file uses utf8 encoding
+    /// UseBOMForUnicodeEncodedFile: Checks if a file with missing BOM is ASCII encoded.
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UseBOMForUnicodeEncodedFile : IScriptRule
