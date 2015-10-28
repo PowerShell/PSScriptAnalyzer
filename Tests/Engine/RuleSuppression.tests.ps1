@@ -50,7 +50,7 @@ Describe "RuleSuppressionWithScope" {
     Context "FunctionScope" {
         It "Does not raise violations" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidUsingPositionalParameters" }
-            $suppression.Count | Should Be 1
+            $suppression.Count | Should Be 0
         }
     }
 
