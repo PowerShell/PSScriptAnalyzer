@@ -52,6 +52,7 @@ If you have previous version of PSScriptAnalyzer installed on your machine, you 
 
 To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell console to obtain the built-in rules
 
+
 Suppressing Rules
 =================
 
@@ -131,6 +132,53 @@ To match all functions/variables/parameters/objects, use `*` as the value of the
     )
 
 
+
+Profile support in ScriptAnalyzer
+========================================
+
+Profiles that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to `Invoke-ScriptAnalyzer` using the `-profile` parameter. This enables a user to create custom configuration for a specific environment.
+
+Using Profile support:
+
+```powershell
+$myProfile = @{
+    Severity='Warning'
+    IncludeRules=@('PSAvoidUsingCmdletAliases',
+                    'PSAvoidUsingPositionalParameters',
+                    'PSAvoidUsingInternalURLs'
+                    'PSAvoidUninitializedVariable')
+    ExcludeRules=@('PSAvoidUsingCmdletAliases'
+                   'PSAvoidUninitializedVariable')
+}
+
+Invoke-ScriptAnalyzer -path MyScript.ps1 -Profile $myProfile
+```
+
+ScriptAnalyzer as a .net library
+================================
+
+ScriptAnalyzer engine and functionality can now be directly consumed as a library.
+
+Here are the public interfaces:
+
+```c#
+using Microsoft.Windows.PowerShell.ScriptAnalyzer;
+
+public void Initialize(System.Management.Automation.Runspaces.Runspace runspace,
+Microsoft.Windows.PowerShell.ScriptAnalyzer.IOutputWriter outputWriter, 
+[string[] customizedRulePath = null], 
+[string[] includeRuleNames = null], 
+[string[] excludeRuleNames = null], 
+[string[] severity = null], 
+[bool suppressedOnly = false], 
+[string profile = null])
+
+public System.Collections.Generic.IEnumerable<DiagnosticRecord> AnalyzePath(string path, 
+[bool searchRecursively = false])
+
+public System.Collections.Generic.IEnumerable<IRule> GetRule(string[] moduleNames, 
+string[] ruleNames)
+```
 
 
 Building the Code

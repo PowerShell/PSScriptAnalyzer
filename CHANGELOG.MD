@@ -1,3 +1,24 @@
+## Released v1.1.0 (Sep.1, 2015)
+###Features:
+- Support for using ScriptAnalyzer as a .net library - ScriptAnalyzer APIs
+- Support for ScriptAnalyzer Profiles
+- Documentation for using Inline Rule Suppression
+- Added about help topic file as part of the module
+
+
+###Rules:
+- Rule to checks for UTF8 encoding in help file
+- Deprecate Uninitialized Variable rule as per community feedback
+
+
+###Fixes:
+- Fix false positive for UsingInternalURL
+- WriteVerbose only when analyzing valid powershell files
+- DSCClass rules not being applied when exclude rule is used
+- Add host to list of initialized variable
+- Exclude external non-powershell applications (Console/GUI) from Positional Parameter rule application
+- Additional heuristics for detecting psavoidusingplaintextforpassword rule violation
+
 ## Released v1.0.2 (June.24, 2015)
 ###Features:
 - Perf improvements in the Engine to execute rules concurrently.
