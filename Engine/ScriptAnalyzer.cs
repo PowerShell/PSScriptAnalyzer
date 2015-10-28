@@ -183,6 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.includeRegexList = new List<Regex>();
             this.excludeRegexList = new List<Regex>();
 
+            #region ParseProfile
             if (!String.IsNullOrWhiteSpace(profile))
             {
                 try
@@ -191,9 +192,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 catch
                 {
-                    this.outputWriter.WriteError(new ErrorRecord(new FileNotFoundException(),
-                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, profile),
-                        ErrorCategory.InvalidArgument, this));
+                    this.outputWriter.WriteWarning(string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, profile));
                 }
 
                 if (File.Exists(profile))
@@ -202,15 +201,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     ParseError[] parserErrors = null;
                     Ast profileAst = Parser.ParseFile(profile, out parserTokens, out parserErrors);
                     IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
-                    foreach (HashtableAst hashTableAst in hashTableAsts)
+
+                    // no hashtable, raise warning
+                    if (hashTableAsts.Count() == 0)
                     {
+                        this.outputWriter.WriteWarning(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile));
+                    }
+                    else
+                    {
+                        HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
+
                         foreach (var kvp in hashTableAst.KeyValuePairs)
                         {
                             if (!(kvp.Item1 is StringConstantExpressionAst))
                             {
-                                this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(),
-                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile),
-                                    ErrorCategory.InvalidArgument, this));
+                                // first item (the key) should be a string
+                                this.outputWriter.WriteWarning(
+                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile));
                                 continue;
                             }
 
@@ -257,11 +264,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     {
                                         foreach (var element in arrayLitAst.Elements)
                                         {
+                                            // all the values in the array needs to be string
                                             if (!(element is StringConstantExpressionAst))
                                             {
-                                                this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(),
-                                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile),
-                                                    ErrorCategory.InvalidArgument, this));
+                                                this.outputWriter.WriteWarning(
+                                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile));
                                                 continue;
                                             }
 
@@ -273,9 +280,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                             if (rhsList.Count == 0)
                             {
-                                this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(),
-                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile),
-                                    ErrorCategory.InvalidArgument, this));
+                                this.outputWriter.WriteWarning(
+                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile));
                                 break;
                             }
 
@@ -312,15 +318,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     }
                                     break;
                                 default:
-                                    this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(),
-                                        string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile),
-                                        ErrorCategory.InvalidArgument, this));
+                                    this.outputWriter.WriteWarning(
+                                        string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile));
                                     break;
                             }
                         }
                     }
                 }
             }
+
+            #endregion
 
             //Check wild card input for the Include/ExcludeRules and create regex match patterns
             if (this.includeRule != null)
