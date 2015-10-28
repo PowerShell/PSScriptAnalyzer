@@ -940,21 +940,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
                     }
 
-                    if (string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID))
+                    // we suppress if there is no suppression id or if there is suppression id and it matches
+                    if (string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID)
+                        || (!String.IsNullOrWhiteSpace(record.RuleSuppressionID) &&
+                            string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase)))
                     {
                         suppressed[recordIndex] = true;
+                        suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
                         suppressionCount += 1;
-                    }
-                    else
-                    {
-                        //if there is a rule suppression id, we only suppressed if it matches
-                        if (!String.IsNullOrWhiteSpace(record.RuleSuppressionID) &&
-                            string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
-                        {
-                            suppressed[recordIndex] = true;
-                            suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
-                            suppressionCount += 1;
-                        }
                     }
 
                     recordIndex += 1;

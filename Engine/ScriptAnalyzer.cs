@@ -969,7 +969,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             ScriptBlockAst scriptAst = null;
             Token[] scriptTokens = null;
-            ParseError[] errors;
+            ParseError[] errors = null;
 
             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, filePath));
 
@@ -979,7 +979,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // processing for non help script
                 if (!(Path.GetFileName(filePath).StartsWith("about_") && Path.GetFileName(filePath).EndsWith(".help.txt")))
                 {
-                    scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+                    try
+                    {
+                        scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+                    }
+                    catch (Exception e)
+                    {
+                        this.outputWriter.WriteWarning(e.ToString());
+                        return null;
+                    }
 
                     if (errors != null && errors.Length > 0)
                     {
@@ -990,7 +998,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                     }
 
-                    if (errors.Length > 10)
+                    if (errors != null && errors.Length > 10)
                     {
                         string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
                         this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));

@@ -526,7 +526,7 @@
     <value>Invoking non-constant members would cause potential bugs. Please double check the syntax to make sure members invoked are non-constant.</value>
   </data>
   <data name="AvoidInvokingEmptyMembersError" xml:space="preserve">
-    <value>'{0}' has non-constant members. Invoking empty members may cause bugs in the script.</value>
+    <value>'{0}' has non-constant members. Invoking non-constant members may cause bugs in the script.</value>
   </data>
   <data name="AvoidInvokingEmptyMembersName" xml:space="preserve">
     <value>AvoidInvokingEmptyMembers</value>
@@ -586,7 +586,7 @@
     <value>Using Internal URLs in the scripts may cause security problems.</value>
   </data>
   <data name="AvoidUsingInternalURLsError" xml:space="preserve">
-    <value>'{0}' could be an internal URL. Using internal URL directly in the script may cause potential information discloure.</value>
+    <value>'{0}' could be an internal URL. Using internal URL directly in the script may cause potential information disclosure.</value>
   </data>
   <data name="AvoidUsingInternalURLsName" xml:space="preserve">
     <value>AvoidUsingInternalURLs</value>
@@ -743,5 +743,17 @@
   </data>
   <data name="UseUTF8EncodingForHelpFileName" xml:space="preserve">
     <value>UseUTF8EncodingForHelpFile</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileCommonName" xml:space="preserve">
+    <value>Use BOM encoding for non-ASCII files</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileDescription" xml:space="preserve">
+    <value>For a file encoded with a format other than ASCII, ensure BOM is present to ensure that any application consuming this file can interpret it correctly.</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileError" xml:space="preserve">
+    <value>Missing BOM encoding for non-ASCII encoded file '{0}'</value>
+  </data>
+  <data name="UseBOMForUnicodeEncodedFileName" xml:space="preserve">
+    <value>UseBOMForUnicodeEncodedFile</value>
   </data>
 </root>

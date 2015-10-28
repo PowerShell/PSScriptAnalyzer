@@ -22,7 +22,7 @@ using System.Management.Automation;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// ProvideCommentHelp: Checks that objects return in a cmdlet have their types declared in OutputType Attribute
+    /// UseOutputTypeCorrectly: Checks that objects returned in a cmdlet have their types declared in OutputType Attribute.
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UseOutputTypeCorrectly : SkipTypeDefinition, IScriptRule
@@ -30,7 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private IEnumerable<TypeDefinitionAst> _classes;
 
         /// <summary>
-        /// AnalyzeScript: Checks that objects return in a cmdlet have their types declared in OutputType Attribute
+        /// AnalyzeScript: Checks that objects returned in a cmdlet have their types declared in OutputType Attribute
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The name of the script</param>

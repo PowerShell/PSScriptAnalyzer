@@ -21,7 +21,7 @@ using System.Globalization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {/// <summary>
-    /// UseShouldProcessCorrectly: Analyzes the ast to check that if the ShouldProcess attribute is present, the function calls ShouldProcess and vice versa.
+    /// UseShouldProcessForStateChangingFunctions: Analyzes the ast to check if ShouldProcess is included in Advanced functions if the Verb of the function could change system state.
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UseShouldProcessForStateChangingFunctions : IScriptRule
