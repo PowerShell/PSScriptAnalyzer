@@ -22,7 +22,7 @@ using System.Management.Automation;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// ProvideVerboseMessage: Analyzes the ast to check that Write-Verbose is called for DSC Resources
+    /// UseVerboseMessageInDSCResource: Analyzes the ast to check that Write-Verbose is called for DSC Resources.
     /// </summary>
     [Export(typeof(IDSCResourceRule))]
     public class UseVerboseMessageInDSCResource : SkipNamedBlock, IDSCResourceRule

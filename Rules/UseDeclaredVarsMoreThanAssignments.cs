@@ -20,7 +20,7 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// ExtraVarsRule: Analyzes the ast to check that variables are used in more than just their assignment.
+    /// UseDeclaredVarsMoreThanAssigments: Analyzes the ast to check that variables are used in more than just their assignment.
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UseDeclaredVarsMoreThanAssigments : IScriptRule

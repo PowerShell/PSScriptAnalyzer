@@ -21,7 +21,7 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// UseStandardDSCFunctionsInResource: 
+    /// UseStandardDSCFunctionsInResource: Checks if the DSC resource uses standard Get/Set/Test TargetResource functions.
     /// </summary>
     [Export(typeof(IDSCResourceRule))]
     public class UseStandardDSCFunctionsInResource : IDSCResourceRule

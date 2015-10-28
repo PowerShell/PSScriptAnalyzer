@@ -1,7 +1,20 @@
+Announcements
+=============
+
+ScriptAnalyzer community meeting schedule:
+
+ - Next Meeting - 10/13/2015 - 11am to 12pm PDT
+ - [iCalender invite](http://1drv.ms/1VvAaxO)
+ - [Notes and recordings from earlier meetings](https://github.com/PowerShell/PSScriptAnalyzer/wiki)
+ 
+
+=============
+
 |Master   |BugFixes |Development |
 |:------:|:------:|:-------:|:-------:|
 [![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/bugfixes?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/bugfixes)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/development?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/development) |
 
+=============
 
 
 Introduction

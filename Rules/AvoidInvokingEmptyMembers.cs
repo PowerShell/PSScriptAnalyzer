@@ -20,14 +20,15 @@ using System.Globalization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
+    // Rule name is inconsistent.
     /// <summary>
-    /// AvoidAlias: Check if cmdlet alias is used.
-    /// </summary>
+    /// AvoidInvokingEmptyMembers: Analyzes the script to check if any non-constant members have been invoked.
+    /// </summary>    
     [Export(typeof(IScriptRule))]
     public class AvoidInvokingEmptyMembers : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyze the script to check if any empty members has been invoked.
+        /// AnalyzeScript: Analyzes the script to check if any non-constant members have been invoked.
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
