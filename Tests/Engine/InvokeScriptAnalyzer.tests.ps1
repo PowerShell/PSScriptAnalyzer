@@ -179,12 +179,12 @@ Describe "Test IncludeRule" {
     Context "IncludeRule supports wild card" {
         It "includes 1 wildcard rule"{
             $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
-            $includeWildcard.Count | Should be 3
+            $includeWildcard.Count | Should be 0
         }
 
         it "includes 2 wildcardrules" {
             $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules, $useRules 
-            $includeWildcard.Count | Should be 7
+            $includeWildcard.Count | Should be 4
         }
     }
 }
@@ -210,12 +210,12 @@ Describe "Test Severity" {
 
         It "works with 2 arguments" {
             $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity Information, Warning
-            $errors.Count | Should Be 2
+            $errors.Count | Should Be 1
         }
 
         It "works with lowercase argument"{
              $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity information, warning
-            $errors.Count | Should Be 2
+            $errors.Count | Should Be 1
         }
     }
 
