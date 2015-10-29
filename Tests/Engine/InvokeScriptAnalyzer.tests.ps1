@@ -88,8 +88,6 @@ Describe "Test Path" {
 		Context "When given a glob" {
     		It "Invokes on all the matching files" {
 			$numFilesResult = (Invoke-ScriptAnalyzer -Path $directory\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
-			Write-HOst "Number of files processed"
-			Write-Host $numFilesResult
 			$numFilesExpected = (Get-ChildItem -Path $directory\TestTestPath*.ps1).Count
 			$numFilesResult | Should be $numFilesExpected
 			}
