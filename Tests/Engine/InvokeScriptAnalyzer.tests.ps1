@@ -87,8 +87,10 @@ Describe "Test Path" {
 
 		Context "When given a glob" {
     		It "Invokes on all the matching files" {
-			$numFilesResult = (Invoke-ScriptAnalyzer -Path $directory\Rule*.ps1 | Select-Object -Property ScriptName -Unique).Count
-			$numFilesExpected = (Get-ChildItem -Path $directory\Rule*.ps1).Count
+			$numFilesResult = (Invoke-ScriptAnalyzer -Path $directory\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
+			Write-HOst "Number of files processed"
+			Write-Host $numFilesResult
+			$numFilesExpected = (Get-ChildItem -Path $directory\TestTestPath*.ps1).Count
 			$numFilesResult | Should be $numFilesExpected
 			}
 		}
@@ -98,8 +100,8 @@ Describe "Test Path" {
 			$freeDriveNameLen = 2
 			$freeDrive, $freeDriveName = GetFreeDrive $freeDriveNameLen
 			New-PSDrive -Name $freeDriveName -PSProvider FileSystem -Root $directory
-			$numFilesExpected = (Get-ChildItem -Path $freeDrive\R*.ps1).Count
-			$numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\Rule*.ps1 | Select-Object -Property ScriptName -Unique).Count
+			$numFilesExpected = (Get-ChildItem -Path $freeDrive\TestTestPath*.ps1).Count
+			$numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
 			Remove-PSDrive $freeDriveName
 			$numFilesResult | Should Be $numFilesExpected
 			}
