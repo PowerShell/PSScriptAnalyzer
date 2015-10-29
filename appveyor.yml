@@ -16,7 +16,6 @@ branches:
   # whitelist
   only:
     - master
-    - bugfixes
     - development
 
 # Run Pester tests and store the results
