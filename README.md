@@ -1,12 +1,17 @@
 Announcements
 =============
 
-ScriptAnalyzer community meeting schedule:
+##### ISE Add-On for ScriptAnalyzer is available in PowerShell Gallery!
+(https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
 
- - Next Meeting - 10/13/2015 - 11am to 12pm PDT
+=============
+
+##### ScriptAnalyzer community meeting schedule:
+
+ - Next Meeting - 11/10/2015 - 11am to 12pm PDT
  - [iCalender invite](http://1drv.ms/1VvAaxO)
  - [Notes and recordings from earlier meetings](https://github.com/PowerShell/PSScriptAnalyzer/wiki)
- 
+
 
 =============
 
