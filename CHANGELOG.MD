@@ -20,7 +20,6 @@
 - Support for ScriptAnalyzer Profiles
 - Documentation for using Inline Rule Suppression
 - Added about help topic file as part of the module
-- 
 
 ###Rules:
 - Rule to checks for UTF8 encoding in help file
