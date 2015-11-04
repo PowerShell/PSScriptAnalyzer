@@ -1,10 +1,25 @@
+## Released v1.1.1 (Nov.3, 2015)
+###Features:
+- Support for PSDrives when using Invoke-ScriptAnalyzer
+- More robust Profiles feature - better defaulting when supplied with invalid profile - actionable Warnings
+- Validated integration with ISESteroids, ISEScriptAnalyzerAddon & VS Code Editor Services Plugin
+
+###Rules:
+- New rule to ensure that a file with missing BOM is encoded in ASCII
+
+###Fixes:
+- Doc Updates, Cleaned up source files to reflect accurate comments
+- Fix SuppressedOnly switch functionality
+- Updated Positional parameter rule to trigger only when used with > 3 positional parameters
+
+##
+
 ## Released v1.1.0 (Sep.1, 2015)
 ###Features:
 - Support for using ScriptAnalyzer as a .net library - ScriptAnalyzer APIs
 - Support for ScriptAnalyzer Profiles
 - Documentation for using Inline Rule Suppression
 - Added about help topic file as part of the module
-
 
 ###Rules:
 - Rule to checks for UTF8 encoding in help file
@@ -18,6 +33,8 @@
 - Add host to list of initialized variable
 - Exclude external non-powershell applications (Console/GUI) from Positional Parameter rule application
 - Additional heuristics for detecting psavoidusingplaintextforpassword rule violation
+
+##
 
 ## Released v1.0.2 (June.24, 2015)
 ###Features:
@@ -45,6 +62,7 @@
 - AvoidUsingPlainTextForPassword rule to be raised only strings or object types.
 - Fix for PositionalParameterUsed method (Helper.cs) uses unsafe method to exclude ForEach-Object and Where-Object.
 
+##
 
 ## Released v1.0.1 (May.8, 2015)
 ###Features:
@@ -62,8 +80,7 @@
 - Fix the issue in importing customized rule
 - Fix Function Member Ast cast error
 
-
-
+##
 
 ##Released v1.0.0 on Apr.24, 2015
 ###Features:
