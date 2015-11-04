@@ -2,7 +2,7 @@
 ###Features:
 - Support for PSDrives when using Invoke-ScriptAnalyzer
 - More robust Profiles feature - better defaulting when supplied with invalid profile - actionable Warnings
-- Validated integration with ISESteroids, ISEScriptAnalyzerAddon & VS Code Editor Services Plugin
+- Validated integration with ISESteroids, ISEScriptAnalyzerAddon
 
 ###Rules:
 - New rule to ensure that a file with missing BOM is encoded in ASCII
