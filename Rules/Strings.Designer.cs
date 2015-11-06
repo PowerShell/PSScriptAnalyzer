@@ -790,7 +790,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Write-Host or Console.Write should not be used because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead..
+        ///   Looks up a localized string similar to Avoid using the Write-Host cmdlet. Instead, use Write-Output, Write-Verbose, or Write-Information. Because Write-Host is host-specific, its implementation might vary unpredictably. Also, prior to PowerShell 5.0, Write-Host did not write to a stream, so users cannot suppress it, capture its value, or redirect it..
         /// </summary>
         internal static string AvoidUsingWriteHostDescription {
             get {
@@ -799,7 +799,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File &apos;{0}&apos; uses Write-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead..
+        ///   Looks up a localized string similar to File &apos;{0}&apos; uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information..
         /// </summary>
         internal static string AvoidUsingWriteHostError {
             get {
