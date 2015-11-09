@@ -8,7 +8,7 @@ Announcements
 
 ##### ScriptAnalyzer community meeting schedule:
 
- - Next Meeting - 11/10/2015 - 11am to 12pm PDT
+ - Next Meeting - 12/08/2015 - 11am to 12pm PDT
  - [iCalender invite](http://1drv.ms/1VvAaxO)
  - [Notes and recordings from earlier meetings](https://github.com/PowerShell/PSScriptAnalyzer/wiki)
 
