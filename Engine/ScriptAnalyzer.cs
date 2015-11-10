@@ -580,11 +580,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                             if ((null != helpContent) && ( 1 == helpContent.Count))
                             {
-                                dynamic description = helpContent[0].Properties["Description"].Value;
+                                dynamic description = helpContent[0].Properties["Description"];
 
                                 if (null != description)
                                 {
-                                    desc = description[0].Text;
+                                    desc = description.Value[0].Text;
                                 }
                             }
                             
