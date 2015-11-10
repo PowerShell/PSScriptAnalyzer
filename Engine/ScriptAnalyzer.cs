@@ -26,6 +26,7 @@ using System.Reflection;
 using System.Globalization;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -545,18 +546,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 using (System.Management.Automation.PowerShell posh =
                        System.Management.Automation.PowerShell.Create(state))
                 {
-                    string script = string.Format(CultureInfo.CurrentCulture, "Get-Module -Name '{0}' -ListAvailable", moduleName);
-                    shortModuleName = posh.AddScript(script).Invoke<PSModuleInfo>().First().Name;
+                    posh.AddCommand("Get-Module").AddParameter("Name", moduleName).AddParameter("ListAvailable");
+                    shortModuleName = posh.Invoke<PSModuleInfo>().First().Name;   
 
                     // Invokes Update-Help for this module
                     // Required since when invoking Get-Help later on, the cmdlet prompts for Update-Help interactively
                     // By invoking Update-Help first, Get-Help will not prompt for downloading help later
-                    script = string.Format(CultureInfo.CurrentCulture, "Update-Help -Module '{0}' -Force", shortModuleName);
-                    posh.AddScript(script).Invoke();
-
+                    posh.AddCommand("Update-Help").AddParameter("Module", shortModuleName).AddParameter("Force");
+                    posh.Invoke();
+                    
                     // Invokes Get-Command and Get-Help for each functions in the module.
-                    script = string.Format(CultureInfo.CurrentCulture, "Get-Command -Module '{0}'", shortModuleName);
-                    var psobjects = posh.AddScript(script).Invoke();
+                    posh.Commands.Clear();
+                    posh.AddCommand("Get-Command").AddParameter("Module", shortModuleName);
+                    var psobjects = posh.Invoke();
 
                     foreach (PSObject psobject in psobjects)
                     {
@@ -570,10 +572,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         //Only add functions that are defined as rules.
                         if (param != null)
                         {
-                            script = string.Format(CultureInfo.CurrentCulture, "(Get-Help -Name {0}).Description | Out-String", funcInfo.Name);
-                            string desc = posh.AddScript(script).Invoke()[0].ImmediateBaseObject.ToString()
-                                    .Replace("\r\n", " ").Trim();
+                            posh.AddCommand("Get-Help").AddParameter("Name", funcInfo.Name);                            
+                            Collection<PSObject> helpContent = posh.Invoke();
 
+                            // Retrieve "Description" field in the help content
+                            string desc = String.Empty;
+
+                            if ((null != helpContent) && ( 1 == helpContent.Count))
+                            {
+                                dynamic description = helpContent[0].Properties["Description"].Value;
+
+                                if (null != description)
+                                {
+                                    desc = description[0].Text;
+                                }
+                            }
+                            
                             rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.Name, param.ParameterType.FullName,
                                 funcInfo.ModuleName, funcInfo.Module.Path));
                         }
@@ -784,8 +798,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     using (System.Management.Automation.PowerShell posh =
                            System.Management.Automation.PowerShell.Create())
                     {
-                        string script = string.Format(CultureInfo.CurrentCulture, "Get-Module -Name '{0}' -ListAvailable", resolvedPath);
-                        PSModuleInfo moduleInfo = posh.AddScript(script).Invoke<PSModuleInfo>().First();
+                        posh.AddCommand("Get-Module").AddParameter("Name", resolvedPath).AddParameter("ListAvailable");
+                        PSModuleInfo moduleInfo = posh.Invoke<PSModuleInfo>().First();     
 
                         // Adds original path, otherwise path.Except<string>(validModPaths) will fail.
                         // It's possible that user can provide something like this:
