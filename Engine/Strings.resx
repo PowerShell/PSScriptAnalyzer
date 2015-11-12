@@ -204,4 +204,16 @@
   <data name="InvalidProfile" xml:space="preserve">
     <value>Profile file '{0}' is invalid because it does not contain a hashtable.</value>
   </data>
+  <data name="ParseErrorFormatForScriptDefinition" xml:space="preserve">
+    <value>Parse error in script definition:  {0} at line {1} column {2}.</value>
+  </data>
+  <data name="ParserErrorMessageForScriptDefinition" xml:space="preserve">
+    <value>There are too many parser errors in the script definition. Please correct them before running ScriptAnalyzer.</value>
+  </data>
+  <data name="RuleSuppressionErrorFormatScriptDefinition" xml:space="preserve">
+    <value>Suppression Message Attribute error at line {0} in script definition : {1}</value>
+  </data>
+  <data name="VerboseScriptDefinitionMessage" xml:space="preserve">
+    <value>Analyzing Script Definition.</value>
+  </data>
 </root>

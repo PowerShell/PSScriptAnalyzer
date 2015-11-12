@@ -6,9 +6,14 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 # wraps the usage of ScriptAnalyzer as a .NET library 
 function Invoke-ScriptAnalyzer {
 	param (
-		[parameter(Mandatory = $true, Position = 0)]
+        [CmdletBinding(DefaultParameterSetName="File")]
+
+		[parameter(Mandatory = $true, Position = 0, ParameterSetName="File")]
 		[Alias("PSPath")]
 		[string] $Path,
+
+		[parameter(Mandatory = $true, ParameterSetName="ScriptDefinition")]
+		[string] $ScriptDefinition,
 
         [Parameter(Mandatory = $false)]
 		[string[]] $CustomizedRulePath = $null,
@@ -41,7 +46,12 @@ function Invoke-ScriptAnalyzer {
 		$SuppressedOnly.IsPresent
 	);
 
-	return $scriptAnalyzer.AnalyzePath($Path, $Recurse.IsPresent);
+    if ($PSCmdlet.ParameterSetName -eq "File") {
+    	return $scriptAnalyzer.AnalyzePath($Path, $Recurse.IsPresent);
+    }
+    else {
+        return $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
+    }
 }
 
 # Define an implementation of the IOutputWriter interface

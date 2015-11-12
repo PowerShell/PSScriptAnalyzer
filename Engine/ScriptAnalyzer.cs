@@ -883,7 +883,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         #endregion
-
+        
 
         /// <summary>
         /// Analyzes a script file or a directory containing script files.
@@ -922,6 +922,49 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     yield return diagnosticRecord;
                 }
             }
+        }
+
+        /// <summary>
+        /// Analyzes a script definition in the form of a string input
+        /// </summary>
+        /// <param name="scriptDefinition">The script to be analyzed</param>
+        /// <returns></returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition)
+        {
+            ScriptBlockAst scriptAst = null;
+            Token[] scriptTokens = null;
+            ParseError[] errors = null;
+
+            this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseScriptDefinitionMessage));
+
+            try
+            {
+                scriptAst = Parser.ParseInput(scriptDefinition, out scriptTokens, out errors);
+            }
+            catch (Exception e)
+            {
+                this.outputWriter.WriteWarning(e.ToString());
+                return null;
+            }
+
+            if (errors != null && errors.Length > 0)
+            {
+                foreach (ParseError error in errors)
+                {
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
+                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
+                }
+            }
+
+            if (errors != null && errors.Length > 10)
+            {
+                string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessageForScriptDefinition);
+                this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, scriptDefinition));
+
+                return new List<DiagnosticRecord>();
+            }
+
+            return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty);
         }
 
         private void BuildScriptPathList(
@@ -1038,7 +1081,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="scriptAst">The ScriptBlockAst from the parsed script.</param>
         /// <param name="scriptTokens">The tokens found in the script.</param>
-        /// <param name="filePath">The path to the file that was parsed.</param>
+        /// <param name="filePath">The path to the file that was parsed.
+        /// If AnalyzeSyntaxTree is called from an ast that we get from ParseInput, then this field will be String.Empty
+        /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeSyntaxTree(
             ScriptBlockAst scriptAst, 
@@ -1052,8 +1097,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
             List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();
+            bool filePathIsNullOrWhiteSpace = String.IsNullOrWhiteSpace(filePath);
+            filePath = filePathIsNullOrWhiteSpace ? String.Empty : filePath;
 
-            bool helpFile = (scriptAst == null) && Helper.Instance.IsHelpFile(filePath);
+            // check whether the script we are analyzing is a help file or not.
+            // this step is not applicable for scriptdefinition, whose filepath is null
+            bool helpFile = (scriptAst == null) && (!filePathIsNullOrWhiteSpace) && Helper.Instance.IsHelpFile(filePath);
 
             if (!helpFile)
             {
@@ -1083,7 +1132,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             #region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
-            string fileName = System.IO.Path.GetFileName(filePath);
+            string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
 
             if (this.ScriptRules != null)
             {
@@ -1285,7 +1334,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 // Check if the supplied artifact is indeed part of the DSC resource
-                if (Helper.Instance.IsDscResourceModule(filePath))
+                if (!filePathIsNullOrWhiteSpace && Helper.Instance.IsDscResourceModule(filePath))
                 {
                     // Run all DSC Rules
                     foreach (IDSCResourceRule dscResourceRule in this.DSCResourceRules)

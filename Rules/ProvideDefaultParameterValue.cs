@@ -37,7 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
 
             // Checks whether this is a dsc resource file (we don't raise this rule for get, set and test-target resource
-            bool isDscResourceFile = Helper.Instance.IsDscResourceModule(fileName);
+            bool isDscResourceFile = !String.IsNullOrWhiteSpace(fileName) && Helper.Instance.IsDscResourceModule(fileName);
 
             List<string> targetResourcesFunctions = new List<string>(new string[] { "get-targetresource", "set-targetresource", "test-targetresource" });
 

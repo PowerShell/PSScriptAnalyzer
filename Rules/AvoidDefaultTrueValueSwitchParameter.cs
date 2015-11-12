@@ -42,9 +42,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (paramAst.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(System.Management.Automation.SwitchParameter))
                     && paramAst.DefaultValue != null && String.Equals(paramAst.DefaultValue.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return new DiagnosticRecord(
-                        String.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueSwitchParameterError, System.IO.Path.GetFileName(fileName)),
-                        paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    if (String.IsNullOrWhiteSpace(fileName))
+                    {
+                        yield return new DiagnosticRecord(
+                            String.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueSwitchParameterErrorScriptDefinition),
+                            paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    }
+                    else
+                    {
+                        yield return new DiagnosticRecord(
+                            String.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueSwitchParameterError, System.IO.Path.GetFileName(fileName)),
+                            paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    }
                 }
             }
         }
