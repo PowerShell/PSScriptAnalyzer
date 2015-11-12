@@ -25,6 +25,16 @@ Describe "Test available parameters" {
         }
     }
 
+    Context "Path parameter" {
+        It "has a ScriptDefinition parameter" {
+            $params.ContainsKey("ScriptDefinition") | Should Be $true
+        }
+        
+        It "accepts string" {
+            $params["ScriptDefinition"].ParameterType.FullName | Should Be "System.String"
+        }
+    }
+
     Context "CustomizedRulePath parameters" {
         It "has a CustomizedRulePath parameter" {
             $params.ContainsKey("CustomizedRulePath") | Should Be $true
@@ -52,6 +62,46 @@ Describe "Test available parameters" {
 
         It "accepts string array" {
             $params["Severity"].ParameterType.FullName | Should Be "System.String[]"
+        }
+    }
+
+    Context "It has 2 parameter sets: File and ScriptDefinition" {
+        It "Has 2 parameter sets" {
+            $sa.ParameterSets.Count | Should Be 2
+        }
+
+        It "Has File parameter set" {
+            $hasFile = $false
+            foreach ($paramSet in $sa.ParameterSets) {
+                if ($paramSet.Name -eq "File") {
+                    $hasFile = $true
+                    break
+                }
+            }
+
+            $hasFile | Should Be $true
+        }
+
+        It "Has ScriptDefinition parameter set" {
+            $hasFile = $false
+            foreach ($paramSet in $sa.ParameterSets) {
+                if ($paramSet.Name -eq "ScriptDefinition") {
+                    $hasFile = $true
+                    break
+                }
+            }
+
+            $hasFile | Should Be $true
+        }
+
+    }
+}
+
+Describe "Test ScriptDefinition" {
+    Context "When given a script definition" {
+        It "Does not run rules on script with more than 10 parser errors" {
+            $moreThanTenErrors = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue -ScriptDefinition (Get-Content -Raw "$directory\CSharp.ps1")
+            $moreThanTenErrors.Count | Should Be 0
         }
     }
 }

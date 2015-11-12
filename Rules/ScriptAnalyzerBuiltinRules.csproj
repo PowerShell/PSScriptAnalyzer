@@ -70,17 +70,17 @@
     <Compile Include="AvoidUsingWriteHost.cs" />
     <Compile Include="DscTestsPresent.cs" />
     <Compile Include="DscExamplesPresent.cs" />
+    <Compile Include="Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
     <Compile Include="UseBOMForUnicodeEncodedFile.cs" />
     <Compile Include="UseOutputTypeCorrectly.cs" />
     <Compile Include="MissingModuleManifestField.cs" />
     <Compile Include="PossibleIncorrectComparisonWithNull.cs" />
     <Compile Include="ProvideCommentHelp.cs" />
     <Compile Include="UseVerboseMessageInDSCResource.cs" />
-    <Compile Include="Strings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
     <Compile Include="UseApprovedVerbs.cs" />
     <Compile Include="UseCmdletCorrectly.cs" />
     <Compile Include="UseDeclaredVarsMoreThanAssignments.cs" />
@@ -95,17 +95,17 @@
     <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Engine\ScriptAnalyzerEngine.csproj">
+      <Project>{f4bde3d0-3eef-4157-8a3e-722df7adef60}</Project>
+      <Name>ScriptAnalyzerEngine</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Strings.resx">
       <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Engine\ScriptAnalyzerEngine.csproj">
-      <Project>{f4bde3d0-3eef-4157-8a3e-722df7adef60}</Project>
-      <Name>ScriptAnalyzerEngine</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>

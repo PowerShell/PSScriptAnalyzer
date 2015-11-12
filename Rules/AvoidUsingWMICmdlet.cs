@@ -50,8 +50,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             || String.Equals(cmdAst.GetCommandName(), "set-wmiinstance", StringComparison.OrdinalIgnoreCase))
                         )
                     {
-                        yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMICmdletError, System.IO.Path.GetFileName(fileName)),
-                            cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        if (String.IsNullOrWhiteSpace(fileName))
+                        {
+                            yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMICmdletErrorScriptDefinition),
+                                cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        }
+                        else
+                        {
+                            yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWMICmdletError,
+                                System.IO.Path.GetFileName(fileName)), cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        }
                     }
                 }
             }

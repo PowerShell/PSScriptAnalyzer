@@ -78,8 +78,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             if (cmdAst.GetCommandName() != null && String.Equals(cmdAst.GetCommandName(), "write-host", StringComparison.OrdinalIgnoreCase))
             {
-                records.Add(new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWriteHostError, System.IO.Path.GetFileName(fileName)),
-                    cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName));
+                if (String.IsNullOrWhiteSpace(fileName))
+                {
+                    records.Add(new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWriteHostErrorScriptDefinition),
+                        cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName));
+                }
+                else
+                {
+                    records.Add(new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWriteHostError,
+                        System.IO.Path.GetFileName(fileName)), cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName));
+                }
             }
 
             return AstVisitAction.Continue;
@@ -102,7 +110,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (typeAst.TypeName.FullName.EndsWith("console", StringComparison.OrdinalIgnoreCase)
                 && !String.IsNullOrWhiteSpace(imeAst.Member.Extent.Text) && imeAst.Member.Extent.Text.StartsWith("Write", StringComparison.OrdinalIgnoreCase))
             {
-                records.Add(new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingConsoleWriteError, System.IO.Path.GetFileName(fileName), imeAst.Member.Extent.Text),
+                records.Add(new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingConsoleWriteError,
+                    String.IsNullOrWhiteSpace(fileName) ? Strings.ScriptDefinitionName : System.IO.Path.GetFileName(fileName), imeAst.Member.Extent.Text),
                     imeAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName));
             }
 

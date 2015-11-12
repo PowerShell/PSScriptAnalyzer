@@ -124,6 +124,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Script definition has a switch parameter default to true..
+        /// </summary>
+        internal static string AvoidDefaultValueSwitchParameterErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueSwitchParameterErrorScriptDefinition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AvoidDefaultValueSwitchParameter.
         /// </summary>
         internal static string AvoidDefaultValueSwitchParameterName {
@@ -237,6 +246,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidShouldContinueWithoutForceError {
             get {
                 return ResourceManager.GetString("AvoidShouldContinueWithoutForceError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; in script definition uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt.
+        /// </summary>
+        internal static string AvoidShouldContinueWithoutForceErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidShouldContinueWithoutForceErrorScriptDefinition", resourceCulture);
             }
         }
         
@@ -498,6 +516,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidUsingConvertToSecureStringWithPlainTextError {
             get {
                 return ResourceManager.GetString("AvoidUsingConvertToSecureStringWithPlainTextError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script definition uses ConvertTo-SecureString with plaintext. This will expose secure information. Encrypted standard strings should be used instead..
+        /// </summary>
+        internal static string AvoidUsingConvertToSecureStringWithPlainTextErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidUsingConvertToSecureStringWithPlainTextErrorScriptDefinition", resourceCulture);
             }
         }
         
@@ -772,6 +799,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Script definition uses WMI cmdlet. For PowerShell 3.0 and above, use CIM cmdlet which perform the same tasks as the WMI cmdlets. The CIM cmdlets comply with WS-Management (WSMan) standards and with the Common Information Model (CIM) standard, which enables the cmdlets to use the same techniques to manage Windows computers and those running other operating systems..
+        /// </summary>
+        internal static string AvoidUsingWMICmdletErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMICmdletErrorScriptDefinition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AvoidUsingWMICmdlet.
         /// </summary>
         internal static string AvoidUsingWMICmdletName {
@@ -804,6 +840,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidUsingWriteHostError {
             get {
                 return ResourceManager.GetString("AvoidUsingWriteHostError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script definition uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information..
+        /// </summary>
+        internal static string AvoidUsingWriteHostErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidUsingWriteHostErrorScriptDefinition", resourceCulture);
             }
         }
         
@@ -1335,6 +1380,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string ReturnCorrectTypesForSetTargetResourceFunctionsDSCError {
             get {
                 return ResourceManager.GetString("ReturnCorrectTypesForSetTargetResourceFunctionsDSCError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ScriptDefinition.
+        /// </summary>
+        internal static string ScriptDefinitionName {
+            get {
+                return ResourceManager.GetString("ScriptDefinitionName", resourceCulture);
             }
         }
         

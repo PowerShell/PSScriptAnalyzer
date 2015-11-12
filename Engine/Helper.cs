@@ -956,8 +956,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
                 if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
                 {
-                    ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                            System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    // checks whether are given a string or a file path
+                    if (String.IsNullOrWhiteSpace(diagnostics.First().Extent.File))
+                    {
+                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormatScriptDefinition, ruleSuppression.StartAttributeLine,
+                                String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    }
+                    else
+                    {
+                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                                System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    }
+
                     this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
                 }
             }

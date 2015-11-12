@@ -178,6 +178,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parse error in script definition:  {0} at line {1} column {2}..
+        /// </summary>
+        internal static string ParseErrorFormatForScriptDefinition {
+            get {
+                return ResourceManager.GetString("ParseErrorFormatForScriptDefinition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parse error in file {0}:  {1} at line {2} column {3}..
         /// </summary>
         internal static string ParserErrorFormat {
@@ -192,6 +201,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string ParserErrorMessage {
             get {
                 return ResourceManager.GetString("ParserErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are too many parser errors in the script definition. Please correct them before running ScriptAnalyzer..
+        /// </summary>
+        internal static string ParserErrorMessageForScriptDefinition {
+            get {
+                return ResourceManager.GetString("ParserErrorMessageForScriptDefinition", resourceCulture);
             }
         }
         
@@ -219,6 +237,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string RuleSuppressionErrorFormat {
             get {
                 return ResourceManager.GetString("RuleSuppressionErrorFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Suppression Message Attribute error at line {0} in script definition : {1}.
+        /// </summary>
+        internal static string RuleSuppressionErrorFormatScriptDefinition {
+            get {
+                return ResourceManager.GetString("RuleSuppressionErrorFormatScriptDefinition", resourceCulture);
             }
         }
         
@@ -282,6 +309,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string VerboseRunningMessage {
             get {
                 return ResourceManager.GetString("VerboseRunningMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Analyzing Script Definition..
+        /// </summary>
+        internal static string VerboseScriptDefinitionMessage {
+            get {
+                return ResourceManager.GetString("VerboseScriptDefinitionMessage", resourceCulture);
             }
         }
         

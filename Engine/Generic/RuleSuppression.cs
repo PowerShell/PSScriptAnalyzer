@@ -294,8 +294,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
             if (!String.IsNullOrWhiteSpace(Error))
             {
-                Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, StartAttributeLine,
-                    System.IO.Path.GetFileName(attrAst.Extent.File), Error);
+                if (String.IsNullOrWhiteSpace(attrAst.Extent.File))
+                {
+                    Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormatScriptDefinition, StartAttributeLine, Error);
+                }
+                else
+                {
+                    Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, StartAttributeLine,
+                        System.IO.Path.GetFileName(attrAst.Extent.File), Error);
+                }
             }
         }
 
@@ -372,8 +379,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     {
                         if (targetAsts.Count() == 0)
                         {
-                            ruleSupp.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSupp.StartAttributeLine,
-                                System.IO.Path.GetFileName(scopeAst.Extent.File), String.Format(Strings.TargetCannotBeFoundError, ruleSupp.Target, ruleSupp.Scope));
+                            if (String.IsNullOrWhiteSpace(scopeAst.Extent.File))
+                            {
+                                ruleSupp.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormatScriptDefinition, ruleSupp.StartAttributeLine,
+                                    String.Format(Strings.TargetCannotBeFoundError, ruleSupp.Target, ruleSupp.Scope));
+                            }
+                            else
+                            {
+                                ruleSupp.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSupp.StartAttributeLine,
+                                    System.IO.Path.GetFileName(scopeAst.Extent.File), String.Format(Strings.TargetCannotBeFoundError, ruleSupp.Target, ruleSupp.Scope));
+                            }
+
                             result.Add(ruleSupp);
                             continue;
                         }

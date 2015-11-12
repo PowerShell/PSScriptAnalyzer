@@ -756,4 +756,22 @@
   <data name="UseBOMForUnicodeEncodedFileName" xml:space="preserve">
     <value>UseBOMForUnicodeEncodedFile</value>
   </data>
+  <data name="AvoidDefaultValueSwitchParameterErrorScriptDefinition" xml:space="preserve">
+    <value>Script definition has a switch parameter default to true.</value>
+  </data>
+  <data name="AvoidShouldContinueWithoutForceErrorScriptDefinition" xml:space="preserve">
+    <value>Function '{0}' in script definition uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt</value>
+  </data>
+  <data name="AvoidUsingConvertToSecureStringWithPlainTextErrorScriptDefinition" xml:space="preserve">
+    <value>Script definition uses ConvertTo-SecureString with plaintext. This will expose secure information. Encrypted standard strings should be used instead.</value>
+  </data>
+  <data name="AvoidUsingWMICmdletErrorScriptDefinition" xml:space="preserve">
+    <value>Script definition uses WMI cmdlet. For PowerShell 3.0 and above, use CIM cmdlet which perform the same tasks as the WMI cmdlets. The CIM cmdlets comply with WS-Management (WSMan) standards and with the Common Information Model (CIM) standard, which enables the cmdlets to use the same techniques to manage Windows computers and those running other operating systems.</value>
+  </data>
+  <data name="AvoidUsingWriteHostErrorScriptDefinition" xml:space="preserve">
+    <value>Script definition uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information.</value>
+  </data>
+  <data name="ScriptDefinitionName" xml:space="preserve">
+    <value>ScriptDefinition</value>
+  </data>
 </root>

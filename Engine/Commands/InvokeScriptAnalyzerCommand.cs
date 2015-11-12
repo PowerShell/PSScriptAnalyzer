@@ -31,14 +31,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// <summary>
     /// InvokeScriptAnalyzerCommand: Cmdlet to statically check PowerShell scripts.
     /// </summary>
-    [Cmdlet(VerbsLifecycle.Invoke, "ScriptAnalyzer", HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
+    [Cmdlet(VerbsLifecycle.Invoke,
+        "ScriptAnalyzer",
+        DefaultParameterSetName="File",
+        HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
         #region Parameters
         /// <summary>
         /// Path: The path to the file or folder to invoke PSScriptAnalyzer on.
         /// </summary>
-        [Parameter(Position = 0, Mandatory = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = "File",
+            Mandatory = true)]
         [ValidateNotNull]
         [Alias("PSPath")]
         public string Path
@@ -47,6 +52,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             set { path = value; }
         }
         private string path;
+
+        /// <summary>
+        /// ScriptDefinition: a script definition in the form of a string to run rules on.
+        /// </summary>
+        [Parameter(Position = 0,
+            ParameterSetName = "ScriptDefinition",
+            Mandatory = true)]
+        [ValidateNotNull]
+        public string ScriptDefinition
+        {
+            get { return scriptDefinition; }
+            set { scriptDefinition = value; }
+        }
+        private string scriptDefinition;
 
         /// <summary>
         /// CustomRulePath: The path to the file containing custom rules to run.
@@ -160,11 +179,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void ProcessRecord()
         {
-            // throws Item Not Found Exception                        
-            Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
-            foreach (PathInfo p in paths)
+            if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
             {
-                ProcessPath(this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path));
+                // throws Item Not Found Exception                        
+                Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
+                foreach (PathInfo p in paths)
+                {
+                    ProcessPathOrScriptDefinition(this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path));
+                }
+            }
+            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
+            {
+                ProcessPathOrScriptDefinition(scriptDefinition);
             }
         }
 
@@ -172,10 +198,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         #region Methods
 
-        private void ProcessPath(string path)
+        private void ProcessPathOrScriptDefinition(string pathOrScriptDefinition)
         {
-            IEnumerable<DiagnosticRecord> diagnosticsList = 
-                ScriptAnalyzer.Instance.AnalyzePath(path, this.recurse);
+            IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
+
+            if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
+            {
+                diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(pathOrScriptDefinition);
+            }
+            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
+            {
+                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(pathOrScriptDefinition);
+            }
 
             //Output through loggers
             foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
