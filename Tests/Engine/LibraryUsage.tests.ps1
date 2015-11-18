@@ -16,7 +16,11 @@ function Invoke-ScriptAnalyzer {
 		[string] $ScriptDefinition,
 
         [Parameter(Mandatory = $false)]
-		[string[]] $CustomizedRulePath = $null,
+		[Alias("CustomizedRulePath")]
+		[string] $CustomRulePath = $null,
+
+		[Parameter(Mandatory = $false)]
+		[switch] $RecurseCustomRulePath,
 
         [Parameter(Mandatory=$false)]
         [string[]] $ExcludeRule = $null,
@@ -39,7 +43,7 @@ function Invoke-ScriptAnalyzer {
 	$scriptAnalyzer.Initialize(
 		$runspace, 
 		$testOutputWriter, 
-		$CustomizedRulePath, 
+		$CustomRulePath, 
 		$IncludeRule,
 		$ExcludeRule,
 		$Severity,
