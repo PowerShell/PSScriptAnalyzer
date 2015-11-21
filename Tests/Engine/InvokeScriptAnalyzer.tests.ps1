@@ -41,7 +41,14 @@ Describe "Test available parameters" {
         }
 
         It "accepts a string" {
-            $params["CustomRulePath"].ParameterType.FullName | Should Be "System.String"
+			if ($testingLibraryUsage)
+			{
+				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String[]"
+			}
+			else
+			{
+				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String"
+			}
         }
 
 		It "has a CustomizedRulePath alias"{
