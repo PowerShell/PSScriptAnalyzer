@@ -38,12 +38,12 @@ function Invoke-ScriptAnalyzer {
         [Parameter(Mandatory = $false)]
         [switch] $SuppressedOnly
 	)
-
+	$customRulePathArr = @($CustomRulePath);
 	$scriptAnalyzer = New-Object "Microsoft.Windows.PowerShell.ScriptAnalyzer.ScriptAnalyzer"
 	$scriptAnalyzer.Initialize(
 		$runspace, 
 		$testOutputWriter, 
-		$CustomRulePath, 
+		$customRulePathArr, 
 		$IncludeRule,
 		$ExcludeRule,
 		$Severity,
