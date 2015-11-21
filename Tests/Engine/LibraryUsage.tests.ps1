@@ -36,7 +36,10 @@ function Invoke-ScriptAnalyzer {
 		[switch] $Recurse,
 
         [Parameter(Mandatory = $false)]
-        [switch] $SuppressedOnly
+        [switch] $SuppressedOnly,
+
+		[Parameter(Mandatory = $false)]       
+        [string] $Profile = $null
 	)
 	[string[]]$customRulePathArr = @($CustomRulePath);
 	if ($CustomRulePath -eq $null)
@@ -52,7 +55,8 @@ function Invoke-ScriptAnalyzer {
 		$IncludeRule,
 		$ExcludeRule,
 		$Severity,
-		$SuppressedOnly.IsPresent
+		$SuppressedOnly.IsPresent,
+		$Profile
 	);
 
     if ($PSCmdlet.ParameterSetName -eq "File") {
