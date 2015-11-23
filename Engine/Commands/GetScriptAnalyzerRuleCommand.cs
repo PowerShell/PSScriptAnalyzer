@@ -33,12 +33,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [Parameter(Mandatory = false)]
         [ValidateNotNullOrEmpty]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public string[] CustomizedRulePath
+        [Alias("CustomizedRulePath")]
+        public string CustomRulePath
         {
-            get { return customizedRulePath; }
-            set { customizedRulePath = value; }
+            get { return customRulePath; }
+            set { customRulePath = value; }
         }
-        private string[] customizedRulePath;
+        private string customRulePath;
+
+        /// <summary>
+        /// RecurseCustomRulePath: Find rules within subfolders under the path
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public SwitchParameter RecurseCustomRulePath
+        {
+            get { return recurseCustomRulePath; }
+            set { recurseCustomRulePath = value; }
+        }
+        private bool recurseCustomRulePath;
 
         /// <summary>
         /// Name: The name of a specific rule to list.
@@ -76,7 +89,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void BeginProcessing()
         {
-            ScriptAnalyzer.Instance.Initialize(this, customizedRulePath);
+            string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
+                this.SessionState, recurseCustomRulePath);
+            ScriptAnalyzer.Instance.Initialize(this, rulePaths);            
         }
 
         /// <summary>

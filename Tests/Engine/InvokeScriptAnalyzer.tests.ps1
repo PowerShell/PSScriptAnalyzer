@@ -30,19 +30,30 @@ Describe "Test available parameters" {
             $params.ContainsKey("ScriptDefinition") | Should Be $true
         }
         
-        It "accepts string" {
+        It "accepts string" {			
             $params["ScriptDefinition"].ParameterType.FullName | Should Be "System.String"
         }
     }
 
-    Context "CustomizedRulePath parameters" {
-        It "has a CustomizedRulePath parameter" {
-            $params.ContainsKey("CustomizedRulePath") | Should Be $true
+    Context "CustomRulePath parameters" {
+        It "has a CustomRulePath parameter" {
+            $params.ContainsKey("CustomRulePath") | Should Be $true
         }
 
-        It "accepts string array" {
-            $params["CustomizedRulePath"].ParameterType.FullName | Should Be "System.String[]"
+        It "accepts a string" {
+			if ($testingLibraryUsage)
+			{
+				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String[]"
+			}
+			else
+			{
+				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String"
+			}
         }
+
+		It "has a CustomizedRulePath alias"{
+			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should be $true
+		}
     }
 
     Context "IncludeRule parameters" {

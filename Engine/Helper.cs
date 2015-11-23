@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -983,8 +984,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
+        public static string[] ProcessCustomRulePaths(string rulePath, SessionState sessionState, bool recurse = false)
+        {
+            //if directory is given, list all the psd1 files
+            List<string> outPaths = new List<string>();
+            if (rulePath == null)
+            {
+                return null;
+            }
+            try
+            {
+                Collection<PathInfo> pathInfo = sessionState.Path.GetResolvedPSPathFromPSPath(rulePath);                
+                foreach (PathInfo pinfo in pathInfo)
+                {
+                    string path = pinfo.Path;
+                    if (Directory.Exists(path))
+                    {
+                        path = path.TrimEnd('\\');
+                        if (recurse)
+                        {
+                            outPaths.AddRange(Directory.GetDirectories(pinfo.Path, "*", SearchOption.AllDirectories));
+                        }
+                    }
+                    outPaths.Add(path);
+                }
+                return outPaths.ToArray();
+            }
+            catch (Exception ex)
+            {
+                // need to do this as the path validation takes place later in the hierarchy.
+                outPaths.Add(rulePath);
+                return outPaths.ToArray();
+            }
+        }
+
+
         #endregion
     }
+
 
     internal class TupleComparer : IComparer<Tuple<int, int>>
     {

@@ -19,12 +19,16 @@ Describe "Test available parameters" {
 
     Context "RuleExtension parameters" {
         It "has a RuleExtension parameter" {
-            $params.ContainsKey("CustomizedRulePath") | Should Be $true
+            $params.ContainsKey("CustomRulePath") | Should Be $true
         }
 
         It "accepts string array" {
-            $params["CustomizedRulePath"].ParameterType.FullName | Should Be "System.String[]"
+            $params["CustomRulePath"].ParameterType.FullName | Should Be "System.String"
         }
+
+		It "takes CustomizedRulePath parameter as an alias of CustomRulePath paramter" {
+			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should be $true
+		}
     }
 
 }

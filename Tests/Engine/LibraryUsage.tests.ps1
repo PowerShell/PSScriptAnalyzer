@@ -16,7 +16,11 @@ function Invoke-ScriptAnalyzer {
 		[string] $ScriptDefinition,
 
         [Parameter(Mandatory = $false)]
-		[string[]] $CustomizedRulePath = $null,
+		[Alias("CustomizedRulePath")]
+		[string[]] $CustomRulePath = $null,
+
+		[Parameter(Mandatory = $false)]
+		[switch] $RecurseCustomRulePath,
 
         [Parameter(Mandatory=$false)]
         [string[]] $ExcludeRule = $null,
@@ -32,18 +36,28 @@ function Invoke-ScriptAnalyzer {
 		[switch] $Recurse,
 
         [Parameter(Mandatory = $false)]
-        [switch] $SuppressedOnly
-	)
+        [switch] $SuppressedOnly,
 
-	$scriptAnalyzer = New-Object "Microsoft.Windows.PowerShell.ScriptAnalyzer.ScriptAnalyzer"
+		[Parameter(Mandatory = $false)]       
+        [string] $Profile = $null
+	)
+	# There is an inconsistency between this implementation and c# implementation of the cmdlet. 
+	# The CustomRulePath parameter here is of "string[]" type whereas in the c# implementation it is of "string" type.
+	# If we set the CustomRulePath parameter here to  "string[]", then the library usage test fails when run as an administrator. 
+	# We want to note that the library usage test doesn't fail when run as a non-admin user.
+	# The following is the error statement when the test runs as an administrator. 
+	# Assert failed on "Initialize" with "7" argument(s): "Test failed due to terminating error: The module was expected to contain an assembly manifest. (Exception from HRESULT: 0x80131018)"
+
+	$scriptAnalyzer = New-Object "Microsoft.Windows.PowerShell.ScriptAnalyzer.ScriptAnalyzer";
 	$scriptAnalyzer.Initialize(
 		$runspace, 
 		$testOutputWriter, 
-		$CustomizedRulePath, 
+		$CustomRulePath, 
 		$IncludeRule,
 		$ExcludeRule,
 		$Severity,
-		$SuppressedOnly.IsPresent
+		$SuppressedOnly.IsPresent,
+		$Profile
 	);
 
     if ($PSCmdlet.ParameterSetName -eq "File") {

@@ -108,7 +108,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 throw new ArgumentNullException("cmdlet");
             }
-
+                                                        
             this.Initialize(
                 cmdlet,
                 cmdlet.SessionState.Path,
@@ -188,7 +188,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (!String.IsNullOrWhiteSpace(profile))
             {
                 try
-                {
+                {                    
                     profile = path.GetResolvedPSPathFromPSPath(profile).First().Path;
                 }
                 catch
@@ -784,7 +784,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // We have to identify the childPath is really a directory or just a module name.
                     // You can also consider following two commands.
                     //   Get-ScriptAnalyzerRule -RuleExtension "ContosoAnalyzerRules"
-                    //   Get-ScriptAnalyzerRule -RuleExtension "%USERPROFILE%\WindowsPowerShell\Modules\ContosoAnalyzerRules"
+                    //   Get-ScriptAnalyzerRule -RuleExtension "%USERPROFILE%\WindowsPowerShell\Modules\ContosoAnalyzerRules"                    
                     if (Path.GetDirectoryName(childPath) == string.Empty)
                     {
                         resolvedPath = childPath;
@@ -797,14 +797,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     using (System.Management.Automation.PowerShell posh =
                            System.Management.Automation.PowerShell.Create())
-                    {
+                    {                        
                         posh.AddCommand("Get-Module").AddParameter("Name", resolvedPath).AddParameter("ListAvailable");
                         PSModuleInfo moduleInfo = posh.Invoke<PSModuleInfo>().First();     
 
                         // Adds original path, otherwise path.Except<string>(validModPaths) will fail.
                         // It's possible that user can provide something like this:
                         // "..\..\..\ScriptAnalyzer.UnitTest\modules\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1"
-                        if (moduleInfo.ExportedFunctions.Count > 0) validModPaths.Add(childPath);
+                        if (moduleInfo.ExportedFunctions.Count > 0) validModPaths.Add(resolvedPath);
                     }
                 }
                 catch

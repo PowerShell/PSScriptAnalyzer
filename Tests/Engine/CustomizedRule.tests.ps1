@@ -51,18 +51,83 @@ Describe "Test importing correct customized rules" {
     }
 
     Context "Test Get-ScriptAnalyzer with customized rules" {
-        It "will show the customized rule" {
+        It "will show the custom rule" {
             $customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\samplerule.psm1 | Where-Object {$_.RuleName -eq $measure}
             $customizedRulePath.Count | Should Be 1
         }
-       
+
+		It "will show the custom rule when given a rule folder path" {
+			$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule | Where-Object {$_.RuleName -eq $measure}
+		    $customizedRulePath.Count | Should Be 1
+		}
+		
+		if (!$testingLibraryUsage)
+		{
+			It "will show the custom rule when given a rule folder path with trailing backslash" {
+				$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\ | Where-Object {$_.RuleName -eq $measure}			
+				$customizedRulePath.Count | Should Be 1
+			}
+
+			It "will show the custom rules when given a glob" {
+				$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.RuleName -match $measure}
+				$customizedRulePath.Count | Should be 4
+			}
+
+			It "will show the custom rules when given recurse switch" {
+				$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule | Where-Object {$_.RuleName -eq $measure}
+				$customizedRulePath.Count | Should be 3
+			}
+		
+			it "will show the custom rules when given glob with recurse switch" {
+				$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.RuleName -eq $measure}
+				$customizedRulePath.Count | Should be 5
+			}
+
+			it "will show the custom rules when given glob with recurse switch" {
+				$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule* | Where-Object {$_.RuleName -eq $measure}
+				$customizedRulePath.Count | Should be 3
+			}
+		}
     }
 
     Context "Test Invoke-ScriptAnalyzer with customized rules" {
-        It "will show the customized rule in the results" {
+        It "will show the custom rule in the results" {
             $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\samplerule.psm1 | Where-Object {$_.Message -eq $message}
             $customizedRulePath.Count | Should Be 1
         }
-    }
 
+		It "will show the custom rule in the results when given a rule folder path" {
+            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule | Where-Object {$_.Message -eq $message}
+            $customizedRulePath.Count | Should Be 1
+        }
+
+		if (!$testingLibraryUsage)
+		{
+			It "will show the custom rule in the results when given a rule folder path with trailing backslash" {
+				$customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\ | Where-Object {$_.Message -eq $message}
+				$customizedRulePath.Count | Should Be 1
+			}
+
+			It "will show the custom rules when given a glob" {
+				$customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.Message -eq $message}
+				$customizedRulePath.Count | Should be 3
+			}
+
+			It "will show the custom rules when given recurse switch" {
+				$customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule | Where-Object {$_.Message -eq $message}
+				$customizedRulePath.Count | Should be 3
+			}
+		
+			it "will show the custom rules when given glob with recurse switch" {
+				$customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.Message -eq $message}
+				$customizedRulePath.Count | Should be 4
+			}
+
+			it "will show the custom rules when given glob with recurse switch" {
+				$customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule* | Where-Object {$_.Message -eq $message}
+				$customizedRulePath.Count | Should be 3
+			}
+		}
+    }
 }
+
