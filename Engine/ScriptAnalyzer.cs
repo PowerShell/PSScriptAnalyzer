@@ -466,15 +466,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     container.ComposeParts(this);
                 }
-                catch (CompositionException compositionException)
-                {
-                    this.outputWriter.WriteWarning(compositionException.ToString());
+                catch
+                {                  
                 }
             }
 
             // Gets external rules.
             if (result.ContainsKey("ValidModPaths") && result["ValidModPaths"].Count > 0)
+            {
                 ExternalRules = GetExternalRule(result["ValidModPaths"].ToArray());
+            }
         }
 
         internal string[] GetValidModulePaths()
@@ -495,8 +496,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<IExternalRule> externalRules = null;
 
             // Combines C# rules.
-            IEnumerable<IRule> rules = ScriptRules.Union<IRule>(TokenRules)
-                                                  .Union<IRule>(DSCResourceRules);
+            IEnumerable<IRule> rules = Enumerable.Empty<IRule>();
+
+            if (null != ScriptRules)
+            {
+                rules = ScriptRules.Union<IRule>(TokenRules).Union<IRule>(DSCResourceRules);
+            }            
 
             // Gets PowerShell Rules.
             if (moduleNames != null)
@@ -565,9 +570,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         posh.Commands.Clear();
 
                         FunctionInfo funcInfo = (FunctionInfo)psobject.ImmediateBaseObject;
-                        ParameterMetadata param = funcInfo.Parameters.Values
-                            .First<ParameterMetadata>(item => item.Name.EndsWith("ast", StringComparison.OrdinalIgnoreCase) ||
-                                item.Name.EndsWith("token", StringComparison.OrdinalIgnoreCase));
+                        ParameterMetadata param = null;
+
+                        // Ignore any exceptions associated with finding functions that are ScriptAnalyzer rules
+                        try
+                        {
+                            param = funcInfo.Parameters.Values.First<ParameterMetadata>(item => item.Name.EndsWith("ast", StringComparison.OrdinalIgnoreCase) ||
+                                                                                                          item.Name.EndsWith("token", StringComparison.OrdinalIgnoreCase));
+                        }
+                        catch
+                        {                            
+                        }
 
                         //Only add functions that are defined as rules.
                         if (param != null)
