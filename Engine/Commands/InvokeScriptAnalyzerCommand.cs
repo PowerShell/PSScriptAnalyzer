@@ -159,15 +159,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// Returns path to the file that contains user profile for ScriptAnalyzer
         /// </summary>
-        [Alias("Configuration")]
+        [Alias("Profile")]
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
-        public string Profile
+        public string Configuration
         {
-            get { return profile; }
-            set { profile = value; }
+            get { return configuration; }
+            set { configuration = value; }
         }
-        private string profile;
+        private string configuration;
 
         #endregion Parameters
 
@@ -188,7 +188,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 this.suppressedOnly,
-                this.profile);
+                this.configuration);
         }
 
         /// <summary>
