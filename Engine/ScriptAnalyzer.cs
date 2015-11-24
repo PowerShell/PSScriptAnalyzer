@@ -759,7 +759,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                                 if (!string.IsNullOrEmpty(message))
                                 {
-                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, null));
+                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, filePath));
                                 }
                             }
                         }
