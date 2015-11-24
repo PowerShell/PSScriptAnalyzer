@@ -159,6 +159,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// Returns path to the file that contains user profile for ScriptAnalyzer
         /// </summary>
+        [Alias("Configuration")]
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
         public string Profile
