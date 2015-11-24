@@ -466,8 +466,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     container.ComposeParts(this);
                 }
-                catch
-                {                  
+                catch (CompositionException compositionException)
+                {
+                    this.outputWriter.WriteWarning(compositionException.ToString());
                 }
             }
 
