@@ -1010,7 +1010,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 return outPaths.ToArray();
             }
-            catch (Exception ex)
+            catch
             {
                 // need to do this as the path validation takes place later in the hierarchy.
                 outPaths.Add(rulePath);

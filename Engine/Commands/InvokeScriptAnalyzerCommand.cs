@@ -220,7 +220,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
             {
-                diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(pathOrScriptDefinition);
+                diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(pathOrScriptDefinition, this.recurse);
             }
             else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
             {

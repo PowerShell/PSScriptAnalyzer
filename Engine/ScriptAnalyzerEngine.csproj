@@ -106,6 +106,7 @@ copy /y "$(ProjectDir)\*.ps1xml" "$(SolutionDir)$(SolutionName)"
 copy /y "$(ProjectDir)\*.psd1" "$(SolutionDir)$(SolutionName)"
 copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
 mkdir "$(SolutionDir)$(SolutionName)\en-US"
-copy /y "$(ProjectDir)\about_*.help.txt" "$(SolutionDir)$(SolutionName)\en-US"</PostBuildEvent>
+copy /y "$(ProjectDir)\about_*.help.txt" "$(SolutionDir)$(SolutionName)\en-US"
+copy /y "$(ProjectDir)\*Help.xml" "$(SolutionDir)$(SolutionName)\en-US"</PostBuildEvent>
   </PropertyGroup>
 </Project>
