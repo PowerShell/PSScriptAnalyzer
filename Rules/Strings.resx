@@ -711,17 +711,17 @@
   <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
     <value>No examples found for resource '{0}'</value>
   </data>
-  <data name="ProvideDefaultParameterValueCommonName" xml:space="preserve">
-    <value>Default Parameter Values</value>
+  <data name="AvoidDefaultValueForMandatoryParameterCommonName" xml:space="preserve">
+    <value>Avoid Default Value For Mandatory Parameter</value>
   </data>
-  <data name="ProvideDefaultParameterValueDescription" xml:space="preserve">
-    <value>Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
+  <data name="AvoidDefaultValueForMandatoryParameterDescription" xml:space="preserve">
+    <value>Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block.</value>
   </data>
-  <data name="ProvideDefaultParameterValueError" xml:space="preserve">
-    <value>Parameter '{0}' is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
+  <data name="AvoidDefaultValueForMandatoryParameterError" xml:space="preserve">
+    <value>Mandatory Parameter '{0}' is initialized in the Param block. To fix a violation of this rule, please leave it unintialized.</value>
   </data>
-  <data name="ProvideDefaultParameterValueName" xml:space="preserve">
-    <value>ProvideDefaultParameterValue</value>
+  <data name="AvoidDefaultValueForMandatoryParameterName" xml:space="preserve">
+    <value>AvoidDefaultValueForMandatoryParameter</value>
   </data>
   <data name="AvoidUsingDeprecatedManifestFieldsCommonName" xml:space="preserve">
     <value>Avoid Using Deprecated Manifest Fields</value>

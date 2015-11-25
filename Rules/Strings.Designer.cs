@@ -97,6 +97,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid Default Value For Mandatory Parameter.
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterCommonName {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block..
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterDescription {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mandatory Parameter &apos;{0}&apos; is initialized in the Param block. To fix a violation of this rule, please leave it unintialized..
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterError {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidDefaultValueForMandatoryParameter.
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterName {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Switch Parameters Should Not Default To True.
         /// </summary>
         internal static string AvoidDefaultValueSwitchParameterCommonName {
@@ -1173,42 +1209,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string ProvideCommentHelpName {
             get {
                 return ResourceManager.GetString("ProvideCommentHelpName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Default Parameter Values.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueCommonName {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueDescription {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueError {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ProvideDefaultParameterValue.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueName {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueName", resourceCulture);
             }
         }
         

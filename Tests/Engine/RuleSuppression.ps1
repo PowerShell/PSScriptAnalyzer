@@ -6,8 +6,17 @@ Param(
 function SuppressMe ()
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "unused1")]
-    Param([string]$unUsed1, [int] $unUsed2)
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueForMandatoryParameter", "unused1")]
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        $unUsed1="unused",
+        
+        [Parameter(Mandatory=$true)]
+        [int]
+        $unUsed2=3
+        )
     {
         Write-Host "I do nothing"
     }
@@ -16,9 +25,18 @@ function SuppressMe ()
 
 function SuppressTwoVariables()
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "b")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "a")]
-    Param([string]$a, [int]$b)
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueForMandatoryParameter", "b")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueForMandatoryParameter", "a")]
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        $a="unused",
+
+        [Parameter(Mandatory=$true)]
+        [int]
+        $b=3
+        )
     {
     }
 }

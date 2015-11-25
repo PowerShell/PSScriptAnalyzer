@@ -49,9 +49,9 @@ Describe "RuleSuppressionWithoutScope" {
 
     Context "RuleSuppressionID" {
         It "Only suppress violations for that ID" {
-            $suppression = $violations | Where-Object {$_.RuleName -eq "PSProvideDefaultParameterValue" }
+            $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
             $suppression.Count | Should Be 1
-            $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSProvideDefaultParameterValue" }
+            $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
             $suppression.Count | Should Be 1
         }
     }
