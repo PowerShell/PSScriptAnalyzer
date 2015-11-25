@@ -13,10 +13,11 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Management.Automation;
 using System.Management.Automation.Language;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// ProvideDefaultParameterValue: Check if any uninitialized variable is used.
     /// </summary>
     [Export(typeof(IScriptRule))]
-    public class ProvideDefaultParameterValue : IScriptRule
+    public class AvoidDefaultValueForMandatoryParameter : IScriptRule
     {
         /// <summary>
         /// AnalyzeScript: Check if any uninitialized variable is used.
@@ -36,48 +37,53 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all functionAst
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
 
-            // Checks whether this is a dsc resource file (we don't raise this rule for get, set and test-target resource
-            bool isDscResourceFile = !String.IsNullOrWhiteSpace(fileName) && Helper.Instance.IsDscResourceModule(fileName);
-
-            List<string> targetResourcesFunctions = new List<string>(new string[] { "get-targetresource", "set-targetresource", "test-targetresource" });
-
-
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
-                // Finds all ParamAsts.
-                IEnumerable<Ast> varAsts = funcAst.FindAll(testAst => testAst is VariableExpressionAst, true);
-
-                // Iterrates all ParamAsts and check if their names are on the list.
-
-                HashSet<string> dscVariables = new HashSet<string>();
-                if (isDscResourceFile && targetResourcesFunctions.Contains(funcAst.Name, StringComparer.OrdinalIgnoreCase))
+                if (funcAst.Body != null && funcAst.Body.ParamBlock != null
+                    && funcAst.Body.ParamBlock.Attributes != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
-                    // don't raise the rules for variables in the param block.
-                    if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Parameters != null)
+                    // only raise this rule for function with cmdletbinding
+                    if (!funcAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
                     {
-                        dscVariables.UnionWith(funcAst.Body.ParamBlock.Parameters.Select(paramAst => paramAst.Name.VariablePath.UserPath));
+                        continue;
                     }
-                }
-                // only raise the rules for variables in the param block.
-                if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Parameters != null)
-                {
+
                     foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
                     {
-                        if (Helper.Instance.IsUninitialized(paramAst.Name, funcAst) && !dscVariables.Contains(paramAst.Name.VariablePath.UserPath))
-                        {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueError, paramAst.Name.VariablePath.UserPath),
-                            paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
-                        }
-                    }
-                }
+                        bool mandatory = false;
 
-                if (funcAst.Parameters != null)
-                {
-                    foreach (var paramAst in funcAst.Parameters)
-                    {
-                        if (Helper.Instance.IsUninitialized(paramAst.Name, funcAst) && !dscVariables.Contains(paramAst.Name.VariablePath.UserPath))
+                        // check that param is mandatory
+                        foreach (var paramAstAttribute in paramAst.Attributes)
                         {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueError, paramAst.Name.VariablePath.UserPath),
+                            if (paramAstAttribute is AttributeAst)
+                            {
+                                var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
+                                if (namedArguments != null)
+                                {
+                                    foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
+                                    {
+                                        if (String.Equals(namedArgument.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            // 2 cases: [Parameter(Mandatory)] and [Parameter(Mandatory=$true)]
+                                            if (namedArgument.ExpressionOmitted || (!namedArgument.ExpressionOmitted && String.Equals(namedArgument.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase)))
+                                            {
+                                                mandatory = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!mandatory)
+                        {
+                            break;
+                        }
+
+                        if (paramAst.DefaultValue != null)
+                        {
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueForMandatoryParameterError, paramAst.Name.VariablePath.UserPath),
                             paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
                         }
                     }
@@ -91,7 +97,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.ProvideDefaultParameterValueName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidDefaultValueForMandatoryParameterName);
         }
 
         /// <summary>
@@ -100,7 +106,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueForMandatoryParameterCommonName);
         }
 
         /// <summary>
@@ -109,7 +115,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.ProvideDefaultParameterValueDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueForMandatoryParameterDescription);
         }
 
         /// <summary>
