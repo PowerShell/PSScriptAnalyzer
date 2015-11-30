@@ -554,13 +554,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     posh.AddCommand("Get-Module").AddParameter("Name", moduleName).AddParameter("ListAvailable");
                     shortModuleName = posh.Invoke<PSModuleInfo>().First().Name;   
-
-                    // Invokes Update-Help for this module
-                    // Required since when invoking Get-Help later on, the cmdlet prompts for Update-Help interactively
-                    // By invoking Update-Help first, Get-Help will not prompt for downloading help later
-                    posh.AddCommand("Update-Help").AddParameter("Module", shortModuleName).AddParameter("Force");
-                    posh.Invoke();
-                    
+                                                            
                     // Invokes Get-Command and Get-Help for each functions in the module.
                     posh.Commands.Clear();
                     posh.AddCommand("Get-Command").AddParameter("Module", shortModuleName);
@@ -586,6 +580,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         //Only add functions that are defined as rules.
                         if (param != null)
                         {
+                            // On a new image, when Get-Help is run the first time, PowerShell offers to download updated help content
+                            // using Update-Help. This results in an interactive prompt - which we cannot handle
+                            // Workaround to prevent Update-Help from running is to set the following reg key
+                            // HKLM:\Software\Microsoft\PowerShell\DisablePromptToUpdateHelp
+                            // OR execute Update-Help in an elevated admin mode before running ScriptAnalyzer
                             posh.AddCommand("Get-Help").AddParameter("Name", funcInfo.Name);                            
                             Collection<PSObject> helpContent = posh.Invoke();
 
