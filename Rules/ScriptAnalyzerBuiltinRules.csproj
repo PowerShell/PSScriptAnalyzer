@@ -63,7 +63,6 @@
     <Compile Include="AvoidUsernameAndPasswordParams.cs" />
     <Compile Include="AvoidUsingComputerNameHardcoded.cs" />
     <Compile Include="AvoidUsingConvertToSecureStringWithPlainText.cs" />
-    <Compile Include="AvoidUsingInternalURLs.cs" />
     <Compile Include="AvoidUsingInvokeExpression.cs" />
     <Compile Include="AvoidUsingPlainTextForPassword.cs" />
     <Compile Include="AvoidUsingWMICmdlet.cs" />
