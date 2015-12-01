@@ -134,6 +134,19 @@ $runspace.Open();
 # Let other test scripts know we are testing library usage now
 $testingLibraryUsage = $true
 
+# Force Get-Help not to prompt for interactive input to download help using Update-Help
+# By adding this registry key we force to turn off Get-Help interactivity logic during ScriptRule parsing
+$null,"Wow6432Node" | ForEach-Object {
+	try
+	{
+		Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+	} 
+	catch
+	{
+		# Ignore for cases when tests are running in non-elevated more or registry key does not exist or not accessible
+	}
+}
+
 # Invoke existing test files that use Invoke-ScriptAnalyzer
 . $directory\InvokeScriptAnalyzer.tests.ps1
 . $directory\RuleSuppression.tests.ps1

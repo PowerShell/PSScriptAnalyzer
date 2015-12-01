@@ -584,9 +584,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             // using Update-Help. This results in an interactive prompt - which we cannot handle
                             // Workaround to prevent Update-Help from running is to set the following reg key
                             // HKLM:\Software\Microsoft\PowerShell\DisablePromptToUpdateHelp
-                            // OR execute Update-Help in an elevated admin mode before running ScriptAnalyzer
-                            posh.AddCommand("Get-Help").AddParameter("Name", funcInfo.Name);                            
-                            Collection<PSObject> helpContent = posh.Invoke();
+                            // OR execute Update-Help in an elevated admin mode before running ScriptAnalyzer 
+                            Collection<PSObject> helpContent = null;
+                            try
+                            {
+                                posh.AddCommand("Get-Help").AddParameter("Name", funcInfo.Name);
+                                helpContent = posh.Invoke();
+                            }
+                            catch (Exception getHelpException)
+                            {
+                                this.outputWriter.WriteWarning(getHelpException.Message.ToString());
+                            }
 
                             // Retrieve "Description" field in the help content
                             string desc = String.Empty;
