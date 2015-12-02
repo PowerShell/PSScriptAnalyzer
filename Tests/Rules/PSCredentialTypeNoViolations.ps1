@@ -1,8 +1,4 @@
-﻿function Credential([pscredential]$credential) {
-
-}
-
-function Credential2
+﻿function Credential
 {
     [CmdletBinding()]
     [Alias()]
@@ -14,6 +10,7 @@ function Credential2
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
         [System.Management.Automation.CredentialAttribute()]
+        [pscredential]
         $Credential
     )
 }

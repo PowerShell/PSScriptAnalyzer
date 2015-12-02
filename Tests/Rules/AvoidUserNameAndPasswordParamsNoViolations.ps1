@@ -8,11 +8,7 @@ function MyFunction2 ($param1, $passwords)
     
 }
 
-function MyFunction3 ([PSCredential]$username, $passwords)
-{
-}
-
-function MyFunction4
+function MyFunction3
 {
     [CmdletBinding()]
     [Alias()]
@@ -24,10 +20,11 @@ function MyFunction4
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
         [System.Management.Automation.CredentialAttribute()]
+        [pscredential]
         $UserName,
 
         # Param2 help description
-        [int]
+        [pscredential]
         [System.Management.Automation.CredentialAttribute()]
         $Password
     )
