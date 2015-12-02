@@ -281,10 +281,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     excludeRuleList = excludeRuleList.Union(rhsList);
                                     break;
                                 default:
-                                    // keep writing warning here, we only stop processing if existing keys are wrong
-                                    writer.WriteWarning(
-                                        string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, key,
-                                            kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile));
+                                    writer.WriteError(new ErrorRecord(
+                                        new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, key, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
+                                        Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
+                                    hasError = true;
                                     break;
                             }
                         }

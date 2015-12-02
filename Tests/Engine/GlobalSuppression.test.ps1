@@ -77,7 +77,7 @@ Describe "GlobalSuppression" {
         It "Raises Error for wrong profile" {
             $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Configuration "$directory\WrongProfile.ps1" -ErrorAction SilentlyContinue
             $invokeWithError.Count | should be 0
-            $Error[0].FullyQualifiedErrorId | should match "ConfigurationValueWrongFormat,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
+            $Error[0].FullyQualifiedErrorId | should match "WrongConfigurationKey,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
         }
     }
 }
