@@ -193,7 +193,7 @@
     <value>Cannot find any DiagnosticRecord with the Rule Suppression ID {0}.</value>
   </data>
   <data name="WrongKey" xml:space="preserve">
-    <value>{0} is not a valid key in the profile hashtable: line {0} column {1} in file {2}</value>
+    <value>{0} is not a valid key in the profile hashtable: line {1} column {2} in file {3}. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
   </data>
   <data name="WrongKeyFormat" xml:space="preserve">
     <value>Key in the profile hashtable should be a string: line {0} column {1} in file {2}</value>
@@ -215,5 +215,23 @@
   </data>
   <data name="VerboseScriptDefinitionMessage" xml:space="preserve">
     <value>Analyzing Script Definition.</value>
+  </data>
+  <data name="ConfigurationFileHasNoHashTable" xml:space="preserve">
+    <value>ConfigurationFileHasNoHashTable</value>
+  </data>
+  <data name="ConfigurationFileNotFound" xml:space="preserve">
+    <value>ConfigurationFileNotFound</value>
+  </data>
+  <data name="ConfigurationKeyNotAString" xml:space="preserve">
+    <value>ConfigurationKeyNotAString</value>
+  </data>
+  <data name="ConfigurationValueNotAString" xml:space="preserve">
+    <value>ConfigurationValueNotAString</value>
+  </data>
+  <data name="ConfigurationValueWrongFormat" xml:space="preserve">
+    <value>ConfigurationValueWrongFormat</value>
+  </data>
+  <data name="WrongConfigurationKey" xml:space="preserve">
+    <value>WrongConfigurationKey</value>
   </data>
 </root>
