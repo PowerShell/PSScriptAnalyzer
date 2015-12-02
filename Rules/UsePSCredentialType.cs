@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Language;
@@ -50,7 +51,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (ParameterAst parameter in funcDefAst.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase)
+                            && parameter.StaticType != typeof(PSCredential) 
+                            && !parameter.Attributes.Any(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute)))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName), funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
@@ -61,7 +64,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (ParameterAst parameter in funcDefAst.Body.ParamBlock.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase)
+                            && parameter.StaticType != typeof(PSCredential)
+                            && !parameter.Attributes.Any(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute)))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName), funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
@@ -75,7 +80,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (ParameterAst parameter in scriptBlockAst.ParamBlock.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase)
+                            && parameter.StaticType != typeof(PSCredential)
+                            && !parameter.Attributes.Any(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute)))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeErrorSB), scriptBlockAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }

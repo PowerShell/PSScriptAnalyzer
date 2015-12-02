@@ -1,5 +1,5 @@
 ﻿Import-Module PSScriptAnalyzer 
-$violationMessage = "The Credential parameter in 'Credential' must be of the type PSCredential."
+$violationMessage = "The Credential parameter in 'Credential' must be of the type PSCredential or has a CredentialAttribute."
 $violationName = "PSUsePSCredentialType"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\PSCredentialType.ps1 | Where-Object {$_.RuleName -eq $violationName}

@@ -421,7 +421,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Functions should only take in a credential parameter of type PSCredential instead of username and password parameters..
+        ///   Looks up a localized string similar to Functions should only take in a credential parameter of type PSCredential or has a CredentialAttribute instead of username and password parameters..
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsDescription {
             get {
@@ -430,7 +430,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function &apos;{0}&apos; has both username and password parameters. A credential parameter of type PSCredential should be used..
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; has both username and password parameters. A credential parameter of type PSCredential or has a CredentialAttribute should be used..
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsError {
             get {
@@ -1771,7 +1771,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Checks that cmdlets that have a Credential parameter accept PSCredential. This comes from the PowerShell teams best practices..
+        ///   Looks up a localized string similar to Checks that cmdlets that have a Credential parameter accept PSCredential or has a CredentialAttribute. This comes from the PowerShell teams best practices..
         /// </summary>
         internal static string UsePSCredentialTypeDescription {
             get {
@@ -1780,7 +1780,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of the type PSCredential..
+        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of the type PSCredential or has a CredentialAttribute..
         /// </summary>
         internal static string UsePSCredentialTypeError {
             get {
@@ -1789,7 +1789,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in a found script block must be of the type PSCredential..
+        ///   Looks up a localized string similar to The Credential parameter in a found script block must be of the type PSCredential or has a CredentialAttribute..
         /// </summary>
         internal static string UsePSCredentialTypeErrorSB {
             get {

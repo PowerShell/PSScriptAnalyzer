@@ -1,6 +1,6 @@
 ﻿Import-Module PSScriptAnalyzer
 
-$violationMessage = "Function 'Verb-Noun' has both username and password parameters. A credential parameter of type PSCredential should be used."
+$violationMessage = "Function 'Verb-Noun' has both username and password parameters. A credential parameter of type PSCredential or has a CredentialAttribute should be used."
 $violationName = "PSAvoidUsingUserNameAndPasswordParams"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidUserNameAndPasswordParams.ps1 | Where-Object {$_.RuleName -eq $violationName}
