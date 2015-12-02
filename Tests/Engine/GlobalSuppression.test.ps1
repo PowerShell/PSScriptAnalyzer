@@ -46,18 +46,38 @@ Describe "GlobalSuppression" {
     }
 
     Context "Severity" {
-        It "Raises 1 violation for internal url without profile" {
-            $withoutProfile = $violations | Where-Object { $_.RuleName -eq "PSAvoidUsingInternalURLs" }
+        It "Raises 1 violation for use output type correctly without profile" {
+            $withoutProfile = $violations | Where-Object { $_.RuleName -eq "PSUseOutputTypeCorrectly" }
             $withoutProfile.Count | Should Be 1
-            $withoutProfile = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingInternalURLs" }
+            $withoutProfile = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSUseOutputTypeCorrectly" }
             $withoutProfile.Count | Should Be 1
         }
 
-        It "Does not raise any violations for internal urls with profile" {
-            $withProfile = $suppression | Where-Object { $_.RuleName -eq "PSAvoidUsingInternalURLs" }
+        It "Does not raise any violations for use output type correctly with profile" {
+            $withProfile = $suppression | Where-Object { $_.RuleName -eq "PSUseOutputTypeCorrectly" }
             $withProfile.Count | Should be 0
-            $withProfile = $suppressionUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingInternalURLs" }
+            $withProfile = $suppressionUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSUseOutputTypeCorrectly" }
             $withProfile.Count | Should be 0
+        }
+    }
+
+    Context "Error Case" {
+        It "Raises Error for file not found" {
+            $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Configuration ".\ThisFileDoesNotExist.ps1" -ErrorAction SilentlyContinue
+            $invokeWithError.Count | should be 0
+            $Error[0].FullyQualifiedErrorId | should match "ConfigurationFileNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
+        }
+
+        It "Raises Error for file with no hash table" {
+            $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Configuration "$directory\GlobalSuppression.ps1" -ErrorAction SilentlyContinue
+            $invokeWithError.Count | should be 0
+            $Error[0].FullyQualifiedErrorId | should match "ConfigurationFileHasNoHashTable,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
+        }
+
+        It "Raises Error for wrong profile" {
+            $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Configuration "$directory\WrongProfile.ps1" -ErrorAction SilentlyContinue
+            $invokeWithError.Count | should be 0
+            $Error[0].FullyQualifiedErrorId | should match "ConfigurationValueWrongFormat,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
         }
     }
 }

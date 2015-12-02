@@ -151,6 +151,159 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 profile);
         }
 
+        internal bool ParseProfile(string profile, PathIntrinsics path, IOutputWriter writer)
+        {
+            IEnumerable<string> includeRuleList = new List<string>();
+            IEnumerable<string> excludeRuleList = new List<string>();
+            IEnumerable<string> severityList = new List<string>();
+
+            bool hasError = false;
+
+            if (!String.IsNullOrWhiteSpace(profile))
+            {
+                try
+                {
+                    profile = path.GetResolvedPSPathFromPSPath(profile).First().Path;
+                }
+                catch
+                {
+                    writer.WriteError(new ErrorRecord(new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, profile)),
+                        Strings.ConfigurationFileNotFound, ErrorCategory.ResourceUnavailable, profile));
+                    hasError = true;
+                }
+
+                if (File.Exists(profile))
+                {
+                    Token[] parserTokens = null;
+                    ParseError[] parserErrors = null;
+                    Ast profileAst = Parser.ParseFile(profile, out parserTokens, out parserErrors);
+                    IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
+
+                    // no hashtable, raise warning
+                    if (hashTableAsts.Count() == 0)
+                    {
+                        writer.WriteError(new ErrorRecord(new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile)),
+                            Strings.ConfigurationFileHasNoHashTable, ErrorCategory.ResourceUnavailable, profile));
+                        hasError = true;
+                    }
+                    else
+                    {
+                        HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
+
+                        foreach (var kvp in hashTableAst.KeyValuePairs)
+                        {
+                            if (!(kvp.Item1 is StringConstantExpressionAst))
+                            {
+                                // first item (the key) should be a string
+                                writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
+                                    Strings.ConfigurationKeyNotAString, ErrorCategory.InvalidData, profile));
+                                hasError = true;
+                                continue;
+                            }
+
+                            // parse the item2 as array
+                            PipelineAst pipeAst = kvp.Item2 as PipelineAst;
+                            List<string> rhsList = new List<string>();
+                            if (pipeAst != null)
+                            {
+                                ExpressionAst pureExp = pipeAst.GetPureExpression();
+                                if (pureExp is StringConstantExpressionAst)
+                                {
+                                    rhsList.Add((pureExp as StringConstantExpressionAst).Value);
+                                }
+                                else
+                                {
+                                    ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
+                                    if (arrayLitAst == null && pureExp is ArrayExpressionAst)
+                                    {
+                                        ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
+                                        // Statements property is never null
+                                        if (arrayExp.SubExpression != null)
+                                        {
+                                            StatementAst stateAst = arrayExp.SubExpression.Statements.FirstOrDefault();
+                                            if (stateAst != null && stateAst is PipelineAst)
+                                            {
+                                                CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.FirstOrDefault();
+                                                if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
+                                                {
+                                                    CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
+                                                    if (cmdExpAst.Expression is StringConstantExpressionAst)
+                                                    {
+                                                        rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (arrayLitAst != null)
+                                    {
+                                        foreach (var element in arrayLitAst.Elements)
+                                        {
+                                            // all the values in the array needs to be string
+                                            if (!(element is StringConstantExpressionAst))
+                                            {
+                                                writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile)),
+                                                    Strings.ConfigurationValueNotAString, ErrorCategory.InvalidData, profile));
+                                                hasError = true;
+                                                continue;
+                                            }
+
+                                            rhsList.Add((element as StringConstantExpressionAst).Value);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (rhsList.Count == 0)
+                            {
+                                writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile)),
+                                    Strings.ConfigurationValueWrongFormat, ErrorCategory.InvalidData, profile));
+                                hasError = true;
+                                continue;
+                            }
+
+                            string key = (kvp.Item1 as StringConstantExpressionAst).Value.ToLower();
+
+                            switch (key)
+                            {
+                                case "severity":
+                                    severityList = severityList.Union(rhsList);
+                                    break;
+                                case "includerules":
+                                    includeRuleList = includeRuleList.Union(rhsList);
+                                    break;
+                                case "excluderules":
+                                    excludeRuleList = excludeRuleList.Union(rhsList);
+                                    break;
+                                default:
+                                    // keep writing warning here, we only stop processing if existing keys are wrong
+                                    writer.WriteWarning(
+                                        string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, key,
+                                            kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile));
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (hasError)
+            {
+                return false;
+            }
+
+            this.severity = (severityList.Count() == 0) ? null : severityList.ToArray();
+            this.includeRule = (includeRuleList.Count() == 0) ? null : includeRuleList.ToArray();
+            this.excludeRule = (excludeRuleList.Count() == 0) ? null : excludeRuleList.ToArray();
+
+            return true;
+        }
+
         private void Initialize(
             IOutputWriter outputWriter, 
             PathIntrinsics path, 
@@ -177,158 +330,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             #region Initializes Rules
 
-            this.severity = severity;
             this.suppressedOnly = suppressedOnly;
-            this.includeRule = includeRuleNames;
-            this.excludeRule = excludeRuleNames;
+            this.severity = this.severity == null ? severity : this.severity.Union(severity ?? new String[0]).ToArray();
+            this.includeRule = this.includeRule == null ? includeRuleNames : this.includeRule.Union(includeRuleNames ?? new String[0]).ToArray();
+            this.excludeRule = this.excludeRule == null ? excludeRuleNames : this.excludeRule.Union(excludeRuleNames ?? new String[0]).ToArray();
             this.includeRegexList = new List<Regex>();
             this.excludeRegexList = new List<Regex>();
-
-            #region ParseProfile
-            if (!String.IsNullOrWhiteSpace(profile))
-            {
-                try
-                {                    
-                    profile = path.GetResolvedPSPathFromPSPath(profile).First().Path;
-                }
-                catch
-                {
-                    this.outputWriter.WriteWarning(string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, profile));
-                }
-
-                if (File.Exists(profile))
-                {
-                    Token[] parserTokens = null;
-                    ParseError[] parserErrors = null;
-                    Ast profileAst = Parser.ParseFile(profile, out parserTokens, out parserErrors);
-                    IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
-
-                    // no hashtable, raise warning
-                    if (hashTableAsts.Count() == 0)
-                    {
-                        this.outputWriter.WriteWarning(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile));
-                    }
-                    else
-                    {
-                        HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
-
-                        foreach (var kvp in hashTableAst.KeyValuePairs)
-                        {
-                            if (!(kvp.Item1 is StringConstantExpressionAst))
-                            {
-                                // first item (the key) should be a string
-                                this.outputWriter.WriteWarning(
-                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile));
-                                continue;
-                            }
-
-                            // parse the item2 as array
-                            PipelineAst pipeAst = kvp.Item2 as PipelineAst;
-                            List<string> rhsList = new List<string>();
-                            if (pipeAst != null)
-                            {
-                                ExpressionAst pureExp = pipeAst.GetPureExpression();
-                                if (pureExp is StringConstantExpressionAst)
-                                {
-                                    rhsList.Add((pureExp as StringConstantExpressionAst).Value);
-                                }
-                                else
-                                {
-                                    ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
-                                    if (arrayLitAst == null && pureExp is ArrayExpressionAst)
-                                    {
-                                        ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
-                                        // Statements property is never null
-                                        if (arrayExp.SubExpression != null)
-                                        {
-                                            StatementAst stateAst = arrayExp.SubExpression.Statements.First();
-                                            if (stateAst != null && stateAst is PipelineAst)
-                                            {
-                                                CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.First();
-                                                if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
-                                                {
-                                                    CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
-                                                    if (cmdExpAst.Expression is StringConstantExpressionAst)
-                                                    {
-                                                        rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
-                                                    }
-                                                    else
-                                                    {
-                                                        arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if (arrayLitAst != null)
-                                    {
-                                        foreach (var element in arrayLitAst.Elements)
-                                        {
-                                            // all the values in the array needs to be string
-                                            if (!(element is StringConstantExpressionAst))
-                                            {
-                                                this.outputWriter.WriteWarning(
-                                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile));
-                                                continue;
-                                            }
-
-                                            rhsList.Add((element as StringConstantExpressionAst).Value);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (rhsList.Count == 0)
-                            {
-                                this.outputWriter.WriteWarning(
-                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile));
-                                break;
-                            }
-
-                            switch ((kvp.Item1 as StringConstantExpressionAst).Value.ToLower())
-                            {
-                                case "severity":
-                                    if (this.severity == null)
-                                    {
-                                        this.severity = rhsList.ToArray();
-                                    }
-                                    else
-                                    {
-                                        this.severity = this.severity.Union(rhsList).ToArray();
-                                    }
-                                    break;
-                                case "includerules":
-                                    if (this.includeRule == null)
-                                    {
-                                        this.includeRule = rhsList.ToArray();
-                                    }
-                                    else
-                                    {
-                                        this.includeRule = this.includeRule.Union(rhsList).ToArray();
-                                    }
-                                    break;
-                                case "excluderules":
-                                    if (this.excludeRule == null)
-                                    {
-                                        this.excludeRule = rhsList.ToArray();
-                                    }
-                                    else
-                                    {
-                                        this.excludeRule = this.excludeRule.Union(rhsList).ToArray();
-                                    }
-                                    break;
-                                default:
-                                    this.outputWriter.WriteWarning(
-                                        string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile));
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            #endregion
 
             //Check wild card input for the Include/ExcludeRules and create regex match patterns
             if (this.includeRule != null)
@@ -339,6 +346,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     this.includeRegexList.Add(includeRegex);
                 }
             }
+
             if (this.excludeRule != null)
             {
                 foreach (string rule in excludeRule)
@@ -1446,7 +1454,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (severity != null)
             {
                 var diagSeverity = severity.Select(item => Enum.Parse(typeof(DiagnosticSeverity), item, true));
-                diagnosticsList = diagnostics.Where(item => diagSeverity.Contains(item.Severity));
+                if (diagSeverity.Count() != 0)
+                {
+                    diagnosticsList = diagnostics.Where(item => diagSeverity.Contains(item.Severity));
+                }
             }
 
             return this.suppressedOnly ?

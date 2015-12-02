@@ -169,6 +169,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         }
         private string configuration;
 
+        private bool stopProcessing;
+
         #endregion Parameters
 
         #region Overrides
@@ -180,6 +182,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);
+
+            if (!ScriptAnalyzer.Instance.ParseProfile(this.configuration, this.SessionState.Path, this))
+            {
+                stopProcessing = true;
+                return;
+            }
 
             ScriptAnalyzer.Instance.Initialize(
                 this,
@@ -196,6 +204,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void ProcessRecord()
         {
+            if (stopProcessing)
+            {
+                stopProcessing = false;
+                return;
+            }
+
             if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
             {
                 // throws Item Not Found Exception                        

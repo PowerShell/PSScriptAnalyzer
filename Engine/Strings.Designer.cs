@@ -88,6 +88,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ConfigurationFileHasNoHashTable.
+        /// </summary>
+        internal static string ConfigurationFileHasNoHashTable {
+            get {
+                return ResourceManager.GetString("ConfigurationFileHasNoHashTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ConfigurationFileNotFound.
+        /// </summary>
+        internal static string ConfigurationFileNotFound {
+            get {
+                return ResourceManager.GetString("ConfigurationFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ConfigurationKeyNotAString.
+        /// </summary>
+        internal static string ConfigurationKeyNotAString {
+            get {
+                return ResourceManager.GetString("ConfigurationKeyNotAString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ConfigurationValueNotAString.
+        /// </summary>
+        internal static string ConfigurationValueNotAString {
+            get {
+                return ResourceManager.GetString("ConfigurationValueNotAString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ConfigurationValueWrongFormat.
+        /// </summary>
+        internal static string ConfigurationValueWrongFormat {
+            get {
+                return ResourceManager.GetString("ConfigurationValueWrongFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Writes all diagnostics to WriteObject..
         /// </summary>
         internal static string DefaultLoggerDescription {
@@ -322,7 +367,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid key in the profile hashtable: line {0} column {1} in file {2}.
+        ///   Looks up a localized string similar to {0} is not a valid key in the profile hashtable: line {1} column {2} in file {3}. This key value pair will not be processed..
         /// </summary>
         internal static string WrongKey {
             get {
