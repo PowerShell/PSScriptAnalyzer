@@ -15,6 +15,8 @@ using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -48,7 +50,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (String.Equals(cmdParamAst.ParameterName, "computername", StringComparison.OrdinalIgnoreCase))
                 {
-                    return cmdParamAst.Argument is ConstantExpressionAst || GetComputerNameArg(CmdAst, cmdParamAst.Extent.StartOffset) is ConstantExpressionAst;
+                    List<string> localhostRepresentations = new List<string> { "localhost", ".", "::1", "127.0.0.1" };
+                    Ast computerNameArgument = GetComputerNameArg(CmdAst, cmdParamAst.Extent.StartOffset);                                        
+
+                    if (null != computerNameArgument)
+                    {
+                        if (!localhostRepresentations.Contains(computerNameArgument.Extent.Text.ToLower()))
+                        {
+                            return computerNameArgument is ConstantExpressionAst;
+                        }
+
+                        return false;
+                    }
+                    
+                    if (null != cmdParamAst.Argument && !localhostRepresentations.Contains(cmdParamAst.Argument.ToString().Replace("\"", "").Replace("'", "").ToLower()))
+                    {
+                        return cmdParamAst.Argument is ConstantExpressionAst;
+                    }
                 }
             }
 
