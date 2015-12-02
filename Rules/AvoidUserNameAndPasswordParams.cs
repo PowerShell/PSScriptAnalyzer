@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Language;
@@ -55,7 +56,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     TypeInfo paramType = (TypeInfo)paramAst.StaticType;
                     String paramName = paramAst.Name.VariablePath.ToString();
 
-                    if (paramType == typeof(PSCredential) || (paramType.IsArray && paramType.GetElementType() == typeof (PSCredential)))
+                    // if this is pscredential type with credential attribute, skip
+                    if ((paramType == typeof(PSCredential) || (paramType.IsArray && paramType.GetElementType() == typeof (PSCredential)))
+                        && paramAst.Attributes.Any(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute)))
                     {
                         continue;
                     }

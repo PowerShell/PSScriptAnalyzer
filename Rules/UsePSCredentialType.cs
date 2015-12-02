@@ -11,6 +11,8 @@
 //
 
 using System;
+using System.Reflection;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Language;
@@ -50,7 +52,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (ParameterAst parameter in funcDefAst.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (WrongCredentialUsage(parameter))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName), funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
@@ -61,7 +63,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (ParameterAst parameter in funcDefAst.Body.ParamBlock.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (WrongCredentialUsage(parameter))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName), funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
@@ -75,13 +77,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (ParameterAst parameter in scriptBlockAst.ParamBlock.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (WrongCredentialUsage(parameter))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeErrorSB), scriptBlockAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                     }
                 }
             }
+        }
+
+        private bool WrongCredentialUsage(ParameterAst parameter)
+        {
+            if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase))
+            {
+                TypeInfo paramType = (TypeInfo)parameter.StaticType;
+
+                if ((paramType == typeof(PSCredential) || (paramType.IsArray && paramType.GetElementType() == typeof(PSCredential)))
+                    && parameter.Attributes.Any(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute)))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
