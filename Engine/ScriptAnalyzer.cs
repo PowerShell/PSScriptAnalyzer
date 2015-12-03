@@ -350,7 +350,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             try
             {
-                this.LoadRules(this.validationResults, invokeCommand);
+                this.LoadRules(this.validationResults, invokeCommand, null == customizedRulePath ? true : false);
             }
             catch (Exception ex)
             {
@@ -418,7 +418,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return paths;
         }
 
-        private void LoadRules(Dictionary<string, List<string>> result, CommandInvocationIntrinsics invokeCommand)
+        private void LoadRules(Dictionary<string, List<string>> result, CommandInvocationIntrinsics invokeCommand, bool loadBuiltInRules)
         {
             List<string> paths = new List<string>();
 
@@ -470,6 +470,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     this.outputWriter.WriteWarning(compositionException.ToString());
                 }
+            }
+
+            if (!loadBuiltInRules)
+            {
+                this.ScriptRules = null;
             }
 
             // Gets external rules.

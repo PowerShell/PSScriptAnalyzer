@@ -160,7 +160,7 @@
     <value>RULE_ERROR</value>
   </data>
   <data name="RulesNotFound" xml:space="preserve">
-    <value>Cannot find analyzer rules.</value>
+    <value>Cannot find ScriptAnalyzer rules in the specified path</value>
   </data>
   <data name="RuleSuppressionErrorFormat" xml:space="preserve">
     <value>Suppression Message Attribute error at line {0} in {1} : {2}</value>

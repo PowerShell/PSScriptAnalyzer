@@ -91,24 +91,28 @@ Describe "Test RuleExtension" {
 
         It "with Name of a built-in rules" {
             $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns
-            $ruleExtension.Count | Should Be 1
-            $ruleExtension[0].RuleName | Should Be $singularNouns
+            $ruleExtension.Count | Should Be 0            
         }
 
         It "with Names of built-in, DSC and non-built-in rules" {
             $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns, $measureRequired, $dscIdentical
-            $ruleExtension.Count | Should be 3
+            $ruleExtension.Count | Should be 1
             ($ruleExtension | Where-Object {$_.RuleName -eq $measureRequired}).Count | Should Be 1
-            ($ruleExtension | Where-Object {$_.RuleName -eq $singularNouns}).Count | Should Be 1
-            ($ruleExtension | Where-Object {$_.RuleName -eq $dscIdentical}).Count | Should Be 1
+            ($ruleExtension | Where-Object {$_.RuleName -eq $singularNouns}).Count | Should Be 0
+            ($ruleExtension | Where-Object {$_.RuleName -eq $dscIdentical}).Count | Should Be 0
         }
     }
 
     Context "When used incorrectly" {
         It "file cannot be found" {
-            $wrongFile = Get-ScriptAnalyzerRule -CustomizedRulePath "This is a wrong rule" 3>&1
-            ($wrongFile  | Select-Object -First 1) | Should Match "Cannot find rule extension 'This is a wrong rule'."
-            ($wrongFile | Where-Object {$_.RuleName -eq $singularNouns}).Count | Should Be 1
+            try
+            {
+                Get-ScriptAnalyzerRule -CustomizedRulePath "Invalid CustomRulePath"
+            }
+            catch
+            {
+                $Error[0].FullyQualifiedErrorId | should match "Cannot find ScriptAnalyzer rules in the specified path,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.GetScriptAnalyzerRuleCommand"            
+            }
         }
 
     }
