@@ -318,19 +318,18 @@ Describe "Test CustomizedRulePath" {
     }
 
     Context "When used incorrectly" {
-        It "file cannot be found" {
-            $wrongRule = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath "This is a wrong rule" 3>&1 | Select-Object -First 1
-
-			if ($testingLibraryUsage)
-			{
-				# Special case for library usage testing: warning output written
-				# with PSHost.UI.WriteWarningLine does not get redirected correctly
-				# so we can't use this approach for checking the warning message.
-				# Instead, reach into the test IOutputWriter implementation to find it.
-				$wrongRule = $testOutputWriter.MostRecentWarningMessage
-			}
-
-			$wrongRule | Should Match "Cannot find rule extension 'This is a wrong rule'."
+        It "file cannot be found" {            
+            try
+            {
+                Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath "Invalid CustomRulePath"
+            }
+            catch
+            {
+                if (-not $testingLibraryUsage)
+			    {                    
+                    $Error[0].FullyQualifiedErrorId | should match "Cannot find ScriptAnalyzer rules in the specified path,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"            
+                }                
+            }
         }
     }
 }

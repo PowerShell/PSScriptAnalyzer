@@ -268,7 +268,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot find analyzer rules..
+        ///   Looks up a localized string similar to Cannot find ScriptAnalyzer rules in the specified path.
         /// </summary>
         internal static string RulesNotFound {
             get {
