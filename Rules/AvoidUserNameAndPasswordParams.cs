@@ -53,12 +53,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Iterrates all ParamAsts and check if their names are on the list.
                 foreach (ParameterAst paramAst in paramAsts)
                 {
-                    TypeInfo paramType = (TypeInfo)paramAst.StaticType;
+                    var psCredentialType = paramAst.Attributes.FirstOrDefault(paramAttribute =>
+                        (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof(PSCredential))
+                        || paramAttribute.TypeName.GetReflectionType() == typeof(PSCredential));
+
+                    var credentialAttribute = paramAst.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
+
                     String paramName = paramAst.Name.VariablePath.ToString();
 
-                    // if this is pscredential type with credential attribute, skip
-                    if ((paramType == typeof(PSCredential) || (paramType.IsArray && paramType.GetElementType() == typeof (PSCredential)))
-                        && paramAst.Attributes.Any(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute)))
+                    // if this is pscredential type with credential attribute where pscredential type comes first
+                    if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset < credentialAttribute.Extent.StartOffset)
                     {
                         continue;
                     }

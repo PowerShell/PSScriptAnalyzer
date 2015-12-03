@@ -19,8 +19,8 @@ function MyFunction3
         [Parameter(Mandatory=$true,
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
-        [System.Management.Automation.CredentialAttribute()]
         [pscredential]
+        [System.Management.Automation.CredentialAttribute()]
         $UserName,
 
         # Param2 help description

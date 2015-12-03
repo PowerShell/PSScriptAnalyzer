@@ -73,6 +73,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (ScriptBlockAst scriptBlockAst in scriptBlockAsts)
             {
+                // check for the case where it's parent is function, in that case we already processed above
+                if (scriptBlockAst.Parent != null && scriptBlockAst.Parent is FunctionDefinitionAst)
+                {
+                    continue;
+                }
+
                 if (scriptBlockAst.ParamBlock != null && scriptBlockAst.ParamBlock.Parameters != null)
                 {
                     foreach (ParameterAst parameter in scriptBlockAst.ParamBlock.Parameters)
@@ -90,10 +96,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase))
             {
-                TypeInfo paramType = (TypeInfo)parameter.StaticType;
+                var psCredentialType = parameter.Attributes.FirstOrDefault(paramAttribute => (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof(PSCredential))
+                    || paramAttribute.TypeName.GetReflectionType() == typeof(PSCredential));
 
-                if ((paramType == typeof(PSCredential) || (paramType.IsArray && paramType.GetElementType() == typeof(PSCredential)))
-                    && parameter.Attributes.Any(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute)))
+                var credentialAttribute = parameter.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
+
+                // check that both exists and pscredentialtype comes before credential attribute
+                if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset < credentialAttribute.Extent.StartOffset)
                 {
                     return false;
                 }
