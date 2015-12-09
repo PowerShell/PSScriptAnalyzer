@@ -88,7 +88,7 @@ RUNNING SCRIPT ANALYZER ON AN EXISTING SCRIPT, MODULE OR DSC RESOURCE
         see if the output is "manageable".  If it isn't, then you will want to "ease 
         into" things by starting with the most serious violations first - errors.
         
-        You may be temtped to use the Invoke-ScriptAnalyzer command's Severity 
+        You may be tempted to use the Invoke-ScriptAnalyzer command's Severity 
         parameter with the argument Error to do this - don't.  This will run every 
         built-in rule and then filter the results during output.  The more rules the 
         script analyzer runs, the longer it will take to analyze a file.  You can 

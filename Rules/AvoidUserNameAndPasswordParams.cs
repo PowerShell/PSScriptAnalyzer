@@ -50,7 +50,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 // Finds all ParamAsts.
                 IEnumerable<Ast> paramAsts = funcAst.FindAll(testAst => testAst is ParameterAst, true);
-                // Iterrates all ParamAsts and check if their names are on the list.
+                // Iterates all ParamAsts and check if their names are on the list.
                 foreach (ParameterAst paramAst in paramAsts)
                 {
                     var psCredentialType = paramAst.Attributes.FirstOrDefault(paramAttribute =>

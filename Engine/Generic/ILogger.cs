@@ -34,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         string GetName();
 
         /// <summary>
-        /// GetDescription: Retrives the description of the logger.
+        /// GetDescription: Retrieves the description of the logger.
         /// </summary>
         /// <returns>The description of the logger</returns>
         string GetDescription();

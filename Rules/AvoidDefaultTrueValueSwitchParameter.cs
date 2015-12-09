@@ -36,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all ParamAsts.
             IEnumerable<Ast> paramAsts = ast.FindAll(testAst => testAst is ParameterAst, true);
 
-            // Iterrates all ParamAsts and check if any are switch.
+            // Iterates all ParamAsts and check if any are switch.
             foreach (ParameterAst paramAst in paramAsts)
             {
                 if (paramAst.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(System.Management.Automation.SwitchParameter))

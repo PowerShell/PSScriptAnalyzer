@@ -23,7 +23,7 @@ CompanyName = 'Microsoft Corporation'
 Copyright = '(c) Microsoft Corporation 2015. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of builtin or customized rules on the scripts being analyzed.'
+Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of built-in or customized rules on the scripts being analyzed.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.0'

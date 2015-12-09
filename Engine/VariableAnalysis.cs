@@ -133,7 +133,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Used to analyze scriptbloct, functionmemberast or functiondefinitionast
+        /// Used to analyze scriptblock, functionmemberast or functiondefinitionast
         /// </summary>
         /// <param name="ast"></param>
         /// <returns></returns>

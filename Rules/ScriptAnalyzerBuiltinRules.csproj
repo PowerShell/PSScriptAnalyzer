@@ -111,7 +111,7 @@
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>mkdir "$(SolutionDir)$(SolutionName)"
+    <PostBuildEvent>if not exist "$(SolutionDir)$(SolutionName)" mkdir "$(SolutionDir)$(SolutionName)"
 copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

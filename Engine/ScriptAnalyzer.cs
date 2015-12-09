@@ -888,7 +888,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            // Resloves relative paths.
+            // Resolves relative paths.
             try
             {
                 for (int i = 0; i < validModPaths.Count; i++)
