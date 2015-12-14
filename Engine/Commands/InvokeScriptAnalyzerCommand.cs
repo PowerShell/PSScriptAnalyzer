@@ -74,12 +74,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [ValidateNotNull]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Alias("CustomizedRulePath")]
-        public string CustomRulePath
+        public string[] CustomRulePath
         {
             get { return customRulePath; }
             set { customRulePath = value; }
         }
-        private string customRulePath;
+        private string[] customRulePath;
 
         /// <summary>
         /// RecurseCustomRulePath: Find rules within subfolders under the path

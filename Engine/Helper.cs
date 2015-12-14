@@ -984,38 +984,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-        public static string[] ProcessCustomRulePaths(string rulePath, SessionState sessionState, bool recurse = false)
+        public static string[] ProcessCustomRulePaths(string[] rulePaths, SessionState sessionState, bool recurse = false)
         {
             //if directory is given, list all the psd1 files
             List<string> outPaths = new List<string>();
-            if (rulePath == null)
+            if (rulePaths == null)
             {
                 return null;
             }
-            try
+
+            Collection<PathInfo> pathInfo = new Collection<PathInfo>();
+            foreach (string rulePath in rulePaths)
             {
-                Collection<PathInfo> pathInfo = sessionState.Path.GetResolvedPSPathFromPSPath(rulePath);                
-                foreach (PathInfo pinfo in pathInfo)
+                Collection<PathInfo> pathInfosForRulePath = sessionState.Path.GetResolvedPSPathFromPSPath(rulePath);
+                if (null != pathInfosForRulePath)
                 {
-                    string path = pinfo.Path;
-                    if (Directory.Exists(path))
+                    foreach (PathInfo pathInfoForRulePath in pathInfosForRulePath)
                     {
-                        path = path.TrimEnd('\\');
-                        if (recurse)
-                        {
-                            outPaths.AddRange(Directory.GetDirectories(pinfo.Path, "*", SearchOption.AllDirectories));
-                        }
+                        pathInfo.Add(pathInfoForRulePath);
                     }
-                    outPaths.Add(path);
                 }
-                return outPaths.ToArray();
             }
-            catch
+
+            foreach (PathInfo pinfo in pathInfo)
             {
-                // need to do this as the path validation takes place later in the hierarchy.
-                outPaths.Add(rulePath);
-                return outPaths.ToArray();
+                string path = pinfo.Path;
+                if (Directory.Exists(path))
+                {
+                    path = path.TrimEnd('\\');
+                    if (recurse)
+                    {
+                        outPaths.AddRange(Directory.GetDirectories(pinfo.Path, "*", SearchOption.AllDirectories));
+                    }
+                }
+                outPaths.Add(path);
             }
+            
+            return outPaths.ToArray();
+            
         }
 
 
