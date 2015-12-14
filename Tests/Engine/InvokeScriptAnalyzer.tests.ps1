@@ -316,6 +316,7 @@ Describe "Test CustomizedRulePath" {
 
 		It "When supplied with a collection of paths recursively" {
             $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath ("$directory\CommunityAnalyzerRules", "$directory\SampleRule", "$directory\SampleRule\SampleRule2") -RecurseCustomRulePath
+			$customizedRulePath
             $customizedRulePath.Count | Should Be 6
         }
 
