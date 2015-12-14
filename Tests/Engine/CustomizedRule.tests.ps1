@@ -99,8 +99,8 @@ Describe "Test importing correct customized rules" {
 			}
 
 			It "will show the custom rules when given recurse switch" {
-				$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule | Where-Object {$_.RuleName -eq $measure}
-				$customizedRulePath.Count | Should be 3
+				$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath "$directory\samplerule", "$directory\samplerule\samplerule2" | Where-Object {$_.RuleName -eq $measure}
+				$customizedRulePath.Count | Should be 5
 			}
 		
 			it "will show the custom rules when given glob with recurse switch" {

@@ -40,15 +40,8 @@ Describe "Test available parameters" {
             $params.ContainsKey("CustomRulePath") | Should Be $true
         }
 
-        It "accepts a string" {
-			if ($testingLibraryUsage)
-			{
+        It "accepts a string array" {
 				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String[]"
-			}
-			else
-			{
-				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String"
-			}
         }
 
 		It "has a CustomizedRulePath alias"{
@@ -315,7 +308,14 @@ Describe "Test CustomizedRulePath" {
             $customizedRulePathExclude = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -ExcludeRule "Measure-RequiresModules" | Where-Object {$_.RuleName -eq $measureRequired}
             $customizedRulePathExclude.Count | Should be 0
         }
+
+		It "When supplied with a collection of paths" {
+            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath ("$directory\CommunityAnalyzerRules", "$directory\SampleRule", "$directory\SampleRule\SampleRule2")
+            $customizedRulePath.Count | Should Be 3
+        }		
+
     }
+
 
     Context "When used incorrectly" {
         It "file cannot be found" {            
@@ -327,7 +327,7 @@ Describe "Test CustomizedRulePath" {
             {
                 if (-not $testingLibraryUsage)
 			    {                    
-                    $Error[0].FullyQualifiedErrorId | should match "Cannot find ScriptAnalyzer rules in the specified path,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"            
+                    $Error[0].FullyQualifiedErrorId | should match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"            
                 }                
             }
         }

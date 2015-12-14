@@ -23,10 +23,10 @@ Describe "Test available parameters" {
         }
 
         It "accepts string array" {
-            $params["CustomRulePath"].ParameterType.FullName | Should Be "System.String"
+            $params["CustomRulePath"].ParameterType.FullName | Should Be "System.String[]"
         }
 
-		It "takes CustomizedRulePath parameter as an alias of CustomRulePath paramter" {
+		It "takes CustomizedRulePath parameter as an alias of CustomRulePath parameter" {
 			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should be $true
 		}
     }
@@ -107,11 +107,11 @@ Describe "Test RuleExtension" {
         It "file cannot be found" {
             try
             {
-                Get-ScriptAnalyzerRule -CustomizedRulePath "Invalid CustomRulePath"
+                Get-ScriptAnalyzerRule -CustomRulePath "Invalid CustomRulePath"
             }
             catch
             {
-                $Error[0].FullyQualifiedErrorId | should match "Cannot find ScriptAnalyzer rules in the specified path,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.GetScriptAnalyzerRuleCommand"            
+                $Error[0].FullyQualifiedErrorId | should match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.GetScriptAnalyzerRuleCommand"            
             }
         }
 
