@@ -24,7 +24,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     public abstract class AvoidCmdletGeneric : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the anaylsis.
+        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the analysis.
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The name of the script file being analyzed</param>
@@ -38,7 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
             List<String> cmdletNameAndAliases = Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper.Instance.CmdletNameAndAliases(GetCmdletName());
 
-            // Iterrates all CommandAsts and check the command name.
+            // Iterates all CommandAsts and check the command name.
             foreach (CommandAst cmdAst in commandAsts)
             {
                 if (cmdAst.GetCommandName() == null) continue;

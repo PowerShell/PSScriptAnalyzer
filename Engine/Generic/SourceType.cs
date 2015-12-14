@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         Builtin = 0,
 
         /// <summary>
-        /// MANAGED: Indicates the script analyzer rule is contirbuted as a managed rule.
+        /// MANAGED: Indicates the script analyzer rule is contributed as a managed rule.
         /// </summary>
         Managed = 1,
 

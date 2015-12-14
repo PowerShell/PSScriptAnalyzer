@@ -35,7 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all CommandAsts.
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CatchClauseAst, true);
 
-            // Iterrates all CatchClauseAst and check the statements count.
+            // Iterates all CatchClauseAst and check the statements count.
             foreach (Ast foundAst in foundAsts)
             {
                 CatchClauseAst catchAst = (CatchClauseAst)foundAst;
