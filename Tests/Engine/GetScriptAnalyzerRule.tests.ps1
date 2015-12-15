@@ -53,6 +53,11 @@ Describe "Test Name parameters" {
             ($rules | Where-Object {$_.RuleName -eq $singularNouns}).Count | Should Be 1
             ($rules | Where-Object {$_.RuleName -eq $approvedVerbs}).Count | Should Be 1
         }
+
+        It "Get Rules with no parameters supplied" {
+			$defaultRules = Get-ScriptAnalyzerRule
+			$defaultRules.Count | Should be 38
+		}
     }
 
     Context "When used incorrectly" {
