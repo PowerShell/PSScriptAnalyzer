@@ -391,11 +391,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 this.outputWriter.ThrowTerminatingError(
                     new ErrorRecord(
-                        new Exception(), 
+                        new Exception(),
                         string.Format(
-                            CultureInfo.CurrentCulture, 
-                            Strings.RulesNotFound), 
-                        ErrorCategory.ResourceExists, 
+                            CultureInfo.CurrentCulture,
+                            Strings.RulesNotFound),
+                        ErrorCategory.ResourceExists,
                         this));
             }
 

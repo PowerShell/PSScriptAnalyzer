@@ -123,44 +123,47 @@ Describe "Test importing correct customized rules" {
             $customizedRulePath.Count | Should Be 1
         }
 
-        It "will show the custom rule in the results when given a rule folder path with trailing backslash" {
-		    $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\ | Where-Object {$_.Message -eq $message}
-			$customizedRulePath.Count | Should Be 1
-		}
+        if (!$testingLibraryUsage)
+		{
+            It "will show the custom rule in the results when given a rule folder path with trailing backslash" {
+		        $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\ | Where-Object {$_.Message -eq $message}
+			    $customizedRulePath.Count | Should Be 1
+		    }
 
-		It "will show the custom rules when given a glob" {
-			$customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.Message -eq $message}
-			$customizedRulePath.Count | Should be 3
-		}
+		    It "will show the custom rules when given a glob" {
+			    $customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.Message -eq $message}
+			    $customizedRulePath.Count | Should be 3
+		    }
 
-		It "will show the custom rules when given recurse switch" {
-			$customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule | Where-Object {$_.Message -eq $message}
-			$customizedRulePath.Count | Should be 3
-		}
+		    It "will show the custom rules when given recurse switch" {
+			    $customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule | Where-Object {$_.Message -eq $message}
+			    $customizedRulePath.Count | Should be 3
+		    }
 		
-		It "will show the custom rules when given glob with recurse switch" {
-			$customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.Message -eq $message}
-			$customizedRulePath.Count | Should be 4
-		}
+		    It "will show the custom rules when given glob with recurse switch" {
+			    $customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.Message -eq $message}
+			    $customizedRulePath.Count | Should be 4
+		    }
 
-		It "will show the custom rules when given glob with recurse switch" {
-			$customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule* | Where-Object {$_.Message -eq $message}
-			$customizedRulePath.Count | Should be 3
-		}
+		    It "will show the custom rules when given glob with recurse switch" {
+			    $customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule* | Where-Object {$_.Message -eq $message}
+			    $customizedRulePath.Count | Should be 3
+		    }
 
-        It "Using IncludeDefaultRules Switch with CustomRulePath" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath $directory\samplerule\samplerule.psm1 -IncludeDefaultRules
-            $customizedRulePath.Count | Should Be 2
-        }
+            It "Using IncludeDefaultRules Switch with CustomRulePath" {
+                $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath $directory\samplerule\samplerule.psm1 -IncludeDefaultRules
+                $customizedRulePath.Count | Should Be 2
+            }
 
-        It "Using IncludeDefaultRules Switch without CustomRulePath" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -IncludeDefaultRules
-            $customizedRulePath.Count | Should Be 1
-        }
+            It "Using IncludeDefaultRules Switch without CustomRulePath" {
+                $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -IncludeDefaultRules
+                $customizedRulePath.Count | Should Be 1
+            }
 
-        It "Not Using IncludeDefaultRules Switch and without CustomRulePath" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1
-            $customizedRulePath.Count | Should Be 1
+            It "Not Using IncludeDefaultRules Switch and without CustomRulePath" {
+                $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1
+                $customizedRulePath.Count | Should Be 1
+            }
         }
 		
     }
