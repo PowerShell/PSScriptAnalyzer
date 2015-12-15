@@ -94,6 +94,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool recurseCustomRulePath;
 
         /// <summary>
+        /// IncludeDefaultRules: Invoke default rules along with Custom rules
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public SwitchParameter IncludeDefaultRules
+        {
+            get { return includeDefaultRules; }
+            set { includeDefaultRules = value; }
+        }
+        private bool includeDefaultRules;
+
+        /// <summary>
         /// ExcludeRule: Array of names of rules to be disabled.
         /// </summary>
         [Parameter(Mandatory = false)]
@@ -195,6 +207,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.includeRule,
                 this.excludeRule,
                 this.severity,
+                null == rulePaths ? true : this.includeDefaultRules,
                 this.suppressedOnly,
                 this.configuration);
         }

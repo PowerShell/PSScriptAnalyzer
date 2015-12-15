@@ -96,10 +96,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         internal void Initialize<TCmdlet>(
             TCmdlet cmdlet, 
-            string[] customizedRulePath = null,
+            string[] customizedRulePath = null,            
             string[] includeRuleNames = null, 
             string[] excludeRuleNames = null,
             string[] severity = null,
+            bool includeDefaultRules = false,
             bool suppressedOnly = false,
             string profile = null)
             where TCmdlet : PSCmdlet, IOutputWriter
@@ -117,6 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 includeRuleNames,
                 excludeRuleNames,
                 severity,
+                includeDefaultRules,
                 suppressedOnly,
                 profile);
         }
@@ -127,10 +129,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public void Initialize(
             Runspace runspace, 
             IOutputWriter outputWriter, 
-            string[] customizedRulePath = null, 
+            string[] customizedRulePath = null,             
             string[] includeRuleNames = null, 
             string[] excludeRuleNames = null,
             string[] severity = null,
+            bool includeDefaultRules = false,
             bool suppressedOnly = false,
             string profile = null)
         {
@@ -147,6 +150,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 includeRuleNames,
                 excludeRuleNames,
                 severity,
+                includeDefaultRules,
                 suppressedOnly,
                 profile);
         }
@@ -308,10 +312,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IOutputWriter outputWriter, 
             PathIntrinsics path, 
             CommandInvocationIntrinsics invokeCommand, 
-            string[] customizedRulePath, 
-            string[] includeRuleNames, 
+            string[] customizedRulePath,            
+            string[] includeRuleNames,
             string[] excludeRuleNames,
             string[] severity,
+            bool includeDefaultRules = false,
             bool suppressedOnly = false,
             string profile = null)
         {
@@ -358,7 +363,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             try
             {
-                this.LoadRules(this.validationResults, invokeCommand, null == customizedRulePath ? true : false);
+                this.LoadRules(this.validationResults, invokeCommand, includeDefaultRules);
             }
             catch (Exception ex)
             {
