@@ -14,18 +14,28 @@ $suppressionUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get
 
 Describe "GlobalSuppression" {
     Context "Exclude Rule" {
-        It "Raises 1 violation for uninitialized variable and 1 for cmdlet alias" {
-            $withoutProfile = $violations | Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases" -or $_.RuleName -eq "PSAvoidUninitializedVariable" }
+        It "Raises 1 violation for cmdlet alias" {
+            $withoutProfile = $violations | Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases"}
             $withoutProfile.Count | Should Be 1
-            $withoutProfile = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases" -or $_.RuleName -eq "PSAvoidUninitializedVariable" }
+            $withoutProfile = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases"}
             $withoutProfile.Count | Should Be 1
         }
 
-        It "Does not raise any violations for uninitialized variable and cmdlet alias with profile" {
-            $withProfile = $suppression | Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases" -or $_.RuleName -eq "PSAvoidUninitializedVariable" }
+        It "Does not raise any violations for cmdlet alias with profile" {
+            $withProfile = $suppression | Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases" }
             $withProfile.Count | Should be 0
-            $withProfile = $suppressionUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases" -or $_.RuleName -eq "PSAvoidUninitializedVariable" }
+            $withProfile = $suppressionUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases" }
             $withProfile.Count | Should be 0
+        }
+
+        It "Does not raise any violation for cmdlet alias using configuration hashtable" {
+            $hashtableConfiguration = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Configuration @{"excluderules" = "PSAvoidUsingCmdletAliases"} |
+                                        Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases"}
+            $hashtableConfiguration.Count | Should Be 0
+
+            $hashtableConfiguration = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$directory\GlobalSuppression.ps1") -Configuration @{"excluderules" = "PSAvoidUsingCmdletAliases"} |
+                                        Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases"}
+            $hashtableConfiguration.Count | Should Be 0
         }
     }
 
@@ -43,6 +53,12 @@ Describe "GlobalSuppression" {
             $withProfile = $suppressionUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingComputerNameHardcoded" }
             $withProfile.Count | Should be 0
         }
+        
+        It "Does not raise any violation for computername hard-coded using configuration hashtable" {
+            $hashtableConfiguration = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Configuration @{"includerules" = @("PSAvoidUsingCmdletAliases", "PSUseOutputTypeCorrectly")} |
+                                        Where-Object { $_.RuleName -eq "PSAvoidUsingComputerNameHardcoded"}
+            $hashtableConfiguration.Count | Should Be 0
+        }
     }
 
     Context "Severity" {
@@ -58,6 +74,12 @@ Describe "GlobalSuppression" {
             $withProfile.Count | Should be 0
             $withProfile = $suppressionUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSUseOutputTypeCorrectly" }
             $withProfile.Count | Should be 0
+        }
+
+        It "Does not raise any violation for use output type correctly with configuration hashtable" {
+            $hashtableConfiguration = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Configuration @{"severity" = "warning"} |
+                                    Where-Object {$_.RuleName -eq "PSUseOutputTypeCorrectly"}
+            $hashtableConfiguration.Count | should be 0
         }
     }
 

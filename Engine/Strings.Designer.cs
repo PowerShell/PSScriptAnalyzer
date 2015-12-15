@@ -178,6 +178,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Key {0} in the configuration is not a string..
+        /// </summary>
+        internal static string KeyNotString {
+            get {
+                return ResourceManager.GetString("KeyNotString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No loggers found..
         /// </summary>
         internal static string LoggersNotFound {
@@ -376,7 +385,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid key in the profile hashtable: line {1} column {2} in file {3}. Valid keys are ExcludeRules, IncludeRules and Severity..
+        ///   Looks up a localized string similar to {0} is not a valid key in the configuration hashtable: line {1} column {2} in file {3}. Valid keys are ExcludeRules, IncludeRules and Severity..
         /// </summary>
         internal static string WrongKey {
             get {
@@ -385,11 +394,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Key in the profile hashtable should be a string: line {0} column {1} in file {2}.
+        ///   Looks up a localized string similar to Key in the configuration hashtable should be a string: line {0} column {1} in file {2}.
         /// </summary>
         internal static string WrongKeyFormat {
             get {
                 return ResourceManager.GetString("WrongKeyFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not a valid key in the configuration hashtable. Valid keys are ExcludeRules, IncludeRules and Severity..
+        /// </summary>
+        internal static string WrongKeyHashTable {
+            get {
+                return ResourceManager.GetString("WrongKeyHashTable", resourceCulture);
             }
         }
         
@@ -403,11 +421,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Value in the profile hashtable should be a string or an array of strings: line {0} column {1} in file {2}.
+        ///   Looks up a localized string similar to Value in the configuration hashtable should be a string or an array of strings: line {0} column {1} in file {2}.
         /// </summary>
         internal static string WrongValueFormat {
             get {
                 return ResourceManager.GetString("WrongValueFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value {0} for key {1} has the wrong data type. Value in the configuration hashtable should be a string or an array of strings..
+        /// </summary>
+        internal static string WrongValueHashTable {
+            get {
+                return ResourceManager.GetString("WrongValueHashTable", resourceCulture);
             }
         }
     }

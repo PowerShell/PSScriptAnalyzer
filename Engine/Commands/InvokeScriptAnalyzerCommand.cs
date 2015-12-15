@@ -169,17 +169,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool suppressedOnly;
 
         /// <summary>
-        /// Returns path to the file that contains user profile for ScriptAnalyzer
+        /// Returns path to the file that contains user profile or hash table for ScriptAnalyzer
         /// </summary>
         [Alias("Profile")]
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
-        public string Configuration
+        public object Configuration
         {
             get { return configuration; }
             set { configuration = value; }
         }
-        private string configuration;
+
+        private object configuration;
 
         private bool stopProcessing;
 
@@ -208,8 +209,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 null == rulePaths ? true : this.includeDefaultRules,
-                this.suppressedOnly,
-                this.configuration);
+                this.suppressedOnly);
         }
 
         /// <summary>
@@ -236,6 +236,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 ProcessPathOrScriptDefinition(scriptDefinition);
             }
+        }
+
+        protected override void EndProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.EndProcessing();
+        }
+
+        protected override void StopProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.StopProcessing();
         }
 
         #endregion

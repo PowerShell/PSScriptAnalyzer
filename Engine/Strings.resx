@@ -193,13 +193,13 @@
     <value>Cannot find any DiagnosticRecord with the Rule Suppression ID {0}.</value>
   </data>
   <data name="WrongKey" xml:space="preserve">
-    <value>{0} is not a valid key in the profile hashtable: line {1} column {2} in file {3}. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
+    <value>{0} is not a valid key in the configuration hashtable: line {1} column {2} in file {3}. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
   </data>
   <data name="WrongKeyFormat" xml:space="preserve">
-    <value>Key in the profile hashtable should be a string: line {0} column {1} in file {2}</value>
+    <value>Key in the configuration hashtable should be a string: line {0} column {1} in file {2}</value>
   </data>
   <data name="WrongValueFormat" xml:space="preserve">
-    <value>Value in the profile hashtable should be a string or an array of strings: line {0} column {1} in file {2}</value>
+    <value>Value in the configuration hashtable should be a string or an array of strings: line {0} column {1} in file {2}</value>
   </data>
   <data name="InvalidProfile" xml:space="preserve">
     <value>Profile file '{0}' is invalid because it does not contain a hashtable.</value>
@@ -233,5 +233,14 @@
   </data>
   <data name="WrongConfigurationKey" xml:space="preserve">
     <value>WrongConfigurationKey</value>
+  </data>
+  <data name="KeyNotString" xml:space="preserve">
+    <value>Key {0} in the configuration is not a string.</value>
+  </data>
+  <data name="WrongKeyHashTable" xml:space="preserve">
+    <value>{0} is not a valid key in the configuration hashtable. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
+  </data>
+  <data name="WrongValueHashTable" xml:space="preserve">
+    <value>Value {0} for key {1} has the wrong data type. Value in the configuration hashtable should be a string or an array of strings.</value>
   </data>
 </root>
