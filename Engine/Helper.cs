@@ -353,7 +353,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 arguments += 1;
             }
 
-            if (moreThanThreePositional && arguments < 3)
+            // if we are only checking for 3 or more positional parameters, check that arguments < parameters + 3
+            if (moreThanThreePositional && (arguments - parameters) < 3)
             {
                 return false;
             }
