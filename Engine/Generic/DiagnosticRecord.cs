@@ -70,7 +70,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             get { return scriptName; }
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
-            set { scriptName = System.IO.Path.GetFileName(value); }
+            set {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    scriptName = System.IO.Path.GetFileName(value);
+                }
+                else
+                {
+                    scriptName = string.Empty;
+                }
+            }
         }
 
         /// <summary>

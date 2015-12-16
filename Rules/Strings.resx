@@ -217,13 +217,13 @@
     <value>One Char</value>
   </data>
   <data name="UsePSCredentialTypeDescription" xml:space="preserve">
-    <value>Checks that cmdlets that have a Credential parameter accept PSCredential. This comes from the PowerShell teams best practices.</value>
+    <value>Checks that cmdlets that have a Credential parameter accept PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.. This comes from the PowerShell teams best practices.</value>
   </data>
   <data name="UsePSCredentialTypeError" xml:space="preserve">
-    <value>The Credential parameter in '{0}' must be of the type PSCredential.</value>
+    <value>The Credential parameter in '{0}' must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.</value>
   </data>
   <data name="UsePSCredentialTypeErrorSB" xml:space="preserve">
-    <value>The Credential parameter in a found script block must be of the type PSCredential.</value>
+    <value>The Credential parameter in a found script block must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.</value>
   </data>
   <data name="UsePSCredentialTypeCommonName" xml:space="preserve">
     <value>PSCredential</value>
@@ -361,10 +361,10 @@
     <value>File '{0}' uses Console.'{1}'. Using Console to write is not recommended because it may not work in all hosts or there may even be no hosts at all. Use Write-Output instead.</value>
   </data>
   <data name="AvoidUsingWriteHostDescription" xml:space="preserve">
-    <value>Write-Host or Console.Write should not be used because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead.</value>
+    <value>Avoid using the Write-Host cmdlet. Instead, use Write-Output, Write-Verbose, or Write-Information. Because Write-Host is host-specific, its implementation might vary unpredictably. Also, prior to PowerShell 5.0, Write-Host did not write to a stream, so users cannot suppress it, capture its value, or redirect it.</value>
   </data>
   <data name="AvoidUsingWriteHostError" xml:space="preserve">
-    <value>File '{0}' uses Write-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead.</value>
+    <value>File '{0}' uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information.</value>
   </data>
   <data name="AvoidUsingWriteHostCommonName" xml:space="preserve">
     <value>Avoid Using Write-Host</value>
@@ -511,10 +511,10 @@
     <value>Avoid Using Username and Password Parameters</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsDescription" xml:space="preserve">
-    <value>Functions should only take in a credential parameter of type PSCredential instead of username and password parameters.</value>
+    <value>Functions should only take in a credential parameter of type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute instead of username and password parameters.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsError" xml:space="preserve">
-    <value>Function '{0}' has both username and password parameters. A credential parameter of type PSCredential should be used.</value>
+    <value>Function '{0}' has both username and password parameters. A credential parameter of type PSCredential with a CredentialAttribute where PSCredential comes before CredentialAttribute should be used.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsName" xml:space="preserve">
     <value>AvoidUsingUserNameAndPassWordParams</value>
@@ -711,17 +711,17 @@
   <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
     <value>No examples found for resource '{0}'</value>
   </data>
-  <data name="ProvideDefaultParameterValueCommonName" xml:space="preserve">
-    <value>Default Parameter Values</value>
+  <data name="AvoidDefaultValueForMandatoryParameterCommonName" xml:space="preserve">
+    <value>Avoid Default Value For Mandatory Parameter</value>
   </data>
-  <data name="ProvideDefaultParameterValueDescription" xml:space="preserve">
-    <value>Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
+  <data name="AvoidDefaultValueForMandatoryParameterDescription" xml:space="preserve">
+    <value>Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block.</value>
   </data>
-  <data name="ProvideDefaultParameterValueError" xml:space="preserve">
-    <value>Parameter '{0}' is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
+  <data name="AvoidDefaultValueForMandatoryParameterError" xml:space="preserve">
+    <value>Mandatory Parameter '{0}' is initialized in the Param block. To fix a violation of this rule, please leave it unintialized.</value>
   </data>
-  <data name="ProvideDefaultParameterValueName" xml:space="preserve">
-    <value>ProvideDefaultParameterValue</value>
+  <data name="AvoidDefaultValueForMandatoryParameterName" xml:space="preserve">
+    <value>AvoidDefaultValueForMandatoryParameter</value>
   </data>
   <data name="AvoidUsingDeprecatedManifestFieldsCommonName" xml:space="preserve">
     <value>Avoid Using Deprecated Manifest Fields</value>
@@ -755,5 +755,23 @@
   </data>
   <data name="UseBOMForUnicodeEncodedFileName" xml:space="preserve">
     <value>UseBOMForUnicodeEncodedFile</value>
+  </data>
+  <data name="AvoidDefaultValueSwitchParameterErrorScriptDefinition" xml:space="preserve">
+    <value>Script definition has a switch parameter default to true.</value>
+  </data>
+  <data name="AvoidShouldContinueWithoutForceErrorScriptDefinition" xml:space="preserve">
+    <value>Function '{0}' in script definition uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt</value>
+  </data>
+  <data name="AvoidUsingConvertToSecureStringWithPlainTextErrorScriptDefinition" xml:space="preserve">
+    <value>Script definition uses ConvertTo-SecureString with plaintext. This will expose secure information. Encrypted standard strings should be used instead.</value>
+  </data>
+  <data name="AvoidUsingWMICmdletErrorScriptDefinition" xml:space="preserve">
+    <value>Script definition uses WMI cmdlet. For PowerShell 3.0 and above, use CIM cmdlet which perform the same tasks as the WMI cmdlets. The CIM cmdlets comply with WS-Management (WSMan) standards and with the Common Information Model (CIM) standard, which enables the cmdlets to use the same techniques to manage Windows computers and those running other operating systems.</value>
+  </data>
+  <data name="AvoidUsingWriteHostErrorScriptDefinition" xml:space="preserve">
+    <value>Script definition uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information.</value>
+  </data>
+  <data name="ScriptDefinitionName" xml:space="preserve">
+    <value>ScriptDefinition</value>
   </data>
 </root>

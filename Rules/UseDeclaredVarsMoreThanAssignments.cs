@@ -87,7 +87,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             {
                                 assignments.Remove(varKey);
                             }
-                            //Check if variable belongs to PowerShell builtin variables
+                            //Check if variable belongs to PowerShell built-in variables
                             if (Helper.Instance.HasSpecialVars(varKey))
                             {
                                 assignments.Remove(varKey);

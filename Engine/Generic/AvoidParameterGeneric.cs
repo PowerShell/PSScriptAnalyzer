@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     public abstract class AvoidParameterGeneric : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the anaylsis.
+        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the analysis.
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The name of the script file being analyzed</param>
@@ -35,7 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             // Finds all CommandAsts.
             IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
-            // Iterrates all CommandAsts and check the condition.
+            // Iterates all CommandAsts and check the condition.
             foreach (CommandAst cmdAst in commandAsts)
             {
                 if (CommandCondition(cmdAst) && cmdAst.CommandElements != null)

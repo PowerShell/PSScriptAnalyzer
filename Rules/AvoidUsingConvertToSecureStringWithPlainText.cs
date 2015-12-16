@@ -60,9 +60,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="FileName"></param>
         /// <param name="CmdAst"></param>
         /// <returns></returns>
-        public override string GetError(string FileName, CommandAst CmdAst)
+        public override string GetError(string fileName, CommandAst cmdAst)
         {
-            return String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingConvertToSecureStringWithPlainTextError, System.IO.Path.GetFileName(FileName));
+            if (String.IsNullOrWhiteSpace(fileName))
+            {
+                return String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingConvertToSecureStringWithPlainTextErrorScriptDefinition);
+            }
+            else
+            {
+                return String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingConvertToSecureStringWithPlainTextError, System.IO.Path.GetFileName(fileName));
+            }
         }
 
         /// <summary>

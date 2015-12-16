@@ -26,6 +26,8 @@ using System.Reflection;
 using System.Globalization;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.Collections;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -95,19 +97,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         internal void Initialize<TCmdlet>(
             TCmdlet cmdlet, 
-            string[] customizedRulePath = null,
+            string[] customizedRulePath = null,            
             string[] includeRuleNames = null, 
             string[] excludeRuleNames = null,
             string[] severity = null,
-            bool suppressedOnly = false,
-            string profile = null)
+            bool includeDefaultRules = false,
+            bool suppressedOnly = false)
             where TCmdlet : PSCmdlet, IOutputWriter
         {
             if (cmdlet == null)
             {
                 throw new ArgumentNullException("cmdlet");
             }
-
+                                                        
             this.Initialize(
                 cmdlet,
                 cmdlet.SessionState.Path,
@@ -116,8 +118,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 includeRuleNames,
                 excludeRuleNames,
                 severity,
-                suppressedOnly,
-                profile);
+                includeDefaultRules,
+                suppressedOnly);
         }
 
         /// <summary>
@@ -126,12 +128,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public void Initialize(
             Runspace runspace, 
             IOutputWriter outputWriter, 
-            string[] customizedRulePath = null, 
+            string[] customizedRulePath = null,             
             string[] includeRuleNames = null, 
             string[] excludeRuleNames = null,
             string[] severity = null,
-            bool suppressedOnly = false,
-            string profile = null)
+            bool includeDefaultRules = false,
+            bool suppressedOnly = false)
         {
             if (runspace == null)
             {
@@ -146,18 +148,316 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 includeRuleNames,
                 excludeRuleNames,
                 severity,
-                suppressedOnly,
-                profile);
+                includeDefaultRules,
+                suppressedOnly);
+        }
+
+        /// <summary>
+        /// clean up this instance, resetting all properties
+        /// </summary>
+        public void CleanUp()
+        {
+            includeRule = null;
+            excludeRule = null;
+            severity = null;
+            includeRegexList = null;
+            excludeRegexList = null;
+            suppressedOnly = false;
+        }
+
+        internal bool ParseProfile(object profileObject, PathIntrinsics path, IOutputWriter writer)
+        {
+            // profile was not given
+            if (profileObject == null)
+            {
+                return true;
+            }
+
+            if (!(profileObject is string || profileObject is Hashtable))
+            {
+                return false;
+            }
+
+            List<string> includeRuleList = new List<string>();
+            List<string> excludeRuleList = new List<string>();
+            List<string> severityList = new List<string>();
+
+            bool hasError = false;
+
+            Hashtable hashTableProfile = profileObject as Hashtable;
+
+            // checks whether we get a hashtable
+            if (hashTableProfile != null)
+            {
+                hasError = ParseProfileHashtable(hashTableProfile, path, writer, severityList, includeRuleList, excludeRuleList);
+            }
+            else
+            {
+                // checks whether we get a string instead
+                string profile = profileObject as string;
+
+                if (!String.IsNullOrWhiteSpace(profile))
+                {
+                    hasError = ParseProfileString(profile, path, writer, severityList, includeRuleList, excludeRuleList);
+                }
+            }
+            
+            if (hasError)
+            {
+                return false;
+            }
+
+            this.severity = (severityList.Count() == 0) ? null : severityList.ToArray();
+            this.includeRule = (includeRuleList.Count() == 0) ? null : includeRuleList.ToArray();
+            this.excludeRule = (excludeRuleList.Count() == 0) ? null : excludeRuleList.ToArray();
+
+            return true;
+        }
+
+        private bool ParseProfileHashtable(Hashtable profile, PathIntrinsics path, IOutputWriter writer,
+            List<string> severityList, List<string> includeRuleList, List<string> excludeRuleList)
+        {
+            bool hasError = false;
+
+            HashSet<string> validKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            validKeys.Add("severity");
+            validKeys.Add("includerules");
+            validKeys.Add("excluderules");
+
+            foreach (var obj in profile.Keys)
+            {
+                string key = obj as string;
+
+                // key should be a string
+                if (key == null)
+                {
+                    writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.KeyNotString, key)),
+                        Strings.ConfigurationKeyNotAString, ErrorCategory.InvalidData, profile));
+                    hasError = true;
+                    continue;
+                }
+
+                // checks whether it falls into list of valid keys
+                if (!validKeys.Contains(key))
+                {
+                    writer.WriteError(new ErrorRecord(
+                        new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, key)),
+                        Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
+                    hasError = true;
+                    continue;
+                }
+
+                object value = profile[obj];
+
+                // value must be either string or collections of string or array
+                if (value == null || !(value is string || value is IEnumerable<string> || value.GetType().IsArray))
+                {
+                    writer.WriteError(new ErrorRecord(
+                                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
+                                            Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
+                    hasError = true;
+                    continue;
+                }
+
+                // if we get here then everything is good
+
+                List<string> values = new List<string>();
+
+                if (value is string)
+                {
+                    values.Add(value as string);
+                }
+                else if (value is IEnumerable<string>)
+                {
+                    values.Union(value as IEnumerable<string>);
+                }
+                else if (value.GetType().IsArray)
+                {
+                    // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
+                    foreach (var val in value as IEnumerable)
+                    {
+                        if (val is string)
+                        {
+                            values.Add(val as string);
+                        }
+                        else
+                        {
+                            writer.WriteError(new ErrorRecord(
+                                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, key)),
+                                                    Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
+                            hasError = true;
+                            continue;
+                        }
+                    }
+                }
+
+                // now add to the list
+                switch (key)
+                {
+                    case "severity":
+                        severityList.AddRange(values);
+                        break;
+                    case "includerules":
+                        includeRuleList.AddRange(values);
+                        break;
+                    case "excluderules":
+                        excludeRuleList.AddRange(values);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return hasError;
+        }
+
+        private bool ParseProfileString(string profile, PathIntrinsics path, IOutputWriter writer,
+            List<string> severityList, List<string> includeRuleList, List<string> excludeRuleList)
+        {
+            bool hasError = false;
+
+            try
+            {
+                profile = path.GetResolvedPSPathFromPSPath(profile).First().Path;
+            }
+            catch
+            {
+                writer.WriteError(new ErrorRecord(new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, profile)),
+                    Strings.ConfigurationFileNotFound, ErrorCategory.ResourceUnavailable, profile));
+                hasError = true;
+            }
+
+            if (File.Exists(profile))
+            {
+                Token[] parserTokens = null;
+                ParseError[] parserErrors = null;
+                Ast profileAst = Parser.ParseFile(profile, out parserTokens, out parserErrors);
+                IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
+
+                // no hashtable, raise warning
+                if (hashTableAsts.Count() == 0)
+                {
+                    writer.WriteError(new ErrorRecord(new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile)),
+                        Strings.ConfigurationFileHasNoHashTable, ErrorCategory.ResourceUnavailable, profile));
+                    hasError = true;
+                }
+                else
+                {
+                    HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
+
+                    foreach (var kvp in hashTableAst.KeyValuePairs)
+                    {
+                        if (!(kvp.Item1 is StringConstantExpressionAst))
+                        {
+                            // first item (the key) should be a string
+                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
+                                Strings.ConfigurationKeyNotAString, ErrorCategory.InvalidData, profile));
+                            hasError = true;
+                            continue;
+                        }
+
+                        // parse the item2 as array
+                        PipelineAst pipeAst = kvp.Item2 as PipelineAst;
+                        List<string> rhsList = new List<string>();
+                        if (pipeAst != null)
+                        {
+                            ExpressionAst pureExp = pipeAst.GetPureExpression();
+                            if (pureExp is StringConstantExpressionAst)
+                            {
+                                rhsList.Add((pureExp as StringConstantExpressionAst).Value);
+                            }
+                            else
+                            {
+                                ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
+                                if (arrayLitAst == null && pureExp is ArrayExpressionAst)
+                                {
+                                    ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
+                                    // Statements property is never null
+                                    if (arrayExp.SubExpression != null)
+                                    {
+                                        StatementAst stateAst = arrayExp.SubExpression.Statements.FirstOrDefault();
+                                        if (stateAst != null && stateAst is PipelineAst)
+                                        {
+                                            CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.FirstOrDefault();
+                                            if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
+                                            {
+                                                CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
+                                                if (cmdExpAst.Expression is StringConstantExpressionAst)
+                                                {
+                                                    rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
+                                                }
+                                                else
+                                                {
+                                                    arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (arrayLitAst != null)
+                                {
+                                    foreach (var element in arrayLitAst.Elements)
+                                    {
+                                        // all the values in the array needs to be string
+                                        if (!(element is StringConstantExpressionAst))
+                                        {
+                                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile)),
+                                                Strings.ConfigurationValueNotAString, ErrorCategory.InvalidData, profile));
+                                            hasError = true;
+                                            continue;
+                                        }
+
+                                        rhsList.Add((element as StringConstantExpressionAst).Value);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (rhsList.Count == 0)
+                        {
+                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile)),
+                                Strings.ConfigurationValueWrongFormat, ErrorCategory.InvalidData, profile));
+                            hasError = true;
+                            continue;
+                        }
+
+                        string key = (kvp.Item1 as StringConstantExpressionAst).Value.ToLower();
+
+                        switch (key)
+                        {
+                            case "severity":
+                                severityList.AddRange(rhsList);
+                                break;
+                            case "includerules":
+                                includeRuleList.AddRange(rhsList);
+                                break;
+                            case "excluderules":
+                                excludeRuleList.AddRange(rhsList);
+                                break;
+                            default:
+                                writer.WriteError(new ErrorRecord(
+                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, key, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
+                                    Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
+                                hasError = true;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            return hasError;
         }
 
         private void Initialize(
             IOutputWriter outputWriter, 
             PathIntrinsics path, 
             CommandInvocationIntrinsics invokeCommand, 
-            string[] customizedRulePath, 
-            string[] includeRuleNames, 
+            string[] customizedRulePath,            
+            string[] includeRuleNames,
             string[] excludeRuleNames,
             string[] severity,
+            bool includeDefaultRules = false,
             bool suppressedOnly = false,
             string profile = null)
         {
@@ -176,158 +476,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             #region Initializes Rules
 
-            this.severity = severity;
             this.suppressedOnly = suppressedOnly;
-            this.includeRule = includeRuleNames;
-            this.excludeRule = excludeRuleNames;
+            this.severity = this.severity == null ? severity : this.severity.Union(severity ?? new String[0]).ToArray();
+            this.includeRule = this.includeRule == null ? includeRuleNames : this.includeRule.Union(includeRuleNames ?? new String[0]).ToArray();
+            this.excludeRule = this.excludeRule == null ? excludeRuleNames : this.excludeRule.Union(excludeRuleNames ?? new String[0]).ToArray();
             this.includeRegexList = new List<Regex>();
             this.excludeRegexList = new List<Regex>();
-
-            #region ParseProfile
-            if (!String.IsNullOrWhiteSpace(profile))
-            {
-                try
-                {
-                    profile = path.GetResolvedPSPathFromPSPath(profile).First().Path;
-                }
-                catch
-                {
-                    this.outputWriter.WriteWarning(string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, profile));
-                }
-
-                if (File.Exists(profile))
-                {
-                    Token[] parserTokens = null;
-                    ParseError[] parserErrors = null;
-                    Ast profileAst = Parser.ParseFile(profile, out parserTokens, out parserErrors);
-                    IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
-
-                    // no hashtable, raise warning
-                    if (hashTableAsts.Count() == 0)
-                    {
-                        this.outputWriter.WriteWarning(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile));
-                    }
-                    else
-                    {
-                        HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
-
-                        foreach (var kvp in hashTableAst.KeyValuePairs)
-                        {
-                            if (!(kvp.Item1 is StringConstantExpressionAst))
-                            {
-                                // first item (the key) should be a string
-                                this.outputWriter.WriteWarning(
-                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile));
-                                continue;
-                            }
-
-                            // parse the item2 as array
-                            PipelineAst pipeAst = kvp.Item2 as PipelineAst;
-                            List<string> rhsList = new List<string>();
-                            if (pipeAst != null)
-                            {
-                                ExpressionAst pureExp = pipeAst.GetPureExpression();
-                                if (pureExp is StringConstantExpressionAst)
-                                {
-                                    rhsList.Add((pureExp as StringConstantExpressionAst).Value);
-                                }
-                                else
-                                {
-                                    ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
-                                    if (arrayLitAst == null && pureExp is ArrayExpressionAst)
-                                    {
-                                        ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
-                                        // Statements property is never null
-                                        if (arrayExp.SubExpression != null)
-                                        {
-                                            StatementAst stateAst = arrayExp.SubExpression.Statements.First();
-                                            if (stateAst != null && stateAst is PipelineAst)
-                                            {
-                                                CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.First();
-                                                if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
-                                                {
-                                                    CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
-                                                    if (cmdExpAst.Expression is StringConstantExpressionAst)
-                                                    {
-                                                        rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
-                                                    }
-                                                    else
-                                                    {
-                                                        arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if (arrayLitAst != null)
-                                    {
-                                        foreach (var element in arrayLitAst.Elements)
-                                        {
-                                            // all the values in the array needs to be string
-                                            if (!(element is StringConstantExpressionAst))
-                                            {
-                                                this.outputWriter.WriteWarning(
-                                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile));
-                                                continue;
-                                            }
-
-                                            rhsList.Add((element as StringConstantExpressionAst).Value);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (rhsList.Count == 0)
-                            {
-                                this.outputWriter.WriteWarning(
-                                    string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile));
-                                break;
-                            }
-
-                            switch ((kvp.Item1 as StringConstantExpressionAst).Value.ToLower())
-                            {
-                                case "severity":
-                                    if (this.severity == null)
-                                    {
-                                        this.severity = rhsList.ToArray();
-                                    }
-                                    else
-                                    {
-                                        this.severity = this.severity.Union(rhsList).ToArray();
-                                    }
-                                    break;
-                                case "includerules":
-                                    if (this.includeRule == null)
-                                    {
-                                        this.includeRule = rhsList.ToArray();
-                                    }
-                                    else
-                                    {
-                                        this.includeRule = this.includeRule.Union(rhsList).ToArray();
-                                    }
-                                    break;
-                                case "excluderules":
-                                    if (this.excludeRule == null)
-                                    {
-                                        this.excludeRule = rhsList.ToArray();
-                                    }
-                                    else
-                                    {
-                                        this.excludeRule = this.excludeRule.Union(rhsList).ToArray();
-                                    }
-                                    break;
-                                default:
-                                    this.outputWriter.WriteWarning(
-                                        string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile));
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            #endregion
 
             //Check wild card input for the Include/ExcludeRules and create regex match patterns
             if (this.includeRule != null)
@@ -338,6 +492,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     this.includeRegexList.Add(includeRegex);
                 }
             }
+
             if (this.excludeRule != null)
             {
                 foreach (string rule in excludeRule)
@@ -349,7 +504,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             try
             {
-                this.LoadRules(this.validationResults, invokeCommand);
+                this.LoadRules(this.validationResults, invokeCommand, includeDefaultRules);
             }
             catch (Exception ex)
             {
@@ -377,11 +532,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 this.outputWriter.ThrowTerminatingError(
                     new ErrorRecord(
-                        new Exception(), 
+                        new Exception(),
                         string.Format(
-                            CultureInfo.CurrentCulture, 
-                            Strings.RulesNotFound), 
-                        ErrorCategory.ResourceExists, 
+                            CultureInfo.CurrentCulture,
+                            Strings.RulesNotFound),
+                        ErrorCategory.ResourceExists,
                         this));
             }
 
@@ -417,7 +572,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return paths;
         }
 
-        private void LoadRules(Dictionary<string, List<string>> result, CommandInvocationIntrinsics invokeCommand)
+        private void LoadRules(Dictionary<string, List<string>> result, CommandInvocationIntrinsics invokeCommand, bool loadBuiltInRules)
         {
             List<string> paths = new List<string>();
 
@@ -471,9 +626,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
+            if (!loadBuiltInRules)
+            {
+                this.ScriptRules = null;
+            }
+
             // Gets external rules.
             if (result.ContainsKey("ValidModPaths") && result["ValidModPaths"].Count > 0)
+            {
                 ExternalRules = GetExternalRule(result["ValidModPaths"].ToArray());
+            }
         }
 
         internal string[] GetValidModulePaths()
@@ -494,8 +656,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<IExternalRule> externalRules = null;
 
             // Combines C# rules.
-            IEnumerable<IRule> rules = ScriptRules.Union<IRule>(TokenRules)
-                                                  .Union<IRule>(DSCResourceRules);
+            IEnumerable<IRule> rules = Enumerable.Empty<IRule>();
+
+            if (null != ScriptRules)
+            {
+                rules = ScriptRules.Union<IRule>(TokenRules).Union<IRule>(DSCResourceRules);
+            }            
 
             // Gets PowerShell Rules.
             if (moduleNames != null)
@@ -545,35 +711,63 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 using (System.Management.Automation.PowerShell posh =
                        System.Management.Automation.PowerShell.Create(state))
                 {
-                    string script = string.Format(CultureInfo.CurrentCulture, "Get-Module -Name '{0}' -ListAvailable", moduleName);
-                    shortModuleName = posh.AddScript(script).Invoke<PSModuleInfo>().First().Name;
-
-                    // Invokes Update-Help for this module
-                    // Required since when invoking Get-Help later on, the cmdlet prompts for Update-Help interactively
-                    // By invoking Update-Help first, Get-Help will not prompt for downloading help later
-                    script = string.Format(CultureInfo.CurrentCulture, "Update-Help -Module '{0}' -Force", shortModuleName);
-                    posh.AddScript(script).Invoke();
-
+                    posh.AddCommand("Get-Module").AddParameter("Name", moduleName).AddParameter("ListAvailable");
+                    shortModuleName = posh.Invoke<PSModuleInfo>().First().Name;   
+                                                            
                     // Invokes Get-Command and Get-Help for each functions in the module.
-                    script = string.Format(CultureInfo.CurrentCulture, "Get-Command -Module '{0}'", shortModuleName);
-                    var psobjects = posh.AddScript(script).Invoke();
+                    posh.Commands.Clear();
+                    posh.AddCommand("Get-Command").AddParameter("Module", shortModuleName);
+                    var psobjects = posh.Invoke();
 
                     foreach (PSObject psobject in psobjects)
                     {
                         posh.Commands.Clear();
 
                         FunctionInfo funcInfo = (FunctionInfo)psobject.ImmediateBaseObject;
-                        ParameterMetadata param = funcInfo.Parameters.Values
-                            .First<ParameterMetadata>(item => item.Name.EndsWith("ast", StringComparison.OrdinalIgnoreCase) ||
-                                item.Name.EndsWith("token", StringComparison.OrdinalIgnoreCase));
+                        ParameterMetadata param = null;
+
+                        // Ignore any exceptions associated with finding functions that are ScriptAnalyzer rules
+                        try
+                        {
+                            param = funcInfo.Parameters.Values.First<ParameterMetadata>(item => item.Name.EndsWith("ast", StringComparison.OrdinalIgnoreCase) ||
+                                                                                                          item.Name.EndsWith("token", StringComparison.OrdinalIgnoreCase));
+                        }
+                        catch
+                        {                            
+                        }
 
                         //Only add functions that are defined as rules.
                         if (param != null)
                         {
-                            script = string.Format(CultureInfo.CurrentCulture, "(Get-Help -Name {0}).Description | Out-String", funcInfo.Name);
-                            string desc = posh.AddScript(script).Invoke()[0].ImmediateBaseObject.ToString()
-                                    .Replace("\r\n", " ").Trim();
+                            // On a new image, when Get-Help is run the first time, PowerShell offers to download updated help content
+                            // using Update-Help. This results in an interactive prompt - which we cannot handle
+                            // Workaround to prevent Update-Help from running is to set the following reg key
+                            // HKLM:\Software\Microsoft\PowerShell\DisablePromptToUpdateHelp
+                            // OR execute Update-Help in an elevated admin mode before running ScriptAnalyzer 
+                            Collection<PSObject> helpContent = null;
+                            try
+                            {
+                                posh.AddCommand("Get-Help").AddParameter("Name", funcInfo.Name);
+                                helpContent = posh.Invoke();
+                            }
+                            catch (Exception getHelpException)
+                            {
+                                this.outputWriter.WriteWarning(getHelpException.Message.ToString());
+                            }
 
+                            // Retrieve "Description" field in the help content
+                            string desc = String.Empty;
+
+                            if ((null != helpContent) && ( 1 == helpContent.Count))
+                            {
+                                dynamic description = helpContent[0].Properties["Description"];
+
+                                if (null != description)
+                                {
+                                    desc = description.Value[0].Text;
+                                }
+                            }
+                            
                             rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.Name, param.ParameterType.FullName,
                                 funcInfo.ModuleName, funcInfo.Module.Path));
                         }
@@ -732,7 +926,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                                 if (!string.IsNullOrEmpty(message))
                                 {
-                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, null));
+                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, filePath));
                                 }
                             }
                         }
@@ -770,7 +964,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // We have to identify the childPath is really a directory or just a module name.
                     // You can also consider following two commands.
                     //   Get-ScriptAnalyzerRule -RuleExtension "ContosoAnalyzerRules"
-                    //   Get-ScriptAnalyzerRule -RuleExtension "%USERPROFILE%\WindowsPowerShell\Modules\ContosoAnalyzerRules"
+                    //   Get-ScriptAnalyzerRule -RuleExtension "%USERPROFILE%\WindowsPowerShell\Modules\ContosoAnalyzerRules"                    
                     if (Path.GetDirectoryName(childPath) == string.Empty)
                     {
                         resolvedPath = childPath;
@@ -783,14 +977,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     using (System.Management.Automation.PowerShell posh =
                            System.Management.Automation.PowerShell.Create())
-                    {
-                        string script = string.Format(CultureInfo.CurrentCulture, "Get-Module -Name '{0}' -ListAvailable", resolvedPath);
-                        PSModuleInfo moduleInfo = posh.AddScript(script).Invoke<PSModuleInfo>().First();
+                    {                        
+                        posh.AddCommand("Get-Module").AddParameter("Name", resolvedPath).AddParameter("ListAvailable");
+                        PSModuleInfo moduleInfo = posh.Invoke<PSModuleInfo>().First();     
 
                         // Adds original path, otherwise path.Except<string>(validModPaths) will fail.
                         // It's possible that user can provide something like this:
                         // "..\..\..\ScriptAnalyzer.UnitTest\modules\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1"
-                        if (moduleInfo.ExportedFunctions.Count > 0) validModPaths.Add(childPath);
+                        if (moduleInfo.ExportedFunctions.Count > 0) validModPaths.Add(resolvedPath);
                     }
                 }
                 catch
@@ -840,7 +1034,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            // Resloves relative paths.
+            // Resolves relative paths.
             try
             {
                 for (int i = 0; i < validModPaths.Count; i++)
@@ -869,7 +1063,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         #endregion
-
+        
 
         /// <summary>
         /// Analyzes a script file or a directory containing script files.
@@ -908,6 +1102,49 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     yield return diagnosticRecord;
                 }
             }
+        }
+
+        /// <summary>
+        /// Analyzes a script definition in the form of a string input
+        /// </summary>
+        /// <param name="scriptDefinition">The script to be analyzed</param>
+        /// <returns></returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition)
+        {
+            ScriptBlockAst scriptAst = null;
+            Token[] scriptTokens = null;
+            ParseError[] errors = null;
+
+            this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseScriptDefinitionMessage));
+
+            try
+            {
+                scriptAst = Parser.ParseInput(scriptDefinition, out scriptTokens, out errors);
+            }
+            catch (Exception e)
+            {
+                this.outputWriter.WriteWarning(e.ToString());
+                return null;
+            }
+
+            if (errors != null && errors.Length > 0)
+            {
+                foreach (ParseError error in errors)
+                {
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
+                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
+                }
+            }
+
+            if (errors != null && errors.Length > 10)
+            {
+                string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessageForScriptDefinition);
+                this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, scriptDefinition));
+
+                return new List<DiagnosticRecord>();
+            }
+
+            return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty);
         }
 
         private void BuildScriptPathList(
@@ -1024,7 +1261,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="scriptAst">The ScriptBlockAst from the parsed script.</param>
         /// <param name="scriptTokens">The tokens found in the script.</param>
-        /// <param name="filePath">The path to the file that was parsed.</param>
+        /// <param name="filePath">The path to the file that was parsed.
+        /// If AnalyzeSyntaxTree is called from an ast that we get from ParseInput, then this field will be String.Empty
+        /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeSyntaxTree(
             ScriptBlockAst scriptAst, 
@@ -1038,8 +1277,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // Use a List of KVP rather than dictionary, since for a script containing inline functions with same signature, keys clash
             List<KeyValuePair<CommandInfo, IScriptExtent>> cmdInfoTable = new List<KeyValuePair<CommandInfo, IScriptExtent>>();
+            bool filePathIsNullOrWhiteSpace = String.IsNullOrWhiteSpace(filePath);
+            filePath = filePathIsNullOrWhiteSpace ? String.Empty : filePath;
 
-            bool helpFile = (scriptAst == null) && Helper.Instance.IsHelpFile(filePath);
+            // check whether the script we are analyzing is a help file or not.
+            // this step is not applicable for scriptdefinition, whose filepath is null
+            bool helpFile = (scriptAst == null) && (!filePathIsNullOrWhiteSpace) && Helper.Instance.IsHelpFile(filePath);
 
             if (!helpFile)
             {
@@ -1069,7 +1312,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             #region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
-            string fileName = System.IO.Path.GetFileName(filePath);
+            string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
 
             if (this.ScriptRules != null)
             {
@@ -1271,7 +1514,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 // Check if the supplied artifact is indeed part of the DSC resource
-                if (Helper.Instance.IsDscResourceModule(filePath))
+                if (!filePathIsNullOrWhiteSpace && Helper.Instance.IsDscResourceModule(filePath))
                 {
                     // Run all DSC Rules
                     foreach (IDSCResourceRule dscResourceRule in this.DSCResourceRules)
@@ -1362,7 +1605,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (severity != null)
             {
                 var diagSeverity = severity.Select(item => Enum.Parse(typeof(DiagnosticSeverity), item, true));
-                diagnosticsList = diagnostics.Where(item => diagSeverity.Contains(item.Severity));
+                if (diagSeverity.Count() != 0)
+                {
+                    diagnosticsList = diagnostics.Where(item => diagSeverity.Contains(item.Severity));
+                }
             }
 
             return this.suppressedOnly ?

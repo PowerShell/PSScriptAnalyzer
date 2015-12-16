@@ -37,9 +37,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all ParamAsts.
             IEnumerable<Ast> paramAsts = ast.FindAll(testAst => testAst is ParameterAst, true);
 
-            List<String> passwords = new List<String>() {"Password", "Passphrase", "Auth", "Cred", "Credential"};
+            List<String> passwords = new List<String>() {"Password", "Passphrase", "Cred", "Credential"};
 
-            // Iterrates all ParamAsts and check if their names are on the list.
+            // Iterates all ParamAsts and check if their names are on the list.
             foreach (ParameterAst paramAst in paramAsts)
             {
                 TypeInfo paramType = (TypeInfo) paramAst.StaticType;

@@ -39,6 +39,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The results of the analysis</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
+            // we are given a script definition, do not analyze
+            if (String.IsNullOrWhiteSpace(fileName))
+            {
+                yield break;
+            }
+
             String fileNameOnly = Path.GetFileName(fileName);
             String resourceName = Path.GetFileNameWithoutExtension(fileNameOnly);
             String testsQuery = String.Format("*{0}*", resourceName);
@@ -72,6 +78,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
         {
+            // we are given a script definition, do not analyze
+            if (String.IsNullOrWhiteSpace(fileName))
+            {
+                yield break;
+            }
+
             String resourceName = null;
 
             IEnumerable<Ast> dscClasses = ast.FindAll(item =>

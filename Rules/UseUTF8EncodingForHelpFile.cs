@@ -30,6 +30,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
+            // we are given a script definition, do not analyze
+            // this rule is not applicable for that
+            if (String.IsNullOrWhiteSpace(fileName))
+            {
+                yield break;
+            }
+
             if (!String.IsNullOrWhiteSpace(fileName) && Helper.Instance.IsHelpFile(fileName))
             {
                 using (var reader = new System.IO.StreamReader(fileName, true))

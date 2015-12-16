@@ -31,14 +31,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// <summary>
     /// InvokeScriptAnalyzerCommand: Cmdlet to statically check PowerShell scripts.
     /// </summary>
-    [Cmdlet(VerbsLifecycle.Invoke, "ScriptAnalyzer", HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
+    [Cmdlet(VerbsLifecycle.Invoke,
+        "ScriptAnalyzer",
+        DefaultParameterSetName="File",
+        HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
         #region Parameters
         /// <summary>
         /// Path: The path to the file or folder to invoke PSScriptAnalyzer on.
         /// </summary>
-        [Parameter(Position = 0, Mandatory = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = "File",
+            Mandatory = true)]
         [ValidateNotNull]
         [Alias("PSPath")]
         public string Path
@@ -49,17 +54,56 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private string path;
 
         /// <summary>
+        /// ScriptDefinition: a script definition in the form of a string to run rules on.
+        /// </summary>
+        [Parameter(Position = 0,
+            ParameterSetName = "ScriptDefinition",
+            Mandatory = true)]
+        [ValidateNotNull]
+        public string ScriptDefinition
+        {
+            get { return scriptDefinition; }
+            set { scriptDefinition = value; }
+        }
+        private string scriptDefinition;
+
+        /// <summary>
         /// CustomRulePath: The path to the file containing custom rules to run.
         /// </summary>
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public string[] CustomizedRulePath
+        [Alias("CustomizedRulePath")]
+        public string[] CustomRulePath
         {
-            get { return customizedRulePath; }
-            set { customizedRulePath = value; }
+            get { return customRulePath; }
+            set { customRulePath = value; }
         }
-        private string[] customizedRulePath;
+        private string[] customRulePath;
+
+        /// <summary>
+        /// RecurseCustomRulePath: Find rules within subfolders under the path
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public SwitchParameter RecurseCustomRulePath
+        {
+            get { return recurseCustomRulePath; }
+            set { recurseCustomRulePath = value; }
+        }
+        private bool recurseCustomRulePath;
+
+        /// <summary>
+        /// IncludeDefaultRules: Invoke default rules along with Custom rules
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public SwitchParameter IncludeDefaultRules
+        {
+            get { return includeDefaultRules; }
+            set { includeDefaultRules = value; }
+        }
+        private bool includeDefaultRules;
 
         /// <summary>
         /// ExcludeRule: Array of names of rules to be disabled.
@@ -125,16 +169,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool suppressedOnly;
 
         /// <summary>
-        /// Returns path to the file that contains user profile for ScriptAnalyzer
+        /// Returns path to the file that contains user profile or hash table for ScriptAnalyzer
         /// </summary>
+        [Alias("Profile")]
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
-        public string Profile
+        public object Settings
         {
-            get { return profile; }
-            set { profile = value; }
+            get { return settings; }
+            set { settings = value; }
         }
-        private string profile;
+
+        private object settings;
+
+        private bool stopProcessing;
 
         #endregion Parameters
 
@@ -145,14 +193,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void BeginProcessing()
         {
+            string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
+                this.SessionState, recurseCustomRulePath);
+
+            if (!ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this))
+            {
+                stopProcessing = true;
+                return;
+            }
+
             ScriptAnalyzer.Instance.Initialize(
                 this,
-                customizedRulePath,
+                rulePaths,
                 this.includeRule,
                 this.excludeRule,
                 this.severity,
-                this.suppressedOnly,
-                this.profile);
+                null == rulePaths ? true : this.includeDefaultRules,
+                this.suppressedOnly);
         }
 
         /// <summary>
@@ -160,22 +217,55 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void ProcessRecord()
         {
-            // throws Item Not Found Exception                        
-            Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
-            foreach (PathInfo p in paths)
+            if (stopProcessing)
             {
-                ProcessPath(this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path));
+                stopProcessing = false;
+                return;
             }
+
+            if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
+            {
+                // throws Item Not Found Exception                        
+                Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
+                foreach (PathInfo p in paths)
+                {
+                    ProcessPathOrScriptDefinition(this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path));
+                }
+            }
+            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
+            {
+                ProcessPathOrScriptDefinition(scriptDefinition);
+            }
+        }
+
+        protected override void EndProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.EndProcessing();
+        }
+
+        protected override void StopProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.StopProcessing();
         }
 
         #endregion
 
         #region Methods
 
-        private void ProcessPath(string path)
+        private void ProcessPathOrScriptDefinition(string pathOrScriptDefinition)
         {
-            IEnumerable<DiagnosticRecord> diagnosticsList = 
-                ScriptAnalyzer.Instance.AnalyzePath(path, this.recurse);
+            IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
+
+            if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
+            {
+                diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(pathOrScriptDefinition, this.recurse);
+            }
+            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
+            {
+                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(pathOrScriptDefinition);
+            }
 
             //Output through loggers
             foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)

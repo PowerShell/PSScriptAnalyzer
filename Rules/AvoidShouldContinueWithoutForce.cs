@@ -37,7 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all ParamAsts.
             IEnumerable<Ast> funcAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
 
-            // Iterrates all ParamAsts and check if there are any force.
+            // Iterates all ParamAsts and check if there are any force.
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
                 IEnumerable<Ast> paramAsts = funcAst.FindAll(testAst => testAst is ParameterAst, true);
@@ -68,9 +68,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (String.Equals(typeAst.VariablePath.UserPath, "pscmdlet", StringComparison.OrdinalIgnoreCase)
                         && (String.Equals(imeAst.Member.Extent.Text, "shouldcontinue", StringComparison.OrdinalIgnoreCase)))
                     {
-                        yield return new DiagnosticRecord(
-                            String.Format(CultureInfo.CurrentCulture, Strings.AvoidShouldContinueWithoutForceError, funcAst.Name, System.IO.Path.GetFileName(fileName)),
-                            imeAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        if (String.IsNullOrWhiteSpace(fileName))
+                        {
+                            yield return new DiagnosticRecord(
+                                String.Format(CultureInfo.CurrentCulture, Strings.AvoidShouldContinueWithoutForceErrorScriptDefinition, funcAst.Name),
+                                imeAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        }
+                        else
+                        {
+                            yield return new DiagnosticRecord(
+                                String.Format(CultureInfo.CurrentCulture, Strings.AvoidShouldContinueWithoutForceError, funcAst.Name,
+                                System.IO.Path.GetFileName(fileName)), imeAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        }
                     }
                 }
             }

@@ -33,6 +33,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
+            // we are given a script definition, do not analyze
+            if (String.IsNullOrWhiteSpace(fileName))
+            {
+                yield break;
+            }
+
             byte[] byteStream = File.ReadAllBytes(fileName);
 
             if (null == GetByteStreamEncoding(byteStream))

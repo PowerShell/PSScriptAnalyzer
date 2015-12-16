@@ -25,14 +25,28 @@ Describe "Test available parameters" {
         }
     }
 
-    Context "CustomizedRulePath parameters" {
-        It "has a CustomizedRulePath parameter" {
-            $params.ContainsKey("CustomizedRulePath") | Should Be $true
+    Context "Path parameter" {
+        It "has a ScriptDefinition parameter" {
+            $params.ContainsKey("ScriptDefinition") | Should Be $true
+        }
+        
+        It "accepts string" {			
+            $params["ScriptDefinition"].ParameterType.FullName | Should Be "System.String"
+        }
+    }
+
+    Context "CustomRulePath parameters" {
+        It "has a CustomRulePath parameter" {
+            $params.ContainsKey("CustomRulePath") | Should Be $true
         }
 
-        It "accepts string array" {
-            $params["CustomizedRulePath"].ParameterType.FullName | Should Be "System.String[]"
+        It "accepts a string array" {
+				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String[]"
         }
+
+		It "has a CustomizedRulePath alias"{
+			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should be $true
+		}
     }
 
     Context "IncludeRule parameters" {
@@ -52,6 +66,46 @@ Describe "Test available parameters" {
 
         It "accepts string array" {
             $params["Severity"].ParameterType.FullName | Should Be "System.String[]"
+        }
+    }
+
+    Context "It has 2 parameter sets: File and ScriptDefinition" {
+        It "Has 2 parameter sets" {
+            $sa.ParameterSets.Count | Should Be 2
+        }
+
+        It "Has File parameter set" {
+            $hasFile = $false
+            foreach ($paramSet in $sa.ParameterSets) {
+                if ($paramSet.Name -eq "File") {
+                    $hasFile = $true
+                    break
+                }
+            }
+
+            $hasFile | Should Be $true
+        }
+
+        It "Has ScriptDefinition parameter set" {
+            $hasFile = $false
+            foreach ($paramSet in $sa.ParameterSets) {
+                if ($paramSet.Name -eq "ScriptDefinition") {
+                    $hasFile = $true
+                    break
+                }
+            }
+
+            $hasFile | Should Be $true
+        }
+
+    }
+}
+
+Describe "Test ScriptDefinition" {
+    Context "When given a script definition" {
+        It "Does not run rules on script with more than 10 parser errors" {
+            $moreThanTenErrors = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue -ScriptDefinition (Get-Content -Raw "$directory\CSharp.ps1")
+            $moreThanTenErrors.Count | Should Be 0
         }
     }
 }
@@ -254,22 +308,28 @@ Describe "Test CustomizedRulePath" {
             $customizedRulePathExclude = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -ExcludeRule "Measure-RequiresModules" | Where-Object {$_.RuleName -eq $measureRequired}
             $customizedRulePathExclude.Count | Should be 0
         }
+
+		It "When supplied with a collection of paths" {
+            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath ("$directory\CommunityAnalyzerRules", "$directory\SampleRule", "$directory\SampleRule\SampleRule2")
+            $customizedRulePath.Count | Should Be 3
+        }		
+
     }
 
+
     Context "When used incorrectly" {
-        It "file cannot be found" {
-            $wrongRule = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath "This is a wrong rule" 3>&1 | Select-Object -First 1
-
-			if ($testingLibraryUsage)
-			{
-				# Special case for library usage testing: warning output written
-				# with PSHost.UI.WriteWarningLine does not get redirected correctly
-				# so we can't use this approach for checking the warning message.
-				# Instead, reach into the test IOutputWriter implementation to find it.
-				$wrongRule = $testOutputWriter.MostRecentWarningMessage
-			}
-
-			$wrongRule | Should Match "Cannot find rule extension 'This is a wrong rule'."
+        It "file cannot be found" {            
+            try
+            {
+                Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath "Invalid CustomRulePath"
+            }
+            catch
+            {
+                if (-not $testingLibraryUsage)
+			    {                    
+                    $Error[0].FullyQualifiedErrorId | should match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"            
+                }                
+            }
         }
     }
 }

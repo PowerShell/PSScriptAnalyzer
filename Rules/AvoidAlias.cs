@@ -35,7 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all CommandAsts.
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
-            // Iterrates all CommandAsts and check the command name.
+            // Iterates all CommandAsts and check the command name.
             foreach (Ast foundAst in foundAsts)
             {
                 CommandAst cmdAst = (CommandAst)foundAst;

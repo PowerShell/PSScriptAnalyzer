@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -956,8 +957,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
                 if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
                 {
-                    ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                            System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    // checks whether are given a string or a file path
+                    if (String.IsNullOrWhiteSpace(diagnostics.First().Extent.File))
+                    {
+                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormatScriptDefinition, ruleSuppression.StartAttributeLine,
+                                String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    }
+                    else
+                    {
+                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
+                                System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
+                    }
+
                     this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
                 }
             }
@@ -973,8 +984,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
+        public static string[] ProcessCustomRulePaths(string[] rulePaths, SessionState sessionState, bool recurse = false)
+        {
+            //if directory is given, list all the psd1 files
+            List<string> outPaths = new List<string>();
+            if (rulePaths == null)
+            {
+                return null;
+            }
+
+            Collection<PathInfo> pathInfo = new Collection<PathInfo>();
+            foreach (string rulePath in rulePaths)
+            {
+                Collection<PathInfo> pathInfosForRulePath = sessionState.Path.GetResolvedPSPathFromPSPath(rulePath);
+                if (null != pathInfosForRulePath)
+                {
+                    foreach (PathInfo pathInfoForRulePath in pathInfosForRulePath)
+                    {
+                        pathInfo.Add(pathInfoForRulePath);
+                    }
+                }
+            }
+
+            foreach (PathInfo pinfo in pathInfo)
+            {
+                string path = pinfo.Path;
+                if (Directory.Exists(path))
+                {
+                    path = path.TrimEnd('\\');
+                    if (recurse)
+                    {
+                        outPaths.AddRange(Directory.GetDirectories(pinfo.Path, "*", SearchOption.AllDirectories));
+                    }
+                }
+                outPaths.Add(path);
+            }
+            
+            return outPaths.ToArray();
+            
+        }
+
+
         #endregion
     }
+
 
     internal class TupleComparer : IComparer<Tuple<int, int>>
     {

@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Language;
@@ -49,13 +50,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 // Finds all ParamAsts.
                 IEnumerable<Ast> paramAsts = funcAst.FindAll(testAst => testAst is ParameterAst, true);
-                // Iterrates all ParamAsts and check if their names are on the list.
+                // Iterates all ParamAsts and check if their names are on the list.
                 foreach (ParameterAst paramAst in paramAsts)
                 {
-                    TypeInfo paramType = (TypeInfo)paramAst.StaticType;
+                    var psCredentialType = paramAst.Attributes.FirstOrDefault(paramAttribute =>
+                        (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof(PSCredential))
+                        || paramAttribute.TypeName.GetReflectionType() == typeof(PSCredential));
+
+                    var credentialAttribute = paramAst.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
+
                     String paramName = paramAst.Name.VariablePath.ToString();
 
-                    if (paramType == typeof(PSCredential) || (paramType.IsArray && paramType.GetElementType() == typeof (PSCredential)))
+                    // if this is pscredential type with credential attribute where pscredential type comes first
+                    if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset < credentialAttribute.Extent.StartOffset)
                     {
                         continue;
                     }

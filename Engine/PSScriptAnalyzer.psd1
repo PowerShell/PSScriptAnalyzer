@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.dll'
 
 # Version number of this module.
-ModuleVersion = '1.1.1'
+ModuleVersion = '1.2.0'
 
 # ID used to uniquely identify this module
 GUID = '324fc715-36bf-4aee-8e58-72e9b4a08ad9'
@@ -23,7 +23,7 @@ CompanyName = 'Microsoft Corporation'
 Copyright = '(c) Microsoft Corporation 2015. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of builtin or customized rules on the scripts being analyzed.'
+Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of built-in or customized rules on the scripts being analyzed.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.0'

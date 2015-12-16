@@ -552,7 +552,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     Block dom = block._predecessors[0];
 
-                    // Get first proccessed node
+                    // Get first processed node
                     foreach (var pred in block._predecessors)
                     {
                         if (dominators[pred.PostOrder] != null)
@@ -828,14 +828,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            // Initialize variables in internaldictionary to undetermined
+            // Initialize variables in internal dictionary to undetermined
             foreach (var key in InternalVariablesDictionary.Keys.ToList())
             {
                 InternalVariablesDictionary[key].Constant = Undetermined.UndeterminedConstant;
                 InternalVariablesDictionary[key].Type = typeof(Undetermined);
             }
 
-            // Initialze DefinedBlock of phi function. If it is null then that phi function is not initialized;
+            // Initialize DefinedBlock of phi function. If it is null then that phi function is not initialized;
             foreach (var block in blocks)
             {
                 foreach (var phi in block.Phis)
@@ -956,7 +956,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         {
                             CommandExpressionAst cmeAst = assigned._rightAst as CommandExpressionAst;
                             MemberExpressionAst memAst = (cmeAst != null) ? (cmeAst.Expression as MemberExpressionAst) : null;
-                            // Don't handle the this case because this is handled in assignmenttarget
+                            // Don't handle the this case because this is handled in assignment target
 
                             if (memAst != null && memAst.Expression is VariableExpressionAst)
                             {
@@ -2042,7 +2042,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitParameter(ParameterAst parameterAst)
         {
-            // Nothing to do now, we've already allocated parameters in the first pass looking for all variable naems.
+            // Nothing to do now, we've already allocated parameters in the first pass looking for all variable names.
             System.Diagnostics.Debug.Assert(false, "Code is unreachable");
             return null;
         }
@@ -2812,7 +2812,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // left operand is always evaluated, visit it's expression in the current block.
                 binaryExpressionAst.Left.Visit(this.Decorator);
 
-                // The right operand is condtionally evaluated.  We aren't generating any code here, just
+                // The right operand is conditionally evaluated.  We aren't generating any code here, just
                 // modeling the flow graph, so we just visit the right operand in a new block, and have
                 // both the current and new blocks both flow to a post-expression block.
                 var targetBlock = new Block();

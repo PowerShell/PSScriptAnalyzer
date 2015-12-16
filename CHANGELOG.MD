@@ -1,3 +1,40 @@
+## Released v1.2.0 (Dec.17, 2015)
+###Features:
+- Support for consuming PowerShell content as streams (-ScriptDefinition)
+- ScriptAnalyzer accepts configuration (settings) in the form of a hashtable (-Settings), added sample Settings
+- Ability to run default ruleset along with custom ones in the same invocation (-IncludeDefaultRules)
+- Recurse Custom Rule Paths (-RecurseCustomRulePath)
+- Consistent Engine error handling when working with Settings, Default and Custom Rules
+
+###Rules:
+- Rule to detect the presence of default value for Mandatory parameters (AvoidDefaultValueForMandatoryParameter)
+
+###Fixes:
+####Engine:
+- Engine update to prevent script based injection attacks
+- CustomizedRulePath is now called CustomRulePath – Fixes to handle folder paths
+- Fixes for RecurseCustomRulePath functionality
+- Fix to binplace cmdlet help file as part of build process
+- ScriptAnalyzer Profile is now called Settings
+- Fix to emit filename in the diagnosticrecord when using Script based custom rules
+- Fix to prevent Engine from calling Update-Help for script based custom rules
+- Added additional pester tests to take care of test holes in Custom Rule feature
+- Post-build error handling improvements, fixed typos in the project
+
+####Rules:
+- Fixed bug in Positional parameter rule to trigger only when used with > 3 positional parameters
+- Updated keywords that trigger PSAvoidUsingPlainTextForPassword rule
+- Updated ProvideDefaultParameterValue rule to AvoidDefaultValueForMandatoryParameter rule
+- Deprecate Internal Url rule based on community feedback, identified additional rules to handle hardcoded paths etc
+- Added localhost exceptions for HardCodedComputerName Rule
+- Update to Credential based rules to validate the presence of CredentialAttribute and PSCredential type
+ 
+###Documentation:
+- Rule & Cmdlet documentation updates – Cmdlet help file addition
+
+
+##
+
 ## Released v1.1.1 (Nov.3, 2015)
 ###Features:
 - Support for PSDrives when using Invoke-ScriptAnalyzer

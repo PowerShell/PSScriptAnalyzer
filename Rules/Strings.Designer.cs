@@ -97,6 +97,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid Default Value For Mandatory Parameter.
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterCommonName {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block..
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterDescription {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mandatory Parameter &apos;{0}&apos; is initialized in the Param block. To fix a violation of this rule, please leave it unintialized..
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterError {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidDefaultValueForMandatoryParameter.
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterName {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Switch Parameters Should Not Default To True.
         /// </summary>
         internal static string AvoidDefaultValueSwitchParameterCommonName {
@@ -120,6 +156,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidDefaultValueSwitchParameterError {
             get {
                 return ResourceManager.GetString("AvoidDefaultValueSwitchParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script definition has a switch parameter default to true..
+        /// </summary>
+        internal static string AvoidDefaultValueSwitchParameterErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueSwitchParameterErrorScriptDefinition", resourceCulture);
             }
         }
         
@@ -237,6 +282,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidShouldContinueWithoutForceError {
             get {
                 return ResourceManager.GetString("AvoidShouldContinueWithoutForceError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; in script definition uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt.
+        /// </summary>
+        internal static string AvoidShouldContinueWithoutForceErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidShouldContinueWithoutForceErrorScriptDefinition", resourceCulture);
             }
         }
         
@@ -367,7 +421,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Functions should only take in a credential parameter of type PSCredential instead of username and password parameters..
+        ///   Looks up a localized string similar to Functions should only take in a credential parameter of type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute instead of username and password parameters..
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsDescription {
             get {
@@ -376,7 +430,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function &apos;{0}&apos; has both username and password parameters. A credential parameter of type PSCredential should be used..
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; has both username and password parameters. A credential parameter of type PSCredential with a CredentialAttribute where PSCredential comes before CredentialAttribute should be used..
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsError {
             get {
@@ -498,6 +552,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidUsingConvertToSecureStringWithPlainTextError {
             get {
                 return ResourceManager.GetString("AvoidUsingConvertToSecureStringWithPlainTextError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script definition uses ConvertTo-SecureString with plaintext. This will expose secure information. Encrypted standard strings should be used instead..
+        /// </summary>
+        internal static string AvoidUsingConvertToSecureStringWithPlainTextErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidUsingConvertToSecureStringWithPlainTextErrorScriptDefinition", resourceCulture);
             }
         }
         
@@ -772,6 +835,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Script definition uses WMI cmdlet. For PowerShell 3.0 and above, use CIM cmdlet which perform the same tasks as the WMI cmdlets. The CIM cmdlets comply with WS-Management (WSMan) standards and with the Common Information Model (CIM) standard, which enables the cmdlets to use the same techniques to manage Windows computers and those running other operating systems..
+        /// </summary>
+        internal static string AvoidUsingWMICmdletErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidUsingWMICmdletErrorScriptDefinition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AvoidUsingWMICmdlet.
         /// </summary>
         internal static string AvoidUsingWMICmdletName {
@@ -790,7 +862,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Write-Host or Console.Write should not be used because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead..
+        ///   Looks up a localized string similar to Avoid using the Write-Host cmdlet. Instead, use Write-Output, Write-Verbose, or Write-Information. Because Write-Host is host-specific, its implementation might vary unpredictably. Also, prior to PowerShell 5.0, Write-Host did not write to a stream, so users cannot suppress it, capture its value, or redirect it..
         /// </summary>
         internal static string AvoidUsingWriteHostDescription {
             get {
@@ -799,11 +871,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File &apos;{0}&apos; uses Write-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all. Use Write-Output instead..
+        ///   Looks up a localized string similar to File &apos;{0}&apos; uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information..
         /// </summary>
         internal static string AvoidUsingWriteHostError {
             get {
                 return ResourceManager.GetString("AvoidUsingWriteHostError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Script definition uses Write-Host. Avoid using Write-Host because it might not work in all hosts, does not work when there is no host, and (prior to PS 5.0) cannot be suppressed, captured, or redirected. Instead, use Write-Output, Write-Verbose, or Write-Information..
+        /// </summary>
+        internal static string AvoidUsingWriteHostErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidUsingWriteHostErrorScriptDefinition", resourceCulture);
             }
         }
         
@@ -1132,42 +1213,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Default Parameter Values.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueCommonName {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueDescription {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueError {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ProvideDefaultParameterValue.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueName {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Reserved Cmdlet Chars.
         /// </summary>
         internal static string ReservedCmdletCharCommonName {
@@ -1335,6 +1380,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string ReturnCorrectTypesForSetTargetResourceFunctionsDSCError {
             get {
                 return ResourceManager.GetString("ReturnCorrectTypesForSetTargetResourceFunctionsDSCError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ScriptDefinition.
+        /// </summary>
+        internal static string ScriptDefinitionName {
+            get {
+                return ResourceManager.GetString("ScriptDefinitionName", resourceCulture);
             }
         }
         
@@ -1717,7 +1771,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Checks that cmdlets that have a Credential parameter accept PSCredential. This comes from the PowerShell teams best practices..
+        ///   Looks up a localized string similar to Checks that cmdlets that have a Credential parameter accept PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.. This comes from the PowerShell teams best practices..
         /// </summary>
         internal static string UsePSCredentialTypeDescription {
             get {
@@ -1726,7 +1780,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of the type PSCredential..
+        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute..
         /// </summary>
         internal static string UsePSCredentialTypeError {
             get {
@@ -1735,7 +1789,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in a found script block must be of the type PSCredential..
+        ///   Looks up a localized string similar to The Credential parameter in a found script block must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute..
         /// </summary>
         internal static string UsePSCredentialTypeErrorSB {
             get {
