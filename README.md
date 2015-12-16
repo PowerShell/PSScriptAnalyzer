@@ -4,6 +4,9 @@ Announcements
 ##### ISE Add-On for ScriptAnalyzer is available in PowerShell Gallery!
 (https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
 
+##### Visual Studio Code now has PowerShell language support with ScriptAnalyzer integration
+(http://blogs.msdn.com/b/powershell/archive/2015/11/17/announcing-windows-powershell-for-visual-studio-code-and-more.aspx)
+
 =============
 
 ##### ScriptAnalyzer community meeting schedule:

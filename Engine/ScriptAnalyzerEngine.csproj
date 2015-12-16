@@ -86,6 +86,11 @@
     <None Include="PSScriptAnalyzer.psd1" />
     <None Include="ScriptAnalyzer.format.ps1xml" />
     <None Include="ScriptAnalyzer.types.ps1xml" />
+    <None Include="Settings\CmdletDesign.psd1" />
+    <None Include="Settings\DSC.psd1" />
+    <None Include="Settings\ScriptFunctions.psd1" />
+    <None Include="Settings\ScriptingStyle.psd1" />
+    <None Include="Settings\ScriptSecurity.psd1" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Strings.resx">
@@ -105,8 +110,8 @@
         if not exist "$(SolutionDir)$(SolutionName)" mkdir "$(SolutionDir)$(SolutionName)"
         copy /y "$(ProjectDir)*.ps1xml" "$(SolutionDir)$(SolutionName)"
         copy /y "$(ProjectDir)*.psd1" "$(SolutionDir)$(SolutionName)"
-        if not exist "$(SolutionDir)$(SolutionName)\Configurations" mkdir "$(SolutionDir)$(SolutionName)\Configurations"
-        copy /y "$(ProjectDir)Configurations\*.psd1" "$(SolutionDir)$(SolutionName)\Configurations"
+        if not exist "$(SolutionDir)$(SolutionName)\Settings" mkdir "$(SolutionDir)$(SolutionName)\Settings"
+        copy /y "$(ProjectDir)Settings\*.psd1" "$(SolutionDir)$(SolutionName)\Settings"
         copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
         if not exist "$(SolutionDir)$(SolutionName)\en-US" mkdir "$(SolutionDir)$(SolutionName)\en-US"
         copy /y "$(ProjectDir)about_*.help.txt" "$(SolutionDir)$(SolutionName)\en-US"
