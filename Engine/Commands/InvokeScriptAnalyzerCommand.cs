@@ -174,13 +174,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [Alias("Profile")]
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
-        public object Configuration
+        public object Settings
         {
-            get { return configuration; }
-            set { configuration = value; }
+            get { return settings; }
+            set { settings = value; }
         }
 
-        private object configuration;
+        private object settings;
 
         private bool stopProcessing;
 
@@ -196,7 +196,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);
 
-            if (!ScriptAnalyzer.Instance.ParseProfile(this.configuration, this.SessionState.Path, this))
+            if (!ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this))
             {
                 stopProcessing = true;
                 return;
