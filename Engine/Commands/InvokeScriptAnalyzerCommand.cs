@@ -169,17 +169,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool suppressedOnly;
 
         /// <summary>
-        /// Returns path to the file that contains user profile for ScriptAnalyzer
+        /// Returns path to the file that contains user profile or hash table for ScriptAnalyzer
         /// </summary>
         [Alias("Profile")]
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
-        public string Configuration
+        public object Settings
         {
-            get { return configuration; }
-            set { configuration = value; }
+            get { return settings; }
+            set { settings = value; }
         }
-        private string configuration;
+
+        private object settings;
 
         private bool stopProcessing;
 
@@ -195,7 +196,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);
 
-            if (!ScriptAnalyzer.Instance.ParseProfile(this.configuration, this.SessionState.Path, this))
+            if (!ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this))
             {
                 stopProcessing = true;
                 return;
@@ -208,8 +209,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 null == rulePaths ? true : this.includeDefaultRules,
-                this.suppressedOnly,
-                this.configuration);
+                this.suppressedOnly);
         }
 
         /// <summary>
@@ -236,6 +236,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 ProcessPathOrScriptDefinition(scriptDefinition);
             }
+        }
+
+        protected override void EndProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.EndProcessing();
+        }
+
+        protected override void StopProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.StopProcessing();
         }
 
         #endregion
