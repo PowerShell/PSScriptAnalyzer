@@ -22,7 +22,7 @@
 - Post-build error handling improvements, fixed typos in the project
 
 ####Rules:
-- Fixed bug in Positional parameter rule to trigger only when used with > 3 positional parameters
+- Fixed bug in Positional parameter rule to trigger only when used with >= 3 positional parameters
 - Updated keywords that trigger PSAvoidUsingPlainTextForPassword rule
 - Updated ProvideDefaultParameterValue rule to AvoidDefaultValueForMandatoryParameter rule
 - Deprecate Internal Url rule based on community feedback, identified additional rules to handle hardcoded paths etc
