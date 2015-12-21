@@ -1495,7 +1495,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             // We want the Engine to continue functioning even if one or more Rules throws an exception
                             try
                             {
+                                #if PSV3
+
+                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, null);
+
+                                #else
+
                                 var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(scriptAst, filePath).ToList());
+
+                                #endif
+
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);

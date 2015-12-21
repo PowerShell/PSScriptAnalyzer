@@ -8,7 +8,7 @@
 Author = 'Microsoft Corporation'
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.dll'
+RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
 ModuleVersion = '1.2.0'
@@ -26,7 +26,7 @@ Copyright = '(c) Microsoft Corporation 2015. All rights reserved.'
 Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of built-in or customized rules on the scripts being analyzed.'
 
 # Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '5.0'
+PowerShellVersion = '3.0'
 
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''
@@ -65,7 +65,7 @@ FormatsToProcess = @('ScriptAnalyzer.format.ps1xml')
 FunctionsToExport = '*'
 
 # Cmdlets to export from this module
-CmdletsToExport = '*'
+CmdletsToExport = @('Get-ScriptAnalyzerRule','Invoke-ScriptAnalyzer')
 
 # Variables to export from this module
 VariablesToExport = '*'
@@ -80,7 +80,15 @@ AliasesToExport = '*'
 # FileList = @()
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess
-# PrivateData = ''
+PrivateData = @{
+    PSData = @{
+        Tags = 'lint best practice'
+        LicenseUri = 'https://github.com/PowerShell/PSScriptAnalyzer/blob/master/LICENSE'
+        ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
+        IconUri = ''
+        ReleaseNotes = ''
+    }
+}
 
 # HelpInfo URI of this module
 # HelpInfoURI = ''
