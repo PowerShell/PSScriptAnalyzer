@@ -1,4 +1,6 @@
-﻿# Check if PSScriptAnalyzer is already loaded so we don't
+﻿if ($PSVersionTable.PSVersion -ge [Version]'5.0') {
+
+# Check if PSScriptAnalyzer is already loaded so we don't
 # overwrite a test version of Invoke-ScriptAnalyzer by
 # accident
 if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
@@ -75,4 +77,5 @@ Describe "RuleSuppressionWithScope" {
             $suppression.Count | Should Be 0
         }
     }
+ }
 }
