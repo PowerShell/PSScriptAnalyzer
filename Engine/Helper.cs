@@ -248,6 +248,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
+            #if !PSV3
+
             List<string> dscResourceFunctionNames = new List<string>(new string[] { "Test", "Get", "Set" });
 
             IEnumerable<Ast> dscClasses = ast.FindAll(item =>
@@ -261,6 +263,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return true;
             }
+
+            #endif
 
             return false;
         }
@@ -934,12 +938,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (typeAst.Members == null)
             {
-                return result;
-            }
+                return result;            
+            }            
 
             foreach (var member in typeAst.Members)
             {
+                #if PSv3
+
+                FunctionDefinitionAst funcMemb = member as FunctionDefinitionAst;
+
+                #else
+
                 FunctionMemberAst funcMemb = member as FunctionMemberAst;
+
+                #endif
 
                 if (funcMemb == null)
                 {
