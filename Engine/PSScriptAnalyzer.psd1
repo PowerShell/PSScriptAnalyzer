@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.2.0'
+ModuleVersion = '1.3.0'
 
 # ID used to uniquely identify this module
 GUID = '324fc715-36bf-4aee-8e58-72e9b4a08ad9'
