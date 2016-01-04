@@ -33,6 +33,24 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'PSV3 Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\PSV3 Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PSV3</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'PSV3 Release|AnyCPU'">
+    <OutputPath>bin\PSV3 Release\</OutputPath>
+    <DefineConstants>TRACE;PSV3</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -111,9 +129,33 @@
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>
-        if not exist "$(SolutionDir)$(SolutionName)" mkdir "$(SolutionDir)$(SolutionName)"
-        copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
-    </PostBuildEvent>
+     <PostBuildEvent>
+if "PSV3 Release" == "$(ConfigurationName)" (
+	GOTO psv3Release
+) else if "PSV3 Debug" == "$(ConfigurationName)" (
+	GOTO psv3Debug	
+) else (
+	GOTO default
+)
+
+:psv3Release
+:psv3Debug
+    if not exist "$(SolutionDir)$(SolutionName)\PSv3" (
+        mkdir "$(SolutionDir)$(SolutionName)\PSv3"
+    )
+    copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)\PSv3"
+
+	GOTO end
+	
+:default         	 
+    if not exist "$(SolutionDir)$(SolutionName)" (
+		mkdir "$(SolutionDir)$(SolutionName)"
+	)
+	copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
+	
+	GOTO end
+	
+:end
+</PostBuildEvent>
   </PropertyGroup>
 </Project>

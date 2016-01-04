@@ -711,9 +711,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 using (System.Management.Automation.PowerShell posh =
                        System.Management.Automation.PowerShell.Create(state))
                 {
-                    posh.AddCommand("Get-Module").AddParameter("Name", moduleName).AddParameter("ListAvailable");
-                    shortModuleName = posh.Invoke<PSModuleInfo>().First().Name;   
-                                                            
+                    posh.AddCommand("Get-Module");
+                    Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();                    
+                    foreach (PSModuleInfo module in loadedModules)
+                    {
+                        string pathToCompare = moduleName;
+                        if (!File.GetAttributes(moduleName).HasFlag(FileAttributes.Directory))
+                        {
+                            pathToCompare = Path.GetDirectoryName(moduleName);
+                        }
+
+                        if (pathToCompare == Path.GetDirectoryName(module.Path))
+                        {
+                           shortModuleName = module.Name;
+                           break;
+                        }
+                    }
+                                        
                     // Invokes Get-Command and Get-Help for each functions in the module.
                     posh.Commands.Clear();
                     posh.AddCommand("Get-Command").AddParameter("Module", shortModuleName);
@@ -974,17 +988,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         resolvedPath = basePath
                             .GetResolvedPSPathFromPSPath(childPath).First().ToString();
                     }
+                    
+                    // Import the module
+                    InitialSessionState state = InitialSessionState.CreateDefault2();
+                    state.ImportPSModule(new string[] { resolvedPath });
 
                     using (System.Management.Automation.PowerShell posh =
-                           System.Management.Automation.PowerShell.Create())
-                    {                        
-                        posh.AddCommand("Get-Module").AddParameter("Name", resolvedPath).AddParameter("ListAvailable");
-                        PSModuleInfo moduleInfo = posh.Invoke<PSModuleInfo>().First();     
+                           System.Management.Automation.PowerShell.Create(state))
+                    {
+                        posh.AddCommand("Get-Module");
+                        Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();
+                        foreach (PSModuleInfo module in loadedModules)
+                        {
+                            string pathToCompare = resolvedPath;
+                            if (!File.GetAttributes(resolvedPath).HasFlag(FileAttributes.Directory))
+                            {
+                                pathToCompare = Path.GetDirectoryName(resolvedPath);
+                            }
 
-                        // Adds original path, otherwise path.Except<string>(validModPaths) will fail.
-                        // It's possible that user can provide something like this:
-                        // "..\..\..\ScriptAnalyzer.UnitTest\modules\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1"
-                        if (moduleInfo.ExportedFunctions.Count > 0) validModPaths.Add(resolvedPath);
+                            if (pathToCompare == Path.GetDirectoryName(module.Path))
+                            {
+                                if (module.ExportedFunctions.Count > 0)
+                                {
+                                    validModPaths.Add(resolvedPath);
+                                }
+                                break;
+                            }
+                        }
                     }
                 }
                 catch
@@ -1495,7 +1525,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             // We want the Engine to continue functioning even if one or more Rules throws an exception
                             try
                             {
+                                #if PSV3
+
+                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, null);
+
+                                #else
+
                                 var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(scriptAst, filePath).ToList());
+
+                                #endif
+
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);

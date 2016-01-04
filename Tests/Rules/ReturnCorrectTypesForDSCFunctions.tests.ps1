@@ -6,8 +6,12 @@ $violationName = "PSDSCReturnCorrectTypesForDSCFunctions"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1 | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\DSCResources\MSFT_WaitForAny\MSFT_WaitForAny.psm1 | Where-Object {$_.RuleName -eq $violationName}
-$classViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResources\BadDscResource\BadDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
-$noClassViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
+
+if ($PSVersionTable.PSVersion -ge [Version]'5.0')
+{
+    $classViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResources\BadDscResource\BadDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
+    $noClassViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
+}
 
 Describe "ReturnCorrectTypesForDSCFunctions" {
     Context "When there are violations" {
@@ -27,7 +31,8 @@ Describe "ReturnCorrectTypesForDSCFunctions" {
     }
 }
 
-Describe "StandardDSCFunctionsInClass" {
+if ($PSVersionTable.PSVersion -ge [Version]'5.0') {
+ Describe "StandardDSCFunctionsInClass" {
     Context "When there are violations" {
         It "has 4 return correct types for DSC functions violations" {
             $classViolations.Count | Should Be 4
@@ -43,4 +48,5 @@ Describe "StandardDSCFunctionsInClass" {
             $noClassViolations.Count | Should Be 0
         }
     }
+ }
 }

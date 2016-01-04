@@ -43,7 +43,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         [Parameter(Position = 0,
             ParameterSetName = "File",
-            Mandatory = true)]
+            Mandatory = true,
+            ValueFromPipeline = true, 
+            ValueFromPipelineByPropertyName = true)]
         [ValidateNotNull]
         [Alias("PSPath")]
         public string Path
@@ -58,7 +60,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         [Parameter(Position = 0,
             ParameterSetName = "ScriptDefinition",
-            Mandatory = true)]
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         [ValidateNotNull]
         public string ScriptDefinition
         {

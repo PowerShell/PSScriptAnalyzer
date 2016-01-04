@@ -3,7 +3,9 @@ Import-Module -Verbose PSScriptAnalyzer
 $currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ruleName = "PSDSCDscExamplesPresent"
 
-Describe "DscExamplesPresent rule in class based resource" {
+if ($PSVersionTable.PSVersion -ge [Version]'5.0') {
+
+ Describe "DscExamplesPresent rule in class based resource" {
     
     $examplesPath = "$currentPath\DSCResources\MyDscResource\Examples"
     $classResourcePath = "$currentPath\DSCResources\MyDscResource\MyDscResource.psm1"
@@ -34,6 +36,7 @@ Describe "DscExamplesPresent rule in class based resource" {
 
         Remove-Item -Path $examplesPath -Recurse -Force
     }
+ }
 }
 
 Describe "DscExamplesPresent rule in regular (non-class) based resource" {

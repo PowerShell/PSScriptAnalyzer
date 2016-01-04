@@ -48,7 +48,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
+            #if PSV3
+
+            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
+
+            #else
+
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Union(ast.FindAll(item => item is FunctionMemberAst, true));
+
+            #endif
+
             foreach (Ast funcAst in funcAsts)
             {
                 IEnumerable<Ast> binAsts = funcAst.FindAll(item => item is BinaryExpressionAst, true);
