@@ -1639,7 +1639,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             #endregion
 
-            IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics;
+            // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
+            IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics.Reverse();
 
             if (severity != null)
             {
