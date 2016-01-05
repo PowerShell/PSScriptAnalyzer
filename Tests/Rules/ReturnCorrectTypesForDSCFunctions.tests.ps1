@@ -39,7 +39,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0') {
         }
 
         It "has the correct description message" {
-            $classViolations[0].Message | Should Match $violationMessageDSCClass
+            $classViolations[3].Message | Should Match $violationMessageDSCClass
         }
     }
 

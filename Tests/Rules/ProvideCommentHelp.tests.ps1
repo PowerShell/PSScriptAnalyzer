@@ -18,7 +18,7 @@ Describe "ProvideCommentHelp" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[1].Message | Should Match $violationMessage
         }
 
         if ($PSVersionTable.PSVersion -ge [Version]'5.0')
