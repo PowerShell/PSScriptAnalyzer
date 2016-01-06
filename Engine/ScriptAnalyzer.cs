@@ -1210,9 +1210,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             else if (File.Exists(path))
             {
                 String fileName = Path.GetFileName(path);
-                if ((fileName.Length > ps1Suffix.Length && String.Equals(Path.GetExtension(path), ps1Suffix, StringComparison.OrdinalIgnoreCase)) ||
-                    (fileName.Length > psm1Suffix.Length && String.Equals(Path.GetExtension(path), psm1Suffix, StringComparison.OrdinalIgnoreCase)) ||
-                    (fileName.Length > psd1Suffix.Length && String.Equals(Path.GetExtension(path), psd1Suffix, StringComparison.OrdinalIgnoreCase)))
+                if ((fileName.Length >= ps1Suffix.Length && String.Equals(Path.GetExtension(path), ps1Suffix, StringComparison.OrdinalIgnoreCase)) ||
+                    (fileName.Length >= psm1Suffix.Length && String.Equals(Path.GetExtension(path), psm1Suffix, StringComparison.OrdinalIgnoreCase)) ||
+                    (fileName.Length >= psd1Suffix.Length && String.Equals(Path.GetExtension(path), psd1Suffix, StringComparison.OrdinalIgnoreCase)))
                 {
                     scriptFilePaths.Add(path);
                 }
