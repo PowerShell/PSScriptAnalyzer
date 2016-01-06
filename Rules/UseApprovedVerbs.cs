@@ -54,7 +54,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
-                funcName = funcAst.Name;
+                funcName = Helper.Instance.FunctionNameWithoutScope(funcAst.Name);
 
                 if (funcName != null && funcName.Contains('-'))
                 {

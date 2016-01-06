@@ -92,10 +92,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         {
                             foreach (NamedAttributeArgumentAst arg in args)
                             {
-                                if (String.Equals(arg.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase)
-                                    && String.Equals(arg.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    isSwitchOrMandatory = true;
+                                if (String.Equals(arg.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase))
+                               {
+                                    // check for the case mandatory=$true and just mandatory
+                                    if (arg.ExpressionOmitted || (!arg.ExpressionOmitted && String.Equals(arg.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        isSwitchOrMandatory = true;
+                                    }
                                 }
                             }
                         }

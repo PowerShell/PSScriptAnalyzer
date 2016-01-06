@@ -53,13 +53,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (assignmentVarAst != null)
                     {
-                        //Ignore if variable is global or environment variable
+                        //Ignore if variable is global or environment variable or scope is function
                         if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst, ast)
-                            && !assignmentVarAst.VariablePath.IsScript)
+                            && !assignmentVarAst.VariablePath.IsScript
+                            && !string.Equals(assignmentVarAst.VariablePath.DriveName, "function", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (!assignments.ContainsKey(assignmentVarAst.VariablePath.UserPath))
+
+                            string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
+
+                            if (!assignments.ContainsKey(variableName))
                             {
-                                assignments.Add(assignmentVarAst.VariablePath.UserPath, assignmentAst);
+                                assignments.Add(variableName, assignmentAst);
                             }
                         }
                     }
@@ -70,7 +74,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 foreach (VariableExpressionAst varAst in varAsts)
                 {
-                    varKey = varAst.VariablePath.UserPath;
+                    varKey = Helper.Instance.VariableNameWithoutScope(varAst.VariablePath);
                     inAssignment = false;
                     
                     if (assignments.ContainsKey(varKey))
