@@ -100,6 +100,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Dictionary<Ast, VariableAnalysis> VariableAnalysisDictionary;
 
+        private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:" };
+
+        private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":" };
+
         #endregion
 
         /// <summary>
@@ -267,6 +271,60 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             #endif
 
             return false;
+        }
+
+        private string NameWithoutScope(string name, string[] scopes)
+        {
+            if (String.IsNullOrWhiteSpace(name) || scopes == null)
+            {
+                return name;
+            }            
+
+            // checks whether function name starts with scope
+            foreach (string scope in scopes)
+            {
+                // trim the scope part
+                if (name.IndexOf(scope) == 0)
+                {
+                    return name.Substring(scope.Length);
+                }
+            }
+
+            // no scope
+            return name;
+        }
+
+        /// <summary>
+        /// Given a function name, strip the scope of the name
+        /// </summary>
+        /// <param name="functionName"></param>
+        /// <returns></returns>
+        public string FunctionNameWithoutScope(string functionName)
+        {
+            return NameWithoutScope(functionName, functionScopes);
+        }
+
+        /// <summary>
+        /// Given a variable name, strip the scope
+        /// </summary>
+        /// <param name="variableName"></param>
+        /// <returns></returns>
+        public string VariableNameWithoutScope(VariablePath variablePath)
+        {
+            if (variablePath == null || variablePath.UserPath == null)
+            {
+                return null;
+            }
+
+            // strip out the drive if there is one
+            if (!string.IsNullOrWhiteSpace(variablePath.DriveName)
+                // checks that variable starts with drivename:
+                && variablePath.UserPath.IndexOf(string.Concat(variablePath.DriveName, ":")) == 0)
+            {
+                return variablePath.UserPath.Substring(variablePath.DriveName.Length + 1);
+            }
+
+            return NameWithoutScope(variablePath.UserPath, variableScopes);
         }
 
         /// <summary>

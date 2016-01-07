@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer;
 using System.ComponentModel.Composition;
 using System.Globalization;
 
@@ -43,7 +44,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
-                if (funcAst.Name != null && funcAst.Name.Intersect(reservedChars).Count() > 0)
+                string funcName = Helper.Instance.FunctionNameWithoutScope(funcAst.Name);
+
+                if (funcName != null && funcName.Intersect(reservedChars).Count() > 0)
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedCmdletCharError, funcAst.Name),
                         funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);

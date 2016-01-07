@@ -54,7 +54,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 attributeAsts = funcDefAst.FindAll(testAst => testAst is NamedAttributeArgumentAst, true);
                 foreach (NamedAttributeArgumentAst attributeAst in attributeAsts) {
-                    hasShouldProcessAttribute |= attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase);
+                    hasShouldProcessAttribute |= ((attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase))
+                        // checks for the case if the user just use the attribute without setting it to true
+                        || (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.ExpressionOmitted));
                 }
 
                 memberAsts = funcDefAst.FindAll(testAst => testAst is MemberExpressionAst, true);
