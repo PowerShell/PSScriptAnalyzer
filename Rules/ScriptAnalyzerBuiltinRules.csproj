@@ -87,6 +87,7 @@
     <Compile Include="AvoidUsingWriteHost.cs" />
     <Compile Include="DscTestsPresent.cs" />
     <Compile Include="DscExamplesPresent.cs" />
+    <Compile Include="MisleadingBacktick.cs" />
     <Compile Include="Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -129,7 +130,7 @@
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
   <PropertyGroup>
-     <PostBuildEvent>
+    <PostBuildEvent>
 if "PSV3 Release" == "$(ConfigurationName)" (
 	GOTO psv3Release
 ) else if "PSV3 Debug" == "$(ConfigurationName)" (
