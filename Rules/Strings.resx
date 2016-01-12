@@ -774,4 +774,16 @@
   <data name="ScriptDefinitionName" xml:space="preserve">
     <value>ScriptDefinition</value>
   </data>
+  <data name="MisleadingBacktickCommonName" xml:space="preserve">
+    <value>Misleading Backtick</value>
+  </data>
+  <data name="MisleadingBacktickDescription" xml:space="preserve">
+    <value>Ending a line with an escaped whitepsace character is misleading. A trailing backtick is usually used for line continuation. Users typically don't intend to end a line with escaped whitespace.</value>
+  </data>
+  <data name="MisleadingBacktickName" xml:space="preserve">
+    <value>MisleadingBacktick</value>
+  </data>
+  <data name="MisleadingBacktickError" xml:space="preserve">
+    <value>This line has a backtick at the end trailed by a whitespace character. Did you mean for this to be a line continuation?</value>
+  </data>
 </root>

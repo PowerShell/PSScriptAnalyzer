@@ -1015,6 +1015,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Misleading Backtick.
+        /// </summary>
+        internal static string MisleadingBacktickCommonName {
+            get {
+                return ResourceManager.GetString("MisleadingBacktickCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ending a line with an escaped whitepsace character is misleading. A trailing backtick is usually used for line continuation. Users typically don&apos;t intend to end a line with escaped whitespace..
+        /// </summary>
+        internal static string MisleadingBacktickDescription {
+            get {
+                return ResourceManager.GetString("MisleadingBacktickDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This line has a backtick at the end trailed by a whitespace character. Did you mean for this to be a line continuation?.
+        /// </summary>
+        internal static string MisleadingBacktickError {
+            get {
+                return ResourceManager.GetString("MisleadingBacktickError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MisleadingBacktick.
+        /// </summary>
+        internal static string MisleadingBacktickName {
+            get {
+                return ResourceManager.GetString("MisleadingBacktickName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Module Manifest Fields.
         /// </summary>
         internal static string MissingModuleManifestFieldCommonName {
