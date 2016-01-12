@@ -9,10 +9,6 @@ Describe "Avoid Misleading Backticks" {
         It "has 5 misleading backtick violations" {
             $violations.Count | Should Be 5
         }
-
-        It "is " {
-            $violations[0].Message | Should Match $writeHostMessage
-        }
     }
 
     Context "When there are no violations" {
