@@ -27,6 +27,15 @@
     }
 }
 
-function O {
+function O
+{
+    [CmdletBinding()]
+    [Alias()]
+    [OutputType([int])]
+    Param()
+
     Write-Output "I use one char"
 }
+
+Export-ModuleMember Use-#Reserved
+Export-ModuleMember O
