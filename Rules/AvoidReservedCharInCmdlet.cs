@@ -15,8 +15,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -40,13 +42,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
             string reservedChars = Strings.ReserverCmdletChars;
+            HashSet<string> exportedFunction = Helper.Instance.GetExportedFunction(ast);
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
-                if (funcAst.Name != null && funcAst.Name.Intersect(reservedChars).Count() > 0)
+                if (funcAst.Body != null && funcAst.Body.ParamBlock != null && funcAst.Body.ParamBlock.Attributes != null)
                 {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedCmdletCharError, funcAst.Name),
-                        funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    // only raise this rule for function with cmdletbinding
+                    if (!funcAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
+                    {
+                        continue;
+                    }
+
+                    string funcName = Helper.Instance.FunctionNameWithoutScope(funcAst.Name);
+
+                    // only raise if the function is exported
+                    if (funcName != null && funcName.Intersect(reservedChars).Count() > 0 && (exportedFunction.Contains(funcAst.Name) || exportedFunction.Contains(funcName)))
+                    {
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedCmdletCharError, funcAst.Name),
+                            funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    }                
                 }
             }            
         }

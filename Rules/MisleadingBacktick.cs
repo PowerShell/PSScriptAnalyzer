@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Microsoft Corporation.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -17,60 +17,52 @@ using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
-using System.Management.Automation;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// ProvideCommentHelp: Analyzes ast to check that cmdlets have help.
+    /// MisleadingBacktick: Checks that lines don't end with a backtick followed by whitespace
     /// </summary>
     [Export(typeof(IScriptRule))]
-    public class ProvideCommentHelp : SkipTypeDefinition, IScriptRule
+    public class MisleadingBacktick : IScriptRule
     {
-        private HashSet<string> exportedFunctions;
+        private static Regex TrailingEscapedWhitespaceRegex = new Regex(@"`\s+$");
+        private static Regex NewlineRegex = new Regex("\r?\n");
 
         /// <summary>
-        /// AnalyzeScript: Analyzes the ast to check that cmdlets have help.
+        /// MisleadingBacktick: Checks that lines don't end with a backtick followed by a whitespace
         /// </summary>
-        /// <param name="ast">The script's ast</param>
-        /// <param name="fileName">The name of the script</param>
-        /// <returns>A List of diagnostic results of this rule</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            DiagnosticRecords.Clear();
-            this.fileName = fileName;
-            exportedFunctions = Helper.Instance.GetExportedFunction(ast);
+            string[] lines = NewlineRegex.Split(ast.Extent.Text);
 
-            ast.Visit(this);
-
-            return DiagnosticRecords;
-        }
-
-        /// <summary>
-        /// Visit function and checks that it has comment help
-        /// </summary>
-        /// <param name="funcAst"></param>
-        /// <returns></returns>
-        public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst funcAst)
-        {
-            if (funcAst == null)
+            if((ast.Extent.EndLineNumber - ast.Extent.StartLineNumber + 1) != lines.Length)
             {
-                return AstVisitAction.SkipChildren;
+                // Did not match the number of lines that the extent indicated
+                yield break;
             }
 
-            if (exportedFunctions.Contains(funcAst.Name))
+            foreach (int i in Enumerable.Range(0, lines.Length))
             {
-                if (funcAst.GetHelpContent() == null)
+                string line = lines[i];
+
+                Match match = TrailingEscapedWhitespaceRegex.Match(line);
+
+                if(match.Success)
                 {
-                    DiagnosticRecords.Add(
-                        new DiagnosticRecord(
-                            string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpError, funcAst.Name),
-                            funcAst.Extent, GetName(), DiagnosticSeverity.Information, fileName));
+                    int lineNumber = ast.Extent.StartLineNumber + i;
+
+                    ScriptPosition start = new ScriptPosition(fileName, lineNumber, match.Index, line);
+                    ScriptPosition end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length, line);
+                    
+                    yield return new DiagnosticRecord(
+                        string.Format(CultureInfo.CurrentCulture, Strings.MisleadingBacktickError),
+                            new ScriptExtent(start, end), GetName(), DiagnosticSeverity.Warning, fileName);
                 }
             }
-
-            return AstVisitAction.Continue;
         }
 
         /// <summary>
@@ -79,7 +71,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.ProvideCommentHelpName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.MisleadingBacktickName);
         }
 
         /// <summary>
@@ -88,19 +80,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.MisleadingBacktickCommonName);
         }
 
         /// <summary>
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() {
-            return string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpDescription);
+        public string GetDescription()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.MisleadingBacktickDescription);
         }
 
         /// <summary>
-        /// Method: Retrieves the type of the rule: builtin, managed or module.
+        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
         public SourceType GetSourceType()
         {
@@ -113,11 +106,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Information;
+            return RuleSeverity.Warning;
         }
 
         /// <summary>
-        /// Method: Retrieves the module/assembly name the rule is from.
+        /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
         public string GetSourceName()
         {

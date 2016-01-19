@@ -11,7 +11,7 @@ Announcements
 
 ##### ScriptAnalyzer community meeting schedule:
 
- - Next Meeting - Dec 8 2015 - 11am to 12pm PDT
+ - Next Meeting - Feb 2 2016 - 11am to 12pm PDT
  - [iCalender invite](http://1drv.ms/1VvAaxO)
  - [Notes and recordings from earlier meetings](https://github.com/PowerShell/PSScriptAnalyzer/wiki)
 
@@ -43,7 +43,9 @@ Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-Exclud
 Requirements
 ============
 
-WS2012R2 / Windows 8.1 / Windows OS running **PowerShell v5.0** and **Windows Management Framework 5.0 Preview**
+WS2012R2 / Windows 8.1 / Windows OS running a **minimum of PowerShell v3.0**
+
+A Windows OS with PowerShell v5.0 [**Windows Management Framework 5.0 Preview**] is also supported
 
 Download the latest WMF package from [Windows Management Framework 5.0 Preview](http://go.microsoft.com/fwlink/?LinkId=398175).
 
