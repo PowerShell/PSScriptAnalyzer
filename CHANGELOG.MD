@@ -1,3 +1,19 @@
+## Released v1.3.0 (Jan.19, 2016)
+###Features:
+- Support for running ScriptAnalyzer on PowerShell version v3 or higher! This means PSv5 is no longer the minimum PS version for ScriptAnalyzer
+
+###Rules:
+- [From Community] Rule for warning about backticks that look like line-continuations but are not [MisleadingBacktick rule]
+- Ability in default ruleset to recognize PowerShell variable scopes - global, local, script, private
+- Ability to use functions as a variable and support for special type of functions like prompt
+
+###Fixes:
+####Rules:
+- Fix for recognizing PowerShell preference variable ($OFS) in the default ruleset
+- Fix for false positive - PSShouldProcess rule requires boolean value
+- Fix to account for function scope prefix
+- Raise ReservedParam rule only for exported functions as cmdlets
+
 ## Released v1.2.0 (Dec.17, 2015)
 ###Features:
 - Support for consuming PowerShell content as streams (-ScriptDefinition)
