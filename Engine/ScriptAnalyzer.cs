@@ -926,8 +926,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                                 // DiagnosticRecord may not be correctly returned from external rule.
                                 try
-                                {
-                                    Enum.TryParse<DiagnosticSeverity>(psobject.Properties["Severity"].Value.ToString().ToUpper(), out severity);
+                                {                                    
+                                    severity = (DiagnosticSeverity)Enum.Parse(typeof(DiagnosticSeverity), psobject.Properties["Severity"].Value.ToString());
                                     message = psobject.Properties["Message"].Value.ToString();
                                     extent = (IScriptExtent)psobject.Properties["Extent"].Value;
                                     ruleName = psobject.Properties["RuleName"].Value.ToString();
