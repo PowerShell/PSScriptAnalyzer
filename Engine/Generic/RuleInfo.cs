@@ -102,7 +102,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             Description = description;
             SourceType  = sourceType;
             SourceName  = sourceName;
-            Severity = severity;
+            Severity = severity;      
         }
+
+        public override string ToString()
+        {
+            return RuleName;
+        }      
     }
 }

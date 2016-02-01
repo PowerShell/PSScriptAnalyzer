@@ -9,8 +9,8 @@ if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
 $sa = Get-Command Invoke-ScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $singularNouns = "PSUseSingularNouns"
-$rules = $singularNouns, "PSUseApprovedVerbs"
-$avoidRules = "PSAvoid*"
+$rules = Get-ScriptAnalyzerRule -Name ($singularNouns, "PSUseApprovedVerbs")
+$avoidRules = Get-ScriptAnalyzerRule -Name "PSAvoid*"
 $useRules = "PSUse*"
 
 Describe "Test available parameters" {
@@ -218,7 +218,7 @@ Describe "Test IncludeRule" {
         }
 
         It "includes 2 rules" {
-            $violations = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $rules | Where-Object {$rules -contains $_.RuleName}
+            $violations = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $rules
             $violations.Count | Should Be 2
         }
     }
@@ -237,7 +237,8 @@ Describe "Test IncludeRule" {
         }
 
         it "includes 2 wildcardrules" {
-            $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules, $useRules 
+            $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
+            $includeWildcard += Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $useRules
             $includeWildcard.Count | Should be 4
         }
     }
