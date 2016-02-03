@@ -1244,7 +1244,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (File.Exists(filePath))
             {
                 // processing for non help script
-                if (!(Path.GetFileName(filePath).StartsWith("about_") && Path.GetFileName(filePath).EndsWith(".help.txt")))
+                if (!(Path.GetFileName(filePath).ToLower().StartsWith("about_") && Path.GetFileName(filePath).ToLower().EndsWith(".help.txt")))
                 {
                     try
                     {
