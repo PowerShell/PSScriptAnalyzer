@@ -61,16 +61,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     String paramName = paramAst.Name.VariablePath.ToString();
 
-                    // if this is pscredential type with credential attribute where pscredential type comes first
-                    if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset < credentialAttribute.Extent.StartOffset)
-                    {
-                        continue;
-                    }
-
+                    // check that the type is securestring
+                    var secureStringType = paramAst.Attributes.FirstOrDefault(paramAttribute =>
+                        (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof (System.Security.SecureString))
+                        || paramAttribute.TypeName.GetReflectionType() == typeof(System.Security.SecureString));
+                    
                     foreach (String password in passwords)
                     {
                         if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
                         {
+                            // if this is a secure string, pscredential or credential attribute, don't count
+                            if (secureStringType != null || credentialAttribute != null || psCredentialType != null)
+                            {
+                                continue;
+                            }
+
                             hasPwd = true;
                             break;
                         }
