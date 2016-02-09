@@ -1,5 +1,5 @@
 #AvoidNullOrEmtpyHelpMessageAttribute
-**Severity Level: Error**
+**Severity Level: Warning**
 
 
 ##Description
@@ -12,12 +12,32 @@ To fix a violation of this rule, please set its value to a non-empty string.
 
 ##Example
 
-Wrong：
+Wrong:
 
-Function BadFuncEmtpyHelpMessage
+Function BadFuncEmtpyHelpMessageEmpty
 {
 	Param(
-		[Parameter(HelpMessage="")]
+		[Parameter(HelpMessage='')]
+		[String] $Param
+	)
+
+	$Param
+}
+
+Function BadFuncEmtpyHelpMessageNull
+{
+	Param(
+		[Parameter(HelpMessage=$null)]
+		[String] $Param
+	)
+
+	$Param
+}
+
+Function BadFuncEmtpyHelpMessageNoAssignment
+{
+	Param(
+		[Parameter(HelpMessage)]
 		[String] $Param
 	)
 
@@ -30,7 +50,7 @@ Correct:
 Function GoodFuncEmtpyHelpMessage
 {
 	Param(
-		[Parameter(HelpMessage="This is help.")]
+		[Parameter(HelpMessage='This is helpful')]
 		[String] $Param
 	)
 

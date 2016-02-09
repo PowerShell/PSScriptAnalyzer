@@ -21,13 +21,13 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidUsingNullOrEmptyHelpMessageParameter: Check if the HelpMessage parameter is set to a non-empty string.
+    /// AvoidUsingNullOrEmptyHelpMessageAttribute: Check if the HelpMessage parameter is set to a non-empty string.
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class AvoidNullOrEmptyHelpMessageAttribute : IScriptRule
     {               
         /// <summary>
-        /// AvoidUsingNullOrEmptyHelpMessageParameter: Check if the HelpMessage parameter is set to a non-empty string.
+        /// AvoidUsingNullOrEmptyHelpMessageAttribute: Check if the HelpMessage parameter is set to a non-empty string.
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
@@ -39,32 +39,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
                 if (funcAst.Body == null || funcAst.Body.ParamBlock == null
-                        || funcAst.Body.ParamBlock.Attributes == null || funcAst.Body.ParamBlock.Parameters == null)               
+                        || funcAst.Body.ParamBlock.Attributes == null || funcAst.Body.ParamBlock.Parameters == null)
+                {
                     continue;
+                }
                                            
                 foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
                 {                        
                     foreach (var paramAstAttribute in paramAst.Attributes)
                     {
                         if (!(paramAstAttribute is AttributeAst))
+                        {
                             continue;
+                        }
 
                         var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
 
                         if (namedArguments == null)
+                        {
                             continue;
+                        }
 
                         foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
                         {
-                            if (!(String.Equals(namedArgument.ArgumentName, "HelpMessage", StringComparison.OrdinalIgnoreCase))
-                                 || namedArgument.ExpressionOmitted)
+                            if (!(namedArgument.ArgumentName.Equals("HelpMessage", StringComparison.OrdinalIgnoreCase)))
+                            {
                                 continue;
+                            }
                             
                             string errCondition;
-                            if (namedArgument.Argument.Extent.Text.Equals("\"\""))
+                            if (namedArgument.ExpressionOmitted
+                                    || namedArgument.Argument.Extent.Text.Equals("\"\"")
+                                    || namedArgument.Argument.Extent.Text.Equals("\'\'"))
                             {
                                 errCondition = "empty";
-                            }
+                            }                                                        
                             else if (namedArgument.Argument.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase))
                             {
                                 errCondition = "null";
@@ -134,7 +143,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Error;
+            return RuleSeverity.Warning;
         }
 
         /// <summary>

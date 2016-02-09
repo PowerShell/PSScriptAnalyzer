@@ -68,3 +68,36 @@ function BadFuncEmptyHelpMessageNoCmdletBinding
     $Param1
     $Param2 = "test"
 }
+
+
+# same as BadFunc but this one has no cmdletbinding
+function BadFuncEmptyHelpMessageNoCmdletBindingSingleQoutes
+{    
+    param(
+        # this has an empty string
+        [Parameter(HelpMessage='')]          
+        [string] $Param1="String",
+        
+        # this parameter has no default value
+        [Parameter(HelpMessage="This is helpful.")]          
+        [string] $Param2
+    )
+    $Param1
+    $Param2 = "test"
+}
+
+# same as BadFunc but this one has no cmdletbinding
+function BadFuncEmptyHelpMessageNoCmdletBindingNoAssignment
+{    
+    param(
+        # this has an empty string
+        [Parameter(HelpMessage)]          
+        [string] $Param1="String",
+        
+        # this parameter has no default value
+        [Parameter(HelpMessage="This is helpful.")]          
+        [string] $Param2
+    )
+    $Param1
+    $Param2 = "test"
+}
