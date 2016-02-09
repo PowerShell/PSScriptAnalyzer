@@ -786,4 +786,16 @@
   <data name="MisleadingBacktickError" xml:space="preserve">
     <value>This line has a backtick at the end trailed by a whitespace character. Did you mean for this to be a line continuation?</value>
   </data>
+  <data name="AvoidNullOrEmptyHelpMessageAttributeCommonName" xml:space="preserve">
+    <value>Avoid using null or empty HelpMessage parameter attribute.</value>
+  </data>
+  <data name="AvoidNullOrEmptyHelpMessageAttributeDescription" xml:space="preserve">
+    <value>Setting the HelpMessage attribute to an empty string or null value causes PowerShell interpreter to throw an error while executing the corresponding function.</value>
+  </data>
+  <data name="AvoidNullOrEmptyHelpMessageAttributeError" xml:space="preserve">
+    <value>HelpMessage parameter attribute should not be null or empty. To fix a violation of this rule, please set its value to a non-empty string.</value>
+  </data>
+  <data name="AvoidNullOrEmptyHelpMessageAttributeName" xml:space="preserve">
+    <value>AvoidNullOrEmptyHelpMessageAttribute</value>
+  </data>
 </root>
