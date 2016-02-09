@@ -91,7 +91,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 yield return new DiagnosticRecord(message,
                                                                     paramAst.Extent, 
                                                                     GetName(), 
-                                                                    DiagnosticSeverity.Error, 
+                                                                    DiagnosticSeverity.Warning, 
                                                                     fileName, 
                                                                     paramAst.Name.VariablePath.UserPath);
                             }                            
