@@ -56,7 +56,7 @@ Describe "Test Name parameters" {
 
         It "Get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-			$defaultRules.Count | Should be 39
+			$defaultRules.Count | Should be 40
 		}
     }
 
@@ -126,17 +126,17 @@ Describe "Test RuleExtension" {
 Describe "TestSeverity" {
     It "filters rules based on the specified rule severity" {
         $rules = Get-ScriptAnalyzerRule -Severity Error
-        $rules.Count | Should be 6
+        $rules.Count | Should be 7
     }
 
     It "filters rules based on multiple severity inputs"{
         $rules = Get-ScriptAnalyzerRule -Severity Error,Information
-        $rules.Count | Should be 13
+        $rules.Count | Should be 14
     }
 
         It "takes lower case inputs" {
         $rules = Get-ScriptAnalyzerRule -Severity error
-        $rules.Count | Should be 6
+        $rules.Count | Should be 7
     }
 }
 
