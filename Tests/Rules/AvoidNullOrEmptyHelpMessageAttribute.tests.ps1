@@ -7,7 +7,7 @@ $noViolations = Invoke-ScriptAnalyzer "$directory\AvoidNullOrEmptyHelpMessageAtt
 
 Describe "AvoidNullOrEmptyHelpMessageAttribute" {
     Context "When there are violations" {
-        It "has 1 provide default value for mandatory parameter violation" {
+        It "detects the violations" {
             $violations.Count | Should Be 4
         }
 
