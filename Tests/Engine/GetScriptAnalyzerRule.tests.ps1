@@ -56,7 +56,7 @@ Describe "Test Name parameters" {
 
         It "Get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-			$defaultRules.Count | Should be 39
+			$defaultRules.Count | Should be 40
 		}
     }
 

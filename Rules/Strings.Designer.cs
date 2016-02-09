@@ -259,6 +259,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid using null or empty HelpMessage parameter attribute..
+        /// </summary>
+        internal static string AvoidNullOrEmptyHelpMessageAttributeCommonName {
+            get {
+                return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setting the HelpMessage attribute to an empty string or null value causes PowerShell interpreter to throw an error while executing the corresponding function..
+        /// </summary>
+        internal static string AvoidNullOrEmptyHelpMessageAttributeDescription {
+            get {
+                return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HelpMessage parameter attribute should not be null or empty. To fix a violation of this rule, please set its value to a non-empty string..
+        /// </summary>
+        internal static string AvoidNullOrEmptyHelpMessageAttributeError {
+            get {
+                return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidNullOrEmptyHelpMessageAttribute.
+        /// </summary>
+        internal static string AvoidNullOrEmptyHelpMessageAttributeName {
+            get {
+                return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ShouldContinue Without Boolean Force Parameter.
         /// </summary>
         internal static string AvoidShouldContinueWithoutForceCommonName {

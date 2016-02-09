@@ -72,6 +72,7 @@
     <Compile Include="AvoidEmptyCatchBlock.cs" />
     <Compile Include="AvoidGlobalVars.cs" />
     <Compile Include="AvoidInvokingEmptyMembers.cs" />
+    <Compile Include="AvoidNullOrEmptyHelpMessageAttribute.cs" />
     <Compile Include="AvoidPositionalParameters.cs" />
     <Compile Include="AvoidReservedCharInCmdlet.cs" />
     <Compile Include="AvoidReservedParams.cs" />
