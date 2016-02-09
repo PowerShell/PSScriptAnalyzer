@@ -276,3 +276,16 @@ function Get-MyWidgetStatus
 {
 
 }
+
+function Get-MyFood
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param([Switch]$Force)
+
+    process
+    {
+        if ($PSCmdlet.ShouldContinue("Are you sure?"))
+        {
+        }
+    }
+}

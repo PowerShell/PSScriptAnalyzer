@@ -46,7 +46,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (ParameterAst paramAst in paramAsts)
                 {
                     if (String.Equals(paramAst.Name.VariablePath.ToString(), "force", StringComparison.OrdinalIgnoreCase)
-                        && String.Equals(paramAst.StaticType.FullName, "System.Boolean", StringComparison.OrdinalIgnoreCase))
+                        && (String.Equals(paramAst.StaticType.FullName, "System.Boolean", StringComparison.OrdinalIgnoreCase) 
+                        || String.Equals(paramAst.StaticType.FullName, "System.Management.Automation.SwitchParameter", StringComparison.OrdinalIgnoreCase)))
                     {
                         hasForce = true;
                         break;
