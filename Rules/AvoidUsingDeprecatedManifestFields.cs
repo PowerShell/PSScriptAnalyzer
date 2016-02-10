@@ -17,6 +17,7 @@ using System.Management.Automation;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -43,6 +44,49 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 var ps = System.Management.Automation.PowerShell.Create();
                 IEnumerable<PSObject> result = null;
+
+                // hash table in psd1
+                var hashTableAst = ast.FindAll(item => item is HashtableAst, false).FirstOrDefault();
+
+                // no hash table means not a module manifest
+                if (hashTableAst == null)
+                {
+                    yield break;
+                }
+
+                var table = hashTableAst as HashtableAst;
+
+                // needs to find the PowerShellVersion key
+                foreach (var kvp in table.KeyValuePairs)
+                {
+                    if (kvp.Item1 != null && kvp.Item1 is StringConstantExpressionAst)
+                    {
+                        var key = (kvp.Item1 as StringConstantExpressionAst).Value;
+
+                        // find the powershellversion key in the hashtable
+                        if (string.Equals(key, "PowerShellVersion", StringComparison.OrdinalIgnoreCase) && kvp.Item2 != null)
+                        {
+                            // get the string value of the version
+                            var value = kvp.Item2.Find(item => item is StringConstantExpressionAst, false);
+
+                            if (value != null)
+                            {
+                                Version psVersion = null;
+
+                                // get the version
+                                if (Version.TryParse((value as StringConstantExpressionAst).Value, out psVersion))
+                                {
+                                    // if version exists and version less than 3, don't raise rule
+                                    if (psVersion.Major < 3)
+                                    {
+                                        yield break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 try
                 {
                     ps.AddCommand("Test-ModuleManifest");
@@ -54,7 +98,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     ps.AddParameter("WarningVariable", "Message");
                     ps.AddScript("$Message");
                     result = ps.Invoke();
-
                 }
                 catch
                 {}
