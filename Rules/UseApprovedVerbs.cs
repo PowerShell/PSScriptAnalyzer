@@ -63,8 +63,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (!approvedVerbs.Contains(verb, StringComparer.OrdinalIgnoreCase))
                     {
+                        IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcName);
+
+                        if (null == extent)
+                        {
+                            extent = funcAst.Extent;
+                        }
+
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseApprovedVerbsError, funcName),
-                            funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                            extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
             }
