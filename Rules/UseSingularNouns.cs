@@ -56,8 +56,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (!ps.IsSingular(noun) && ps.IsPlural(noun))
                     {
+                        IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
+
+                        if (null == extent)
+                        {
+                            extent = funcAst.Extent;
+                        }
+
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
-                            funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                            extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
             }
