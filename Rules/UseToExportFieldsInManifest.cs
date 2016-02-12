@@ -42,7 +42,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
             
-            if (!fileName.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase))
+            if (fileName == null || !fileName.EndsWith(".psd1", StringComparison.OrdinalIgnoreCase))
             {
                 yield break;
             }
