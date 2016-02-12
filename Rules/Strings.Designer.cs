@@ -1798,42 +1798,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use the *ToExport module manifest fields..
-        /// </summary>
-        internal static string UseManifestExportFieldsCommonName {
-            get {
-                return ResourceManager.GetString("UseManifestExportFieldsCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Specify entries for AliasToExport, CmdletsToExport, FunctionsToExport and do not use wildcards and $null in these entries. During module auto-discovery, if any of these entries are missing or $null, PowerShell do some potentially expensive work to analyze the rest of the module.
-        /// </summary>
-        internal static string UseManifestExportFieldsDescription {
-            get {
-                return ResourceManager.GetString("UseManifestExportFieldsDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not use wildcards and $null in these entry. Explicitly specify a list for {0}.  .
-        /// </summary>
-        internal static string UseManifestExportFieldsError {
-            get {
-                return ResourceManager.GetString("UseManifestExportFieldsError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to UseManifestExportFields.
-        /// </summary>
-        internal static string UseManifestExportFieldsName {
-            get {
-                return ResourceManager.GetString("UseManifestExportFieldsName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Use OutputType Correctly.
         /// </summary>
         internal static string UseOutputTypeCorrectlyCommonName {
@@ -2028,6 +1992,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string UseStandardDSCFunctionsInResourceName {
             get {
                 return ResourceManager.GetString("UseStandardDSCFunctionsInResourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use the *ToExport module manifest fields..
+        /// </summary>
+        internal static string UseToExportFieldsInManifestCommonName {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In a module manifest, AliasesToExport, CmdletsToExport, FunctionsToExport and VariablesToExport fields should not use wildcards or $null in their entries. During module auto-discovery, if any of these entries are missing or $null or wildcard, PowerShell does some potentially expensive work to analyze the rest of the module..
+        /// </summary>
+        internal static string UseToExportFieldsInManifestDescription {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do not use wildcard or $null in this field. Explicitly specify a list for {0}.  .
+        /// </summary>
+        internal static string UseToExportFieldsInManifestError {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseToExportFieldsInManifest.
+        /// </summary>
+        internal static string UseToExportFieldsInManifestName {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestName", resourceCulture);
             }
         }
         

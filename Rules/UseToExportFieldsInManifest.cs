@@ -17,17 +17,20 @@ using System.Management.Automation;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// UseManifestExportFields: Run Test Module Manifest to check that no deprecated fields are being used.
+    /// UseToExportFieldsInManifest: Checks if AliasToExport, CmdletsToExport, FunctionsToExport and VariablesToExport 
+    /// fields do not use wildcards and $null in their entries. 
     /// </summary>
     [Export(typeof(IScriptRule))]
-    public class UseManifestExportFields : IScriptRule
+    public class UseToExportFieldsInManifest : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Run Test Module Manifest to check that no deprecated fields are being used.
+        /// AnalyzeScript: Analyzes the AST to check if AliasToExport, CmdletsToExport, FunctionsToExport 
+        /// and VariablesToExport fields do not use wildcards and $null in their entries. 
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The script's file name</param>
@@ -44,19 +47,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 yield break;
             }
 
+            if (!IsValidManifest(ast, fileName))
+            {
+                yield break;
+            }
+
             String[] manifestFields = {"FunctionsToExport", "CmdletsToExport", "VariablesToExport", "AliasesToExport"};
             var hashtableAst = ast.Find(x => x is HashtableAst, false) as HashtableAst;
-
+            
             if (hashtableAst == null)
-            {
-                //Should we emit a warning if the parser cannot find a hashtable?
+            {                                
                 yield break;
             }
 
             foreach(String field in manifestFields)
             {
                 IScriptExtent extent;
-                if (!HasAcceptableExportField(field, hashtableAst, out extent) && extent != null)
+                if (!HasAcceptableExportField(field, hashtableAst, ast.Extent.Text, out extent) && extent != null)
                 {
                     yield return new DiagnosticRecord(GetError(field), extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
@@ -64,17 +71,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         
         }
         
-        private bool HasAcceptableExportField(string key, HashtableAst hast, out IScriptExtent extent)
+        /// <summary>
+        /// Checks if the manifest file is valid. 
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <param name="fileName"></param>
+        /// <returns>A boolean value indicating the validity of the manifest file.</returns>
+        private bool IsValidManifest(Ast ast, string fileName)
+        {
+            var missingManifestRule = new MissingModuleManifestField();
+            return !missingManifestRule.AnalyzeScript(ast, fileName).GetEnumerator().MoveNext();
+                    
+        }
+                
+        /// <summary>
+        /// Checks if the *ToExport fields are explicitly set to lists, @(...) 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="hast"></param>
+        /// <param name="scriptText"></param>
+        /// <param name="extent"></param>
+        /// <returns>A boolean value indicating if the the ToExport fields are explicitly set to lists or not.</returns>
+        private bool HasAcceptableExportField(string key, HashtableAst hast, string scriptText, out IScriptExtent extent)
         {
             extent = null;
             foreach (var pair in hast.KeyValuePairs)
             {
                 if (key.Equals(pair.Item1.Extent.Text.Trim(), StringComparison.OrdinalIgnoreCase))
                 {
-                    var arrayAst = pair.Item2.Find(x => x is ArrayLiteralAst, true) as ArrayLiteralAst;
+                    var arrayAst = pair.Item2.Find(x => x is ArrayLiteralAst || x is ArrayExpressionAst, true);
                     if (arrayAst == null)
                     {
-                        extent = GetScriptExtent(pair);
+                        extent = GetScriptExtent(pair, scriptText);
                         return false;
                     }
                     else
@@ -85,23 +113,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             return true;
         }
-
-
-        private ScriptExtent GetScriptExtent(Tuple<ExpressionAst, StatementAst> pair)
+        
+        /// <summary>
+        /// Gets the script extent. 
+        /// </summary>
+        /// <param name="pair"></param>
+        /// <param name="scriptText"></param>
+        /// <returns></returns>
+        private ScriptExtent GetScriptExtent(Tuple<ExpressionAst, StatementAst> pair, string scriptText)
         {
-            return new ScriptExtent(new ScriptPosition(pair.Item1.Extent.StartScriptPosition.File,
-                                                                        pair.Item1.Extent.StartScriptPosition.LineNumber,
-                                                                        pair.Item1.Extent.StartScriptPosition.Offset,
-                                                                        pair.Item1.Extent.StartScriptPosition.Line),
-                                                  new ScriptPosition(pair.Item2.Extent.EndScriptPosition.File,
-                                                                        pair.Item2.Extent.EndScriptPosition.LineNumber,
-                                                                        pair.Item2.Extent.EndScriptPosition.Offset,
-                                                                        pair.Item2.Extent.EndScriptPosition.Line));
+            string[] scriptLines = Regex.Split(scriptText, "\r\n|\r|\n");
+            return new ScriptExtent(new ScriptPosition(pair.Item1.Extent.File,
+                                                            pair.Item1.Extent.StartLineNumber,
+                                                            pair.Item1.Extent.StartColumnNumber,
+                                                            scriptLines[pair.Item1.Extent.StartLineNumber - 1]), //line number begins with 1
+                                        new ScriptPosition(pair.Item2.Extent.File,
+                                                            pair.Item2.Extent.EndLineNumber,
+                                                            pair.Item2.Extent.EndColumnNumber,
+                                                            scriptLines[pair.Item2.Extent.EndLineNumber - 1]));   //line number begins with 1
+
+            
         }
 
         public string GetError(string field)
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseManifestExportFieldsError, field);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseToExportFieldsInManifestError, field);
         }
 
         /// <summary>
@@ -110,7 +146,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseManifestExportFieldsName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseToExportFieldsInManifestName);
         }
 
         /// <summary>
@@ -119,7 +155,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return String.Format(CultureInfo.CurrentCulture, Strings.UseManifestExportFieldsCommonName);
+            return String.Format(CultureInfo.CurrentCulture, Strings.UseToExportFieldsInManifestCommonName);
         }
 
         /// <summary>
@@ -128,7 +164,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return String.Format(CultureInfo.CurrentCulture, Strings.UseManifestExportFieldsDescription);
+            return String.Format(CultureInfo.CurrentCulture, Strings.UseToExportFieldsInManifestDescription);
         }
 
         /// <summary>
