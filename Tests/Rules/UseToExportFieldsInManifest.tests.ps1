@@ -1,5 +1,6 @@
 Import-Module PSScriptAnalyzer
-$testManifestPath = "TestManifest"
+$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testManifestPath = Join-Path $directory "TestManifest"
 $testManifestBadFunctionsWildcardPath = "ManifestBadFunctionsWildcard.psd1"
 $testManifestBadFunctionsNullPath = "ManifestBadFunctionsNull.psd1"
 $testManifestBadCmdletsWildcardPath = "ManifestBadCmdletsWildcard.psd1"
