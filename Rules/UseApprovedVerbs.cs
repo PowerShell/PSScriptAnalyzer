@@ -63,7 +63,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (!approvedVerbs.Contains(verb, StringComparer.OrdinalIgnoreCase))
                     {
-                        IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcName);
+                        IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
 
                         if (null == extent)
                         {

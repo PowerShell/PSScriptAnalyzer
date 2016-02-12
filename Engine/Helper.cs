@@ -646,21 +646,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         // Obtain script extent for the function - just around the function name
-        public IScriptExtent GetScriptExtentForFunctionName(string functionName)
+        public IScriptExtent GetScriptExtentForFunctionName(FunctionDefinitionAst functionDefinitionAst)
         {
-            if (String.IsNullOrEmpty(functionName))
+            if (null == functionDefinitionAst)
             {
                 return null;
             }
 
             // Obtain the index where the function name is in Tokens
             int funcTokenIndex = Tokens.Select((s, index) => new { s, index })
-                          .Where(x => x.s.Text == functionName)
+                          .Where(x => x.s.Extent.StartOffset == functionDefinitionAst.Extent.StartOffset)
                           .Select(x => x.index).FirstOrDefault();
 
-            if (funcTokenIndex > 0 && funcTokenIndex <= Helper.Instance.Tokens.Count())
+            if (funcTokenIndex > 0 && funcTokenIndex < Helper.Instance.Tokens.Count())
             {
-                return Tokens[funcTokenIndex].Extent;
+                // return the extent of the next token - this is the extent for the function name
+                return Tokens[++funcTokenIndex].Extent;
             }
 
             return null;
