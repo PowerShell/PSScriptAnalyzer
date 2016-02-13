@@ -24,14 +24,14 @@ Function Run-PSScriptAnalyzerRule
 
 Describe "UseManifestExportFields" {
 
-    Context "invalid manifest file" {
+    Context "Invalid manifest file" {
         It "does not process the manifest" {
             $results = Run-PSScriptAnalyzerRule $testManifestInvalidPath
             $results | Should BeNullOrEmpty            
         }        
     }
 
-    Context "manifest contains violations" {
+    Context "Manifest contains violations" {
 
         It "detects FunctionsToExport with wildcard" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardPath
@@ -80,7 +80,7 @@ Describe "UseManifestExportFields" {
         }
     }
 
-    Context "manifest contains no violations" {
+    Context "Manifest contains no violations" {
         It "detects all the *ToExport fields explicitly stating lists" {
             $results = Run-PSScriptAnalyzerRule $testManifestGoodPath
             $results.Count | Should be 0
