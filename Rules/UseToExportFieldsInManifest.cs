@@ -101,39 +101,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     var arrayAst = pair.Item2.Find(x => x is ArrayLiteralAst || x is ArrayExpressionAst, true);
                     if (arrayAst == null)
-                    {
-                        extent = GetScriptExtent(pair, scriptText);
+                    {         
+                        extent = pair.Item2.Extent;
                         return false;
-                    }
+                    }                        
                     else
                     {
+                        var elementWithWildcard = arrayAst.Find(x => x is StringConstantExpressionAst 
+                                                                    && x.Extent.Text.Contains("*"), false);
+                        if (elementWithWildcard != null)
+                        {
+                            extent = elementWithWildcard.Extent;
+                            return false;
+                        }                            
                         return true;
                     }
                 }
             }
             return true;
-        }
-        
-        /// <summary>
-        /// Gets the script extent. 
-        /// </summary>
-        /// <param name="pair"></param>
-        /// <param name="scriptText"></param>
-        /// <returns></returns>
-        private ScriptExtent GetScriptExtent(Tuple<ExpressionAst, StatementAst> pair, string scriptText)
-        {
-            string[] scriptLines = Regex.Split(scriptText, "\r\n|\r|\n");
-            return new ScriptExtent(new ScriptPosition(pair.Item1.Extent.File,
-                                                            pair.Item1.Extent.StartLineNumber,
-                                                            pair.Item1.Extent.StartColumnNumber,
-                                                            scriptLines[pair.Item1.Extent.StartLineNumber - 1]), //line number begins with 1
-                                        new ScriptPosition(pair.Item2.Extent.File,
-                                                            pair.Item2.Extent.EndLineNumber,
-                                                            pair.Item2.Extent.EndColumnNumber,
-                                                            scriptLines[pair.Item2.Extent.EndLineNumber - 1]));   //line number begins with 1
-
-            
-        }
+        }       
 
         public string GetError(string field)
         {
