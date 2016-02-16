@@ -85,13 +85,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
                 
         /// <summary>
-        /// Checks if the *ToExport fields are explicitly set to lists, @(...) 
+        /// Checks if the *ToExport fields are explicitly set to arrays, eg. @(...), and the array entries do not contain any wildcard.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="hast"></param>
         /// <param name="scriptText"></param>
         /// <param name="extent"></param>
-        /// <returns>A boolean value indicating if the the ToExport fields are explicitly set to lists or not.</returns>
+        /// <returns>A boolean value indicating if the the ToExport fields are explicitly set to arrays or not.</returns>
         private bool HasAcceptableExportField(string key, HashtableAst hast, string scriptText, out IScriptExtent extent)
         {
             extent = null;
@@ -99,6 +99,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (key.Equals(pair.Item1.Extent.Text.Trim(), StringComparison.OrdinalIgnoreCase))
                 {
+                    // checks if the right hand side of the assignment is an array.
                     var arrayAst = pair.Item2.Find(x => x is ArrayLiteralAst || x is ArrayExpressionAst, true);
                     if (arrayAst == null)
                     {         
@@ -107,6 +108,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }                        
                     else
                     {
+                        //checks if any entry within the array has a wildcard.
                         var elementWithWildcard = arrayAst.Find(x => x is StringConstantExpressionAst 
                                                                     && x.Extent.Text.Contains("*"), false);
                         if (elementWithWildcard != null)
