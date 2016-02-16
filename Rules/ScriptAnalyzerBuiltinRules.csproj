@@ -95,6 +95,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="UseBOMForUnicodeEncodedFile.cs" />
+    <Compile Include="UseToExportFieldsInManifest.cs" />
     <Compile Include="UseOutputTypeCorrectly.cs" />
     <Compile Include="MissingModuleManifestField.cs" />
     <Compile Include="PossibleIncorrectComparisonWithNull.cs" />

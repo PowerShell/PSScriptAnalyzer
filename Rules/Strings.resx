@@ -798,4 +798,16 @@
   <data name="AvoidNullOrEmptyHelpMessageAttributeName" xml:space="preserve">
     <value>AvoidNullOrEmptyHelpMessageAttribute</value>
   </data>
+  <data name="UseToExportFieldsInManifestCommonName" xml:space="preserve">
+    <value>Use the *ToExport module manifest fields.</value>
+  </data>
+  <data name="UseToExportFieldsInManifestDescription" xml:space="preserve">
+    <value>In a module manifest, AliasesToExport, CmdletsToExport, FunctionsToExport and VariablesToExport fields should not use wildcards or $null in their entries. During module auto-discovery, if any of these entries are missing or $null or wildcard, PowerShell does some potentially expensive work to analyze the rest of the module.</value>
+  </data>
+  <data name="UseToExportFieldsInManifestError" xml:space="preserve">
+    <value>Do not use wildcard or $null in this field. Explicitly specify a list for {0}.  </value>
+  </data>
+  <data name="UseToExportFieldsInManifestName" xml:space="preserve">
+    <value>UseToExportFieldsInManifest</value>
+  </data>
 </root>
