@@ -3,7 +3,7 @@
 
 ###### [ScriptAnalyzer v1.4.0 published to PowerShellGallery - New Rules available!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.4.0)
 
-###### [ScriptAnalyzer now runs on platforms containing PSv3.0 and above - WMF 4.0 is no longer a prerequisite!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.4.0)
+###### [ScriptAnalyzer now runs on platforms containing PSv3.0 and above - WMF 5.0 is no longer a prerequisite!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.4.0)
 
 
 ###### [VSCode-PowerShell has built-in ScriptAnalyzer validation](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
