@@ -1996,6 +1996,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use the *ToExport module manifest fields..
+        /// </summary>
+        internal static string UseToExportFieldsInManifestCommonName {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In a module manifest, AliasesToExport, CmdletsToExport, FunctionsToExport and VariablesToExport fields should not use wildcards or $null in their entries. During module auto-discovery, if any of these entries are missing or $null or wildcard, PowerShell does some potentially expensive work to analyze the rest of the module..
+        /// </summary>
+        internal static string UseToExportFieldsInManifestDescription {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do not use wildcard or $null in this field. Explicitly specify a list for {0}.  .
+        /// </summary>
+        internal static string UseToExportFieldsInManifestError {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseToExportFieldsInManifest.
+        /// </summary>
+        internal static string UseToExportFieldsInManifestName {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use Type At Variable Assignment.
         /// </summary>
         internal static string UseTypeAtVariableAssignmentCommonName {
