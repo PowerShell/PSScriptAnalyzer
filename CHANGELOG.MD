@@ -1,3 +1,23 @@
+## Released v1.4.0 (Feb.16, 2016)
+###Features:
+- IncludeRule and ExcludeRule now consume RuleInfo objects
+
+###Rules:
+- Rule to validate HelpMessage parameter attribute value
+- Rule to suggest module manifest *ToExport field values for optimizing module loading
+
+###Fixes:
+####Engine:
+- Fixed bug in engine handling of severity for custom rules - this property was being ignored
+- Exclude help files from being Ast parsed
+
+####Rules:
+- Emit accurate ast extents for rules - helps VSCode-PowerShell to mark violations better
+- Improved heuristics for Singular noun rule - reduce false positives
+- Updated credential rules to be less noisy based on community feedback
+- Support for [switch] type along with [boolean] for ShouldContinueWithoutForce rule
+- Improved handling of deprecated module manifest fields when PSv2.0 is specified in the manifest
+
 ## Released v1.3.0 (Jan.19, 2016)
 ###Features:
 - Support for running ScriptAnalyzer on PowerShell version v3 or higher! This means PSv5 is no longer the minimum PS version for ScriptAnalyzer
