@@ -1,11 +1,15 @@
 ﻿Announcements
 =============
 
-##### ISE Add-On for ScriptAnalyzer is available in PowerShell Gallery!
-(https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
+###### [ScriptAnalyzer v1.4.0 published to PowerShellGallery - New Rules available!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.4.0)
 
-##### Visual Studio Code now has PowerShell language support with ScriptAnalyzer integration
-(http://blogs.msdn.com/b/powershell/archive/2015/11/17/announcing-windows-powershell-for-visual-studio-code-and-more.aspx)
+###### [ScriptAnalyzer now runs on platforms containing PSv3.0 and above - WMF 4.0 is no longer a prerequisite!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.4.0)
+
+
+###### [VSCode-PowerShell has built-in ScriptAnalyzer validation](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
+
+##### [ISE Add-On for ScriptAnalyzer is available in PowerShell Gallery](https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
+
 
 =============
 
