@@ -5,8 +5,9 @@
 
 ###### [ScriptAnalyzer now runs on platforms containing PSv3.0 and above - WMF 5.0 is no longer a prerequisite!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.4.0)
 
-
 ###### [VSCode-PowerShell has built-in ScriptAnalyzer support](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
+
+###### [ISE-Steroids has ScriptAnalyzer integration](http://www.powertheshell.com/psscriptanalyzer-integration-and-more/)
 
 ##### [ISE Add-On for ScriptAnalyzer is available in PowerShellGallery](https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
 
