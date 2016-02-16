@@ -261,3 +261,31 @@ function Get-Reserved*
     {
     }
 }
+
+<#
+.Synopsis
+   function that has a noun that is singular  
+.DESCRIPTION
+   
+.EXAMPLE
+   
+.EXAMPLE
+   
+#>
+function Get-MyWidgetStatus
+{
+
+}
+
+function Get-MyFood
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param([Switch]$Force)
+
+    process
+    {
+        if ($PSCmdlet.ShouldContinue("Are you sure?"))
+        {
+        }
+    }
+}

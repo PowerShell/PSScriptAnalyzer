@@ -103,7 +103,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (string key in assignments.Keys)
             {
                 yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseDeclaredVarsMoreThanAssignmentsError, key),
-                    assignments[key].Extent, GetName(), DiagnosticSeverity.Warning, fileName, key);
+                    assignments[key].Left.Extent, GetName(), DiagnosticSeverity.Warning, fileName, key);
             }
         }
 

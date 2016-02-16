@@ -53,24 +53,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Iterates all ParamAsts and check if their names are on the list.
                 foreach (ParameterAst paramAst in paramAsts)
                 {
+                    // this will be null if there is no [pscredential] attached to the parameter
                     var psCredentialType = paramAst.Attributes.FirstOrDefault(paramAttribute =>
                         (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof(PSCredential))
                         || paramAttribute.TypeName.GetReflectionType() == typeof(PSCredential));
 
+                    // this will be null if there are no [credential()] attribute attached
                     var credentialAttribute = paramAst.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
 
-                    String paramName = paramAst.Name.VariablePath.ToString();
+                    // this will be null if there are no [securestring] attached to the parameter
+                    var secureStringType = paramAst.Attributes.FirstOrDefault(paramAttribute =>
+                        (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof (System.Security.SecureString))
+                        || paramAttribute.TypeName.GetReflectionType() == typeof(System.Security.SecureString));
 
-                    // if this is pscredential type with credential attribute where pscredential type comes first
-                    if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset < credentialAttribute.Extent.StartOffset)
-                    {
-                        continue;
-                    }
+                    String paramName = paramAst.Name.VariablePath.ToString();                    
 
                     foreach (String password in passwords)
                     {
                         if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
                         {
+                            // if this is a secure string, pscredential or credential attribute, don't count
+                            if (secureStringType != null || credentialAttribute != null || psCredentialType != null)
+                            {
+                                continue;
+                            }
+
                             hasPwd = true;
                             break;
                         }

@@ -17,6 +17,7 @@ using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -46,12 +47,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     funcNamePieces = funcAst.Name.Split(funcSeperator);
                     String noun = funcNamePieces[1];
+
+                    // Convert the noun part of the function into a series of space delimited words
+                    // This helps the PluralizationService to provide an accurate determination about the plurality of the string
+                    noun = SplitCamelCaseString(noun);
+
                     var ps = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
 
                     if (!ps.IsSingular(noun) && ps.IsPlural(noun))
                     {
+                        IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
+
+                        if (null == extent)
+                        {
+                            extent = funcAst.Extent;
+                        }
+
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
-                            funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                            extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
             }
@@ -107,6 +120,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
+        }
+
+        /// <summary>
+        /// SplitCamelCaseString: Splits a Camel Case'd string into individual words with space delimited
+        /// </summary>
+        private string SplitCamelCaseString(string input)
+        {
+            if (String.IsNullOrEmpty(input))
+            {
+                return String.Empty;
+            }
+
+            return Regex.Replace(input, "([A-Z])", " $1", RegexOptions.Compiled).Trim();
         }
     }
 

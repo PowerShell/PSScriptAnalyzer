@@ -645,6 +645,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return false;
         }
 
+        // Obtain script extent for the function - just around the function name
+        public IScriptExtent GetScriptExtentForFunctionName(FunctionDefinitionAst functionDefinitionAst)
+        {
+            if (null == functionDefinitionAst)
+            {
+                return null;
+            }
+
+            // Obtain the index where the function name is in Tokens
+            int funcTokenIndex = Tokens.Select((s, index) => new { s, index })
+                          .Where(x => x.s.Extent.StartOffset == functionDefinitionAst.Extent.StartOffset)
+                          .Select(x => x.index).FirstOrDefault();
+
+            if (funcTokenIndex > 0 && funcTokenIndex < Helper.Instance.Tokens.Count())
+            {
+                // return the extent of the next token - this is the extent for the function name
+                return Tokens[++funcTokenIndex].Extent;
+            }
+
+            return null;
+        }
+        
         private void FindClosingParenthesis(string keyword)
         {
             if (Tokens == null || Tokens.Length == 0)
