@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using System.Management.Automation;
@@ -97,19 +98,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             extent = null;
             foreach (var pair in hast.KeyValuePairs)
             {
-                if (pair.Item1 is StringConstantExpressionAst
-                            && key.Equals((pair.Item1 as StringConstantExpressionAst).Value,
-                                            StringComparison.OrdinalIgnoreCase))
-                {
-                    //checks for wildcard in the entry.
-                    var elementWithWildcard = pair.Item2.Find(x => x is StringConstantExpressionAst
-                            && WildcardPattern.ContainsWildcardCharacters((x as StringConstantExpressionAst).Value), false);
 
+                var keyStrConstAst = pair.Item1 is StringConstantExpressionAst ? pair.Item1 as StringConstantExpressionAst : null;
+
+                if (keyStrConstAst != null && keyStrConstAst.Value.Equals(key, StringComparison.OrdinalIgnoreCase))                    
+                {
+                    // Checks for wildcard character in the entry.
+                    var strConstAstElements = from element in pair.Item2.FindAll(x => x is StringConstantExpressionAst, false)
+                                              select element as StringConstantExpressionAst;                     
+                    var elementWithWildcard = strConstAstElements.FirstOrDefault(x => x != null 
+                        && WildcardPattern.ContainsWildcardCharacters(x.Value));
+                    
                     if (elementWithWildcard == null)
                     {
-                        //checks for $null in the entry.
-                        var nullAst = pair.Item2.Find(x => x is VariableExpressionAst
-                            && (x as VariableExpressionAst).ToString().Equals("$null", StringComparison.OrdinalIgnoreCase), false);
+                        // Checks for $null in the entry.                           
+                        var varAstElements = from element in pair.Item2.FindAll(x => x is VariableExpressionAst, false)
+                                             select element as VariableExpressionAst;                        
+                        // VariablePath property is never null hence we don't need to check for it.
+                        var nullAst = varAstElements.FirstOrDefault(x => x != null 
+                            && x.VariablePath.IsUnqualified
+                            && x.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase));
                         
                         if (nullAst == null)
                         {
