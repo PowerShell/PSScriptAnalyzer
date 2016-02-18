@@ -97,28 +97,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             extent = null;
             foreach (var pair in hast.KeyValuePairs)
             {
-                if (key.Equals(pair.Item1.Extent.Text.Trim(), StringComparison.OrdinalIgnoreCase))
+                if (pair.Item1 is StringConstantExpressionAst
+                            && key.Equals((pair.Item1 as StringConstantExpressionAst).Value,
+                                            StringComparison.OrdinalIgnoreCase))
                 {
-                    // checks if the right hand side of the assignment is an array.
-                    var arrayAst = pair.Item2.Find(x => x is ArrayLiteralAst || x is ArrayExpressionAst, true);
-                    if (arrayAst == null)
-                    {         
-                        extent = pair.Item2.Extent;
-                        return false;
-                    }                        
+                    //checks for wildcard in the entry.
+                    var elementWithWildcard = pair.Item2.Find(x => x is StringConstantExpressionAst
+                            && WildcardPattern.ContainsWildcardCharacters((x as StringConstantExpressionAst).Value), false);
+
+                    if (elementWithWildcard == null)
+                    {
+                        //checks for $null in the entry.
+                        var nullAst = pair.Item2.Find(x => x is VariableExpressionAst
+                            && (x as VariableExpressionAst).ToString().Equals("$null", StringComparison.OrdinalIgnoreCase), false);
+                        
+                        if (nullAst == null)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            extent = nullAst.Extent;
+                            return false;
+                        }
+                    }
                     else
                     {
-                        //checks if any entry within the array has a wildcard.
-                        var elementWithWildcard = arrayAst.Find(x => x is StringConstantExpressionAst 
-                                                                    && x.Extent.Text.Contains("*"), false);
-                        if (elementWithWildcard != null)
-                        {
-                            extent = elementWithWildcard.Extent;
-                            return false;
-                        }                            
-                        return true;
-                    }
+                        extent = elementWithWildcard.Extent;
+                        return false;
+                    }                                            
                 }
+
             }
             return true;
         }       
