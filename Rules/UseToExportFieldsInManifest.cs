@@ -84,6 +84,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return !missingManifestRule.AnalyzeScript(ast, fileName).GetEnumerator().MoveNext();
                     
         }
+
+        /// <summary>
+        /// Checks if the ast contains wildcard character.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        private bool HasWildcardInExpression(Ast ast)
+        {
+            var strConstExprAst = ast as StringConstantExpressionAst;
+            if (strConstExprAst != null && WildcardPattern.ContainsWildcardCharacters(strConstExprAst.Value))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks if the ast contains null expression.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        private bool HasNullInExpression(Ast ast)
+        {
+            var varExprAst = ast as VariableExpressionAst;
+            if (varExprAst != null
+                && varExprAst.VariablePath.IsUnqualified
+                && varExprAst.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
                 
         /// <summary>
         /// Checks if the *ToExport fields are explicitly set to arrays, eg. @(...), and the array entries do not contain any wildcard.
@@ -98,48 +136,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             extent = null;
             foreach (var pair in hast.KeyValuePairs)
             {
-
-                var keyStrConstAst = pair.Item1 is StringConstantExpressionAst ? pair.Item1 as StringConstantExpressionAst : null;
-
+                var keyStrConstAst = pair.Item1 as StringConstantExpressionAst;
                 if (keyStrConstAst != null && keyStrConstAst.Value.Equals(key, StringComparison.OrdinalIgnoreCase))                    
                 {
                     // Checks for wildcard character in the entry.
-                    var strConstAstElements = from element in pair.Item2.FindAll(x => x is StringConstantExpressionAst, false)
-                                              select element as StringConstantExpressionAst;                     
-                    var elementWithWildcard = strConstAstElements.FirstOrDefault(x => x != null 
-                        && WildcardPattern.ContainsWildcardCharacters(x.Value));
-                    
-                    if (elementWithWildcard == null)
+                    var astWithWildcard = pair.Item2.Find(HasWildcardInExpression, false);
+                    if (astWithWildcard != null)
                     {
-                        // Checks for $null in the entry.                           
-                        var varAstElements = from element in pair.Item2.FindAll(x => x is VariableExpressionAst, false)
-                                             select element as VariableExpressionAst;                        
-                        // VariablePath property is never null hence we don't need to check for it.
-                        var nullAst = varAstElements.FirstOrDefault(x => x != null 
-                            && x.VariablePath.IsUnqualified
-                            && x.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase));
-                        
-                        if (nullAst == null)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            extent = nullAst.Extent;
-                            return false;
-                        }
+                        extent = astWithWildcard.Extent;
+                        return false;
                     }
                     else
                     {
-                        extent = elementWithWildcard.Extent;
-                        return false;
-                    }                                            
+                        // Checks for $null in the entry.                           
+                        var astWithNull = pair.Item2.Find(HasNullInExpression, false);
+                        if (astWithNull != null)
+                        {
+                            extent = astWithNull.Extent;
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
                 }
-
             }
             return true;
         }       
 
+        
+        /// <summary>
+        /// Gets the error string of the rule.
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
         public string GetError(string field)
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseToExportFieldsInManifestError, field);
