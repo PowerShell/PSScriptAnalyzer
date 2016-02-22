@@ -93,14 +93,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool HasWildcardInExpression(Ast ast)
         {
             var strConstExprAst = ast as StringConstantExpressionAst;
-            if (strConstExprAst != null && WildcardPattern.ContainsWildcardCharacters(strConstExprAst.Value))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return strConstExprAst != null && WildcardPattern.ContainsWildcardCharacters(strConstExprAst.Value);
         }
 
         /// <summary>
@@ -111,16 +104,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool HasNullInExpression(Ast ast)
         {
             var varExprAst = ast as VariableExpressionAst;
-            if (varExprAst != null
-                && varExprAst.VariablePath.IsUnqualified
-                && varExprAst.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return varExprAst != null
+                    && varExprAst.VariablePath.IsUnqualified
+                    && varExprAst.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase);
         }
                 
         /// <summary>
