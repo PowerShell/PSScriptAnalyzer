@@ -1,5 +1,5 @@
 ﻿Import-Module PSScriptAnalyzer 
-$violationMessage = "The Credential parameter in 'Credential' must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute."
+$violationMessage = "The Credential parameter in 'Credential' must be of the type PSCredential and should have a credential attribute of type CredentialAttribute."
 $violationName = "PSUsePSCredentialType"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\PSCredentialType.ps1 | Where-Object {$_.RuleName -eq $violationName}
@@ -7,8 +7,8 @@ $noViolations = Invoke-ScriptAnalyzer $directory\PSCredentialTypeNoViolations.ps
 
 Describe "PSCredentialType" {
     Context "When there are violations" {
-        It "has 2 PSCredential type violation" {
-            $violations.Count | Should Be 2
+        It "has 1 PSCredential type violation" {
+            $violations.Count | Should Be 1
         }
 
         It "has the correct description message" {

@@ -217,16 +217,16 @@
     <value>One Char</value>
   </data>
   <data name="UsePSCredentialTypeDescription" xml:space="preserve">
-    <value>Checks that cmdlets that have a Credential parameter accept PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.. This comes from the PowerShell teams best practices.</value>
+    <value>Checks if a credential parameter of type PSCredential has a credential attribute of type CredentialAttribute. This comes from the PowerShell teams best practices.</value>
   </data>
   <data name="UsePSCredentialTypeError" xml:space="preserve">
-    <value>The Credential parameter in '{0}' must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.</value>
+    <value>The Credential parameter in '{0}' must be of the type PSCredential and should have a credential attribute of type CredentialAttribute.</value>
   </data>
   <data name="UsePSCredentialTypeErrorSB" xml:space="preserve">
-    <value>The Credential parameter in a found script block must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.</value>
+    <value>The Credential parameter in a found script block must be of the type PSCredential should have a credential attribute of type CredentialAttribute.</value>
   </data>
   <data name="UsePSCredentialTypeCommonName" xml:space="preserve">
-    <value>PSCredential</value>
+    <value>Use PSCredential type</value>
   </data>
   <data name="ReservedCmdletCharDescription" xml:space="preserve">
     <value>Checks for reserved characters in cmdlet names. These characters usually cause a parsing error. Otherwise they will generally cause runtime errors.</value>
@@ -511,10 +511,10 @@
     <value>Avoid Using Username and Password Parameters</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsDescription" xml:space="preserve">
-    <value>Functions should only take in a credential parameter of type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute instead of username and password parameters.</value>
+    <value>Functions should take in a credential parameter of type PSCredential with CredentialAttribute or set the password parameter to SecureString type.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsError" xml:space="preserve">
-    <value>Function '{0}' has both username and password parameters. A credential parameter of type PSCredential with a CredentialAttribute where PSCredential comes before CredentialAttribute should be used.</value>
+    <value>Function '{0}' has both username and password parameters. Either set the type of password parameter to SecureString or replace the username and password parameters by a credential parameter of type PSCredential. If you use a credential parameter, please add a CredentialAttribute attribute to the parameter.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsName" xml:space="preserve">
     <value>AvoidUsingUserNameAndPassWordParams</value>
