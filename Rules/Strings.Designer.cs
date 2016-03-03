@@ -1834,7 +1834,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PSCredential.
+        ///   Looks up a localized string similar to Use PSCredential type.
         /// </summary>
         internal static string UsePSCredentialTypeCommonName {
             get {
@@ -1843,7 +1843,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Checks that cmdlets that have a Credential parameter accept PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.. This comes from the PowerShell teams best practices..
+        ///   Looks up a localized string similar to Checks if a credential parameter of type PSCredential has a credential attribute of type CredentialAttribute. This comes from the PowerShell teams best practices..
         /// </summary>
         internal static string UsePSCredentialTypeDescription {
             get {
@@ -1852,7 +1852,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute..
+        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of the type PSCredential and should have a credential attribute of type CredentialAttribute..
         /// </summary>
         internal static string UsePSCredentialTypeError {
             get {
@@ -1861,7 +1861,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in a found script block must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute..
+        ///   Looks up a localized string similar to The Credential parameter in a found script block must be of the type PSCredential should have a credential attribute of type CredentialAttribute..
         /// </summary>
         internal static string UsePSCredentialTypeErrorSB {
             get {

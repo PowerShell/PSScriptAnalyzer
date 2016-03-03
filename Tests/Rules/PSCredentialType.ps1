@@ -2,7 +2,7 @@
 
 }
 
-# this one is wrong because pscredential should come first
+# Order between PSCredential and CredentialAttribute should not matter.
 function Credential2
 {
     [CmdletBinding()]
