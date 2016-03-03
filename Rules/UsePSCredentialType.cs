@@ -24,13 +24,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
 
     /// <summary>
-    /// UsePSCredentialType: Analyzes the ast to check that cmdlets that have a Credential parameter accept PSCredential.
+    /// UsePSCredentialType: Checks if a credential parameter of type PSCredential has a credential attribute of type CredentialAttribute. 
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UsePSCredentialType : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyzes the ast to check that cmdlets that have a Credential parameter accept PSCredential.
+        /// AnalyzeScript: Analyzes the ast to check if a credential parameter of type PSCredential has a credential attribute of type CredentialAttribute.
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The script's file name</param>
