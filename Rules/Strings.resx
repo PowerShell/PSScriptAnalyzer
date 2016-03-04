@@ -217,16 +217,16 @@
     <value>One Char</value>
   </data>
   <data name="UsePSCredentialTypeDescription" xml:space="preserve">
-    <value>Checks that cmdlets that have a Credential parameter accept PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.. This comes from the PowerShell teams best practices.</value>
+    <value>Checks if a credential parameter of type PSCredential has a CredentialAttribute attribute such that PSCredential precedes CredentialAttribute. This is not applicable to PowerShell version 5.0 or above. </value>
   </data>
   <data name="UsePSCredentialTypeError" xml:space="preserve">
-    <value>The Credential parameter in '{0}' must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.</value>
+    <value>The Credential parameter in '{0}' must be of type PSCredential and must have a CredentialAttribute attribute such that PSCredential is placed before CredentialAttribute. This is not applicable to PowerShell version 5.0 or above.</value>
   </data>
   <data name="UsePSCredentialTypeErrorSB" xml:space="preserve">
-    <value>The Credential parameter in a found script block must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.</value>
+    <value>The Credential parameter found in the script block must be of type PSCredential and must have a CredentialAttribute attribute such that PSCredential is placed before CredentialAttribute. This is not applicable to PowerShell version 5.0 or above.</value>
   </data>
   <data name="UsePSCredentialTypeCommonName" xml:space="preserve">
-    <value>PSCredential</value>
+    <value>Use PSCredential type.</value>
   </data>
   <data name="ReservedCmdletCharDescription" xml:space="preserve">
     <value>Checks for reserved characters in cmdlet names. These characters usually cause a parsing error. Otherwise they will generally cause runtime errors.</value>
