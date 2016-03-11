@@ -1,5 +1,5 @@
 ﻿Import-Module PSScriptAnalyzer 
-$violationMessage = "The Credential parameter in 'Credential' must be of type PSCredential and must have a CredentialAttribute attribute such that PSCredential is placed before CredentialAttribute. This is not applicable to PowerShell version 5.0 or above."
+$violationMessage = "The Credential parameter in 'Credential' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, [CredentialAttribute()], after the PSCredential type attribute."
 $violationName = "PSUsePSCredentialType"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\PSCredentialType.ps1 | Where-Object {$_.RuleName -eq $violationName}
@@ -12,7 +12,7 @@ Describe "PSCredentialType" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should Be $violationMessage
         }
     }
 
