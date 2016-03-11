@@ -706,28 +706,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 // Imports modules by using full path.
                 InitialSessionState state = InitialSessionState.CreateDefault2();
-                state.ImportPSModule(new string[] { moduleName });
-
                 using (System.Management.Automation.PowerShell posh =
                        System.Management.Automation.PowerShell.Create(state))
                 {
-                    posh.AddCommand("Get-Module");
-                    Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();                    
-                    foreach (PSModuleInfo module in loadedModules)
+                    posh.AddCommand("Import-Module").AddArgument(moduleName).AddParameter("PassThru");
+                    Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();
+                    if (loadedModules != null && loadedModules.Count > 0)
                     {
-                        string pathToCompare = moduleName;
-                        if (!File.GetAttributes(moduleName).HasFlag(FileAttributes.Directory))
-                        {
-                            pathToCompare = Path.GetDirectoryName(moduleName);
-                        }
-
-                        if (pathToCompare == Path.GetDirectoryName(module.Path))
-                        {
-                           shortModuleName = module.Name;
-                           break;
-                        }
+                        shortModuleName = loadedModules.First().Name;
                     }
-                                        
+                                                            
                     // Invokes Get-Command and Get-Help for each functions in the module.
                     posh.Commands.Clear();
                     posh.AddCommand("Get-Command").AddParameter("Module", shortModuleName);
@@ -987,34 +975,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         resolvedPath = basePath
                             .GetResolvedPSPathFromPSPath(childPath).First().ToString();
-                    }
+                    }                    
                     
                     // Import the module
-                    InitialSessionState state = InitialSessionState.CreateDefault2();
-                    state.ImportPSModule(new string[] { resolvedPath });
-
+                    InitialSessionState state = InitialSessionState.CreateDefault2();                                    
                     using (System.Management.Automation.PowerShell posh =
                            System.Management.Automation.PowerShell.Create(state))
-                    {
-                        posh.AddCommand("Get-Module");
+                    {                    
+                        posh.AddCommand("Import-Module").AddArgument(resolvedPath).AddParameter("PassThru");
                         Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();
-                        foreach (PSModuleInfo module in loadedModules)
-                        {
-                            string pathToCompare = resolvedPath;
-                            if (!File.GetAttributes(resolvedPath).HasFlag(FileAttributes.Directory))
-                            {
-                                pathToCompare = Path.GetDirectoryName(resolvedPath);
-                            }
-
-                            if (pathToCompare == Path.GetDirectoryName(module.Path))
-                            {
-                                if (module.ExportedFunctions.Count > 0)
-                                {
-                                    validModPaths.Add(resolvedPath);
-                                }
-                                break;
-                            }
-                        }
+                        if (loadedModules != null 
+                                && loadedModules.Count > 0
+                                && loadedModules.First().ExportedFunctions.Count > 0)
+                        { 
+                                validModPaths.Add(resolvedPath);                                
+                        }                        
                     }
                 }
                 catch
