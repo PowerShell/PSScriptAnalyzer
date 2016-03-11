@@ -108,7 +108,7 @@ Describe "Test importing correct customized rules" {
 
 		It "will show the custom rules when given glob with recurse switch" {
 			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule* | Where-Object {$_.RuleName -eq $measure}
-			$customizedRulePath.Count | Should be 3
+			$customizedRulePath.Count | Should be 4
 		}		
     }
 
@@ -147,7 +147,7 @@ Describe "Test importing correct customized rules" {
 
 		    It "will show the custom rules when given glob with recurse switch" {
 			    $customizedRulePath = Invoke-ScriptAnalyzer  $directory\TestScript.ps1 -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule* | Where-Object {$_.Message -eq $message}
-			    $customizedRulePath.Count | Should be 3
+			    $customizedRulePath.Count | Should be 4
 		    }
 
             It "Using IncludeDefaultRules Switch with CustomRulePath" {
@@ -164,6 +164,23 @@ Describe "Test importing correct customized rules" {
                 $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1
                 $customizedRulePath.Count | Should Be 1
             }
+
+	    It "loads custom rules that contain version in their path" {
+	       $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath $directory\SampleRuleWithVersion\SampleRuleWithVersion
+	       $customizedRulePath.Count | Should Be 1
+
+	       $customizedRulePath = Get-ScriptAnalyzerRule -CustomRulePath $directory\SampleRuleWithVersion\SampleRuleWithVersion
+	       $customizedRulePath.Count | Should Be 1
+	    }
+
+	    It "loads custom rules that contain version in their path with the RecurseCustomRule switch" {
+	       $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath $directory\SampleRuleWithVersion -RecurseCustomRulePath
+	       $customizedRulePath.Count | Should Be 1
+
+	       $customizedRulePath = Get-ScriptAnalyzerRule -CustomRulePath $directory\SampleRuleWithVersion -RecurseCustomRulePath
+	       $customizedRulePath.Count | Should Be 1
+
+	    }
         }
 		
     }
