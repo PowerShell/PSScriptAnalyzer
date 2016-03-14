@@ -1,5 +1,7 @@
 # WS2012R2 image with April WMF5.0
-os: unstable
+# os: unstable
+
+image: Visual Studio 2015
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
