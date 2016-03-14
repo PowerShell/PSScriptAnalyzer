@@ -1,14 +1,11 @@
-# WS2012R2 image with April WMF5.0
-# os: unstable
-
-image: Visual Studio 2015
+# Image with WMF5.0 RTM
+os: "WMF 5"
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
  
 # Install Pester
 install: 
-    - set PATH=C:\Program Files (x86)\MSBuild\12.0\Bin;%PATH%
     - cinst -y pester --version 3.3.13
     
 # Build PSScriptAnalyzer using msbuild
