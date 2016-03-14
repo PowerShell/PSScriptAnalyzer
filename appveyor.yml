@@ -8,6 +8,7 @@ clone_folder: c:\projects\psscriptanalyzer
  
 # Install Pester
 install: 
+    - set PATH=C:\Program Files (x86)\MSBuild\12.0\Bin;%PATH%
     - cinst -y pester --version 3.3.13
     
 # Build PSScriptAnalyzer using msbuild
