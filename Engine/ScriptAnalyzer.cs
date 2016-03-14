@@ -764,8 +764,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             {
                                 dynamic description = helpContent[0].Properties["Description"];
 
-                                if (null != description)
-                                {
+                                if (null != description && null != description.Value && description.Value.GetType().IsArray)
+                                {                                    
                                     desc = description.Value[0].Text;
                                 }
                             }
