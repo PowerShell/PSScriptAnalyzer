@@ -14,7 +14,7 @@ function Credential2
         [Parameter(Mandatory=$true,
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
-        [System.Management.Automation.CredentialAttribute()]
+        [System.Management.Automation.Credential()]
         [pscredential]
         $Credential
     )

@@ -220,10 +220,10 @@
     <value>For PowerShell 4.0 and earlier, a parameter named Credential with type PSCredential must have a credential transformation attribute defined after the PSCredential type attribute. </value>
   </data>
   <data name="UsePSCredentialTypeError" xml:space="preserve">
-    <value>The Credential parameter in '{0}' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, [CredentialAttribute()], after the PSCredential type attribute.</value>
+    <value>The Credential parameter in '{0}' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute.</value>
   </data>
   <data name="UsePSCredentialTypeErrorSB" xml:space="preserve">
-    <value>The Credential parameter found in the script block must be of type PSCredential. For PowerShell 4.0 and earlier please define a credential transformation attribute, [CredentialAttribute()], after the PSCredential type attribute. </value>
+    <value>The Credential parameter found in the script block must be of type PSCredential. For PowerShell 4.0 and earlier please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute. </value>
   </data>
   <data name="UsePSCredentialTypeCommonName" xml:space="preserve">
     <value>Use PSCredential type.</value>

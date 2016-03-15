@@ -1852,7 +1852,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, [CredentialAttribute()], after the PSCredential type attribute..
+        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute..
         /// </summary>
         internal static string UsePSCredentialTypeError {
             get {
@@ -1861,7 +1861,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter found in the script block must be of type PSCredential. For PowerShell 4.0 and earlier please define a credential transformation attribute, [CredentialAttribute()], after the PSCredential type attribute. .
+        ///   Looks up a localized string similar to The Credential parameter found in the script block must be of type PSCredential. For PowerShell 4.0 and earlier please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute. .
         /// </summary>
         internal static string UsePSCredentialTypeErrorSB {
             get {
