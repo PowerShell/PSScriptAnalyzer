@@ -217,16 +217,16 @@
     <value>One Char</value>
   </data>
   <data name="UsePSCredentialTypeDescription" xml:space="preserve">
-    <value>Checks that cmdlets that have a Credential parameter accept PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.. This comes from the PowerShell teams best practices.</value>
+    <value>For PowerShell 4.0 and earlier, a parameter named Credential with type PSCredential must have a credential transformation attribute defined after the PSCredential type attribute. </value>
   </data>
   <data name="UsePSCredentialTypeError" xml:space="preserve">
-    <value>The Credential parameter in '{0}' must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.</value>
+    <value>The Credential parameter in '{0}' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute.</value>
   </data>
   <data name="UsePSCredentialTypeErrorSB" xml:space="preserve">
-    <value>The Credential parameter in a found script block must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.</value>
+    <value>The Credential parameter found in the script block must be of type PSCredential. For PowerShell 4.0 and earlier please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute. </value>
   </data>
   <data name="UsePSCredentialTypeCommonName" xml:space="preserve">
-    <value>PSCredential</value>
+    <value>Use PSCredential type.</value>
   </data>
   <data name="ReservedCmdletCharDescription" xml:space="preserve">
     <value>Checks for reserved characters in cmdlet names. These characters usually cause a parsing error. Otherwise they will generally cause runtime errors.</value>
@@ -511,10 +511,10 @@
     <value>Avoid Using Username and Password Parameters</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsDescription" xml:space="preserve">
-    <value>Functions should only take in a credential parameter of type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute instead of username and password parameters.</value>
+    <value>Functions should take in a Credential parameter of type PSCredential (with a Credential transformation attribute defined after it in PowerShell 4.0 or earlier) or set the Password parameter to type SecureString.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsError" xml:space="preserve">
-    <value>Function '{0}' has both username and password parameters. A credential parameter of type PSCredential with a CredentialAttribute where PSCredential comes before CredentialAttribute should be used.</value>
+    <value>Function '{0}' has both Username and Password parameters. Either set the type of the Password parameter to SecureString or replace the Username and Password parameters with a Credential parameter of type PSCredential. If using a Credential parameter in PowerShell 4.0 or earlier, please define a credential transformation attribute after the PSCredential type attribute.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsName" xml:space="preserve">
     <value>AvoidUsingUserNameAndPassWordParams</value>

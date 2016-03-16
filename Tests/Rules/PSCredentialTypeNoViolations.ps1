@@ -10,7 +10,7 @@
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
         [pscredential]
-        [System.Management.Automation.CredentialAttribute()]
+        [System.Management.Automation.Credential()]
         $Credential
     )
 }
