@@ -113,7 +113,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public override RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Error;
+            return RuleSeverity.Warning;
+        }
+
+        /// <summary>
+        /// DiagnosticSeverity: Retrieves the severity of the rule of type DiagnosticSeverity: error, warning of information.
+        /// </summary>
+        /// <returns></returns>
+        public override DiagnosticSeverity GetDiagnosticSeverity()
+        {
+            return DiagnosticSeverity.Warning;
         }
 
         /// <summary>

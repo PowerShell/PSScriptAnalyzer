@@ -44,7 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     {
                         if (ParameterCondition(cmdAst, ceAst))
                         {
-                            yield return new DiagnosticRecord(GetError(fileName, cmdAst), cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
+                            yield return new DiagnosticRecord(GetError(fileName, cmdAst), cmdAst.Extent, GetName(), GetDiagnosticSeverity(), fileName, cmdAst.GetCommandName());
                         }
                     }
                 }
@@ -102,6 +102,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <returns>The source type of the rule.</returns>
         public abstract  SourceType GetSourceType();
 
+        /// <summary>
+        /// RuleSeverity: Returns the severity of the rule.
+        /// </summary>
+        /// <returns></returns>
         public abstract RuleSeverity GetSeverity();
+
+        /// <summary>
+        /// DiagnosticSeverity: Returns the severity of the rule of type DiagnosticSeverity
+        /// </summary>
+        /// <returns></returns>
+        public abstract DiagnosticSeverity GetDiagnosticSeverity();
     }
 }
