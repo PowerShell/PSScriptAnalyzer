@@ -113,7 +113,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public override RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Warning;
+            return RuleSeverity.Error;
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public override DiagnosticSeverity GetDiagnosticSeverity()
         {
-            return DiagnosticSeverity.Warning;
+            return DiagnosticSeverity.Error;
         }
 
         /// <summary>
