@@ -53,7 +53,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (funcParamAsts.Count() != funcParamAsts2.Count())
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCError),
-                        firstFunc.Extent, GetName(), DiagnosticSeverity.Information, fileName);
+                        firstFunc.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                 }
 
                 foreach (ParameterAst paramAst in funcParamAsts)
