@@ -108,7 +108,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
+        /// GetSeverity: Retrieves the severity of the rule: error, warning or information.
         /// </summary>
         /// <returns></returns>
         public override RuleSeverity GetSeverity()
@@ -117,7 +117,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// DiagnosticSeverity: Retrieves the severity of the rule of type DiagnosticSeverity: error, warning of information.
+        /// DiagnosticSeverity: Retrieves the severity of the rule of type DiagnosticSeverity: error, warning or information.
         /// </summary>
         /// <returns></returns>
         public override DiagnosticSeverity GetDiagnosticSeverity()
