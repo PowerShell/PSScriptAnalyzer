@@ -100,9 +100,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Dictionary<Ast, VariableAnalysis> VariableAnalysisDictionary;
 
-        private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:" };
+        private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:", "Global:", "Local:", "Script:", "Private:" };
 
-        private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":" };
+        private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":", "Global:", "Local:", "Script:", "Private:", "Variable:" };
 
         #endregion
 
