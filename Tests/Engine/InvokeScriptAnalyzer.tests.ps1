@@ -9,8 +9,8 @@ if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
 $sa = Get-Command Invoke-ScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $singularNouns = "PSUseSingularNouns"
-$rules = $singularNouns, "PSUseApprovedVerbs"
-$avoidRules = "PSAvoid*"
+$rules = Get-ScriptAnalyzerRule -Name ($singularNouns, "PSUseApprovedVerbs")
+$avoidRules = Get-ScriptAnalyzerRule -Name "PSAvoid*"
 $useRules = "PSUse*"
 
 Describe "Test available parameters" {
@@ -40,15 +40,8 @@ Describe "Test available parameters" {
             $params.ContainsKey("CustomRulePath") | Should Be $true
         }
 
-        It "accepts a string" {
-			if ($testingLibraryUsage)
-			{
+        It "accepts a string array" {
 				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String[]"
-			}
-			else
-			{
-				$params["CustomRulePath"].ParameterType.FullName | Should Be "System.String"
-			}
         }
 
 		It "has a CustomizedRulePath alias"{
@@ -225,7 +218,7 @@ Describe "Test IncludeRule" {
         }
 
         It "includes 2 rules" {
-            $violations = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $rules | Where-Object {$rules -contains $_.RuleName}
+            $violations = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $rules
             $violations.Count | Should Be 2
         }
     }
@@ -244,7 +237,8 @@ Describe "Test IncludeRule" {
         }
 
         it "includes 2 wildcardrules" {
-            $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules, $useRules 
+            $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
+            $includeWildcard += Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $useRules
             $includeWildcard.Count | Should be 4
         }
     }
@@ -315,22 +309,28 @@ Describe "Test CustomizedRulePath" {
             $customizedRulePathExclude = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -ExcludeRule "Measure-RequiresModules" | Where-Object {$_.RuleName -eq $measureRequired}
             $customizedRulePathExclude.Count | Should be 0
         }
+
+		It "When supplied with a collection of paths" {
+            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath ("$directory\CommunityAnalyzerRules", "$directory\SampleRule", "$directory\SampleRule\SampleRule2")
+            $customizedRulePath.Count | Should Be 3
+        }		
+
     }
 
+
     Context "When used incorrectly" {
-        It "file cannot be found" {
-            $wrongRule = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath "This is a wrong rule" 3>&1 | Select-Object -First 1
-
-			if ($testingLibraryUsage)
-			{
-				# Special case for library usage testing: warning output written
-				# with PSHost.UI.WriteWarningLine does not get redirected correctly
-				# so we can't use this approach for checking the warning message.
-				# Instead, reach into the test IOutputWriter implementation to find it.
-				$wrongRule = $testOutputWriter.MostRecentWarningMessage
-			}
-
-			$wrongRule | Should Match "Cannot find rule extension 'This is a wrong rule'."
+        It "file cannot be found" {            
+            try
+            {
+                Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath "Invalid CustomRulePath"
+            }
+            catch
+            {
+                if (-not $testingLibraryUsage)
+			    {                    
+                    $Error[0].FullyQualifiedErrorId | should match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"            
+                }                
+            }
         }
     }
 }

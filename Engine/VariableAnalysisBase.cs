@@ -106,7 +106,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public static Dictionary<string, VariableAnalysisDetails> Visit(Ast ast)
         {
+            #if PSV3
+
+            if (!(ast is ScriptBlockAst || ast is FunctionDefinitionAst))
+
+            #else
+
             if (!(ast is ScriptBlockAst || ast is FunctionMemberAst || ast is FunctionDefinitionAst))
+
+            #endif
+
             {
                 return null;
             }
@@ -122,20 +131,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 (ast as ScriptBlockAst).Visit(visitor);
             }
+
+            #if !PSV3
+
             else if (ast is FunctionMemberAst)
             {
                 (ast as FunctionMemberAst).Body.Visit(visitor);
             }
+
+            #endif
+
             else if (ast is FunctionDefinitionAst)
             {
                 (ast as FunctionDefinitionAst).Body.Visit(visitor);
             }
+
+            #if PSV3
+
+            if (ast is FunctionDefinitionAst && (ast as FunctionDefinitionAst).Parameters != null)
+
+            #else
 
             if (ast is FunctionMemberAst && (ast as FunctionMemberAst).Parameters != null)
             {
                 visitor.VisitParameters((ast as FunctionMemberAst).Parameters);
             }
             else if (ast is FunctionDefinitionAst && (ast as FunctionDefinitionAst).Parameters != null)
+
+            #endif
             {
                 visitor.VisitParameters((ast as FunctionDefinitionAst).Parameters);
             }
@@ -151,6 +174,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             _variables.Add("true", new VariableAnalysisDetails { Name = "true", RealName = "true", Type = typeof(bool) });
             _variables.Add("false", new VariableAnalysisDetails { Name = "false", RealName = "true", Type = typeof(bool) });
 
+            #if !PSV3
+
             if (ast is FunctionMemberAst)
             {
                 TypeDefinitionAst psClass = AssignmentTarget.FindClassAncestor(ast);
@@ -159,6 +184,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     _variables.Add("this", new VariableAnalysisDetails { Name = "this", RealName = "this", Constant = SpecialVars.ThisVariable });
                 }
             }
+
+            #endif
+
         }
 
         internal void VisitParameters(ReadOnlyCollection<ParameterAst> parameters)
@@ -552,7 +580,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     Block dom = block._predecessors[0];
 
-                    // Get first proccessed node
+                    // Get first processed node
                     foreach (var pred in block._predecessors)
                     {
                         if (dominators[pred.PostOrder] != null)
@@ -788,9 +816,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="Variables"></param>
         /// <param name="Entry"></param>
         /// <param name="Classes"></param>
-        /// <returns></returns>
+        /// <returns></returns>        
+        #if PSV3
+
         internal static Tuple<Dictionary<string, VariableAnalysisDetails>, Dictionary<string, VariableAnalysisDetails>> SparseSimpleConstants(
+             Dictionary<string, VariableAnalysisDetails> Variables, Block Entry)
+
+        #else            
+            internal static Tuple<Dictionary<string, VariableAnalysisDetails>, Dictionary<string, VariableAnalysisDetails>> SparseSimpleConstants(
             Dictionary<string, VariableAnalysisDetails> Variables, Block Entry, List<TypeDefinitionAst> Classes)
+
+        #endif
         {
             List<Block> blocks = GenerateReverseDepthFirstOrder(Entry);
 
@@ -828,14 +864,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            // Initialize variables in internaldictionary to undetermined
+            // Initialize variables in internal dictionary to undetermined
             foreach (var key in InternalVariablesDictionary.Keys.ToList())
             {
                 InternalVariablesDictionary[key].Constant = Undetermined.UndeterminedConstant;
                 InternalVariablesDictionary[key].Type = typeof(Undetermined);
             }
 
-            // Initialze DefinedBlock of phi function. If it is null then that phi function is not initialized;
+            // Initialize DefinedBlock of phi function. If it is null then that phi function is not initialized;
             foreach (var block in blocks)
             {
                 foreach (var phi in block.Phis)
@@ -956,13 +992,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         {
                             CommandExpressionAst cmeAst = assigned._rightAst as CommandExpressionAst;
                             MemberExpressionAst memAst = (cmeAst != null) ? (cmeAst.Expression as MemberExpressionAst) : null;
-                            // Don't handle the this case because this is handled in assignmenttarget
+                            // Don't handle the this case because this is handled in assignment target
 
                             if (memAst != null && memAst.Expression is VariableExpressionAst)
                             {
                                 VariableAnalysisDetails analysis = VariablesDictionary[VariableAnalysis.AnalysisDictionaryKey(memAst.Expression as VariableExpressionAst)];
+
+                                #if PSV3
+
+                                Type possibleType = AssignmentTarget.GetTypeFromMemberExpressionAst(memAst, analysis);
+
+                                #else
+
                                 TypeDefinitionAst psClass = Classes.FirstOrDefault(item => String.Equals(item.Name, analysis.Type.FullName, StringComparison.OrdinalIgnoreCase));
                                 Type possibleType = AssignmentTarget.GetTypeFromMemberExpressionAst(memAst, analysis, psClass);
+
+                                #endif
 
                                 if (possibleType != null && possibleType != assigned.Type)
                                 {
@@ -1334,12 +1379,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="memAst"></param>
         /// <param name="psClass"></param>
         /// <returns></returns>
+        
+        #if PSV3
+
+        internal static Type GetTypeFromMemberExpressionAst(MemberExpressionAst memAst, VariableAnalysisDetails analysis)
+
+        #else
+
         internal static Type GetTypeFromMemberExpressionAst(MemberExpressionAst memAst, VariableAnalysisDetails analysis, TypeDefinitionAst psClass)
+
+        #endif        
         {
             if (memAst != null && memAst.Expression is VariableExpressionAst && memAst.Member is StringConstantExpressionAst
                 && !String.Equals((memAst.Expression as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
             {
                 string fieldName = (memAst.Member as StringConstantExpressionAst).Value;
+
+                #if !PSV3
 
                 if (psClass == null && analysis.Constant == SpecialVars.ThisVariable)
                 {
@@ -1356,6 +1412,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                     }
                 }
+
+                #endif
 
                 // If the type is not a ps class or there are some types of the same name.
                 if (analysis != null && analysis.Type != null && analysis.Type != typeof(object)
@@ -1411,6 +1469,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         // isStatic is true
                         result = GetTypeFromInvokeMemberAst(type, imeAst, methodName, true);
                     }
+                    #if !PSV3
                     else
                     {
                         // Check for classes
@@ -1428,6 +1487,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                         }
                     }
+                    #endif
                 }
 
                 #endregion
@@ -1447,6 +1507,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         result = GetPropertyOrFieldTypeFromMemberExpressionAst(expressionType, fieldName);
                     }
+                    #if !PSV3
                     else
                     {
                         // check for class type
@@ -1462,6 +1523,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                         }
                     }
+                    #endif
                 }
 
                 #endregion
@@ -1478,11 +1540,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (memberAst.Expression is VariableExpressionAst
                 && String.Equals((memberAst.Expression as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
             {
+                #if !PSV3
+
                 // Check that we are in a class
                 TypeDefinitionAst psClass = FindClassAncestor(memberAst);
 
                 // Is static is false for this case
                 result = GetTypeFromClass(psClass, memberAst);
+
+                #endif
             }
 
             return result;
@@ -1598,6 +1664,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return null;
         }
 
+        #if !PSV3
+
         /// <summary>
         /// Get the type for memberexpressionast assuming that the variable is a class
         /// </summary>
@@ -1627,6 +1695,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return result;
         }
+
+        #endif
 
         private void SetVariableName()
         {
@@ -2042,7 +2112,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitParameter(ParameterAst parameterAst)
         {
-            // Nothing to do now, we've already allocated parameters in the first pass looking for all variable naems.
+            // Nothing to do now, we've already allocated parameters in the first pass looking for all variable names.
             System.Diagnostics.Debug.Assert(false, "Code is unreachable");
             return null;
         }
@@ -2812,7 +2882,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // left operand is always evaluated, visit it's expression in the current block.
                 binaryExpressionAst.Left.Visit(this.Decorator);
 
-                // The right operand is condtionally evaluated.  We aren't generating any code here, just
+                // The right operand is conditionally evaluated.  We aren't generating any code here, just
                 // modeling the flow graph, so we just visit the right operand in a new block, and have
                 // both the current and new blocks both flow to a post-expression block.
                 var targetBlock = new Block();

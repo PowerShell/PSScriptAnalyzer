@@ -217,16 +217,16 @@
     <value>One Char</value>
   </data>
   <data name="UsePSCredentialTypeDescription" xml:space="preserve">
-    <value>Checks that cmdlets that have a Credential parameter accept PSCredential. This comes from the PowerShell teams best practices.</value>
+    <value>For PowerShell 4.0 and earlier, a parameter named Credential with type PSCredential must have a credential transformation attribute defined after the PSCredential type attribute. </value>
   </data>
   <data name="UsePSCredentialTypeError" xml:space="preserve">
-    <value>The Credential parameter in '{0}' must be of the type PSCredential.</value>
+    <value>The Credential parameter in '{0}' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute.</value>
   </data>
   <data name="UsePSCredentialTypeErrorSB" xml:space="preserve">
-    <value>The Credential parameter in a found script block must be of the type PSCredential.</value>
+    <value>The Credential parameter found in the script block must be of type PSCredential. For PowerShell 4.0 and earlier please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute. </value>
   </data>
   <data name="UsePSCredentialTypeCommonName" xml:space="preserve">
-    <value>PSCredential</value>
+    <value>Use PSCredential type.</value>
   </data>
   <data name="ReservedCmdletCharDescription" xml:space="preserve">
     <value>Checks for reserved characters in cmdlet names. These characters usually cause a parsing error. Otherwise they will generally cause runtime errors.</value>
@@ -511,10 +511,10 @@
     <value>Avoid Using Username and Password Parameters</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsDescription" xml:space="preserve">
-    <value>Functions should only take in a credential parameter of type PSCredential instead of username and password parameters.</value>
+    <value>Functions should take in a Credential parameter of type PSCredential (with a Credential transformation attribute defined after it in PowerShell 4.0 or earlier) or set the Password parameter to type SecureString.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsError" xml:space="preserve">
-    <value>Function '{0}' has both username and password parameters. A credential parameter of type PSCredential should be used.</value>
+    <value>Function '{0}' has both Username and Password parameters. Either set the type of the Password parameter to SecureString or replace the Username and Password parameters with a Credential parameter of type PSCredential. If using a Credential parameter in PowerShell 4.0 or earlier, please define a credential transformation attribute after the PSCredential type attribute.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsName" xml:space="preserve">
     <value>AvoidUsingUserNameAndPassWordParams</value>
@@ -711,17 +711,17 @@
   <data name="DscExamplesPresentNoExamplesError" xml:space="preserve">
     <value>No examples found for resource '{0}'</value>
   </data>
-  <data name="ProvideDefaultParameterValueCommonName" xml:space="preserve">
-    <value>Default Parameter Values</value>
+  <data name="AvoidDefaultValueForMandatoryParameterCommonName" xml:space="preserve">
+    <value>Avoid Default Value For Mandatory Parameter</value>
   </data>
-  <data name="ProvideDefaultParameterValueDescription" xml:space="preserve">
-    <value>Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
+  <data name="AvoidDefaultValueForMandatoryParameterDescription" xml:space="preserve">
+    <value>Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block.</value>
   </data>
-  <data name="ProvideDefaultParameterValueError" xml:space="preserve">
-    <value>Parameter '{0}' is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters</value>
+  <data name="AvoidDefaultValueForMandatoryParameterError" xml:space="preserve">
+    <value>Mandatory Parameter '{0}' is initialized in the Param block. To fix a violation of this rule, please leave it unintialized.</value>
   </data>
-  <data name="ProvideDefaultParameterValueName" xml:space="preserve">
-    <value>ProvideDefaultParameterValue</value>
+  <data name="AvoidDefaultValueForMandatoryParameterName" xml:space="preserve">
+    <value>AvoidDefaultValueForMandatoryParameter</value>
   </data>
   <data name="AvoidUsingDeprecatedManifestFieldsCommonName" xml:space="preserve">
     <value>Avoid Using Deprecated Manifest Fields</value>
@@ -773,5 +773,41 @@
   </data>
   <data name="ScriptDefinitionName" xml:space="preserve">
     <value>ScriptDefinition</value>
+  </data>
+  <data name="MisleadingBacktickCommonName" xml:space="preserve">
+    <value>Misleading Backtick</value>
+  </data>
+  <data name="MisleadingBacktickDescription" xml:space="preserve">
+    <value>Ending a line with an escaped whitepsace character is misleading. A trailing backtick is usually used for line continuation. Users typically don't intend to end a line with escaped whitespace.</value>
+  </data>
+  <data name="MisleadingBacktickName" xml:space="preserve">
+    <value>MisleadingBacktick</value>
+  </data>
+  <data name="MisleadingBacktickError" xml:space="preserve">
+    <value>This line has a backtick at the end trailed by a whitespace character. Did you mean for this to be a line continuation?</value>
+  </data>
+  <data name="AvoidNullOrEmptyHelpMessageAttributeCommonName" xml:space="preserve">
+    <value>Avoid using null or empty HelpMessage parameter attribute.</value>
+  </data>
+  <data name="AvoidNullOrEmptyHelpMessageAttributeDescription" xml:space="preserve">
+    <value>Setting the HelpMessage attribute to an empty string or null value causes PowerShell interpreter to throw an error while executing the corresponding function.</value>
+  </data>
+  <data name="AvoidNullOrEmptyHelpMessageAttributeError" xml:space="preserve">
+    <value>HelpMessage parameter attribute should not be null or empty. To fix a violation of this rule, please set its value to a non-empty string.</value>
+  </data>
+  <data name="AvoidNullOrEmptyHelpMessageAttributeName" xml:space="preserve">
+    <value>AvoidNullOrEmptyHelpMessageAttribute</value>
+  </data>
+  <data name="UseToExportFieldsInManifestCommonName" xml:space="preserve">
+    <value>Use the *ToExport module manifest fields.</value>
+  </data>
+  <data name="UseToExportFieldsInManifestDescription" xml:space="preserve">
+    <value>In a module manifest, AliasesToExport, CmdletsToExport, FunctionsToExport and VariablesToExport fields should not use wildcards or $null in their entries. During module auto-discovery, if any of these entries are missing or $null or wildcard, PowerShell does some potentially expensive work to analyze the rest of the module.</value>
+  </data>
+  <data name="UseToExportFieldsInManifestError" xml:space="preserve">
+    <value>Do not use wildcard or $null in this field. Explicitly specify a list for {0}.  </value>
+  </data>
+  <data name="UseToExportFieldsInManifestName" xml:space="preserve">
+    <value>UseToExportFieldsInManifest</value>
   </data>
 </root>

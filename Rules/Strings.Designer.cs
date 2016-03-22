@@ -97,6 +97,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid Default Value For Mandatory Parameter.
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterCommonName {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block..
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterDescription {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mandatory Parameter &apos;{0}&apos; is initialized in the Param block. To fix a violation of this rule, please leave it unintialized..
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterError {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidDefaultValueForMandatoryParameter.
+        /// </summary>
+        internal static string AvoidDefaultValueForMandatoryParameterName {
+            get {
+                return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Switch Parameters Should Not Default To True.
         /// </summary>
         internal static string AvoidDefaultValueSwitchParameterCommonName {
@@ -219,6 +255,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidInvokingEmptyMembersName {
             get {
                 return ResourceManager.GetString("AvoidInvokingEmptyMembersName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid using null or empty HelpMessage parameter attribute..
+        /// </summary>
+        internal static string AvoidNullOrEmptyHelpMessageAttributeCommonName {
+            get {
+                return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setting the HelpMessage attribute to an empty string or null value causes PowerShell interpreter to throw an error while executing the corresponding function..
+        /// </summary>
+        internal static string AvoidNullOrEmptyHelpMessageAttributeDescription {
+            get {
+                return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HelpMessage parameter attribute should not be null or empty. To fix a violation of this rule, please set its value to a non-empty string..
+        /// </summary>
+        internal static string AvoidNullOrEmptyHelpMessageAttributeError {
+            get {
+                return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidNullOrEmptyHelpMessageAttribute.
+        /// </summary>
+        internal static string AvoidNullOrEmptyHelpMessageAttributeName {
+            get {
+                return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeName", resourceCulture);
             }
         }
         
@@ -385,7 +457,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Functions should only take in a credential parameter of type PSCredential instead of username and password parameters..
+        ///   Looks up a localized string similar to Functions should take in a Credential parameter of type PSCredential (with a Credential transformation attribute defined after it in PowerShell 4.0 or earlier) or set the Password parameter to type SecureString..
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsDescription {
             get {
@@ -394,7 +466,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function &apos;{0}&apos; has both username and password parameters. A credential parameter of type PSCredential should be used..
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; has both Username and Password parameters. Either set the type of the Password parameter to SecureString or replace the Username and Password parameters with a Credential parameter of type PSCredential. If using a Credential parameter in PowerShell 4.0 or earlier, please define a credential transformation attribute after the PSCredential type attribute..
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsError {
             get {
@@ -979,6 +1051,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Misleading Backtick.
+        /// </summary>
+        internal static string MisleadingBacktickCommonName {
+            get {
+                return ResourceManager.GetString("MisleadingBacktickCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ending a line with an escaped whitepsace character is misleading. A trailing backtick is usually used for line continuation. Users typically don&apos;t intend to end a line with escaped whitespace..
+        /// </summary>
+        internal static string MisleadingBacktickDescription {
+            get {
+                return ResourceManager.GetString("MisleadingBacktickDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This line has a backtick at the end trailed by a whitespace character. Did you mean for this to be a line continuation?.
+        /// </summary>
+        internal static string MisleadingBacktickError {
+            get {
+                return ResourceManager.GetString("MisleadingBacktickError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MisleadingBacktick.
+        /// </summary>
+        internal static string MisleadingBacktickName {
+            get {
+                return ResourceManager.GetString("MisleadingBacktickName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Module Manifest Fields.
         /// </summary>
         internal static string MissingModuleManifestFieldCommonName {
@@ -1173,42 +1281,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string ProvideCommentHelpName {
             get {
                 return ResourceManager.GetString("ProvideCommentHelpName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Default Parameter Values.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueCommonName {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueDescription {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; is not initialized. Parameters must have a default value. To fix a violation of this rule, please specify a default value for all parameters.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueError {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ProvideDefaultParameterValue.
-        /// </summary>
-        internal static string ProvideDefaultParameterValueName {
-            get {
-                return ResourceManager.GetString("ProvideDefaultParameterValueName", resourceCulture);
             }
         }
         
@@ -1762,7 +1834,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PSCredential.
+        ///   Looks up a localized string similar to Use PSCredential type..
         /// </summary>
         internal static string UsePSCredentialTypeCommonName {
             get {
@@ -1771,7 +1843,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Checks that cmdlets that have a Credential parameter accept PSCredential. This comes from the PowerShell teams best practices..
+        ///   Looks up a localized string similar to For PowerShell 4.0 and earlier, a parameter named Credential with type PSCredential must have a credential transformation attribute defined after the PSCredential type attribute. .
         /// </summary>
         internal static string UsePSCredentialTypeDescription {
             get {
@@ -1780,7 +1852,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of the type PSCredential..
+        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute..
         /// </summary>
         internal static string UsePSCredentialTypeError {
             get {
@@ -1789,7 +1861,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in a found script block must be of the type PSCredential..
+        ///   Looks up a localized string similar to The Credential parameter found in the script block must be of type PSCredential. For PowerShell 4.0 and earlier please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute. .
         /// </summary>
         internal static string UsePSCredentialTypeErrorSB {
             get {
@@ -1920,6 +1992,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string UseStandardDSCFunctionsInResourceName {
             get {
                 return ResourceManager.GetString("UseStandardDSCFunctionsInResourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use the *ToExport module manifest fields..
+        /// </summary>
+        internal static string UseToExportFieldsInManifestCommonName {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In a module manifest, AliasesToExport, CmdletsToExport, FunctionsToExport and VariablesToExport fields should not use wildcards or $null in their entries. During module auto-discovery, if any of these entries are missing or $null or wildcard, PowerShell does some potentially expensive work to analyze the rest of the module..
+        /// </summary>
+        internal static string UseToExportFieldsInManifestDescription {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do not use wildcard or $null in this field. Explicitly specify a list for {0}.  .
+        /// </summary>
+        internal static string UseToExportFieldsInManifestError {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseToExportFieldsInManifest.
+        /// </summary>
+        internal static string UseToExportFieldsInManifestName {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestName", resourceCulture);
             }
         }
         

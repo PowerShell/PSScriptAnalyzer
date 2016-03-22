@@ -1,12 +1,12 @@
-# WS2012R2 image with April WMF5.0
-os: unstable
+# Image with WMF5.0 RTM
+os: "WMF 5"
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
  
 # Install Pester
 install: 
-    - cinst -y pester
+    - cinst -y pester --version 3.3.13
     
 # Build PSScriptAnalyzer using msbuild
 build: true

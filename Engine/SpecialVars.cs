@@ -36,6 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal const string ExecutionContext = "ExecutionContext";
         internal const string Matches = "Matches";
         internal const string PSVersionTable = "PSVersionTable";
+        internal const string OFS = "OFS";
 
         internal static readonly string[] InitializedVariables;
 
@@ -67,7 +68,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                    PSCommandPath,
                                                                    ExecutionContext,
                                                                    Matches,
-                                                                   PSVersionTable
+                                                                   PSVersionTable,
+                                                                   OFS
                                                                };
         internal static readonly Type[] AutomaticVariableTypes = new Type[]  
                                                                  {  
@@ -82,7 +84,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                    /* PSCommandPath */     typeof(string),  
                                                                    /* ExecutionContext */  typeof(EngineIntrinsics),
                                                                    /* Matches */           typeof(System.Collections.Hashtable),
-                                                                   /* PSVersionTable */    typeof(System.Collections.Hashtable)
+                                                                   /* PSVersionTable */    typeof(System.Collections.Hashtable),
+                                                                   /* OFS */               typeof(object)
                                                                  };
 
 

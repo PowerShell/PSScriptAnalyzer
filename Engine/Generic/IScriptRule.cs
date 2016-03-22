@@ -25,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     public interface IScriptRule : IRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the anaylsis.
+        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the analysis.
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The name of the script file being analyzed</param>

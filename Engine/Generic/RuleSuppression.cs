@@ -367,9 +367,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                             targetAsts = scopeAst.FindAll(item => item is FunctionDefinitionAst && reg.IsMatch((item as FunctionDefinitionAst).Name), true);
                             goto default;
 
+                        #if !PSV3
+
                         case "class":
                             targetAsts = scopeAst.FindAll(item => item is TypeDefinitionAst && reg.IsMatch((item as TypeDefinitionAst).Name), true);
                             goto default;
+
+                        #endif
 
                         default:
                             break;

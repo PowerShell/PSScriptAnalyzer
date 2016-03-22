@@ -43,7 +43,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         [Parameter(Position = 0,
             ParameterSetName = "File",
-            Mandatory = true)]
+            Mandatory = true,
+            ValueFromPipeline = true, 
+            ValueFromPipelineByPropertyName = true)]
         [ValidateNotNull]
         [Alias("PSPath")]
         public string Path
@@ -58,7 +60,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         [Parameter(Position = 0,
             ParameterSetName = "ScriptDefinition",
-            Mandatory = true)]
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         [ValidateNotNull]
         public string ScriptDefinition
         {
@@ -74,12 +78,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [ValidateNotNull]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Alias("CustomizedRulePath")]
-        public string CustomRulePath
+        public string[] CustomRulePath
         {
             get { return customRulePath; }
             set { customRulePath = value; }
         }
-        private string customRulePath;
+        private string[] customRulePath;
 
         /// <summary>
         /// RecurseCustomRulePath: Find rules within subfolders under the path
@@ -92,6 +96,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             set { recurseCustomRulePath = value; }
         }
         private bool recurseCustomRulePath;
+
+        /// <summary>
+        /// IncludeDefaultRules: Invoke default rules along with Custom rules
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public SwitchParameter IncludeDefaultRules
+        {
+            get { return includeDefaultRules; }
+            set { includeDefaultRules = value; }
+        }
+        private bool includeDefaultRules;
 
         /// <summary>
         /// ExcludeRule: Array of names of rules to be disabled.
@@ -157,17 +173,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool suppressedOnly;
 
         /// <summary>
-        /// Returns path to the file that contains user profile for ScriptAnalyzer
+        /// Returns path to the file that contains user profile or hash table for ScriptAnalyzer
         /// </summary>
         [Alias("Profile")]
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
-        public string Configuration
+        public object Settings
         {
-            get { return configuration; }
-            set { configuration = value; }
+            get { return settings; }
+            set { settings = value; }
         }
-        private string configuration;
+
+        private object settings;
+
+        private bool stopProcessing;
 
         #endregion Parameters
 
@@ -181,14 +200,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);
 
+            if (!ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this))
+            {
+                stopProcessing = true;
+                return;
+            }
+
             ScriptAnalyzer.Instance.Initialize(
                 this,
                 rulePaths,
                 this.includeRule,
                 this.excludeRule,
                 this.severity,
-                this.suppressedOnly,
-                this.configuration);
+                null == rulePaths ? true : this.includeDefaultRules,
+                this.suppressedOnly);
         }
 
         /// <summary>
@@ -196,6 +221,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void ProcessRecord()
         {
+            if (stopProcessing)
+            {
+                stopProcessing = false;
+                return;
+            }
+
             if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
             {
                 // throws Item Not Found Exception                        
@@ -209,6 +240,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 ProcessPathOrScriptDefinition(scriptDefinition);
             }
+        }
+
+        protected override void EndProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.EndProcessing();
+        }
+
+        protected override void StopProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.StopProcessing();
         }
 
         #endregion

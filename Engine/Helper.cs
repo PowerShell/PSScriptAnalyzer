@@ -100,6 +100,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Dictionary<Ast, VariableAnalysis> VariableAnalysisDictionary;
 
+        private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:" };
+
+        private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":" };
+
         #endregion
 
         /// <summary>
@@ -226,6 +230,141 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Get the list of exported function by analyzing the ast
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public HashSet<string> GetExportedFunction(Ast ast)
+        {
+            HashSet<string> exportedFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            List<string> exportFunctionsCmdlet = Helper.Instance.CmdletNameAndAliases("export-modulemember");
+
+            // find functions exported
+            IEnumerable<Ast> cmdAsts = ast.FindAll(item => item is CommandAst
+                && exportFunctionsCmdlet.Contains((item as CommandAst).GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
+
+            CommandInfo exportMM = Helper.Instance.GetCommandInfo("export-modulemember", CommandTypes.Cmdlet);
+
+            // switch parameters
+            IEnumerable<ParameterMetadata> switchParams = (exportMM != null) ? exportMM.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter) : Enumerable.Empty<ParameterMetadata>();
+
+            if (exportMM == null)
+            {
+                return exportedFunctions;
+            }
+
+            foreach (CommandAst cmdAst in cmdAsts)
+            {
+                if (cmdAst.CommandElements == null || cmdAst.CommandElements.Count < 2)
+                {
+                    continue;
+                }
+
+                int i = 1;
+
+                while (i < cmdAst.CommandElements.Count)
+                {
+                    CommandElementAst ceAst = cmdAst.CommandElements[i];
+                    ExpressionAst exprAst = null;
+
+                    if (ceAst is CommandParameterAst)
+                    {
+                        var paramAst = ceAst as CommandParameterAst;
+                        var param = exportMM.ResolveParameter(paramAst.ParameterName);
+
+                        if (param == null)
+                        {
+                            i += 1;
+                            continue;
+                        }
+
+                        if (string.Equals(param.Name, "function", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // checks for the case of -Function:"verb-nouns"
+                            if (paramAst.Argument != null)
+                            {
+                                exprAst = paramAst.Argument;
+                            }
+                            // checks for the case of -Function "verb-nouns"
+                            else if (i < cmdAst.CommandElements.Count - 1)
+                            {
+                                i += 1;
+                                exprAst = cmdAst.CommandElements[i] as ExpressionAst;
+                            }
+                        }
+                        // some other parameter. we just checks whether the one after this is positional
+                        else if (i < cmdAst.CommandElements.Count - 1)
+                        {
+                            // the next element is a parameter like -module so just move to that one
+                            if (cmdAst.CommandElements[i + 1] is CommandParameterAst)
+                            {
+                                i += 1;
+                                continue;
+                            }
+
+                            // not a switch parameter so the next element is definitely the argument to this parameter
+                            if (paramAst.Argument == null && !switchParams.Contains(param))
+                            {
+                                // skips the next element
+                                i += 1;
+                            }
+
+                            i += 1;
+                            continue;
+                        }
+                    }
+                    else if (ceAst is ExpressionAst)
+                    {
+                        exprAst = ceAst as ExpressionAst;
+                    }
+
+                    if (exprAst != null)
+                    {
+                        // One string so just add this to the list
+                        if (exprAst is StringConstantExpressionAst)
+                        {
+                            exportedFunctions.Add((exprAst as StringConstantExpressionAst).Value);
+                        }
+                        // Array of the form "v-n", "v-n1"
+                        else if (exprAst is ArrayLiteralAst)
+                        {
+                            exportedFunctions.UnionWith(Helper.Instance.GetStringsFromArrayLiteral(exprAst as ArrayLiteralAst));
+                        }
+                        // Array of the form @("v-n", "v-n1")
+                        else if (exprAst is ArrayExpressionAst)
+                        {
+                            ArrayExpressionAst arrExAst = exprAst as ArrayExpressionAst;
+                            if (arrExAst.SubExpression != null && arrExAst.SubExpression.Statements != null)
+                            {
+                                foreach (StatementAst stAst in arrExAst.SubExpression.Statements)
+                                {
+                                    if (stAst is PipelineAst)
+                                    {
+                                        PipelineAst pipeAst = stAst as PipelineAst;
+                                        if (pipeAst.PipelineElements != null)
+                                        {
+                                            foreach (CommandBaseAst cmdBaseAst in pipeAst.PipelineElements)
+                                            {
+                                                if (cmdBaseAst is CommandExpressionAst)
+                                                {
+                                                    exportedFunctions.UnionWith(Helper.Instance.GetStringsFromArrayLiteral((cmdBaseAst as CommandExpressionAst).Expression as ArrayLiteralAst));
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    i += 1;
+                }
+            }
+
+            return exportedFunctions;
+        }
+
+        /// <summary>
         /// Given a filePath. Returns true if it is a powershell help file
         /// </summary>
         /// <param name="filePath"></param>
@@ -248,6 +387,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
+            #if !PSV3
+
             List<string> dscResourceFunctionNames = new List<string>(new string[] { "Test", "Get", "Set" });
 
             IEnumerable<Ast> dscClasses = ast.FindAll(item =>
@@ -262,7 +403,63 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return true;
             }
 
+            #endif
+
             return false;
+        }
+
+        private string NameWithoutScope(string name, string[] scopes)
+        {
+            if (String.IsNullOrWhiteSpace(name) || scopes == null)
+            {
+                return name;
+            }            
+
+            // checks whether function name starts with scope
+            foreach (string scope in scopes)
+            {
+                // trim the scope part
+                if (name.IndexOf(scope) == 0)
+                {
+                    return name.Substring(scope.Length);
+                }
+            }
+
+            // no scope
+            return name;
+        }
+
+        /// <summary>
+        /// Given a function name, strip the scope of the name
+        /// </summary>
+        /// <param name="functionName"></param>
+        /// <returns></returns>
+        public string FunctionNameWithoutScope(string functionName)
+        {
+            return NameWithoutScope(functionName, functionScopes);
+        }
+
+        /// <summary>
+        /// Given a variable name, strip the scope
+        /// </summary>
+        /// <param name="variableName"></param>
+        /// <returns></returns>
+        public string VariableNameWithoutScope(VariablePath variablePath)
+        {
+            if (variablePath == null || variablePath.UserPath == null)
+            {
+                return null;
+            }
+
+            // strip out the drive if there is one
+            if (!string.IsNullOrWhiteSpace(variablePath.DriveName)
+                // checks that variable starts with drivename:
+                && variablePath.UserPath.IndexOf(string.Concat(variablePath.DriveName, ":")) == 0)
+            {
+                return variablePath.UserPath.Substring(variablePath.DriveName.Length + 1);
+            }
+
+            return NameWithoutScope(variablePath.UserPath, variableScopes);
         }
 
         /// <summary>
@@ -353,7 +550,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 arguments += 1;
             }
 
-            if (moreThanThreePositional && arguments < 3)
+            // if we are only checking for 3 or more positional parameters, check that arguments < parameters + 3
+            if (moreThanThreePositional && (arguments - parameters) < 3)
             {
                 return false;
             }
@@ -447,6 +645,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return false;
         }
 
+        // Obtain script extent for the function - just around the function name
+        public IScriptExtent GetScriptExtentForFunctionName(FunctionDefinitionAst functionDefinitionAst)
+        {
+            if (null == functionDefinitionAst)
+            {
+                return null;
+            }
+
+            // Obtain the index where the function name is in Tokens
+            int funcTokenIndex = Tokens.Select((s, index) => new { s, index })
+                          .Where(x => x.s.Extent.StartOffset == functionDefinitionAst.Extent.StartOffset)
+                          .Select(x => x.index).FirstOrDefault();
+
+            if (funcTokenIndex > 0 && funcTokenIndex < Helper.Instance.Tokens.Count())
+            {
+                // return the extent of the next token - this is the extent for the function name
+                return Tokens[++funcTokenIndex].Extent;
+            }
+
+            return null;
+        }
+        
         private void FindClosingParenthesis(string keyword)
         {
             if (Tokens == null || Tokens.Length == 0)
@@ -618,7 +838,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="classes"></param>
         /// <param name="scriptAst"></param>
         /// <returns></returns>
+        
+        #if PSV3
+
+        public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret)
+
+        #else
+
         public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret, IEnumerable<TypeDefinitionAst> classes)
+
+        #endif
         {
             if (ret == null || funcAst == null)
             {
@@ -649,7 +878,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                         else if (cmAst.Expression is MemberExpressionAst)
                         {
+                            #if PSV3
+
+                            result = GetTypeFromMemberExpressionAst(cmAst.Expression as MemberExpressionAst, funcAst);
+
+                            #else
+
                             result = GetTypeFromMemberExpressionAst(cmAst.Expression as MemberExpressionAst, funcAst, classes);
+
+                            #endif
                         }
                     }
                 }
@@ -672,7 +909,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="scopeAst"></param>
         /// <param name="classes"></param>
         /// <returns></returns>
+        
+        #if PSV3
+
+        public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst)
+
+        #else
+
         public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst, IEnumerable<TypeDefinitionAst> classes)
+
+        #endif        
         {
             if (memberAst == null)
             {
@@ -680,7 +926,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             VariableAnalysisDetails details = null;
+
+            #if !PSV3
+
             TypeDefinitionAst psClass = null;
+
+            #endif
 
             if (memberAst.Expression is VariableExpressionAst && VariableAnalysisDictionary.ContainsKey(scopeAst))
             {
@@ -688,14 +939,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // Get the analysis detail for the variable
                 details = VarTypeAnalysis.GetVariableAnalysis(memberAst.Expression as VariableExpressionAst);
 
+                #if !PSV3
+
                 if (details != null && classes != null)
                 {
                     // Get the class that corresponds to the name of the type (if possible)
                     psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
                 }
+
+                #endif
             }
 
-            return GetTypeFromMemberExpressionAstHelper(memberAst, psClass, details);
+            #if PSV3
+
+                return GetTypeFromMemberExpressionAstHelper(memberAst, details);
+
+            #else
+
+                return GetTypeFromMemberExpressionAstHelper(memberAst, psClass, details);
+
+            #endif         
         }
 
         /// <summary>
@@ -706,16 +969,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="psClass"></param>
         /// <param name="analysisDetails"></param>
         /// <returns></returns>
+        
+        #if PSV3
+        
+        internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, VariableAnalysisDetails analysisDetails)
+
+        #else
+
         internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, TypeDefinitionAst psClass, VariableAnalysisDetails analysisDetails)
+
+        #endif
         {
             //Try to get the type without using psClass first
             Type result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst);
+
+            #if !PSV3
 
             //If we can't get the type, then it may be that the type of the object being invoked on is a powershell class
             if (result == null && psClass != null && analysisDetails != null)
             {
                 result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst, analysisDetails, psClass);
             }
+
+            #endif
 
             if (result != null)
             {
@@ -815,6 +1091,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
             }
 
+            #if !PSV3
+
             // Get rule suppression from classes
             IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
 
@@ -822,6 +1100,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 ruleSuppressionList.AddRange(GetSuppressionsClass(typeAst));
             }
+
+            #endif
 
             ruleSuppressionList.Sort((item, item2) => item.StartOffset.CompareTo(item2.StartOffset));
 
@@ -873,12 +1153,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (typeAst.Members == null)
             {
-                return result;
-            }
+                return result;            
+            }            
 
             foreach (var member in typeAst.Members)
             {
+                #if PSv3
+
+                FunctionDefinitionAst funcMemb = member as FunctionDefinitionAst;
+
+                #else
+
                 FunctionMemberAst funcMemb = member as FunctionMemberAst;
+
+                #endif
 
                 if (funcMemb == null)
                 {
@@ -984,38 +1272,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-        public static string[] ProcessCustomRulePaths(string rulePath, SessionState sessionState, bool recurse = false)
+        public static string[] ProcessCustomRulePaths(string[] rulePaths, SessionState sessionState, bool recurse = false)
         {
             //if directory is given, list all the psd1 files
             List<string> outPaths = new List<string>();
-            if (rulePath == null)
+            if (rulePaths == null)
             {
                 return null;
             }
-            try
+
+            Collection<PathInfo> pathInfo = new Collection<PathInfo>();
+            foreach (string rulePath in rulePaths)
             {
-                Collection<PathInfo> pathInfo = sessionState.Path.GetResolvedPSPathFromPSPath(rulePath);                
-                foreach (PathInfo pinfo in pathInfo)
+                Collection<PathInfo> pathInfosForRulePath = sessionState.Path.GetResolvedPSPathFromPSPath(rulePath);
+                if (null != pathInfosForRulePath)
                 {
-                    string path = pinfo.Path;
-                    if (Directory.Exists(path))
+                    foreach (PathInfo pathInfoForRulePath in pathInfosForRulePath)
                     {
-                        path = path.TrimEnd('\\');
-                        if (recurse)
-                        {
-                            outPaths.AddRange(Directory.GetDirectories(pinfo.Path, "*", SearchOption.AllDirectories));
-                        }
+                        pathInfo.Add(pathInfoForRulePath);
                     }
-                    outPaths.Add(path);
                 }
-                return outPaths.ToArray();
             }
-            catch
+
+            foreach (PathInfo pinfo in pathInfo)
             {
-                // need to do this as the path validation takes place later in the hierarchy.
-                outPaths.Add(rulePath);
-                return outPaths.ToArray();
+                string path = pinfo.Path;
+                if (Directory.Exists(path))
+                {
+                    path = path.TrimEnd('\\');
+                    if (recurse)
+                    {
+                        outPaths.AddRange(Directory.GetDirectories(pinfo.Path, "*", SearchOption.AllDirectories));
+                    }
+                }
+                outPaths.Add(path);
             }
+            
+            return outPaths.ToArray();
+            
         }
 
 
@@ -1082,7 +1376,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // We already run variable analysis if the parent is a function so skip these.
             // Otherwise, we have to do variable analysis using the outer scope variables.
+            #if PSV3
+
+                if (!(scriptBlockAst.Parent is FunctionDefinitionAst))
+
+            #else
+
             if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
+
+            #endif
             {
                 OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
             }
@@ -1110,7 +1412,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             VariableAnalysis innerAnalysis = OuterAnalysis;
             OuterAnalysis = previousOuter;
 
+            #if PSV3
+
+            if (!(scriptBlockAst.Parent is FunctionDefinitionAst))
+
+            #else
+
             if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
+
+            #endif
             {
                 // Update the variable analysis of the outer script block
                 VariableAnalysis.UpdateOuterAnalysis(OuterAnalysis, innerAnalysis);
@@ -1130,6 +1440,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return null;
             }
+
+            #if PSV3
+
+            statementAst.Visit(this);
+            
+            #else
 
             TypeDefinitionAst typeAst = statementAst as TypeDefinitionAst;
 
@@ -1157,8 +1473,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
+            #endif
+
             return null;
         }
+
+        #if !PSV3
 
         /// <summary>
         /// Do nothing
@@ -1169,6 +1489,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             return null;
         }
+
+        #endif
 
         /// <summary>
         /// Do nothing
@@ -1835,7 +2157,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     {
         List<Tuple<string, StatementAst>> outputTypes;
 
+        #if !PSV3
+
         IEnumerable<TypeDefinitionAst> classes;
+
+        #endif
 
         FunctionDefinitionAst myFunction;
         /// <summary>
@@ -1872,10 +2198,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Find the pipeline output
         /// </summary>
         /// <param name="ast"></param>
+        
+        #if PSV3
+
+        public FindPipelineOutput(FunctionDefinitionAst ast)
+
+        #else
+
         public FindPipelineOutput(FunctionDefinitionAst ast, IEnumerable<TypeDefinitionAst> classes)
+
+        #endif
         {
             outputTypes = new List<Tuple<string, StatementAst>>();
+
+            #if !PSV3
+
             this.classes = classes;
+
+            #endif
+
             myFunction = ast;
 
             if (myFunction != null)
@@ -1888,10 +2229,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Get list of outputTypes from functiondefinitionast funcast
         /// </summary>
         /// <returns></returns>
+        
+        #if PSV3
+
+        public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst)
+        {
+            return (new FindPipelineOutput(funcAst)).outputTypes;
+        }
+
+        #else
         public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst, IEnumerable<TypeDefinitionAst> classes)
         {
             return (new FindPipelineOutput(funcAst, classes)).outputTypes;
         }
+
+        #endif
 
         /// <summary>
         /// Ignore assignment statement
@@ -2344,7 +2696,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitReturnStatement(ReturnStatementAst returnStatementAst)
         {
+            #if PSV3
+
+            return Helper.Instance.GetTypeFromReturnStatementAst(myFunction, returnStatementAst);
+
+            #else
+
             return Helper.Instance.GetTypeFromReturnStatementAst(myFunction, returnStatementAst, classes);
+
+            #endif            
         }
 
         /// <summary>
@@ -2354,7 +2714,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitMemberExpression(MemberExpressionAst memAst)
         {
+            #if PSV3
+
+            return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, myFunction);
+
+            #else
+
             return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, myFunction, classes);
+
+            #endif
         }
 
         /// <summary>
@@ -2364,7 +2732,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitInvokeMemberExpression(InvokeMemberExpressionAst invokeAst)
         {
+            #if PSV3
+
+            return Helper.Instance.GetTypeFromMemberExpressionAst(invokeAst, myFunction);
+
+            #else
+
             return Helper.Instance.GetTypeFromMemberExpressionAst(invokeAst, myFunction, classes);
+
+            #endif
         }
 
         /// <summary>

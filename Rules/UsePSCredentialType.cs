@@ -11,6 +11,8 @@
 //
 
 using System;
+using System.Reflection;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Language;
@@ -22,13 +24,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
 
     /// <summary>
-    /// UsePSCredentialType: Analyzes the ast to check that cmdlets that have a Credential parameter accept PSCredential.
+    /// UsePSCredentialType: Checks if a parameter named Credential is of type PSCredential. Also checks if there is a credential transformation attribute defined after the PSCredential type attribute. The order between credential transformation attribute and PSCredential type attribute is applicable only to Poweshell 4.0 and earlier. 
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UsePSCredentialType : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyzes the ast to check that cmdlets that have a Credential parameter accept PSCredential.
+        /// AnalyzeScript: Analyzes the ast to check if a parameter named Credential is of type PSCredential. Also checks if there is a credential transformation attribute defined after the PSCredential type attribute. The order between the credential transformation attribute and PSCredential type attribute is applicable only to Poweshell 4.0 and earlier.
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The script's file name</param>
@@ -36,6 +38,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+
+            var sbAst = ast as ScriptBlockAst;
+            if (sbAst != null 
+                    && sbAst.ScriptRequirements != null 
+                    && sbAst.ScriptRequirements.RequiredPSVersion != null
+                    && sbAst.ScriptRequirements.RequiredPSVersion.Major == 5)
+            {           
+                    yield break;
+            }
 
             IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
             IEnumerable<Ast> scriptBlockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);
@@ -50,7 +61,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (ParameterAst parameter in funcDefAst.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (WrongCredentialUsage(parameter))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName), funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
@@ -61,7 +72,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (ParameterAst parameter in funcDefAst.Body.ParamBlock.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (WrongCredentialUsage(parameter))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName), funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
@@ -71,17 +82,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (ScriptBlockAst scriptBlockAst in scriptBlockAsts)
             {
+                // check for the case where it's parent is function, in that case we already processed above
+                if (scriptBlockAst.Parent != null && scriptBlockAst.Parent is FunctionDefinitionAst)
+                {
+                    continue;
+                }
+
                 if (scriptBlockAst.ParamBlock != null && scriptBlockAst.ParamBlock.Parameters != null)
                 {
                     foreach (ParameterAst parameter in scriptBlockAst.ParamBlock.Parameters)
                     {
-                        if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase) && parameter.StaticType != typeof(PSCredential))
+                        if (WrongCredentialUsage(parameter))
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeErrorSB), scriptBlockAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                     }
                 }
             }
+        }
+
+        private bool WrongCredentialUsage(ParameterAst parameter)
+        {
+            if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase))
+            {
+                var psCredentialType = parameter.Attributes.FirstOrDefault(paramAttribute => (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof(PSCredential))
+                    || paramAttribute.TypeName.GetReflectionType() == typeof(PSCredential));
+
+                var credentialAttribute = parameter.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
+
+                // check that both exists and pscredentialtype comes before credential attribute
+                if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset < credentialAttribute.Extent.StartOffset)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

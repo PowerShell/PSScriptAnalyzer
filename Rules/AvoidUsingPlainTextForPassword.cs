@@ -39,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             List<String> passwords = new List<String>() {"Password", "Passphrase", "Cred", "Credential"};
 
-            // Iterrates all ParamAsts and check if their names are on the list.
+            // Iterates all ParamAsts and check if their names are on the list.
             foreach (ParameterAst paramAst in paramAsts)
             {
                 TypeInfo paramType = (TypeInfo) paramAst.StaticType;

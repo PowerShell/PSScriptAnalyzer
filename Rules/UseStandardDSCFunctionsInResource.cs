@@ -57,7 +57,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         ast.Extent, GetName(), DiagnosticSeverity.Error, fileName);      
                 }
             }
-        }
+        }        
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes dsc classes and the file and check that they have get, set and test
@@ -68,6 +68,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+
+            #if PSV3
+
+            return null;
+
+            #else
 
             List<string> resourceFunctionNames = new List<string>(new string[] {"Test", "Get", "Set"});
 
@@ -89,7 +95,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
-        }
+
+            #endif
+        }        
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.

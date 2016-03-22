@@ -37,7 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all ParamAsts.
             IEnumerable<Ast> funcAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
 
-            // Iterrates all ParamAsts and check if there are any force.
+            // Iterates all ParamAsts and check if there are any force.
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
                 IEnumerable<Ast> paramAsts = funcAst.FindAll(testAst => testAst is ParameterAst, true);
@@ -46,7 +46,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (ParameterAst paramAst in paramAsts)
                 {
                     if (String.Equals(paramAst.Name.VariablePath.ToString(), "force", StringComparison.OrdinalIgnoreCase)
-                        && String.Equals(paramAst.StaticType.FullName, "System.Boolean", StringComparison.OrdinalIgnoreCase))
+                        && (String.Equals(paramAst.StaticType.FullName, "System.Boolean", StringComparison.OrdinalIgnoreCase) 
+                        || String.Equals(paramAst.StaticType.FullName, "System.Management.Automation.SwitchParameter", StringComparison.OrdinalIgnoreCase)))
                     {
                         hasForce = true;
                         break;

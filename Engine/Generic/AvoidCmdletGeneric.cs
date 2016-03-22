@@ -24,7 +24,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     public abstract class AvoidCmdletGeneric : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the anaylsis.
+        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the analysis.
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The name of the script file being analyzed</param>
@@ -38,14 +38,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
             List<String> cmdletNameAndAliases = Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper.Instance.CmdletNameAndAliases(GetCmdletName());
 
-            // Iterrates all CommandAsts and check the command name.
+            // Iterates all CommandAsts and check the command name.
             foreach (CommandAst cmdAst in commandAsts)
             {
                 if (cmdAst.GetCommandName() == null) continue;
 
                 if (cmdletNameAndAliases.Contains(cmdAst.GetCommandName(), StringComparer.OrdinalIgnoreCase))
                 {
-                    yield return new DiagnosticRecord(GetError(fileName), cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    yield return new DiagnosticRecord(GetError(fileName), cmdAst.Extent, GetName(), GetDiagnosticSeverity(), fileName);
                 }
             }
         }
@@ -97,5 +97,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// </summary>
         /// <returns></returns>
         public abstract RuleSeverity GetSeverity();
+
+        /// <summary>
+        /// DiagnosticSeverity: Returns the severity of the rule of type DiagnosticSeverity
+        /// </summary>
+        /// <returns></returns>
+        public abstract DiagnosticSeverity GetDiagnosticSeverity();
     }
 }

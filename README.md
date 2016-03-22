@@ -1,26 +1,34 @@
-Announcements
+﻿Announcements
 =============
 
-##### ISE Add-On for ScriptAnalyzer is available in PowerShell Gallery!
-(https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
+###### [ScriptAnalyzer v1.4.0 published to PowerShellGallery - New Rules available!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.4.0)
+
+###### [ScriptAnalyzer now runs on platforms containing PSv3.0 and above - WMF 5.0 is no longer a prerequisite!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.4.0)
+
+###### [VSCode-PowerShell has built-in ScriptAnalyzer support](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
+
+###### [ISE-Steroids has ScriptAnalyzer integration](http://www.powertheshell.com/psscriptanalyzer-integration-and-more/)
+
+##### [ISE Add-On for ScriptAnalyzer is available in PowerShellGallery](https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
+
 
 =============
 
 ##### ScriptAnalyzer community meeting schedule:
 
- - Next Meeting - Dec 8 2015 - 11am to 12pm PDT
- - [iCalender invite](http://1drv.ms/1VvAaxO)
+ - [Next Meeting - Mar 29 2016 - 11am to 12pm PDT](http://1drv.ms/1VvAaxO)
  - [Notes and recordings from earlier meetings](https://github.com/PowerShell/PSScriptAnalyzer/wiki)
 
 
 =============
-
+#####Builds
 |Master   |  Development |
 |:------:|:------:|:-------:|:-------:|
 [![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/development?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/development) |
 
 =============
-
+#### Code Review Dashboard on [reviewable.io](https://reviewable.io/reviews/PowerShell/PSScriptAnalyzer#-)
+=============
 
 Introduction
 ============
@@ -40,9 +48,10 @@ Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-Exclud
 Requirements
 ============
 
-WS2012R2 / Windows 8.1 / Windows OS running **PowerShell v5.0** and **Windows Management Framework 5.0 Preview**
+WS2012R2 / Windows 8.1 / Windows OS running a **minimum of PowerShell v3.0**
 
-Download the latest WMF package from [Windows Management Framework 5.0 Preview](http://go.microsoft.com/fwlink/?LinkId=398175).
+A Windows OS with PowerShell v5.0 [Windows Management Framework 5.0 Preview](http://go.microsoft.com/fwlink/?LinkId=398175) is also supported
+
 
 Installation
 ============

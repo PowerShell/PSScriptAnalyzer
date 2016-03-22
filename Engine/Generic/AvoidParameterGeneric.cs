@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     public abstract class AvoidParameterGeneric : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the anaylsis.
+        /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the analysis.
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The name of the script file being analyzed</param>
@@ -35,7 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             // Finds all CommandAsts.
             IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
-            // Iterrates all CommandAsts and check the condition.
+            // Iterates all CommandAsts and check the condition.
             foreach (CommandAst cmdAst in commandAsts)
             {
                 if (CommandCondition(cmdAst) && cmdAst.CommandElements != null)
@@ -44,7 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     {
                         if (ParameterCondition(cmdAst, ceAst))
                         {
-                            yield return new DiagnosticRecord(GetError(fileName, cmdAst), cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, cmdAst.GetCommandName());
+                            yield return new DiagnosticRecord(GetError(fileName, cmdAst), cmdAst.Extent, GetName(), GetDiagnosticSeverity(), fileName, cmdAst.GetCommandName());
                         }
                     }
                 }
@@ -102,6 +102,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <returns>The source type of the rule.</returns>
         public abstract  SourceType GetSourceType();
 
+        /// <summary>
+        /// RuleSeverity: Returns the severity of the rule.
+        /// </summary>
+        /// <returns></returns>
         public abstract RuleSeverity GetSeverity();
+
+        /// <summary>
+        /// DiagnosticSeverity: Returns the severity of the rule of type DiagnosticSeverity
+        /// </summary>
+        /// <returns></returns>
+        public abstract DiagnosticSeverity GetDiagnosticSeverity();
     }
 }

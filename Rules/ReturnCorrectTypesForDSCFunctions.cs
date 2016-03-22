@@ -40,13 +40,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
+            #if !PSV3
+
             IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
                 item is TypeDefinitionAst
                 && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
 
+            #endif
+
             foreach (FunctionDefinitionAst func in functionDefinitionAsts)
             {
+
+                #if PSV3
+
+                List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func);
+
+                #else
+
                 List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func, classes);
+
+                #endif
+                
 
                 if (String.Equals(func.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase))
                 {
@@ -83,6 +97,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
         }
+
+        #if !PSV3
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes given DSC Resource
@@ -172,6 +188,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
         }
+
+        #endif
         
 
         /// <summary>
