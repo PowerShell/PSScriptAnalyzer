@@ -40,17 +40,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 CommandAst cmdAst = (CommandAst)foundAst;
                 string aliasName = cmdAst.GetCommandName();
+
                 // Handles the exception caused by commands like, {& $PLINK $args 2> $TempErrorFile}.
                 // You can also review the remark section in following document,
                 // MSDN: CommandAst.GetCommandName Method
-                if (aliasName == null) continue;
+                if (aliasName == null)
+                {
+                    continue;
+                }
 
                 string cmdletName = Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper.Instance.GetCmdletNameFromAlias(aliasName);
 
                 if (!String.IsNullOrEmpty(cmdletName))
                 {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, aliasName, cmdletName),
-                        cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, aliasName);
+                    yield return new DiagnosticRecord(
+                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, aliasName, cmdletName),
+                        cmdAst.Extent, 
+                        GetName(), 
+                        DiagnosticSeverity.Warning, 
+                        fileName, 
+                        aliasName, 
+                        cmdletName);
                 }
             }
         }
