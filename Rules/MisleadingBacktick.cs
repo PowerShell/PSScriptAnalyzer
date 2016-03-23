@@ -56,11 +56,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     int lineNumber = ast.Extent.StartLineNumber + i;
 
                     ScriptPosition start = new ScriptPosition(fileName, lineNumber, match.Index, line);
-                    ScriptPosition end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length, line);
-                    
+                    ScriptPosition end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length, line);                    
                     yield return new DiagnosticRecord(
                         string.Format(CultureInfo.CurrentCulture, Strings.MisleadingBacktickError),
-                            new ScriptExtent(start, end), GetName(), DiagnosticSeverity.Warning, fileName);
+                            new ScriptExtent(start, end), 
+                            GetName(), 
+                            DiagnosticSeverity.Warning, 
+                            fileName,
+                            suggestedCorrection:string.Empty);
                 }
             }
         }

@@ -8,6 +8,12 @@ Describe "Avoid Misleading Backticks" {
     Context "When there are violations" {
         It "has 5 misleading backtick violations" {
             $violations.Count | Should Be 5
+
+	    foreach ($violation in $violations)
+	    {
+		$violation.SuggestedCorrection | Should Not Be $null
+		$violation.SuggestedCorrection | Should BeNullOrEmpty
+	    }
         }
     }
 
