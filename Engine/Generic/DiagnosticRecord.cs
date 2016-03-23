@@ -26,6 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private DiagnosticSeverity severity;
         private string scriptName;
         private string ruleSuppressionId;
+        private string suggestedCorrection;
 
         /// <summary>
         /// Represents a string from the rule about why this diagnostic was created.
@@ -92,29 +93,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// Returns suggested correction
+        /// return value can be null
+        /// </summary>
+        public string SuggestedCorrection
+        {
+            get { return suggestedCorrection;  }            
+        }
+
+        /// <summary>
         /// DiagnosticRecord: The constructor for DiagnosticRecord class.
         /// </summary>
         public DiagnosticRecord()
         {
 
         }
-
+        
         /// <summary>
-        /// DiagnosticRecord: The constructor for DiagnosticRecord class.
+        /// DiagnosticRecord: The constructor for DiagnosticRecord class that takes in suggestedCorrection
         /// </summary>
         /// <param name="message">A string about why this diagnostic was created</param>
         /// <param name="extent">The place in the script this diagnostic refers to</param>
         /// <param name="ruleName">The name of the rule that created this diagnostic</param>
         /// <param name="severity">The severity of this diagnostic</param>
         /// <param name="scriptName">The name of the script file being analyzed</param>
-        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptName, string ruleId = null)
+        /// <param name="suggestedCorrection">The correction suggested by the rule to replace the extent text</param>
+        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptName, string ruleId = null, string suggestedCorrection = null)
         {
-            Message  = string.IsNullOrEmpty(message)  ? string.Empty : message;
+            Message = string.IsNullOrEmpty(message) ? string.Empty : message;
             RuleName = string.IsNullOrEmpty(ruleName) ? string.Empty : ruleName;
-            Extent   = extent;
+            Extent = extent;
             Severity = severity;
             ScriptName = string.IsNullOrEmpty(scriptName) ? string.Empty : scriptName;
             ruleSuppressionId = ruleId;
+            this.suggestedCorrection = suggestedCorrection;
         }
     }
 
