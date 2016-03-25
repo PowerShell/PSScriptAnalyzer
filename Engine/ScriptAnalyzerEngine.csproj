@@ -34,23 +34,23 @@
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'PSV3 Debug|AnyCPU'">
-     <DebugSymbols>true</DebugSymbols>
-     <OutputPath>bin\PSV3 Debug\</OutputPath>
-     <DefineConstants>TRACE;DEBUG;PSV3</DefineConstants>
-     <DebugType>full</DebugType>
-     <PlatformTarget>AnyCPU</PlatformTarget>
-     <ErrorReport>prompt</ErrorReport>
-     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'PSV3 Release|AnyCPU'">
-     <OutputPath>bin\PSV3 Release\</OutputPath>
-     <DefineConstants>TRACE;PSV3</DefineConstants>
-     <Optimize>true</Optimize>
-     <DebugType>pdbonly</DebugType>
-     <PlatformTarget>AnyCPU</PlatformTarget>
-     <ErrorReport>prompt</ErrorReport>
-     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    </PropertyGroup>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\PSV3 Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PSV3</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'PSV3 Release|AnyCPU'">
+    <OutputPath>bin\PSV3 Release\</OutputPath>
+    <DefineConstants>TRACE;PSV3</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -70,6 +70,7 @@
     <Compile Include="Commands\InvokeScriptAnalyzerCommand.cs" />
     <Compile Include="Generic\AvoidCmdletGeneric.cs" />
     <Compile Include="Generic\AvoidParameterGeneric.cs" />
+    <Compile Include="Generic\CorrectionExtent.cs" />
     <Compile Include="Generic\SuppressedRecord.cs" />
     <Compile Include="Generic\DiagnosticRecord.cs" />
     <Compile Include="Generic\ExternalRule.cs" />
@@ -101,7 +102,7 @@
     <Compile Include="VariableAnalysisBase.cs" />
   </ItemGroup>
   <ItemGroup>
-	<None Include="PSScriptAnalyzer.psm1" />
+    <None Include="PSScriptAnalyzer.psm1" />
     <None Include="PSScriptAnalyzer.psd1" />
     <None Include="ScriptAnalyzer.format.ps1xml" />
     <None Include="ScriptAnalyzer.types.ps1xml" />
