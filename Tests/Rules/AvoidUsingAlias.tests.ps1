@@ -15,10 +15,13 @@ Describe "AvoidUsingAlias" {
             $violations[1].Message | Should Match $violationMessage
         }
 
-		It "suggests correction" {
-			$violations[0].SuggestedCorrection | Should Be 'Invoke-Expression'
-			$violations[1].SuggestedCorrection | Should Be 'Clear-Host'
-		}
+	It "suggests correction" {
+	   $violations[0].SuggestedCorrections.Count | Should Be 1
+	   $violations[0].SuggestedCorrections.Text | Should Be 'Invoke-Expression'
+
+	   $violations[1].SuggestedCorrections.Count | Should Be 1
+	   $violations[1].SuggestedCorrections.Text | Should Be 'Clear-Host'
+	}
     }
 
     Context "When there are no violations" {

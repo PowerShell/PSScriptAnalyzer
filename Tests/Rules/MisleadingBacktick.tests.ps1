@@ -11,8 +11,8 @@ Describe "Avoid Misleading Backticks" {
 
 	    foreach ($violation in $violations)
 	    {
-		$violation.SuggestedCorrection | Should Not Be $null
-		$violation.SuggestedCorrection | Should BeNullOrEmpty
+		$violation.SuggestedCorrections.Count | Should Be 1
+		$violation.SuggestedCorrections[0].Text | Should Be ''
 	    }
         }
     }

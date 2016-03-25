@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
-    public class CorrectionExtent : IScriptExtent
+    public class CorrectionExtent
     {
         public int EndColumnNumber
         {
@@ -23,22 +23,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             get
             {
                 return endLineNumber;
-            }
-        }
-
-        public int EndOffset
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public IScriptPosition EndScriptPosition
-        {
-            get
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -66,22 +50,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
         }
 
-        public int StartOffset
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public IScriptPosition StartScriptPosition
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public string Text
         {
             get
@@ -97,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private int endColumnNumber;
         private string text;
     
-        public CorrectionExtent(string file, int startLineNumber, int endLineNumber, int startColumnNumber, int endColumnNumber, string text)
+        public CorrectionExtent(int startLineNumber, int endLineNumber, int startColumnNumber, int endColumnNumber, string text, string file)
         {
             this.startLineNumber = startLineNumber;
             this.endLineNumber = endLineNumber;
@@ -113,34 +81,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             ThrowIfNull<string>(file, "filename");
             ThrowIfNull<string>(text, "text");
             ThrowIfDecreasing(startLineNumber, endLineNumber, "start line number cannot be less than end line number");            
-            ThrowIfTextNotConsistent();
-        }
-
-        private void ThrowIfTextNotConsistent()
-        {
-            using (var stringReader = new StringReader(text))
+            if (startLineNumber == endLineNumber)
             {
-                int numLines = 0;                
-                int expectedNumLines = endLineNumber - startLineNumber + 1;                
-                for (string line = stringReader.ReadLine(); line != null; line = stringReader.ReadLine())
-                {
-                    numLines++;                    
-                }
-                if (numLines != expectedNumLines)
-                {
-                    throw new ArgumentException("number of lines not consistent with text argument");
-                }
-                if (numLines == 1)
-                {
-                    ThrowIfDecreasing(startColumnNumber, endColumnNumber, "start column number cannot be less then end column number");
-                    if (endColumnNumber - startColumnNumber != text.Length)
-                    {
-                        throw new ArgumentException("column numbers are inconsistent with the length of the string");
-                    }
-                }
+                ThrowIfDecreasing(StartColumnNumber, endColumnNumber, "start column number cannot be less than end column number for a one line extent");
             }
         }
-                
+
         private void ThrowIfDecreasing(int start, int end, string message)
         {
             if (start > end)

@@ -55,17 +55,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     int lineNumber = ast.Extent.StartLineNumber + i;
 
-                    ScriptPosition start = new ScriptPosition(fileName, lineNumber, match.Index, line);
-                    ScriptPosition end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length, line);                    
+                    var start = new ScriptPosition(fileName, lineNumber, match.Index, line);
+                    var end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length, line);
+                    var extent = new ScriptExtent(start, end);
                     yield return new DiagnosticRecord(
                         string.Format(CultureInfo.CurrentCulture, Strings.MisleadingBacktickError),
-                            new ScriptExtent(start, end), 
+                            extent, 
                             GetName(), 
                             DiagnosticSeverity.Warning, 
                             fileName,
-                            suggestedCorrection:string.Empty);
+                            suggestedCorrections: GetCorrectionExtent(extent));
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a list containing suggested correction
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <returns>Returns a list of suggested corrections</returns>
+        private List<CorrectionExtent> GetCorrectionExtent(IScriptExtent violationExtent)
+        {
+            var corrections = new List<CorrectionExtent>();            
+            corrections.Add(new CorrectionExtent(                
+                violationExtent.StartLineNumber,
+                violationExtent.EndLineNumber,
+                violationExtent.StartColumnNumber,
+                violationExtent.EndColumnNumber,
+                String.Empty,
+                violationExtent.File));
+            return corrections;
         }
 
         /// <summary>

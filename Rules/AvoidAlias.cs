@@ -60,9 +60,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         DiagnosticSeverity.Warning, 
                         fileName, 
                         aliasName, 
-                        cmdletName);
+                        suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletName));
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a list containing suggested correction
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <param name="cmdletName"></param>
+        /// <returns>Returns a list of suggested corrections</returns>
+        private List<CorrectionExtent> GetCorrectionExtent(CommandAst cmdAst, string cmdletName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            var ext = cmdAst.Extent;
+            corrections.Add(new CorrectionExtent(                
+                ext.StartLineNumber,
+                ext.EndLineNumber,
+                ext.StartColumnNumber,
+                ext.EndColumnNumber,
+                cmdletName,
+                ext.File));
+            return corrections;
         }
 
         /// <summary>

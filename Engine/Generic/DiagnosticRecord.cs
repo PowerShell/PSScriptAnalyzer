@@ -10,6 +10,7 @@
 // THE SOFTWARE.
 //
 
+using System.Collections.Generic;
 using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
@@ -26,7 +27,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private DiagnosticSeverity severity;
         private string scriptName;
         private string ruleSuppressionId;
-        private string suggestedCorrection;
+        private List<CorrectionExtent> suggestedCorrections;
 
         /// <summary>
         /// Represents a string from the rule about why this diagnostic was created.
@@ -96,9 +97,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// Returns suggested correction
         /// return value can be null
         /// </summary>
-        public string SuggestedCorrection
+        public List<CorrectionExtent> SuggestedCorrections
         {
-            get { return suggestedCorrection;  }            
+            get { return suggestedCorrections;  }            
         }
 
         /// <summary>
@@ -117,8 +118,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="ruleName">The name of the rule that created this diagnostic</param>
         /// <param name="severity">The severity of this diagnostic</param>
         /// <param name="scriptName">The name of the script file being analyzed</param>
-        /// <param name="suggestedCorrection">The correction suggested by the rule to replace the extent text</param>
-        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptName, string ruleId = null, string suggestedCorrection = null)
+        /// <param name="suggestedCorrections">The correction suggested by the rule to replace the extent text</param>
+        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptName, string ruleId = null, List<CorrectionExtent> suggestedCorrections = null)
         {
             Message = string.IsNullOrEmpty(message) ? string.Empty : message;
             RuleName = string.IsNullOrEmpty(ruleName) ? string.Empty : ruleName;
@@ -126,7 +127,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             Severity = severity;
             ScriptName = string.IsNullOrEmpty(scriptName) ? string.Empty : scriptName;
             ruleSuppressionId = ruleId;
-            this.suggestedCorrection = suggestedCorrection;
+            this.suggestedCorrections = suggestedCorrections;
         }
     }
 
