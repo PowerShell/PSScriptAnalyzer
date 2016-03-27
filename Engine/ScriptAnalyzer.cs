@@ -133,7 +133,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] excludeRuleNames = null,
             string[] severity = null,
             bool includeDefaultRules = false,
-            bool suppressedOnly = false)
+            bool suppressedOnly = false,
+            string profile = null)
         {
             if (runspace == null)
             {
@@ -149,7 +150,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 excludeRuleNames,
                 severity,
                 includeDefaultRules,
-                suppressedOnly);
+                suppressedOnly,
+                profile);
         }
 
         /// <summary>
@@ -476,12 +478,69 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             #region Initializes Rules
 
+            var includeRuleList = new List<string>();
+            var excludeRuleList = new List<string>();
+            var severityList = new List<string>();
+
+            if (profile != null)
+            {
+                ParseProfileString(profile, path, outputWriter, severityList, includeRuleList, excludeRuleList);
+            }
+
+            if (includeRuleNames != null)
+            {
+                foreach (string includeRuleName in includeRuleNames.Where(rule => !includeRuleList.Contains(rule, StringComparer.OrdinalIgnoreCase)))
+                {
+                    includeRuleList.Add(includeRuleName);
+                }
+            }
+
+            if (excludeRuleNames != null)
+            {
+                foreach (string excludeRuleName in excludeRuleNames.Where(rule => !excludeRuleList.Contains(rule, StringComparer.OrdinalIgnoreCase)))
+                {
+                    excludeRuleList.Add(excludeRuleName);
+                }
+            }
+
+            if (severity != null)
+            {
+                foreach (string sev in severity.Where(s => !severityList.Contains(s, StringComparer.OrdinalIgnoreCase)))
+                {
+                    severityList.Add(sev);
+                }
+            }
+
             this.suppressedOnly = suppressedOnly;
-            this.severity = this.severity == null ? severity : this.severity.Union(severity ?? new String[0]).ToArray();
-            this.includeRule = this.includeRule == null ? includeRuleNames : this.includeRule.Union(includeRuleNames ?? new String[0]).ToArray();
-            this.excludeRule = this.excludeRule == null ? excludeRuleNames : this.excludeRule.Union(excludeRuleNames ?? new String[0]).ToArray();
             this.includeRegexList = new List<Regex>();
             this.excludeRegexList = new List<Regex>();
+
+            if (this.severity == null)
+            {
+                this.severity = severityList.Count == 0 ? null : severityList.ToArray();
+            }
+            else
+            {
+                this.severity = this.severity.Union(severityList).ToArray();
+            }
+
+            if (this.includeRule == null)
+            {
+                this.includeRule = includeRuleList.Count == 0 ? null : includeRuleList.ToArray();
+            }
+            else
+            {
+                this.includeRule = this.includeRule.Union(includeRuleList).ToArray();
+            }
+
+            if (this.excludeRule == null)
+            {
+                this.excludeRule = excludeRuleList.Count == 0 ? null : excludeRuleList.ToArray();
+            }
+            else
+            {
+                this.excludeRule = this.excludeRule.Union(excludeRuleList).ToArray();
+            }
 
             //Check wild card input for the Include/ExcludeRules and create regex match patterns
             if (this.includeRule != null)
