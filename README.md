@@ -147,35 +147,46 @@ To match all functions/variables/parameters/objects, use `*` as the value of the
 
 
 
-Profile support in ScriptAnalyzer
+Settings Support in ScriptAnalyzer
 ========================================
 
-Profiles that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to `Invoke-ScriptAnalyzer` using the `-profile` parameter. This enables a user to create custom configuration for a specific environment.
+Settings that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to
+`Invoke-ScriptAnalyzer` using the `-Setting` parameter. This enables a user to create custom configuration for a specific environment.
 
-Using Profile support:
+Using Settings support:
+
+The following example excludes two rules from the default set of rules and any rule
+that does not output an Error or Warning diagnostic record.
 
 ```powershell
-# This example excludes two rules from the default set of rules and any rule
-# that does not output an Error or Warning diagnostic record.
-@'
+# ScriptAnalyzerSettings.psd1
 @{
     Severity=@('Error','Warning')
     ExcludeRules=@('PSAvoidUsingCmdletAliases',
                    'PSAvoidUsingWriteHost')
 }
-'@ > ScriptAnalyzerProfile.psd1
+```
 
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Profile ScriptAnalyzerProfile.psd1
+Then invoke that settings file when using `Invoke-ScriptAnalyzer`:
 
-# This example selects a few rules to execute instead of all the default rules.
-@'
+```powershell
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting ScriptAnalyzerSettings.psd1
+```
+
+The next example selects a few rules to execute instead of all the default rules.
+
+```powershell
+# ScriptAnalyzerSettings.psd1
 @{
     IncludeRules=@('PSAvoidUsingPlainTextForPassword',
                    'PSAvoidUsingConvertToSecureStringWithPlainText')
 }
-'@ > ScriptAnalyzerProfile.psd1
+```
 
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Profile ScriptAnalyzerProfile.psd1
+Then invoke that settings file when using `Invoke-ScriptAnalyzer`:
+
+```powershell
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting ScriptAnalyzerSettings.psd1
 ```
 
 ScriptAnalyzer as a .net library
