@@ -32,6 +32,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private CommandInvocationIntrinsics invokeCommand;
         private IOutputWriter outputWriter;
+        private Object getCommandLock = new object();
 
         #endregion
 
@@ -567,7 +568,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public CommandInfo GetCommandInfo(string name, CommandTypes commandType = CommandTypes.Alias | CommandTypes.Cmdlet | CommandTypes.Configuration | CommandTypes.ExternalScript | CommandTypes.Filter | CommandTypes.Function | CommandTypes.Script | CommandTypes.Workflow)
         {
-            return this.invokeCommand.GetCommand(name, commandType);
+            lock (getCommandLock)
+            {
+                return this.invokeCommand.GetCommand(name, commandType);
+            }
         }
 
         /// <summary>
