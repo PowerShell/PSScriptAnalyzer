@@ -1437,14 +1437,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
             if (this.ScriptRules != null)
             {
-                var tasks = this.ScriptRules.Select(scriptRule => Task.Factory.StartNew(() =>
+                var allowedRules = this.ScriptRules.Where(IsRuleAllowed);
+
+                if (allowedRules.Any())
                 {
-                    bool helpRule = String.Equals(scriptRule.GetName(), "PSUseUTF8EncodingForHelpFile", StringComparison.OrdinalIgnoreCase);
-
-                    if (IsRuleAllowed(scriptRule))
+                    var tasks = allowedRules.Select(scriptRule => Task.Factory.StartNew(() =>
                     {
+                        bool helpRule = String.Equals(scriptRule.GetName(), "PSUseUTF8EncodingForHelpFile", StringComparison.OrdinalIgnoreCase);
                         List<object> result = new List<object>();
-
                         result.Add(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors
@@ -1478,26 +1478,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
 
                         verboseOrErrors.Add(result);
-                    }
-                }));
+                    }));
 
-                Task.Factory.ContinueWhenAll(tasks.ToArray(), t => verboseOrErrors.CompleteAdding());
+                    Task.Factory.ContinueWhenAll(tasks.ToArray(), t => verboseOrErrors.CompleteAdding());
 
-                while (!verboseOrErrors.IsCompleted)
-                {
-                    List<object> data = null;
-                    try
+                    while (!verboseOrErrors.IsCompleted)
                     {
-                        data = verboseOrErrors.Take();
-                    }
-                    catch (InvalidOperationException) { }
-
-                    if (data != null)
-                    {
-                        this.outputWriter.WriteVerbose(data[0] as string);
-                        if (data.Count == 2)
+                        List<object> data = null;
+                        try
                         {
-                            this.outputWriter.WriteError(data[1] as ErrorRecord);
+                            data = verboseOrErrors.Take();
+                        }
+                        catch (InvalidOperationException) { }
+
+                        if (data != null)
+                        {
+                            this.outputWriter.WriteVerbose(data[0] as string);
+                            if (data.Count == 2)
+                            {
+                                this.outputWriter.WriteError(data[1] as ErrorRecord);
+                            }
                         }
                     }
                 }
