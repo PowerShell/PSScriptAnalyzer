@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.4.0'
+ModuleVersion = '1.5.0'
 
 # ID used to uniquely identify this module
 GUID = '324fc715-36bf-4aee-8e58-72e9b4a08ad9'
@@ -20,7 +20,7 @@ GUID = '324fc715-36bf-4aee-8e58-72e9b4a08ad9'
 CompanyName = 'Microsoft Corporation'
 
 # Copyright statement for this module
-Copyright = '(c) Microsoft Corporation 2015. All rights reserved.'
+Copyright = '(c) Microsoft Corporation 2016. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of built-in or customized rules on the scripts being analyzed.'
