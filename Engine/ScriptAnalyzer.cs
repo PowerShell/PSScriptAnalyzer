@@ -1320,6 +1320,64 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath);
         }
 
+        private bool IsSeverityAllowed(IEnumerable<uint> allowedSeverities, IRule rule)
+        {
+            return severity == null 
+                || (allowedSeverities != null 
+                    && rule != null 
+                    && HasGetSeverity(rule) 
+                    && allowedSeverities.Contains((uint)rule.GetSeverity()));
+        }
+
+        IEnumerable<uint> GetAllowedSeveritiesInInt()
+        {
+            return severity != null 
+                ? severity.Select(item => (uint)Enum.Parse(typeof(DiagnosticSeverity), item, true)) 
+                : null;
+        }
+
+        bool HasMethod<T>(T obj, string methodName)
+        {
+            var type = obj.GetType();
+            return type.GetMethod(methodName) != null;
+        }
+
+        bool HasGetSeverity<T>(T obj)
+        {
+            return HasMethod<T>(obj, "GetSeverity");
+        }
+
+        bool IsRuleAllowed(IRule rule)
+        {
+            IEnumerable<uint> allowedSeverities = GetAllowedSeveritiesInInt();
+            bool includeRegexMatch = false;
+            bool excludeRegexMatch = false;
+            foreach (Regex include in includeRegexList)
+            {
+                if (include.IsMatch(rule.GetName()))
+                {
+                    includeRegexMatch = true;
+                    break;
+                }
+            }
+
+            foreach (Regex exclude in excludeRegexList)
+            {
+                if (exclude.IsMatch(rule.GetName()))
+                {
+                    excludeRegexMatch = true;
+                    break;
+                }
+            }
+
+            bool helpRule = String.Equals(rule.GetName(), "PSUseUTF8EncodingForHelpFile", StringComparison.OrdinalIgnoreCase);
+            bool includeSeverity = IsSeverityAllowed(allowedSeverities, rule);
+
+            return (includeRule == null || includeRegexMatch)
+                    && (excludeRule == null || !excludeRegexMatch)
+                    && IsSeverityAllowed(allowedSeverities, rule);
+        }
+
         /// <summary>
         /// Analyzes the syntax tree of a script file that has already been parsed.
         /// </summary>
@@ -1373,39 +1431,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 Helper.Instance.Tokens = scriptTokens;
             }
-
+          
             #region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
             string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
-
             if (this.ScriptRules != null)
             {
                 var tasks = this.ScriptRules.Select(scriptRule => Task.Factory.StartNew(() =>
                 {
-                    bool includeRegexMatch = false;
-                    bool excludeRegexMatch = false;
-
-                    foreach (Regex include in includeRegexList)
-                    {
-                        if (include.IsMatch(scriptRule.GetName()))
-                        {
-                            includeRegexMatch = true;
-                            break;
-                        }
-                    }
-
-                    foreach (Regex exclude in excludeRegexList)
-                    {
-                        if (exclude.IsMatch(scriptRule.GetName()))
-                        {
-                            excludeRegexMatch = true;
-                            break;
-                        }
-                    }
-
                     bool helpRule = String.Equals(scriptRule.GetName(), "PSUseUTF8EncodingForHelpFile", StringComparison.OrdinalIgnoreCase);
 
-                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                    if (IsRuleAllowed(scriptRule))
                     {
                         List<object> result = new List<object>();
 
@@ -1475,25 +1511,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 foreach (ITokenRule tokenRule in this.TokenRules)
                 {
-                    bool includeRegexMatch = false;
-                    bool excludeRegexMatch = false;
-                    foreach (Regex include in includeRegexList)
-                    {
-                        if (include.IsMatch(tokenRule.GetName()))
-                        {
-                            includeRegexMatch = true;
-                            break;
-                        }
-                    }
-                    foreach (Regex exclude in excludeRegexList)
-                    {
-                        if (exclude.IsMatch(tokenRule.GetName()))
-                        {
-                            excludeRegexMatch = true;
-                            break;
-                        }
-                    }
-                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                    if (IsRuleAllowed(tokenRule))
                     {
                         this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, tokenRule.GetName()));
 
@@ -1592,24 +1610,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // Run all DSC Rules
                     foreach (IDSCResourceRule dscResourceRule in this.DSCResourceRules)
                     {
-                        bool includeRegexMatch = false;
-                        bool excludeRegexMatch = false;
-                        foreach (Regex include in includeRegexList)
-                        {
-                            if (include.IsMatch(dscResourceRule.GetName()))
-                            {
-                                includeRegexMatch = true;
-                                break;
-                            }
-                        }
-                        foreach (Regex exclude in excludeRegexList)
-                        {
-                            if (exclude.IsMatch(dscResourceRule.GetName()))
-                            {
-                                excludeRegexMatch = true;
-                            }
-                        }
-                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                        if (IsRuleAllowed(dscResourceRule))
                         {
                             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
@@ -1646,8 +1647,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 foreach (ExternalRule exRule in this.ExternalRules)
                 {
-                    if ((includeRule == null || includeRule.Contains(exRule.GetName(), StringComparer.OrdinalIgnoreCase)) &&
-                        (excludeRule == null || !excludeRule.Contains(exRule.GetName(), StringComparer.OrdinalIgnoreCase)))
+                    if (IsRuleAllowed(exRule))
                     {
                         string ruleName = string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", exRule.GetSourceName(), exRule.GetName());
                         this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, ruleName));
@@ -1675,15 +1675,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
             IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics.Reverse();
-
-            if (severity != null)
-            {
-                var diagSeverity = severity.Select(item => Enum.Parse(typeof(DiagnosticSeverity), item, true));
-                if (diagSeverity.Count() != 0)
-                {
-                    diagnosticsList = diagnostics.Where(item => diagSeverity.Contains(item.Severity));
-                }
-            }
 
             return this.suppressedOnly ?
                 suppressed.OfType<DiagnosticRecord>() :
