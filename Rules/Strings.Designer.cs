@@ -457,7 +457,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Functions should only take in a credential parameter of type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute instead of username and password parameters..
+        ///   Looks up a localized string similar to Functions should take in a Credential parameter of type PSCredential (with a Credential transformation attribute defined after it in PowerShell 4.0 or earlier) or set the Password parameter to type SecureString..
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsDescription {
             get {
@@ -466,7 +466,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function &apos;{0}&apos; has both username and password parameters. A credential parameter of type PSCredential with a CredentialAttribute where PSCredential comes before CredentialAttribute should be used..
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; has both Username and Password parameters. Either set the type of the Password parameter to SecureString or replace the Username and Password parameters with a Credential parameter of type PSCredential. If using a Credential parameter in PowerShell 4.0 or earlier, please define a credential transformation attribute after the PSCredential type attribute..
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsError {
             get {
@@ -1834,7 +1834,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PSCredential.
+        ///   Looks up a localized string similar to Use PSCredential type..
         /// </summary>
         internal static string UsePSCredentialTypeCommonName {
             get {
@@ -1843,7 +1843,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Checks that cmdlets that have a Credential parameter accept PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute.. This comes from the PowerShell teams best practices..
+        ///   Looks up a localized string similar to For PowerShell 4.0 and earlier, a parameter named Credential with type PSCredential must have a credential transformation attribute defined after the PSCredential type attribute. .
         /// </summary>
         internal static string UsePSCredentialTypeDescription {
             get {
@@ -1852,7 +1852,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute..
+        ///   Looks up a localized string similar to The Credential parameter in &apos;{0}&apos; must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute..
         /// </summary>
         internal static string UsePSCredentialTypeError {
             get {
@@ -1861,7 +1861,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Credential parameter in a found script block must be of the type PSCredential with CredentialAttribute where PSCredential comes before CredentialAttribute..
+        ///   Looks up a localized string similar to The Credential parameter found in the script block must be of type PSCredential. For PowerShell 4.0 and earlier please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute. .
         /// </summary>
         internal static string UsePSCredentialTypeErrorSB {
             get {

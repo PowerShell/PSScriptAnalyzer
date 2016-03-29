@@ -223,6 +223,21 @@ function global:Get-SimpleFunc*
 
 }
 
+function Local:Get-SimpleFunc*
+{
+
+}
+
+function PRIVATE:Get-SimpleFunc*
+{
+
+}
+
+function ScRiPt:Get-SimpleFunc*
+{
+
+}
+
 <#
 .Synopsis
    Short description

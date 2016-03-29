@@ -133,7 +133,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] excludeRuleNames = null,
             string[] severity = null,
             bool includeDefaultRules = false,
-            bool suppressedOnly = false)
+            bool suppressedOnly = false,
+            string profile = null)
         {
             if (runspace == null)
             {
@@ -149,7 +150,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 excludeRuleNames,
                 severity,
                 includeDefaultRules,
-                suppressedOnly);
+                suppressedOnly,
+                profile);
         }
 
         /// <summary>
@@ -476,12 +478,69 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             #region Initializes Rules
 
+            var includeRuleList = new List<string>();
+            var excludeRuleList = new List<string>();
+            var severityList = new List<string>();
+
+            if (profile != null)
+            {
+                ParseProfileString(profile, path, outputWriter, severityList, includeRuleList, excludeRuleList);
+            }
+
+            if (includeRuleNames != null)
+            {
+                foreach (string includeRuleName in includeRuleNames.Where(rule => !includeRuleList.Contains(rule, StringComparer.OrdinalIgnoreCase)))
+                {
+                    includeRuleList.Add(includeRuleName);
+                }
+            }
+
+            if (excludeRuleNames != null)
+            {
+                foreach (string excludeRuleName in excludeRuleNames.Where(rule => !excludeRuleList.Contains(rule, StringComparer.OrdinalIgnoreCase)))
+                {
+                    excludeRuleList.Add(excludeRuleName);
+                }
+            }
+
+            if (severity != null)
+            {
+                foreach (string sev in severity.Where(s => !severityList.Contains(s, StringComparer.OrdinalIgnoreCase)))
+                {
+                    severityList.Add(sev);
+                }
+            }
+
             this.suppressedOnly = suppressedOnly;
-            this.severity = this.severity == null ? severity : this.severity.Union(severity ?? new String[0]).ToArray();
-            this.includeRule = this.includeRule == null ? includeRuleNames : this.includeRule.Union(includeRuleNames ?? new String[0]).ToArray();
-            this.excludeRule = this.excludeRule == null ? excludeRuleNames : this.excludeRule.Union(excludeRuleNames ?? new String[0]).ToArray();
             this.includeRegexList = new List<Regex>();
             this.excludeRegexList = new List<Regex>();
+
+            if (this.severity == null)
+            {
+                this.severity = severityList.Count == 0 ? null : severityList.ToArray();
+            }
+            else
+            {
+                this.severity = this.severity.Union(severityList).ToArray();
+            }
+
+            if (this.includeRule == null)
+            {
+                this.includeRule = includeRuleList.Count == 0 ? null : includeRuleList.ToArray();
+            }
+            else
+            {
+                this.includeRule = this.includeRule.Union(includeRuleList).ToArray();
+            }
+
+            if (this.excludeRule == null)
+            {
+                this.excludeRule = excludeRuleList.Count == 0 ? null : excludeRuleList.ToArray();
+            }
+            else
+            {
+                this.excludeRule = this.excludeRule.Union(excludeRuleList).ToArray();
+            }
 
             //Check wild card input for the Include/ExcludeRules and create regex match patterns
             if (this.includeRule != null)
@@ -706,28 +765,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 // Imports modules by using full path.
                 InitialSessionState state = InitialSessionState.CreateDefault2();
-                state.ImportPSModule(new string[] { moduleName });
-
                 using (System.Management.Automation.PowerShell posh =
                        System.Management.Automation.PowerShell.Create(state))
                 {
-                    posh.AddCommand("Get-Module");
-                    Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();                    
-                    foreach (PSModuleInfo module in loadedModules)
+                    posh.AddCommand("Import-Module").AddArgument(moduleName).AddParameter("PassThru");
+                    Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();
+                    if (loadedModules != null && loadedModules.Count > 0)
                     {
-                        string pathToCompare = moduleName;
-                        if (!File.GetAttributes(moduleName).HasFlag(FileAttributes.Directory))
-                        {
-                            pathToCompare = Path.GetDirectoryName(moduleName);
-                        }
-
-                        if (pathToCompare == Path.GetDirectoryName(module.Path))
-                        {
-                           shortModuleName = module.Name;
-                           break;
-                        }
+                        shortModuleName = loadedModules.First().Name;
                     }
-                                        
+                                                            
                     // Invokes Get-Command and Get-Help for each functions in the module.
                     posh.Commands.Clear();
                     posh.AddCommand("Get-Command").AddParameter("Module", shortModuleName);
@@ -776,8 +823,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             {
                                 dynamic description = helpContent[0].Properties["Description"];
 
-                                if (null != description)
-                                {
+                                if (null != description && null != description.Value && description.Value.GetType().IsArray)
+                                {                                    
                                     desc = description.Value[0].Text;
                                 }
                             }
@@ -987,34 +1034,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         resolvedPath = basePath
                             .GetResolvedPSPathFromPSPath(childPath).First().ToString();
-                    }
+                    }                    
                     
                     // Import the module
-                    InitialSessionState state = InitialSessionState.CreateDefault2();
-                    state.ImportPSModule(new string[] { resolvedPath });
-
+                    InitialSessionState state = InitialSessionState.CreateDefault2();                                    
                     using (System.Management.Automation.PowerShell posh =
                            System.Management.Automation.PowerShell.Create(state))
-                    {
-                        posh.AddCommand("Get-Module");
+                    {                    
+                        posh.AddCommand("Import-Module").AddArgument(resolvedPath).AddParameter("PassThru");
                         Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();
-                        foreach (PSModuleInfo module in loadedModules)
-                        {
-                            string pathToCompare = resolvedPath;
-                            if (!File.GetAttributes(resolvedPath).HasFlag(FileAttributes.Directory))
-                            {
-                                pathToCompare = Path.GetDirectoryName(resolvedPath);
-                            }
-
-                            if (pathToCompare == Path.GetDirectoryName(module.Path))
-                            {
-                                if (module.ExportedFunctions.Count > 0)
-                                {
-                                    validModPaths.Add(resolvedPath);
-                                }
-                                break;
-                            }
-                        }
+                        if (loadedModules != null 
+                                && loadedModules.Count > 0
+                                && loadedModules.First().ExportedFunctions.Count > 0)
+                        { 
+                                validModPaths.Add(resolvedPath);                                
+                        }                        
                     }
                 }
                 catch
@@ -1286,6 +1320,64 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath);
         }
 
+        private bool IsSeverityAllowed(IEnumerable<uint> allowedSeverities, IRule rule)
+        {
+            return severity == null 
+                || (allowedSeverities != null 
+                    && rule != null 
+                    && HasGetSeverity(rule) 
+                    && allowedSeverities.Contains((uint)rule.GetSeverity()));
+        }
+
+        IEnumerable<uint> GetAllowedSeveritiesInInt()
+        {
+            return severity != null 
+                ? severity.Select(item => (uint)Enum.Parse(typeof(DiagnosticSeverity), item, true)) 
+                : null;
+        }
+
+        bool HasMethod<T>(T obj, string methodName)
+        {
+            var type = obj.GetType();
+            return type.GetMethod(methodName) != null;
+        }
+
+        bool HasGetSeverity<T>(T obj)
+        {
+            return HasMethod<T>(obj, "GetSeverity");
+        }
+
+        bool IsRuleAllowed(IRule rule)
+        {
+            IEnumerable<uint> allowedSeverities = GetAllowedSeveritiesInInt();
+            bool includeRegexMatch = false;
+            bool excludeRegexMatch = false;
+            foreach (Regex include in includeRegexList)
+            {
+                if (include.IsMatch(rule.GetName()))
+                {
+                    includeRegexMatch = true;
+                    break;
+                }
+            }
+
+            foreach (Regex exclude in excludeRegexList)
+            {
+                if (exclude.IsMatch(rule.GetName()))
+                {
+                    excludeRegexMatch = true;
+                    break;
+                }
+            }
+
+            bool helpRule = String.Equals(rule.GetName(), "PSUseUTF8EncodingForHelpFile", StringComparison.OrdinalIgnoreCase);
+            bool includeSeverity = IsSeverityAllowed(allowedSeverities, rule);
+
+            return (includeRule == null || includeRegexMatch)
+                    && (excludeRule == null || !excludeRegexMatch)
+                    && IsSeverityAllowed(allowedSeverities, rule);
+        }
+
         /// <summary>
         /// Analyzes the syntax tree of a script file that has already been parsed.
         /// </summary>
@@ -1339,42 +1431,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 Helper.Instance.Tokens = scriptTokens;
             }
-
+          
             #region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
             string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
-
             if (this.ScriptRules != null)
             {
-                var tasks = this.ScriptRules.Select(scriptRule => Task.Factory.StartNew(() =>
+                var allowedRules = this.ScriptRules.Where(IsRuleAllowed);
+
+                if (allowedRules.Any())
                 {
-                    bool includeRegexMatch = false;
-                    bool excludeRegexMatch = false;
-
-                    foreach (Regex include in includeRegexList)
+                    var tasks = allowedRules.Select(scriptRule => Task.Factory.StartNew(() =>
                     {
-                        if (include.IsMatch(scriptRule.GetName()))
-                        {
-                            includeRegexMatch = true;
-                            break;
-                        }
-                    }
-
-                    foreach (Regex exclude in excludeRegexList)
-                    {
-                        if (exclude.IsMatch(scriptRule.GetName()))
-                        {
-                            excludeRegexMatch = true;
-                            break;
-                        }
-                    }
-
-                    bool helpRule = String.Equals(scriptRule.GetName(), "PSUseUTF8EncodingForHelpFile", StringComparison.OrdinalIgnoreCase);
-
-                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
-                    {
+                        bool helpRule = String.Equals(scriptRule.GetName(), "PSUseUTF8EncodingForHelpFile", StringComparison.OrdinalIgnoreCase);
                         List<object> result = new List<object>();
-
                         result.Add(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, scriptRule.GetName()));
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors
@@ -1408,26 +1478,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
 
                         verboseOrErrors.Add(result);
-                    }
-                }));
+                    }));
 
-                Task.Factory.ContinueWhenAll(tasks.ToArray(), t => verboseOrErrors.CompleteAdding());
+                    Task.Factory.ContinueWhenAll(tasks.ToArray(), t => verboseOrErrors.CompleteAdding());
 
-                while (!verboseOrErrors.IsCompleted)
-                {
-                    List<object> data = null;
-                    try
+                    while (!verboseOrErrors.IsCompleted)
                     {
-                        data = verboseOrErrors.Take();
-                    }
-                    catch (InvalidOperationException) { }
-
-                    if (data != null)
-                    {
-                        this.outputWriter.WriteVerbose(data[0] as string);
-                        if (data.Count == 2)
+                        List<object> data = null;
+                        try
                         {
-                            this.outputWriter.WriteError(data[1] as ErrorRecord);
+                            data = verboseOrErrors.Take();
+                        }
+                        catch (InvalidOperationException) { }
+
+                        if (data != null)
+                        {
+                            this.outputWriter.WriteVerbose(data[0] as string);
+                            if (data.Count == 2)
+                            {
+                                this.outputWriter.WriteError(data[1] as ErrorRecord);
+                            }
                         }
                     }
                 }
@@ -1441,25 +1511,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 foreach (ITokenRule tokenRule in this.TokenRules)
                 {
-                    bool includeRegexMatch = false;
-                    bool excludeRegexMatch = false;
-                    foreach (Regex include in includeRegexList)
-                    {
-                        if (include.IsMatch(tokenRule.GetName()))
-                        {
-                            includeRegexMatch = true;
-                            break;
-                        }
-                    }
-                    foreach (Regex exclude in excludeRegexList)
-                    {
-                        if (exclude.IsMatch(tokenRule.GetName()))
-                        {
-                            excludeRegexMatch = true;
-                            break;
-                        }
-                    }
-                    if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                    if (IsRuleAllowed(tokenRule))
                     {
                         this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, tokenRule.GetName()));
 
@@ -1558,24 +1610,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // Run all DSC Rules
                     foreach (IDSCResourceRule dscResourceRule in this.DSCResourceRules)
                     {
-                        bool includeRegexMatch = false;
-                        bool excludeRegexMatch = false;
-                        foreach (Regex include in includeRegexList)
-                        {
-                            if (include.IsMatch(dscResourceRule.GetName()))
-                            {
-                                includeRegexMatch = true;
-                                break;
-                            }
-                        }
-                        foreach (Regex exclude in excludeRegexList)
-                        {
-                            if (exclude.IsMatch(dscResourceRule.GetName()))
-                            {
-                                excludeRegexMatch = true;
-                            }
-                        }
-                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || !excludeRegexMatch))
+                        if (IsRuleAllowed(dscResourceRule))
                         {
                             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
@@ -1612,8 +1647,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 foreach (ExternalRule exRule in this.ExternalRules)
                 {
-                    if ((includeRule == null || includeRule.Contains(exRule.GetName(), StringComparer.OrdinalIgnoreCase)) &&
-                        (excludeRule == null || !excludeRule.Contains(exRule.GetName(), StringComparer.OrdinalIgnoreCase)))
+                    if (IsRuleAllowed(exRule))
                     {
                         string ruleName = string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", exRule.GetSourceName(), exRule.GetName());
                         this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, ruleName));
@@ -1641,15 +1675,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
             IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics.Reverse();
-
-            if (severity != null)
-            {
-                var diagSeverity = severity.Select(item => Enum.Parse(typeof(DiagnosticSeverity), item, true));
-                if (diagSeverity.Count() != 0)
-                {
-                    diagnosticsList = diagnostics.Where(item => diagSeverity.Contains(item.Severity));
-                }
-            }
 
             return this.suppressedOnly ?
                 suppressed.OfType<DiagnosticRecord>() :

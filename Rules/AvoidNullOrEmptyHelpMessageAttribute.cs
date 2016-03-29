@@ -38,43 +38,45 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
-                if (funcAst.Body == null || funcAst.Body.ParamBlock == null
-                        || funcAst.Body.ParamBlock.Attributes == null || funcAst.Body.ParamBlock.Parameters == null)
+                if (funcAst.Body == null || funcAst.Body.ParamBlock == null || funcAst.Body.ParamBlock.Parameters == null)
                 {
                     continue;
                 }
                                            
-                foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
-                {                        
-                    foreach (var paramAstAttribute in paramAst.Attributes)
+                foreach (ParameterAst paramAst in funcAst.Body.ParamBlock.Parameters)
+                {
+                    if (paramAst == null)
                     {
-                        if (!(paramAstAttribute is AttributeAst))
+                        continue;
+                    }
+
+                    foreach (AttributeBaseAst attributeAst in paramAst.Attributes)
+                    {
+                        var paramAttributeAst = attributeAst as AttributeAst;
+                        if (paramAttributeAst == null)
                         {
                             continue;
                         }
 
-                        var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
-
+                        var namedArguments = paramAttributeAst.NamedArguments;
                         if (namedArguments == null)
                         {
                             continue;
                         }
-
+                                               
                         foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
                         {
-                            if (!(namedArgument.ArgumentName.Equals("HelpMessage", StringComparison.OrdinalIgnoreCase)))
+                            if (namedArgument == null || !(namedArgument.ArgumentName.Equals("HelpMessage", StringComparison.OrdinalIgnoreCase)))
                             {
                                 continue;
                             }
                             
                             string errCondition;
-                            if (namedArgument.ExpressionOmitted
-                                    || namedArgument.Argument.Extent.Text.Equals("\"\"")
-                                    || namedArgument.Argument.Extent.Text.Equals("\'\'"))
+                            if (namedArgument.ExpressionOmitted || HasEmptyStringInExpression(namedArgument.Argument))
                             {
                                 errCondition = "empty";
                             }                                                        
-                            else if (namedArgument.Argument.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase))
+                            else if (HasNullInExpression(namedArgument.Argument))
                             {
                                 errCondition = "null";
                             }
@@ -82,7 +84,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             {
                                 errCondition = null;
                             }
-
                             if (!String.IsNullOrEmpty(errCondition))
                             {
                                 string message = string.Format(CultureInfo.CurrentCulture,
@@ -100,6 +101,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
                 
             }
+        }
+
+        /// <summary>
+        /// Checks if the given ast is an empty string.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        private bool HasEmptyStringInExpression(ExpressionAst ast)
+        {
+            var constStrAst = ast as StringConstantExpressionAst;
+            return constStrAst != null && constStrAst.Value.Equals(String.Empty);
+        }
+
+        /// <summary>
+        /// Checks if the ast contains null expression.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        private bool HasNullInExpression(Ast ast)
+        {
+            var varExprAst = ast as VariableExpressionAst;
+            return varExprAst != null
+                    && varExprAst.VariablePath.IsUnqualified
+                    && varExprAst.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

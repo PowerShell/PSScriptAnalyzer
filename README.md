@@ -16,7 +16,7 @@
 
 ##### ScriptAnalyzer community meeting schedule:
 
- - [Next Meeting - Mar 1 2016 - 11am to 12pm PDT](http://1drv.ms/1VvAaxO)
+ - [Next Meeting - Mar 29 2016 - 11am to 12pm PDT](http://1drv.ms/1VvAaxO)
  - [Notes and recordings from earlier meetings](https://github.com/PowerShell/PSScriptAnalyzer/wiki)
 
 

@@ -24,13 +24,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
 
     /// <summary>
-    /// UsePSCredentialType: Analyzes the ast to check that cmdlets that have a Credential parameter accept PSCredential.
+    /// UsePSCredentialType: Checks if a parameter named Credential is of type PSCredential. Also checks if there is a credential transformation attribute defined after the PSCredential type attribute. The order between credential transformation attribute and PSCredential type attribute is applicable only to Poweshell 4.0 and earlier. 
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UsePSCredentialType : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Analyzes the ast to check that cmdlets that have a Credential parameter accept PSCredential.
+        /// AnalyzeScript: Analyzes the ast to check if a parameter named Credential is of type PSCredential. Also checks if there is a credential transformation attribute defined after the PSCredential type attribute. The order between the credential transformation attribute and PSCredential type attribute is applicable only to Poweshell 4.0 and earlier.
         /// </summary>
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The script's file name</param>
@@ -38,6 +38,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+
+            var sbAst = ast as ScriptBlockAst;
+            if (sbAst != null 
+                    && sbAst.ScriptRequirements != null 
+                    && sbAst.ScriptRequirements.RequiredPSVersion != null
+                    && sbAst.ScriptRequirements.RequiredPSVersion.Major == 5)
+            {           
+                    yield break;
+            }
 
             IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
             IEnumerable<Ast> scriptBlockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);

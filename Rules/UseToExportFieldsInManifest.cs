@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using System.Management.Automation;
@@ -83,6 +84,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return !missingManifestRule.AnalyzeScript(ast, fileName).GetEnumerator().MoveNext();
                     
         }
+
+        /// <summary>
+        /// Checks if the ast contains wildcard character.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        private bool HasWildcardInExpression(Ast ast)
+        {
+            var strConstExprAst = ast as StringConstantExpressionAst;
+            return strConstExprAst != null && WildcardPattern.ContainsWildcardCharacters(strConstExprAst.Value);
+        }
+
+        /// <summary>
+        /// Checks if the ast contains null expression.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        private bool HasNullInExpression(Ast ast)
+        {
+            var varExprAst = ast as VariableExpressionAst;
+            return varExprAst != null
+                    && varExprAst.VariablePath.IsUnqualified
+                    && varExprAst.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase);
+        }
                 
         /// <summary>
         /// Checks if the *ToExport fields are explicitly set to arrays, eg. @(...), and the array entries do not contain any wildcard.
@@ -97,32 +122,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             extent = null;
             foreach (var pair in hast.KeyValuePairs)
             {
-                if (key.Equals(pair.Item1.Extent.Text.Trim(), StringComparison.OrdinalIgnoreCase))
+                var keyStrConstAst = pair.Item1 as StringConstantExpressionAst;
+                if (keyStrConstAst != null && keyStrConstAst.Value.Equals(key, StringComparison.OrdinalIgnoreCase))                    
                 {
-                    // checks if the right hand side of the assignment is an array.
-                    var arrayAst = pair.Item2.Find(x => x is ArrayLiteralAst || x is ArrayExpressionAst, true);
-                    if (arrayAst == null)
-                    {         
-                        extent = pair.Item2.Extent;
+                    // Checks for wildcard character in the entry.
+                    var astWithWildcard = pair.Item2.Find(HasWildcardInExpression, false);
+                    if (astWithWildcard != null)
+                    {
+                        extent = astWithWildcard.Extent;
                         return false;
-                    }                        
+                    }
                     else
                     {
-                        //checks if any entry within the array has a wildcard.
-                        var elementWithWildcard = arrayAst.Find(x => x is StringConstantExpressionAst 
-                                                                    && x.Extent.Text.Contains("*"), false);
-                        if (elementWithWildcard != null)
+                        // Checks for $null in the entry.                           
+                        var astWithNull = pair.Item2.Find(HasNullInExpression, false);
+                        if (astWithNull != null)
                         {
-                            extent = elementWithWildcard.Extent;
+                            extent = astWithNull.Extent;
                             return false;
-                        }                            
-                        return true;
+                        }
+                        else
+                        {
+                            return true;
+                        }
                     }
                 }
             }
             return true;
         }       
 
+        
+        /// <summary>
+        /// Gets the error string of the rule.
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
         public string GetError(string field)
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseToExportFieldsInManifestError, field);

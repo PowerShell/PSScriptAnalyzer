@@ -45,7 +45,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
                 if (cmdletNameAndAliases.Contains(cmdAst.GetCommandName(), StringComparer.OrdinalIgnoreCase))
                 {
-                    yield return new DiagnosticRecord(GetError(fileName), cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    yield return new DiagnosticRecord(GetError(fileName), cmdAst.Extent, GetName(), GetDiagnosticSeverity(), fileName);
                 }
             }
         }
@@ -97,5 +97,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// </summary>
         /// <returns></returns>
         public abstract RuleSeverity GetSeverity();
+
+        /// <summary>
+        /// DiagnosticSeverity: Returns the severity of the rule of type DiagnosticSeverity
+        /// </summary>
+        /// <returns></returns>
+        public abstract DiagnosticSeverity GetDiagnosticSeverity();
     }
 }
