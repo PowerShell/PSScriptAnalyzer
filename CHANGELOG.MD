@@ -1,4 +1,21 @@
-## Released v1.4.0 (Feb.16, 2016)
+## Release v1.5.0 (March.30, 2016)
+
+####Engine:
+- Fixed engine bug that prevented versioned script rule modules from being loaded
+- Fixed loading issues with custom rules that do not have comment help to describe the rule
+- Housekeeping: Fixes to Appveyor config to use VS 2015 and WMF 5.0 RTM image
+- Community Fix: Updates the Initialize API to process the Profile (Settings) parameter
+- Perf: Improve rule filtering based on severity before invoking the engine to create tasks (threads)
+- Fixed a hang issue that appeared when using ScriptAnalyzer engine recursively with a large data set
+
+####Rules:
+- Various fixes to UseToExportFieldsInManifest rule that include perf and functional fixes
+- Fixes to AvoidNullOrEmptyHelpMessageAttribute to use parsed values instead of ast extent
+- Updated messages for AvoidUsernameAndPasswordParams rule and UsePSCredentialType rule
+- Scrubbed inconsistencies in severities for rules
+- Community Fix: False positive on 'PSUseApprovedVerbs' when scope is declared as a prefix to the Verb-Noun combination
+
+## Release v1.4.0 (Feb.16, 2016)
 ###Features:
 - IncludeRule and ExcludeRule now consume RuleInfo objects
 
@@ -18,7 +35,7 @@
 - Support for [switch] type along with [boolean] for ShouldContinueWithoutForce rule
 - Improved handling of deprecated module manifest fields when PSv2.0 is specified in the manifest
 
-## Released v1.3.0 (Jan.19, 2016)
+## Release v1.3.0 (Jan.19, 2016)
 ###Features:
 - Support for running ScriptAnalyzer on PowerShell version v3 or higher! This means PSv5 is no longer the minimum PS version for ScriptAnalyzer
 
@@ -34,7 +51,7 @@
 - Fix to account for function scope prefix
 - Raise ReservedParam rule only for exported functions as cmdlets
 
-## Released v1.2.0 (Dec.17, 2015)
+## Release v1.2.0 (Dec.17, 2015)
 ###Features:
 - Support for consuming PowerShell content as streams (-ScriptDefinition)
 - ScriptAnalyzer accepts configuration (settings) in the form of a hashtable (-Settings), added sample Settings
@@ -71,7 +88,7 @@
 
 ##
 
-## Released v1.1.1 (Nov.3, 2015)
+## Release v1.1.1 (Nov.3, 2015)
 ###Features:
 - Support for PSDrives when using Invoke-ScriptAnalyzer
 - More robust Profiles feature - better defaulting when supplied with invalid profile - actionable Warnings
@@ -87,7 +104,7 @@
 
 ##
 
-## Released v1.1.0 (Sep.1, 2015)
+## Release v1.1.0 (Sep.1, 2015)
 ###Features:
 - Support for using ScriptAnalyzer as a .net library - ScriptAnalyzer APIs
 - Support for ScriptAnalyzer Profiles
@@ -109,7 +126,7 @@
 
 ##
 
-## Released v1.0.2 (June.24, 2015)
+## Release v1.0.2 (June.24, 2015)
 ###Features:
 - Perf improvements in the Engine to execute rules concurrently.
 
@@ -137,7 +154,7 @@
 
 ##
 
-## Released v1.0.1 (May.8, 2015)
+## Release v1.0.1 (May.8, 2015)
 ###Features:
 - Integrated with waffle.io for Project Management.
 - Added documentation for writing script rules.
