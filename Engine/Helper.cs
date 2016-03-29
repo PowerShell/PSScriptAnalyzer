@@ -101,9 +101,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Dictionary<Ast, VariableAnalysis> VariableAnalysisDictionary;
 
-        private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:" };
+        private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:"};
 
-        private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":" };
+        private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":"};
 
         #endregion
 
@@ -420,7 +420,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             foreach (string scope in scopes)
             {
                 // trim the scope part
-                if (name.IndexOf(scope) == 0)
+                if (name.IndexOf(scope, StringComparison.OrdinalIgnoreCase) == 0) 
+
                 {
                     return name.Substring(scope.Length);
                 }
