@@ -1,19 +1,19 @@
 ## Release v1.5.0 (March.30, 2016)
 
-####Engine:
+#### Engine:
 - Fixed engine bug that prevented versioned script rule modules from being loaded
-- Fixed loading issues with custom rules that do not have comment help to describe the rule
+- Fixed loading issues with custom rules that do not have comment-based help to describe the rule
 - Housekeeping: Fixes to Appveyor config to use VS 2015 and WMF 5.0 RTM image
-- Community Fix: Updates the Initialize API to process the Profile (Settings) parameter
-- Perf: Improve rule filtering based on severity before invoking the engine to create tasks (threads)
+- Community Fix: Updates to the Initialize API to process the `-Settings` (formerly `-Profile`) parameter
+- Perf: Improved rule filtering based on severity before invoking the engine to create tasks (threads)
 - Fixed a hang issue that appeared when using ScriptAnalyzer engine recursively with a large data set
 
 ####Rules:
-- Various fixes to UseToExportFieldsInManifest rule that include perf and functional fixes
-- Fixes to AvoidNullOrEmptyHelpMessageAttribute to use parsed values instead of ast extent
-- Updated messages for AvoidUsernameAndPasswordParams rule and UsePSCredentialType rule
+- Various fixes to `UseToExportFieldsInManifest` rule that include perf and functional fixes
+- Fixes to `AvoidNullOrEmptyHelpMessageAttribute` to use parsed values instead of ast extent
+- Updated messages for `AvoidUsernameAndPasswordParams` rule and `UsePSCredentialType` rule
 - Scrubbed inconsistencies in severities for rules
-- Community Fix: False positive on 'PSUseApprovedVerbs' when scope is declared as a prefix to the Verb-Noun combination
+- Community Fix: False positive on `PSUseApprovedVerbs` when scope is declared as a prefix to the Verb-Noun combination
 
 ## Release v1.4.0 (Feb.16, 2016)
 ###Features:
