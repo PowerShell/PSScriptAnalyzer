@@ -75,11 +75,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             var corrections = new List<CorrectionExtent>();
             var ext = cmdAst.Extent;
+            var alias = cmdAst.GetCommandName();
+            var startColumnNumber = ext.StartColumnNumber + ext.Text.IndexOf(alias);
+            var endColumnNumber = startColumnNumber + alias.Length;
             corrections.Add(new CorrectionExtent(                
                 ext.StartLineNumber,
                 ext.EndLineNumber,
-                ext.StartColumnNumber,
-                ext.EndColumnNumber,
+                startColumnNumber,
+                endColumnNumber,
                 cmdletName,
                 ext.File));
             return corrections;
