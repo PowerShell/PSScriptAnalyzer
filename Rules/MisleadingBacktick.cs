@@ -55,8 +55,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     int lineNumber = ast.Extent.StartLineNumber + i;
 
-                    var start = new ScriptPosition(fileName, lineNumber, match.Index, line);
-                    var end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length, line);
+                    var start = new ScriptPosition(fileName, lineNumber, match.Index + 1, line);
+                    var end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length + 1, line);
                     var extent = new ScriptExtent(start, end);
                     yield return new DiagnosticRecord(
                         string.Format(CultureInfo.CurrentCulture, Strings.MisleadingBacktickError),
@@ -75,12 +75,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="cmdAst"></param>
         /// <returns>Returns a list of suggested corrections</returns>
         private List<CorrectionExtent> GetCorrectionExtent(IScriptExtent violationExtent)
-        {
+        {           
             var corrections = new List<CorrectionExtent>();            
             corrections.Add(new CorrectionExtent(                
-                violationExtent.StartLineNumber,
+                violationExtent.StartLineNumber ,
                 violationExtent.EndLineNumber,
-                violationExtent.StartColumnNumber,
+                violationExtent.StartColumnNumber + 1,
                 violationExtent.EndColumnNumber,
                 String.Empty,
                 violationExtent.File));
