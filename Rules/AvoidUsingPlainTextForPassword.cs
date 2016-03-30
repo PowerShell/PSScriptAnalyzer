@@ -60,9 +60,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     yield return new DiagnosticRecord(
                         String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPlainTextForPasswordError, paramAst.Name),
-                        paramAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        paramAst.Extent, 
+                        GetName(), 
+                        DiagnosticSeverity.Warning, 
+                        fileName,
+                        suggestedCorrections: GetCorrectionExtent(paramAst));
                 }
             }
+        }
+
+        private List<CorrectionExtent> GetCorrectionExtent(ParameterAst paramAst)
+        {
+            IScriptExtent ext = paramAst.Extent;
+            var corrections = new List<CorrectionExtent>();            
+            string correctionText = string.Format("{0} {1}", "[SecureString]", paramAst.Name.Extent.Text);
+            corrections.Add(new CorrectionExtent(
+                ext.StartLineNumber,
+                ext.EndLineNumber,
+                ext.StartColumnNumber,
+                ext.EndColumnNumber,
+                correctionText,
+                ext.File));
+            return corrections;
         }
 
         /// <summary>
