@@ -2,8 +2,8 @@
 $violationMessage = "'cls' is an alias of 'Clear-Host'. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content."
 $violationName = "PSAvoidUsingCmdletAliases"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violationsFilepath = Join-Path $directory 'AvoidUsingAlias.ps1'
-$violations = Invoke-ScriptAnalyzer $violationsFilepath | Where-Object {$_.RuleName -eq $violationName}
+$violationFilepath = Join-Path $directory 'AvoidUsingAlias.ps1'
+$violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingAliasNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 Describe "AvoidUsingAlias" {
@@ -18,13 +18,8 @@ Describe "AvoidUsingAlias" {
 
 	It "suggests correction" {
 	   Import-Module .\PSScriptAnalyzerTestHelper.psm1
-	   $violations[0].SuggestedCorrections.Count | Should Be 1
-	   $violations[0].SuggestedCorrections.Text | Should Be 'Invoke-Expression'
-	   Get-ExtentText $violations[0].SuggestedCorrections[0] $violationsFilepath | Should Be 'iex'
-
-	   $violations[1].SuggestedCorrections.Count | Should Be 1
-	   $violations[1].SuggestedCorrections.Text | Should Be 'Clear-Host'
-	   Get-ExtentText $violations[1].SuggestedCorrections[0] $violationsFilepath | Should Be 'cls'
+	   Test-CorrectionExtent $violationFilepath $violations[0] 1 'iex' 'Invoke-Expression'
+	   Test-CorrectionExtent $violationFilepath $violations[1] 1 'cls' 'Clear-Host'
 	}
     }
 

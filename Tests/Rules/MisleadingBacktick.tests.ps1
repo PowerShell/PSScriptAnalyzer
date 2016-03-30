@@ -1,42 +1,24 @@
 Import-Module PSScriptAnalyzer
 $writeHostName = "PSMisleadingBacktick"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violationsFilepath = Join-Path $directory 'MisleadingBacktick.ps1'
-$violations = Invoke-ScriptAnalyzer $violationsFilepath | Where-Object {$_.RuleName -eq $writeHostName}
+$violationFilepath = Join-Path $directory 'MisleadingBacktick.ps1'
+$violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $writeHostName}
 $noViolations = Invoke-ScriptAnalyzer $directory\NoMisleadingBacktick.ps1 | Where-Object {$_.RuleName -eq $clearHostName}
 
 Describe "Avoid Misleading Backticks" {
     Context "When there are violations" {
         It "has 5 misleading backtick violations" {
-	   Import-Module .\PSScriptAnalyzerTestHelper.psm1
             $violations.Count | Should Be 5
-
-	    $idx = 0
-	    $violations[$idx].SuggestedCorrections.Count | Should Be 1
-	    $violations[$idx].SuggestedCorrections[0].Text | Should Be ''
-	    Get-ExtentText $violations[$idx].SuggestedCorrections[0] $violationsFilepath | Should BeExactly ' '
-
-	    $idx = 1
-	    $violations[$idx].SuggestedCorrections.Count | Should Be 1
-	    $violations[$idx].SuggestedCorrections[0].Text | Should Be ''
-	    Get-ExtentText $violations[$idx].SuggestedCorrections[0] $violationsFilepath | Should BeExactly ' '
-
-	    $idx = 2
-	    $violations[$idx].SuggestedCorrections.Count | Should Be 1
-	    $violations[$idx].SuggestedCorrections[0].Text | Should Be ''
-	    Get-ExtentText $violations[$idx].SuggestedCorrections[0] $violationsFilepath | Should BeExactly ' '
-
-	    $idx = 3
-	    $violations[$idx].SuggestedCorrections.Count | Should Be 1
-	    $violations[$idx].SuggestedCorrections[0].Text | Should Be ''
-	    Get-ExtentText $violations[$idx].SuggestedCorrections[0] $violationsFilepath | Should BeExactly '                     '
-
-	    $idx = 4
-	    $violations[$idx].SuggestedCorrections.Count | Should Be 1
-	    $violations[$idx].SuggestedCorrections[0].Text | Should Be ''
-	    Get-ExtentText $violations[$idx].SuggestedCorrections[0] $violationsFilepath | Should BeExactly '      '
-
         }
+	
+	It "suggests correction" {
+	   Import-Module .\PSScriptAnalyzerTestHelper.psm1
+	   Test-CorrectionExtent $violationFilepath $violations[0] 1 ' ' ''
+	   Test-CorrectionExtent $violationFilepath $violations[1] 1 ' ' ''
+	   Test-CorrectionExtent $violationFilepath $violations[2] 1 ' ' ''
+	   Test-CorrectionExtent $violationFilepath $violations[3] 1 '                     ' ''
+	   Test-CorrectionExtent $violationFilepath $violations[4] 1 '      ' ''
+	}
     }
 
     Context "When there are no violations" {

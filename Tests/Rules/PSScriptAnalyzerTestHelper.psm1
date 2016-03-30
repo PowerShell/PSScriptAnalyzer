@@ -11,4 +11,22 @@ Function Get-ExtentText
 	return($extent.Text)
 }
 
+Function Test-CorrectionExtent
+{
+	Param(
+		[string] $violationFilepath,
+		[Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord] $diagnosticRecord, 
+		[int] $correctionsCount, 
+		[string] $violationText, 
+		[string] $correctionText
+	)
+	$corrections = $diagnosticRecord.SuggestedCorrections
+	$corrections.Count | Should Be 1
+	$corrections[0].Text | Should Be $correctionText
+	Get-ExtentText $corrections[0] $violationFilepath | `
+		       Should Be $violationText
+}
+
+
 Export-ModuleMember -Function Get-ExtentText
+Export-ModuleMember -Function Test-CorrectionExtent
