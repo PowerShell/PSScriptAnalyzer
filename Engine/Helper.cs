@@ -228,6 +228,58 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return false;
         }
+        
+        /// <summary>
+        /// Gets the module manifest
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="errorRecord"></param>
+        /// <returns>Returns a object of type PSModuleInfo</returns>
+        public PSModuleInfo GetModuleManifest(string filePath, out IEnumerable<ErrorRecord> errorRecord)
+        {                        
+            errorRecord = null;
+            PSModuleInfo psModuleInfo = null;
+            Collection<PSObject> psObj = null;
+            var ps = System.Management.Automation.PowerShell.Create();
+            if (ps == null)
+            {
+                return null;
+            }
+            try
+            {                
+                ps.AddCommand("Test-ModuleManifest");
+                ps.AddParameter("Path", filePath);
+
+                // Suppress warnings emitted during the execution of Test-ModuleManifest
+                ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                psObj = ps.Invoke();
+            }
+            catch { }
+            if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
+            {
+                var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
+                ps.Streams.Error.CopyTo(errorRecordArr, 0);
+                errorRecord = errorRecordArr;
+            }
+            if (psObj != null && psObj.Any() && psObj[0] != null)
+            {
+                psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
+            }
+            ps.Dispose();                                       
+            return psModuleInfo;
+        }
+
+        /// <summary>
+        /// Checks if the error record is MissingMemberException
+        /// </summary>
+        /// <param name="errorRecord"></param>
+        /// <returns>Returns a boolean value indicating the presence of MissingMemberException</returns>
+        public bool IsMissingMemberException(ErrorRecord errorRecord)
+        {
+            return errorRecord.CategoryInfo != null
+                && errorRecord.CategoryInfo.Category == ErrorCategory.ResourceUnavailable
+                && string.Equals("MissingMemberException", errorRecord.CategoryInfo.Reason, StringComparison.OrdinalIgnoreCase);
+        }
 
         /// <summary>
         /// Get the list of exported function by analyzing the ast

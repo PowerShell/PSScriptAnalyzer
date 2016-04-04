@@ -38,41 +38,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             if (String.Equals(System.IO.Path.GetExtension(fileName), ".psd1", StringComparison.OrdinalIgnoreCase))
             {
-                var ps = System.Management.Automation.PowerShell.Create();
-
-                try
+                IEnumerable<ErrorRecord> errorRecords;
+                var psModuleInfo = Helper.Instance.GetModuleManifest(fileName, out errorRecords);
+                if (errorRecords != null)
                 {
-                    ps.AddCommand("Test-ModuleManifest");
-                    ps.AddParameter("Path", fileName);
-                    
-                    // Suppress warnings emitted during the execution of Test-ModuleManifest
-                    // ModuleManifest rule must catch any violations (warnings/errors) and generate DiagnosticRecord(s)
-                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);                    
-                    ps.Invoke();
-
-                } catch { }
-
-                if (ps != null && ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
-                {
-                    foreach (var errorRecord in ps.Streams.Error)
+                    foreach (var errorRecord in errorRecords)
                     {
-                        if (errorRecord.CategoryInfo != null && errorRecord.CategoryInfo.Category == System.Management.Automation.ErrorCategory.ResourceUnavailable
-                            && String.Equals("MissingMemberException", errorRecord.CategoryInfo.Reason, StringComparison.OrdinalIgnoreCase))
+                        if (Helper.Instance.IsMissingMemberException(errorRecord))
                         {
                             System.Diagnostics.Debug.Assert(errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), Strings.NullErrorMessage);
-
                             yield return
                                 new DiagnosticRecord(errorRecord.Exception.Message, ast.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                         }
 
                     }
                 }
-
-                ps.Dispose();
             }
 
         }
-
+        
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
