@@ -28,6 +28,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -216,13 +217,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return true;
         }
 
-        private bool TryAddingProfileItem(
+        private bool AddProfileItem(
             string key,
             List<string> values,
             List<string> severityList,
             List<string> includeRuleList,
             List<string> excludeRuleList)
         {
+            Debug.Assert(key != null);
+            Debug.Assert(values != null);
+            Debug.Assert(severityList != null);
+            Debug.Assert(includeRuleList != null);
+            Debug.Assert(excludeRuleList != null);
+
             switch (key.ToLower())
             {
                 case "severity":
@@ -317,7 +324,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-                TryAddingProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
+                AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
             
             }
 
@@ -437,7 +444,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         string key = (kvp.Item1 as StringConstantExpressionAst).Value.ToLower();
 
-                        if(!TryAddingProfileItem(key, rhsList, severityList, includeRuleList, excludeRuleList))
+                        if(!AddProfileItem(key, rhsList, severityList, includeRuleList, excludeRuleList))
                         {
                             writer.WriteError(new ErrorRecord(
                                     new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, key, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
