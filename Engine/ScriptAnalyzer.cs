@@ -28,6 +28,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -216,6 +217,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return true;
         }
 
+        private bool AddProfileItem(
+            string key,
+            List<string> values,
+            List<string> severityList,
+            List<string> includeRuleList,
+            List<string> excludeRuleList)
+        {
+            Debug.Assert(key != null);
+            Debug.Assert(values != null);
+            Debug.Assert(severityList != null);
+            Debug.Assert(includeRuleList != null);
+            Debug.Assert(excludeRuleList != null);
+
+            switch (key.ToLower())
+            {
+                case "severity":
+                    severityList.AddRange(values);
+                    break;
+                case "includerules":
+                    includeRuleList.AddRange(values);
+                    break;
+                case "excluderules":
+                    excludeRuleList.AddRange(values);
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        }
+
         private bool ParseProfileHashtable(Hashtable profile, PathIntrinsics path, IOutputWriter writer,
             List<string> severityList, List<string> includeRuleList, List<string> excludeRuleList)
         {
@@ -238,7 +269,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     hasError = true;
                     continue;
                 }
-
+                
                 // checks whether it falls into list of valid keys
                 if (!validKeys.Contains(key))
                 {
@@ -293,21 +324,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-                // now add to the list
-                switch (key)
-                {
-                    case "severity":
-                        severityList.AddRange(values);
-                        break;
-                    case "includerules":
-                        includeRuleList.AddRange(values);
-                        break;
-                    case "excluderules":
-                        excludeRuleList.AddRange(values);
-                        break;
-                    default:
-                        break;
-                }
+                AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
+            
             }
 
             return hasError;
@@ -426,23 +444,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         string key = (kvp.Item1 as StringConstantExpressionAst).Value.ToLower();
 
-                        switch (key)
+                        if(!AddProfileItem(key, rhsList, severityList, includeRuleList, excludeRuleList))
                         {
-                            case "severity":
-                                severityList.AddRange(rhsList);
-                                break;
-                            case "includerules":
-                                includeRuleList.AddRange(rhsList);
-                                break;
-                            case "excluderules":
-                                excludeRuleList.AddRange(rhsList);
-                                break;
-                            default:
-                                writer.WriteError(new ErrorRecord(
+                            writer.WriteError(new ErrorRecord(
                                     new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, key, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
                                     Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
-                                hasError = true;
-                                break;
+                            hasError = true;
                         }
                     }
                 }
