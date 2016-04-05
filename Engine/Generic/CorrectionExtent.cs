@@ -58,14 +58,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
         }
 
+        public string Description
+        {
+            get
+            {
+                return description;
+            }
+        }
+
         private string file;
         private int startLineNumber;
         private int endLineNumber;
         private int startColumnNumber;
         private int endColumnNumber;
         private string text;
+        private string description;
     
-        public CorrectionExtent(int startLineNumber, int endLineNumber, int startColumnNumber, int endColumnNumber, string text, string file)
+        public CorrectionExtent(
+            int startLineNumber, 
+            int endLineNumber, 
+            int startColumnNumber, 
+            int endColumnNumber, 
+            string text, 
+            string file) 
+            : this(
+                  startLineNumber, 
+                  endLineNumber,
+                  startColumnNumber,
+                  endColumnNumber,
+                  text,
+                  file,
+                  null)
+        {
+        }
+
+        public CorrectionExtent(
+            int startLineNumber, 
+            int endLineNumber, 
+            int startColumnNumber, 
+            int endColumnNumber, 
+            string text, 
+            string file,
+            string description)
         {
             this.startLineNumber = startLineNumber;
             this.endLineNumber = endLineNumber;
@@ -73,8 +107,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             this.endColumnNumber = endColumnNumber;
             this.file = file;
             this.text = text;
+            this.description = description;
             ThrowIfInvalidArguments();
         }
+
+
 
         private void ThrowIfInvalidArguments()
         {

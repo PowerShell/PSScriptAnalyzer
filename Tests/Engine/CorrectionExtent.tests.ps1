@@ -8,7 +8,7 @@ Describe "Correction Extent" {
 
 	 Context "Object construction" {
 	 	 It "creates the object with correct properties" {
-		    $correctionExtent = $type::new(1, 1, 1, 3, "get-childitem", "newfile")
+		    $correctionExtent = $type::new(1, 1, 1, 3, "get-childitem", "newfile", "cool description")
 
 		    $correctionExtent.StartLineNumber | Should Be 1
 		    $correctionExtent.EndLineNumber | Should Be 1
@@ -16,6 +16,7 @@ Describe "Correction Extent" {
 		    $correctionExtent.EndColumnNumber | Should be 3
 		    $correctionExtent.Text | Should Be "get-childitem"
 		    $correctionExtent.File | Should Be "newfile"
+		    $correctionExtent.Description | Should Be "cool description"
 		 }
 	 
 	 	 It "throws if end line number is less than start line number" {
