@@ -73,14 +73,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             IScriptExtent ext = paramAst.Extent;
             var corrections = new List<CorrectionExtent>();            
-            string correctionText = string.Format("{0} {1}", "[SecureString]", paramAst.Name.Extent.Text);
+            string correctionText = string.Format("[SecureString] {0}", paramAst.Name.Extent.Text);
+            string description = string.Format("Set {0} type to SecureString", paramAst.Name.Extent.Text);
             corrections.Add(new CorrectionExtent(
                 ext.StartLineNumber,
                 ext.EndLineNumber,
                 ext.StartColumnNumber,
                 ext.EndColumnNumber,
                 correctionText,
-                ext.File));
+                ext.File,
+                description));
             return corrections;
         }
 

@@ -16,6 +16,8 @@ Describe "AvoidUsingPlainTextForPassword" {
 	It "suggests corrections" {
             Import-Module .\PSScriptAnalyzerTestHelper.psm1
 	    Test-CorrectionExtent $violationFilepath $violations[0] 1 '$passphrases' '[SecureString] $passphrases'
+	    $violations[0].SuggestedCorrections[0].Description | Should Be 'Set $passphrases type to SecureString'
+
 	    Test-CorrectionExtent $violationFilepath $violations[1] 1 '$passwordparam' '[SecureString] $passwordparam'
 	    Test-CorrectionExtent $violationFilepath $violations[2] 1 '$credential' '[SecureString] $credential'
 	    Test-CorrectionExtent $violationFilepath $violations[3] 1 '$password' '[SecureString] $password'

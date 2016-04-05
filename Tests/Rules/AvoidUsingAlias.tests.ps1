@@ -19,7 +19,10 @@ Describe "AvoidUsingAlias" {
 	It "suggests correction" {
 	   Import-Module .\PSScriptAnalyzerTestHelper.psm1
 	   Test-CorrectionExtent $violationFilepath $violations[0] 1 'iex' 'Invoke-Expression'
+	   $violations[0].SuggestedCorrections[0].Description | Should Be 'Replace iex with Invoke-Expression'
+
 	   Test-CorrectionExtent $violationFilepath $violations[1] 1 'cls' 'Clear-Host'
+	   $violations[1].SuggestedCorrections[0].Description | Should Be 'Replace cls with Clear-Host'
 	}
     }
 

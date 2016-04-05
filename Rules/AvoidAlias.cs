@@ -78,13 +78,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var alias = cmdAst.GetCommandName();
             var startColumnNumber = ext.StartColumnNumber + ext.Text.IndexOf(alias);
             var endColumnNumber = startColumnNumber + alias.Length;
+            string description = string.Format("Replace {0} with {1}", alias, cmdletName);
             corrections.Add(new CorrectionExtent(                
                 ext.StartLineNumber,
                 ext.EndLineNumber,
                 startColumnNumber,
                 endColumnNumber,
                 cmdletName,
-                ext.File));
+                ext.File,
+                description));
             return corrections;
         }
 

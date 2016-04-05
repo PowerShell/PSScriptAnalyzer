@@ -44,6 +44,7 @@ Describe "UseManifestExportFields" {
 	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardPath
 	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsWildcardPath
 	    Test-CorrectionExtent $violationFilepath $violations[0] 1 "'*'" "@('Get-Foo', 'Get-Bar')"
+	    $violations[0].SuggestedCorrections[0].Description | Should Be "Replace '*' with @('Get-Foo', 'Get-Bar')"
 	}
 
         It "detects FunctionsToExport with null" {

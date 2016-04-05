@@ -126,14 +126,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     break;
                 default:
                     throw new NotImplementedException(string.Format("{0} not implemented", field));
-            }            
+            }
+            string description = string.Format("Replace {0} with {1}", extent.Text, correctionText);
             corrections.Add(new CorrectionExtent(
                 extent.StartLineNumber,
                 extent.EndLineNumber,
                 extent.StartColumnNumber,
                 extent.EndColumnNumber,
                 correctionText,
-                extent.File));
+                extent.File,
+                description));
             return corrections;
         }
 

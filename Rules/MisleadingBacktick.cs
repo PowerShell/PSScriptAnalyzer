@@ -76,14 +76,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>Returns a list of suggested corrections</returns>
         private List<CorrectionExtent> GetCorrectionExtent(IScriptExtent violationExtent)
         {           
-            var corrections = new List<CorrectionExtent>();            
+            var corrections = new List<CorrectionExtent>();
+            string description = "Remove trailing whilespace";
             corrections.Add(new CorrectionExtent(                
                 violationExtent.StartLineNumber ,
                 violationExtent.EndLineNumber,
                 violationExtent.StartColumnNumber + 1,
                 violationExtent.EndColumnNumber,
                 String.Empty,
-                violationExtent.File));
+                violationExtent.File,
+                description));
             return corrections;
         }
 
