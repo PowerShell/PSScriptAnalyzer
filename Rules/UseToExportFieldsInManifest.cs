@@ -19,6 +19,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -29,6 +30,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     [Export(typeof(IScriptRule))]
     public class UseToExportFieldsInManifest : IScriptRule
     {
+
+        private const string functionsToExport = "FunctionsToExport";
+        private const string cmdletsToExport = "CmdletsToExport";
+        private const string variablesToExport = "VariablesToExport";
+        private const string aliasesToExport = "AliasesToExport";
+                   
         /// <summary>
         /// AnalyzeScript: Analyzes the AST to check if AliasToExport, CmdletsToExport, FunctionsToExport 
         /// and VariablesToExport fields do not use wildcards and $null in their entries. 
@@ -48,12 +55,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 yield break;
             }
 
-            if (!IsValidManifest(ast, fileName))
-            {
+            // check if valid module manifest
+            IEnumerable<ErrorRecord> errorRecord = null;
+            PSModuleInfo psModuleInfo = Helper.Instance.GetModuleManifest(fileName, out errorRecord);            
+            if ((errorRecord != null && errorRecord.Count() > 0) || psModuleInfo == null)
+            {                
                 yield break;
             }
-
-            String[] manifestFields = {"FunctionsToExport", "CmdletsToExport", "VariablesToExport", "AliasesToExport"};
+            
             var hashtableAst = ast.Find(x => x is HashtableAst, false) as HashtableAst;
             
             if (hashtableAst == null)
@@ -61,29 +70,85 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 yield break;
             }
 
-            foreach(String field in manifestFields)
+            string[] manifestFields = { functionsToExport, cmdletsToExport, variablesToExport, aliasesToExport };
+
+            foreach(string field in manifestFields)
             {
                 IScriptExtent extent;
                 if (!HasAcceptableExportField(field, hashtableAst, ast.Extent.Text, out extent) && extent != null)
                 {
-                    yield return new DiagnosticRecord(GetError(field), extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    yield return new DiagnosticRecord(
+                        GetError(field), 
+                        extent, 
+                        GetName(), 
+                        DiagnosticSeverity.Warning, 
+                        fileName,
+                        suggestedCorrections: GetCorrectionExtent(field, extent, psModuleInfo));
                 }
             }                               
                         
         }
-        
-        /// <summary>
-        /// Checks if the manifest file is valid. 
-        /// </summary>
-        /// <param name="ast"></param>
-        /// <param name="fileName"></param>
-        /// <returns>A boolean value indicating the validity of the manifest file.</returns>
-        private bool IsValidManifest(Ast ast, string fileName)
+
+        private string GetListLiteral<T>(Dictionary<string, T> exportedItems)
         {
-            var missingManifestRule = new MissingModuleManifestField();
-            return !missingManifestRule.AnalyzeScript(ast, fileName).GetEnumerator().MoveNext();
-                    
+            if (exportedItems == null || exportedItems.Keys == null)
+            {
+                return null;
+            }
+            var sbuilder = new System.Text.StringBuilder();
+            sbuilder.Append("@(");
+            sbuilder.Append(string.Join(", ", exportedItems.Keys.Select(key => string.Format("'{0}'", key))));
+            sbuilder.Append(")");
+            return sbuilder.ToString();
         }
+
+
+        private List<CorrectionExtent> GetCorrectionExtent(string field, IScriptExtent extent, PSModuleInfo psModuleInfo)
+        {
+            Debug.Assert(field != null);            
+            Debug.Assert(psModuleInfo != null);
+            Debug.Assert(extent != null);
+            var corrections = new List<CorrectionExtent>();
+            string correctionText = null;
+            switch (field)
+            {
+                case functionsToExport:
+                    correctionText = GetListLiteral(psModuleInfo.ExportedFunctions);
+                    break;
+                case cmdletsToExport:
+                    correctionText = GetListLiteral(psModuleInfo.ExportedCmdlets);
+                    break;
+                case variablesToExport:
+                    correctionText = GetListLiteral(psModuleInfo.ExportedVariables);
+                    break;
+                case aliasesToExport:
+                    correctionText = GetListLiteral(psModuleInfo.ExportedAliases);
+                    break;
+                default:
+                    throw new NotImplementedException(string.Format("{0} not implemented", field));
+            }            
+            corrections.Add(new CorrectionExtent(
+                extent.StartLineNumber,
+                extent.EndLineNumber,
+                extent.StartColumnNumber,
+                extent.EndColumnNumber,
+                correctionText,
+                extent.File));
+            return corrections;
+        }
+
+        ///// <summary>
+        ///// Checks if the manifest file is valid. 
+        ///// </summary>
+        ///// <param name="ast"></param>
+        ///// <param name="fileName"></param>
+        ///// <returns>A boolean value indicating the validity of the manifest file.</returns>
+        //private bool IsValidManifest(Ast ast, string fileName)
+        //{
+        //    var missingManifestRule = new MissingModuleManifestField();
+        //    return !missingManifestRule.AnalyzeScript(ast, fileName).GetEnumerator().MoveNext();
+
+        //}
 
         /// <summary>
         /// Checks if the ast contains wildcard character.

@@ -39,11 +39,25 @@ Describe "UseManifestExportFields" {
             $results[0].Extent.Text | Should be "'*'"
         }
 
+	It "suggests corrections for FunctionsToExport with wildcard" {
+	    Import-Module .\PSScriptAnalyzerTestHelper.psm1
+	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardPath
+	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsWildcardPath
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1 "'*'" "@('Get-Foo', 'Get-Bar')"
+	}
+
         It "detects FunctionsToExport with null" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsNullPath
             $results.Count | Should be 1
             $results[0].Extent.Text | Should be '$null'
         }
+
+	It "suggests corrections for FunctionsToExport with null" {
+	    Import-Module .\PSScriptAnalyzerTestHelper.psm1
+	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsNullPath
+	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsNullPath
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1  '$null' "@('Get-Foo', 'Get-Bar')"
+	}
 
         It "detects array element containing wildcard" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardInArrayPath
@@ -67,6 +81,13 @@ Describe "UseManifestExportFields" {
             $results.Count | Should be 1
             $results[0].Extent.Text | Should be "'*'"
         }
+
+	It "suggests corrections for AliasesToExport with wildcard" {
+	    Import-Module .\PSScriptAnalyzerTestHelper.psm1
+	    $violations = Run-PSScriptAnalyzerRule $testManifestBadAliasesWildcardPath
+	    $violationFilepath = Join-path $testManifestPath $testManifestBadAliasesWildcardPath
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1  "'*'" "@('gfoo', 'gbar')"
+	}
 
         It "detects VariablesToExport with wildcard" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadVariablesWildcardPath
