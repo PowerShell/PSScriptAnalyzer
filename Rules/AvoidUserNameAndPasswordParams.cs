@@ -50,6 +50,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 // Finds all ParamAsts.
                 IEnumerable<Ast> paramAsts = funcAst.FindAll(testAst => testAst is ParameterAst, true);
+
+                ParameterAst usernameAst = null;
+                ParameterAst passwordAst = null;
                 // Iterates all ParamAsts and check if their names are on the list.
                 foreach (ParameterAst paramAst in paramAsts)
                 {
@@ -67,7 +70,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         || paramAttribute.TypeName.GetReflectionType() == typeof(System.Security.SecureString));
 
                     String paramName = paramAst.Name.VariablePath.ToString();                    
-
                     foreach (String password in passwords)
                     {
                         if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
@@ -79,6 +81,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             }
 
                             hasPwd = true;
+                            passwordAst = paramAst;
                             break;
                         }
                     }
@@ -88,6 +91,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (paramName.IndexOf(username, StringComparison.OrdinalIgnoreCase) != -1)
                         {
                             hasUserName = true;
+                            usernameAst = paramAst;
                             break;
                         }
                     }
@@ -97,9 +101,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     yield return new DiagnosticRecord(
                         String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsError, funcAst.Name),
-                        funcAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
+                        GetExtent(usernameAst, passwordAst, ast), GetName(), DiagnosticSeverity.Error, fileName);
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns script extent of username and password parameters
+        /// </summary>
+        /// <param name="usernameAst"></param>
+        /// <param name="passwordAst"></param>
+        /// <returns>IScriptExtent</returns>
+        private IScriptExtent GetExtent(ParameterAst usernameAst, ParameterAst passwordAst, Ast scriptAst)
+        {
+            var usrExt = usernameAst.Extent;
+            var pwdExt = passwordAst.Extent;
+            IScriptExtent startExt, endExt;
+            var usrBeforePwd 
+                = (usrExt.StartLineNumber == pwdExt.StartLineNumber
+                    && usrExt.StartColumnNumber < pwdExt.StartColumnNumber)
+                    || usrExt.StartLineNumber < pwdExt.StartLineNumber;
+            if (usrBeforePwd)
+            {
+                startExt = usrExt;
+                endExt = pwdExt;
+            }
+            else
+            {
+                startExt = pwdExt;
+                endExt = usrExt;
+            }
+            var startPos = new ScriptPosition(
+                startExt.File,
+                startExt.StartLineNumber,
+                startExt.StartColumnNumber,
+                startExt.StartScriptPosition.Line);
+            var endPos = new ScriptPosition(
+                endExt.File,
+                endExt.EndLineNumber,
+                endExt.EndColumnNumber,
+                endExt.EndScriptPosition.Line);
+            return new ScriptExtent(startPos, endPos);
         }
 
         /// <summary>
