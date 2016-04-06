@@ -656,22 +656,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (null == functionDefinitionAst)
             {
                 return null;
-            }
-
-            // Obtain the index where the function name is in Tokens
-            int funcTokenIndex = Tokens.Select((s, index) => new { s, index })
-                          .Where(x => x.s.Extent.StartOffset == functionDefinitionAst.Extent.StartOffset)
-                          .Select(x => x.index).FirstOrDefault();
-
-            if (funcTokenIndex > 0 && funcTokenIndex < Helper.Instance.Tokens.Count())
+            }            
+            var funcNameToken = Tokens.Where(
+                token => ContainsExtent(functionDefinitionAst.Extent, token.Extent) 
+                && token.Text.Equals(functionDefinitionAst.Name));
+            if (funcNameToken.Any())
             {
-                // return the extent of the next token - this is the extent for the function name
-                return Tokens[++funcTokenIndex].Extent;
+                return funcNameToken.First().Extent;
             }
-
-            return null;
+            else
+            {
+                return null;
+            }
         }
-        
+
+        /// <summary>
+        /// Return true of subset is contained in set
+        /// </summary>
+        /// <param name="set"></param>
+        /// <param name="subset"></param>
+        /// <returns>True or False</returns>
+        private bool ContainsExtent(IScriptExtent set, IScriptExtent subset)
+        {
+            if (set == null)
+            {
+                throw new ArgumentNullException("set");
+            }
+            if (subset == null)
+            {
+                throw new ArgumentNullException("subset");
+            }
+            if (set.StartOffset <= subset.StartOffset 
+                && set.EndOffset >= subset.EndOffset)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         private void FindClosingParenthesis(string keyword)
         {
             if (Tokens == null || Tokens.Length == 0)
