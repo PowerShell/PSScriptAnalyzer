@@ -1190,12 +1190,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="ruleSuppressions"></param>
         /// <param name="diagnostics"></param>
-        public Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(string ruleName, Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict, List<DiagnosticRecord> diagnostics)
+        public Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
+            string ruleName,
+            Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict,
+            List<DiagnosticRecord> diagnostics,
+            out List<ErrorRecord> errorRecords)
         {
             List<SuppressedRecord> suppressedRecords = new List<SuppressedRecord>();
             List<DiagnosticRecord> unSuppressedRecords = new List<DiagnosticRecord>();
             Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> result = Tuple.Create(suppressedRecords, unSuppressedRecords);
-
+            errorRecords = new List<ErrorRecord>();
             if (diagnostics == null || diagnostics.Count == 0)
             {
                 return result;
@@ -1261,8 +1265,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
                                 System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
                     }
-
-                    this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    errorRecords.Add(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    //this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
                 }
             }
 
