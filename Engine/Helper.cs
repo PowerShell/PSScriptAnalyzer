@@ -657,44 +657,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return null;
             }            
-            var funcNameToken = Tokens.Where(
-                token => ContainsExtent(functionDefinitionAst.Extent, token.Extent) 
+            var funcNameTokens = Tokens.Where(
+                token => 
+                ContainsExtent(functionDefinitionAst.Extent, token.Extent) 
                 && token.Text.Equals(functionDefinitionAst.Name));
-            if (funcNameToken.Any())
-            {
-                return funcNameToken.First().Extent;
-            }
-            else
-            {
-                return null;
-            }
+            var funcNameToken = funcNameTokens.FirstOrDefault();
+            return funcNameToken == null ? null : funcNameToken.Extent;
         }
 
         /// <summary>
-        /// Return true of subset is contained in set
+        /// Return true if subset is contained in set
         /// </summary>
         /// <param name="set"></param>
         /// <param name="subset"></param>
         /// <returns>True or False</returns>
         private bool ContainsExtent(IScriptExtent set, IScriptExtent subset)
         {
-            if (set == null)
-            {
-                throw new ArgumentNullException("set");
-            }
-            if (subset == null)
-            {
-                throw new ArgumentNullException("subset");
-            }
-            if (set.StartOffset <= subset.StartOffset 
-                && set.EndOffset >= subset.EndOffset)
-            {
-                return true;
-            }
-            else
+            if (set == null || subset == null)
             {
                 return false;
             }
+            return set.StartOffset <= subset.StartOffset
+                && set.EndOffset >= subset.EndOffset;
         }
         private void FindClosingParenthesis(string keyword)
         {
