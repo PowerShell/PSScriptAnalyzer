@@ -1386,6 +1386,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Wrapper around the Helper.SuppressRule method
+        /// </summary>
+        /// <param name="ruleName"></param>
+        /// <param name="ruleSuppressions"></param>
+        /// <param name="ruleDiagnosticRecords"></param>
+        /// <returns>Returns a tuple of suppressed and diagnostic records</returns>
+        private Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
+            string ruleName,
+            Dictionary<string, List<RuleSuppression>> ruleSuppressions,
+            List<DiagnosticRecord> ruleDiagnosticRecords)
+        {
+            List<ErrorRecord> suppressRuleErrors;
+            var records = Helper.Instance.SuppressRule(
+                ruleName,
+                ruleSuppressions,
+                ruleDiagnosticRecords,
+                out suppressRuleErrors);
+            foreach (var error in suppressRuleErrors)
+            {
+                this.outputWriter.WriteError(error);
+            }
+            return records;
+        }
+
+        /// <summary>
         /// Analyzes the syntax tree of a script file that has already been parsed.
         /// </summary>
         /// <param name="scriptAst">The ScriptBlockAst from the parsed script.</param>
@@ -1445,7 +1470,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (this.ScriptRules != null)
             {
                 var allowedRules = this.ScriptRules.Where(IsRuleAllowed);
-
                 if (allowedRules.Any())
                 {
                     var tasks = allowedRules.Select(scriptRule => Task.Factory.StartNew(() =>
@@ -1468,7 +1492,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                             else if (!helpRule && !helpFile)
                             {
-                                var records = Helper.Instance.SuppressRule(scriptRule.GetName(), ruleSuppressions, scriptRule.AnalyzeScript(scriptAst, scriptAst.Extent.File).ToList());
+                                List<ErrorRecord> suppressRuleErrors;
+                                var ruleRecords = scriptRule.AnalyzeScript(scriptAst, scriptAst.Extent.File).ToList();
+                                var records = Helper.Instance.SuppressRule(
+                                    scriptRule.GetName(), 
+                                    ruleSuppressions, 
+                                    ruleRecords,
+                                    out suppressRuleErrors);
+                                result.AddRange(suppressRuleErrors);
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);
@@ -1486,9 +1517,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         verboseOrErrors.Add(result);
                     }));
-
                     Task.Factory.ContinueWhenAll(tasks.ToArray(), t => verboseOrErrors.CompleteAdding());
-
                     while (!verboseOrErrors.IsCompleted)
                     {
                         List<object> data = null;
@@ -1501,9 +1530,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         if (data != null)
                         {
                             this.outputWriter.WriteVerbose(data[0] as string);
-                            if (data.Count == 2)
+                            if (data.Count > 1)
                             {
-                                this.outputWriter.WriteError(data[1] as ErrorRecord);
+                                for (int count = 1; count < data.Count; count++)
+                                {
+                                    this.outputWriter.WriteError(data[count] as ErrorRecord);
+                                }
                             }
                         }
                     }
@@ -1526,7 +1558,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
-                            var records = Helper.Instance.SuppressRule(tokenRule.GetName(), ruleSuppressions, tokenRule.AnalyzeTokens(scriptTokens, filePath).ToList());
+                            var ruleRecords = tokenRule.AnalyzeTokens(scriptTokens, filePath).ToList();
+                            var records = SuppressRule(tokenRule.GetName(), ruleSuppressions, ruleRecords);
                             foreach (var record in records.Item2)
                             {
                                 diagnostics.Add(record);
@@ -1584,16 +1617,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             // We want the Engine to continue functioning even if one or more Rules throws an exception
                             try
                             {
-                                #if PSV3
-
+#if PSV3
                                 var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, null);
-
-                                #else
-
-                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCClass(scriptAst, filePath).ToList());
-
-                                #endif
-
+#else
+                                var ruleRecords = dscResourceRule.AnalyzeDSCClass(scriptAst, filePath).ToList();
+                                var records = SuppressRule(dscResourceRule.GetName(), ruleSuppressions, ruleRecords);
+#endif
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);
@@ -1625,7 +1654,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             // We want the Engine to continue functioning even if one or more Rules throws an exception
                             try
                             {
-                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, dscResourceRule.AnalyzeDSCResource(scriptAst, filePath).ToList());
+                                var ruleRecords = dscResourceRule.AnalyzeDSCResource(scriptAst, filePath).ToList();
+                                var records = SuppressRule(dscResourceRule.GetName(), ruleSuppressions, ruleRecords);
                                 foreach (var record in records.Item2)
                                 {
                                     diagnostics.Add(record);
