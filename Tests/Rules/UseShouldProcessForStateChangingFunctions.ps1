@@ -9,3 +9,8 @@ function Set-MyObject{
     param([string]$c, [int]$d) 
 
 } 
+
+function Remove-MyObject{
+    [CmdletBinding()]
+    param([string]$c, [int]$d) 
+}

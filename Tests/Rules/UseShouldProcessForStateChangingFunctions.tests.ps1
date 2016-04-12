@@ -7,8 +7,9 @@ $noViolations = Invoke-ScriptAnalyzer $directory\UseShouldProcessForStateChangin
 
 Describe "It checks UseShouldProcess is enabled when there are state changing verbs in the function names" {
     Context "When there are violations" {
-        It "has 2 violations where ShouldProcess is not supported" {
-            $violations.Count | Should Be 2
+    	$numViolations = 3
+        It ("has {0} violations where ShouldProcess is not supported" -f $numViolations) {
+            $violations.Count | Should Be $numViolations
         }
 
         It "has the correct description message" {

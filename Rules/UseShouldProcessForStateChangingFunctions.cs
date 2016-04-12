@@ -1,5 +1,4 @@
-﻿//
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -8,24 +7,38 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Management.Automation.Language;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Linq;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
-{/// <summary>
+{   
+    /// <summary>
     /// UseShouldProcessForStateChangingFunctions: Analyzes the ast to check if ShouldProcess is included in Advanced functions if the Verb of the function could change system state.
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class UseShouldProcessForStateChangingFunctions : IScriptRule
     {
+        /// <summary>
+        /// Array of verbs that can potentially change the state of a system
+        /// </summary>
+        private string[] stateChangingVerbs =
+        {
+            "Restart-",
+            "Stop-",
+            "New-",
+            "Set-",
+            "Update-",
+            "Reset-",
+            "Remove-"
+        };
+
         /// <summary>
         /// AnalyzeScript: Analyzes the ast to check if ShouldProcess is included in Advanced functions if the Verb of the function could change system state.
         /// </summary>
@@ -34,39 +47,45 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>A List of diagnostic results of this rule</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
-
-            IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
-            string supportsShouldProcess = "SupportsShouldProcess";
-            string trueString = "$true";
+            if (ast == null)
+            {
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            }
+            IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);            
             foreach (FunctionDefinitionAst funcDefAst in funcDefAsts)
             {
                 string funcName = funcDefAst.Name;
                 bool hasShouldProcessAttribute = false;
-
-                if (funcName.StartsWith("Restart-", StringComparison.OrdinalIgnoreCase) ||
-                    funcName.StartsWith("Stop-", StringComparison.OrdinalIgnoreCase)||
-                    funcName.StartsWith("New-", StringComparison.OrdinalIgnoreCase) ||
-                    funcName.StartsWith("Set-", StringComparison.OrdinalIgnoreCase) ||
-                    funcName.StartsWith("Update-", StringComparison.OrdinalIgnoreCase) ||
-                    funcName.StartsWith("Reset-", StringComparison.OrdinalIgnoreCase))
+                var targetFuncName = this.stateChangingVerbs.Where(
+                    elem => funcName.StartsWith(
+                        elem, 
+                        StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                if (targetFuncName != null)
                 {
                     IEnumerable<Ast> attributeAsts = funcDefAst.FindAll(testAst => testAst is NamedAttributeArgumentAst, true);
                     if (funcDefAst.Body != null && funcDefAst.Body.ParamBlock != null
                         && funcDefAst.Body.ParamBlock.Attributes != null &&
                         funcDefAst.Body.ParamBlock.Parameters != null)
                     {
-                        if (!funcDefAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof (CmdletBindingAttribute)))
+                        if (!funcDefAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
                         {
                             continue;
                         }
 
                         foreach (NamedAttributeArgumentAst attributeAst in attributeAsts)
                         {
-                            if (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase))
+                            if (attributeAst.ArgumentName.Equals("SupportsShouldProcess", StringComparison.OrdinalIgnoreCase))
                             {
-                                if((attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase)) && !attributeAst.ExpressionOmitted || 
-                                    attributeAst.ExpressionOmitted)
+                                if (!attributeAst.ExpressionOmitted)
+                                {
+                                    var varExpAst = attributeAst.Argument as VariableExpressionAst;
+                                    if (varExpAst != null 
+                                        && varExpAst.VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        hasShouldProcessAttribute = true;
+                                    }
+                                }
+                                else
                                 {
                                     hasShouldProcessAttribute = true;
                                 }
@@ -76,7 +95,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (!hasShouldProcessAttribute)
                         {
                             yield return
-                                 new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture,Strings.UseShouldProcessForStateChangingFunctionsError, funcName),funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                                 new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcName), funcDefAst.Extent, this.GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                     }
                 }
@@ -89,7 +108,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseShouldProcessForStateChangingFunctionsName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, this.GetSourceName(), Strings.UseShouldProcessForStateChangingFunctionsName);
         }
 
         /// <summary>
@@ -111,8 +130,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
+        /// GetSourceType: Retrieves the type of the rule: built-in, managed or module.
         /// </summary>
+        /// <returns>Source type {PS, PSDSC}</returns>
         public SourceType GetSourceType()
         {
             return SourceType.Builtin;
@@ -121,20 +141,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Rule severity {Information, Warning, Error}</returns>
         public RuleSeverity GetSeverity()
         {
             return RuleSeverity.Warning;
         }
 
-
         /// <summary>
         /// GetSourceName: Retrieves the module/assembly name the rule is from.
         /// </summary>
+        /// <returns>Source name</returns>
         public string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
     }
-
 }
