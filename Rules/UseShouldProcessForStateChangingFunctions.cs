@@ -51,55 +51,113 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
-            IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);            
-            foreach (FunctionDefinitionAst funcDefAst in funcDefAsts)
+            IEnumerable<Ast> funcDefWithNoShouldProcessAttrAsts = ast.FindAll(IsStateChangingFunctionWithNoShouldProcessAttribute, true);            
+            foreach (FunctionDefinitionAst funcDefAst in funcDefWithNoShouldProcessAttrAsts)
             {
-                string funcName = funcDefAst.Name;
-                bool hasShouldProcessAttribute = false;
-                var targetFuncName = this.stateChangingVerbs.Where(
-                    elem => funcName.StartsWith(
-                        elem, 
-                        StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                if (targetFuncName != null)
+                yield return new DiagnosticRecord(
+                    string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcDefAst.Name), 
+                    funcDefAst.Extent, 
+                    this.GetName(), 
+                    DiagnosticSeverity.Warning, 
+                    fileName);
+            }
+                            
+        }
+        /// <summary>
+        /// Checks if the ast defines a state changing function
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns>Returns true or false</returns>
+        private bool IsStateChangingFunctionWithNoShouldProcessAttribute(Ast ast)
+        {
+            var funcDefAst = ast as FunctionDefinitionAst;
+            if (funcDefAst == null)
+            {
+                return false;
+            }
+            string funcName = funcDefAst.Name;
+            var targetFuncName = this.stateChangingVerbs.Where(
+                elem => funcName.StartsWith(
+                    elem,
+                    StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            if (targetFuncName == null
+                || funcDefAst.Body == null
+                || funcDefAst.Body.ParamBlock == null
+                || funcDefAst.Body.ParamBlock.Attributes == null
+                || !funcDefAst.Body.ParamBlock.Attributes.Any(
+                    attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
+            {
+                return false;
+            }
+            return !HasShouldProcessTrue(funcDefAst.Body.ParamBlock.Attributes);
+        }
+        
+        /// <summary>
+        /// Checks if an attribute has SupportShouldProcess set to $true
+        /// </summary>
+        /// <param name="attributeAsts"></param>
+        /// <returns>Returns true or false</returns>
+        private bool HasShouldProcessTrue(IEnumerable<AttributeAst> attributeAsts)
+        {
+            if (attributeAsts == null)
+            {
+                return false;
+            }
+            foreach (var attributeAst in attributeAsts)
+            {                
+                if (attributeAst == null || attributeAst.NamedArguments == null)
                 {
-                    IEnumerable<Ast> attributeAsts = funcDefAst.FindAll(testAst => testAst is NamedAttributeArgumentAst, true);
-                    if (funcDefAst.Body != null && funcDefAst.Body.ParamBlock != null
-                        && funcDefAst.Body.ParamBlock.Attributes != null &&
-                        funcDefAst.Body.ParamBlock.Parameters != null)
+                    continue;
+                }
+                foreach (var namedAttributeAst in attributeAst.NamedArguments)
+                {
+                    if (namedAttributeAst == null)
                     {
-                        if (!funcDefAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
-                        {
-                            continue;
-                        }
-
-                        foreach (NamedAttributeArgumentAst attributeAst in attributeAsts)
-                        {
-                            if (attributeAst.ArgumentName.Equals("SupportsShouldProcess", StringComparison.OrdinalIgnoreCase))
-                            {
-                                if (!attributeAst.ExpressionOmitted)
-                                {
-                                    var varExpAst = attributeAst.Argument as VariableExpressionAst;
-                                    if (varExpAst != null 
-                                        && varExpAst.VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        hasShouldProcessAttribute = true;
-                                    }
-                                }
-                                else
-                                {
-                                    hasShouldProcessAttribute = true;
-                                }
-                            }
-                        }
-
-                        if (!hasShouldProcessAttribute)
-                        {
-                            yield return
-                                 new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcName), funcDefAst.Extent, this.GetName(), DiagnosticSeverity.Warning, fileName);
-                        }
+                        continue;
                     }
+                    if (!IsShouldProcessAttribute(namedAttributeAst))
+                    {
+                        continue;
+                    }
+                    return IsShouldProcessTrue(namedAttributeAst);                    
                 }
             }
+            // Cannot find any SupportShouldProcess attribute   
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if the named attribute is SupportShouldProcess
+        /// </summary>
+        /// <param name="namedAttributeArgumentAst"></param>
+        /// <returns>Returns true or false</returns>
+        private bool IsShouldProcessAttribute(NamedAttributeArgumentAst namedAttributeArgumentAst)
+        {
+            return namedAttributeArgumentAst != null
+                && namedAttributeArgumentAst.ArgumentName.Equals("SupportsShouldProcess", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Checks if the SupportShouldProcess attribute is true
+        /// </summary>
+        /// <param name="namedAttributeArgumentAst"></param>
+        /// <returns>Returns true or false</returns>
+        private bool IsShouldProcessTrue(NamedAttributeArgumentAst namedAttributeArgumentAst)
+        {
+            if (namedAttributeArgumentAst.ExpressionOmitted)
+            {
+                return true;
+            }
+            else
+            {
+                var varExpAst = namedAttributeArgumentAst.Argument as VariableExpressionAst;
+                if (varExpAst != null
+                    && varExpAst.VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
