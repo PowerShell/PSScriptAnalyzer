@@ -56,7 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 yield return new DiagnosticRecord(
                     string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcDefAst.Name), 
-                    funcDefAst.Extent, 
+                    Helper.Instance.GetScriptExtentForFunctionName(funcDefAst),                    
                     this.GetName(), 
                     DiagnosticSeverity.Warning, 
                     fileName);
@@ -80,12 +80,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 elem => funcName.StartsWith(
                     elem,
                     StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-            if (targetFuncName == null
-                || funcDefAst.Body == null
+            if (targetFuncName == null                
                 || funcDefAst.Body.ParamBlock == null
-                || funcDefAst.Body.ParamBlock.Attributes == null
-                || !funcDefAst.Body.ParamBlock.Attributes.Any(
-                    attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
+                || funcDefAst.Body.ParamBlock.Attributes == null)
             {
                 return false;
             }
@@ -99,42 +96,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>Returns true or false</returns>
         private bool HasShouldProcessTrue(IEnumerable<AttributeAst> attributeAsts)
         {
-            if (attributeAsts == null)
-            {
-                return false;
-            }
             foreach (var attributeAst in attributeAsts)
             {                
                 if (attributeAst == null || attributeAst.NamedArguments == null)
                 {
                     continue;
                 }
-                foreach (var namedAttributeAst in attributeAst.NamedArguments)
+                if (attributeAst.TypeName.GetReflectionAttributeType() 
+                    == typeof(CmdletBindingAttribute))
                 {
-                    if (namedAttributeAst == null)
+                    foreach (var namedAttributeAst in attributeAst.NamedArguments)
                     {
-                        continue;
+                        if (namedAttributeAst == null
+                            || !namedAttributeAst.ArgumentName.Equals(
+                                "SupportsShouldProcess", 
+                                StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                        return IsShouldProcessTrue(namedAttributeAst);                        
                     }
-                    if (!IsShouldProcessAttribute(namedAttributeAst))
-                    {
-                        continue;
-                    }
-                    return IsShouldProcessTrue(namedAttributeAst);                    
                 }
             }
             // Cannot find any SupportShouldProcess attribute   
             return false;
-        }
-
-        /// <summary>
-        /// Checks if the named attribute is SupportShouldProcess
-        /// </summary>
-        /// <param name="namedAttributeArgumentAst"></param>
-        /// <returns>Returns true or false</returns>
-        private bool IsShouldProcessAttribute(NamedAttributeArgumentAst namedAttributeArgumentAst)
-        {
-            return namedAttributeArgumentAst != null
-                && namedAttributeArgumentAst.ArgumentName.Equals("SupportsShouldProcess", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -151,11 +136,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             else
             {
                 var varExpAst = namedAttributeArgumentAst.Argument as VariableExpressionAst;
-                if (varExpAst != null
-                    && varExpAst.VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase))
+                if (varExpAst == null)
+                {
+                    var constExpAst = namedAttributeArgumentAst.Argument as ConstantExpressionAst;
+                    if (constExpAst == null)
+                    {
+                        return false;
+                    }
+                    bool constExpVal;
+                    if (LanguagePrimitives.TryConvertTo<bool>(constExpAst.Value, out constExpVal))
+                    {
+                        return constExpVal;
+                    }                    
+                }
+                else if (varExpAst.VariablePath.UserPath.Equals(
+                    bool.TrueString, 
+                    StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
-                }
+                }                
             }
             return false;
         }
