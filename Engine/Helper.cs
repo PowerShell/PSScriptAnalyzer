@@ -1448,11 +1448,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         return constExpVal;
                     }
                 }
-                else if (varExpAst.VariablePath.UserPath.Equals(
-                    bool.TrueString,
-                    StringComparison.OrdinalIgnoreCase))
+                else
                 {
-                    return true;
+                    return varExpAst.VariablePath.UserPath.Equals(
+                        bool.TrueString,
+                        StringComparison.OrdinalIgnoreCase);
                 }
             }
             return false;
