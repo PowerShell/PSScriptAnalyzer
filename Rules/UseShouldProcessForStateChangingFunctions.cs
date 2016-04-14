@@ -75,20 +75,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return false;
             }
-            string funcName = funcDefAst.Name;
-            var targetFuncName = this.stateChangingVerbs.Where(
-                elem => funcName.StartsWith(
-                    elem,
-                    StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-            if (targetFuncName == null                
-                || funcDefAst.Body.ParamBlock == null
-                || funcDefAst.Body.ParamBlock.Attributes == null)
-            {
-                return false;
-            }
-            return !HasShouldProcessTrue(funcDefAst.Body.ParamBlock.Attributes);
+            return Helper.Instance.IsStateChangingFunctionName(funcDefAst.Name) 
+                    && (funcDefAst.Body.ParamBlock == null
+                        || funcDefAst.Body.ParamBlock.Attributes == null
+                        || !HasShouldProcessTrue(funcDefAst.Body.ParamBlock.Attributes));
         }
-        
+
         /// <summary>
         /// Checks if an attribute has SupportShouldProcess set to $true
         /// </summary>
@@ -96,67 +88,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>Returns true or false</returns>
         private bool HasShouldProcessTrue(IEnumerable<AttributeAst> attributeAsts)
         {
-            foreach (var attributeAst in attributeAsts)
-            {                
-                if (attributeAst == null || attributeAst.NamedArguments == null)
-                {
-                    continue;
-                }
-                if (attributeAst.TypeName.GetReflectionAttributeType() 
-                    == typeof(CmdletBindingAttribute))
-                {
-                    foreach (var namedAttributeAst in attributeAst.NamedArguments)
-                    {
-                        if (namedAttributeAst == null
-                            || !namedAttributeAst.ArgumentName.Equals(
-                                "SupportsShouldProcess", 
-                                StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-                        return IsShouldProcessTrue(namedAttributeAst);                        
-                    }
-                }
-            }
-            // Cannot find any SupportShouldProcess attribute   
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if the SupportShouldProcess attribute is true
-        /// </summary>
-        /// <param name="namedAttributeArgumentAst"></param>
-        /// <returns>Returns true or false</returns>
-        private bool IsShouldProcessTrue(NamedAttributeArgumentAst namedAttributeArgumentAst)
-        {
-            if (namedAttributeArgumentAst.ExpressionOmitted)
+            var shouldProcessAttributeAst = Helper.Instance.GetShouldProcessAttributeAst(attributeAsts);
+            if (shouldProcessAttributeAst == null)
             {
-                return true;
+                return false;
             }
-            else
-            {
-                var varExpAst = namedAttributeArgumentAst.Argument as VariableExpressionAst;
-                if (varExpAst == null)
-                {
-                    var constExpAst = namedAttributeArgumentAst.Argument as ConstantExpressionAst;
-                    if (constExpAst == null)
-                    {
-                        return false;
-                    }
-                    bool constExpVal;
-                    if (LanguagePrimitives.TryConvertTo<bool>(constExpAst.Value, out constExpVal))
-                    {
-                        return constExpVal;
-                    }                    
-                }
-                else if (varExpAst.VariablePath.UserPath.Equals(
-                    bool.TrueString, 
-                    StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }                
-            }
-            return false;
+            return Helper.Instance.GetNamedArgumentAttributeValue(shouldProcessAttributeAst);
         }
 
         /// <summary>
