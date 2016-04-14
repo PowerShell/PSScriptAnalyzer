@@ -1329,6 +1329,134 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             
         }
 
+        /// <summary>
+        /// Check if the function name starts with one of potentailly state changing verbs
+        /// </summary>
+        /// <param name="functionName"></param>
+        /// <returns>true if the function name starts with a state changing verb, otherwise false</returns>
+        public bool IsStateChangingFunctionName(string functionName)
+        {
+            if (functionName == null)
+            {
+                throw new ArgumentNullException("functionName");
+            }
+            // Array of verbs that can potentially change the state of a system
+            string[] stateChangingVerbs =
+            {
+                "Restart-",
+                "Stop-",
+                "New-",
+                "Set-",
+                "Update-",
+                "Reset-",
+                "Remove-"
+            };
+            foreach (var verb in stateChangingVerbs)
+            {
+                if (functionName.StartsWith(verb, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Get the SupportShouldProcess attribute ast
+        /// </summary>
+        /// <param name="attributeAsts"></param>
+        /// <returns>Returns SupportShouldProcess attribute ast if it exists, otherwise returns null</returns>
+        public NamedAttributeArgumentAst GetShouldProcessAttributeAst(IEnumerable<AttributeAst> attributeAsts)
+        {
+            if (attributeAsts == null)
+            {
+                throw new ArgumentNullException("attributeAsts");
+            }
+            var cmdletBindingAttributeAst = this.GetCmdletBindingAttributeAst(attributeAsts);
+            if (cmdletBindingAttributeAst == null
+                || cmdletBindingAttributeAst.NamedArguments == null)
+            {
+                return null;
+            }
+            foreach (var namedAttributeAst in cmdletBindingAttributeAst.NamedArguments)
+            {
+                if (namedAttributeAst != null
+                    && namedAttributeAst.ArgumentName.Equals(
+                        "SupportsShouldProcess",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return namedAttributeAst;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the CmdletBinding attribute ast
+        /// </summary>
+        /// <param name="attributeAsts"></param>
+        /// <returns>Returns CmdletBinding attribute ast if it exists, otherwise returns null</returns>
+        public AttributeAst GetCmdletBindingAttributeAst(IEnumerable<AttributeAst> attributeAsts)
+        {
+            if (attributeAsts == null)
+            {
+                throw new ArgumentNullException("attributeAsts");
+            }
+            foreach (var attributeAst in attributeAsts)
+            {
+                if (attributeAst == null || attributeAst.NamedArguments == null)
+                {
+                    continue;
+                }
+                if (attributeAst.TypeName.GetReflectionAttributeType()
+                    == typeof(CmdletBindingAttribute))
+                {
+                    return attributeAst;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the boolean value of the named attribute argument
+        /// </summary>
+        /// <param name="namedAttributeArgumentAst"></param>
+        /// <returns>Boolean value of the named attribute argument</returns>
+        public bool GetNamedArgumentAttributeValue(NamedAttributeArgumentAst namedAttributeArgumentAst)
+        {
+            if (namedAttributeArgumentAst == null)
+            {
+                throw new ArgumentNullException("namedAttributeArgumentAst");
+            }
+            if (namedAttributeArgumentAst.ExpressionOmitted)
+            {
+                return true;
+            }
+            else
+            {
+                var varExpAst = namedAttributeArgumentAst.Argument as VariableExpressionAst;
+                if (varExpAst == null)
+                {
+                    var constExpAst = namedAttributeArgumentAst.Argument as ConstantExpressionAst;
+                    if (constExpAst == null)
+                    {
+                        return false;
+                    }
+                    bool constExpVal;
+                    if (LanguagePrimitives.TryConvertTo<bool>(constExpAst.Value, out constExpVal))
+                    {
+                        return constExpVal;
+                    }
+                }
+                else
+                {
+                    return varExpAst.VariablePath.UserPath.Equals(
+                        bool.TrueString,
+                        StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            return false;
+        }
 
         #endregion
     }
