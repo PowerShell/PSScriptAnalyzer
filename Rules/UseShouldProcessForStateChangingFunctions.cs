@@ -26,20 +26,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class UseShouldProcessForStateChangingFunctions : IScriptRule
     {
         /// <summary>
-        /// Array of verbs that can potentially change the state of a system
-        /// </summary>
-        private string[] stateChangingVerbs =
-        {
-            "Restart-",
-            "Stop-",
-            "New-",
-            "Set-",
-            "Update-",
-            "Reset-",
-            "Remove-"
-        };
-
-        /// <summary>
         /// AnalyzeScript: Analyzes the ast to check if ShouldProcess is included in Advanced functions if the Verb of the function could change system state.
         /// </summary>
         /// <param name="ast">The script's ast</param>
