@@ -35,13 +35,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
+            records = new List<DiagnosticRecord>();
+            this.fileName = fileName;
+
             // Rule is applicable only when PowerShell Version is < 5.0, since Test-NetConnection cmdlet was introduced in 5.0
             int majorPSVersion = GetPSMajorVersion(ast);
             if (!(5 > majorPSVersion && 0 < majorPSVersion))
-            {
-                records = new List<DiagnosticRecord>();
-                this.fileName = fileName;
-
+            {             
                 ast.Visit(this);
             }
 
