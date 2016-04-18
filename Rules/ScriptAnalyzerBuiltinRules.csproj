@@ -84,6 +84,7 @@
     <Compile Include="AvoidUsingConvertToSecureStringWithPlainText.cs" />
     <Compile Include="AvoidUsingInvokeExpression.cs" />
     <Compile Include="AvoidUsingPlainTextForPassword.cs" />
+    <Compile Include="AvoidUsingPing.cs" />
     <Compile Include="AvoidUsingWMICmdlet.cs" />
     <Compile Include="AvoidUsingWriteHost.cs" />
     <Compile Include="DscTestsPresent.cs" />

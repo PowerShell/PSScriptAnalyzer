@@ -810,4 +810,19 @@
   <data name="UseToExportFieldsInManifestName" xml:space="preserve">
     <value>UseToExportFieldsInManifest</value>
   </data>
+  <data name="AvoidUsingPingCommonName" xml:space="preserve">
+    <value>Avoid Using Ping</value>
+  </data>
+  <data name="AvoidUsingPingDescription" xml:space="preserve">
+    <value>Avoid using the Ping command. Instead, use Test-NetConnection or Test-Connection. Test-NetConnection and Test-Connection can directly replace ping and do not require parsing text, using $LASTERRORCODE, or the .Net ping class.</value>
+  </data>
+  <data name="AvoidUsingPingError" xml:space="preserve">
+    <value>File '{0}' uses Ping command. For PowerShell 5.0 and above, use Test-NetConnection or Test-Connection cmdlet which perform the same tasks as the Ping command. </value>
+  </data>
+  <data name="AvoidUsingPingErrorScriptDefinition" xml:space="preserve">
+    <value>Avoid using the Ping command. For PowerShell 5.0 and above, use Test-NetConnection or Test-Connection cmdlet which perform the same tasks as the Ping command.</value>
+  </data>
+  <data name="AvoidUsingPingName" xml:space="preserve">
+    <value>AvoidUsingPing</value>
+  </data>
 </root>
