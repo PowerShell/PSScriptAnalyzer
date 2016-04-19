@@ -5,6 +5,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violationFilepath = Join-Path $directory 'AvoidUsingAlias.ps1'
 $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingAliasNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+Import-Module (Join-Path $directory "PSScriptAnalyzerTestHelper.psm1")
 
 Describe "AvoidUsingAlias" {
     Context "When there are violations" {
@@ -17,7 +18,6 @@ Describe "AvoidUsingAlias" {
         }
 
 	It "suggests correction" {
-	   Import-Module .\PSScriptAnalyzerTestHelper.psm1
 	   Test-CorrectionExtent $violationFilepath $violations[0] 1 'iex' 'Invoke-Expression'
 	   $violations[0].SuggestedCorrections[0].Description | Should Be 'Replace iex with Invoke-Expression'
 

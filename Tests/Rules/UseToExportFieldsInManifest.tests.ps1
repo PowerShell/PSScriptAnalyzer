@@ -10,6 +10,7 @@ $testManifestBadVariablesWildcardPath = "ManifestBadVariablesWildcard.psd1"
 $testManifestBadAllPath = "ManifestBadAll.psd1"
 $testManifestGoodPath = "ManifestGood.psd1"
 $testManifestInvalidPath = "ManifestInvalid.psd1"
+Import-Module (Join-Path $directory "PSScriptAnalyzerTestHelper.psm1")
 
 Function Run-PSScriptAnalyzerRule 
 {
@@ -40,7 +41,6 @@ Describe "UseManifestExportFields" {
         }
 
 	It "suggests corrections for FunctionsToExport with wildcard" {
-	    Import-Module .\PSScriptAnalyzerTestHelper.psm1
 	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardPath
 	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsWildcardPath
 	    Test-CorrectionExtent $violationFilepath $violations[0] 1 "'*'" "@('Get-Foo', 'Get-Bar')"
@@ -54,7 +54,6 @@ Describe "UseManifestExportFields" {
         }
 
 	It "suggests corrections for FunctionsToExport with null" {
-	    Import-Module .\PSScriptAnalyzerTestHelper.psm1
 	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsNullPath
 	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsNullPath
 	    Test-CorrectionExtent $violationFilepath $violations[0] 1  '$null' "@('Get-Foo', 'Get-Bar')"
@@ -84,7 +83,6 @@ Describe "UseManifestExportFields" {
         }
 
 	It "suggests corrections for AliasesToExport with wildcard" {
-	    Import-Module .\PSScriptAnalyzerTestHelper.psm1
 	    $violations = Run-PSScriptAnalyzerRule $testManifestBadAliasesWildcardPath
 	    $violationFilepath = Join-path $testManifestPath $testManifestBadAliasesWildcardPath
 	    Test-CorrectionExtent $violationFilepath $violations[0] 1  "'*'" "@('gfoo', 'gbar')"
