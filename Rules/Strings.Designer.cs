@@ -772,6 +772,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid Using Ping.
+        /// </summary>
+        internal static string AvoidUsingPingCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUsingPingCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid using the Ping command. Instead, use Test-NetConnection or Test-Connection. Test-NetConnection and Test-Connection can directly replace ping and do not require parsing text, using $LASTERRORCODE, or the .Net ping class..
+        /// </summary>
+        internal static string AvoidUsingPingDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingPingDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; uses Ping command. For PowerShell 5.0 and above, use Test-NetConnection or Test-Connection cmdlet which perform the same tasks as the Ping command. .
+        /// </summary>
+        internal static string AvoidUsingPingError {
+            get {
+                return ResourceManager.GetString("AvoidUsingPingError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid using the Ping command. For PowerShell 5.0 and above, use Test-NetConnection or Test-Connection cmdlet which perform the same tasks as the Ping command..
+        /// </summary>
+        internal static string AvoidUsingPingErrorScriptDefinition {
+            get {
+                return ResourceManager.GetString("AvoidUsingPingErrorScriptDefinition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUsingPing.
+        /// </summary>
+        internal static string AvoidUsingPingName {
+            get {
+                return ResourceManager.GetString("AvoidUsingPingName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using Plain Text For Password Parameter.
         /// </summary>
         internal static string AvoidUsingPlainTextForPasswordCommonName {
