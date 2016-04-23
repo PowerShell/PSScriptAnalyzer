@@ -124,6 +124,23 @@ Describe "Test Path" {
         }
     }
 
+    Context "DiagnosticRecord  " {
+	It "has valid ScriptPath and ScriptName properties when an input file is given" {
+	   $scriptName = "TestScript.ps1"
+	   $scriptPath = Join-Path $directory $scriptName
+	   $expectedScriptPath = Resolve-Path $directory\TestScript.ps1
+	   $diagnosticRecords = Invoke-ScriptAnalyzer $scriptPath -IncludeRule "PSAvoidUsingEmptyCatchBlock"
+	   $diagnosticRecords[0].ScriptPath | Should Be $expectedScriptPath.Path
+	   $diagnosticRecords[0].ScriptName | Should Be $scriptName
+	}
+
+	It "has empty ScriptPath and ScriptName properties when a script definition is given" {
+	   $diagnosticRecords = Invoke-ScriptAnalyzer -ScriptDefinition gci -IncludeRule "PSAvoidUsingCmdletAliases"
+	   $diagnosticRecords[0].ScriptPath | Should Be ([System.String]::Empty)
+	   $diagnosticRecords[0].ScriptName | Should Be ([System.String]::Empty)
+	}
+    }
+
 	if (!$testingLibraryUsage)
 	{
 		#There is probably a more concise way to do this but for now we will settle for this!
@@ -177,7 +194,6 @@ Describe "Test Path" {
             Write-Output $writeHostViolation.Count
             $globalVarsViolation.Count -eq 1 -and $writeHostViolation.Count -eq 1 | Should Be $true
         }
-
     }
 }
 
