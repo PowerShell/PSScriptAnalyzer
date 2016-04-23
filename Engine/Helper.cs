@@ -274,7 +274,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="errorRecord"></param>
         /// <returns>Returns a boolean value indicating the presence of MissingMemberException</returns>
-        public bool IsMissingMemberException(ErrorRecord errorRecord)
+        public static bool IsMissingManifestMemberException(ErrorRecord errorRecord)
         {
             return errorRecord.CategoryInfo != null
                 && errorRecord.CategoryInfo.Category == ErrorCategory.ResourceUnavailable

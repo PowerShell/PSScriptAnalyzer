@@ -44,7 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (var errorRecord in errorRecords)
                     {
-                        if (Helper.Instance.IsMissingMemberException(errorRecord))
+                        if (Helper.IsMissingManifestMemberException(errorRecord))
                         {
                             System.Diagnostics.Debug.Assert(errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), Strings.NullErrorMessage);
                             yield return
