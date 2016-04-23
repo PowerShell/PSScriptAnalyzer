@@ -53,20 +53,18 @@ Describe "UseManifestExportFields" {
             $results[0].Extent.Text | Should be '$null'
         }
 
-	It "suggests corrections for FunctionsToExport with null" {
+	It "suggests corrections for FunctionsToExport with null and line wrapping" {
 	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsNullPath
 	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsNullPath
-	    Test-CorrectionExtent $violationFilepath $violations[0] 1  '$null' "@('Get-Foo', 'Get-Bar')"
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1  '$null' "@('Get-Foo1', 'Get-Foo2', 'Get-Foo3', 'Get-Foo4', 'Get-Foo5', 'Get-Foo6', `r`n`t`t'Get-Foo7', 'Get-Foo8', 'Get-Foo9', 'Get-Foo10', 'Get-Foo11', `r`n`t`t'Get-Foo12')"
 	}
 
         It "detects array element containing wildcard" {
+	    # if more than two elements contain wildcard we can show only the first one as of now.
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardInArrayPath
-            $results.Count | Should be 3
+            $results.Count | Should be 2
             $results.Where({$_.Message -match "FunctionsToExport"}).Extent.Text | Should be "'Get-*'"
             $results.Where({$_.Message -match "CmdletsToExport"}).Extent.Text | Should be "'Update-*'"
-            
-            # if more than two elements contain wildcard we can show only the first one as of now.
-            $results.Where({$_.Message -match "VariablesToExport"}).Extent.Text | Should be "'foo*'"
         }
 
 
@@ -88,15 +86,9 @@ Describe "UseManifestExportFields" {
 	    Test-CorrectionExtent $violationFilepath $violations[0] 1  "'*'" "@('gfoo', 'gbar')"
 	}
 
-        It "detects VariablesToExport with wildcard" {
-            $results = Run-PSScriptAnalyzerRule $testManifestBadVariablesWildcardPath
-            $results.Count | Should be 1
-            $results[0].Extent.Text | Should be "'*'"
-        }
-
         It "detects all the *ToExport violations" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadAllPath
-            $results.Count | Should be 4
+            $results.Count | Should be 3
         }
     }
 

@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -33,7 +34,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private const string functionsToExport = "FunctionsToExport";
         private const string cmdletsToExport = "CmdletsToExport";
-        private const string variablesToExport = "VariablesToExport";
         private const string aliasesToExport = "AliasesToExport";
                    
         /// <summary>
@@ -70,7 +70,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 yield break;
             }
 
-            string[] manifestFields = { functionsToExport, cmdletsToExport, variablesToExport, aliasesToExport };
+            string[] manifestFields = { functionsToExport, cmdletsToExport, aliasesToExport };
 
             foreach(string field in manifestFields)
             {
@@ -85,19 +85,43 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         fileName,
                         suggestedCorrections: GetCorrectionExtent(field, extent, psModuleInfo));
                 }
+                else
+                {
+
+                }
             }                               
                         
         }
 
         private string GetListLiteral<T>(Dictionary<string, T> exportedItems)
         {
+            const int lineWidth = 64;
             if (exportedItems == null || exportedItems.Keys == null)
             {
                 return null;
             }
-            var sbuilder = new System.Text.StringBuilder();
+            var sbuilder = new StringBuilder();
             sbuilder.Append("@(");
-            sbuilder.Append(string.Join(", ", exportedItems.Keys.Select(key => string.Format("'{0}'", key))));
+            var sbuilderInner = new StringBuilder();
+            int charLadder = lineWidth;
+            int keyCount = exportedItems.Keys.Count;
+            foreach (var key in exportedItems.Keys)
+            {
+                sbuilderInner.Append("'");
+                sbuilderInner.Append(key);
+                sbuilderInner.Append("'");
+                if (--keyCount > 0)
+                {
+                    sbuilderInner.Append(", ");
+                    if (sbuilderInner.Length > charLadder)
+                    {
+                        charLadder += lineWidth;
+                        sbuilderInner.AppendLine();
+                        sbuilderInner.Append('\t', 2);
+                    }
+                }
+            }
+            sbuilder.Append(sbuilderInner);
             sbuilder.Append(")");
             return sbuilder.ToString();
         }
@@ -118,16 +142,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 case cmdletsToExport:
                     correctionText = GetListLiteral(psModuleInfo.ExportedCmdlets);
                     break;
-                case variablesToExport:
-                    correctionText = GetListLiteral(psModuleInfo.ExportedVariables);
-                    break;
                 case aliasesToExport:
                     correctionText = GetListLiteral(psModuleInfo.ExportedAliases);
                     break;
                 default:
                     throw new NotImplementedException(string.Format("{0} not implemented", field));
             }
-            string description = string.Format("Replace {0} with {1}", extent.Text, correctionText);
+            string description = string.Format(
+                Strings.UseToExportFieldsInManifestCorrectionDescription,
+                extent.Text,
+                correctionText);
             corrections.Add(new CorrectionExtent(
                 extent.StartLineNumber,
                 extent.EndLineNumber,
