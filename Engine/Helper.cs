@@ -19,6 +19,7 @@ using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -103,7 +104,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:" };
 
         private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":" };
-
         #endregion
 
         /// <summary>
@@ -111,6 +111,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
+                                    
         }
 
         /// <summary>
@@ -236,25 +237,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="errorRecord"></param>
         /// <returns>Returns a object of type PSModuleInfo</returns>
         public PSModuleInfo GetModuleManifest(string filePath, out IEnumerable<ErrorRecord> errorRecord)
-        {                        
+        {
             errorRecord = null;
             PSModuleInfo psModuleInfo = null;
             Collection<PSObject> psObj = null;
             var ps = System.Management.Automation.PowerShell.Create();
-            if (ps == null)
-            {
-                return null;
-            }
             try
-            {                
+            {
                 ps.AddCommand("Test-ModuleManifest");
                 ps.AddParameter("Path", filePath);
-
-                // Suppress warnings emitted during the execution of Test-ModuleManifest
                 ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
                 psObj = ps.Invoke();
             }
-            catch { }
+            catch (CmdletInvocationException e)
+            {
+                // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
+                // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
+                // we consume it to allow execution of the of this method.
+                if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                {
+                    throw;
+                }
+            }
             if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
             {
                 var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
@@ -265,7 +269,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
             }
-            ps.Dispose();                                       
+            ps.Dispose();
             return psModuleInfo;
         }
 
@@ -1364,8 +1368,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             
         }
 
-
-        #endregion
+        #endregion Methods
     }
 
 
