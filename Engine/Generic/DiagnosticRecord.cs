@@ -97,7 +97,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// Returns suggested correction
         /// return value can be null
         /// </summary>
-        public List<CorrectionExtent> SuggestedCorrections
+        public IEnumerable<CorrectionExtent> SuggestedCorrections
         {
             get { return suggestedCorrections;  }            
         }
