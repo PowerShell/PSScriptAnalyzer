@@ -48,9 +48,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-
-                string cmdletName = Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper.Instance.GetCmdletNameFromAlias(aliasName);
-
+                string cmdletName = Helper.Instance.GetCmdletNameFromAlias(aliasName);
                 if (!String.IsNullOrEmpty(cmdletName))
                 {
                     yield return new DiagnosticRecord(
@@ -68,24 +66,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Creates a list containing suggested correction
         /// </summary>
-        /// <param name="cmdAst"></param>
-        /// <param name="cmdletName"></param>
-        /// <returns>Returns a list of suggested corrections</returns>
+        /// <param name="cmdAst">Command AST of an alias</param>
+        /// <param name="cmdletName">Full name of the alias</param>
+        /// <returns>Retruns a list of suggested corrections</returns>
         private List<CorrectionExtent> GetCorrectionExtent(CommandAst cmdAst, string cmdletName)
         {
             var corrections = new List<CorrectionExtent>();
             var ext = cmdAst.Extent;
-            var alias = cmdAst.GetCommandName();
-            var startColumnNumber = ext.StartColumnNumber + ext.Text.IndexOf(alias);
-            var endColumnNumber = startColumnNumber + alias.Length;
-            string description = string.Format("Replace {0} with {1}", alias, cmdletName);
+            var alias = cmdAst.GetCommandName();            
+            string description = string.Format(
+                CultureInfo.CurrentCulture, 
+                Strings.AvoidUsingCmdletAliasesCorrectionDescription, 
+                alias, 
+                cmdletName);
             corrections.Add(new CorrectionExtent(                
                 ext.StartLineNumber,
                 ext.EndLineNumber,
-                startColumnNumber,
-                endColumnNumber,
+                cmdAst.CommandElements[0].Extent.StartColumnNumber,
+                cmdAst.CommandElements[0].Extent.EndColumnNumber,
                 cmdletName,
-                ext.File,
+                ext.File,                
                 description));
             return corrections;
         }
