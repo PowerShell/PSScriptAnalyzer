@@ -9,8 +9,9 @@ Import-Module (Join-Path $directory "PSScriptAnalyzerTestHelper.psm1")
 
 Describe "AvoidUsingPlainTextForPassword" {
     Context "When there are violations" {
-        It "has 3 avoid using plain text for password violations" {
-            $violations.Count | Should Be 4
+    $expectedNumViolations = 7
+        It "has $expectedNumViolations violations" {
+            $violations.Count | Should Be $expectedNumViolations
         }
 
 	It "suggests corrections" {
@@ -20,6 +21,9 @@ Describe "AvoidUsingPlainTextForPassword" {
 	    Test-CorrectionExtent $violationFilepath $violations[1] 1 '$passwordparam' '[SecureString] $passwordparam'
 	    Test-CorrectionExtent $violationFilepath $violations[2] 1 '$credential' '[SecureString] $credential'
 	    Test-CorrectionExtent $violationFilepath $violations[3] 1 '$password' '[SecureString] $password'
+	    Test-CorrectionExtent $violationFilepath $violations[4] 1 '[string]' '[SecureString]'
+	    Test-CorrectionExtent $violationFilepath $violations[5] 1 '[string[]]' '[SecureString[]]'
+	    Test-CorrectionExtent $violationFilepath $violations[6] 1 '[string]' '[SecureString]'
 	}
 
         It "has the correct violation message" {

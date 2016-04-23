@@ -17,6 +17,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -71,19 +72,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private List<CorrectionExtent> GetCorrectionExtent(ParameterAst paramAst)
         {
-            IScriptExtent ext = paramAst.Extent;
-            var corrections = new List<CorrectionExtent>();            
-            string correctionText = string.Format("[SecureString] {0}", paramAst.Name.Extent.Text);
-            string description = string.Format("Set {0} type to SecureString", paramAst.Name.Extent.Text);
+            //Find the parameter type extent and replace that with secure string
+            IScriptExtent extent;
+            var typeAttributeAst = GetTypeAttributeAst(paramAst);
+            var corrections = new List<CorrectionExtent>();
+            string correctionText;
+            if (typeAttributeAst == null)
+            {
+                // cannot find any type attribute
+                extent = paramAst.Name.Extent;
+                correctionText = string.Format("[SecureString] {0}", paramAst.Name.Extent.Text);
+            }
+            else
+            {
+                // replace only the existing type with [SecureString]
+                extent = typeAttributeAst.Extent;
+                correctionText = typeAttributeAst.TypeName.IsArray ? "[SecureString[]]" : "[SecureString]";
+            }
+            string description = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.AvoidUsingPlainTextForPasswordCorrectionDescription,
+                paramAst.Name.Extent.Text);
             corrections.Add(new CorrectionExtent(
-                ext.StartLineNumber,
-                ext.EndLineNumber,
-                ext.StartColumnNumber,
-                ext.EndColumnNumber,
-                correctionText,
-                ext.File,
+                extent.StartLineNumber,
+                extent.EndLineNumber,
+                extent.StartColumnNumber,
+                extent.EndColumnNumber,
+                correctionText.ToString(),
+                paramAst.Extent.File,
                 description));
             return corrections;
+        }
+
+        private TypeConstraintAst GetTypeAttributeAst(ParameterAst paramAst)
+        {
+            if (paramAst.Attributes != null)
+            {
+                foreach(var attr in paramAst.Attributes)
+                {
+                    if (attr.GetType() == typeof(TypeConstraintAst))
+                    {
+                        return attr as TypeConstraintAst;
+                    }
+                }
+            }
+            return null;
         }
 
         /// <summary>
