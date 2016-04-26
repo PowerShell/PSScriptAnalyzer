@@ -17,6 +17,7 @@ using System.Management.Automation;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -46,15 +47,59 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         if (Helper.IsMissingManifestMemberException(errorRecord))
                         {
-                            System.Diagnostics.Debug.Assert(errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), Strings.NullErrorMessage);
-                            yield return
-                                new DiagnosticRecord(errorRecord.Exception.Message, ast.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                            System.Diagnostics.Debug.Assert(
+                                errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), 
+                                Strings.NullErrorMessage);
+                            var hashTableAsts = ast.Find(x => x is HashtableAst, false);
+                            yield return new DiagnosticRecord(
+                                errorRecord.Exception.Message, 
+                                ast.Extent, 
+                                GetName(), 
+                                DiagnosticSeverity.Warning, 
+                                fileName,
+                                suggestedCorrections:GetCorrectionExtent(hashTableAsts as HashtableAst));
                         }
 
                     }
                 }
             }
 
+        }
+
+
+        /// <summary>
+        /// Gets the correction extent
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns>A List of CorrectionExtent</returns>
+        private List<CorrectionExtent> GetCorrectionExtent(HashtableAst ast)
+        {
+            // we assume the extent begins with "@{"
+            if (ast.Extent.Text.IndexOf("@{") != 0)
+            {                
+                return null;
+            }
+
+            var correctionExtents = new List<CorrectionExtent>();
+            string moduleVersionText = @"
+# Version number of this module.
+ModuleVersion = '1.0.0.0'";           
+            int startLineNumber = ast.Extent.StartLineNumber;
+            int startColumnNumber = ast.Extent.StartColumnNumber + 2; // 2 for "@{",
+            var correctionText = new StringBuilder();
+            correctionText.AppendLine();
+            correctionText.Append(moduleVersionText);
+            correctionText.AppendLine();
+            correctionText.AppendLine();
+            var correctionExtent = new CorrectionExtent(
+                startLineNumber,
+                startLineNumber,
+                startColumnNumber,
+                startColumnNumber + 1,
+                correctionText.ToString(),
+                ast.Extent.File);
+            correctionExtents.Add(correctionExtent);
+            return correctionExtents;
         }
         
         /// <summary>
