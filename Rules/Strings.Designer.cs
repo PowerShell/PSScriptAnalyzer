@@ -1114,6 +1114,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add {0} = {1} to the module manifest.
+        /// </summary>
+        internal static string MissingModuleManifestFieldCorrectionDescription {
+            get {
+                return ResourceManager.GetString("MissingModuleManifestFieldCorrectionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some fields of the module manifest (such as ModuleVersion) are required..
         /// </summary>
         internal static string MissingModuleManifestFieldDescription {

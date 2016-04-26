@@ -81,23 +81,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var correctionExtents = new List<CorrectionExtent>();
-            string moduleVersionText = @"
-# Version number of this module.
-ModuleVersion = '1.0.0.0'";           
+            string fieldName = "ModuleVersion";
+            string fieldValue = "1.0.0.0";
             int startLineNumber = ast.Extent.StartLineNumber;
             int startColumnNumber = ast.Extent.StartColumnNumber + 2; // 2 for "@{",
-            var correctionText = new StringBuilder();
-            correctionText.AppendLine();
-            correctionText.Append(moduleVersionText);
-            correctionText.AppendLine();
-            correctionText.AppendLine();
+            string description = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.MissingModuleManifestFieldCorrectionDescription,
+                fieldName,
+                fieldValue);
+            var correctionTextTemplate = @"
+# Version number of this module.
+{0} = {1}
+";
+            var correctionText = string.Format(
+                correctionTextTemplate,
+                fieldName,
+                fieldValue);
             var correctionExtent = new CorrectionExtent(
                 startLineNumber,
                 startLineNumber,
                 startColumnNumber,
                 startColumnNumber + 1,
-                correctionText.ToString(),
-                ast.Extent.File);
+                correctionText,
+                ast.Extent.File,
+                description);
             correctionExtents.Add(correctionExtent);
             return correctionExtents;
         }
