@@ -45,6 +45,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         List<Regex> includeRegexList;
         List<Regex> excludeRegexList;
         bool suppressedOnly;
+        Runspace runspace;
+        ModuleDependencyHandler moduleHandler;
 
         #endregion
 
@@ -165,7 +167,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             severity = null;
             includeRegexList = null;
             excludeRegexList = null;
-            suppressedOnly = false;
+            suppressedOnly = false;            
+            moduleHandler.Dispose();
         }
 
         internal bool ParseProfile(object profileObject, PathIntrinsics path, IOutputWriter writer)
@@ -476,6 +479,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             this.outputWriter = outputWriter;
+            
+            // TODO Create a runspace pool
+            runspace = RunspaceFactory.CreateRunspace();          
+            moduleHandler = new ModuleDependencyHandler(runspace);            
 
             #region Verifies rule extensions and loggers path
 
@@ -1271,8 +1278,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         ErrorCategory.InvalidArgument, 
                         this));
             }
-        }
+        }        
 
+        
         private IEnumerable<DiagnosticRecord> AnalyzeFile(string filePath)
         {
             ScriptBlockAst scriptAst = null;
@@ -1296,6 +1304,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this.outputWriter.WriteWarning(e.ToString());
                         return null;
                     }
+
+
+                    // TODO Handle Parse Errors causes by missing modules
+                    // if errors are due to ModuleNotFoundDuringParse
+                    // - EITHER
+                    //  - create a runspace and set the default runspace (make sure backup the default runspace before modifying it)
+                    //  - check if it is present in the gallery
+                    //  - if present on the gallery, save it to a temporary file, and load the module
+                    //  - now parse again
+                    //  - if parse is successful, proceed
+                    //  - else inform the user of the issue
+                    // - OR
+                    //  - swallow the these errors
+
+
+                    if (errors != null && errors.Length > 0)
+                    {
+                        foreach (ParseError error in errors)
+                        {
+                            if (IsModuleNotFoundError(error))
+                            {
+                                var moduleName = ModuleDependencyHandler.GetModuleNameFromErrorExtent(error, scriptAst);
+                                if (moduleName != null)
+                                {
+                                    moduleHandler.SaveModule(moduleName);
+                                }
+                            }
+                        }
+                    }
+
+                    //try parsing again
+                    //var oldDefault = Runspace.DefaultRunspace;
+                    //Runspace.DefaultRunspace = moduleHandler.Runspace;
+                    scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+                    //Runspace.DefaultRunspace = oldDefault;
 
                     if (errors != null && errors.Length > 0)
                     {
@@ -1325,6 +1368,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath);
+        }
+
+        private bool IsModuleNotFoundError(ParseError error)
+        {
+            return error.ErrorId != null
+                && error.ErrorId.Equals("ModuleNotFoundDuringParse", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsSeverityAllowed(IEnumerable<uint> allowedSeverities, IRule rule)
