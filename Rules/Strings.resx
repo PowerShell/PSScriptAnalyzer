@@ -810,4 +810,13 @@
   <data name="UseToExportFieldsInManifestName" xml:space="preserve">
     <value>UseToExportFieldsInManifest</value>
   </data>
+  <data name="AvoidUsingCmdletAliasesCorrectionDescription" xml:space="preserve">
+    <value>Replace {0} with {1}</value>
+  </data>
+  <data name="AvoidUsingPlainTextForPasswordCorrectionDescription" xml:space="preserve">
+    <value>Set {0} type to SecureString</value>
+  </data>
+  <data name="UseToExportFieldsInManifestCorrectionDescription" xml:space="preserve">
+    <value>Replace {0} with {1}</value>
+  </data>
 </root>

@@ -19,6 +19,7 @@ using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -104,7 +105,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:"};
 
         private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":"};
-
         #endregion
 
         /// <summary>
@@ -112,6 +112,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
+                                    
         }
 
         /// <summary>
@@ -228,6 +229,61 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return false;
+        }
+        
+        /// <summary>
+        /// Gets the module manifest
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="errorRecord"></param>
+        /// <returns>Returns a object of type PSModuleInfo</returns>
+        public PSModuleInfo GetModuleManifest(string filePath, out IEnumerable<ErrorRecord> errorRecord)
+        {
+            errorRecord = null;
+            PSModuleInfo psModuleInfo = null;
+            Collection<PSObject> psObj = null;
+            var ps = System.Management.Automation.PowerShell.Create();
+            try
+            {
+                ps.AddCommand("Test-ModuleManifest");
+                ps.AddParameter("Path", filePath);
+                ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                psObj = ps.Invoke();
+            }
+            catch (CmdletInvocationException e)
+            {
+                // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
+                // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
+                // we consume it to allow execution of the of this method.
+                if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                {
+                    throw;
+                }
+            }
+            if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
+            {
+                var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
+                ps.Streams.Error.CopyTo(errorRecordArr, 0);
+                errorRecord = errorRecordArr;
+            }
+            if (psObj != null && psObj.Any() && psObj[0] != null)
+            {
+                psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
+            }
+            ps.Dispose();
+            return psModuleInfo;
+        }
+
+        /// <summary>
+        /// Checks if the error record is MissingMemberException
+        /// </summary>
+        /// <param name="errorRecord"></param>
+        /// <returns>Returns a boolean value indicating the presence of MissingMemberException</returns>
+        public static bool IsMissingManifestMemberException(ErrorRecord errorRecord)
+        {
+            return errorRecord.CategoryInfo != null
+                && errorRecord.CategoryInfo.Category == ErrorCategory.ResourceUnavailable
+                && string.Equals("MissingMemberException", errorRecord.CategoryInfo.Reason, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1328,7 +1384,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return outPaths.ToArray();
             
         }
-
+        
         /// <summary>
         /// Check if the function name starts with one of potentailly state changing verbs
         /// </summary>
@@ -1458,7 +1514,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return false;
         }
 
-        #endregion
+        #endregion Methods
     }
 
 
