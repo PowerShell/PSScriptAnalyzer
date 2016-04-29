@@ -12,6 +12,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     // TODO Use runspace pool
     // TODO Create a new process for the runspace
+    // TODO Support for verbose mode
+    // TODO Try changing the psmodulepath variable through powershell layer. This will save copying and removing the modules
     public class ModuleDependencyHandler : IDisposable
     {
         #region Private Variables
@@ -31,7 +33,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         #endregion Private Variables
 
         #region Properties
-        public string ModulePath
+        public string TempModulePath
         {
             get { return tempDirPath; }
         }        
@@ -156,30 +158,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         // TODO Use powershell copy-item
-        private void CopyDir(string srcParentPath,
-            string srcName,
-            string dstParentPath,
-            string dstName = null,
-            bool recurse = false)
+        private void CopyDir(string srcPath, string dstPath)
         {
-            if (dstName == null)
-            {
-                dstName = srcName;
-            }
-            var srcPath = Path.Combine(srcParentPath, srcName);
-            var dstPath = Path.Combine(dstParentPath, dstName);
-            Directory.CreateDirectory(dstPath);
-            foreach (var file in Directory.EnumerateFiles(srcPath))
-            {
-                File.Copy(file, Path.Combine(dstPath, Path.GetFileName(file)));
-            }
-            foreach (var dir in Directory.EnumerateDirectories(srcPath))
-            {
-                CopyDir(srcPath,
-                    Path.GetFileName(dir),
-                    dstPath,
-                    recurse: true);
-            }
+            var ps = System.Management.Automation.PowerShell.Create();
+            ps.Runspace = runspace;
+            ps.AddCommand("Copy-Item")
+                .AddParameter("Recurse")
+                .AddParameter("Path", srcPath)
+                .AddParameter("Destination", dstPath);
+            ps.Invoke();
         }
 
         #endregion Private Methods
@@ -243,8 +230,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             ps.AddCommand("Find-Module", true)
                 .AddParameter("Name", moduleName)
                 .AddParameter("Repository", moduleRepository);
-            modules = ps.Invoke<PSObject>();
-            
+            modules = ps.Invoke<PSObject>();            
             if (modules == null)
             {
                 return null;
@@ -264,7 +250,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             throw new NotImplementedException();
         }
 
-
+        // TODO Do not use find module because it leads to two queries to the server
+        // instead use save module and check if it couldn't find the module
+        // TODO Add a TrySaveModule method
         public void SaveModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
@@ -275,7 +263,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             if (modulesSavedInTempPath.Contains(moduleName))
             {
                 // copy to local ps module path
-                CopyDir(tempDirPath, moduleName, localPSModulePath, recurse: true);
+                CopyDir(Path.Combine(tempDirPath, moduleName), localPSModulePath);
                 modulesSavedInModulePath.Add(moduleName);
                 return;
             }
@@ -293,7 +281,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             modulesSavedInTempPath.Add(moduleName);
 
             // copy to local ps module path
-            CopyDir(tempDirPath, moduleName, localPSModulePath, recurse: true);
+            CopyDir(Path.Combine(tempDirPath, moduleName), localPSModulePath);
             modulesSavedInModulePath.Add(moduleName);
         }
 
