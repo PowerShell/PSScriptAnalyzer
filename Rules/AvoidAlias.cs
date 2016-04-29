@@ -71,8 +71,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>Retruns a list of suggested corrections</returns>
         private List<CorrectionExtent> GetCorrectionExtent(CommandAst cmdAst, string cmdletName)
         {
-            var corrections = new List<CorrectionExtent>();
             var ext = cmdAst.Extent;
+            if (ext.File == null)
+            {
+                return null;
+            }
+            var corrections = new List<CorrectionExtent>();            
             var alias = cmdAst.GetCommandName();            
             string description = string.Format(
                 CultureInfo.CurrentCulture, 

@@ -64,7 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetName(), 
                             DiagnosticSeverity.Warning, 
                             fileName,
-                            suggestedCorrections: GetCorrectionExtent(extent));
+                            suggestedCorrections: fileName == null ? null : GetCorrectionExtent(extent));
                 }
             }
         }
@@ -75,7 +75,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="cmdAst"></param>
         /// <returns>Returns a list of suggested corrections</returns>
         private List<CorrectionExtent> GetCorrectionExtent(IScriptExtent violationExtent)
-        {           
+        {            
             var corrections = new List<CorrectionExtent>();
             string description = "Remove trailing whilespace";
             corrections.Add(new CorrectionExtent(                

@@ -10,6 +10,9 @@
 // THE SOFTWARE.
 //
 
+
+
+using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 
@@ -25,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private IScriptExtent extent;
         private string ruleName;
         private DiagnosticSeverity severity;
-        private string scriptName;
+        private string scriptPath;
         private string ruleSuppressionId;
         private List<CorrectionExtent> suggestedCorrections;
 
@@ -35,7 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public string Message
         {
             get { return message; }
-            set { message = value; }
+            protected set { message = string.IsNullOrEmpty(value) ? string.Empty : value; }
         }
 
         /// <summary>
@@ -44,7 +47,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public IScriptExtent Extent
         {
             get { return extent; }
-            set { extent = value; }
+            protected set { extent = value; }
         }
 
         /// <summary>
@@ -53,7 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public string RuleName
         {
             get { return ruleName; }
-            set { ruleName = value; }
+            protected set { ruleName = string.IsNullOrEmpty(value) ? string.Empty : value; }
         }
 
         /// <summary>
@@ -70,18 +73,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// </summary>
         public string ScriptName
         {
-            get { return scriptName; }
-            //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
-            set {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    scriptName = System.IO.Path.GetFileName(value);
-                }
-                else
-                {
-                    scriptName = string.Empty;
-                }
-            }
+            get { return string.IsNullOrEmpty(scriptPath) ? string.Empty : System.IO.Path.GetFileName(scriptPath);}
+        }
+
+        /// <summary>
+        /// Returns the path of the script.
+        /// </summary>
+        public string ScriptPath
+        {
+            get { return scriptPath; }
+            protected set { scriptPath = string.IsNullOrEmpty(value) ? string.Empty : value; }
         }
 
         /// <summary>
@@ -117,18 +118,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="extent">The place in the script this diagnostic refers to</param>
         /// <param name="ruleName">The name of the rule that created this diagnostic</param>
         /// <param name="severity">The severity of this diagnostic</param>
-        /// <param name="scriptName">The name of the script file being analyzed</param>
+        /// <param name="scriptPath">The full path of the script file being analyzed</param>
         /// <param name="suggestedCorrections">The correction suggested by the rule to replace the extent text</param>
-        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptName, string ruleId = null, List<CorrectionExtent> suggestedCorrections = null)
+        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptPath, string ruleId = null, List<CorrectionExtent> suggestedCorrections = null)
         {
-            Message = string.IsNullOrEmpty(message) ? string.Empty : message;
-            RuleName = string.IsNullOrEmpty(ruleName) ? string.Empty : ruleName;
-            Extent = extent;
+            Message  = message;
+            RuleName = ruleName;
+            Extent   = extent;
             Severity = severity;
-            ScriptName = string.IsNullOrEmpty(scriptName) ? string.Empty : scriptName;
-            ruleSuppressionId = ruleId;
+            ScriptPath = scriptPath;
+            RuleSuppressionID = ruleId;
             this.suggestedCorrections = suggestedCorrections;
         }
+
     }
 
 
