@@ -18,10 +18,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private Runspace runspace;
         private readonly string moduleRepository;
         private string tempDirPath;
+        private string localPSModulePath;
         Dictionary<string, PSObject> modulesFound;
-        HashSet<string> modulesSaved;
-        private string oldPSModulePath;
-        private string currentModulePath;
+        HashSet<string> modulesSavedInModulePath;
+        HashSet<string> modulesSavedInTempPath;
+        private string localAppdataPath;
+        private string pssaAppdataPath;
+        private const string symLinkName = "TempModuleDir";
+        private const string tempPrefix = "PSSAModules-";
+        private string symLinkPath;
 
         #endregion Private Variables
 
@@ -36,7 +41,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             get { return runspace; }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Private Methods
         private static void ThrowIfNull<T>(T obj, string name)
@@ -46,44 +51,96 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 throw new ArgumentNullException(name);
             }            
         }
+
+        private void SetupCache()
+        {
+            // check if pssa exists in local appdata
+            if (Directory.Exists(pssaAppdataPath))
+            {
+                // check if there is a link
+                if (File.Exists(symLinkPath))
+                {
+                    tempDirPath = GetTempDirPath(symLinkPath);
+                    
+                    // check if the temp dir exists
+                    if (tempDirPath != null
+                        && Directory.Exists(tempDirPath))
+                    {
+                        SetModulesInTempPath();
+                        return;
+                    }
+                }
+                SetupTempDir();                
+            }
+            else
+            {
+                Directory.CreateDirectory(pssaAppdataPath);
+                SetupTempDir();
+            }           
+        }
+
+        private void SetModulesInTempPath()
+        {
+            // we assume the modules have not been tampered with
+            foreach (var dir in Directory.EnumerateDirectories(tempDirPath))
+            {
+                modulesSavedInTempPath.Add(Path.GetFileName(dir));
+            }
+        }
+
         private void SetupTempDir()
         {
-            //var tempPath = Path.GetTempPath();
-            //do
-            //{
-            //    tempDirPath = Path.Combine(
-            //        tempPath, 
-            //        Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-            //} while (Directory.Exists(tempDirPath));
-            //Directory.CreateDirectory(tempDirPath);
-            tempDirPath = "C:\\Users\\kabawany\\tmp\\modules\\";
+            CreateTempDir();
+            UpdateSymLinkFile();            
         }
 
-        private void RemoveTempDir()
+        private void UpdateSymLinkFile()
         {
-            //Directory.Delete(tempDirPath, true);
+            File.WriteAllLines(symLinkPath, new string[] { tempDirPath });
         }
 
-        private void SetupPSModulePath()
+        private void CreateTempDir()
         {
-            oldPSModulePath = Environment.GetEnvironmentVariable("PSModulePath", EnvironmentVariableTarget.Process);
-            var sb = new StringBuilder();
-            sb.Append(oldPSModulePath)
-                .Append(Path.DirectorySeparatorChar)
-                .Append(tempDirPath);
-            currentModulePath = sb.ToString();
+            tempDirPath = GetTempDirPath();
+            Directory.CreateDirectory(tempDirPath);
+        }
+
+        private string GetTempDirPath()
+        {
+            var tempPathRoot = Path.GetTempPath();
+            string tempPath;
+            do
+            {
+                tempPath = Path.Combine(
+                    tempPathRoot,
+                    tempPrefix + Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+            } while (Directory.Exists(tempPath));
+            return tempPath;
+        }
+
+        // Return the first line of the file
+        private string GetTempDirPath(string symLinkPath)
+        {
+            var symLinkLines = File.ReadAllLines(symLinkPath);
+            if(symLinkLines.Length != 1)
+            {
+                return null;
+            }
+            return symLinkLines[0];
         }
         
         private void CleanUp()
         {
             runspace.Dispose();
-            RemoveTempDir();            
-            RestorePSModulePath();
-        }
 
-        private void RestorePSModulePath()
-        {
-            Environment.SetEnvironmentVariable("PSModulePath", oldPSModulePath, EnvironmentVariableTarget.Process);
+            // remove the modules from local psmodule path            
+            foreach (var dir in Directory.EnumerateDirectories(localPSModulePath))
+            {
+                if (modulesSavedInModulePath.Contains(Path.GetFileName(dir)))
+                {
+                    Directory.Delete(dir, true);
+                }
+            }
         }
 
         private void SaveModule(PSObject module)
@@ -98,6 +155,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             ps.Invoke();
         }
 
+        // TODO Use powershell copy-item
+        private void CopyDir(string srcParentPath,
+            string srcName,
+            string dstParentPath,
+            string dstName = null,
+            bool recurse = false)
+        {
+            if (dstName == null)
+            {
+                dstName = srcName;
+            }
+            var srcPath = Path.Combine(srcParentPath, srcName);
+            var dstPath = Path.Combine(dstParentPath, dstName);
+            Directory.CreateDirectory(dstPath);
+            foreach (var file in Directory.EnumerateFiles(srcPath))
+            {
+                File.Copy(file, Path.Combine(dstPath, Path.GetFileName(file)));
+            }
+            foreach (var dir in Directory.EnumerateDirectories(srcPath))
+            {
+                CopyDir(srcPath,
+                    Path.GetFileName(dir),
+                    dstPath,
+                    recurse: true);
+            }
+        }
+
         #endregion Private Methods
 
         #region Public Methods
@@ -106,10 +190,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             runspace = null;
             moduleRepository = "PSGallery";
-            modulesSaved = new HashSet<string>();
+            modulesSavedInModulePath = new HashSet<string>();
+            modulesSavedInTempPath = new HashSet<string>();
             modulesFound = new Dictionary<string, PSObject>();
-            SetupTempDir();
-            //SetupPSModulePath();           
+
+            // TODO search it in the $psmodulepath instead of constructing it
+            localPSModulePath = Path.Combine(
+                Environment.GetEnvironmentVariable("USERPROFILE"),
+                "Documents\\WindowsPowerShell\\Modules");
+            localAppdataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+
+            // TODO Add PSSA Version in the path
+            pssaAppdataPath = Path.Combine(localAppdataPath, "PSScriptAnalyzer");
+            symLinkPath = Path.Combine(pssaAppdataPath, symLinkName);
+
+            SetupCache();
         }
 
         public ModuleDependencyHandler(Runspace runspace) : this()
@@ -163,13 +258,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             return module;
         }
 
+
+        public bool ModuleExists(string moduleName)
+        {
+            throw new NotImplementedException();
+        }
+
+
         public void SaveModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
-            if (modulesSaved.Contains(moduleName))
+            if (modulesSavedInModulePath.Contains(moduleName))
             {
                 return;
             }
+            if (modulesSavedInTempPath.Contains(moduleName))
+            {
+                // copy to local ps module path
+                CopyDir(tempDirPath, moduleName, localPSModulePath, recurse: true);
+                modulesSavedInModulePath.Add(moduleName);
+                return;
+            }
+
             var module = FindModule(moduleName);
             if (module == null)
             {
@@ -180,7 +290,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         moduleRepository));
             }            
             SaveModule(module);
-            modulesSaved.Add(moduleName);
+            modulesSavedInTempPath.Add(moduleName);
+
+            // copy to local ps module path
+            CopyDir(tempDirPath, moduleName, localPSModulePath, recurse: true);
+            modulesSavedInModulePath.Add(moduleName);
         }
 
         public static string GetModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
