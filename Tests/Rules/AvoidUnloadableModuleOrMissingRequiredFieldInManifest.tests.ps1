@@ -24,17 +24,16 @@ Describe "MissingRequiredFieldModuleManifest" {
             $violations.Message | Should Match $missingMessage
         }
 	
-	$expectedCorrections = 1
-	It "has $expectedCorrections suggested corrections" {
-	   $violations.SuggestedCorrections.Count | Should Be 1
+	$numExpectedCorrections = 1
+	It "has $numExpectedCorrections suggested corrections" {
+	   $violations.SuggestedCorrections.Count | Should Be $numExpectedCorrections
 	}
 	
 
 	It "has the right suggested correction" {	
 	   $expectedText = @'
-
 # Version number of this module.
-ModuleVersion = 1.0.0.0
+ModuleVersion = '1.0.0.0'
 '@
        $violations[0].SuggestedCorrections[0].Text | Should Match $expectedText
        Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should Match ""

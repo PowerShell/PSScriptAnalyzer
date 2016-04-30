@@ -50,14 +50,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             System.Diagnostics.Debug.Assert(
                                 errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), 
                                 Strings.NullErrorMessage);
-                            var hashTableAsts = ast.Find(x => x is HashtableAst, false);
+                            var hashTableAst = ast.Find(x => x is HashtableAst, false);                            
                             yield return new DiagnosticRecord(
                                 errorRecord.Exception.Message, 
-                                ast.Extent, 
+                                hashTableAst.Extent, 
                                 GetName(), 
                                 DiagnosticSeverity.Warning, 
                                 fileName,
-                                suggestedCorrections:GetCorrectionExtent(hashTableAsts as HashtableAst));
+                                suggestedCorrections:GetCorrectionExtent(hashTableAst as HashtableAst));
                         }
 
                     }
@@ -66,7 +66,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         }
 
-
         /// <summary>
         /// Gets the correction extent
         /// </summary>
@@ -74,17 +73,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>A List of CorrectionExtent</returns>
         private List<CorrectionExtent> GetCorrectionExtent(HashtableAst ast)
         {
-            // we assume the extent begins with "@{"
-            if (ast.Extent.Text.IndexOf("@{") != 0)
-            {                
-                return null;
+            int startLineNumber;
+            int startColumnNumber;
+
+            // for empty hashtable insert after after "@{"
+            if (ast.KeyValuePairs.Count == 0)
+            {
+                // check if ast starts with "@{"
+                if (ast.Extent.Text.IndexOf("@{") != 0)
+                {
+                    return null;
+                }
+                startLineNumber = ast.Extent.StartLineNumber;
+                startColumnNumber = ast.Extent.StartColumnNumber + 2; // 2 for "@{",
+            }
+            else // for non-empty hashtable insert after the last element
+            {
+                int maxLine = 0;
+                int lastCol = 0;
+                foreach (var keyVal in ast.KeyValuePairs)
+                {
+                    if (keyVal.Item2.Extent.EndLineNumber > maxLine)
+                    {
+                        maxLine = keyVal.Item2.Extent.EndLineNumber;
+                        lastCol = keyVal.Item2.Extent.EndColumnNumber;
+                    }
+                }
+                startLineNumber = maxLine;
+                startColumnNumber = lastCol;
             }
 
             var correctionExtents = new List<CorrectionExtent>();
             string fieldName = "ModuleVersion";
             string fieldValue = "1.0.0.0";
-            int startLineNumber = ast.Extent.StartLineNumber;
-            int startColumnNumber = ast.Extent.StartColumnNumber + 2; // 2 for "@{",
             string description = string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.MissingModuleManifestFieldCorrectionDescription,
@@ -92,7 +113,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 fieldValue);
             var correctionTextTemplate = @"
 # Version number of this module.
-{0} = {1}
+{0} = '{1}'
 ";
             var correctionText = string.Format(
                 correctionTextTemplate,
@@ -102,7 +123,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 startLineNumber,
                 startLineNumber,
                 startColumnNumber,
-                startColumnNumber + 1,
+                startColumnNumber,
                 correctionText,
                 ast.Extent.File,
                 description);
