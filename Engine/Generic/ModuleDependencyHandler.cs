@@ -263,8 +263,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             if (modulesSavedInTempPath.Contains(moduleName))
             {
                 // copy to local ps module path
-                CopyDir(Path.Combine(tempDirPath, moduleName), localPSModulePath);
-                modulesSavedInModulePath.Add(moduleName);
+                CopyToPSModulePath(moduleName);
                 return;
             }
 
@@ -278,9 +277,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         moduleRepository));
             }            
             SaveModule(module);
-            modulesSavedInTempPath.Add(moduleName);
+            modulesSavedInTempPath.Add(moduleName);            
+            CopyToPSModulePath(moduleName);
+        }        
 
-            // copy to local ps module path
+        private void CopyToPSModulePath(string moduleName, bool checkModulePresence = false)
+        {
+            if (checkModulePresence)
+            {
+                foreach(var dir in Directory.EnumerateDirectories(localPSModulePath))
+                {
+                    if (Path.GetFileName(dir).Equals(moduleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+                }
+            }
             CopyDir(Path.Combine(tempDirPath, moduleName), localPSModulePath);
             modulesSavedInModulePath.Add(moduleName);
         }
