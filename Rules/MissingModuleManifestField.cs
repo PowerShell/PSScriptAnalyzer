@@ -17,6 +17,7 @@ using System.Management.Automation;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -46,15 +47,88 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         if (Helper.IsMissingManifestMemberException(errorRecord))
                         {
-                            System.Diagnostics.Debug.Assert(errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), Strings.NullErrorMessage);
-                            yield return
-                                new DiagnosticRecord(errorRecord.Exception.Message, ast.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                            System.Diagnostics.Debug.Assert(
+                                errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), 
+                                Strings.NullErrorMessage);
+                            var hashTableAst = ast.Find(x => x is HashtableAst, false);                            
+                            yield return new DiagnosticRecord(
+                                errorRecord.Exception.Message, 
+                                hashTableAst.Extent, 
+                                GetName(), 
+                                DiagnosticSeverity.Warning, 
+                                fileName,
+                                suggestedCorrections:GetCorrectionExtent(hashTableAst as HashtableAst));
                         }
 
                     }
                 }
             }
 
+        }
+
+        /// <summary>
+        /// Gets the correction extent
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns>A List of CorrectionExtent</returns>
+        private List<CorrectionExtent> GetCorrectionExtent(HashtableAst ast)
+        {
+            int startLineNumber;
+            int startColumnNumber;
+
+            // for empty hashtable insert after after "@{"
+            if (ast.KeyValuePairs.Count == 0)
+            {
+                // check if ast starts with "@{"
+                if (ast.Extent.Text.IndexOf("@{") != 0)
+                {
+                    return null;
+                }
+                startLineNumber = ast.Extent.StartLineNumber;
+                startColumnNumber = ast.Extent.StartColumnNumber + 2; // 2 for "@{",
+            }
+            else // for non-empty hashtable insert after the last element
+            {
+                int maxLine = 0;
+                int lastCol = 0;
+                foreach (var keyVal in ast.KeyValuePairs)
+                {
+                    if (keyVal.Item2.Extent.EndLineNumber > maxLine)
+                    {
+                        maxLine = keyVal.Item2.Extent.EndLineNumber;
+                        lastCol = keyVal.Item2.Extent.EndColumnNumber;
+                    }
+                }
+                startLineNumber = maxLine;
+                startColumnNumber = lastCol;
+            }
+
+            var correctionExtents = new List<CorrectionExtent>();
+            string fieldName = "ModuleVersion";
+            string fieldValue = "1.0.0.0";
+            string description = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.MissingModuleManifestFieldCorrectionDescription,
+                fieldName,
+                fieldValue);
+            var correctionTextTemplate = @"
+# Version number of this module.
+{0} = '{1}'
+";
+            var correctionText = string.Format(
+                correctionTextTemplate,
+                fieldName,
+                fieldValue);
+            var correctionExtent = new CorrectionExtent(
+                startLineNumber,
+                startLineNumber,
+                startColumnNumber,
+                startColumnNumber,
+                correctionText,
+                ast.Extent.File,
+                description);
+            correctionExtents.Add(correctionExtent);
+            return correctionExtents;
         }
         
         /// <summary>
