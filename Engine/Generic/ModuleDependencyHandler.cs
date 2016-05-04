@@ -239,12 +239,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             return module;
         }
 
-
-        public bool ModuleExists(string moduleName)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool TrySaveModule(string moduleName)
         {
             try
@@ -259,9 +253,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
         }
 
-        // TODO Do not use find module because it leads to two queries to the server
-        // instead use save module and check if it couldn't find the module
-        // TODO Add a TrySaveModule method
         public void SaveModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
@@ -270,16 +261,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 return;
             }
 
-            var module = FindModule(moduleName);
-            if (module == null)
-            {
-                throw new ItemNotFoundException(
-                    string.Format(
-                        "Cannot find {0} in {1} repository.",
-                        moduleName,
-                        moduleRepository));
-            }            
-            SaveModule(module);
+            var ps = System.Management.Automation.PowerShell.Create();
+            ps.Runspace = runspace;
+            ps.AddCommand("Save-Module")
+                .AddParameter("Path", tempDirPath)
+                .AddParameter("Name", moduleName);
+            ps.Invoke();
             AddModuleName(modulesSavedInTempPath, moduleName);             
         }        
 
