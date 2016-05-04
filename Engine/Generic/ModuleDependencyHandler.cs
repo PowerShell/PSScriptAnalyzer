@@ -245,6 +245,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             throw new NotImplementedException();
         }
 
+        public bool TrySaveModule(string moduleName)
+        {
+            try
+            {
+                SaveModule(moduleName);
+                return true;
+            }
+            catch
+            {
+                // log exception    to verbose
+                return false;
+            }
+        }
+
         // TODO Do not use find module because it leads to two queries to the server
         // instead use save module and check if it couldn't find the module
         // TODO Add a TrySaveModule method

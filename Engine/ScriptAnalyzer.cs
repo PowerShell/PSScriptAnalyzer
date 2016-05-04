@@ -1327,17 +1327,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     bool parseAgain = false;
                     if (moduleHandler != null && errors != null && errors.Length > 0)
                     {
-                        foreach (ParseError error in errors)
+                        foreach (ParseError error in errors.Where(IsModuleNotFoundError))
                         {
-                            if (IsModuleNotFoundError(error))
+                            var moduleName = ModuleDependencyHandler.GetModuleNameFromErrorExtent(error, scriptAst);
+                            if (moduleName != null
+                                && moduleHandler.TrySaveModule(moduleName))
                             {
-                                var moduleName = ModuleDependencyHandler.GetModuleNameFromErrorExtent(error, scriptAst);
-                                if (moduleName != null)
-                                {
-                                    moduleHandler.SaveModule(moduleName);
-                                    // if successfully saved
-                                    parseAgain = true;
-                                }
+                                parseAgain = true;
                             }
                         }
                     }
@@ -1364,7 +1360,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
                         this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));
-
                         return new List<DiagnosticRecord>();
                     }
                 }
