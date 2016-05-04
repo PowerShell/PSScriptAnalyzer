@@ -6,29 +6,27 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
-using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     // TODO Use runspace pool
     // TODO Create a new process for the runspace
-    // TODO Support for verbose mode
-    // TODO Try changing the psmodulepath variable through powershell layer. This will save copying and removing the modules
+    // TODO Support for verbose mode    
     public class ModuleDependencyHandler : IDisposable
     {
         #region Private Variables
         private Runspace runspace;
         private readonly string moduleRepository;
-        private string tempDirPath;
-        private string localPSModulePath;
+        private string tempDirPath;       
         Dictionary<string, PSObject> modulesFound;
-        HashSet<string> modulesSavedInModulePath;
         HashSet<string> modulesSavedInTempPath;
         private string localAppdataPath;
         private string pssaAppdataPath;
         private const string symLinkName = "TempModuleDir";
         private const string tempPrefix = "PSSAModules-";
         private string symLinkPath;
+        private string oldPSModulePath;
+        private string curPSModulePath;
 
         #endregion Private Variables
 
@@ -144,20 +142,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private void CleanUp()
         {
             runspace.Dispose();
-
-            // remove the modules from local psmodule path            
-            foreach (var dir in Directory.EnumerateDirectories(localPSModulePath))
-            {
-                if (IsModuleNamePresent(modulesSavedInModulePath, Path.GetFileName(dir)))                    
-                {
-                    Directory.Delete(dir, true);
-                }
-            }
+            RestorePSModulePath();
         }
 
         private void SaveModule(PSObject module)
         {
             ThrowIfNull(module, "module");
+
             // TODO validate module
             var ps = System.Management.Automation.PowerShell.Create();
             ps.Runspace = runspace;
@@ -166,19 +157,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 .AddParameter("InputObject", module);
             ps.Invoke();
         }
-
-        // TODO Use powershell copy-item
-        private void CopyDir(string srcPath, string dstPath)
-        {
-            var ps = System.Management.Automation.PowerShell.Create();
-            ps.Runspace = runspace;
-            ps.AddCommand("Copy-Item")
-                .AddParameter("Recurse")
-                .AddParameter("Path", srcPath)
-                .AddParameter("Destination", dstPath);
-            ps.Invoke();
-        }
-
         #endregion Private Methods
 
         #region Public Methods
@@ -187,21 +165,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             runspace = null;
             moduleRepository = "PSGallery";
-            modulesSavedInModulePath = new HashSet<string>();
             modulesSavedInTempPath = new HashSet<string>();
-            modulesFound = new Dictionary<string, PSObject>();
-
-            // TODO search it in the $psmodulepath instead of constructing it
-            localPSModulePath = Path.Combine(
-                Environment.GetEnvironmentVariable("USERPROFILE"),
-                "Documents\\WindowsPowerShell\\Modules");
+            modulesFound = new Dictionary<string, PSObject>();            
             localAppdataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
 
             // TODO Add PSSA Version in the path
             pssaAppdataPath = Path.Combine(localAppdataPath, "PSScriptAnalyzer");
             symLinkPath = Path.Combine(pssaAppdataPath, symLinkName);
-
             SetupCache();
+            SetupPSModulePath();
+        }
+
+        private void SetupPSModulePath()
+        {
+            oldPSModulePath = Environment.GetEnvironmentVariable("PSModulePath");
+            curPSModulePath = oldPSModulePath + ";" + tempDirPath;
+            Environment.SetEnvironmentVariable("PSModulePath", curPSModulePath, EnvironmentVariableTarget.Process);
+        }
+
+        private void RestorePSModulePath()
+        {
+            Environment.SetEnvironmentVariable("PSModulePath", oldPSModulePath, EnvironmentVariableTarget.Process);
         }
 
         public ModuleDependencyHandler(Runspace runspace) : this()
@@ -267,14 +251,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public void SaveModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
-            if (IsModuleNamePresent(modulesSavedInModulePath, moduleName))
-            {
-                return;
-            }
             if (IsModuleNamePresent(modulesSavedInTempPath, moduleName))
-            {
-                // copy to local ps module path
-                CopyToPSModulePath(moduleName);
+            {                
                 return;
             }
 
@@ -289,24 +267,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }            
             SaveModule(module);
             AddModuleName(modulesSavedInTempPath, moduleName);             
-            CopyToPSModulePath(moduleName);
         }        
-
-        private void CopyToPSModulePath(string moduleName, bool checkModulePresence = false)
-        {
-            if (checkModulePresence)
-            {
-                foreach(var dir in Directory.EnumerateDirectories(localPSModulePath))
-                {
-                    if (Path.GetFileName(dir).Equals(moduleName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return;
-                    }
-                }
-            }
-            CopyDir(Path.Combine(tempDirPath, moduleName), localPSModulePath);
-            AddModuleName(modulesSavedInModulePath, moduleName);            
-        }
 
         public static string GetModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
         {
