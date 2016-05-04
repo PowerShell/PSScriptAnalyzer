@@ -188,6 +188,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         private bool stopProcessing;
 
+        /// <summary>
+        /// Resolve DSC resoure dependency
+        /// </summary>        
+        [Parameter(Mandatory = false)]
+        public SwitchParameter ResolveDSCResourceDependency
+        {
+            get { return resolveDSCResourceDependency; }
+            set { resolveDSCResourceDependency = value; }
+        }
+        private bool resolveDSCResourceDependency;
         #endregion Parameters
 
         #region Overrides
@@ -213,7 +223,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 null == rulePaths ? true : this.includeDefaultRules,
-                this.suppressedOnly);
+                this.suppressedOnly,
+                resolveDSCResourceDependency: resolveDSCResourceDependency);
         }
 
         /// <summary>

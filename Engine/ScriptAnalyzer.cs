@@ -105,7 +105,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] excludeRuleNames = null,
             string[] severity = null,
             bool includeDefaultRules = false,
-            bool suppressedOnly = false)
+            bool suppressedOnly = false,
+            bool resolveDSCResourceDependency = false)
             where TCmdlet : PSCmdlet, IOutputWriter
         {
             if (cmdlet == null)
@@ -122,7 +123,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 excludeRuleNames,
                 severity,
                 includeDefaultRules,
-                suppressedOnly);
+                suppressedOnly,
+                resolveDSCResourceDependency: resolveDSCResourceDependency);
         }
 
         /// <summary>
@@ -167,8 +169,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             severity = null;
             includeRegexList = null;
             excludeRegexList = null;
-            suppressedOnly = false;            
-            moduleHandler.Dispose();
+            suppressedOnly = false;
+            if (moduleHandler != null)
+            {
+                moduleHandler.Dispose();
+            }
         }
 
         internal bool ParseProfile(object profileObject, PathIntrinsics path, IOutputWriter writer)
@@ -462,16 +467,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         private void Initialize(
-            IOutputWriter outputWriter, 
-            PathIntrinsics path, 
-            CommandInvocationIntrinsics invokeCommand, 
-            string[] customizedRulePath,            
+            IOutputWriter outputWriter,
+            PathIntrinsics path,
+            CommandInvocationIntrinsics invokeCommand,
+            string[] customizedRulePath,
             string[] includeRuleNames,
             string[] excludeRuleNames,
             string[] severity,
             bool includeDefaultRules = false,
             bool suppressedOnly = false,
-            string profile = null)
+            string profile = null,
+            bool resolveDSCResourceDependency = false)
         {
             if (outputWriter == null)
             {
@@ -481,8 +487,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.outputWriter = outputWriter;
             
             // TODO Create a runspace pool
-            runspace = RunspaceFactory.CreateRunspace();          
-            moduleHandler = new ModuleDependencyHandler(runspace);            
+            runspace = RunspaceFactory.CreateRunspace();
+            moduleHandler = resolveDSCResourceDependency ? new ModuleDependencyHandler(runspace) : null;
 
             #region Verifies rule extensions and loggers path
 
@@ -1318,8 +1324,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // - OR
                     //  - swallow the these errors
 
-
-                    if (errors != null && errors.Length > 0)
+                    bool parseAgain = false;
+                    if (moduleHandler != null && errors != null && errors.Length > 0)
                     {
                         foreach (ParseError error in errors)
                         {
@@ -1329,6 +1335,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 if (moduleName != null)
                                 {
                                     moduleHandler.SaveModule(moduleName);
+                                    // if successfully saved
+                                    parseAgain = true;
                                 }
                             }
                         }
@@ -1337,9 +1345,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     //try parsing again
                     //var oldDefault = Runspace.DefaultRunspace;
                     //Runspace.DefaultRunspace = moduleHandler.Runspace;
-                    scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
-                    //Runspace.DefaultRunspace = oldDefault;
+                    if (parseAgain)
+                    {
+                        scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+                    }
 
+                    //Runspace.DefaultRunspace = oldDefault;
                     if (errors != null && errors.Length > 0)
                     {
                         foreach (ParseError error in errors)
