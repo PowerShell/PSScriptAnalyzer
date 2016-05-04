@@ -86,8 +86,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             // we assume the modules have not been tampered with
             foreach (var dir in Directory.EnumerateDirectories(tempDirPath))
             {
-                modulesSavedInTempPath.Add(Path.GetFileName(dir));
+                AddModuleName(modulesSavedInTempPath, Path.GetFileName(dir));
             }
+        }
+
+        private void AddModuleName(HashSet<string> hashSet, string moduleName)
+        {
+            hashSet.Add(moduleName.ToLower());
+        }
+
+        private bool IsModuleNamePresent(HashSet<string> hashSet, string moduleName)
+        {
+            return hashSet.Contains(moduleName.ToLower());
         }
 
         private void SetupTempDir()
@@ -138,7 +148,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             // remove the modules from local psmodule path            
             foreach (var dir in Directory.EnumerateDirectories(localPSModulePath))
             {
-                if (modulesSavedInModulePath.Contains(Path.GetFileName(dir)))
+                if (IsModuleNamePresent(modulesSavedInModulePath, Path.GetFileName(dir)))                    
                 {
                     Directory.Delete(dir, true);
                 }
@@ -220,6 +230,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public PSObject FindModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
+            moduleName = moduleName.ToLower();
             if (modulesFound.ContainsKey(moduleName))
             {
                 return modulesFound[moduleName];
@@ -256,11 +267,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public void SaveModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
-            if (modulesSavedInModulePath.Contains(moduleName))
+            if (IsModuleNamePresent(modulesSavedInModulePath, moduleName))
             {
                 return;
             }
-            if (modulesSavedInTempPath.Contains(moduleName))
+            if (IsModuleNamePresent(modulesSavedInTempPath, moduleName))
             {
                 // copy to local ps module path
                 CopyToPSModulePath(moduleName);
@@ -277,7 +288,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         moduleRepository));
             }            
             SaveModule(module);
-            modulesSavedInTempPath.Add(moduleName);            
+            AddModuleName(modulesSavedInTempPath, moduleName);             
             CopyToPSModulePath(moduleName);
         }        
 
@@ -294,7 +305,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 }
             }
             CopyDir(Path.Combine(tempDirPath, moduleName), localPSModulePath);
-            modulesSavedInModulePath.Add(moduleName);
+            AddModuleName(modulesSavedInModulePath, moduleName);            
         }
 
         public static string GetModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
