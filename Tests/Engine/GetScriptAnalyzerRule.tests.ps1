@@ -54,10 +54,15 @@ Describe "Test Name parameters" {
             ($rules | Where-Object {$_.RuleName -eq $approvedVerbs}).Count | Should Be 1
         }
 
-        It "Get Rules with no parameters supplied" {
+        It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
 			$defaultRules.Count | Should be 41
 		}
+
+        It "is a positional parameter" {
+            $rules = Get-ScriptAnalyzerRule *alias*
+            $rules.Count | Should Be 1
+        }
     }
 
     Context "When used incorrectly" {
