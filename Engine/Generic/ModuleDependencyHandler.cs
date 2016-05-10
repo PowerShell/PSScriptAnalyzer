@@ -10,36 +10,129 @@ using System.Management.Automation.Runspaces;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     // TODO Use runspace pool
-    // TODO Create a new process for the runspace
     // TODO Support for verbose mode    
     public class ModuleDependencyHandler : IDisposable
     {
         #region Private Variables
         private Runspace runspace;
-        private readonly string moduleRepository;
-        private string tempDirPath;       
+        private string moduleRepository;
+        private string tempPath; // path to the user temporary directory 
+        private string tempModulePath; // path to temp directory containing modules
         Dictionary<string, PSObject> modulesFound;
-        HashSet<string> modulesSavedInTempPath;
         private string localAppdataPath;
-        private string pssaAppdataPath;
+        private string pssaAppDataPath;
         private const string symLinkName = "TempModuleDir";
         private const string tempPrefix = "PSSAModules-";
         private string symLinkPath;
         private string oldPSModulePath;
         private string curPSModulePath;
-
         #endregion Private Variables
 
         #region Properties
+        /// <summary>
+        /// Path where the object stores the modules
+        /// </summary>
         public string TempModulePath
         {
-            get { return tempDirPath; }
+            get { return tempModulePath; }
+        }
+
+        /// <summary>
+        /// Temporary path of the current user scope
+        /// </summary>
+        public string TempPath
+        {
+            get
+            {
+                return tempPath;
+            }
+            // it must be set only during initialization
+            private set
+            {
+                tempPath
+                    = (string.IsNullOrEmpty(value)
+                        || string.IsNullOrWhiteSpace(value))
+                    ? Environment.GetEnvironmentVariable("TEMP")
+                    : value;
+            }
+
+        }
+
+        /// <summary>
+        /// Local App Data path
+        /// </summary>
+        public string LocalAppDataPath
+        {
+            get
+            {
+                return localAppdataPath;
+            }
+            private set
+            {
+                localAppdataPath 
+                    = (string.IsNullOrEmpty(value)
+                        || string.IsNullOrWhiteSpace(value))
+                    ? Environment.GetEnvironmentVariable("LOCALAPPDATA")
+                    : value;
+            }
         }        
 
-        public Runspace Runspace
+        /// <summary>
+        /// Module Respository
+        /// By default it is PSGallery
+        /// </summary>
+        public string ModuleRepository
+        {
+            get
+            {
+                return moduleRepository;
+            }
+            set
+            {
+                moduleRepository
+                    = (string.IsNullOrEmpty(value)
+                        || string.IsNullOrWhiteSpace(value))
+                    ? "PSGallery"
+                    : value;
+            }
+        }
+
+        /// <summary>
+        /// Local App data of PSSScriptAnalyzer
+        /// </summary>
+        public string PSSAAppDataPath
+        {
+            get
+            {
+                return pssaAppDataPath;
+            }
+            private set
+            {
+                var leaf
+                    = (string.IsNullOrEmpty(value) || string.IsNullOrWhiteSpace(value))
+                    ? "PSScriptAnalyzer"
+                    : value;
+                pssaAppDataPath = Path.Combine(LocalAppDataPath, leaf);
+            }
+        }        
+
+        /// <summary>
+        /// Module Paths
+        /// </summary>
+        public string PSModulePath
+        {
+            get { return curPSModulePath; }
+        }
+       
+        /// <summary>
+        /// Runspace in which the object invokes powershell cmdlets
+        /// </summary>
+        public Runspace Runspace    
         {
             get { return runspace; }
+            set { runspace = value; }
         }
+
 
         #endregion Properties
 
@@ -52,84 +145,64 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }            
         }
 
-        private void SetupCache()
+        private void SetupPSSAAppData()
         {
             // check if pssa exists in local appdata
-            if (Directory.Exists(pssaAppdataPath))
+            if (Directory.Exists(pssaAppDataPath))
             {
                 // check if there is a link
                 if (File.Exists(symLinkPath))
                 {
-                    tempDirPath = GetTempDirPath(symLinkPath);
+                    tempModulePath = GetTempModulePath(symLinkPath);
                     
                     // check if the temp dir exists
-                    if (tempDirPath != null
-                        && Directory.Exists(tempDirPath))
+                    if (tempModulePath != null
+                        && Directory.Exists(tempModulePath))
                     {
-                        SetModulesInTempPath();
                         return;
                     }
-                }
-                SetupTempDir();                
+                }                          
             }
             else
             {
-                Directory.CreateDirectory(pssaAppdataPath);
-                SetupTempDir();
-            }           
-        }
-
-        private void SetModulesInTempPath()
-        {
-            // we assume the modules have not been tampered with
-            foreach (var dir in Directory.EnumerateDirectories(tempDirPath))
-            {
-                AddModuleName(modulesSavedInTempPath, Path.GetFileName(dir));
+                Directory.CreateDirectory(pssaAppDataPath);                
             }
+            SetupTempDir();
         }
 
-        private void AddModuleName(HashSet<string> hashSet, string moduleName)
+        private bool IsModulePresent(string moduleName)
         {
-            hashSet.Add(moduleName.ToLower());
-        }
-
-        private bool IsModuleNamePresent(HashSet<string> hashSet, string moduleName)
-        {
-            return hashSet.Contains(moduleName.ToLower());
+            foreach (var dir in Directory.EnumerateDirectories(TempModulePath))
+            {
+                if (moduleName.Equals(dir, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void SetupTempDir()
         {
-            CreateTempDir();
-            UpdateSymLinkFile();            
+            tempModulePath = GetPSSATempDirPath();
+            Directory.CreateDirectory(tempModulePath);
+            File.WriteAllLines(symLinkPath, new string[] { tempModulePath });
         }
 
-        private void UpdateSymLinkFile()
+        private string GetPSSATempDirPath()
         {
-            File.WriteAllLines(symLinkPath, new string[] { tempDirPath });
-        }
-
-        private void CreateTempDir()
-        {
-            tempDirPath = GetTempDirPath();
-            Directory.CreateDirectory(tempDirPath);
-        }
-
-        private string GetTempDirPath()
-        {
-            var tempPathRoot = Path.GetTempPath();
-            string tempPath;
+            string path;
             do
             {
-                tempPath = Path.Combine(
-                    tempPathRoot,
+                path = Path.Combine(
+                    tempPath,
                     tempPrefix + Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-            } while (Directory.Exists(tempPath));
-            return tempPath;
+            } while (Directory.Exists(path));
+            return path;
         }
 
         // Return the first line of the file
-        private string GetTempDirPath(string symLinkPath)
+        private string GetTempModulePath(string symLinkPath)
         {
             var symLinkLines = File.ReadAllLines(symLinkPath);
             if(symLinkLines.Length != 1)
@@ -137,12 +210,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 return null;
             }
             return symLinkLines[0];
-        }
-        
-        private void CleanUp()
-        {
-            runspace.Dispose();
-            RestorePSModulePath();
         }
 
         private void SaveModule(PSObject module)
@@ -153,33 +220,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             var ps = System.Management.Automation.PowerShell.Create();
             ps.Runspace = runspace;
             ps.AddCommand("Save-Module")
-                .AddParameter("Path", tempDirPath)
+                .AddParameter("Path", tempModulePath)
                 .AddParameter("InputObject", module);
             ps.Invoke();
-        }
-        #endregion Private Methods
-
-        #region Public Methods
-
-        public ModuleDependencyHandler()
-        {
-            runspace = null;
-            moduleRepository = "PSGallery";
-            modulesSavedInTempPath = new HashSet<string>();
-            modulesFound = new Dictionary<string, PSObject>();            
-            localAppdataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
-
-            // TODO Add PSSA Version in the path
-            pssaAppdataPath = Path.Combine(localAppdataPath, "PSScriptAnalyzer");
-            symLinkPath = Path.Combine(pssaAppdataPath, symLinkName);
-            SetupCache();
-            SetupPSModulePath();
         }
 
         private void SetupPSModulePath()
         {
             oldPSModulePath = Environment.GetEnvironmentVariable("PSModulePath");
-            curPSModulePath = oldPSModulePath + ";" + tempDirPath;
+            curPSModulePath = oldPSModulePath + ";" + tempModulePath;
             Environment.SetEnvironmentVariable("PSModulePath", curPSModulePath, EnvironmentVariableTarget.Process);
         }
 
@@ -187,30 +236,65 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             Environment.SetEnvironmentVariable("PSModulePath", oldPSModulePath, EnvironmentVariableTarget.Process);
         }
+        #endregion Private Methods
 
-        public ModuleDependencyHandler(Runspace runspace) : this()
+        #region Public Methods
+
+        /// <summary>
+        /// Creates an instance of the ModuleDependencyHandler class
+        /// </summary>
+        /// <param name="runspace">Runspace in which the instance runs powershell cmdlets to find and save modules</param>
+        /// <param name="moduleRepository">Name of the repository from where to download the modules. By default it is PSGallery. This should be a registered repository. </param>
+        /// <param name="tempPath">Path to the user scoped temporary directory</param>
+        /// <param name="localAppDataPath">Path to the local app data directory</param>
+        public ModuleDependencyHandler(
+            Runspace runspace = null,
+            string moduleRepository = null,
+            string tempPath = null,
+            string localAppDataPath = null)
         {
-            ThrowIfNull(runspace, "runspace");
-            this.runspace = runspace;
-            this.runspace.Open();
-        }
-
-
-        public void SetupDefaultRunspace()
-        {
-            runspace = RunspaceFactory.CreateRunspace();
-        }
-
-        public void SetupDefaultRunspace(Runspace runspace)
-        {
-            ThrowIfNull(runspace, "runspace");
-            if (runspace != null)
+            if (runspace == null)
             {
-                this.runspace = runspace;
+                Runspace = RunspaceFactory.CreateRunspace();
             }
-            Runspace.DefaultRunspace = this.runspace;
+            else
+            {
+                Runspace = runspace;
+            }
+            
+            if (Runspace.RunspaceStateInfo.State == RunspaceState.BeforeOpen)
+            {
+                Runspace.Open();
+            }
+            else if (Runspace.RunspaceStateInfo.State != RunspaceState.Opened)
+            {
+                throw new ArgumentException(string.Format(
+                        "Runspace state cannot be {0}",
+                        runspace.RunspaceStateInfo.State.ToString()));
+            }
+
+            // TODO should set PSSA environment variables outside this class
+            // Should be set in ScriptAnalyzer class
+            // and then passed into modulehandler
+            TempPath = tempPath;
+            LocalAppDataPath = localAppDataPath;
+            PSSAAppDataPath = pssaAppDataPath;
+            ModuleRepository = moduleRepository;
+                        
+            modulesFound = new Dictionary<string, PSObject>();            
+
+            // TODO Add PSSA Version in the path
+            symLinkPath = Path.Combine(pssaAppDataPath, symLinkName);
+            SetupPSSAAppData();
+            SetupPSModulePath();
+            
         }
 
+        /// <summary>
+        /// Encapsulates Find-Module
+        /// </summary>
+        /// <param name="moduleName">Name of the module</param>
+        /// <returns>A PSObject if it finds the modules otherwise returns null</returns>
         public PSObject FindModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
@@ -239,6 +323,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             return module;
         }
 
+        /// <summary>
+        /// SaveModule version that doesn't throw
+        /// </summary>
+        /// <param name="moduleName">Name of the module</param>
+        /// <returns>True if it can save a module otherwise false.</returns>
         public bool TrySaveModule(string moduleName)
         {
             try
@@ -248,35 +337,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
             catch
             {
-                // log exception    to verbose
+                // log exception to verbose
                 return false;
             }
         }
 
+        /// <summary>
+        /// Encapsulates Save-Module cmdlet
+        /// </summary>
+        /// <param name="moduleName">Name of the module</param>
         public void SaveModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
-            if (IsModuleNamePresent(modulesSavedInTempPath, moduleName))
+            if (IsModulePresent(moduleName))
             {                
                 return;
             }
-
             var ps = System.Management.Automation.PowerShell.Create();
             ps.Runspace = runspace;
             ps.AddCommand("Save-Module")
-                .AddParameter("Path", tempDirPath)
-                .AddParameter("Name", moduleName);
+                .AddParameter("Path", tempModulePath)
+                .AddParameter("Name", moduleName)
+                .AddParameter("Force");
             ps.Invoke();
-            AddModuleName(modulesSavedInTempPath, moduleName);             
-        }        
+        }
 
+        /// <summary>
+        /// Get the module name from the error extent
+        /// 
+        /// If a parser encounters Import-DSCResource -ModuleName SomeModule 
+        /// and if SomeModule is not present in any of the PSModulePaths, the
+        /// parser throws ModuleNotFoundDuringParse Error. We correlate the 
+        /// error message with extent to extract the module name as the error
+        /// record doesn't provide direct access to the missing module name.
+        /// </summary>
+        /// <param name="error">Parse error</param>
+        /// <param name="ast">AST of the script that contians the parse error</param>
+        /// <returns>The name of the module that caused the parser to throw the error. Returns null if it cannot extract the module name.</returns>
         public static string GetModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
         {
             ThrowIfNull(error, "error");
             ThrowIfNull(ast, "ast");
             var statement = ast.Find(x => x.Extent.Equals(error.Extent), true);
             var dynamicKywdAst = statement as DynamicKeywordStatementAst;
-            if (dynamicKywdAst == null)
+                if (dynamicKywdAst == null)
             {
                 return null;
             }
@@ -309,9 +413,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             return paramValAst.Value;
         }
 
+        /// <summary>
+        /// Disposes the runspace and restores the PSModulePath. 
+        /// </summary>
         public void Dispose()
         {
-            CleanUp();
+            runspace.Dispose();
+            RestorePSModulePath();
         }
 
         #endregion Public Methods

@@ -1311,19 +1311,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         return null;
                     }
 
-
-                    // TODO Handle Parse Errors causes by missing modules
-                    // if errors are due to ModuleNotFoundDuringParse
-                    // - EITHER
-                    //  - create a runspace and set the default runspace (make sure backup the default runspace before modifying it)
-                    //  - check if it is present in the gallery
-                    //  - if present on the gallery, save it to a temporary file, and load the module
-                    //  - now parse again
-                    //  - if parse is successful, proceed
-                    //  - else inform the user of the issue
-                    // - OR
-                    //  - swallow the these errors
-
                     bool parseAgain = false;
                     if (moduleHandler != null && errors != null && errors.Length > 0)
                     {
