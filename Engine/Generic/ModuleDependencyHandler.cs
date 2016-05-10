@@ -50,9 +50,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             private set
             {
                 tempPath
-                    = (string.IsNullOrEmpty(value)
-                        || string.IsNullOrWhiteSpace(value))
-                    ? Environment.GetEnvironmentVariable("TEMP")
+                    = string.IsNullOrWhiteSpace(value)
+                    ? Path.GetTempPath()
                     : value;
             }
 
@@ -69,10 +68,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
             private set
             {
-                localAppdataPath 
-                    = (string.IsNullOrEmpty(value)
-                        || string.IsNullOrWhiteSpace(value))
-                    ? Environment.GetEnvironmentVariable("LOCALAPPDATA")
+                localAppdataPath
+                    = string.IsNullOrWhiteSpace(value)
+                    ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
                     : value;
             }
         }        
@@ -90,8 +88,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             set
             {
                 moduleRepository
-                    = (string.IsNullOrEmpty(value)
-                        || string.IsNullOrWhiteSpace(value))
+                    = string.IsNullOrWhiteSpace(value)
                     ? "PSGallery"
                     : value;
             }
@@ -105,14 +102,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             get
             {
                 return pssaAppDataPath;
-            }
-            private set
-            {
-                var leaf
-                    = (string.IsNullOrEmpty(value) || string.IsNullOrWhiteSpace(value))
-                    ? "PSScriptAnalyzer"
-                    : value;
-                pssaAppDataPath = Path.Combine(LocalAppDataPath, leaf);
             }
         }        
 
@@ -156,8 +145,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     tempModulePath = GetTempModulePath(symLinkPath);
                     
                     // check if the temp dir exists
-                    if (tempModulePath != null
-                        && Directory.Exists(tempModulePath))
+                    if (Directory.Exists(tempModulePath))
                     {
                         return;
                     }
@@ -204,12 +192,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         // Return the first line of the file
         private string GetTempModulePath(string symLinkPath)
         {
-            var symLinkLines = File.ReadAllLines(symLinkPath);
-            if(symLinkLines.Length != 1)
+            string line; 
+            using (var fileStream = new StreamReader(symLinkPath))
             {
-                return null;
+                line = fileStream.ReadLine();
             }
-            return symLinkLines[0];
+            return line;
         }
 
         private void SaveModule(PSObject module)
@@ -278,9 +266,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             // and then passed into modulehandler
             TempPath = tempPath;
             LocalAppDataPath = localAppDataPath;
-            PSSAAppDataPath = pssaAppDataPath;
             ModuleRepository = moduleRepository;
-                        
+            pssaAppDataPath = Path.Combine(
+                LocalAppDataPath,
+                string.IsNullOrWhiteSpace(pssaAppDataPath)
+                        ? "PSScriptAnalyzer"
+                        : pssaAppDataPath);
+
             modulesFound = new Dictionary<string, PSObject>();            
 
             // TODO Add PSSA Version in the path

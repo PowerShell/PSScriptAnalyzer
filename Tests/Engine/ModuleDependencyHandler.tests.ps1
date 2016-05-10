@@ -31,7 +31,7 @@ Describe "Resolve DSC Resource Dependency" {
         It "Sets defaults correctly" {
             $depHandler = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]::new()
 
-            $expectedPath = [System.Environment]::GetEnvironmentVariable("TEMP");
+            $expectedPath = [System.IO.Path]::GetTempPath()
             $depHandler.TempPath | Should Be $expectedPath
 
             $expectedLocalAppDataPath = [System.Environment]::GetEnvironmentVariable("LOCALAPPDATA");
@@ -105,8 +105,8 @@ Describe "Resolve DSC Resource Dependency" {
         #restore environment variables and clean up temporary location
         $env:LOCALAPPDATA = $oldLocalAppDataPath
         $env:TEMP = $oldTempPath
-        Remove-Item -Recurse -Path $tempModulePath
-        Remove-Item -Recurse -Path $tempPath
+        Remove-Item -Recurse -Path $tempModulePath -Force
+        Remove-Item -Recurse -Path $tempPath -Force
 
         It "Keeps the environment variables unchanged" {
             Test-EnvironmentVariables($oldEnvVars)
