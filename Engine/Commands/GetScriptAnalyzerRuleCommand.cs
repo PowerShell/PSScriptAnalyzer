@@ -56,7 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// Name: The name of a specific rule to list.
         /// </summary>
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, Position = 1)]
         [ValidateNotNullOrEmpty]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public string[] Name
