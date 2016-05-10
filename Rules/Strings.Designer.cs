@@ -529,6 +529,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Replace {0} with {1}.
+        /// </summary>
+        internal static string AvoidUsingCmdletAliasesCorrectionDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingCmdletAliasesCorrectionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availability..
         /// </summary>
         internal static string AvoidUsingCmdletAliasesDescription {
@@ -777,6 +786,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidUsingPlainTextForPasswordCommonName {
             get {
                 return ResourceManager.GetString("AvoidUsingPlainTextForPasswordCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set {0} type to SecureString.
+        /// </summary>
+        internal static string AvoidUsingPlainTextForPasswordCorrectionDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingPlainTextForPasswordCorrectionDescription", resourceCulture);
             }
         }
         
@@ -1092,6 +1110,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string MissingModuleManifestFieldCommonName {
             get {
                 return ResourceManager.GetString("MissingModuleManifestFieldCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add {0} = {1} to the module manifest.
+        /// </summary>
+        internal static string MissingModuleManifestFieldCorrectionDescription {
+            get {
+                return ResourceManager.GetString("MissingModuleManifestFieldCorrectionDescription", resourceCulture);
             }
         }
         
@@ -2001,6 +2028,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string UseToExportFieldsInManifestCommonName {
             get {
                 return ResourceManager.GetString("UseToExportFieldsInManifestCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace {0} with {1}.
+        /// </summary>
+        internal static string UseToExportFieldsInManifestCorrectionDescription {
+            get {
+                return ResourceManager.GetString("UseToExportFieldsInManifestCorrectionDescription", resourceCulture);
             }
         }
         

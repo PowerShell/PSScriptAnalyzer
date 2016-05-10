@@ -55,14 +55,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     int lineNumber = ast.Extent.StartLineNumber + i;
 
-                    ScriptPosition start = new ScriptPosition(fileName, lineNumber, match.Index, line);
-                    ScriptPosition end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length, line);
-                    
+                    var start = new ScriptPosition(fileName, lineNumber, match.Index + 1, line);
+                    var end = new ScriptPosition(fileName, lineNumber, match.Index + match.Length + 1, line);
+                    var extent = new ScriptExtent(start, end);
                     yield return new DiagnosticRecord(
                         string.Format(CultureInfo.CurrentCulture, Strings.MisleadingBacktickError),
-                            new ScriptExtent(start, end), GetName(), DiagnosticSeverity.Warning, fileName);
+                            extent, 
+                            GetName(), 
+                            DiagnosticSeverity.Warning, 
+                            fileName,
+                            suggestedCorrections: fileName == null ? null : GetCorrectionExtent(extent));
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a list containing suggested correction
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <returns>Returns a list of suggested corrections</returns>
+        private List<CorrectionExtent> GetCorrectionExtent(IScriptExtent violationExtent)
+        {            
+            var corrections = new List<CorrectionExtent>();
+            string description = "Remove trailing whilespace";
+            corrections.Add(new CorrectionExtent(                
+                violationExtent.StartLineNumber ,
+                violationExtent.EndLineNumber,
+                violationExtent.StartColumnNumber + 1,
+                violationExtent.EndColumnNumber,
+                String.Empty,
+                violationExtent.File,
+                description));
+            return corrections;
         }
 
         /// <summary>

@@ -183,6 +183,47 @@ RULE SUPPRESSSION
                                                                Target="*")]
             param() 
         }
+
+VIOLATION CORRECTION
+
+Most violations can be fixed by replacing the violation causing content with the correct alternative. In an attempt to provide the user with the ability to correct the violation we provide a property - `SuggestedCorrections`, in each DiagnosticRecord instance. This property contains the information needed to rectify the violation. For example, consider a script `C:\tmp\test.ps1` with the following content.
+
+PS> Get-Content C:\tmp\test.ps1
+gci C:\
+
+Invoking PSScriptAnalyzer on the file gives the following output. 
+
+PS>$diagnosticRecord = Invoke-ScriptAnalyzer -Path C:\tmp\test.p1
+PS>$diagnosticRecord | select SuggestedCorrections | Format-Custom
+
+class DiagnosticRecord
+{
+  SuggestedCorrections =
+    [
+      class CorrectionExtent
+      {
+        EndColumnNumber = 4
+        EndLineNumber = 1
+        File = C:\Users\kabawany\tmp\test3.ps1
+        StartColumnNumber = 1
+        StartLineNumber = 1
+        Text = Get-ChildItem
+        Description = Replace gci with Get-ChildItem
+      }
+    ]
+
+}
+
+The *LineNumber and *ColumnNumber properties give the region of the script that can be replaced by the contents of Text property, i.e., replace gci with Get-ChildItem.
+
+The main motivation behind having SuggestedCorrections is to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid SuggestedCorrection only for the following rules, while gradually adding this feature to more rules. 
+
+  * AvoidAlias.cs 
+  * AvoidUsingPlainTextForPassword.cs
+  * MisleadingBacktick.cs
+  * MissingModuleManifestField.cs
+  * UseToExportFieldsInManifest.cs
+
         
 EXTENSIBILITY
 

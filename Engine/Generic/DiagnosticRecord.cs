@@ -10,7 +10,10 @@
 // THE SOFTWARE.
 //
 
+
+
 using System;
+using System.Collections.Generic;
 using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
@@ -27,6 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private DiagnosticSeverity severity;
         private string scriptPath;
         private string ruleSuppressionId;
+        private List<CorrectionExtent> suggestedCorrections;
 
         /// <summary>
         /// Represents a string from the rule about why this diagnostic was created.
@@ -91,42 +95,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// Returns suggested correction
+        /// return value can be null
+        /// </summary>
+        public IEnumerable<CorrectionExtent> SuggestedCorrections
+        {
+            get { return suggestedCorrections;  }            
+        }
+
+        /// <summary>
         /// DiagnosticRecord: The constructor for DiagnosticRecord class.
         /// </summary>
         public DiagnosticRecord()
         {
 
         }
-
+        
         /// <summary>
-        /// DiagnosticRecord: The constructor for DiagnosticRecord class.
+        /// DiagnosticRecord: The constructor for DiagnosticRecord class that takes in suggestedCorrection
         /// </summary>
         /// <param name="message">A string about why this diagnostic was created</param>
         /// <param name="extent">The place in the script this diagnostic refers to</param>
         /// <param name="ruleName">The name of the rule that created this diagnostic</param>
         /// <param name="severity">The severity of this diagnostic</param>
-        /// <param name="scriptName">The path of the script file being analyzed</param>
-        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptPath, string ruleId = null)
+        /// <param name="scriptPath">The full path of the script file being analyzed</param>
+        /// <param name="suggestedCorrections">The correction suggested by the rule to replace the extent text</param>
+        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptPath, string ruleId = null, List<CorrectionExtent> suggestedCorrections = null)
         {
             Message  = message;
             RuleName = ruleName;
             Extent   = extent;
             Severity = severity;
             ScriptPath = scriptPath;
-            ruleSuppressionId = ruleId;
+            RuleSuppressionID = ruleId;
+            this.suggestedCorrections = suggestedCorrections;
         }
 
-        /// <summary>
-        /// Copy Constructor
-        /// </summary>
-        /// <param name="record"></param>
-        public DiagnosticRecord(DiagnosticRecord diagnosticRecord)
-        {
-            if (diagnosticRecord == null)
-            {
-                throw new ArgumentNullException("diagnosticRecord");
-            }
-        }
     }
 
 
