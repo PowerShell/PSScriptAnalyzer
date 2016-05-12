@@ -45,9 +45,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         List<Regex> includeRegexList;
         List<Regex> excludeRegexList;
         bool suppressedOnly;
-        Runspace runspace;
-        ModuleDependencyHandler moduleHandler;
-
         #endregion
 
         #region Singleton
@@ -170,10 +167,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             includeRegexList = null;
             excludeRegexList = null;
             suppressedOnly = false;
-            if (moduleHandler != null)
-            {
-                moduleHandler.Dispose();
-            }
         }
 
         internal bool ParseProfile(object profileObject, PathIntrinsics path, IOutputWriter writer)
@@ -486,10 +479,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             this.outputWriter = outputWriter;
             
-            // TODO Create a runspace pool
-            runspace = RunspaceFactory.CreateRunspace();
-            moduleHandler = resolveDSCResourceDependency ? new ModuleDependencyHandler(runspace) : null;
-
             #region Verifies rule extensions and loggers path
 
             List<string> paths = this.GetValidCustomRulePaths(customizedRulePath, path);
@@ -1176,16 +1165,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // is an optimization over doing the whole operation at once
             // and calling .Concat on IEnumerables to join results.
             this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
-
-            foreach (string scriptFilePath in scriptFilePaths)
+            using (var rsp = RunspaceFactory.CreateRunspace())
             {
-                // Yield each record in the result so that the 
-                // caller can pull them one at a time
-                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                rsp.Open();
+                using (var moduleHandler = new ModuleDependencyHandler(rsp))
                 {
-                    yield return diagnosticRecord;
+                    foreach (string scriptFilePath in scriptFilePaths)
+                    {
+                        // Yield each record in the result so that the
+                        // caller can pull them one at a time
+                        foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath, moduleHandler))
+                        {
+                            yield return diagnosticRecord;
+                        }
+                    }
                 }
-            }
+            } // disposing the runspace also closes it if it not already closed
         }
 
         /// <summary>
@@ -1287,7 +1282,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }        
 
         
-        private IEnumerable<DiagnosticRecord> AnalyzeFile(string filePath)
+        private IEnumerable<DiagnosticRecord> AnalyzeFile(
+            string filePath,
+            ModuleDependencyHandler moduleHandler = null)
         {
             ScriptBlockAst scriptAst = null;
             Token[] scriptTokens = null;

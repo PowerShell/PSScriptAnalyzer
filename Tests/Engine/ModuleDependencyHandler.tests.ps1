@@ -26,10 +26,13 @@ Describe "Resolve DSC Resource Dependency" {
     }
 
     Context "Module handler class" {
+        $moduleHandlerType = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]
         $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
         $oldPSModulePath = $env:PSModulePath
         It "Sets defaults correctly" {
-            $depHandler = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]::new()
+            $rsp = [runspacefactory]::CreateRunspace()
+            $rsp.Open()
+            $depHandler = $moduleHandlerType::new($rsp)
 
             $expectedPath = [System.IO.Path]::GetTempPath()
             $depHandler.TempPath | Should Be $expectedPath
@@ -47,10 +50,21 @@ Describe "Resolve DSC Resource Dependency" {
             $env:PSModulePath | Should Be $expectedPSModulePath
 
             $depHandler.Dispose()
+            $rsp.Dispose()
         }
 
         It "Keeps the environment variables unchanged" {
             Test-EnvironmentVariables($oldEnvVars)
+        }
+
+        It "Throws if runspace is null" {
+            {$moduleHandlerType::new($null)} | Should Throw
+        }
+
+        It "Throws if runspace is not opened" {
+            $rsp = [runspacefactory]::CreateRunspace()
+            {$moduleHandlerType::new($rsp)} | Should Throw
+            $rsp.Dispose()
         }
     }
 
@@ -82,10 +96,13 @@ Describe "Resolve DSC Resource Dependency" {
         New-Item -Type Directory -Path $newTempPath
 
         # create and dispose module dependency handler object
-        # to setup the temporary module location
-        $depHandler = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]::new()
+        # to setup the temporary module
+        $rsp = [runspacefactory]::CreateRunspace()
+        $rsp.Open()
+        $depHandler = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]::new($rsp)
         $pssaAppDataPath = $depHandler.PSSAAppDataPath
         $tempModulePath = $depHandler.TempModulePath
+        $rsp.Dispose()
         $depHandler.Dispose()
 
         # copy myresource module to the temporary location

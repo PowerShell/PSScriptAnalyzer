@@ -238,30 +238,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="tempPath">Path to the user scoped temporary directory</param>
         /// <param name="localAppDataPath">Path to the local app data directory</param>
         public ModuleDependencyHandler(
-            Runspace runspace = null,
+            Runspace runspace,
             string moduleRepository = null,
             string tempPath = null,
             string localAppDataPath = null)
         {
-            if (runspace == null)
-            {
-                Runspace = RunspaceFactory.CreateRunspace();
-            }
-            else
-            {
-                Runspace = runspace;
-            }
-            
-            if (Runspace.RunspaceStateInfo.State == RunspaceState.BeforeOpen)
-            {
-                Runspace.Open();
-            }
-            else if (Runspace.RunspaceStateInfo.State != RunspaceState.Opened)
+
+            ThrowIfNull(runspace, "runspace");
+            if (runspace.RunspaceStateInfo.State != RunspaceState.Opened)
             {
                 throw new ArgumentException(string.Format(
-                        "Runspace state cannot be {0}",
+                        "Runspace state cannot be in {0} state. It must be in Opened state",
                         runspace.RunspaceStateInfo.State.ToString()));
             }
+            Runspace = runspace;
 
             // TODO should set PSSA environment variables outside this class
             // Should be set in ScriptAnalyzer class
@@ -416,7 +406,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// </summary>
         public void Dispose()
         {
-            runspace.Dispose();
             RestorePSModulePath();
         }
 
