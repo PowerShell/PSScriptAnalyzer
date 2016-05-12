@@ -34,7 +34,7 @@ Describe "Resolve DSC Resource Dependency" {
             $expectedPath = [System.IO.Path]::GetTempPath()
             $depHandler.TempPath | Should Be $expectedPath
 
-            $expectedLocalAppDataPath = [System.Environment]::GetEnvironmentVariable("LOCALAPPDATA");
+            $expectedLocalAppDataPath = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::LocalApplicationData)
             $depHandler.LocalAppDataPath | Should Be $expectedLocalAppDataPath
 
             $expectedModuleRepository = "PSGallery"
