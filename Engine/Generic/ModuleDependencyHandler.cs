@@ -205,12 +205,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             ThrowIfNull(module, "module");
 
             // TODO validate module
-            var ps = System.Management.Automation.PowerShell.Create();
-            ps.Runspace = runspace;
-            ps.AddCommand("Save-Module")
-                .AddParameter("Path", tempModulePath)
-                .AddParameter("InputObject", module);
-            ps.Invoke();
+            using (var ps = System.Management.Automation.PowerShell.Create())
+            {
+                ps.Runspace = runspace;
+                ps.AddCommand("Save-Module")
+                    .AddParameter("Path", tempModulePath)
+                    .AddParameter("InputObject", module);
+                ps.Invoke();
+            }
         }
 
         private void SetupPSModulePath()
@@ -295,13 +297,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             {
                 return modulesFound[moduleName];
             }
-            var ps = System.Management.Automation.PowerShell.Create();
-            Collection<PSObject> modules = null;            
-            ps.Runspace = runspace;
-            ps.AddCommand("Find-Module", true)
-                .AddParameter("Name", moduleName)
-                .AddParameter("Repository", moduleRepository);
-            modules = ps.Invoke<PSObject>();            
+            Collection<PSObject> modules = null;
+            using (var ps = System.Management.Automation.PowerShell.Create())
+            {
+                ps.Runspace = runspace;
+                ps.AddCommand("Find-Module", true)
+                    .AddParameter("Name", moduleName)
+                    .AddParameter("Repository", moduleRepository);
+                modules = ps.Invoke<PSObject>();
+            }
             if (modules == null)
             {
                 return null;
@@ -345,13 +349,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             {                
                 return;
             }
-            var ps = System.Management.Automation.PowerShell.Create();
-            ps.Runspace = runspace;
-            ps.AddCommand("Save-Module")
-                .AddParameter("Path", tempModulePath)
-                .AddParameter("Name", moduleName)
-                .AddParameter("Force");
-            ps.Invoke();
+            using (var ps = System.Management.Automation.PowerShell.Create())
+            {
+                ps.Runspace = runspace;
+                ps.AddCommand("Save-Module")
+                    .AddParameter("Path", tempModulePath)
+                    .AddParameter("Name", moduleName)
+                    .AddParameter("Force");
+                ps.Invoke();
+            }
         }
 
         /// <summary>
