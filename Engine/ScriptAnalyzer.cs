@@ -45,13 +45,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         List<Regex> includeRegexList;
         List<Regex> excludeRegexList;
         bool suppressedOnly;
+        private bool resolveDscResourceDependency;
         #endregion
 
         #region Singleton
         private static object syncRoot = new Object();
-
         private static ScriptAnalyzer instance;
-
         public static ScriptAnalyzer Instance
         {
             get
@@ -103,7 +102,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] severity = null,
             bool includeDefaultRules = false,
             bool suppressedOnly = false,
-            bool resolveDSCResourceDependency = false)
+            bool resolveDscResourceDependency = false)
             where TCmdlet : PSCmdlet, IOutputWriter
         {
             if (cmdlet == null)
@@ -121,7 +120,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 severity,
                 includeDefaultRules,
                 suppressedOnly,
-                resolveDSCResourceDependency: resolveDSCResourceDependency);
+                resolveDscResourceDependency: resolveDscResourceDependency);
         }
 
         /// <summary>
@@ -470,7 +469,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             bool includeDefaultRules = false,
             bool suppressedOnly = false,
             string profile = null,
-            bool resolveDSCResourceDependency = false)
+            bool resolveDscResourceDependency = false)
         {
             if (outputWriter == null)
             {
@@ -478,6 +477,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             this.outputWriter = outputWriter;
+            this.resolveDscResourceDependency = resolveDscResourceDependency;
             
             #region Verifies rule extensions and loggers path
 
@@ -1165,22 +1165,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // is an optimization over doing the whole operation at once
             // and calling .Concat on IEnumerables to join results.
             this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
-            using (var rsp = RunspaceFactory.CreateRunspace())
+            if (resolveDscResourceDependency)
             {
-                rsp.Open();
-                using (var moduleHandler = new ModuleDependencyHandler(rsp))
+                using (var rsp = RunspaceFactory.CreateRunspace())
                 {
-                    foreach (string scriptFilePath in scriptFilePaths)
+                    rsp.Open();
+                    using (var moduleHandler = new ModuleDependencyHandler(rsp))
                     {
-                        // Yield each record in the result so that the
-                        // caller can pull them one at a time
-                        foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath, moduleHandler))
-                        {
-                            yield return diagnosticRecord;
-                        }
+                        return AnalyzePaths(scriptFilePaths, moduleHandler);
                     }
+                } // disposing the runspace also closes it if it not already closed
+            }
+            else
+            {
+                return AnalyzePaths(scriptFilePaths, null);
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> AnalyzePaths(
+            IEnumerable<string> scriptFilePaths,
+            ModuleDependencyHandler moduleHandler)
+        {
+            foreach (string scriptFilePath in scriptFilePaths)
+            {
+                // Yield each record in the result so that the
+                // caller can pull them one at a time
+                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath, moduleHandler))
+                {
+                    yield return diagnosticRecord;
                 }
-            } // disposing the runspace also closes it if it not already closed
+            }
         }
 
         /// <summary>

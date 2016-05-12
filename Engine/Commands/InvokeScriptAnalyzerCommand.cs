@@ -192,12 +192,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// Resolve DSC resoure dependency
         /// </summary>        
         [Parameter(Mandatory = false)]
-        public SwitchParameter ResolveDSCResourceDependency
+        public SwitchParameter ResolveDscResourceDependency
         {
-            get { return resolveDSCResourceDependency; }
-            set { resolveDSCResourceDependency = value; }
+            get { return resolveDscResourceDependency; }
+            set { resolveDscResourceDependency = value; }
         }
-        private bool resolveDSCResourceDependency;
+        private bool resolveDscResourceDependency;
         #endregion Parameters
 
         #region Overrides
@@ -224,7 +224,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.severity,
                 null == rulePaths ? true : this.includeDefaultRules,
                 this.suppressedOnly,
-                resolveDSCResourceDependency: resolveDSCResourceDependency);
+                resolveDscResourceDependency: resolveDscResourceDependency);
         }
 
         /// <summary>
