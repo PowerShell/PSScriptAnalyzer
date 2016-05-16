@@ -345,6 +345,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 ps.AddCommand("Save-Module")
                     .AddParameter("Path", tempModulePath)
                     .AddParameter("Name", moduleName)
+                    .AddParameter("Repository", moduleRepository)
                     .AddParameter("Force");
                 ps.Invoke();
             }
