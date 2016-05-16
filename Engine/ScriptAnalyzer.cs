@@ -1165,6 +1165,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // is an optimization over doing the whole operation at once
             // and calling .Concat on IEnumerables to join results.
             this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
+            IEnumerable<DiagnosticRecord> diagnosticRecords;
             if (resolveDscResourceDependency)
             {
                 using (var rsp = RunspaceFactory.CreateRunspace())
@@ -1172,29 +1173,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     rsp.Open();
                     using (var moduleHandler = new ModuleDependencyHandler(rsp))
                     {
-                        return AnalyzePaths(scriptFilePaths, moduleHandler);
+                        // cannot use IEnumerable because the execution is deferred
+                        // which causes the code to go out of the "using" scope which 
+                        // in turn closes the runspace
+                        diagnosticRecords = AnalyzePaths(scriptFilePaths, moduleHandler);
                     }
                 } // disposing the runspace also closes it if it not already closed
             }
             else
             {
-                return AnalyzePaths(scriptFilePaths, null);
+                diagnosticRecords = AnalyzePaths(scriptFilePaths, null);
             }
+            return diagnosticRecords;
         }
 
-        private IEnumerable<DiagnosticRecord> AnalyzePaths(
+        private List<DiagnosticRecord> AnalyzePaths(
             IEnumerable<string> scriptFilePaths,
             ModuleDependencyHandler moduleHandler)
         {
+            var diagnosticRecords = new List<DiagnosticRecord>();
             foreach (string scriptFilePath in scriptFilePaths)
             {
                 // Yield each record in the result so that the
                 // caller can pull them one at a time
                 foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath, moduleHandler))
                 {
-                    yield return diagnosticRecord;
+                    diagnosticRecords.Add(diagnosticRecord);
                 }
             }
+            return diagnosticRecords;
         }
 
         /// <summary>
@@ -1327,11 +1334,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         foreach (ParseError error in errors.Where(IsModuleNotFoundError))
                         {
-                            var moduleName = ModuleDependencyHandler.GetModuleNameFromErrorExtent(error, scriptAst);
-                            if (moduleName != null
-                                && moduleHandler.TrySaveModule(moduleName))
+                            var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst);                            
+                            if (moduleNames != null)
                             {
-                                parseAgain = true;
+                                parseAgain |= moduleNames.Any(x => moduleHandler.TrySaveModule(x));
                             }
                         }
                     }

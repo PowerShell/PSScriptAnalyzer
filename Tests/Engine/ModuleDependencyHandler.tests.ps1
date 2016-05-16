@@ -66,6 +66,36 @@ Describe "Resolve DSC Resource Dependency" {
             {$moduleHandlerType::new($rsp)} | Should Throw
             $rsp.Dispose()
         }
+                
+        It "Extracts 1 module name" {
+            $sb = @"
+{Configuration SomeConfiguration
+{
+    Import-DscResource -ModuleName SomeDscModule1
+}}
+"@
+            $tokens = $null
+            $parseError = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
+            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast).ToArray()
+            $resultModuleNames[0] | Should Be 'SomeDscModule1'            
+        }
+        
+        It "Extracts more than 1 module names" {
+            $sb = @"
+{Configuration SomeConfiguration
+{
+    Import-DscResource -ModuleName SomeDscModule1,SomeDscModule2,SomeDscModule3
+}}
+"@
+            $tokens = $null
+            $parseError = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
+            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast).ToArray()
+            $resultModuleNames[0] | Should Be 'SomeDscModule1'
+            $resultModuleNames[1] | Should Be 'SomeDscModule2'
+            $resultModuleNames[2] | Should Be 'SomeDscModule3'
+        }
     }
 
     Context "Invoke-ScriptAnalyzer without switch" {

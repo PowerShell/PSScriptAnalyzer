@@ -158,7 +158,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             SetupTempDir();
         }
 
-        private bool IsModulePresent(string moduleName)
+        private bool IsModulePresentInTempModulePath(string moduleName)
         {
             foreach (var dir in Directory.EnumerateDirectories(TempModulePath))
             {
@@ -335,7 +335,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public void SaveModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
-            if (IsModulePresent(moduleName))
+            if (IsModulePresentInTempModulePath(moduleName))
             {                
                 return;
             }
@@ -351,6 +351,60 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// Encapsulates Get-Module to check the availability of the module on the system
+        /// </summary>
+        /// <param name="moduleName"></param>
+        /// <returns>True indicating the presence of the module, otherwise false</returns>
+        public bool IsModuleAvailable(string moduleName)
+        {
+            ThrowIfNull(moduleName, "moduleName");
+            IEnumerable<PSModuleInfo> availableModules;
+            using (var ps = System.Management.Automation.PowerShell.Create())
+            {
+                ps.Runspace = runspace;
+                availableModules = ps.AddCommand("Get-Module")
+                    .AddParameter("Name", moduleName)
+                    .AddParameter("ListAvailable")
+                    .Invoke<PSModuleInfo>();                
+            }
+            return availableModules != null ? availableModules.Any() : false;
+        }
+
+        /// <summary>
+        /// Extracts out the module names from the error extent that are not available
+        /// 
+        /// This handles the following case.
+        /// Import-DSCResourceModule -ModuleName ModulePresent,ModuleAbsent
+        /// 
+        /// ModulePresent is present in PSModulePath whereas ModuleAbsent is not. 
+        /// But the error exent coverts the entire extent and hence we need to check
+        /// which module is actually not present so as to be downloaded
+        /// </summary>
+        /// <param name="error"></param>
+        /// <param name="ast"></param>
+        /// <returns>An enumeration over the module names that are not available</returns>
+        public IEnumerable<string> GetUnavailableModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
+        {
+            ThrowIfNull(error, "error");
+            ThrowIfNull(ast, "ast");
+            var moduleNames = ModuleDependencyHandler.GetModuleNameFromErrorExtent(error, ast);
+            if (moduleNames == null)
+            {
+                return null;
+            }
+            var unavailableModules = new List<string>();
+            foreach (var moduleName in moduleNames)
+            {
+                if (!IsModuleAvailable(moduleName))
+                {
+                    unavailableModules.Add(moduleName);
+                }
+            }
+            //return moduleNames.Where(x => !IsModuleAvailable(x));
+            return unavailableModules;
+        }
+
+        /// <summary>
         /// Get the module name from the error extent
         /// 
         /// If a parser encounters Import-DSCResource -ModuleName SomeModule 
@@ -362,7 +416,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="error">Parse error</param>
         /// <param name="ast">AST of the script that contians the parse error</param>
         /// <returns>The name of the module that caused the parser to throw the error. Returns null if it cannot extract the module name.</returns>
-        public static string GetModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
+        public static IEnumerable<string> GetModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
         {
             ThrowIfNull(error, "error");
             ThrowIfNull(ast, "ast");
@@ -373,9 +427,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 return null;
             }
             // check if the command name is import-dscmodule
-            // right now we handle only the following form
-            // Import-DSCResource -ModuleName xActiveDirectory
-            if (dynamicKywdAst.CommandElements.Count != 3)
+            // right now we handle only the following forms
+            // 1. Import-DSCResourceModule -ModuleName somemodule
+            // 2. Import-DSCResourceModule -ModuleName somemodule1,somemodule2
+            if (dynamicKywdAst.CommandElements.Count < 3)
             {
                 return null;
             }
@@ -386,19 +441,56 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 return null;
             }
 
-            var paramAst = dynamicKywdAst.CommandElements[1] as CommandParameterAst;
-            if (paramAst == null || !paramAst.ParameterName.Equals("ModuleName", StringComparison.OrdinalIgnoreCase))
+            // find a parameter named modulename
+            int k;            
+            for (k = 1; k < dynamicKywdAst.CommandElements.Count; k++)
             {
+                var paramAst = dynamicKywdAst.CommandElements[1] as CommandParameterAst;
+                // TODO match the initial letters only
+                if (paramAst == null || !paramAst.ParameterName.Equals("ModuleName", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                break;
+            }
+            
+            if (k == dynamicKywdAst.CommandElements.Count)
+            {
+                // cannot find  modulename
                 return null;
             }
+            var modules = new List<string>();
+            
+            // k < count - 1, because only -ModuleName throws parse error and hence not possible
+            var paramValAst = dynamicKywdAst.CommandElements[++k];
 
-            var paramValAst = dynamicKywdAst.CommandElements[2] as StringConstantExpressionAst;
-            if (paramValAst == null)
-            {
-                return null;
+            // import-dscresource -ModuleName module1
+            var paramValStrConstExprAst = paramValAst as StringConstantExpressionAst;
+            if (paramValStrConstExprAst != null)
+            {                
+                modules.Add(paramValStrConstExprAst.Value);
+                return modules;
             }
-
-            return paramValAst.Value;
+            
+            // import-dscresource -ModuleName module1,module2
+            var paramValArrLtrlAst = paramValAst as ArrayLiteralAst;
+            if (paramValArrLtrlAst != null)
+            {
+                foreach (var elem in paramValArrLtrlAst.Elements)
+                {
+                    var elemStrConstExprAst = elem as StringConstantExpressionAst;
+                    if (elemStrConstExprAst != null)
+                    {
+                        modules.Add(elemStrConstExprAst.Value);
+                    }
+                }
+                if (modules.Count == 0)
+                {
+                    return null;
+                }
+                return modules;
+            }
+            return null;
         }
 
         /// <summary>
