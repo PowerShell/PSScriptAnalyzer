@@ -19,7 +19,7 @@ Describe "Test available parameters" {
         It "has a Path parameter" {
             $params.ContainsKey("Path") | Should Be $true
         }
-        
+
         It "accepts string" {
             $params["Path"].ParameterType.FullName | Should Be "System.String"
         }
@@ -29,8 +29,8 @@ Describe "Test available parameters" {
         It "has a ScriptDefinition parameter" {
             $params.ContainsKey("ScriptDefinition") | Should Be $true
         }
-        
-        It "accepts string" {			
+
+        It "accepts string" {
             $params["ScriptDefinition"].ParameterType.FullName | Should Be "System.String"
         }
     }
@@ -66,6 +66,16 @@ Describe "Test available parameters" {
 
         It "accepts string array" {
             $params["Severity"].ParameterType.FullName | Should Be "System.String[]"
+        }
+    }
+
+    Context "SaveDSCResourceDependency parameter" {
+        It "has the parameter" {
+            $params.ContainsKey("SaveDscResourceDependency") | Should Be $true
+        }
+
+        It "is a switch parameter" {
+            $params["SaveDscResourceDependency"].ParameterType.FullName | Should Be "System.Management.Automation.SwitchParameter"
         }
     }
 
@@ -144,14 +154,14 @@ Describe "Test Path" {
 	if (!$testingLibraryUsage)
 	{
 		#There is probably a more concise way to do this but for now we will settle for this!
-		Function GetFreeDrive ($freeDriveLen) { 
+		Function GetFreeDrive ($freeDriveLen) {
 			$ordA = 65
 			$ordZ = 90
 			$freeDrive = ""
 			$freeDriveName = ""
 			do{
 				$freeDriveName = (1..$freeDriveLen | %{[char](Get-Random -Maximum $ordZ -Minimum $ordA)}) -join ''
-				$freeDrive = $freeDriveName + ":"    
+				$freeDrive = $freeDriveName + ":"
 			}while(Test-Path $freeDrive)
 			$freeDrive, $freeDriveName
 		}
@@ -180,7 +190,7 @@ Describe "Test Path" {
     Context "When given a directory" {
         $withoutPathWithDirectory = Invoke-ScriptAnalyzer -Recurse $directory\RecursionDirectoryTest
         $withPathWithDirectory = Invoke-ScriptAnalyzer -Recurse -Path $directory\RecursionDirectoryTest
-    
+
         It "Has the same count as without Path parameter"{
             $withoutPathWithDirectory.Count -eq $withPathWithDirectory.Count | Should Be $true
         }
@@ -206,7 +216,7 @@ Describe "Test ExcludeRule" {
 
         It "excludes 3 rules" {
             $noViolations = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -ExcludeRule $rules | Where-Object {$rules -contains $_.RuleName}
-            $noViolations.Count | Should Be 0 
+            $noViolations.Count | Should Be 0
         }
     }
 
@@ -329,13 +339,13 @@ Describe "Test CustomizedRulePath" {
 		It "When supplied with a collection of paths" {
             $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath ("$directory\CommunityAnalyzerRules", "$directory\SampleRule", "$directory\SampleRule\SampleRule2")
             $customizedRulePath.Count | Should Be 3
-        }		
+        }
 
     }
 
 
     Context "When used incorrectly" {
-        It "file cannot be found" {            
+        It "file cannot be found" {
             try
             {
                 Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath "Invalid CustomRulePath"
@@ -343,9 +353,9 @@ Describe "Test CustomizedRulePath" {
             catch
             {
                 if (-not $testingLibraryUsage)
-			    {                    
-                    $Error[0].FullyQualifiedErrorId | should match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"            
-                }                
+			    {
+                    $Error[0].FullyQualifiedErrorId | should match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
+                }
             }
         }
     }
