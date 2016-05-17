@@ -190,7 +190,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool stopProcessing;
 
         /// <summary>
-        /// Resolve DSC resoure dependency
+        /// Resolve DSC resource dependency
         /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter ResolveDscResourceDependency
@@ -257,34 +257,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
         }
 
-        private void ProcessInput()
-        {
-            IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
-            if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
-            {
-                // throws Item Not Found Exception
-                Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
-                foreach (PathInfo p in paths)
-                {
-                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(
-                        this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path),
-                        this.recurse);
-                }
-            }
-            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
-            {
-                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition);
-            }
-
-            foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
-            {
-                foreach (DiagnosticRecord diagnostic in diagnosticsList)
-                {
-                    logger.LogObject(diagnostic, this);
-                }
-            }
-        }
-
         protected override void EndProcessing()
         {
             ScriptAnalyzer.Instance.CleanUp();
@@ -300,30 +272,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         #endregion
 
         #region Methods
+        private void ProcessInput()
+        {
+            IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
+            if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
+            {
+                // throws Item Not Found Exception
+                Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
+                foreach (PathInfo p in paths)
+                {
+                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(
+                        this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path),
+                        this.recurse);
+                    WriteToOutput(diagnosticsList);
+                }
+            }
+            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
+            {
+                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition);
+                WriteToOutput(diagnosticsList);
+            }
+        }
 
-        //private void ProcessPathOrScriptDefinition(string pathOrScriptDefinition)
-        //{
-        //    IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
-
-        //    if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(pathOrScriptDefinition, this.recurse);
-        //    }
-        //    else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(pathOrScriptDefinition);
-        //    }
-
-        //    //Output through loggers
-        //    foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
-        //    {
-        //        foreach (DiagnosticRecord diagnostic in diagnosticsList)
-        //        {
-        //            logger.LogObject(diagnostic, this);
-        //        }
-        //    }
-        //}
-
+        private void WriteToOutput(IEnumerable<DiagnosticRecord> diagnosticRecords)
+        {
+            foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
+            {
+                foreach (DiagnosticRecord diagnostic in diagnosticRecords)
+                {
+                    logger.LogObject(diagnostic, this);
+                }
+            }
+        }
         #endregion
     }
 }

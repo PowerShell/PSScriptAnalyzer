@@ -1170,7 +1170,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this));
             }
 
-            // Precreate the list of script file paths to analyze.  This
+            // Create in advance the list of script file paths to analyze.  This
             // is an optimization over doing the whole operation at once
             // and calling .Concat on IEnumerables to join results.
             this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
@@ -1184,23 +1184,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
         }
-
-        //private List<DiagnosticRecord> AnalyzePaths(
-        //    IEnumerable<string> scriptFilePaths,
-        //    ModuleDependencyHandler moduleHandler)
-        //{
-        //    var diagnosticRecords = new List<DiagnosticRecord>();
-        //    foreach (string scriptFilePath in scriptFilePaths)
-        //    {
-        //        // Yield each record in the result so that the
-        //        // caller can pull them one at a time
-        //        foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath, moduleHandler))
-        //        {
-        //            diagnosticRecords.Add(diagnosticRecord);
-        //        }
-        //    }
-        //    return diagnosticRecords;
-        //}
 
         /// <summary>
         /// Analyzes a script definition in the form of a string input
