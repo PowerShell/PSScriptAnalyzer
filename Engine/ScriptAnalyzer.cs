@@ -45,7 +45,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         List<Regex> includeRegexList;
         List<Regex> excludeRegexList;
         bool suppressedOnly;
-        private bool resolveDscResourceDependency;
+        ModuleDependencyHandler moduleHandler;
         #endregion
 
         #region Singleton
@@ -86,6 +86,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<IDSCResourceRule> DSCResourceRules { get; private set; }
 
         internal List<ExternalRule> ExternalRules { get; set; }
+        public ModuleDependencyHandler ModuleHandler {
+            get
+            {
+                return moduleHandler;
+            }
+
+            internal set
+            {
+                moduleHandler = value;
+            }
+        }
 
         #endregion
 
@@ -95,21 +106,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Initialize : Initializes default rules, loggers and helper.
         /// </summary>
         internal void Initialize<TCmdlet>(
-            TCmdlet cmdlet, 
-            string[] customizedRulePath = null,            
-            string[] includeRuleNames = null, 
+            TCmdlet cmdlet,
+            string[] customizedRulePath = null,
+            string[] includeRuleNames = null,
             string[] excludeRuleNames = null,
             string[] severity = null,
             bool includeDefaultRules = false,
-            bool suppressedOnly = false,
-            bool resolveDscResourceDependency = false)
+            bool suppressedOnly = false)
             where TCmdlet : PSCmdlet, IOutputWriter
         {
             if (cmdlet == null)
             {
                 throw new ArgumentNullException("cmdlet");
             }
-                                                        
+
             this.Initialize(
                 cmdlet,
                 cmdlet.SessionState.Path,
@@ -119,18 +129,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 excludeRuleNames,
                 severity,
                 includeDefaultRules,
-                suppressedOnly,
-                resolveDscResourceDependency: resolveDscResourceDependency);
+                suppressedOnly);
         }
 
         /// <summary>
         /// Initialize : Initializes default rules, loggers and helper.
         /// </summary>
         public void Initialize(
-            Runspace runspace, 
-            IOutputWriter outputWriter, 
-            string[] customizedRulePath = null,             
-            string[] includeRuleNames = null, 
+            Runspace runspace,
+            IOutputWriter outputWriter,
+            string[] customizedRulePath = null,
+            string[] includeRuleNames = null,
             string[] excludeRuleNames = null,
             string[] severity = null,
             bool includeDefaultRules = false,
@@ -204,7 +213,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     hasError = ParseProfileString(profile, path, writer, severityList, includeRuleList, excludeRuleList);
                 }
             }
-            
+
             if (hasError)
             {
                 return false;
@@ -269,7 +278,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     hasError = true;
                     continue;
                 }
-                
+
                 // checks whether it falls into list of valid keys
                 if (!validKeys.Contains(key))
                 {
@@ -325,7 +334,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
-            
+
             }
 
             return hasError;
@@ -468,17 +477,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] severity,
             bool includeDefaultRules = false,
             bool suppressedOnly = false,
-            string profile = null,
-            bool resolveDscResourceDependency = false)
+            string profile = null)
         {
             if (outputWriter == null)
             {
                 throw new ArgumentNullException("outputWriter");
             }
 
+            this.moduleHandler = null;
+
             this.outputWriter = outputWriter;
-            this.resolveDscResourceDependency = resolveDscResourceDependency;
-            
+
             #region Verifies rule extensions and loggers path
 
             List<string> paths = this.GetValidCustomRulePaths(customizedRulePath, path);
@@ -578,7 +587,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 this.outputWriter.ThrowTerminatingError(
                     new ErrorRecord(
-                        ex, 
+                        ex,
                         ex.HResult.ToString("X", CultureInfo.CurrentCulture),
                         ErrorCategory.NotSpecified, this));
             }
@@ -729,7 +738,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (null != ScriptRules)
             {
                 rules = ScriptRules.Union<IRule>(TokenRules).Union<IRule>(DSCResourceRules);
-            }            
+            }
 
             // Gets PowerShell Rules.
             if (moduleNames != null)
@@ -783,7 +792,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         shortModuleName = loadedModules.First().Name;
                     }
-                                                            
+
                     // Invokes Get-Command and Get-Help for each functions in the module.
                     posh.Commands.Clear();
                     posh.AddCommand("Get-Command").AddParameter("Module", shortModuleName);
@@ -803,7 +812,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                                                           item.Name.EndsWith("token", StringComparison.OrdinalIgnoreCase));
                         }
                         catch
-                        {                            
+                        {
                         }
 
                         //Only add functions that are defined as rules.
@@ -813,7 +822,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             // using Update-Help. This results in an interactive prompt - which we cannot handle
                             // Workaround to prevent Update-Help from running is to set the following reg key
                             // HKLM:\Software\Microsoft\PowerShell\DisablePromptToUpdateHelp
-                            // OR execute Update-Help in an elevated admin mode before running ScriptAnalyzer 
+                            // OR execute Update-Help in an elevated admin mode before running ScriptAnalyzer
                             Collection<PSObject> helpContent = null;
                             try
                             {
@@ -833,11 +842,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 dynamic description = helpContent[0].Properties["Description"];
 
                                 if (null != description && null != description.Value && description.Value.GetType().IsArray)
-                                {                                    
+                                {
                                     desc = description.Value[0].Text;
                                 }
                             }
-                            
+
                             rules.Add(new ExternalRule(funcInfo.Name, funcInfo.Name, desc, param.Name, param.ParameterType.FullName,
                                 funcInfo.ModuleName, funcInfo.Module.Path));
                         }
@@ -982,7 +991,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                                 // DiagnosticRecord may not be correctly returned from external rule.
                                 try
-                                {                                    
+                                {
                                     severity = (DiagnosticSeverity)Enum.Parse(typeof(DiagnosticSeverity), psobject.Properties["Severity"].Value.ToString());
                                     message = psobject.Properties["Message"].Value.ToString();
                                     extent = (IScriptExtent)psobject.Properties["Extent"].Value;
@@ -1030,11 +1039,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     string resolvedPath = string.Empty;
 
-                    // Users may provide a valid module path or name, 
+                    // Users may provide a valid module path or name,
                     // We have to identify the childPath is really a directory or just a module name.
                     // You can also consider following two commands.
                     //   Get-ScriptAnalyzerRule -RuleExtension "ContosoAnalyzerRules"
-                    //   Get-ScriptAnalyzerRule -RuleExtension "%USERPROFILE%\WindowsPowerShell\Modules\ContosoAnalyzerRules"                    
+                    //   Get-ScriptAnalyzerRule -RuleExtension "%USERPROFILE%\WindowsPowerShell\Modules\ContosoAnalyzerRules"
                     if (Path.GetDirectoryName(childPath) == string.Empty)
                     {
                         resolvedPath = childPath;
@@ -1043,21 +1052,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         resolvedPath = basePath
                             .GetResolvedPSPathFromPSPath(childPath).First().ToString();
-                    }                    
-                    
+                    }
+
                     // Import the module
-                    InitialSessionState state = InitialSessionState.CreateDefault2();                                    
+                    InitialSessionState state = InitialSessionState.CreateDefault2();
                     using (System.Management.Automation.PowerShell posh =
                            System.Management.Automation.PowerShell.Create(state))
-                    {                    
+                    {
                         posh.AddCommand("Import-Module").AddArgument(resolvedPath).AddParameter("PassThru");
                         Collection<PSModuleInfo> loadedModules = posh.Invoke<PSModuleInfo>();
-                        if (loadedModules != null 
+                        if (loadedModules != null
                                 && loadedModules.Count > 0
                                 && loadedModules.First().ExportedFunctions.Count > 0)
-                        { 
-                                validModPaths.Add(resolvedPath);                                
-                        }                        
+                        {
+                                validModPaths.Add(resolvedPath);
+                        }
                     }
                 }
                 catch
@@ -1136,14 +1145,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         #endregion
-        
+
 
         /// <summary>
         /// Analyzes a script file or a directory containing script files.
         /// </summary>
         /// <param name="path">The path of the file or directory to analyze.</param>
         /// <param name="searchRecursively">
-        /// If true, recursively searches the given file path and analyzes any 
+        /// If true, recursively searches the given file path and analyzes any
         /// script files that are found.
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
@@ -1157,7 +1166,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     new ErrorRecord(
                         new FileNotFoundException(),
                         string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path),
-                        ErrorCategory.InvalidArgument, 
+                        ErrorCategory.InvalidArgument,
                         this));
             }
 
@@ -1165,44 +1174,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // is an optimization over doing the whole operation at once
             // and calling .Concat on IEnumerables to join results.
             this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
-            IEnumerable<DiagnosticRecord> diagnosticRecords;
-            if (resolveDscResourceDependency)
-            {
-                using (var rsp = RunspaceFactory.CreateRunspace())
-                {
-                    rsp.Open();
-                    using (var moduleHandler = new ModuleDependencyHandler(rsp))
-                    {
-                        // cannot use IEnumerable because the execution is deferred
-                        // which causes the code to go out of the "using" scope which 
-                        // in turn closes the runspace
-                        diagnosticRecords = AnalyzePaths(scriptFilePaths, moduleHandler);
-                    }
-                } // disposing the runspace also closes it if it not already closed
-            }
-            else
-            {
-                diagnosticRecords = AnalyzePaths(scriptFilePaths, null);
-            }
-            return diagnosticRecords;
-        }
-
-        private List<DiagnosticRecord> AnalyzePaths(
-            IEnumerable<string> scriptFilePaths,
-            ModuleDependencyHandler moduleHandler)
-        {
-            var diagnosticRecords = new List<DiagnosticRecord>();
             foreach (string scriptFilePath in scriptFilePaths)
             {
                 // Yield each record in the result so that the
                 // caller can pull them one at a time
-                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath, moduleHandler))
+                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
                 {
-                    diagnosticRecords.Add(diagnosticRecord);
+                    yield return diagnosticRecord;
                 }
             }
-            return diagnosticRecords;
         }
+
+        //private List<DiagnosticRecord> AnalyzePaths(
+        //    IEnumerable<string> scriptFilePaths,
+        //    ModuleDependencyHandler moduleHandler)
+        //{
+        //    var diagnosticRecords = new List<DiagnosticRecord>();
+        //    foreach (string scriptFilePath in scriptFilePaths)
+        //    {
+        //        // Yield each record in the result so that the
+        //        // caller can pull them one at a time
+        //        foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath, moduleHandler))
+        //        {
+        //            diagnosticRecords.Add(diagnosticRecord);
+        //        }
+        //    }
+        //    return diagnosticRecords;
+        //}
 
         /// <summary>
         /// Analyzes a script definition in the form of a string input
@@ -1248,8 +1246,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         private void BuildScriptPathList(
-            string path, 
-            bool searchRecursively, 
+            string path,
+            bool searchRecursively,
             IList<string> scriptFilePaths)
         {
             const string ps1Suffix = ".ps1";
@@ -1295,17 +1293,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 this.outputWriter.WriteError(
                     new ErrorRecord(
-                        new FileNotFoundException(), 
-                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path), 
-                        ErrorCategory.InvalidArgument, 
+                        new FileNotFoundException(),
+                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path),
+                        ErrorCategory.InvalidArgument,
                         this));
             }
-        }        
+        }
 
-        
-        private IEnumerable<DiagnosticRecord> AnalyzeFile(
-            string filePath,
-            ModuleDependencyHandler moduleHandler = null)
+
+        private IEnumerable<DiagnosticRecord> AnalyzeFile(string filePath)
         {
             ScriptBlockAst scriptAst = null;
             Token[] scriptTokens = null;
@@ -1334,7 +1330,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         foreach (ParseError error in errors.Where(IsModuleNotFoundError))
                         {
-                            var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst);                            
+                            var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst);
                             if (moduleNames != null)
                             {
                                 parseAgain |= moduleNames.Any(x => moduleHandler.TrySaveModule(x));
@@ -1388,17 +1384,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private bool IsSeverityAllowed(IEnumerable<uint> allowedSeverities, IRule rule)
         {
-            return severity == null 
-                || (allowedSeverities != null 
-                    && rule != null 
-                    && HasGetSeverity(rule) 
+            return severity == null
+                || (allowedSeverities != null
+                    && rule != null
+                    && HasGetSeverity(rule)
                     && allowedSeverities.Contains((uint)rule.GetSeverity()));
         }
 
         IEnumerable<uint> GetAllowedSeveritiesInInt()
         {
-            return severity != null 
-                ? severity.Select(item => (uint)Enum.Parse(typeof(DiagnosticSeverity), item, true)) 
+            return severity != null
+                ? severity.Select(item => (uint)Enum.Parse(typeof(DiagnosticSeverity), item, true))
                 : null;
         }
 
@@ -1479,8 +1475,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeSyntaxTree(
-            ScriptBlockAst scriptAst, 
-            Token[] scriptTokens, 
+            ScriptBlockAst scriptAst,
+            Token[] scriptTokens,
             string filePath)
         {
             Dictionary<string, List<RuleSuppression>> ruleSuppressions = new Dictionary<string,List<RuleSuppression>>();
@@ -1522,7 +1518,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 Helper.Instance.Tokens = scriptTokens;
             }
-          
+
             #region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
             string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
@@ -1554,8 +1550,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 List<ErrorRecord> suppressRuleErrors;
                                 var ruleRecords = scriptRule.AnalyzeScript(scriptAst, scriptAst.Extent.File).ToList();
                                 var records = Helper.Instance.SuppressRule(
-                                    scriptRule.GetName(), 
-                                    ruleSuppressions, 
+                                    scriptRule.GetName(),
+                                    ruleSuppressions,
                                     ruleRecords,
                                     out suppressRuleErrors);
                                 result.AddRange(suppressRuleErrors);

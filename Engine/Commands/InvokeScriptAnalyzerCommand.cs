@@ -25,6 +25,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
@@ -44,7 +45,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [Parameter(Position = 0,
             ParameterSetName = "File",
             Mandatory = true,
-            ValueFromPipeline = true, 
+            ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
         [ValidateNotNull]
         [Alias("PSPath")]
@@ -190,7 +191,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         /// <summary>
         /// Resolve DSC resoure dependency
-        /// </summary>        
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter ResolveDscResourceDependency
         {
@@ -223,8 +224,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 null == rulePaths ? true : this.includeDefaultRules,
-                this.suppressedOnly,
-                resolveDscResourceDependency: resolveDscResourceDependency);
+                this.suppressedOnly);
         }
 
         /// <summary>
@@ -238,18 +238,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 return;
             }
 
+            // TODO Support dependency resolution for analyzing script definitions
+            if (resolveDscResourceDependency)
+            {
+                using (var rsp = RunspaceFactory.CreateRunspace())
+                {
+                    rsp.Open();
+                    using (var moduleHandler = new ModuleDependencyHandler(rsp))
+                    {
+                        ScriptAnalyzer.Instance.ModuleHandler = moduleHandler;
+                        ProcessInput();
+                    }
+                }
+            }
+            else
+            {
+                ProcessInput();
+            }
+        }
+
+        private void ProcessInput()
+        {
+            IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
             if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
             {
-                // throws Item Not Found Exception                        
+                // throws Item Not Found Exception
                 Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
                 foreach (PathInfo p in paths)
                 {
-                    ProcessPathOrScriptDefinition(this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path));
+                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(
+                        this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path),
+                        this.recurse);
                 }
             }
             else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
             {
-                ProcessPathOrScriptDefinition(scriptDefinition);
+                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition);
+            }
+
+            foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
+            {
+                foreach (DiagnosticRecord diagnostic in diagnosticsList)
+                {
+                    logger.LogObject(diagnostic, this);
+                }
             }
         }
 
@@ -269,28 +301,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         #region Methods
 
-        private void ProcessPathOrScriptDefinition(string pathOrScriptDefinition)
-        {
-            IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
+        //private void ProcessPathOrScriptDefinition(string pathOrScriptDefinition)
+        //{
+        //    IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
 
-            if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
-            {
-                diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(pathOrScriptDefinition, this.recurse);
-            }
-            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
-            {
-                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(pathOrScriptDefinition);
-            }
+        //    if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(pathOrScriptDefinition, this.recurse);
+        //    }
+        //    else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(pathOrScriptDefinition);
+        //    }
 
-            //Output through loggers
-            foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
-            {
-                foreach (DiagnosticRecord diagnostic in diagnosticsList)
-                {
-                    logger.LogObject(diagnostic, this);
-                }
-            }
-        }
+        //    //Output through loggers
+        //    foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
+        //    {
+        //        foreach (DiagnosticRecord diagnostic in diagnosticsList)
+        //        {
+        //            logger.LogObject(diagnostic, this);
+        //        }
+        //    }
+        //}
 
         #endregion
     }
