@@ -193,12 +193,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// Resolve DSC resource dependency
         /// </summary>
         [Parameter(Mandatory = false)]
-        public SwitchParameter ResolveDscResourceDependency
+        public SwitchParameter SaveDscResourceDependency
         {
-            get { return resolveDscResourceDependency; }
-            set { resolveDscResourceDependency = value; }
+            get { return saveDscResourceDependency; }
+            set { saveDscResourceDependency = value; }
         }
-        private bool resolveDscResourceDependency;
+        private bool saveDscResourceDependency;
         #endregion Parameters
 
         #region Overrides
@@ -239,7 +239,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 
             // TODO Support dependency resolution for analyzing script definitions
-            if (resolveDscResourceDependency)
+            if (saveDscResourceDependency)
             {
                 using (var rsp = RunspaceFactory.CreateRunspace())
                 {
