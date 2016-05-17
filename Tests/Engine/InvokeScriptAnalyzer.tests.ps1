@@ -69,13 +69,16 @@ Describe "Test available parameters" {
         }
     }
 
-    Context "SaveDSCResourceDependency parameter" {
-        It "has the parameter" {
-            $params.ContainsKey("SaveDscResourceDependency") | Should Be $true
-        }
+    if (!$testingLibraryUsage)
+    {
+        Context "SaveDSCResourceDependency parameter" {
+            It "has the parameter" {
+                $params.ContainsKey("SaveDscResourceDependency") | Should Be $true
+            }
 
-        It "is a switch parameter" {
-            $params["SaveDscResourceDependency"].ParameterType.FullName | Should Be "System.Management.Automation.SwitchParameter"
+            It "is a switch parameter" {
+                $params["SaveDscResourceDependency"].ParameterType.FullName | Should Be "System.Management.Automation.SwitchParameter"
+            }
         }
     }
 
