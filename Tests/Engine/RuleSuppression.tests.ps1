@@ -21,6 +21,15 @@ Function do-something
 }
 '@
 
+$ruleSuppressionInConfiguration = @'
+Configuration xFileUpload
+{
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+param ([string] $decryptedPassword)
+$securePassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
+}
+'@
+
 Describe "RuleSuppressionWithoutScope" {
     Context "Function" {
         It "Does not raise violations" {
@@ -46,6 +55,13 @@ Describe "RuleSuppressionWithoutScope" {
             $suppression.Count | Should Be 1
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
             $suppression.Count | Should Be 1
+        }
+    }
+
+    Context "Rule suppression within DSC Configuration definition" {
+        It "Suppresses rule" {
+            $suppressedRule = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -SuppressedOnly
+            $suppressedRule.Count | Should Be 1
         }
     }
 
