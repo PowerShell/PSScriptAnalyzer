@@ -1656,7 +1656,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             try
                             {
 #if PSV3
-                                var records = Helper.Instance.SuppressRule(dscResourceRule.GetName(), ruleSuppressions, null);
+                                var errRecs = new List<ErrorRecord>();
+                                var records = Helper.Instance.SuppressRule(
+                                    dscResourceRule.GetName(),
+                                    ruleSuppressions,
+                                    null,
+                                    out errRecs);
 #else
                                 var ruleRecords = dscResourceRule.AnalyzeDSCClass(scriptAst, filePath).ToList();
                                 var records = SuppressRule(dscResourceRule.GetName(), ruleSuppressions, ruleRecords);
