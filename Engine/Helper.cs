@@ -1160,8 +1160,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
             }
 
-            #if !PSV3
-
+#if !PSV3
             // Get rule suppression from classes
             IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
 
@@ -1170,7 +1169,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsClass(typeAst));
             }
 
-            #endif
+            // Get rule suppression from configuration definitions
+            IEnumerable<ConfigurationDefinitionAst> configDefAsts = ast.FindAll(item => item is ConfigurationDefinitionAst, true).Cast<ConfigurationDefinitionAst>();
+
+            foreach (var configDefAst in configDefAsts)
+            {
+                ruleSuppressionList.AddRange(GetSuppressionsConfiguration(configDefAst));
+            }
+#endif // !PSV3
 
             ruleSuppressionList.Sort((item, item2) => item.StartOffset.CompareTo(item2.StartOffset));
 
@@ -1186,6 +1192,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Returns a list of rule suppressions from the configuration
+        /// </summary>
+        /// <param name="configDefAst"></param>
+        /// <returns></returns>
+        internal List<RuleSuppression> GetSuppressionsConfiguration(ConfigurationDefinitionAst configDefAst)
+        {
+            var result = new List<RuleSuppression>();
+            if (configDefAst == null || configDefAst.Body == null)
+            {
+                return result;
+            }
+            var attributeAsts = configDefAst.FindAll(x => x is AttributeAst, true).Cast<AttributeAst>();
+            result.AddRange(RuleSuppression.GetSuppressions(
+                attributeAsts,
+                configDefAst.Extent.StartOffset,
+                configDefAst.Extent.EndOffset,
+                configDefAst));
+            return result;
         }
 
         /// <summary>
