@@ -45,10 +45,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         List<Regex> includeRegexList;
         List<Regex> excludeRegexList;
         bool suppressedOnly;
+#if !PSV3
         ModuleDependencyHandler moduleHandler;
-        #endregion
+#endif
+#endregion
 
-        #region Singleton
+#region Singleton
         private static object syncRoot = new Object();
         private static ScriptAnalyzer instance;
         public static ScriptAnalyzer Instance
@@ -68,9 +70,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        #endregion
+#endregion
 
-        #region Properties
+#region Properties
 
         // Initializes via ImportMany
         [ImportMany]
@@ -86,6 +88,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<IDSCResourceRule> DSCResourceRules { get; private set; }
 
         internal List<ExternalRule> ExternalRules { get; set; }
+
+#if !PSV3
         public ModuleDependencyHandler ModuleHandler {
             get
             {
@@ -97,8 +101,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 moduleHandler = value;
             }
         }
+#endif
 
-        #endregion
+#endregion
 
         #region Methods
 
@@ -483,18 +488,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 throw new ArgumentNullException("outputWriter");
             }
-
+#if !PSV3
             this.moduleHandler = null;
+#endif
 
             this.outputWriter = outputWriter;
 
-            #region Verifies rule extensions and loggers path
+#region Verifies rule extensions and loggers path
 
             List<string> paths = this.GetValidCustomRulePaths(customizedRulePath, path);
 
-            #endregion
+#endregion
 
-            #region Initializes Rules
+#region Initializes Rules
 
             var includeRuleList = new List<string>();
             var excludeRuleList = new List<string>();
@@ -592,9 +598,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         ErrorCategory.NotSpecified, this));
             }
 
-            #endregion
+#endregion
 
-            #region Verify rules
+#region Verify rules
 
             // Safely get one non-duplicated list of rules
             IEnumerable<IRule> rules =
@@ -617,7 +623,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this));
             }
 
-            #endregion
+#endregion
         }
 
         private List<string> GetValidCustomRulePaths(string[] customizedRulePath, PathIntrinsics path)
@@ -903,7 +909,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // Defines the command results.
                 List<IAsyncResult> powerShellCommandResults = new List<IAsyncResult>();
 
-                #region Builds and invokes commands list
+#region Builds and invokes commands list
 
                 foreach (KeyValuePair<string, List<ExternalRule>> tokenRuleGroup in tokenRuleGroups)
                 {
@@ -960,8 +966,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-                #endregion
-                #region Collects the results from commands.
+#endregion
+#region Collects the results from commands.
                 List<DiagnosticRecord> diagnostics = new List<DiagnosticRecord>();
                 try
                 {
@@ -1018,7 +1024,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 return diagnostics;
-                #endregion
+#endregion
             }
         }
 
@@ -1144,7 +1150,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return results;
         }
 
-        #endregion
+#endregion
 
 
         /// <summary>
@@ -1307,7 +1313,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this.outputWriter.WriteWarning(e.ToString());
                         return null;
                     }
-
+#if !PSV3
                     bool parseAgain = false;
                     if (moduleHandler != null && errors != null && errors.Length > 0)
                     {
@@ -1328,7 +1334,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
                     }
-
+#endif //!PSV3
                     //Runspace.DefaultRunspace = oldDefault;
                     if (errors != null && errors.Length > 0)
                     {
@@ -1491,18 +1497,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-                #region Run VariableAnalysis
+#region Run VariableAnalysis
                 try
                 {
                     Helper.Instance.InitializeVariableAnalysis(scriptAst);
                 }
                 catch { }
-                #endregion
+#endregion
 
                 Helper.Instance.Tokens = scriptTokens;
             }
 
-            #region Run ScriptRules
+#region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
             string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
             if (this.ScriptRules != null)
@@ -1580,9 +1586,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            #endregion
+#endregion
 
-            #region Run Token Rules
+#region Run Token Rules
 
             if (this.TokenRules != null && !helpFile)
             {
@@ -1615,9 +1621,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            #endregion
+#endregion
 
-            #region DSC Resource Rules
+#region DSC Resource Rules
             if (this.DSCResourceRules != null && !helpFile)
             {
                 // Invoke AnalyzeDSCClass only if the ast is a class based resource
@@ -1717,9 +1723,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 }
             }
-            #endregion
+#endregion
 
-            #region Run External Rules
+#region Run External Rules
 
             if (this.ExternalRules != null && !helpFile)
             {
@@ -1751,7 +1757,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            #endregion
+#endregion
 
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
             IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics.Reverse();

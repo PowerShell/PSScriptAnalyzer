@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !PSV3
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -13,7 +14,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     // TODO Support for verbose mode    
     public class ModuleDependencyHandler : IDisposable
     {
-        #region Private Variables
+#region Private Variables
         private Runspace runspace;
         private string moduleRepository;
         private string tempPath; // path to the user temporary directory 
@@ -26,9 +27,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private string symLinkPath;
         private string oldPSModulePath;
         private string curPSModulePath;
-        #endregion Private Variables
+#endregion Private Variables
 
-        #region Properties
+#region Properties
         /// <summary>
         /// Path where the object stores the modules
         /// </summary>
@@ -123,9 +124,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
 
-        #endregion Properties
+#endregion Properties
 
-        #region Private Methods
+#region Private Methods
         private static void ThrowIfNull<T>(T obj, string name)
         {
             if (obj == null)
@@ -226,9 +227,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             Environment.SetEnvironmentVariable("PSModulePath", oldPSModulePath, EnvironmentVariableTarget.Process);
         }
-        #endregion Private Methods
+#endregion Private Methods
 
-        #region Public Methods
+#region Public Methods
 
         /// <summary>
         /// Creates an instance of the ModuleDependencyHandler class
@@ -371,6 +372,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             return availableModules != null ? availableModules.Any() : false;
         }
 
+
         /// <summary>
         /// Extracts out the module names from the error extent that are not available
         /// 
@@ -502,6 +504,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             RestorePSModulePath();
         }
 
-        #endregion Public Methods
+#endregion Public Methods
     }
 }
+#endif // !PSV3
