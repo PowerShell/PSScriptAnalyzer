@@ -8,7 +8,7 @@
 - Add a `SaveDSCResourceDependency` switch to allow `Invoke-ScriptAnalyzer` to download a DSC Resource module from PSGallery in the event of a `ModuleNotFoundDuringParse` parse error.
 - Add `remove` verb to `UseShouldProcessForStateChangingFunctions` rule
 - Add a `ScriptPath` property to Diagnostic Record that returns the full path of the script
-- Fix the parsing of settings parameter when a hashtable is given
+- Fix the parsing of `Settings` parameter value when a hashtable is given
 - Fix writing error record while running rule suppression
  
 ### Rules
