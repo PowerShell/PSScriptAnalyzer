@@ -1607,6 +1607,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
+#if !PSV3
         /// <summary>
         /// Checks whether a class with the name name exists in the script that contains ast
         /// </summary>
@@ -1664,8 +1665,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return null;
         }
 
-        #if !PSV3
-
         /// <summary>
         /// Get the type for memberexpressionast assuming that the variable is a class
         /// </summary>
@@ -1696,7 +1695,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-        #endif
+#endif // !PSV3
 
         private void SetVariableName()
         {

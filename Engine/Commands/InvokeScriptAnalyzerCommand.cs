@@ -189,6 +189,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         private bool stopProcessing;
 
+#if !PSV3
         /// <summary>
         /// Resolve DSC resource dependency
         /// </summary>
@@ -199,9 +200,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             set { saveDscResourceDependency = value; }
         }
         private bool saveDscResourceDependency;
-        #endregion Parameters
+#endif // !PSV3
+#endregion Parameters
 
-        #region Overrides
+#region Overrides
 
         /// <summary>
         /// Imports all known rules and loggers.
@@ -238,6 +240,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 return;
             }
 
+#if !PSV3
             // TODO Support dependency resolution for analyzing script definitions
             if (saveDscResourceDependency)
             {
@@ -250,11 +253,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         ProcessInput();
                     }
                 }
+                return;
             }
-            else
-            {
-                ProcessInput();
-            }
+#endif
+            ProcessInput();
         }
 
         protected override void EndProcessing()
@@ -269,9 +271,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             base.StopProcessing();
         }
 
-        #endregion
+#endregion
 
-        #region Methods
+#region Methods
         private void ProcessInput()
         {
             IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
@@ -304,6 +306,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 }
             }
         }
-        #endregion
+#endregion
     }
 }
