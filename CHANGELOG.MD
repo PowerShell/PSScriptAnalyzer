@@ -10,6 +10,7 @@
 - Add a `ScriptPath` property to Diagnostic Record that returns the full path of the script
 - Fix the parsing of `Settings` parameter value when a hashtable is given
 - Fix writing error record while running rule suppression
+- Fix rule suppression in DSC Configuration definitions
  
 ### Rules
 - Add suggested corrections feature to the following rules.
