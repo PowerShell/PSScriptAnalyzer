@@ -1,6 +1,8 @@
 ﻿Announcements
 =============
 
+[![Join the chat at https://gitter.im/PowerShell/PSScriptAnalyzer](https://badges.gitter.im/PowerShell/PSScriptAnalyzer.svg)](https://gitter.im/PowerShell/PSScriptAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ###### [ScriptAnalyzer v1.5.0 published to PowerShellGallery!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.5.0)
 
 ###### [ScriptAnalyzer now runs on platforms containing PSv3.0 and above - WMF 5.0 is no longer a prerequisite!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.5.0)
