@@ -5,7 +5,7 @@
     - This property emits text that can rectify the violation which triggered the rule.
     - The primary purpose of this feature is to enable quick-fix scenarios in editors (e.g. vscode)     
 - Add "Name" as a positional parameter in Get-ScriptAnalyzerRule
-- Add a `SaveDSCResourceDependency` switch to allow `Invoke-ScriptAnalyzer` to download a DSC Resource module from PSGallery in the event of a `ModuleNotFoundDuringParse` parse error.
+- Add a `SaveDscDependency` switch to allow `Invoke-ScriptAnalyzer` to download a DSC Resource module from PSGallery in the event of a `ModuleNotFoundDuringParse` parse error.
 - Add `remove` verb to `UseShouldProcessForStateChangingFunctions` rule
 - Add a `ScriptPath` property to Diagnostic Record that returns the full path of the script
 - Fix the parsing of `Settings` parameter value when a hashtable is given
