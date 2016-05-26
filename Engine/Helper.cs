@@ -1206,27 +1206,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Returns a list of rule suppressions from the configuration
-        /// </summary>
-        /// <param name="configDefAst"></param>
-        /// <returns></returns>
-        internal List<RuleSuppression> GetSuppressionsConfiguration(ConfigurationDefinitionAst configDefAst)
-        {
-            var result = new List<RuleSuppression>();
-            if (configDefAst == null || configDefAst.Body == null)
-            {
-                return result;
-            }
-            var attributeAsts = configDefAst.FindAll(x => x is AttributeAst, true).Cast<AttributeAst>();
-            result.AddRange(RuleSuppression.GetSuppressions(
-                attributeAsts,
-                configDefAst.Extent.StartOffset,
-                configDefAst.Extent.EndOffset,
-                configDefAst));
-            return result;
-        }
-
-        /// <summary>
         /// Returns a list of rule suppressions from the function
         /// </summary>
         /// <param name="funcAst"></param>
@@ -1278,6 +1257,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return result;
         }
+
+        /// <summary>
+        /// Returns a list of rule suppressions from the configuration
+        /// </summary>
+        /// <param name="configDefAst"></param>
+        /// <returns></returns>
+        internal List<RuleSuppression> GetSuppressionsConfiguration(ConfigurationDefinitionAst configDefAst)
+        {
+            var result = new List<RuleSuppression>();
+            if (configDefAst == null || configDefAst.Body == null)
+            {
+                return result;
+            }
+            var attributeAsts = configDefAst.FindAll(x => x is AttributeAst, true).Cast<AttributeAst>();
+            result.AddRange(RuleSuppression.GetSuppressions(
+                attributeAsts,
+                configDefAst.Extent.StartOffset,
+                configDefAst.Extent.EndOffset,
+                configDefAst));
+            return result;
+        }
+
 #endif // !PSV3
 
         /// <summary>
