@@ -6,7 +6,7 @@ clone_folder: c:\projects\psscriptanalyzer
  
 # Install Pester
 install: 
-    - cinst -y pester --version 3.3.13
+    - cinst -y pester --version 3.4.0
     
 # Build PSScriptAnalyzer using msbuild
 build: true
