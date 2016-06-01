@@ -50,7 +50,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             System.Diagnostics.Debug.Assert(
                                 errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), 
                                 Strings.NullErrorMessage);
-                            var hashTableAst = ast.Find(x => x is HashtableAst, false);                            
+                            var hashTableAst = ast.Find(x => x is HashtableAst, false);
+                            if (hashTableAst == null)
+                            {
+                                yield break;
+                            }
                             yield return new DiagnosticRecord(
                                 errorRecord.Exception.Message, 
                                 hashTableAst.Extent, 
