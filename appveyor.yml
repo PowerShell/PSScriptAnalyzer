@@ -1,5 +1,5 @@
 matrix:
-    - os: WMF 5
+    - image: WMF 5
       configuration: Release
       
 # os:
