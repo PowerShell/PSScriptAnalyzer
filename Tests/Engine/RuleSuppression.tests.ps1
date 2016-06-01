@@ -58,10 +58,13 @@ Describe "RuleSuppressionWithoutScope" {
         }
     }
 
-    Context "Rule suppression within DSC Configuration definition" {
-        It "Suppresses rule" {
-            $suppressedRule = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -SuppressedOnly
-            $suppressedRule.Count | Should Be 1
+    if (($PSVersionTable.PSVersion -ge [Version]'5.0'))
+    {
+        Context "Rule suppression within DSC Configuration definition" {
+            It "Suppresses rule" {
+                $suppressedRule = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -SuppressedOnly
+                $suppressedRule.Count | Should Be 1
+            }
         }
     }
 

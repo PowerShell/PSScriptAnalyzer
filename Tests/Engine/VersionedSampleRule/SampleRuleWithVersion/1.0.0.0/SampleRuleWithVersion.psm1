@@ -28,20 +28,10 @@ function Measure-RequiresRunAsAdministrator
         [System.Management.Automation.Language.ScriptBlockAst]
         $testAst
     )
+        $dr = New-Object `
+            -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+            -ArgumentList "This is help",$ast.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
 
-    
-        $results = @()
-       
-        $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "this is help"; 
-                                            "Extent"   = $ast.Extent;
-                                            "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Warning"}
-
-        $results += $result             
-                
-      
-        return $results
-
-           
+        return @($dr)
 }
 Export-ModuleMember -Function Measure*

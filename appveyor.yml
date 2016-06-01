@@ -1,15 +1,19 @@
-# Image with WMF5.0 RTM
-os: "WMF 5"
+os:
+    - "WMF 5"
+    - "Visual Studio 2015"
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
- 
+
 # Install Pester
-install: 
+install:
     - cinst -y pester --version 3.4.0
-    
+
 # Build PSScriptAnalyzer using msbuild
-build: true
+# build: true
+
+build_script:
+- ps: "$buildConfig = 'Release'\nif ($PSVersionTable.PSVersion -lt [Version]'5.0') \n{\n  $buildConfig = 'PSV3 Release'\n}\n& 'C:\\Program Files (x86)\\MSBuild\\12.0\\Bin\\MSBuild.exe' .\\PSScriptAnalyzer.sln /P:Configuration=$buildConfig logger:'C:\\Program Files\\AppVeyor\\BuildAgent\\Appveyor.MSBuildLogger.dll'"
 
 # branches to build
 branches:
@@ -27,15 +31,15 @@ test_script:
         $ruleTestResultsFile = ".\RuleTestResults.xml"
         $engineTestResults = Invoke-Pester -Script "C:\projects\psscriptanalyzer\Tests\Engine" -OutputFormat NUnitXml -OutputFile $engineTestResultsFile -PassThru
         (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $engineTestResultsFile))
-        if ($engineTestResults.FailedCount -gt 0) { 
+        if ($engineTestResults.FailedCount -gt 0) {
             throw "$($engineTestResults.FailedCount) tests failed."
         }
         $ruleTestResults = Invoke-Pester -Script "C:\projects\psscriptanalyzer\Tests\Rules" -OutputFormat NUnitXml -OutputFile $ruleTestResultsFile -PassThru
         (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $ruleTestResultsFile))
-        if ($ruleTestResults.FailedCount -gt 0) { 
+        if ($ruleTestResults.FailedCount -gt 0) {
             throw "$($ruleTestResults.FailedCount) tests failed."
         }
-        
+
 # Upload the project along with TestResults as a zip archive
 on_finish:
     - ps: |
@@ -47,3 +51,4 @@ on_finish:
             # You can add other artifacts here
             (ls $zipFile)
         ) | % { Push-AppveyorArtifact $_.FullName }
+        Write-Output $PSVersionTable.PSVersion
