@@ -1,9 +1,7 @@
-image:
-- WMF 5
-- Visual Studio 2015
-configuration:
-- Release
-- PSV3 Release
+matrix:
+  allow_failures:
+    - os: WMF 5
+      configuration: Release
 
       
 # os:
