@@ -1,13 +1,15 @@
 # Image with WMF5.0 RTM
-os: "WMF 5"
+os:
+    - "WMF 5"
+    - "Visual Studio 2015"
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
- 
+
 # Install Pester
-install: 
+install:
     - cinst -y pester --version 3.3.13
-    
+
 # Build PSScriptAnalyzer using msbuild
 build: true
 
@@ -27,15 +29,15 @@ test_script:
         $ruleTestResultsFile = ".\RuleTestResults.xml"
         $engineTestResults = Invoke-Pester -Script "C:\projects\psscriptanalyzer\Tests\Engine" -OutputFormat NUnitXml -OutputFile $engineTestResultsFile -PassThru
         (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $engineTestResultsFile))
-        if ($engineTestResults.FailedCount -gt 0) { 
+        if ($engineTestResults.FailedCount -gt 0) {
             throw "$($engineTestResults.FailedCount) tests failed."
         }
         $ruleTestResults = Invoke-Pester -Script "C:\projects\psscriptanalyzer\Tests\Rules" -OutputFormat NUnitXml -OutputFile $ruleTestResultsFile -PassThru
         (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $ruleTestResultsFile))
-        if ($ruleTestResults.FailedCount -gt 0) { 
+        if ($ruleTestResults.FailedCount -gt 0) {
             throw "$($ruleTestResults.FailedCount) tests failed."
         }
-        
+
 # Upload the project along with TestResults as a zip archive
 on_finish:
     - ps: |
