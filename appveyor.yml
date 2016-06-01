@@ -1,5 +1,5 @@
 matrix:
-    - os:"WMF 5"
+    - os: "WMF 5"
       configuration: "Release"
     - os: "Visual Studio 2015"
       configuration: "PSV3 Release"
