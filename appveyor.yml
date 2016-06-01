@@ -1,6 +1,9 @@
-matrix:
-    - image: WMF 5
-      configuration: Release
+environment:
+  matrix:
+  - image: WMF 5
+    configuration: Release
+  - image: Visual Studio 2015
+    configuration: PSV3 Release
       
 # os:
 #     - "WMF 5"
