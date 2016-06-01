@@ -1,9 +1,8 @@
 matrix:
-    allow_failures:
-        - os:"WMF 5"
-          configuration: "Release"
-        - os: "Visual Studio 2015"
-          configuration: "PSV3 Release"
+    - os:"WMF 5"
+      configuration: "Release"
+    - os: "Visual Studio 2015"
+      configuration: "PSV3 Release"
 # os:
 #     - "WMF 5"
 #     - "Visual Studio 2015"
