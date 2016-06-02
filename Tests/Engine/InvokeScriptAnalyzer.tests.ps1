@@ -69,7 +69,7 @@ Describe "Test available parameters" {
         }
     }
 
-    if (!$testingLibraryUsage)
+    if (!$testingLibraryUsage -and ($PSVersionTable.PSVersion -ge [Version]'5.0'))
     {
         Context "SaveDscDependency parameter" {
             It "has the parameter" {
