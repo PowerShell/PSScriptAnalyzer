@@ -5,9 +5,10 @@ Function Get-ExtentText
 	[string] $scriptPath
 	)
 	$scriptContent = Get-Content -Path $scriptPath
-	$start = [System.Management.Automation.Language.ScriptPosition]::new($scriptPath, $violation.StartLineNumber, $violation.StartColumnNumber, $scriptContent[$violation.StartLineNumber - 1])
-	$end = [System.Management.Automation.Language.ScriptPosition]::new($scriptPath, $violation.EndLineNumber, $violation.EndColumnNumber, $scriptContent[$violation.EndLineNumber - 1])	
-	$extent = [System.Management.Automation.Language.ScriptExtent]::new($start, $end)
+	$typeScriptPos = 'System.Management.Automation.Language.ScriptPosition'
+	$start = New-Object -TypeName $typeScriptPos -ArgumentList @($scriptPath, $violation.StartLineNumber, $violation.StartColumnNumber, $scriptContent[$violation.StartLineNumber - 1])
+	$end = New-Object -TypeName $typeScriptPos -ArgumentList @($scriptPath, $violation.EndLineNumber, $violation.EndColumnNumber, $scriptContent[$violation.EndLineNumber - 1])
+	$extent = New-Object -TypeName 'System.Management.Automation.Language.ScriptExtent' -ArgumentList @($start, $end)
 	return($extent.Text)
 }
 
@@ -15,9 +16,9 @@ Function Test-CorrectionExtent
 {
 	Param(
 		[string] $violationFilepath,
-		[Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord] $diagnosticRecord, 
-		[int] $correctionsCount, 
-		[string] $violationText, 
+		[Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord] $diagnosticRecord,
+		[int] $correctionsCount,
+		[string] $violationText,
 		[string] $correctionText
 	)
 	$corrections = $diagnosticRecord.SuggestedCorrections
