@@ -8,6 +8,12 @@ if ($testingLibraryUsage)
     return
 }
 
+# DSC Module saving is not supported in versions less than PSv5
+if (($PSVersionTable.PSVersion -lt [Version]'5.0'))
+{
+    return
+}
+
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violationFileName = 'MissingDSCResource.ps1'
 $violationFilePath = Join-Path $directory $violationFileName

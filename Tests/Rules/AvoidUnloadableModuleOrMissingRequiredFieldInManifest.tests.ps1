@@ -9,7 +9,7 @@ $noHashtableFilepath = Join-Path $directory "TestBadModule\NoHashtable.psd1"
 
 Describe "MissingRequiredFieldModuleManifest" {
     BeforeAll {
-        Import-Module (Join-Path $directory "PSScriptAnalyzerTestHelper.psm1")
+        Import-Module (Join-Path $directory "PSScriptAnalyzerTestHelper.psm1") -Force
     }
 
     AfterAll{

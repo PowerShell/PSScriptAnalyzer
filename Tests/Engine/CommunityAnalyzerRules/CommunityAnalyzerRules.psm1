@@ -7,8 +7,8 @@ Import-LocalizedData -BindingVariable Messages
 .SYNOPSIS
     Uses #Requires -RunAsAdministrator instead of your own methods.
 .DESCRIPTION
-    The #Requires statement prevents a script from running unless the Windows PowerShell version, modules, snap-ins, and module and snap-in version prerequisites are met. 
-    From Windows PowerShell 4.0, the #Requires statement let script developers require that sessions be run with elevated user rights (run as Administrator). 
+    The #Requires statement prevents a script from running unless the Windows PowerShell version, modules, snap-ins, and module and snap-in version prerequisites are met.
+    From Windows PowerShell 4.0, the #Requires statement let script developers require that sessions be run with elevated user rights (run as Administrator).
     Script developers does not need to write their own methods any more.
     To fix a violation of this rule, please consider to use #Requires -RunAsAdministrator instead of your own methods.
 .EXAMPLE
@@ -83,37 +83,35 @@ function Measure-RequiresRunAsAdministrator
             #endregion
 
             #region Finds ASTs that match the predicates.
-        
+
             [System.Management.Automation.Language.Ast[]]$methodAst     = $ScriptBlockAst.FindAll($predicate1, $true)
             [System.Management.Automation.Language.Ast[]]$assignmentAst = $ScriptBlockAst.FindAll($predicate2, $true)
 
             if ($null -ne $ScriptBlockAst.ScriptRequirements)
             {
-                if ((!$ScriptBlockAst.ScriptRequirements.IsElevationRequired) -and 
+                if ((!$ScriptBlockAst.ScriptRequirements.IsElevationRequired) -and
                     ($methodAst.Count -ne 0) -and ($assignmentAst.Count -ne 0))
                 {
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresRunAsAdministrator; 
-                                                "Extent"   = $assignmentAst.Extent;
-                                                "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Information"}
-                    $results += $result               
+                    $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureRequiresRunAsAdministrator,$assignmentAst.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
+                    $results += $result
                 }
             }
             else
             {
                 if (($methodAst.Count -ne 0) -and ($assignmentAst.Count -ne 0))
                 {
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresRunAsAdministrator; 
-                                                "Extent"   = $assignmentAst.Extent;
-                                                "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Information"}
-                    $results += $result               
-                }        
+                    $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureRequiresRunAsAdministrator,$assignmentAst.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
+                    $results += $result
+                }
             }
 
             return $results
 
-            #endregion 
+            #endregion
         }
         catch
         {
@@ -126,8 +124,8 @@ function Measure-RequiresRunAsAdministrator
 .SYNOPSIS
     Uses #Requires -Modules instead of Import-Module.
 .DESCRIPTION
-    The #Requires statement prevents a script from running unless the Windows PowerShell version, modules, snap-ins, and module and snap-in version prerequisites are met. 
-    From Windows PowerShell 3.0, the #Requires statement let script developers specify Windows PowerShell modules that the script requires. 
+    The #Requires statement prevents a script from running unless the Windows PowerShell version, modules, snap-ins, and module and snap-in version prerequisites are met.
+    From Windows PowerShell 3.0, the #Requires statement let script developers specify Windows PowerShell modules that the script requires.
     To fix a violation of this rule, please consider to use #Requires -RunAsAdministrator instead of using Import-Module.
 .EXAMPLE
     Measure-RequiresModules -ScriptBlockAst $ScriptBlockAst
@@ -182,22 +180,22 @@ function Measure-RequiresModules
             #endregion
 
             #region Finds ASTs that match the predicates.
-        
+
             [System.Management.Automation.Language.Ast[]]$asts = $ScriptBlockAst.FindAll($predicate, $true)
 
             if ($null -ne $ScriptBlockAst.ScriptRequirements)
             {
-                if (($ScriptBlockAst.ScriptRequirements.RequiredModules.Count -eq 0) -and 
+                if (($ScriptBlockAst.ScriptRequirements.RequiredModules.Count -eq 0) -and
                     ($null -ne $asts))
                 {
                     foreach ($ast in $asts)
                     {
-                        $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresModules; 
-                                                    "Extent"   = $ast.Extent;
-                                                    "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                    "Severity" = "Information"}
+                        $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureRequiresModules,$ast.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
+
                         $results += $result
-                    }              
+                    }
                 }
             }
             else
@@ -206,12 +204,12 @@ function Measure-RequiresModules
                 {
                     foreach ($ast in $asts)
                     {
-                        $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureRequiresModules; 
-                                                    "Extent"   = $ast.Extent;
-                                                    "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                    "Severity" = "Information"}
+                        $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureRequiresModules,$ast.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
+
                         $results += $result
-                    }            
+                    }
                 }
             }
 
@@ -285,11 +283,11 @@ function Measure-LongClassName
                 if ($sbResult.BoundParameters["TypeName"].ConstantValue.ToString().Split('.').Length -ge 3)
                 {
                     # $sbResult.BoundParameters["TypeName"].Value is a CommandElementAst, so we can return an extent.
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureLongClassName; 
-                                                "Extent"   = $sbResult.BoundParameters["TypeName"].Value.Extent;
-                                                "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Information"}
-                    $results += $result                
+                    $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureLongClassName,$sbResult.BoundParameters["TypeName"].Value.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
+
+                    $results += $result
                 }
             }
 
@@ -308,7 +306,7 @@ function Measure-LongClassName
 .SYNOPSIS
     Do not use deprecated WMI class in your script.
 .DESCRIPTION
-    With the release of new Microsoft Windows, some WMI classes are marked as deprecated. When writing Windows PowerShell scripts, you should not use these WMI classes. 
+    With the release of new Microsoft Windows, some WMI classes are marked as deprecated. When writing Windows PowerShell scripts, you should not use these WMI classes.
     You can run this command to get the deprecated WMI classes list, "Get-CimClass * -QualifierName deprecated"
     To fix a violation of this rule, please do not use the deprecated WMI classes in your script.
 .EXAMPLE
@@ -336,18 +334,18 @@ function Measure-DeprecatedWMIClass
     {
         $results = @()
 
-        $deprecatedWMIClasses = @("Win32_PageFile", "Win32_DisplayConfiguration", "Win32_DisplayControllerConfiguration", 
+        $deprecatedWMIClasses = @("Win32_PageFile", "Win32_DisplayConfiguration", "Win32_DisplayControllerConfiguration",
                                   "Win32_VideoConfiguration", "Win32_AllocatedResource")
 
         try
         {
             if ($StringConstantExpressionAst.Value -in $deprecatedWMIClasses)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureDeprecatedWMIClass; 
-                                            "Extent"   = $StringConstantExpressionAst.Extent;
-                                            "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Information"}
-                $results += $result             
+                $result = New-Object `
+                            -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                            -ArgumentList $Messages.MeasureDeprecatedWMIClass,$StringConstantExpressionAst.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
+
+                $results += $result
             }
 
             return $results
@@ -363,7 +361,7 @@ function Measure-DeprecatedWMIClass
 .SYNOPSIS
     Please do not use COM objects when calling New-Object.
 .DESCRIPTION
-    If you can't use just PowerShell, use .NET, external commands or COM objects, in that order of preference. COM objects are rarely well-documented, making them harder for someone else to research and understand. 
+    If you can't use just PowerShell, use .NET, external commands or COM objects, in that order of preference. COM objects are rarely well-documented, making them harder for someone else to research and understand.
     They do not always work flawlessly in PowerShell, as they must be used through .NET's Interop layer, which isn't 100% perfect.
     To fix a violation of this rule, please do not use COM objects when calling New-Object.
 .EXAMPLE
@@ -415,11 +413,11 @@ function Measure-ComObject
                 if ($sbResults.BoundParameters.ContainsKey("ComObject"))
                 {
                     # $sbResult.BoundParameters["TypeName"].Value is a CommandElementAst, so we can return an extent.
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureComObject; 
-                                                "Extent"   = $sbResult.BoundParameters["ComObject"].Value.Extent;
-                                                "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Warning"}
-                    $results += $result                    
+                    $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureComObject,$sbResult.BoundParameters["ComObject"].Value.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
+
+                    $results += $result
                 }
             }
 
@@ -438,7 +436,7 @@ function Measure-ComObject
 .SYNOPSIS
     Adds end-of-line comment after closing curly bracket for deeply nested structures.
 .DESCRIPTION
-    In general, you should avoid creating deeply nested structures, but sometimes they cannot be avoided. 
+    In general, you should avoid creating deeply nested structures, but sometimes they cannot be avoided.
     The use of end-of-line comments with closing curly brackets can greatly improve the readability and maintainability of your script.
     To fix a violation of this rule, please add comment after closing curly bracket for deeply nested structures.
 .EXAMPLE
@@ -494,25 +492,25 @@ function Measure-CurlyBracket
             #endregion
 
             #region Finds ASTs that match the predicates.
-        
+
             [System.Management.Automation.Language.Ast[]]$asts = $ScriptBlockAst.FindAll($predicate1, $true)
 
             foreach ($ast in $asts)
             {
                 # Checks nesting structures
-                $nestingASTs = $asts.Where({($PSItem.Extent.StartLineNumber -gt $ast.Extent.StartLineNumber) -and 
+                $nestingASTs = $asts.Where({($PSItem.Extent.StartLineNumber -gt $ast.Extent.StartLineNumber) -and
                                             ($PSItem.Extent.EndLineNumber   -lt $ast.Extent.EndLineNumber)})
-                
+
                 # If one AST have end-of-line comments, we should skip it.
                 [bool]$needComment = $ast.Extent.EndScriptPosition.Line.Trim().EndsWith("}")
 
                 if ($needComment -and $nestingASTs)
                 {
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureCurlyBracket; 
-                                                "Extent"   = $ast.Extent;
-                                                "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Information"}
-                    $results += $result                
+                    $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureCurlyBracket,$ast.Extent,$PSCmdlet.MyInvocation.InvocationName,Information,$null
+
+                    $results += $result
                 }
             }
 
@@ -533,7 +531,7 @@ function Measure-CurlyBracket
 .SYNOPSIS
     Removes these unnecessary comments.
 .DESCRIPTION
-    Don't precede each line of code with a comment. Doing so breaks up the code and makes it harder to follow. A well-written PowerShell command, with full command and parameter names, can be pretty self-explanatory. 
+    Don't precede each line of code with a comment. Doing so breaks up the code and makes it harder to follow. A well-written PowerShell command, with full command and parameter names, can be pretty self-explanatory.
     Don't comment-explain it unless it isn't self-explanatory.To fix a violation of this rule, please remove these unnecessary comments.
 .EXAMPLE
     Measure-OverComment -Token $Token
@@ -580,12 +578,12 @@ function Measure-OverComment
 
             if ($actualPercentage -ge 80)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureOverComment; 
-                                            "Extent"   = $Token[0].Extent;
-                                            "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Warning"}
+                $result = New-Object `
+                            -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                            -ArgumentList $Messages.MeasureOverComment,$Token[0].Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
+
                 $results += $result
-            } 
+            }
 
             return $results
         }
@@ -600,7 +598,7 @@ function Measure-OverComment
 .SYNOPSIS
     Removes backticks from your script and use "splatting" instead.
 .DESCRIPTION
-    In general, the community feels you should avoid using those backticks as “line continuation characters” when possible. 
+    In general, the community feels you should avoid using those backticks as “line continuation characters” when possible.
     They’re hard to read, easy to miss, and easy to mis-type. Also, if you add an extra whitespace after the backtick in the above example, then the command won’t work.
     To fix a violation of this rule, please remove backticks from your script and use "splatting" instead. You can run "Get-Help about_splatting" to get more details.
 .EXAMPLE
@@ -635,10 +633,10 @@ function Measure-Backtick
 
             foreach ($lcToken in $lcTokens)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureBacktick; 
-                                            "Extent"   = $lcToken.Extent;
-                                            "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Warning"}
+                $result = New-Object `
+                            -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                            -ArgumentList $Messages.MeasureBacktick,$lcToken.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
+
                 $results += $result
             }
 
@@ -655,8 +653,8 @@ function Measure-Backtick
 .SYNOPSIS
     You should never use Write-Host to create any script output whatsoever.
 .DESCRIPTION
-    It is generally accepted that you should never use Write-Host to create any script output whatsoever, unless your script (or function, or whatever) uses the Show verb (as in, Show-Performance). 
-    That verb explicitly means “show on the screen, with no other possibilities.” Like Show-Command. 
+    It is generally accepted that you should never use Write-Host to create any script output whatsoever, unless your script (or function, or whatever) uses the Show verb (as in, Show-Performance).
+    That verb explicitly means “show on the screen, with no other possibilities.” Like Show-Command.
     To fix a violation of this rule, please replace Write-Host with Write-Output in most scenarios.
 .EXAMPLE
     Measure-WriteHost -CommandAst $CommandAst
@@ -685,20 +683,20 @@ function Measure-WriteHost
 
         try
         {
-            # Checks command name, if the command name matches Write-Host or 
+            # Checks command name, if the command name matches Write-Host or
             # user-defined aliases, this rule is triggered.
 
             if ($null -ne $CommandAst.GetCommandName())
             {
                 $alias = (Get-Alias -Definition "Write-Host" -ErrorAction SilentlyContinue).Name
 
-                if (($CommandAst.GetCommandName() -eq "Write-Host") -or 
+                if (($CommandAst.GetCommandName() -eq "Write-Host") -or
                     ($CommandAst.GetCommandName() -eq $alias))
                 {
-                    $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureWriteHost; 
-                                                "Extent"   = $CommandAst.Extent;
-                                                "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                                "Severity" = "Warning"}
+                    $result = New-Object `
+                                -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                                -ArgumentList $Messages.MeasureWriteHost,$CommandAst.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
+
                     $results += $result
                 }
             }
@@ -716,7 +714,7 @@ function Measure-WriteHost
 .SYNOPSIS
     Resets $ErrorActionPreference to continue.
 .DESCRIPTION
-    When executing something other than a cmdlet, set $ErrorActionPreference='Stop' before executing, and reset to Continue afterwards. 
+    When executing something other than a cmdlet, set $ErrorActionPreference='Stop' before executing, and reset to Continue afterwards.
     Please don’t change $ErrorActionPreference persistently. To fix a violation of this rule, please reset $ErrorActionPreference to continue.
 .EXAMPLE
     Measure-ErrorActionPreference -ScriptBlockAst $ScriptBlockAst
@@ -767,15 +765,15 @@ function Measure-ErrorActionPreference
             #endregion
 
             #region Finds ASTs that match the predicates.
-        
+
             [System.Management.Automation.Language.Ast[]]$asts = $ScriptBlockAst.FindAll($predicate1, $true)
 
             if ($asts.Count % 2 -ne 0)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureErrorActionPreference; 
-                                            "Extent"   = $asts[0].Extent;
-                                            "RuleName" = "Measure-ErrorActionPreference";
-                                            "Severity" = "Warning"}
+                $result = New-Object `
+                            -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                            -ArgumentList $Messages.MeasureErrorActionPreference,$asts[0].Extent,"Measure-ErrorActionPreference",Warning,$null
+
                 $results += $result
             }
 
@@ -796,7 +794,7 @@ function Measure-ErrorActionPreference
 .SYNOPSIS
     Considers to use try-catch-finally statements instead of using $?.
 .DESCRIPTION
-    When you need to examine the error that occurred, try to avoid using $?. It actually doesn’t mean an error did or did not occur; it’s reporting whether or not the last-run command considered itself to have completed successfully. 
+    When you need to examine the error that occurred, try to avoid using $?. It actually doesn’t mean an error did or did not occur; it’s reporting whether or not the last-run command considered itself to have completed successfully.
     You get no details on what happened. To fix a violation of this rule, please consider to use try-catch-finally statements.
 .EXAMPLE
     Measure-QuestionVariable -ScriptBlockAst $ScriptBlockAst
@@ -836,12 +834,12 @@ function Measure-QuestionVariable
 
             foreach ($questionVariable in $questionVariables)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureQuestionVariable; 
-                                            "Extent"   = $questionVariable.Extent;
-                                            "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Warning"}
+                $result = New-Object `
+                            -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                            -ArgumentList $Messages.MeasureQuestionVariable,$questionVariable.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
+
                 $results += $result
-            } 
+            }
 
             return $results
         }
@@ -916,11 +914,11 @@ function Measure-HelpNote
 
             if (!$FunctionDefinitionAst.GetHelpContent().Notes)
             {
-                $result = [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{"Message"  = $Messages.MeasureHelpNote; 
-                                            "Extent"   = $FunctionDefinitionAst.Extent;
-                                            "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-                                            "Severity" = "Warning"}
-                $results += $result              
+                $result = New-Object `
+                            -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
+                            -ArgumentList $Messages.MeasureHelpNote,$FunctionDefinitionAst.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null
+
+                $results += $result
             }
 
             return $results
