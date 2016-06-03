@@ -8,39 +8,28 @@ Password parameters that take in plaintext will expose passwords and compromise 
 
 ##How to Fix
 
-To fix a violation of this rule, please use SecurityString as the type of password parameter.
+To fix a violation of this rule, please use SecureString as the type of password parameter.
 
 ##Example
 
 Wrong： 
 ```
-    function Verb-Noun
+    function Test-Script
     {
         [CmdletBinding()]
         [Alias()]
         [OutputType([int])]
         Param
         (
-            # Param1 help description
-            [Parameter(Mandatory=$true,
-                       ValueFromPipelineByPropertyName=$true,
-                       Position=0)]
-            $Param1,
-            # Param2 help description
-            [int]
-            $Param2,
-            [SecureString]
+            [string]
             $Password,
-            [System.Security.SecureString]
+            [string]
             $Pass,
-            [SecureString[]]
+            [string[]]
             $Passwords,
             $Passphrases,
             $Passwordparam
         )
-    }
-
-    function TestFunction($password, [System.Security.SecureString[]]passphrases, [String]$passThru){
     }
 ```
 
@@ -54,30 +43,18 @@ Correct:
 	    [OutputType([Int])]
 	    Param
 	    (
-	        # Param1 help description
-	        [Parameter(Mandatory=$true,
-	                   ValueFromPipelineByPropertyName=$true,
-	                   Position=0)]
-	        $Param1,
-	        # Param2 help description
-	        [int]
-	        $Param2,
-	        [SecureString]
-	        $Password,
-	        [System.Security.SecureString]
-	        $Pass,
-		[SecureString[]]
-	        $Passwords,
-	        [SecureString]
-    		$Passphrases,
-    	    	[SecureString]
-    		$PasswordParam,
-    	    	[string]
-    	    	$PassThru
-    	    )
-    	    ...
+			[SecureString]
+			$Password,
+			[System.Security.SecureString]
+			$Pass,
+			[SecureString[]]
+			$Passwords,
+			[SecureString]
+			$Passphrases,
+			[SecureString]
+			$PasswordParam
+		)
+	        ...
 	}
 
-	function TestFunction([SecureString]$Password, [System.Security.SecureString[]]$Passphrases, [SecureString[]]$passes){
-	}
 ```
