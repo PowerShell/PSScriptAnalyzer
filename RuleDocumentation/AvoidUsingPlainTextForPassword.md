@@ -30,6 +30,7 @@ Wrong：
             $Passphrases,
             $Passwordparam
         )
+	        ...
     }
 ```
 
@@ -38,10 +39,10 @@ Correct:
 ```
 	function Test-Script
 	{
-	    [CmdletBinding()]
-	    [Alias()]
-	    [OutputType([Int])]
-	    Param
+		[CmdletBinding()]
+		[Alias()]
+		[OutputType([Int])]
+		Param
 	    (
 			[SecureString]
 			$Password,
