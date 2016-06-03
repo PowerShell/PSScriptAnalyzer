@@ -1,6 +1,7 @@
 os:
     - "WMF 5"
     - "Visual Studio 2015"
+    - "Windows Server 2012"
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
