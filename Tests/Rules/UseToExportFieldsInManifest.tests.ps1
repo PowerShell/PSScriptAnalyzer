@@ -63,8 +63,9 @@ Describe "UseManifestExportFields" {
 	    # if more than two elements contain wildcard we can show only the first one as of now.
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardInArrayPath
             $results.Count | Should be 2
-            $results.Where({$_.Message -match "FunctionsToExport"}).Extent.Text | Should be "'Get-*'"
-            $results.Where({$_.Message -match "CmdletsToExport"}).Extent.Text | Should be "'Update-*'"
+			($results | Where-Object {$_.Message -match "FunctionsToExport"}).Extent.Text | Should be "'Get-*'"
+            ($results | Where-Object {$_.Message -match "CmdletsToExport"}).Extent.Text | Should be "'Update-*'"
+
         }
 
 
