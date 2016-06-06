@@ -3,15 +3,17 @@
 ### Engine
 - Add `SuggestedCorrections` property to `DiagnosticRecord`
     - This property emits text that can rectify the violation which triggered the rule.
-    - The primary purpose of this feature is to enable quick-fix scenarios in editors (e.g. vscode)     
+    - The primary purpose of this feature is to enable quick-fix scenarios in editors (e.g. vscode)
 - Add "Name" as a positional parameter in Get-ScriptAnalyzerRule
-- Add a `SaveDscDependency` switch to allow `Invoke-ScriptAnalyzer` to download a DSC Resource module from PSGallery in the event of a `ModuleNotFoundDuringParse` parse error.
+- Add a `SaveDscDependency` switch to allow `Invoke-ScriptAnalyzer` to download a DSC Resource module from PSGallery in the event of a `ModuleNotFoundDuringParse` parse error. This feature is available only for PSv5 and above.
 - Add `remove` verb to `UseShouldProcessForStateChangingFunctions` rule
 - Add a `ScriptPath` property to Diagnostic Record that returns the full path of the script
+- Add PSv4 (Windows Server 2012 R2) and PSv3 (Windows Server 2012) to build and test matrix on AppVeyor
 - Fix the parsing of `Settings` parameter value when a hashtable is given
 - Fix writing error record while running rule suppression
 - Fix rule suppression in DSC Configuration definitions
- 
+- Fix build and tests on PSv4 and v3
+
 ### Rules
 - Add suggested corrections feature to the following rules.
     - `PSAvoidUsingCmdletAliases`
@@ -19,10 +21,12 @@
     - `PSMisleadingBacktick`
     - `PSUseToExportFieldsInManifest`
     - `PSMissingModuleManifestField`
-- Fix extent of 
-    - `UseSingularNoun`
-    - `UseApprovedVerb`
-    - `AvoidUsernameAndPasswordParams`
+- Fix extent of
+    - `PSUseSingularNoun`
+    - `PSUseApprovedVerb`
+    - `PSAvoidUsernameAndPasswordParams`
+- Fix a bug in `PSMissingModuleManifestField` rule caused by .psd1 files that do not contain Hashtable
+- Fix documentation of `PSAvoidUsingPlainTextForPassword`
 
 ## Release v1.5.0 (Mar. 30, 2016)
 
@@ -107,7 +111,7 @@
 - Deprecate Internal Url rule based on community feedback, identified additional rules to handle hardcoded paths etc
 - Added localhost exceptions for HardCodedComputerName Rule
 - Update to Credential based rules to validate the presence of CredentialAttribute and PSCredential type
- 
+
 ###Documentation:
 - Rule & Cmdlet documentation updates – Cmdlet help file addition
 
@@ -200,9 +204,9 @@
 
 ##Released v1.0.0 on Apr.24, 2015
 ###Features:
-- Finalized three levels of Severity - Error/Warning/Information. 
+- Finalized three levels of Severity - Error/Warning/Information.
 - Improved PSScriptAnalyzer engine behavior: emits non-terminating errors (Ex: for failed ast parse) and continues rule application when running on multiple scripts.
-- Added wild card supports for rules in Invoke-ScriptAnalyzer and Get-ScriptAnalyzer. Eg. Invoke-ScriptAnalyzer -IncludeRule PSAvoid* will apply all rules starting with PSAvoid* in built in rule assemblies. 
+- Added wild card supports for rules in Invoke-ScriptAnalyzer and Get-ScriptAnalyzer. Eg. Invoke-ScriptAnalyzer -IncludeRule PSAvoid* will apply all rules starting with PSAvoid* in built in rule assemblies.
 - Added -Severity to Get-ScriptAnalyzerRules. Get-ScriptAnalyzer -Severity will filter rules based on the severity given.
 - Added Suppression functionality. Users are now able to specify suppression on certain parts of the scripts by specifying "SupressMessageAttribute" in the scripts. More details and documentations will be coming soon in blog posts. Also comes with this feature is the ability for users to display a list of suppressed messages.
 
