@@ -10,6 +10,7 @@ $testManifestBadVariablesWildcardPath = "ManifestBadVariablesWildcard.psd1"
 $testManifestBadAllPath = "ManifestBadAll.psd1"
 $testManifestGoodPath = "ManifestGood.psd1"
 $testManifestInvalidPath = "ManifestInvalid.psd1"
+Import-Module (Join-Path $directory "PSScriptAnalyzerTestHelper.psm1")
 
 Function Run-PSScriptAnalyzerRule 
 {
@@ -39,20 +40,32 @@ Describe "UseManifestExportFields" {
             $results[0].Extent.Text | Should be "'*'"
         }
 
+	It "suggests corrections for FunctionsToExport with wildcard" {
+	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardPath
+	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsWildcardPath
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1 "'*'" "@('Get-Foo', 'Get-Bar')"
+	    $violations[0].SuggestedCorrections[0].Description | Should Be "Replace '*' with @('Get-Foo', 'Get-Bar')"
+	}
+
         It "detects FunctionsToExport with null" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsNullPath
             $results.Count | Should be 1
             $results[0].Extent.Text | Should be '$null'
         }
 
+	It "suggests corrections for FunctionsToExport with null and line wrapping" {
+	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsNullPath
+	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsNullPath
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1  '$null' "@('Get-Foo1', 'Get-Foo2', 'Get-Foo3', 'Get-Foo4', 'Get-Foo5', 'Get-Foo6', `r`n`t`t'Get-Foo7', 'Get-Foo8', 'Get-Foo9', 'Get-Foo10', 'Get-Foo11', `r`n`t`t'Get-Foo12')"
+	}
+
         It "detects array element containing wildcard" {
+	    # if more than two elements contain wildcard we can show only the first one as of now.
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardInArrayPath
-            $results.Count | Should be 3
-            $results.Where({$_.Message -match "FunctionsToExport"}).Extent.Text | Should be "'Get-*'"
-            $results.Where({$_.Message -match "CmdletsToExport"}).Extent.Text | Should be "'Update-*'"
-            
-            # if more than two elements contain wildcard we can show only the first one as of now.
-            $results.Where({$_.Message -match "VariablesToExport"}).Extent.Text | Should be "'foo*'"
+            $results.Count | Should be 2
+			($results | Where-Object {$_.Message -match "FunctionsToExport"}).Extent.Text | Should be "'Get-*'"
+            ($results | Where-Object {$_.Message -match "CmdletsToExport"}).Extent.Text | Should be "'Update-*'"
+
         }
 
 
@@ -68,15 +81,15 @@ Describe "UseManifestExportFields" {
             $results[0].Extent.Text | Should be "'*'"
         }
 
-        It "detects VariablesToExport with wildcard" {
-            $results = Run-PSScriptAnalyzerRule $testManifestBadVariablesWildcardPath
-            $results.Count | Should be 1
-            $results[0].Extent.Text | Should be "'*'"
-        }
+	It "suggests corrections for AliasesToExport with wildcard" {
+	    $violations = Run-PSScriptAnalyzerRule $testManifestBadAliasesWildcardPath
+	    $violationFilepath = Join-path $testManifestPath $testManifestBadAliasesWildcardPath
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1  "'*'" "@('gfoo', 'gbar')"
+	}
 
         It "detects all the *ToExport violations" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadAllPath
-            $results.Count | Should be 4
+            $results.Count | Should be 3
         }
     }
 

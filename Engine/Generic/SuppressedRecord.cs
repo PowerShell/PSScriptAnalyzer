@@ -40,7 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 Message = record.Message;
                 Extent = record.Extent;
                 Severity = record.Severity;
-                ScriptName = record.ScriptName;
+                ScriptPath = record.ScriptPath;
                 RuleSuppressionID = record.RuleSuppressionID;
             }
         }

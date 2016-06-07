@@ -19,6 +19,7 @@ using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -104,7 +105,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:"};
 
         private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":"};
-
         #endregion
 
         /// <summary>
@@ -112,6 +112,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
+                                    
         }
 
         /// <summary>
@@ -228,6 +229,61 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return false;
+        }
+        
+        /// <summary>
+        /// Gets the module manifest
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="errorRecord"></param>
+        /// <returns>Returns a object of type PSModuleInfo</returns>
+        public PSModuleInfo GetModuleManifest(string filePath, out IEnumerable<ErrorRecord> errorRecord)
+        {
+            errorRecord = null;
+            PSModuleInfo psModuleInfo = null;
+            Collection<PSObject> psObj = null;
+            var ps = System.Management.Automation.PowerShell.Create();
+            try
+            {
+                ps.AddCommand("Test-ModuleManifest");
+                ps.AddParameter("Path", filePath);
+                ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                psObj = ps.Invoke();
+            }
+            catch (CmdletInvocationException e)
+            {
+                // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
+                // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
+                // we consume it to allow execution of the of this method.
+                if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                {
+                    throw;
+                }
+            }
+            if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
+            {
+                var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
+                ps.Streams.Error.CopyTo(errorRecordArr, 0);
+                errorRecord = errorRecordArr;
+            }
+            if (psObj != null && psObj.Any() && psObj[0] != null)
+            {
+                psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
+            }
+            ps.Dispose();
+            return psModuleInfo;
+        }
+
+        /// <summary>
+        /// Checks if the error record is MissingMemberException
+        /// </summary>
+        /// <param name="errorRecord"></param>
+        /// <returns>Returns a boolean value indicating the presence of MissingMemberException</returns>
+        public static bool IsMissingManifestMemberException(ErrorRecord errorRecord)
+        {
+            return errorRecord.CategoryInfo != null
+                && errorRecord.CategoryInfo.Category == ErrorCategory.ResourceUnavailable
+                && string.Equals("MissingMemberException", errorRecord.CategoryInfo.Reason, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -561,17 +617,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return arguments > parameters;
         }
 
+
         /// <summary>
         /// Given a command's name, checks whether it exists
         /// </summary>
         /// <param name="name"></param>
         /// <param name="commandType"></param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name, CommandTypes commandType = CommandTypes.Alias | CommandTypes.Cmdlet | CommandTypes.Configuration | CommandTypes.ExternalScript | CommandTypes.Filter | CommandTypes.Function | CommandTypes.Script | CommandTypes.Workflow)
+        public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null)
         {
+            CommandTypes defaultCmdType = CommandTypes.Alias
+                | CommandTypes.Cmdlet
+                | CommandTypes.ExternalScript
+                | CommandTypes.Filter
+                | CommandTypes.Function
+                | CommandTypes.Script
+                | CommandTypes.Workflow;
+#if !PSV3
+            defaultCmdType |= CommandTypes.Configuration;
+#endif
             lock (getCommandLock)
             {
-                return this.invokeCommand.GetCommand(name, commandType);
+                return this.invokeCommand.GetCommand(name, commandType ?? defaultCmdType);
             }
         }
 
@@ -656,22 +723,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (null == functionDefinitionAst)
             {
                 return null;
-            }
-
-            // Obtain the index where the function name is in Tokens
-            int funcTokenIndex = Tokens.Select((s, index) => new { s, index })
-                          .Where(x => x.s.Extent.StartOffset == functionDefinitionAst.Extent.StartOffset)
-                          .Select(x => x.index).FirstOrDefault();
-
-            if (funcTokenIndex > 0 && funcTokenIndex < Helper.Instance.Tokens.Count())
-            {
-                // return the extent of the next token - this is the extent for the function name
-                return Tokens[++funcTokenIndex].Extent;
-            }
-
-            return null;
+            }            
+            var funcNameTokens = Tokens.Where(
+                token => 
+                ContainsExtent(functionDefinitionAst.Extent, token.Extent) 
+                && token.Text.Equals(functionDefinitionAst.Name));
+            var funcNameToken = funcNameTokens.FirstOrDefault();
+            return funcNameToken == null ? null : funcNameToken.Extent;
         }
-        
+
+        /// <summary>
+        /// Return true if subset is contained in set
+        /// </summary>
+        /// <param name="set"></param>
+        /// <param name="subset"></param>
+        /// <returns>True or False</returns>
+        private bool ContainsExtent(IScriptExtent set, IScriptExtent subset)
+        {
+            if (set == null || subset == null)
+            {
+                return false;
+            }
+            return set.StartOffset <= subset.StartOffset
+                && set.EndOffset >= subset.EndOffset;
+        }
         private void FindClosingParenthesis(string keyword)
         {
             if (Tokens == null || Tokens.Length == 0)
@@ -844,15 +919,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="scriptAst"></param>
         /// <returns></returns>
         
-        #if PSV3
+#if PSV3
 
         public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret)
 
-        #else
+#else
 
         public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret, IEnumerable<TypeDefinitionAst> classes)
 
-        #endif
+#endif
         {
             if (ret == null || funcAst == null)
             {
@@ -883,15 +958,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                         else if (cmAst.Expression is MemberExpressionAst)
                         {
-                            #if PSV3
+#if PSV3
 
                             result = GetTypeFromMemberExpressionAst(cmAst.Expression as MemberExpressionAst, funcAst);
 
-                            #else
+#else
 
                             result = GetTypeFromMemberExpressionAst(cmAst.Expression as MemberExpressionAst, funcAst, classes);
 
-                            #endif
+#endif
                         }
                     }
                 }
@@ -915,15 +990,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="classes"></param>
         /// <returns></returns>
         
-        #if PSV3
+#if PSV3
 
         public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst)
 
-        #else
+#else
 
         public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst, IEnumerable<TypeDefinitionAst> classes)
 
-        #endif        
+#endif
         {
             if (memberAst == null)
             {
@@ -932,11 +1007,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             VariableAnalysisDetails details = null;
 
-            #if !PSV3
+#if !PSV3
 
             TypeDefinitionAst psClass = null;
 
-            #endif
+#endif
 
             if (memberAst.Expression is VariableExpressionAst && VariableAnalysisDictionary.ContainsKey(scopeAst))
             {
@@ -944,7 +1019,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // Get the analysis detail for the variable
                 details = VarTypeAnalysis.GetVariableAnalysis(memberAst.Expression as VariableExpressionAst);
 
-                #if !PSV3
+#if !PSV3
 
                 if (details != null && classes != null)
                 {
@@ -952,18 +1027,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
                 }
 
-                #endif
+#endif
             }
 
-            #if PSV3
+#if PSV3
 
                 return GetTypeFromMemberExpressionAstHelper(memberAst, details);
 
-            #else
+#else
 
                 return GetTypeFromMemberExpressionAstHelper(memberAst, psClass, details);
 
-            #endif         
+#endif
         }
 
         /// <summary>
@@ -975,20 +1050,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="analysisDetails"></param>
         /// <returns></returns>
         
-        #if PSV3
+#if PSV3
         
         internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, VariableAnalysisDetails analysisDetails)
 
-        #else
+#else
 
         internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, TypeDefinitionAst psClass, VariableAnalysisDetails analysisDetails)
 
-        #endif
+#endif
         {
             //Try to get the type without using psClass first
             Type result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst);
 
-            #if !PSV3
+#if !PSV3
 
             //If we can't get the type, then it may be that the type of the object being invoked on is a powershell class
             if (result == null && psClass != null && analysisDetails != null)
@@ -996,7 +1071,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst, analysisDetails, psClass);
             }
 
-            #endif
+#endif
 
             if (result != null)
             {
@@ -1096,8 +1171,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
             }
 
-            #if !PSV3
-
+#if !PSV3
             // Get rule suppression from classes
             IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
 
@@ -1106,7 +1180,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsClass(typeAst));
             }
 
-            #endif
+            // Get rule suppression from configuration definitions
+            IEnumerable<ConfigurationDefinitionAst> configDefAsts = ast.FindAll(item => item is ConfigurationDefinitionAst, true).Cast<ConfigurationDefinitionAst>();
+
+            foreach (var configDefAst in configDefAsts)
+            {
+                ruleSuppressionList.AddRange(GetSuppressionsConfiguration(configDefAst));
+            }
+#endif // !PSV3
 
             ruleSuppressionList.Sort((item, item2) => item.StartOffset.CompareTo(item2.StartOffset));
 
@@ -1142,6 +1223,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
+#if !PSV3
         /// <summary>
         /// Returns a list of rule suppression from the class
         /// </summary>
@@ -1163,16 +1245,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             foreach (var member in typeAst.Members)
             {
-                #if PSv3
-
-                FunctionDefinitionAst funcMemb = member as FunctionDefinitionAst;
-
-                #else
 
                 FunctionMemberAst funcMemb = member as FunctionMemberAst;
-
-                #endif
-
                 if (funcMemb == null)
                 {
                     continue;
@@ -1185,17 +1259,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Returns a list of rule suppressions from the configuration
+        /// </summary>
+        /// <param name="configDefAst"></param>
+        /// <returns></returns>
+        internal List<RuleSuppression> GetSuppressionsConfiguration(ConfigurationDefinitionAst configDefAst)
+        {
+            var result = new List<RuleSuppression>();
+            if (configDefAst == null || configDefAst.Body == null)
+            {
+                return result;
+            }
+            var attributeAsts = configDefAst.FindAll(x => x is AttributeAst, true).Cast<AttributeAst>();
+            result.AddRange(RuleSuppression.GetSuppressions(
+                attributeAsts,
+                configDefAst.Extent.StartOffset,
+                configDefAst.Extent.EndOffset,
+                configDefAst));
+            return result;
+        }
+
+#endif // !PSV3
+
+        /// <summary>
         /// Suppress the rules from the diagnostic records list.
         /// Returns a list of suppressed records as well as the ones that are not suppressed
         /// </summary>
         /// <param name="ruleSuppressions"></param>
         /// <param name="diagnostics"></param>
-        public Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(string ruleName, Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict, List<DiagnosticRecord> diagnostics)
+        public Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
+            string ruleName,
+            Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict,
+            List<DiagnosticRecord> diagnostics,
+            out List<ErrorRecord> errorRecords)
         {
             List<SuppressedRecord> suppressedRecords = new List<SuppressedRecord>();
             List<DiagnosticRecord> unSuppressedRecords = new List<DiagnosticRecord>();
             Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> result = Tuple.Create(suppressedRecords, unSuppressedRecords);
-
+            errorRecords = new List<ErrorRecord>();
             if (diagnostics == null || diagnostics.Count == 0)
             {
                 return result;
@@ -1261,8 +1362,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
                                 System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
                     }
-
-                    this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    errorRecords.Add(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    //this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
                 }
             }
 
@@ -1316,9 +1417,137 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return outPaths.ToArray();
             
         }
+        
+        /// <summary>
+        /// Check if the function name starts with one of potentailly state changing verbs
+        /// </summary>
+        /// <param name="functionName"></param>
+        /// <returns>true if the function name starts with a state changing verb, otherwise false</returns>
+        public bool IsStateChangingFunctionName(string functionName)
+        {
+            if (functionName == null)
+            {
+                throw new ArgumentNullException("functionName");
+            }
+            // Array of verbs that can potentially change the state of a system
+            string[] stateChangingVerbs =
+            {
+                "Restart-",
+                "Stop-",
+                "New-",
+                "Set-",
+                "Update-",
+                "Reset-",
+                "Remove-"
+            };
+            foreach (var verb in stateChangingVerbs)
+            {
+                if (functionName.StartsWith(verb, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
+        /// <summary>
+        /// Get the SupportShouldProcess attribute ast
+        /// </summary>
+        /// <param name="attributeAsts"></param>
+        /// <returns>Returns SupportShouldProcess attribute ast if it exists, otherwise returns null</returns>
+        public NamedAttributeArgumentAst GetShouldProcessAttributeAst(IEnumerable<AttributeAst> attributeAsts)
+        {
+            if (attributeAsts == null)
+            {
+                throw new ArgumentNullException("attributeAsts");
+            }
+            var cmdletBindingAttributeAst = this.GetCmdletBindingAttributeAst(attributeAsts);
+            if (cmdletBindingAttributeAst == null
+                || cmdletBindingAttributeAst.NamedArguments == null)
+            {
+                return null;
+            }
+            foreach (var namedAttributeAst in cmdletBindingAttributeAst.NamedArguments)
+            {
+                if (namedAttributeAst != null
+                    && namedAttributeAst.ArgumentName.Equals(
+                        "SupportsShouldProcess",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return namedAttributeAst;
+                }
+            }
+            return null;
+        }
 
-        #endregion
+        /// <summary>
+        /// Get the CmdletBinding attribute ast
+        /// </summary>
+        /// <param name="attributeAsts"></param>
+        /// <returns>Returns CmdletBinding attribute ast if it exists, otherwise returns null</returns>
+        public AttributeAst GetCmdletBindingAttributeAst(IEnumerable<AttributeAst> attributeAsts)
+        {
+            if (attributeAsts == null)
+            {
+                throw new ArgumentNullException("attributeAsts");
+            }
+            foreach (var attributeAst in attributeAsts)
+            {
+                if (attributeAst == null || attributeAst.NamedArguments == null)
+                {
+                    continue;
+                }
+                if (attributeAst.TypeName.GetReflectionAttributeType()
+                    == typeof(CmdletBindingAttribute))
+                {
+                    return attributeAst;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the boolean value of the named attribute argument
+        /// </summary>
+        /// <param name="namedAttributeArgumentAst"></param>
+        /// <returns>Boolean value of the named attribute argument</returns>
+        public bool GetNamedArgumentAttributeValue(NamedAttributeArgumentAst namedAttributeArgumentAst)
+        {
+            if (namedAttributeArgumentAst == null)
+            {
+                throw new ArgumentNullException("namedAttributeArgumentAst");
+            }
+            if (namedAttributeArgumentAst.ExpressionOmitted)
+            {
+                return true;
+            }
+            else
+            {
+                var varExpAst = namedAttributeArgumentAst.Argument as VariableExpressionAst;
+                if (varExpAst == null)
+                {
+                    var constExpAst = namedAttributeArgumentAst.Argument as ConstantExpressionAst;
+                    if (constExpAst == null)
+                    {
+                        return false;
+                    }
+                    bool constExpVal;
+                    if (LanguagePrimitives.TryConvertTo<bool>(constExpAst.Value, out constExpVal))
+                    {
+                        return constExpVal;
+                    }
+                }
+                else
+                {
+                    return varExpAst.VariablePath.UserPath.Equals(
+                        bool.TrueString,
+                        StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            return false;
+        }
+
+#endregion Methods
     }
 
 
@@ -1381,15 +1610,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // We already run variable analysis if the parent is a function so skip these.
             // Otherwise, we have to do variable analysis using the outer scope variables.
-            #if PSV3
+#if PSV3
 
                 if (!(scriptBlockAst.Parent is FunctionDefinitionAst))
 
-            #else
+#else
 
             if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
 
-            #endif
+#endif
             {
                 OuterAnalysis = Helper.Instance.InitializeVariableAnalysisHelper(scriptBlockAst, OuterAnalysis);
             }
@@ -1417,15 +1646,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             VariableAnalysis innerAnalysis = OuterAnalysis;
             OuterAnalysis = previousOuter;
 
-            #if PSV3
+#if PSV3
 
             if (!(scriptBlockAst.Parent is FunctionDefinitionAst))
 
-            #else
+#else
 
             if (!(scriptBlockAst.Parent is FunctionDefinitionAst) && !(scriptBlockAst.Parent is FunctionMemberAst))
 
-            #endif
+#endif
             {
                 // Update the variable analysis of the outer script block
                 VariableAnalysis.UpdateOuterAnalysis(OuterAnalysis, innerAnalysis);
@@ -1446,11 +1675,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-            #if PSV3
+#if PSV3
 
             statementAst.Visit(this);
             
-            #else
+#else
 
             TypeDefinitionAst typeAst = statementAst as TypeDefinitionAst;
 
@@ -1478,12 +1707,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            #endif
+#endif
 
             return null;
         }
 
-        #if !PSV3
+#if !PSV3
 
         /// <summary>
         /// Do nothing
@@ -1495,7 +1724,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return null;
         }
 
-        #endif
+#endif
 
         /// <summary>
         /// Do nothing
@@ -2162,11 +2391,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     {
         List<Tuple<string, StatementAst>> outputTypes;
 
-        #if !PSV3
+#if !PSV3
 
         IEnumerable<TypeDefinitionAst> classes;
 
-        #endif
+#endif
 
         FunctionDefinitionAst myFunction;
         /// <summary>
@@ -2204,23 +2433,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="ast"></param>
         
-        #if PSV3
+#if PSV3
 
         public FindPipelineOutput(FunctionDefinitionAst ast)
 
-        #else
+#else
 
         public FindPipelineOutput(FunctionDefinitionAst ast, IEnumerable<TypeDefinitionAst> classes)
 
-        #endif
+#endif
         {
             outputTypes = new List<Tuple<string, StatementAst>>();
 
-            #if !PSV3
+#if !PSV3
 
             this.classes = classes;
 
-            #endif
+#endif
 
             myFunction = ast;
 
@@ -2235,20 +2464,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <returns></returns>
         
-        #if PSV3
+#if PSV3
 
         public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst)
         {
             return (new FindPipelineOutput(funcAst)).outputTypes;
         }
 
-        #else
+#else
         public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst, IEnumerable<TypeDefinitionAst> classes)
         {
             return (new FindPipelineOutput(funcAst, classes)).outputTypes;
         }
 
-        #endif
+#endif
 
         /// <summary>
         /// Ignore assignment statement
@@ -2701,15 +2930,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitReturnStatement(ReturnStatementAst returnStatementAst)
         {
-            #if PSV3
+#if PSV3
 
             return Helper.Instance.GetTypeFromReturnStatementAst(myFunction, returnStatementAst);
 
-            #else
+#else
 
             return Helper.Instance.GetTypeFromReturnStatementAst(myFunction, returnStatementAst, classes);
 
-            #endif            
+#endif
         }
 
         /// <summary>
@@ -2719,15 +2948,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitMemberExpression(MemberExpressionAst memAst)
         {
-            #if PSV3
+#if PSV3
 
             return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, myFunction);
 
-            #else
+#else
 
             return Helper.Instance.GetTypeFromMemberExpressionAst(memAst, myFunction, classes);
 
-            #endif
+#endif
         }
 
         /// <summary>
@@ -2737,15 +2966,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public object VisitInvokeMemberExpression(InvokeMemberExpressionAst invokeAst)
         {
-            #if PSV3
+#if PSV3
 
             return Helper.Instance.GetTypeFromMemberExpressionAst(invokeAst, myFunction);
 
-            #else
+#else
 
             return Helper.Instance.GetTypeFromMemberExpressionAst(invokeAst, myFunction, classes);
 
-            #endif
+#endif
         }
 
         /// <summary>

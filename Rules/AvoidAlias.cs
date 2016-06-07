@@ -40,19 +40,58 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 CommandAst cmdAst = (CommandAst)foundAst;
                 string aliasName = cmdAst.GetCommandName();
+
                 // Handles the exception caused by commands like, {& $PLINK $args 2> $TempErrorFile}.
                 // You can also review the remark section in following document,
                 // MSDN: CommandAst.GetCommandName Method
-                if (aliasName == null) continue;
-
-                string cmdletName = Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper.Instance.GetCmdletNameFromAlias(aliasName);
-
+                if (aliasName == null)
+                {
+                    continue;
+                }
+                string cmdletName = Helper.Instance.GetCmdletNameFromAlias(aliasName);
                 if (!String.IsNullOrEmpty(cmdletName))
                 {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, aliasName, cmdletName),
-                        cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName, aliasName);
+                    yield return new DiagnosticRecord(
+                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, aliasName, cmdletName),
+                        cmdAst.Extent, 
+                        GetName(), 
+                        DiagnosticSeverity.Warning, 
+                        fileName, 
+                        aliasName, 
+                        suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletName));
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a list containing suggested correction
+        /// </summary>
+        /// <param name="cmdAst">Command AST of an alias</param>
+        /// <param name="cmdletName">Full name of the alias</param>
+        /// <returns>Retruns a list of suggested corrections</returns>
+        private List<CorrectionExtent> GetCorrectionExtent(CommandAst cmdAst, string cmdletName)
+        {
+            var ext = cmdAst.Extent;
+            if (ext.File == null)
+            {
+                return null;
+            }
+            var corrections = new List<CorrectionExtent>();            
+            var alias = cmdAst.GetCommandName();            
+            string description = string.Format(
+                CultureInfo.CurrentCulture, 
+                Strings.AvoidUsingCmdletAliasesCorrectionDescription, 
+                alias, 
+                cmdletName);
+            corrections.Add(new CorrectionExtent(                
+                ext.StartLineNumber,
+                ext.EndLineNumber,
+                cmdAst.CommandElements[0].Extent.StartColumnNumber,
+                cmdAst.CommandElements[0].Extent.EndColumnNumber,
+                cmdletName,
+                ext.File,                
+                description));
+            return corrections;
         }
 
         /// <summary>

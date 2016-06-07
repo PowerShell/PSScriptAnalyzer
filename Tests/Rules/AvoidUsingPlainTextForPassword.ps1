@@ -39,3 +39,24 @@
 
 function TestFunction($password, [System.Security.SecureString[]]$passphrases, [string]$passThru){
 }
+
+function TestFunction2
+{
+	 Param(
+		[string] <#some dumb comment#> $password
+	 )
+}
+
+function TestFunction3
+{
+	Param(
+		[string[]] $password
+	)
+}
+
+function TestFunction4
+{
+	Param(
+		[string] [Parameter(ValueFromPipeline)] $Password
+	)
+}

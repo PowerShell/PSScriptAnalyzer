@@ -53,7 +53,8 @@ function MyFunction3
     )
 }
 
-function TestFunction($password, [PSCredential[]]$passwords, $username){
+function TestFunction1($password, $username, [PSCredential[]]$passwords){
 }
 
-
+function TestFunction2($username, $password, [PSCredential[]]$passwords){
+}

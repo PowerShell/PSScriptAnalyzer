@@ -54,10 +54,15 @@ Describe "Test Name parameters" {
             ($rules | Where-Object {$_.RuleName -eq $approvedVerbs}).Count | Should Be 1
         }
 
-        It "Get Rules with no parameters supplied" {
+        It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
 			$defaultRules.Count | Should be 41
 		}
+
+        It "is a positional parameter" {
+            $rules = Get-ScriptAnalyzerRule *alias*
+            $rules.Count | Should Be 1
+        }
     }
 
     Context "When used incorrectly" {
@@ -78,20 +83,26 @@ Describe "Test RuleExtension" {
     $community = "CommunityAnalyzerRules"
     $measureRequired = "Measure-RequiresModules"
     Context "When used correctly" {
+
+		$expectedNumCommunityRules = 10
+		if ($PSVersionTable.PSVersion -ge [Version]'4.0')
+		{
+			$expectedNumCommunityRules = 12
+		}
         It "with the module folder path" {
             $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules | Where-Object {$_.SourceName -eq $community}
-            $ruleExtension.Count | Should Be 12
+            $ruleExtension.Count | Should Be $expectedNumCommunityRules
         }
 
         It "with the psd1 path" {
             $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1 | Where-Object {$_.SourceName -eq $community}
-            $ruleExtension.Count | Should Be 12
+            $ruleExtension.Count | Should Be $expectedNumCommunityRules
 
         }
 
         It "with the psm1 path" {
             $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 | Where-Object {$_.SourceName -eq $community}
-            $ruleExtension.Count | Should Be 12
+            $ruleExtension.Count | Should Be $expectedNumCommunityRules
         }
 
         It "with Name of a built-in rules" {
