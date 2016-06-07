@@ -1,24 +1,22 @@
-﻿Announcements
+﻿[![Join the chat at https://gitter.im/PowerShell/PSScriptAnalyzer](https://badges.gitter.im/PowerShell/PSScriptAnalyzer.svg)](https://gitter.im/PowerShell/PSScriptAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+Announcements
 =============
 
-[![Join the chat at https://gitter.im/PowerShell/PSScriptAnalyzer](https://badges.gitter.im/PowerShell/PSScriptAnalyzer.svg)](https://gitter.im/PowerShell/PSScriptAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-###### [ScriptAnalyzer v1.5.0 published to PowerShellGallery!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.5.0)
-
-###### [ScriptAnalyzer now runs on platforms containing PSv3.0 and above - WMF 5.0 is no longer a prerequisite!](https://www.powershellgallery.com/packages/PSScriptAnalyzer/1.5.0)
+###### [Get the latest PSScriptAnalyzer version from PowerShellGallery](https://www.powershellgallery.com/packages/PSScriptAnalyzer)
 
 ###### [VSCode-PowerShell has built-in ScriptAnalyzer support](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
 
 ###### [ISE-Steroids has ScriptAnalyzer integration](http://www.powertheshell.com/psscriptanalyzer-integration-and-more/)
 
-##### [ISE Add-On for ScriptAnalyzer is available in PowerShellGallery](https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
+###### [ISE Add-On for ScriptAnalyzer is available in PowerShellGallery](https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
 
 
 =============
 
 ##### ScriptAnalyzer community meeting schedule:
 
- - Next Meeting - May 24 2016 - 11am to 12pm PDT
+ - Next Meeting - June 2, 2016 - 11am to 12pm PDT
     - [Meeting Agenda](https://github.com/PowerShell/PSScriptAnalyzer/wiki/Community-Meeting-Agenda)
  - [Notes and recordings from earlier meetings](https://github.com/PowerShell/PSScriptAnalyzer/wiki)
 
