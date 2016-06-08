@@ -134,14 +134,14 @@ RUNNING SCRIPT ANALYZER ON AN EXISTING SCRIPT, MODULE OR DSC RESOURCE
         Count Name
         ----- ----
            23 PSAvoidUsingInvokeExpression
-            8 PSUseDeclaredVarsMoreThanAssigments
+            8 PSUseDeclaredVarsMoreThanAssignments
             8 PSProvideDefaultParameterValue
             6 PSAvoidUninitializedVariable
             3 PSPossibleIncorrectComparisonWithNull
             1 PSAvoidUsingComputerNameHardcoded
             
         You may decide to exclude the PSAvoidUsingInvokeExpression rule for the moment
-        and focus on the rest, especially the PSUseDeclaredVarsMoreThanAssigments, 
+        and focus on the rest, especially the PSUseDeclaredVarsMoreThanAssignments, 
         PSAvoidUninitializedVariable and PSPossibleIncorrectComparisonWithNull rules.
         
         As you fix rules, go back and enable more rules as you have time to address 

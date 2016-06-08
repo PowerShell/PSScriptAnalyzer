@@ -445,7 +445,7 @@
     <value>UseApprovedVerbs</value>
   </data>
   <data name="UseDeclaredVarsMoreThanAssignmentsName" xml:space="preserve">
-    <value>UseDeclaredVarsMoreThanAssigments</value>
+    <value>UseDeclaredVarsMoreThanAssignments</value>
   </data>
   <data name="UsePSCredentialTypeName" xml:space="preserve">
     <value>UsePSCredentialType</value>

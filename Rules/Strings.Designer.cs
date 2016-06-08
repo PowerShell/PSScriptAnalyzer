@@ -1744,7 +1744,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UseDeclaredVarsMoreThanAssigments.
+        ///   Looks up a localized string similar to UseDeclaredVarsMoreThanAssignments.
         /// </summary>
         internal static string UseDeclaredVarsMoreThanAssignmentsName {
             get {
