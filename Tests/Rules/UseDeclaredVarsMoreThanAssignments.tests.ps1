@@ -1,6 +1,6 @@
 ﻿Import-Module PSScriptAnalyzer
 $violationMessage = "The variable 'declaredVar2' is assigned but never used."
-$violationName = "PSUseDeclaredVarsMoreThanAssigments"
+$violationName = "PSUseDeclaredVarsMoreThanAssignments"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\UseDeclaredVarsMoreThanAssignments.ps1 | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\UseDeclaredVarsMoreThanAssignmentsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
