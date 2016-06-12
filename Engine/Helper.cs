@@ -1310,15 +1310,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
-
+            var offsetArr = GetOffsetArray(diagnostics);
             int recordIndex = 0;
             int startRecord = 0;
             bool[] suppressed = new bool[diagnostics.Count];
-
             foreach (RuleSuppression ruleSuppression in ruleSuppressions)
             {
                 int suppressionCount = 0;
-                while (startRecord < diagnostics.Count && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
+                while (startRecord < diagnostics.Count
+                    // && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
+                    // && diagnostics[startRecord].Extent.StartLineNumber < ruleSuppression.st)
+                    && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
                 {
                     startRecord += 1;
                 }
@@ -1329,8 +1331,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 while (recordIndex < diagnostics.Count)
                 {
                     DiagnosticRecord record = diagnostics[recordIndex];
+                    var curOffset = offsetArr[recordIndex];
 
-                    if (record.Extent.EndOffset > ruleSuppression.EndOffset)
+                    //if (record.Extent.EndOffset > ruleSuppression.EndOffset)
+                    if (curOffset.Item2 > ruleSuppression.EndOffset)
                     {
                         break;
                     }
@@ -1376,6 +1380,55 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return result;
+        }
+
+        private Tuple<int,int>[] GetOffsetArray(List<DiagnosticRecord> diagnostics)
+        {
+            Func<int,int,Tuple<int,int>> GetTuple = (x, y) => new Tuple<int, int>(x, y);
+            Func<Tuple<int, int>> GetDefaultTuple = () => GetTuple(0, 0);
+
+            var offsets = new Tuple<int, int>[diagnostics.Count];
+            for (int k = 0; k < diagnostics.Count; k++)
+            {
+                var ext = diagnostics[k].Extent;
+                if (ext.StartOffset == 0 && ext.EndOffset == 0)
+                {
+                    // check if line and column number do not correspond to 0 offsets
+                    if (ext.StartLineNumber == 1
+                        && ext.StartColumnNumber == 1
+                        && ext.EndLineNumber == 1
+                        && ext.EndColumnNumber == 1)
+                    {
+                        offsets[k] = GetDefaultTuple();
+                    }
+                    else
+                    {
+                        // created using the ScriptExtent constructor, which sets
+                        // StartOffset and EndOffset to 0
+                        // find the token the corresponding start line and column number
+                        var startToken = Tokens.Where(x
+                            => x.Extent.StartLineNumber == ext.StartLineNumber
+                            && x.Extent.StartColumnNumber == ext.StartColumnNumber)
+                            .FirstOrDefault();
+                        if (startToken == null)
+                        {
+                            offsets[k] = GetDefaultTuple();
+                            continue;
+                        }
+                        var endToken = Tokens.Where(x
+                            => x.Extent.EndLineNumber == ext.EndLineNumber
+                            && x.Extent.EndColumnNumber == ext.EndColumnNumber)
+                            .FirstOrDefault();
+                        if (endToken == null)
+                        {
+                            offsets[k] = GetDefaultTuple();
+                            continue;
+                        }
+                        offsets[k] = GetTuple(startToken.Extent.StartOffset, endToken.Extent.EndOffset);
+                    }
+                }
+            }
+            return offsets;
         }
 
         public static string[] ProcessCustomRulePaths(string[] rulePaths, SessionState sessionState, bool recurse = false)
