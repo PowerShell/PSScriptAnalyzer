@@ -1386,46 +1386,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             Func<int,int,Tuple<int,int>> GetTuple = (x, y) => new Tuple<int, int>(x, y);
             Func<Tuple<int, int>> GetDefaultTuple = () => GetTuple(0, 0);
-
             var offsets = new Tuple<int, int>[diagnostics.Count];
             for (int k = 0; k < diagnostics.Count; k++)
             {
                 var ext = diagnostics[k].Extent;
                 if (ext.StartOffset == 0 && ext.EndOffset == 0)
                 {
-                    // check if line and column number do not correspond to 0 offsets
+                    // check if line and column number correspond to 0 offsets
                     if (ext.StartLineNumber == 1
                         && ext.StartColumnNumber == 1
                         && ext.EndLineNumber == 1
                         && ext.EndColumnNumber == 1)
                     {
                         offsets[k] = GetDefaultTuple();
+                        continue;
                     }
-                    else
+                    // created using the ScriptExtent constructor, which sets
+                    // StartOffset and EndOffset to 0
+                    // find the token the corresponding start line and column number
+                    var startToken = Tokens.Where(x
+                        => x.Extent.StartLineNumber == ext.StartLineNumber
+                        && x.Extent.StartColumnNumber == ext.StartColumnNumber)
+                        .FirstOrDefault();
+                    if (startToken == null)
                     {
-                        // created using the ScriptExtent constructor, which sets
-                        // StartOffset and EndOffset to 0
-                        // find the token the corresponding start line and column number
-                        var startToken = Tokens.Where(x
-                            => x.Extent.StartLineNumber == ext.StartLineNumber
-                            && x.Extent.StartColumnNumber == ext.StartColumnNumber)
-                            .FirstOrDefault();
-                        if (startToken == null)
-                        {
-                            offsets[k] = GetDefaultTuple();
-                            continue;
-                        }
-                        var endToken = Tokens.Where(x
-                            => x.Extent.EndLineNumber == ext.EndLineNumber
-                            && x.Extent.EndColumnNumber == ext.EndColumnNumber)
-                            .FirstOrDefault();
-                        if (endToken == null)
-                        {
-                            offsets[k] = GetDefaultTuple();
-                            continue;
-                        }
-                        offsets[k] = GetTuple(startToken.Extent.StartOffset, endToken.Extent.EndOffset);
+                        offsets[k] = GetDefaultTuple();
+                        continue;
                     }
+                    var endToken = Tokens.Where(x
+                        => x.Extent.EndLineNumber == ext.EndLineNumber
+                        && x.Extent.EndColumnNumber == ext.EndColumnNumber)
+                        .FirstOrDefault();
+                    if (endToken == null)
+                    {
+                        offsets[k] = GetDefaultTuple();
+                        continue;
+                    }
+                    offsets[k] = GetTuple(startToken.Extent.StartOffset, endToken.Extent.EndOffset);
+                }
+                else
+                {
+                    // Extent has valid offsets
+                    offsets[k] = GetTuple(ext.StartOffset, ext.EndOffset);
                 }
             }
             return offsets;
