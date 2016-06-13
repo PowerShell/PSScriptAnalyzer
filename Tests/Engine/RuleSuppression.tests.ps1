@@ -30,6 +30,21 @@ $securePassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
 }
 '@
 
+# If function doesn't starts at offset 0, then the test case fails before commit b551211
+$ruleSuppressionAvoidUsernameAndPassword = @'
+
+function SuppressUserAndPwdRule()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "")]
+    [CmdletBinding()]
+    param
+    (
+        [System.String] $username,
+        [System.Boolean] $password
+    )
+}
+'@
+
 Describe "RuleSuppressionWithoutScope" {
     Context "Function" {
         It "Does not raise violations" {
@@ -38,6 +53,16 @@ Describe "RuleSuppressionWithoutScope" {
             $suppression = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSProvideCommentHelp" }
             $suppression.Count | Should Be 0
         }
+
+        It "Suppresses rule with extent created using ScriptExtent constructor" {
+            Invoke-ScriptAnalyzer `
+              -ScriptDefinition $ruleSuppressionAvoidUsernameAndPassword `
+              -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" `
+              -OutVariable ruleViolations `
+              -SuppressedOnly
+            $ruleViolations.Count | Should Be 1
+	    }
+
     }
 
     Context "Script" {
