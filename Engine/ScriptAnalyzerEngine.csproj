@@ -128,44 +128,6 @@
   </ProjectExtensions>
   <PropertyGroup>
     <PostBuildEvent>
-if "PSV3 Release" == "$(ConfigurationName)" (
-	GOTO psv3Release
-) else if "PSV3 Debug" == "$(ConfigurationName)" (
-	GOTO psv3Debug	
-) else (
-	GOTO default
-)
-
-:psv3Release
-:psv3Debug
-if not exist "$(SolutionDir)$(SolutionName)\PSv3" (
-        mkdir "$(SolutionDir)$(SolutionName)\PSv3"
-)
-copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)\PSv3"
-GOTO end
-
-
-:default
-if not exist "$(SolutionDir)$(SolutionName)" (
-	mkdir "$(SolutionDir)$(SolutionName)"
-)
-copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
-GOTO end
-
-:end
-copy /y "$(ProjectDir)*.ps1xml" "$(SolutionDir)$(SolutionName)"
-copy /y "$(ProjectDir)*.psm1" "$(SolutionDir)$(SolutionName)"
-copy /y "$(ProjectDir)*.psd1" "$(SolutionDir)$(SolutionName)"	
-if not exist "$(SolutionDir)$(SolutionName)\Settings" (
-	mkdir "$(SolutionDir)$(SolutionName)\Settings"
-)
-copy /y "$(ProjectDir)Settings\*.psd1" "$(SolutionDir)$(SolutionName)\Settings"
-if not exist "$(SolutionDir)$(SolutionName)\en-US" (
-	mkdir "$(SolutionDir)$(SolutionName)\en-US"
-)
-copy /y "$(ProjectDir)about_*.help.txt" "$(SolutionDir)$(SolutionName)\en-US"
-copy /y "$(ProjectDir)*Help.xml" "$(SolutionDir)$(SolutionName)\en-US"
-
 </PostBuildEvent>
   </PropertyGroup>
 </Project>
