@@ -143,18 +143,18 @@ if "PSV3 Release" == "$(ConfigurationName)" (
 
 :psv3Release
 :psv3Debug
-    if not exist "$(SolutionDir)$(SolutionName)\PSv3" (
-        mkdir "$(SolutionDir)$(SolutionName)\PSv3"
+    if not exist "$(SolutionDir)out\$(SolutionName)\PSv3" (
+        mkdir "$(SolutionDir)out\$(SolutionName)\PSv3"
     )
-    copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)\PSv3"
+    copy /y "$(TargetPath)" "$(SolutionDir)out\$(SolutionName)\PSv3"
 
 	GOTO end
 	
 :default         	 
-    if not exist "$(SolutionDir)$(SolutionName)" (
-		mkdir "$(SolutionDir)$(SolutionName)"
+    if not exist "$(SolutionDir)out\$(SolutionName)" (
+		mkdir "$(SolutionDir)out\$(SolutionName)"
 	)
-	copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
+	copy /y "$(TargetPath)" "$(SolutionDir)out\$(SolutionName)"
 	
 	GOTO end
 	
