@@ -54,7 +54,6 @@ Pester module.
 
 Param
 (
-	[Parameter(Mandatory = $true)]
 	[ValidateScript({ Get-Module -ListAvailable -Name $_ })]
 	[string]
 	$ModuleName = 'PSScriptAnalyzer',
