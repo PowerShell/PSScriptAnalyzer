@@ -5,20 +5,30 @@ param(
     [string] $Configuration = 'Debug',
 
     [Parameter(ParameterSetName='Build')]
-    [switch] $CleanSolution = $false,    
+    [switch] $CleanSolution = $false,
 
     [Parameter(ParameterSetName='Documentation')]
     [switch] $Documentation = $false,
 
-    [Parameter(ParameterSetName='Clean')]    
+    [Parameter(ParameterSetName='Clean')]
     [switch] $Clean = $false
 )
+
+# Some cmdlets like copy-item do not respond to the $verbosepreference variable
+# hence we set it explicitly
+$verbosity = $false
+if ($VerbosePreference.Equals([System.Management.Automation.ActionPreference]'Continue'))
+{
+    $verbosity = $true
+}
+
+
 
 Function CreateIfNotExists([string] $folderPath)
 {
     if (-not (Test-Path $folderPath))
     {
-        New-Item -Path $folderPath -ItemType Directory
+        New-Item -Path $folderPath -ItemType Directory -Verbose:$verbosity
     }
 }
 
@@ -53,10 +63,10 @@ if ($PSCmdlet.ParameterSetName -eq 'Build')
     if ($CleanSolution)
     {
         & $buildCmd $solutionPath $Configuration 'clean'
-        return    
+        return
     }
-    & $buildCmd $solutionPath $Configuration    
-    
+    & $buildCmd $solutionPath $Configuration
+
     CreateIfNotExists($destinationPath)
     CreateIfNotExists("$destinationPath\Settings")
 
@@ -76,19 +86,26 @@ if ($PSCmdlet.ParameterSetName -eq 'Build')
 
 if ($PSCmdlet.ParameterSetName -eq 'Documentation')
 {
-    CreateIfNotExists("$destinationPath\en-US\")
-    Copy-Item -Path "$enginePath\about_PSScriptAnalyzer.help.txt" -Destination $destinationPath\en-US\. -Force
-    
+    $docsPath = Join-Path $projectRoot 'docs'
+    $markdownDocsPath = Join-Path $docsPath 'markdown'
+    $outputDocsPath = Join-Path $destinationPath en-US
+
+    CreateIfNotExists($outputDocsPath)
+    # copy the about help file
+    Copy-Item -Path $docsPath\about_PSScriptAnalyzer.help.txt -Destination $outputDocsPath -Force -Verbose:$verbosity
+
     # Build documentation using platyPS
-    if ((Get-Module PlatyPS -ListAvailable) -eq $null)
+    if ((Get-Module PlatyPS -ListAvailable -Verbose:$verbosity) -eq $null)
     {
         throw "Cannot find PlatyPS. Please install it from https://www.powershellgallery.com."
     }
-    Import-Module PlatyPS -Force
-    $docsPath = Join-Path $projectRoot docs
-    if (-not (Test-Path $docsPath))
+    if ((Get-Module PlatyPS -Verbose:$verbosity) -eq $null)
+    {
+        Import-Module PlatyPS -Verbose:$verbosity
+    }
+    if (-not (Test-Path $markdownDocsPath -Verbose:$verbosity))
     {
         throw "Cannot find markdown documentation folder."
     }
-    New-ExternalHelp -Path $projectRoot\docs -OutputPath $destinationPath\en-US -Force
+    New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force -Verbose:$verbosity
 }
