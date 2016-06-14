@@ -36,11 +36,7 @@ Function CreateIfNotExists([string] $folderPath)
 $projectRoot = Resolve-path .
 $solutionPath = Join-Path $projectRoot 'PSScriptAnalyzer.sln'
 $outPath = Join-Path $projectRoot 'out'
-$enginePath = Join-Path $projectRoot "Engine"
-$engineBinariesPath = Join-Path $enginePath "bin\$Configuration"
-$rulesBinariesPath = Join-Path $projectRoot "Rules\bin\$Configuration"
 $destinationPath = Join-Path $outPath PSScriptAnalyzer
-
 
 if (-not (Test-Path $solutionPath))
 {
@@ -67,22 +63,6 @@ if ($PSCmdlet.ParameterSetName -eq 'Build')
         return
     }
     & $buildCmd $solutionPath $Configuration
-
-    CreateIfNotExists($destinationPath)
-    CreateIfNotExists("$destinationPath\Settings")
-
-    Copy-Item -Path $enginePath\*.ps1xml -Destination $destinationPath\. -Force
-    Copy-Item -Path "$enginePath\PSScriptAnalyzer.psm1" -Destination $destinationPath\. -Force
-    Copy-Item -Path "$enginePath\PSScriptAnalyzer.psd1" -Destination $destinationPath\. -Force
-    Copy-Item -Path "$enginePath\Settings" -Destination $destinationPath\. -Force -Recurse
-
-    if ($Configuration -match 'PSV3')
-    {
-        $destinationPath = Join-Path $destinationPath "PSv3"
-        CreateIfNotExists($destinationPath)
-    }
-    Copy-Item -Path $engineBinariesPath\*.dll -Destination $destinationPath\. -Force
-    Copy-Item -Path $rulesBinariesPath\*.dll -Destination $destinationPath\. -Force
 }
 
 if ($PSCmdlet.ParameterSetName -eq 'Documentation')
