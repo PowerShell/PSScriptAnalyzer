@@ -270,7 +270,9 @@ foreach ($command in $commands) {
 				
 				# Should be a description for every parameter
 				It "gets help for parameter: $parameterName : in $commandName" {
-					$parameterHelp.Description.Text | Should Not BeNullOrEmpty
+					# `$parameterHelp.Description.Text | Should Not BeNullOrEmpty` fails for -Settings paramter 
+					# without explicit [string] casting on the Text property
+					[string]::IsNullOrEmpty($parameterHelp.Description.Text) | Should Be $false
 				}
 				
 				# Required value in Help should match IsMandatory property of parameter
