@@ -84,11 +84,11 @@ Enter the path to a .NET assembly or module that contains Script Analyzer rules.
 You can enter only one value, but wildcards are supported.
 To get rules in subdirectories of the path, use the RecurseCustomRulePath parameter.
 
-You can create custom rules by using a custom .NET assembly or a Windows PowerShell module, such as the Community Analyzer Rules in 
+You can create custom rules by using a custom .NET assembly or a Windows PowerShell module, such as the Community Analyzer Rules in
 https://github.com/PowerShell/PSScriptAnalyzer/blob/development/Tests/Engine/CommunityAnalyzerRules/CommunityAnalyzerRules.psm1.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases: CustomizedRulePath
 
@@ -106,11 +106,11 @@ By default, Get-ScriptAnalyzerRule adds only the custom rules in the specified p
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
-Default value: 
+Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -125,7 +125,7 @@ By default, Get-ScriptAnalyzerRule gets all rules.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -142,7 +142,7 @@ By default, Get-ScriptAnalyzerRule gets all rules.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named

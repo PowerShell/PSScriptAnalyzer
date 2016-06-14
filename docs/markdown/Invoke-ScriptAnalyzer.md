@@ -14,14 +14,14 @@ Evaluates a script or module based on selected best practice rules
 ```
 Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
  [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly]
- [-Profile <String>]
+ [-Settings <String>]
 ```
 
 ### UNNAMED_PARAMETER_SET_2
 ```
 Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
  [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly]
- [-Profile <String>]
+ [-Settings <String>]
 ```
 
 ## DESCRIPTION
@@ -118,7 +118,7 @@ function Get-Widgets
     Param()
 
     dir $pshome
-    ... 
+    ...
 }
 
 PS C:\> Invoke-ScriptAnalyzer -Path .\Get-Widgets.ps1
@@ -192,7 +192,7 @@ PSUseSingularNouns                  Warning                 1     The cmd
 ```
 
 This command uses the ScriptDefinition parameter to analyze a function at the command line.
-The function string is enclosed in quotation marks. 
+The function string is enclosed in quotation marks.
 
 When you use the ScriptDefinition parameter, the FileName property of the DiagnosticRecord object is $null.
 
@@ -215,13 +215,13 @@ Aliases: PSPath
 
 Required: True
 Position: 0
-Default value: 
+Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -CustomRulePath
-Adds the custom rules defined in the specified paths to the analysis. 
+Adds the custom rules defined in the specified paths to the analysis.
 
 Enter the path to a file that defines rules or a directory that contains files that define rules.
 Wildcard characters are supported.
@@ -232,29 +232,29 @@ By default, Invoke-ScriptAnalyzer uses only rules defined in the Microsoft.Windo
 If Invoke-ScriptAnalyzer cannot find rules in the CustomRulePath, it runs the standard rules without notice.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases: CustomizedRulePath
 
 Required: False
 Position: Named
-Default value: 
+Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -RecurseCustomRulePath
-Adds rules defined in in subdirectories of the CustomRulePath location.
+Adds rules defined in subdirectories of the CustomRulePath location.
 By default, Invoke-ScriptAnalyzer adds only the custom rules defined in the specified file or directory.
 
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
-Default value: 
+Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -280,7 +280,7 @@ If a rule is specified in both the ExcludeRule and IncludeRule collections, the 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -288,6 +288,22 @@ Default value: All rules are included.
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### -IncludeDefaultRules
+Invoke default rules along with Custom rules
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 
 ### -IncludeRule
 Runs only the specified rules in the Script Analyzer test.
@@ -309,7 +325,7 @@ include a Warning rule.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -336,7 +352,7 @@ include a Warning rule.
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -354,7 +370,7 @@ To search the CustomRulePath recursively, use the RecurseCustomRulePath paramete
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -375,7 +391,7 @@ For help, see the examples.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases:
 
 Required: False
 Position: Named
@@ -384,14 +400,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Profile
-Runs Invoke-ScriptAnalyzer with the parameters and values specified in a Script Analyzer profile file.
-Enter the path
-to the profile file.
+### -Settings
+File path that contains user profile or hash table for ScriptAnalyzer
 
-If the path, the file, or its content is invalid, it is ignored.
-The parameters and values in the profile take
-precedence over the same parameter and values specified at the command line.
+Runs Invoke-ScriptAnalyzer with the parameters and values specified in a Script Analyzer profile file or hash table
+
+If the path, the file's or hashtable's content are invalid, it is ignored. The parameters and values in the profile take precedence over the same parameter and values specified at the command line.
 
 A Script Analyzer profile file is a text file that contains a hash table with one or more of the following keys:
 -- Severity
@@ -411,13 +425,13 @@ For example:
     @{ Severity = 'Error', 'Warning'}
 
 ```yaml
-Type: String
+Type: Object
 Parameter Sets: (All)
-Aliases: 
+Aliases: Profile
 
 Required: False
 Position: Named
-Default value: Uses the parameters and values specified at the command line.
+Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -431,14 +445,32 @@ Unlike ScriptBlock parameters, the ScriptDefinition parameter requires a string 
 ```yaml
 Type: String
 Parameter Sets: UNNAMED_PARAMETER_SET_2
-Aliases: 
+Aliases:
 
 Required: True
 Position: 0
-Default value: 
+Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### -SaveDscDependency
+Resolve DSC resource dependency
+
+Whenever Invoke-ScriptAnalyzer (isa) is run on a script having the dynamic keyword "Import-DSCResource -ModuleName <somemodule>", if <somemodule> is not present in any of the PSModulePath, isa gives parse error. This error is caused by the powershell parser not being able to find the symbol for <somemodule>. If isa finds the module on PowerShell Gallery (www.powershellgallery.com) then it downloads the missing module to a temp path. The temp path is then added to PSModulePath only for duration of the scan. The temp location can be found in $LOCALAPPDATA/PSScriptAnalyzer/TempModuleDir.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 
 ## INPUTS
 
