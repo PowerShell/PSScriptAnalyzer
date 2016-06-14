@@ -449,20 +449,9 @@ You cannot pipe input to this cmdlet.
 
 ### Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord
 By default, Invoke-ScriptAnalyzer returns one DiagnosticRecord object to report a rule violation.
-If you use the SuppressedOnly parameter, Invoke-ScriptAnalyzer instead returns a SuppressedRecord object.
-
-Name              MemberType     Definition
-----              ----------     ----------
-Extent            Property       System.Management.Automation.Language.IScriptExtent Extent {get;set;}
-Message           Property       string Message {get;set;}
-RuleName          Property       string RuleName {get;set;}
-RuleSuppressionID Property       string RuleSuppressionID {get;set;}
-ScriptName        Property       string ScriptName {get;set;}
-Severity          Property       Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticSeverity Severity {get;set;}
-Column            ScriptProperty System.Object Column {get=$this.Extent.StartColumnNumber;}
-Line              ScriptProperty System.Object Line {get=$this.Extent.StartLineNumber;}
 
 ### Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.SuppressedRecord
+If you use the SuppressedOnly parameter, Invoke-ScriptAnalyzer instead returns a SuppressedRecord object.
 
 ## NOTES
 

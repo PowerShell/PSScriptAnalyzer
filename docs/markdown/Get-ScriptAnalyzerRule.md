@@ -159,21 +159,7 @@ You cannot pipe input to this cmdlet.
 ## OUTPUTS
 
 ### Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleInfo
-The RuleInfo object is a custom object created especially for Script Analyzer.
-It is not documented in MSDN.
-
-Name        MemberType Definition
-----        ---------- ----------
-Equals      Method     bool Equals(System.Object obj)
-GetHashCode Method     int GetHashCode()
-GetType     Method     type GetType()
-ToString    Method     string ToString()
-CommonName  Property   string CommonName {get;}
-Description Property   string Description {get;}
-RuleName    Property   string RuleName {get;}
-Severity    Property   Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleSeverity Severity {get;}
-SourceName  Property   string SourceName {get;}
-SourceType  Property   Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.SourceType SourceType {get;}
+The RuleInfo object is a custom object created especially for Script Analyzer. It is not documented on MSDN.
 
 ## NOTES
 
