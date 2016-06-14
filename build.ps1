@@ -11,7 +11,10 @@ param(
     [switch] $Documentation = $false,
 
     [Parameter(ParameterSetName='Clean')]
-    [switch] $Clean = $false
+    [switch] $Clean = $false,
+
+    [Parameter(ParameterSetName='Install')]
+    [switch] $Install = $false
 )
 
 # Some cmdlets like copy-item do not respond to the $verbosepreference variable
@@ -21,8 +24,6 @@ if ($VerbosePreference.Equals([System.Management.Automation.ActionPreference]'Co
 {
     $verbosity = $true
 }
-
-
 
 Function CreateIfNotExists([string] $folderPath)
 {
@@ -108,4 +109,18 @@ if ($PSCmdlet.ParameterSetName -eq 'Documentation')
         throw "Cannot find markdown documentation folder."
     }
     New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force -Verbose:$verbosity
+}
+
+if ($PSCmdlet.ParameterSetName -eq 'Install')
+{
+    $modulePath = Join-Path (Split-Path $profile) 'Modules'
+    if (-not (Test-Path $modulePath))
+    {
+        New-Item -Path $modulePath -ItemType Directory -Force -Verbose:$verbosity
+    }
+    if (-not (Test-Path -Path $destinationPath))
+    {
+        throw "Please build the module first."
+    }
+    Copy-Item -Path $destinationPath -Destination $modulePath -Recurse -Verbose:$verbosity
 }
