@@ -212,8 +212,18 @@ Get-Module $ModuleName | Remove-Module
 
 # Import the required version
 Import-Module $ModuleName -RequiredVersion $RequiredVersion -ErrorAction Stop
-$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
-$commands = Get-Command -FullyQualifiedModule $ms -CommandType Cmdlet, Function, Workflow # Not alias
+$ms = $null
+$commands =$null
+$paramBlackList = @()
+if ($PSVersionTable.PSVersion -lt [Version]'5.0') {
+	$ms = New-Object -TypeName 'Microsoft.PowerShell.Commands.ModuleSpecification' -ArgumentList $ModuleName
+	$commands = Get-Command -Module $ms.Name
+	$paramBlackList += 'SaveDscDependency'
+}
+else {
+	$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
+	$commands = Get-Command -FullyQualifiedModule $ms -CommandType Cmdlet,Function,Workflow # Not alias
+}
 
 ## When testing help, remember that help is cached at the beginning of each session.
 ## To test, restart session.
@@ -265,6 +275,9 @@ foreach ($command in $commands) {
 			$HelpParameterNames = $Help.Parameters.Parameter.Name | Sort-Object -Unique
 			
 			foreach ($parameter in $parameters) {
+				if ($parameter -in $paramBlackList) {
+					continue
+				}
 				$parameterName = $parameter.Name
 				$parameterHelp = $Help.parameters.parameter | Where-Object Name -EQ $parameterName
 				
@@ -291,6 +304,9 @@ foreach ($command in $commands) {
 			}
 			
 			foreach ($helpParm in $HelpParameterNames) {
+				if ($helpParm -in $paramBlackList) {
+					continue
+				}
 				# Shouldn't find extra parameters in help.
 				It "finds help parameter in code: $helpParm" {
 					$helpParm -in $parameterNames | Should Be $true
