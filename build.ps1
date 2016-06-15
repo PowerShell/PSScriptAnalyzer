@@ -1,19 +1,16 @@
 [CmdletBinding()]
 param(
-    [Parameter(ParameterSetName='Build')]
     [ValidateSet('PSV3 Debug','PSV3 Release','Debug','Release')]
     [string] $Configuration = 'Debug',
 
-    [Parameter(ParameterSetName='Build')]
+    [switch] $BuildSolution = $false,
+
     [switch] $CleanSolution = $false,
 
-    [Parameter(ParameterSetName='Documentation')]
-    [switch] $Documentation = $false,
+    [switch] $BuildDocs = $false,
 
-    [Parameter(ParameterSetName='Clean')]
-    [switch] $Clean = $false,
+    [switch] $CleanOutput = $false,
 
-    [Parameter(ParameterSetName='Install')]
     [switch] $Install = $false
 )
 
@@ -49,23 +46,22 @@ if (-not (Test-Path $buildCmd))
     throw "cannot find build.cmd"
 }
 
-
-if ($PSCmdlet.ParameterSetName -eq 'Clean')
+if ($CleanOutput)
 {
-    Remove-Item -Recurse $outPath\* -Force
+    Remove-Item -Recurse $outPath\* -Force -Verbose:$verbosity
 }
 
-if ($PSCmdlet.ParameterSetName -eq 'Build')
+if ($CleanSolution)
 {
-    if ($CleanSolution)
-    {
-        & $buildCmd $solutionPath $Configuration 'clean'
-        return
-    }
+    & $buildCmd $solutionPath $Configuration 'clean'
+}
+
+if ($BuildSolution)
+{
     & $buildCmd $solutionPath $Configuration
 }
 
-if ($PSCmdlet.ParameterSetName -eq 'Documentation')
+if ($BuildDocs)
 {
     $docsPath = Join-Path $projectRoot 'docs'
     $markdownDocsPath = Join-Path $docsPath 'markdown'
@@ -91,7 +87,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Documentation')
     New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force -Verbose:$verbosity
 }
 
-if ($PSCmdlet.ParameterSetName -eq 'Install')
+if ($Install)
 {
     $modulePath = Join-Path (Split-Path $profile) 'Modules'
     if (-not (Test-Path $modulePath))
