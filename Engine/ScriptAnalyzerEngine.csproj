@@ -119,16 +119,12 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="about_PSScriptAnalyzer.help.txt" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>
-if "PSV3 Release" == "$(ConfigurationName)" (
+    <PostBuildEvent>if "PSV3 Release" == "$(ConfigurationName)" (
 	GOTO psv3Release
 ) else if "PSV3 Debug" == "$(ConfigurationName)" (
 	GOTO psv3Debug	
@@ -138,34 +134,31 @@ if "PSV3 Release" == "$(ConfigurationName)" (
 
 :psv3Release
 :psv3Debug
-if not exist "$(SolutionDir)$(SolutionName)\PSv3" (
-        mkdir "$(SolutionDir)$(SolutionName)\PSv3"
+if not exist "$(SolutionDir)out\$(SolutionName)\PSv3" (
+        mkdir "$(SolutionDir)out\$(SolutionName)\PSv3"
 )
-copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)\PSv3"
+copy /y "$(TargetPath)" "$(SolutionDir)out\$(SolutionName)\PSv3"
 GOTO end
 
 
 :default
-if not exist "$(SolutionDir)$(SolutionName)" (
-	mkdir "$(SolutionDir)$(SolutionName)"
+if not exist "$(SolutionDir)out\$(SolutionName)" (
+	mkdir "$(SolutionDir)out\$(SolutionName)"
 )
-copy /y "$(TargetPath)" "$(SolutionDir)$(SolutionName)"
+copy /y "$(TargetPath)" "$(SolutionDir)out\$(SolutionName)"
 GOTO end
 
 :end
-copy /y "$(ProjectDir)*.ps1xml" "$(SolutionDir)$(SolutionName)"
-copy /y "$(ProjectDir)*.psm1" "$(SolutionDir)$(SolutionName)"
-copy /y "$(ProjectDir)*.psd1" "$(SolutionDir)$(SolutionName)"	
-if not exist "$(SolutionDir)$(SolutionName)\Settings" (
-	mkdir "$(SolutionDir)$(SolutionName)\Settings"
+copy /y "$(ProjectDir)*.ps1xml" "$(SolutionDir)out\$(SolutionName)"
+copy /y "$(ProjectDir)*.psm1" "$(SolutionDir)out\$(SolutionName)"
+copy /y "$(ProjectDir)*.psd1" "$(SolutionDir)out\$(SolutionName)"
+if not exist "$(SolutionDir)out\$(SolutionName)\Settings" (
+	mkdir "$(SolutionDir)out\$(SolutionName)\Settings"
 )
-copy /y "$(ProjectDir)Settings\*.psd1" "$(SolutionDir)$(SolutionName)\Settings"
-if not exist "$(SolutionDir)$(SolutionName)\en-US" (
-	mkdir "$(SolutionDir)$(SolutionName)\en-US"
+copy /y "$(ProjectDir)Settings\*.psd1" "$(SolutionDir)out\$(SolutionName)\Settings"
+if not exist "$(SolutionDir)out\$(SolutionName)\en-US" (
+	mkdir "$(SolutionDir)out\$(SolutionName)\en-US"
 )
-copy /y "$(ProjectDir)about_*.help.txt" "$(SolutionDir)$(SolutionName)\en-US"
-copy /y "$(ProjectDir)*Help.xml" "$(SolutionDir)$(SolutionName)\en-US"
-
-</PostBuildEvent>
+copy /y "$(SolutionDir)docs\about_*.help.txt" "$(SolutionDir)out\$(SolutionName)\en-US"</PostBuildEvent>
   </PropertyGroup>
 </Project>
