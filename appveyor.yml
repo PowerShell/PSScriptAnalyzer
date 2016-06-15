@@ -9,9 +9,7 @@ clone_folder: c:\projects\psscriptanalyzer
 # Install Pester
 install:
     - cinst -y pester --version 3.4.0
-
-# Build PSScriptAnalyzer using msbuild
-# build: true
+    - ps: nuget install platyPS -Version 0.5.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
 
 build_script:
     - ps: |
@@ -21,6 +19,7 @@ build_script:
             $buildConfig = 'PSV3 Release'
         }
         & 'C:\Program Files (x86)\MSBuild\12.0\Bin\MSBuild.exe' 'C:\projects\psscriptanalyzer\PSScriptAnalyzer.sln' /P:Configuration=$buildConfig /logger:'C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll'
+        C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
 
 # branches to build
 branches:
@@ -33,7 +32,7 @@ branches:
 test_script:
     - SET PATH=c:\Program Files\WindowsPowerShell\Modules\;%PATH%;
     - ps: |
-        copy "C:\projects\psscriptanalyzer\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
+        copy "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
         $engineTestResultsFile = ".\EngineTestResults.xml"
         $ruleTestResultsFile = ".\RuleTestResults.xml"
         $engineTestResults = Invoke-Pester -Script "C:\projects\psscriptanalyzer\Tests\Engine" -OutputFormat NUnitXml -OutputFile $engineTestResultsFile -PassThru
