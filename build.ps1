@@ -30,14 +30,15 @@ Function CreateIfNotExists([string] $folderPath)
     }
 }
 
-$projectRoot = Resolve-path .
+$projectRoot = Resolve-path (Split-Path $MyInvocation.InvocationName)
 $solutionPath = Join-Path $projectRoot 'PSScriptAnalyzer.sln'
 $outPath = Join-Path $projectRoot 'out'
 $destinationPath = Join-Path $outPath PSScriptAnalyzer
 
 if (-not (Test-Path $solutionPath))
 {
-    throw "not the right directory"
+    $errMsg = "{0} not the right directory" -f $solutionPath
+    throw $errMsg
 }
 
 $buildCmd = Join-Path $projectRoot "build.cmd"
