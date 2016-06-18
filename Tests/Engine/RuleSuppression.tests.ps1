@@ -81,6 +81,25 @@ Describe "RuleSuppressionWithoutScope" {
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
             $suppression.Count | Should Be 1
         }
+
+        It "Suppresses PSAvoidUsingPlainTextForPassword violation for the given ID" {
+            $ruleSuppressionIdAvoidPlainTextPassword = @'
+function SuppressPwdParam()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1")]
+    param(
+    [string] $password1,
+    [string] $password2
+    )
+}
+'@
+            Invoke-ScriptAnalyzer `
+              -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword `
+              -IncludeRule "PSAvoidUsingPlainTextForPassword" `
+              -OutVariable ruleViolations `
+              -SuppressedOnly
+            $ruleViolations.Count | Should Be 1
+        }
     }
 
     if (($PSVersionTable.PSVersion -ge [Version]'5.0'))
