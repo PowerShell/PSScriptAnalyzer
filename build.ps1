@@ -1,26 +1,39 @@
 [CmdletBinding()]
 param(
-   
+
+    [Parameter(ParameterSetName='Build')]
     [ValidateSet('PSV3 Debug','PSV3 Release','Debug','Release')]
     [string] $Configuration = 'Debug',
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $BuildSolution = $false,
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $CleanSolution = $false,
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $BuildDocs = $false,
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $CleanOutput = $false,
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $Install = $false,
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $Uninstall = $false,
 
+    [Parameter(ParameterSetName='Test')]
     [switch] $Test = $false,
 
+    [Parameter(ParameterSetName='Test')]
     [switch] $Engine = $false,
 
-    [switch] $Rules = $false
+    [Parameter(ParameterSetName='Test')]
+    [switch] $Rules = $false,
+
+    [Parameter(ParameterSetName='Test')]
+    [switch] $RunInDifferentProcess = $false
 )
 
 # Some cmdlets like copy-item do not respond to the $verbosepreference variable
@@ -118,7 +131,7 @@ if ($Test)
     Import-Module PSScriptAnalyzer -ErrorAction Stop
     Import-Module -Name Pester -RequiredVersion 3.4.0 -ErrorAction Stop
 
-    
+
     Function GetTestRunnerScriptContent($testPath)
     {
         $x = @"
@@ -127,7 +140,7 @@ if ($Test)
 "@
         return $x
     }
-    
+
     Function CreateTestRunnerScript($testPath)
     {
         $tmptmpFilePath = [System.IO.Path]::GetTempFileName()
@@ -150,17 +163,18 @@ if ($Test)
         }
         return $testPath
     }
-    
-    Function RunTest($TestType, $DifferentProcess)
+
+    Function RunTest($TestType, [Boolean] $DifferentProcess)
     {
-        $testPath = GetTestPath($TestType)        
+        $testPath = GetTestPath($TestType)
         if ($DifferentProcess)
         {
             $testScriptFilePath = CreateTestRunnerScript $testPath
             Start-Process powershell -ArgumentList "-NoExit","-File $testScriptFilePath" -Verb runas
+            # clean up the test file
         }
         else
-        {            
+        {
             try
             {
                 Push-Location .
@@ -169,18 +183,18 @@ if ($Test)
             finally
             {
                 Pop-Location
+
             }
         }
-        # clean up the test file
     }
 
-    if ($Engine)
+    if ($Engine -or (-not ($Engine -or $Rules)))
     {
-        RunTest('engine')
+        RunTest 'engine' $RunInDifferentProcess
     }
-    if ($Rules)
+    if ($Rules -or (-not ($Engine -or $Rules)))
     {
-        RunTest('rules')
+        RunTest 'rules' $RunInDifferentProcess
     }
 }
 
@@ -188,5 +202,3 @@ if ($Uninstall)
 {
     Remove-Item -Path $modulePSSAPath -Force -Verbose:$verbosity -Recurse
 }
-
-
