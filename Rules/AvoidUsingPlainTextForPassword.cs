@@ -65,6 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetName(), 
                         DiagnosticSeverity.Warning, 
                         fileName,
+                        paramName,
                         suggestedCorrections: fileName == null ? null : GetCorrectionExtent(paramAst));
                 }
             }

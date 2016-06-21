@@ -1,17 +1,39 @@
 [CmdletBinding()]
 param(
+
+    [Parameter(ParameterSetName='Build')]
     [ValidateSet('PSV3 Debug','PSV3 Release','Debug','Release')]
     [string] $Configuration = 'Debug',
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $BuildSolution = $false,
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $CleanSolution = $false,
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $BuildDocs = $false,
 
+    [Parameter(ParameterSetName='Build')]
     [switch] $CleanOutput = $false,
 
-    [switch] $Install = $false
+    [Parameter(ParameterSetName='Build')]
+    [switch] $Install = $false,
+
+    [Parameter(ParameterSetName='Build')]
+    [switch] $Uninstall = $false,
+
+    [Parameter(ParameterSetName='Test')]
+    [switch] $Test = $false,
+
+    [Parameter(ParameterSetName='Test')]
+    [switch] $Engine = $false,
+
+    [Parameter(ParameterSetName='Test')]
+    [switch] $Rules = $false,
+
+    [Parameter(ParameterSetName='Test')]
+    [switch] $RunInDifferentProcess = $false
 )
 
 # Some cmdlets like copy-item do not respond to the $verbosepreference variable
@@ -88,16 +110,95 @@ if ($BuildDocs)
     New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force -Verbose:$verbosity
 }
 
+
+$moduleRootPath = Join-Path (Split-Path $profile) 'Modules'
+$modulePSSAPath = Join-Path $moduleRootPath 'PSScriptAnalyzer'
 if ($Install)
 {
-    $modulePath = Join-Path (Split-Path $profile) 'Modules'
-    if (-not (Test-Path $modulePath))
+    if (-not (Test-Path $moduleRootPath))
     {
-        New-Item -Path $modulePath -ItemType Directory -Force -Verbose:$verbosity
+        New-Item -Path $moduleRootPath -ItemType Directory -Force -Verbose:$verbosity
     }
     if (-not (Test-Path -Path $destinationPath))
     {
         throw "Please build the module first."
     }
-    Copy-Item -Path $destinationPath -Destination $modulePath -Recurse -Verbose:$verbosity
+    Copy-Item -Path $destinationPath -Destination $modulePSSAPath -Recurse -Verbose:$verbosity
+}
+
+if ($Test)
+{
+    Import-Module PSScriptAnalyzer -ErrorAction Stop
+    Import-Module -Name Pester -RequiredVersion 3.4.0 -ErrorAction Stop
+
+
+    Function GetTestRunnerScriptContent($testPath)
+    {
+        $x = @"
+        cd $testPath
+        Invoke-Pester
+"@
+        return $x
+    }
+
+    Function CreateTestRunnerScript($testPath)
+    {
+        $tmptmpFilePath = [System.IO.Path]::GetTempFileName()
+        $tmpFilePath = $tmptmpFilePath + '.ps1'
+        Move-Item $tmptmpFilePath $tmpFilePath -Verbose:$verbosity
+        $content = GetTestRunnerScriptContent $testPath
+        Set-Content -Path $tmpFilePath -Value $content -Verbose:$verbosity
+        return $tmpFilePath
+    }
+
+    Function GetTestPath($TestType)
+    {
+        if ($TestType -eq "engine")
+        {
+            $testPath = Join-Path $projectRoot "Tests/Engine"
+        }
+        else
+        {
+            $testPath = Join-Path $projectRoot "Tests/Rules"
+        }
+        return $testPath
+    }
+
+    Function RunTest($TestType, [Boolean] $DifferentProcess)
+    {
+        $testPath = GetTestPath($TestType)
+        if ($DifferentProcess)
+        {
+            $testScriptFilePath = CreateTestRunnerScript $testPath
+            Start-Process powershell -ArgumentList "-NoExit","-File $testScriptFilePath" -Verb runas
+            # clean up the test file
+        }
+        else
+        {
+            try
+            {
+                Push-Location .
+                ([scriptblock]::Create((GetTestRunnerScriptContent $testPath))).Invoke()
+            }
+            finally
+            {
+                Pop-Location
+
+            }
+        }
+    }
+
+    if ($Engine -or (-not ($Engine -or $Rules)))
+    {
+        RunTest 'engine' $RunInDifferentProcess
+    }
+    if ($Rules -or (-not ($Engine -or $Rules)))
+    {
+        RunTest 'rules' $RunInDifferentProcess
+    }
+}
+
+if ($Uninstall)
+{
+    Remove-Item -Path $modulePSSAPath -Force -Verbose:$verbosity -Recurse
 }
