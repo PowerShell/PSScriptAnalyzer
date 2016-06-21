@@ -29,3 +29,19 @@ function MyFunction3
         $Password
     )
 }
+
+function MyFunction3
+{
+    param(
+    [string] $Username,
+    [switch] $HidePassword
+    )
+}
+
+function MyFunction4
+{
+    param(
+    [string] $Username,
+    [bool] $HidePassword
+    )
+}

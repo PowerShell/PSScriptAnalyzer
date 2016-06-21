@@ -42,6 +42,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             List<String> passwords = new List<String>() {"Password", "Passphrase"};
             List<String> usernames = new List<String>() { "Username", "User"};
+            Type[] typeWhiteList = {typeof(CredentialAttribute),
+                                            typeof(PSCredential),
+                                            typeof(System.Security.SecureString),
+                                            typeof(SwitchParameter),
+                                            typeof(Boolean)};
 
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
@@ -50,32 +55,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 // Finds all ParamAsts.
                 IEnumerable<Ast> paramAsts = funcAst.FindAll(testAst => testAst is ParameterAst, true);
-
                 ParameterAst usernameAst = null;
                 ParameterAst passwordAst = null;
                 // Iterates all ParamAsts and check if their names are on the list.
                 foreach (ParameterAst paramAst in paramAsts)
                 {
-                    // this will be null if there is no [pscredential] attached to the parameter
-                    var psCredentialType = paramAst.Attributes.FirstOrDefault(paramAttribute =>
-                        (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof(PSCredential))
-                        || paramAttribute.TypeName.GetReflectionType() == typeof(PSCredential));
-
-                    // this will be null if there are no [credential()] attribute attached
-                    var credentialAttribute = paramAst.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
-
-                    // this will be null if there are no [securestring] attached to the parameter
-                    var secureStringType = paramAst.Attributes.FirstOrDefault(paramAttribute =>
-                        (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof (System.Security.SecureString))
-                        || paramAttribute.TypeName.GetReflectionType() == typeof(System.Security.SecureString));
-
+                    var attributes = typeWhiteList.Select(x => GetAttributeOfType(paramAst.Attributes, x));
                     String paramName = paramAst.Name.VariablePath.ToString();                    
                     foreach (String password in passwords)
                     {
                         if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
                         {
-                            // if this is a secure string, pscredential or credential attribute, don't count
-                            if (secureStringType != null || credentialAttribute != null || psCredentialType != null)
+                            if (attributes.Any(x => x != null))
                             {
                                 continue;
                             }
@@ -106,6 +97,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+        private AttributeBaseAst GetAttributeOfType(IEnumerable<AttributeBaseAst> attributeAsts, Type type)
+        {
+            return attributeAsts.FirstOrDefault(x => IsAttributeOfType(x, type));
+        }
+
+        private bool IsAttributeOfType(AttributeBaseAst attributeAst, Type type)
+        {
+            var arrayType = attributeAst.TypeName as ArrayTypeName;
+            if (arrayType != null)
+            {
+                return arrayType.ElementType.GetReflectionType() == type;
+            }
+            return attributeAst.TypeName.GetReflectionType() == type;
+        }
         /// <summary>
         /// Returns script extent of username and password parameters
         /// </summary>

@@ -40,7 +40,7 @@ function SuppressUserAndPwdRule()
     param
     (
         [System.String] $username,
-        [System.Boolean] $password
+        [System.String] $password
     )
 }
 '@
