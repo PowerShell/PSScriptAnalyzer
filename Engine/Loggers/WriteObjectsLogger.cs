@@ -13,7 +13,7 @@
 using System;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
-using System.ComponentModel.Composition;
+//using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
@@ -24,14 +24,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Loggers
     /// <summary>
     /// WriteObjectsLogger: Logs Diagnostics though WriteObject.
     /// </summary>
-    [Export(typeof(ILogger))]
+    // [Export(typeof(ILogger))]
     public class WriteObjectsLogger : ILogger
     {
         #region Private members
 
+#if CORECLR
+        private CultureInfo cul = System.Globalization.CultureInfo.CurrentCulture;
+        private ResourceManager rm = new ResourceManager(
+            "Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings",
+            typeof(WriteObjectsLogger).GetTypeInfo().Assembly);
+#else
         private CultureInfo cul = Thread.CurrentThread.CurrentCulture;
         private ResourceManager rm = new ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings",
                                                                   Assembly.GetExecutingAssembly());
+#endif
 
         #endregion
 

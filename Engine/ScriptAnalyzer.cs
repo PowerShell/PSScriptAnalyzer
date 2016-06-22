@@ -16,8 +16,10 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
+#if !CORECLR
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+#endif // !CORECLR
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -38,7 +40,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         #region Private members
 
         private IOutputWriter outputWriter;
+#if !CORECLR
         private CompositionContainer container;
+#endif // !CORECLR
         Dictionary<string, List<string>> validationResults = new Dictionary<string, List<string>>();
         string[] includeRule;
         string[] excludeRule;
@@ -71,11 +75,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-#endregion
+        #endregion
 
-#region Properties
+        #region Properties
 
-        // Initializes via ImportMany
+#if CORECLR
+        public IEnumerable<IScriptRule> ScriptRules { get; private set; }
+        public IEnumerable<ITokenRule> TokenRules { get; private set; }
+        public IEnumerable<ILogger> Loggers { get; private set; }
+        public IEnumerable<IDSCResourceRule> DSCResourceRules { get; private set; }
+#else
         [ImportMany]
         public IEnumerable<IScriptRule> ScriptRules { get; private set; }
 
@@ -87,6 +96,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         [ImportMany]
         public IEnumerable<IDSCResourceRule> DSCResourceRules { get; private set; }
+
+#endif // !CORECLR
+        // Initializes via ImportMany
 
         internal List<ExternalRule> ExternalRules { get; set; }
 
@@ -106,7 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
 #endregion
 
-        #region Methods
+#region Methods
 
         /// <summary>
         /// Initialize : Initializes default rules, loggers and helper.
@@ -656,6 +668,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return paths;
         }
 
+
+        private IEnumerable<IScriptRule> GetRulesFromDLL()
+        {
+            string dirName = Path.GetDirectoryName(typeof(ScriptAnalyzer).GetTypeInfo().Assembly.Location);
+            var dllPaths = Directory.EnumerateFiles(dirName, "*.dll", SearchOption.TopDirectoryOnly);
+            var rules = new List<IScriptRule>();
+            foreach (var dllPath in dllPaths)
+            {
+                var rulesFromOneFile = GetRulesFromDLL(dllPath);
+                rules.AddRange(rulesFromOneFile);
+            }
+            return rules;
+        }
+
+        private IEnumerable<IScriptRule> GetRulesFromDLL(string ruleDllPath)
+        {
+            var dll = Assembly.Load(new AssemblyName(Path.GetFileNameWithoutExtension(ruleDllPath)));
+            var rules = new List<IScriptRule>();
+            foreach (var type in dll.ExportedTypes)
+            {
+                if (type == typeof(IScriptRule))
+                {
+                    IScriptRule rule = Activator.CreateInstance(type) as IScriptRule;
+                    rules.Add(rule);
+                }
+            }
+            return rules;
+        }
+
         private void LoadRules(Dictionary<string, List<string>> result, CommandInvocationIntrinsics invokeCommand, bool loadBuiltInRules)
         {
             List<string> paths = new List<string>();
@@ -669,6 +710,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.TokenRules = null;
             this.ExternalRules = null;
 
+#if CORECLR
+            this.ScriptRules = GetRulesFromDLL();
+#else
             // An aggregate catalog that combines multiple catalogs.
             using (AggregateCatalog catalog = new AggregateCatalog())
             {
@@ -709,7 +753,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     this.outputWriter.WriteWarning(compositionException.ToString());
                 }
             }
-
+#endif // CORECLR
             if (!loadBuiltInRules)
             {
                 this.ScriptRules = null;

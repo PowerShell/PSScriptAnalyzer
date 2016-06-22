@@ -106,7 +106,7 @@
     <Compile Include="Helper.cs" />
     <Compile Include="IOutputWriter.cs" />
     <Compile Include="Loggers\WriteObjectsLogger.cs" />
-    <Compile Include="SafeDirectoryCatalog.cs" />
+    <Compile Include="SafeDirectoryCatalog.cs" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'"/>
     <Compile Include="ScriptAnalyzer.cs" />
     <Compile Include="SpecialVars.cs" />
     <Compile Include="Strings.Designer.cs">
