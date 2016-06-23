@@ -51,9 +51,8 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CoreCLR Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CoreCLR Debug|AnyCPU'">
     <TargetFrameworkIdentifier>.NETCore</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v0.1</TargetFrameworkVersion>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\CoreCLR Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;CORECLR</DefineConstants>
@@ -61,6 +60,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <TargetFrameworkIdentifier>.NETCore</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v0.1</TargetFrameworkVersion>
   </PropertyGroup>
   <Choose>
     <When Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'">
@@ -106,10 +107,13 @@
     <Compile Include="Helper.cs" />
     <Compile Include="IOutputWriter.cs" />
     <Compile Include="Loggers\WriteObjectsLogger.cs" />
-    <Compile Include="SafeDirectoryCatalog.cs" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'"/>
+    <Compile Include="SafeDirectoryCatalog.cs" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'" />
     <Compile Include="ScriptAnalyzer.cs" />
     <Compile Include="SpecialVars.cs" />
-    <Compile Include="Strings.Designer.cs">
+    <Compile Include="Strings.Designer.Core.cs" Condition="'$(Configuration)|$(Platform)' == 'CoreCLR Debug|AnyCPU'">
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Strings.Designer.cs" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
@@ -130,12 +134,18 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Strings.resx">
+      <Generator Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'">ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <!--<EmbeddedResource Include="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>-->
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'"/>
-  <Import Project="$(SolutionDir)\Microsoft.CoreSys.CSHARP.Targets" Condition="'$(Configuration)|$(Platform)' == 'CoreCLR Debug|AnyCPU'"/>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'" />
+  <Import Project="$(SolutionDir)\Microsoft.CoreSys.CSHARP.Targets" Condition="'$(Configuration)|$(Platform)' == 'CoreCLR Debug|AnyCPU'" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
