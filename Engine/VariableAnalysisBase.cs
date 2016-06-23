@@ -1725,11 +1725,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return typeof(object);
             }
 
-            if (FirstType.IsSubclassOf(SecondType) || FirstType == SecondType)
+            if (FirstType.GetTypeInfo().IsSubclassOf(SecondType) || FirstType == SecondType)
             {
                 return FirstType;
             }
-            else if (SecondType.IsSubclassOf(FirstType))
+            else if (SecondType.GetTypeInfo().IsSubclassOf(FirstType))
             {
                 return SecondType;
             }

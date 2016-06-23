@@ -69,10 +69,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
             private set
             {
+#if CORECLR
+                localAppdataPath
+                    = string.IsNullOrWhiteSpace(value)
+                    ? Environment.GetEnvironmentVariable("LOCALAPPDATA")
+                    : value;
+#else
                 localAppdataPath
                     = string.IsNullOrWhiteSpace(value)
                     ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
                     : value;
+#endif
             }
         }        
 
@@ -194,7 +201,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private string GetTempModulePath(string symLinkPath)
         {
             string line; 
-            using (var fileStream = new StreamReader(symLinkPath))
+            using (var file = File.Open(symLinkPath, FileMode.Open))
+            using (var fileStream = new StreamReader(file))
             {
                 line = fileStream.ReadLine();
             }
@@ -220,12 +228,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             oldPSModulePath = Environment.GetEnvironmentVariable("PSModulePath");
             curPSModulePath = oldPSModulePath + ";" + tempModulePath;
+#if CORECLR
+            Environment.SetEnvironmentVariable("PSModulePath", curPSModulePath);
+#else
             Environment.SetEnvironmentVariable("PSModulePath", curPSModulePath, EnvironmentVariableTarget.Process);
+#endif
         }
 
         private void RestorePSModulePath()
         {
+
+#if CORECLR
+            Environment.SetEnvironmentVariable("PSModulePath", oldPSModulePath);
+#else
             Environment.SetEnvironmentVariable("PSModulePath", oldPSModulePath, EnvironmentVariableTarget.Process);
+#endif
         }
 #endregion Private Methods
 
