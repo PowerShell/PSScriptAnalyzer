@@ -21,10 +21,11 @@
         "compile": { 
             "exclude": [ 
                 "Strings.Designer.cs",
+                "Strings.Designer.Core.cs",
                 "UseSingularNouns.cs" 
                 ] 
-            }          
+            }
       }
     }
-  }
+  },
 }
