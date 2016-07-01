@@ -4,8 +4,7 @@
     [switch]$install
 )
 
-$solutionDir = "C:\Users\kborle\Source\Repos\PSScriptAnalyzer"
-
+$solutionDir = "$HOME\Source\Repos\PSScriptAnalyzer"
 
 $itemsToCopy = @("$solutionDir\Engine\bin\debug\netcoreapp1.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
     "$solutionDir\Rules\bin\debug\netcoreapp1.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll",
@@ -18,10 +17,12 @@ $destinationDir = "$solutionDir/out/coreclr/PSScriptAnalyzer"
 
 if ($build)
 {
+    .\New-StronglyTypedCsFileForResx.ps1 Engine
     Push-Location Engine\
     dotnet build
     Pop-Location
 
+    .\New-StronglyTypedCsFileForResx.ps1 Rules
     Push-Location Rules\
     dotnet build
     Pop-Location
@@ -35,16 +36,16 @@ if ($build)
         Remove-Item "$destinationDir\*" -Recurse
     }
 
-    foreach ($file in $itemsToCopy) 
+    foreach ($file in $itemsToCopy)
     {
         Copy-Item -Path $file -Destination (Join-Path $destinationDir (Split-Path $file -Leaf)) -Verbose
     }
-    (Get-Content "$solutionDir\Engine\PSScriptAnalyzer.psd1") -replace "ModuleVersion = '1.6.0'","ModuleVersion = '0.0.1'" | Out-File "$solutionDir\Engine\PSScriptAnalyzer.psd1"
+    (Get-Content "$destinationDir\PSScriptAnalyzer.psd1") -replace "ModuleVersion = '1.6.0'","ModuleVersion = '0.0.1'" | Out-File "$destinationDir\PSScriptAnalyzer.psd1" -Encoding ascii
 }
 
-$modulePath = "C:\Users\kborle\Documents\WindowsPowerShell\Modules";
+$modulePath = "$HOME\Documents\WindowsPowerShell\Modules";
 $pssaModulePath = Join-Path $modulePath PSScriptAnalyzer
- 
+
 
 if ($uninstall)
 {
@@ -52,11 +53,10 @@ if ($uninstall)
     {
         Remove-Item -Recurse $pssaModulePath -Verbose
     }
- 
+
 }
 
 if ($install)
 {
     Copy-Item -Recurse -Path "$destinationDir" -Destination "$modulePath\." -Verbose -Force
 }
-
