@@ -669,28 +669,57 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
 
-        private IEnumerable<IScriptRule> GetRulesFromDLL()
+        private IEnumerable<T> GetRulesFromDLL<T>() where T : class, IRule 
         {
             string dirName = Path.GetDirectoryName(typeof(ScriptAnalyzer).GetTypeInfo().Assembly.Location);
             var dllPaths = Directory.EnumerateFiles(dirName, "*.dll", SearchOption.TopDirectoryOnly);
-            var rules = new List<IScriptRule>();
+            var rules = new List<T>();
             foreach (var dllPath in dllPaths)
             {
-                var rulesFromOneFile = GetRulesFromDLL(dllPath);
+                outputWriter.WriteVerbose(string.Format("Found Assembly: {0}", dllPath));
+                var rulesFromOneFile = GetRulesFromDLL<T>(dllPath);
                 rules.AddRange(rulesFromOneFile);
             }
             return rules;
         }
 
-        private IEnumerable<IScriptRule> GetRulesFromDLL(string ruleDllPath)
+        private IEnumerable<T> GetRulesFromDLL<T>(string ruleDllPath) where T : class, IRule
         {
-            var dll = Assembly.Load(new AssemblyName(Path.GetFileNameWithoutExtension(ruleDllPath)));
-            var rules = new List<IScriptRule>();
+            var fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
+            var assName = new AssemblyName(fileName);
+            outputWriter.WriteVerbose(string.Format("Loading Assembly:{0}", assName.FullName));
+
+            var dll = Assembly.Load(assName);
+            var rules = new List<T>();
+            if (dll == null)
+            {
+                outputWriter.WriteVerbose(string.Format("Cannot load {0}", ruleDllPath));
+                return rules;
+            }
             foreach (var type in dll.ExportedTypes)
             {
-                if (type == typeof(IScriptRule))
+                var typeInfo = type.GetTypeInfo();
+                if (!typeInfo.IsInterface
+                    && !typeInfo.IsAbstract
+                    && typeInfo.ImplementedInterfaces.Contains(typeof(T)))
                 {
-                    IScriptRule rule = Activator.CreateInstance(type) as IScriptRule;
+                    outputWriter.WriteVerbose(
+                        string.Format(
+                            "Creating Instance of {0}", type.Name));
+
+                    var ruleObj = Activator.CreateInstance(type);
+                    outputWriter.WriteVerbose(
+                        string.Format(
+                            "Created Instance of {0}", type.Name));
+
+                    T rule = ruleObj as T;
+                    if (rule == null)
+                    {
+                        outputWriter.WriteVerbose(
+                            string.Format(
+                                "Cannot cast instance of type {0} to {1}", type.Name, typeof(T).GetTypeInfo().Name));
+                        continue;
+                    }
                     rules.Add(rule);
                 }
             }
@@ -711,7 +740,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.ExternalRules = null;
 
 #if CORECLR
-            this.ScriptRules = GetRulesFromDLL();
+            this.ScriptRules = GetRulesFromDLL<IScriptRule>();
+            this.TokenRules = GetRulesFromDLL<ITokenRule>();
+            this.DSCResourceRules = GetRulesFromDLL<IDSCResourceRule>();
 #else
             // An aggregate catalog that combines multiple catalogs.
             using (AggregateCatalog catalog = new AggregateCatalog())
