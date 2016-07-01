@@ -678,23 +678,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             string dirName = Path.GetDirectoryName(typeof(ScriptAnalyzer).GetTypeInfo().Assembly.Location);
             var dllPaths = Directory.EnumerateFiles(dirName, "*.dll", SearchOption.TopDirectoryOnly);
-            var rules = new List<T>();
+            var objects = new List<T>();
             foreach (var dllPath in dllPaths)
             {
                 outputWriter.WriteVerbose(string.Format("Found Assembly: {0}", dllPath));
-                var rulesFromOneFile = GetRulesFromDLL<T>(dllPath);
-                rules.AddRange(rulesFromOneFile);
+                var objectsFromOneFile = GetInterfaceImplementationsFromAssembly<T>(dllPath);
+                objects.AddRange(objectsFromOneFile);
             }
-            return rules;
+            return objects;
         }
 
-        private IEnumerable<T> GetRulesFromDLL<T>(string ruleDllPath) where T : class
+        private IEnumerable<T> GetInterfaceImplementationsFromAssembly<T>(string ruleDllPath) where T : class
         {
             var fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
-            var assName = new AssemblyName(fileName);
-            outputWriter.WriteVerbose(string.Format("Loading Assembly:{0}", assName.FullName));
+            var assemblyName = new AssemblyName(fileName);
+            outputWriter.WriteVerbose(string.Format("Loading Assembly:{0}", assemblyName.FullName));
 
-            var dll = Assembly.Load(assName);
+            var dll = Assembly.Load(assemblyName);
             var rules = new List<T>();
             if (dll == null)
             {
