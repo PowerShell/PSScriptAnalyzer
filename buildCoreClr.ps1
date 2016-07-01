@@ -4,10 +4,14 @@
     [switch]$install
 )
 
-$solutionDir = "$HOME\Source\Repos\PSScriptAnalyzer"
+$solutionDir = Split-Path $MyInvocation.InvocationName
+if (-not (Test-Path "$solutionDir/global.json"))
+{
+    throw "Not in solution root"
+}
 
-$itemsToCopy = @("$solutionDir\Engine\bin\debug\netcoreapp1.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-    "$solutionDir\Rules\bin\debug\netcoreapp1.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll",
+$itemsToCopy = @("$solutionDir\Engine\bin\Debug\netcoreapp1.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+    "$solutionDir\Rules\bin\Debug\netcoreapp1.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll",
     "$solutionDir\Engine\PSScriptAnalyzer.psd1",
     "$solutionDir\Engine\PSScriptAnalyzer.psm1",
     "$solutionDir\Engine\ScriptAnalyzer.format.ps1xml",
