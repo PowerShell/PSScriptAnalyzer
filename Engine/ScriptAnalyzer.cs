@@ -96,9 +96,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         [ImportMany]
         public IEnumerable<IDSCResourceRule> DSCResourceRules { get; private set; }
-
-#endif // !CORECLR
         // Initializes via ImportMany
+#endif // !CORECLR
 
         internal List<ExternalRule> ExternalRules { get; set; }
 
@@ -507,13 +506,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             this.outputWriter = outputWriter;
 
-#region Verifies rule extensions and loggers path
+#region Verifies rule extensions
 
             List<string> paths = this.GetValidCustomRulePaths(customizedRulePath, path);
 
-#endregion
+            #endregion
 
-#region Initializes Rules
+#if CORECLR
+            // For Full CLR logger is loaded via Composition
+            // But for Core CLR we need to load it explicitly
+            this.Loggers = GetInterfaceImplementationsFromAssembly<ILogger>();
+#endif
+
+            #region Initializes Rules
 
             var includeRuleList = new List<string>();
             var excludeRuleList = new List<string>();
@@ -669,7 +674,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
 
-        private IEnumerable<T> GetRulesFromDLL<T>() where T : class, IRule 
+        private IEnumerable<T> GetInterfaceImplementationsFromAssembly<T>() where T : class
         {
             string dirName = Path.GetDirectoryName(typeof(ScriptAnalyzer).GetTypeInfo().Assembly.Location);
             var dllPaths = Directory.EnumerateFiles(dirName, "*.dll", SearchOption.TopDirectoryOnly);
@@ -683,7 +688,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return rules;
         }
 
-        private IEnumerable<T> GetRulesFromDLL<T>(string ruleDllPath) where T : class, IRule
+        private IEnumerable<T> GetRulesFromDLL<T>(string ruleDllPath) where T : class
         {
             var fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
             var assName = new AssemblyName(fileName);
@@ -740,9 +745,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.ExternalRules = null;
 
 #if CORECLR
-            this.ScriptRules = GetRulesFromDLL<IScriptRule>();
-            this.TokenRules = GetRulesFromDLL<ITokenRule>();
-            this.DSCResourceRules = GetRulesFromDLL<IDSCResourceRule>();
+            this.ScriptRules = GetInterfaceImplementationsFromAssembly<IScriptRule>();
+            this.TokenRules = GetInterfaceImplementationsFromAssembly<ITokenRule>();
+            this.DSCResourceRules = GetInterfaceImplementationsFromAssembly<IDSCResourceRule>();
 #else
             // An aggregate catalog that combines multiple catalogs.
             using (AggregateCatalog catalog = new AggregateCatalog())
