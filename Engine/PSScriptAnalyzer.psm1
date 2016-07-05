@@ -12,8 +12,15 @@ $PSModuleRoot = $PSModule.ModuleBase
 
 # Import the appropriate nested binary module based on the current PowerShell version
 $binaryModuleRoot = $PSModuleRoot
-if ($PSVersionTable.PSVersion -lt [Version]'5.0') {
-    $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv3'
+
+if ($PSVersionTable.PSEdition -ne 'Desktop') {
+    $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'coreclr'
+}
+else
+{
+    if ($PSVersionTable.PSVersion -lt [Version]'5.0') {
+        $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv3'
+    }    
 }
 
 $binaryModulePath = Join-Path -Path $binaryModuleRoot -ChildPath 'Microsoft.Windows.PowerShell.ScriptAnalyzer.dll'
