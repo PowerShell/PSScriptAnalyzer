@@ -2,30 +2,55 @@
   "name": "Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules",
   "version": "1.0.0-*",
   "authors": ["kapilmb"],
-
   "dependencies": {
-    "Microsoft.NETCore.App": {
-      "type": "platform",
-      "version": "1.0.0-rc2-3002702"
-    },
     "System.Management.Automation": "1.0.0-b2682",
     "Engine": "1.0.0-*"
   },
-
   "frameworks": {
-    "netcoreapp1.0": {
+    "net451": {
+        "frameworkAssemblies": {
+          "System.ComponentModel.Composition": "",
+          "System.Data.Entity.Design": ""
+        },
+        "buildOptions": {
+          "compile": {
+            "exclude": [
+              "Strings.Designer.Core.cs",
+              "Strings.Designer.cs"
+              ]
+          }
+        },
+        "configurations": {
+          "PSV3 Release": {
+              "buildOptions": {
+                  "define": [ "PSV3" ]
+              }
+          },
+          "PSV3 Debug": {
+              "buildOptions": {
+                  "define": [ "PSV3", "DEBUG" ]
+              }
+          }
+        }
+    },
+    "netstandard1.6": {
       "imports": "dnxcore50",
-    
       "buildOptions": {
         "define": [ "CORECLR" ],
-        "compile": { 
-            "exclude": [ 
+        "compile": {
+            "exclude": [
                 "Strings.Designer.cs",
                 "Strings.Designer.Core.cs",
-                "UseSingularNouns.cs" 
-                ] 
+                "UseSingularNouns.cs"
+                ]
             }
+      },
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002702"
+          }
       }
     }
-  },
+  }
 }
