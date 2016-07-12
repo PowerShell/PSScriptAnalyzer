@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptAnalyzerEngine", "Engine\ScriptAnalyzerEngine.csproj", "{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}"
 EndProject
@@ -9,15 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptAnalyzerBuiltinRules"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		CoreCLR Debug|Any CPU = CoreCLR Debug|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		PSV3 Debug|Any CPU = PSV3 Debug|Any CPU
 		PSV3 Release|Any CPU = PSV3 Release|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}.CoreCLR Debug|Any CPU.ActiveCfg = CoreCLR Debug|Any CPU
-		{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}.CoreCLR Debug|Any CPU.Build.0 = CoreCLR Debug|Any CPU
 		{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}.PSV3 Debug|Any CPU.ActiveCfg = PSV3 Debug|Any CPU
@@ -26,8 +23,6 @@ Global
 		{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}.PSV3 Release|Any CPU.Build.0 = PSV3 Release|Any CPU
 		{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4BDE3D0-3EEF-4157-8A3E-722DF7ADEF60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C33B6B9D-E61C-45A3-9103-895FD82A5C1E}.CoreCLR Debug|Any CPU.ActiveCfg = CoreCLR Debug|Any CPU
-		{C33B6B9D-E61C-45A3-9103-895FD82A5C1E}.CoreCLR Debug|Any CPU.Build.0 = CoreCLR Debug|Any CPU
 		{C33B6B9D-E61C-45A3-9103-895FD82A5C1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C33B6B9D-E61C-45A3-9103-895FD82A5C1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C33B6B9D-E61C-45A3-9103-895FD82A5C1E}.PSV3 Debug|Any CPU.ActiveCfg = PSV3 Debug|Any CPU

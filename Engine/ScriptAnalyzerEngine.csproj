@@ -51,36 +51,20 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CoreCLR Debug|AnyCPU'">
-    <TargetFrameworkIdentifier>.NETCore</TargetFrameworkIdentifier>
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\CoreCLR Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CORECLR</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <TargetFrameworkIdentifier>.NETCore</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v0.1</TargetFrameworkVersion>
-  </PropertyGroup>
-  <Choose>
-    <When Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'">
-      <ItemGroup>
-        <Reference Include="Microsoft.CSharp" />
-        <Reference Include="System" />
-        <Reference Include="System.ComponentModel.Composition" />
-        <Reference Include="System.Core" />
-        <Reference Include="System.Data" />
-        <Reference Include="System.Data.DataSetExtensions" />
-        <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-          <SpecificVersion>False</SpecificVersion>
-          <HintPath>..\..\..\..\..\..\fbl_srv2_ci_mgmt.binaries.amd64chk\monad\System.Management.Automation.dll</HintPath>
-        </Reference>
-        <Reference Include="System.Xml" />
-        <Reference Include="System.Xml.Linq" />
-      </ItemGroup>
-    </When>
-  </Choose>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\fbl_srv2_ci_mgmt.binaries.amd64chk\monad\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\GetScriptAnalyzerRuleCommand.cs" />
     <Compile Include="Commands\InvokeScriptAnalyzerCommand.cs" />
@@ -107,13 +91,10 @@
     <Compile Include="Helper.cs" />
     <Compile Include="IOutputWriter.cs" />
     <Compile Include="Loggers\WriteObjectsLogger.cs" />
-    <Compile Include="SafeDirectoryCatalog.cs" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'" />
+    <Compile Include="SafeDirectoryCatalog.cs" />
     <Compile Include="ScriptAnalyzer.cs" />
     <Compile Include="SpecialVars.cs" />
-    <Compile Include="Strings.Designer.Core.cs" Condition="'$(Configuration)|$(Platform)' == 'CoreCLR Debug|AnyCPU'">
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Strings.Designer.cs" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'">
+    <Compile Include="Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
@@ -134,18 +115,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Strings.resx">
-      <Generator Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'">ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <!--<EmbeddedResource Include="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>-->
+    </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" Condition="'$(Configuration)|$(Platform)' != 'CoreCLR Debug|AnyCPU'" />
-  <Import Project="$(SolutionDir)\Microsoft.CoreSys.CSHARP.Targets" Condition="'$(Configuration)|$(Platform)' == 'CoreCLR Debug|AnyCPU'" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
