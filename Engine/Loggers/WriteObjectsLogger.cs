@@ -13,7 +13,9 @@
 using System;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
-//using System.ComponentModel.Composition;
+#if !CORECLR
+using System.ComponentModel.Composition;
+#endif // CORECLR
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
@@ -24,7 +26,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Loggers
     /// <summary>
     /// WriteObjectsLogger: Logs Diagnostics though WriteObject.
     /// </summary>
-    // [Export(typeof(ILogger))]
+#if !CORECLR
+    [Export(typeof(ILogger))]
+#endif
     public class WriteObjectsLogger : ILogger
     {
         #region Private members
