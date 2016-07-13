@@ -1,7 +1,13 @@
 ﻿param(
-    [switch]$build,
-    [switch]$uninstall,
-    [switch]$install
+    [switch]$Build,
+    [switch]$Uninstall,
+    [switch]$Install,
+
+    [ValidateSet("net451", "netstandard1.6")]
+    [string]$Framework = "netstandard1.6",
+
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration = "Debug"
 )
 
 $solutionDir = Split-Path $MyInvocation.InvocationName
@@ -10,8 +16,8 @@ if (-not (Test-Path "$solutionDir/global.json"))
     throw "Not in solution root"
 }
 
-$itemsToCopyCoreCLR = @("$solutionDir\Engine\bin\Debug\netcoreapp1.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-    "$solutionDir\Rules\bin\Debug\netcoreapp1.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
+$itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+    "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
 
 $itemsToCopyCommon = @("$solutionDir\Engine\PSScriptAnalyzer.psd1",
     "$solutionDir\Engine\PSScriptAnalyzer.psm1",
@@ -19,7 +25,11 @@ $itemsToCopyCommon = @("$solutionDir\Engine\PSScriptAnalyzer.psd1",
     "$solutionDir\Engine\ScriptAnalyzer.types.ps1xml")
 
 $destinationDir = "$solutionDir/out/PSScriptAnalyzer"
-$destinationDirCoreCLR = "$destinationDir/coreclr"
+$destinationDirBinaries = "$destinationDir"
+if ($Framework -eq "netstandard1.6")
+{
+    $destinationDirBinaries = "$destinationDir/coreclr"
+}
 
 if ($build)
 {
@@ -47,7 +57,7 @@ if ($build)
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
     (Get-Content "$destinationDir\PSScriptAnalyzer.psd1") -replace "ModuleVersion = '1.6.0'","ModuleVersion = '0.0.1'" | Out-File "$destinationDir\PSScriptAnalyzer.psd1" -Encoding ascii
 
-    CopyToDestinationDir $itemsToCopyCoreCLR $destinationDirCoreCLR
+    CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 }
 
 $modulePath = "$HOME\Documents\WindowsPowerShell\Modules";
