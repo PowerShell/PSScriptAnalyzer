@@ -146,6 +146,7 @@ To match all functions/variables/parameters/objects, use `*` as the value of the
     Param(
     )
 
+**Note**: Rule suppression is currently supported only for built-in rules. 
 
 Settings Support in ScriptAnalyzer
 ========================================
