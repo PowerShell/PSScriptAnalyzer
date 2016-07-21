@@ -33,6 +33,12 @@ Function Test-PSEditionCoreCLR
     ($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')
 }
 
+Function Test-PSEditionCoreCLRLinux
+{
+    (Test-PSEditionCoreCLR) -and ($env:OS -eq "Linux")
+}
+
 Export-ModuleMember -Function Get-ExtentText
 Export-ModuleMember -Function Test-CorrectionExtent
 Export-ModuleMember -Function Test-PSEditionCoreCLR
+Export-ModuleMember -Function Test-PSEditionCoreCLRLinux
