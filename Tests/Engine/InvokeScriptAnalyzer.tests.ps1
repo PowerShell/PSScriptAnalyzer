@@ -356,7 +356,7 @@ Describe "Test CustomizedRulePath" {
         }
 
 		It "When supplied with a collection of paths" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath ("$directory\CommunityAnalyzerRules", "$directory\SampleRule", "$directory\SampleRule\SampleRule2")
+            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath ("$directory\CommunityAnalyzerRules", "$directory\samplerule", "$directory\samplerule\samplerule2")
             $customizedRulePath.Count | Should Be 3
         }
 
