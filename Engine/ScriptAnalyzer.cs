@@ -1730,7 +1730,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (this.ExternalRules != null && !helpFile)
             {
-                List<ExternalRule> exRules = new List<ExternalRule>();
 
                 foreach (ExternalRule exRule in this.ExternalRules)
                 {
@@ -1743,19 +1742,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         // We want the Engine to continue functioning even if one or more Rules throws an exception
                         try
                         {
+
+                            List<ExternalRule> exRules = new List<ExternalRule>();
                             exRules.Add(exRule);
+                            var ruleRecords = this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), fileName);
+                            var records = SuppressRule(exRule.GetName(), ruleSuppressions, ruleRecords.ToList<DiagnosticRecord>());
+                            foreach (var record in records.Item2)
+                            {
+                                diagnostics.Add(record);
+                            }
+                            foreach (var suppressedRec in records.Item1)
+                            {
+                                suppressed.Add(suppressedRec);
+                            }
                         }
                         catch (Exception externalRuleException)
                         {
                             this.outputWriter.WriteError(new ErrorRecord(externalRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, fileName));
                         }
                     }
-                }
-
-                foreach (var record in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), fileName))
-                {
-                    diagnostics.Add(record);
-                }
+                }                
             }
 
 #endregion
