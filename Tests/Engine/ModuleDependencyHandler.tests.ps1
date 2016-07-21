@@ -8,13 +8,23 @@ if ($testingLibraryUsage)
     return
 }
 
+$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+
+# needs fixing
+# right now we do not support module dependency handing on Linux
+if ((Test-PSEditionCoreCLRLinux))
+{
+    return
+}
+
 # DSC Module saving is not supported in versions less than PSv5
 if (($PSVersionTable.PSVersion -lt [Version]'5.0'))
 {
     return
 }
 
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violationFileName = 'MissingDSCResource.ps1'
 $violationFilePath = Join-Path $directory $violationFileName
 
