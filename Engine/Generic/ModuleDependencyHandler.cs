@@ -445,10 +445,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
 
             // find a parameter named modulename
-            int k;            
+            int k;
             for (k = 1; k < dynamicKywdAst.CommandElements.Count; k++)
             {
-                var paramAst = dynamicKywdAst.CommandElements[1] as CommandParameterAst;
+                var paramAst = dynamicKywdAst.CommandElements[k] as CommandParameterAst;
                 // TODO match the initial letters only
                 if (paramAst == null || !paramAst.ParameterName.Equals("ModuleName", StringComparison.OrdinalIgnoreCase))
                 {
