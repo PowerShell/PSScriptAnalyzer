@@ -1290,6 +1290,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        private bool TrySaveModules(ParseError[] errors, ScriptBlockAst scriptAst)
+        {
+            bool modulesSaved = false;
+            if (moduleHandler == null || errors == null || errors.Length == 0)
+            {
+                return modulesSaved;
+            }
+            foreach (var error in errors.Where(IsModuleNotFoundError))
+            {
+                var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst);
+                if (moduleNames == null)
+                {
+                    continue;
+                }
+                foreach(var moduleName in moduleNames)
+                {
+                    this.outputWriter.WriteVerbose(
+                        String.Format(
+                            "Saving module {0} from PSGallery",
+                            moduleName));
+                    var moduleSaved = moduleHandler.TrySaveModule(moduleName);
+                    if (!moduleSaved)
+                    {
+                        this.outputWriter.WriteVerbose(
+                            String.Format(
+                                "Cannot download {0} from PSGallery",
+                                moduleName));
+                    }
+                    modulesSaved |= moduleSaved;
+                }
+            }
+            return modulesSaved;
+        }
 
         private IEnumerable<DiagnosticRecord> AnalyzeFile(string filePath)
         {
@@ -1315,23 +1348,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         return null;
                     }
 #if !PSV3
-                    bool parseAgain = false;
-                    if (moduleHandler != null && errors != null && errors.Length > 0)
-                    {
-                        foreach (ParseError error in errors.Where(IsModuleNotFoundError))
-                        {
-                            var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst);
-                            if (moduleNames != null)
-                            {
-                                parseAgain |= moduleNames.Any(x => moduleHandler.TrySaveModule(x));
-                            }
-                        }
-                    }
-
                     //try parsing again
-                    //var oldDefault = Runspace.DefaultRunspace;
-                    //Runspace.DefaultRunspace = moduleHandler.Runspace;
-                    if (parseAgain)
+                    if (TrySaveModules(errors, scriptAst))
                     {
                         scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
                     }

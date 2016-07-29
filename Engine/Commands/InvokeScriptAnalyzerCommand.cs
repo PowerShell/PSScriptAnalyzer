@@ -250,6 +250,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     using (var moduleHandler = new ModuleDependencyHandler(rsp))
                     {
                         ScriptAnalyzer.Instance.ModuleHandler = moduleHandler;
+                        this.WriteVerbose(
+                            String.Format(
+                                "Temporary module location: {0}",
+                                moduleHandler.TempModulePath));
                         ProcessInput();
                     }
                 }
