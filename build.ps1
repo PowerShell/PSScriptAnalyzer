@@ -128,10 +128,7 @@ if ($Install)
 
 if ($Test)
 {
-    Import-Module PSScriptAnalyzer -ErrorAction Stop
     Import-Module -Name Pester -MinimumVersion 3.4.0 -ErrorAction Stop
-
-
     Function GetTestRunnerScriptContent($testPath)
     {
         $x = @"
