@@ -131,7 +131,7 @@ Write-Host "write-host"
             It "Suppresses violation of an external ast rule" {
                 Invoke-ScriptAnalyzer `
                     -ScriptDefinition $externalRuleSuppression `
-                    -CustomRulePath "CommunityAnalyzerRules/" `
+                    -CustomRulePath (Join-Path $directory "CommunityAnalyzerRules") `
                     -OutVariable ruleViolations `
                     -SuppressedOnly
                 $ruleViolations.Count | Should Be 1
