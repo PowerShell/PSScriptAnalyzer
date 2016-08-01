@@ -110,8 +110,12 @@ if ($BuildDocs)
     New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force -Verbose:$verbosity
 }
 
-
-$moduleRootPath = Join-Path (Split-Path $profile) 'Modules'
+# Appyeyor errors out due to $profile being null. Hence...
+$moduleRootPath = "$HOME/Documents/WindowsPowerShell/Modules"
+if ($profile -ne $null)
+{
+    $moduleRootPath = Join-Path (Split-Path $profile) 'Modules'
+}
 $modulePSSAPath = Join-Path $moduleRootPath 'PSScriptAnalyzer'
 if ($Install)
 {
