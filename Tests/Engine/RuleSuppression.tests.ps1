@@ -137,8 +137,6 @@ Write-Host "write-host"
                 $ruleViolations.Count | Should Be 1
             }
         }
-
-
     }
 }
 

@@ -1454,22 +1454,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             return records;
         }
+
+        /// <summary>
+        /// Wrapper around SuppressRule method.
+        ///
+        /// This enables suppressing external rules (written in PowerShell).
+        /// Since there can be an inconsistency between the rule name in
+        /// diagnostic record and the actual rule (function) name, we use
+        /// the diagnostic record rule name for suppression
+        /// </summary>
+        /// <param name="ruleSuppressions"></param>
+        /// <param name="ruleDiagnosticRecord"></param>
+        /// <returns>Returns a tuple of suppressed and diagnostic records</returns>
         private Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
-            DiagnosticRecord ruleDiagnosticRecord,
-            Dictionary<string, List<RuleSuppression>> ruleSuppressions
+            Dictionary<string, List<RuleSuppression>> ruleSuppressions,
+            DiagnosticRecord ruleDiagnosticRecord
             )
         {
-            List<ErrorRecord> suppressRuleErrors;
-            var records = Helper.Instance.SuppressRule(
+            return SuppressRule(
                 ruleDiagnosticRecord.RuleName,
                 ruleSuppressions,
-                new List<DiagnosticRecord> { ruleDiagnosticRecord },
-                out suppressRuleErrors);
-            foreach (var error in suppressRuleErrors)
-            {
-                this.outputWriter.WriteError(error);
-            }
-            return records;
+                new List<DiagnosticRecord> { ruleDiagnosticRecord });
         }
 
         /// <summary>
@@ -1771,7 +1776,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 foreach (var ruleRecord in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), fileName))
                 {
-                    var records = SuppressRule(ruleRecord, ruleSuppressions);
+                    var records = SuppressRule(ruleSuppressions, ruleRecord);
                     foreach (var record in records.Item2)
                     {
                         diagnostics.Add(record);
