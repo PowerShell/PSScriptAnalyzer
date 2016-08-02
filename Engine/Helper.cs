@@ -1604,12 +1604,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         public static IEnumerable<string> GetModuleManifestKeys(Version powershellVersion)
         {
-            string[] keys = new string[] { };
+            var keys = new List<string>();
 
-            // default to version 5.0.10586.494
-            if (powershellVersion == null)
-            {
-                keys = new string[] {
+            var keysCommon = new List<string> {
                     "RootModule",
                     "ModuleVersion",
                     "GUID",
@@ -1633,12 +1630,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     "CmdletsToExport",
                     "VariablesToExport",
                     "AliasesToExport",
-                    "DscResourcesToExport",
                     "ModuleList",
                     "FileList",
                     "PrivateData",
                     "HelpInfoURI",
                     "DefaultCommandPrefix"};
+
+            keys.AddRange(keysCommon);
+
+            // default to version 5.0
+            if (powershellVersion == null || powershellVersion.Equals(new Version("5.0")))
+            {
+                keys.Add("DscResourcesToExport");
             }
             return keys;
         }
@@ -1647,11 +1650,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             Token[] tokens;
             ParseError[] errors;
+            if (filepath == null)
+            {
+                throw new ArgumentNullException("filepath");
+            }
+            if (!Path.GetExtension(filepath).Equals(".psd1", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
 
             //using parsefile causes the parser to crash!
             string fileContent = File.ReadAllText(filepath);
             var ast = Parser.ParseInput(fileContent, out tokens, out errors);
             var hast = ast.Find(x => x is HashtableAst, false) as HashtableAst;
+            if (hast == null)
+            {
+                return false;
+            }
             var keys = GetModuleManifestKeys(null);
             int matchCount = 0;
             foreach(var pair in hast.KeyValuePairs)
