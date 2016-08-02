@@ -25,19 +25,19 @@ Describe "MissingRequiredFieldModuleManifest" {
             $violations.Message | Should Match $missingMessage
         }
 
-	$numExpectedCorrections = 1
-	It "has $numExpectedCorrections suggested corrections" {
-	   $violations.SuggestedCorrections.Count | Should Be $numExpectedCorrections
-	}
+        $numExpectedCorrections = 1
+        It "has $numExpectedCorrections suggested corrections" {
+            $violations.SuggestedCorrections.Count | Should Be $numExpectedCorrections
+        }
 
 
-	It "has the right suggested correction" {
-	   $expectedText = @'
+	    It "has the right suggested correction" {
+	        $expectedText = @'
 # Version number of this module.
 ModuleVersion = '1.0.0.0'
 '@
-       $violations[0].SuggestedCorrections[0].Text | Should Match $expectedText
-       Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should Match ""
+            $violations[0].SuggestedCorrections[0].Text | Should Match $expectedText
+            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should Match ""
     }
 }
 
@@ -50,6 +50,18 @@ ModuleVersion = '1.0.0.0'
     Context "When an .psd1 file doesn't contain a hashtable" {
         It "does not throw exception" {
             {Invoke-ScriptAnalyzer -Path $noHashtableFilepath -IncludeRule $missingMemberRuleName} | Should Not Throw
+        }
+    }
+
+    Context "Validate the contents of a .psd1 file" {
+        It "detects a valid module manifest file" {
+            $filepath = Join-Path $directory "TestManifest/ManifestGood.psd1"
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath) | Should Be $true
+        }
+
+        It "detects a .psd1 file which is not module manifest" {
+            $filepath = Join-Path $directory "TestManifest/PowerShellDataFile.psd1"
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath) | Should Be $false
         }
     }
 }
