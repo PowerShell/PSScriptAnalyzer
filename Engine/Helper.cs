@@ -1602,6 +1602,76 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return false;
         }
 
+        public static IEnumerable<string> GetModuleManifestKeys(Version powershellVersion)
+        {
+            string[] keys = new string[] { };
+
+            // default to version 5.0.10586.494
+            if (powershellVersion == null)
+            {
+                keys = new string[] {
+                    "RootModule",
+                    "ModuleVersion",
+                    "GUID",
+                    "Author",
+                    "CompanyName",
+                    "Copyright",
+                    "Description",
+                    "PowerShellVersion",
+                    "PowerShellHostName",
+                    "PowerShellHostVersion",
+                    "DotNetFrameworkVersion",
+                    "CLRVersion",
+                    "ProcessorArchitecture",
+                    "RequiredModules",
+                    "RequiredAssemblies",
+                    "ScriptsToProcess",
+                    "TypesToProcess",
+                    "FormatsToProcess",
+                    "NestedModules",
+                    "FunctionsToExport",
+                    "CmdletsToExport",
+                    "VariablesToExport",
+                    "AliasesToExport",
+                    "DscResourcesToExport",
+                    "ModuleList",
+                    "FileList",
+                    "PrivateData",
+                    "HelpInfoURI",
+                    "DefaultCommandPrefix"};
+            }
+            return keys;
+        }
+
+        public static bool IsModuleManifest(string filepath)
+        {
+            Token[] tokens;
+            ParseError[] errors;
+
+            //using parsefile causes the parser to crash!
+            string fileContent = File.ReadAllText(filepath);
+            var ast = Parser.ParseInput(fileContent, out tokens, out errors);
+            var hast = ast.Find(x => x is HashtableAst, false) as HashtableAst;
+            var keys = GetModuleManifestKeys(null);
+            int matchCount = 0;
+            foreach(var pair in hast.KeyValuePairs)
+            {
+                var pairKey = pair.Item1 as StringConstantExpressionAst;
+                if (pairKey == null)
+                {
+                    break;
+                }
+                foreach(var key in keys)
+                {
+                    if (key.Equals(pairKey.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        matchCount++;
+                        break;
+                    }
+                }
+            }
+            return matchCount == hast.KeyValuePairs.Count;
+        }
 #endregion Methods
     }
 
