@@ -110,7 +110,7 @@ if ($BuildDocs)
     New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force -Verbose:$verbosity
 }
 
-# Appyeyor errors out due to $profile being null. Hence...
+# Appveyor errors out due to $profile being null. Hence...
 $moduleRootPath = "$HOME/Documents/WindowsPowerShell/Modules"
 if ($profile -ne $null)
 {
