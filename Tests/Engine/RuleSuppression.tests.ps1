@@ -114,13 +114,29 @@ function SuppressPwdParam()
 
     if (!$testingLibraryUsage)
     {
-	Context "Bad Rule Suppression" {
-    		It "Throws a non-terminating error" {
-	   	   Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionBad -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -ErrorVariable errorRecord -ErrorAction SilentlyContinue
-	   	   $errorRecord.Count | Should Be 1
-	   	   $errorRecord.FullyQualifiedErrorId | Should match "suppression message attribute error"
-	}
-    }
+        Context "Bad Rule Suppression" {
+            It "Throws a non-terminating error" {
+                Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionBad -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -ErrorVariable errorRecord -ErrorAction SilentlyContinue
+                $errorRecord.Count | Should Be 1
+                $errorRecord.FullyQualifiedErrorId | Should match "suppression message attribute error"
+            }
+        }
+
+        Context "External Rule Suppression" {
+            $externalRuleSuppression = @'
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','')]
+param() # without the param block, powershell parser throws up!
+Write-Host "write-host"
+'@
+            It "Suppresses violation of an external ast rule" {
+                Invoke-ScriptAnalyzer `
+                    -ScriptDefinition $externalRuleSuppression `
+                    -CustomRulePath (Join-Path $directory "CommunityAnalyzerRules") `
+                    -OutVariable ruleViolations `
+                    -SuppressedOnly
+                $ruleViolations.Count | Should Be 1
+            }
+        }
     }
 }
 

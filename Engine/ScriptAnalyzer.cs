@@ -1474,6 +1474,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Wrapper around SuppressRule method.
+        ///
+        /// This enables suppressing external rules (written in PowerShell).
+        /// Since there can be an inconsistency between the rule name in
+        /// diagnostic record and the actual rule (function) name, we use
+        /// the diagnostic record rule name for suppression
+        /// </summary>
+        /// <param name="ruleSuppressions"></param>
+        /// <param name="ruleDiagnosticRecord"></param>
+        /// <returns>Returns a tuple of suppressed and diagnostic records</returns>
+        private Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
+            Dictionary<string, List<RuleSuppression>> ruleSuppressions,
+            DiagnosticRecord ruleDiagnosticRecord
+            )
+        {
+            return SuppressRule(
+                ruleDiagnosticRecord.RuleName,
+                ruleSuppressions,
+                new List<DiagnosticRecord> { ruleDiagnosticRecord });
+        }
+
+        /// <summary>
         /// Analyzes the syntax tree of a script file that has already been parsed.
         /// </summary>
         /// <param name="scriptAst">The ScriptBlockAst from the parsed script.</param>
@@ -1770,13 +1792,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-                foreach (var record in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), fileName))
+                foreach (var ruleRecord in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), fileName))
                 {
-                    diagnostics.Add(record);
+                    var records = SuppressRule(ruleSuppressions, ruleRecord);
+                    foreach (var record in records.Item2)
+                    {
+                        diagnostics.Add(record);
+                    }
+                    foreach (var suppressedRec in records.Item1)
+                    {
+                        suppressed.Add(suppressedRec);
+                    }
                 }
             }
-
-#endregion
+            
+            #endregion
 
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
             IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics.Reverse();
