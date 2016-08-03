@@ -39,8 +39,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
-
-            if (String.Equals(System.IO.Path.GetExtension(fileName), ".psd1", StringComparison.OrdinalIgnoreCase))
+            if (fileName == null)
+            {
+                yield break;
+            }
+            if (Helper.IsModuleManifest(fileName))
             {
                 var ps = System.Management.Automation.PowerShell.Create();
                 IEnumerable<PSObject> result = null;
