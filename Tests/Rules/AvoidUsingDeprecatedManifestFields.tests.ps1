@@ -21,4 +21,14 @@ Describe "AvoidUsingDeprecatedManifestFields" {
             $noViolations.Count | Should Be 0
         }
     }
+
+    Context "When given a non module manifest file" {
+        It "does not flag a PowerShell data file" {
+            Invoke-ScriptAnalyzer `
+                -Path "$directory/TestManifest/PowerShellDataFile.psd1" `
+                -IncludeRule "PSAvoidUsingDeprecatedManifestFields" `
+                -OutVariable ruleViolation
+            $ruleViolation.Count | Should Be 0
+        }
+    }
 }

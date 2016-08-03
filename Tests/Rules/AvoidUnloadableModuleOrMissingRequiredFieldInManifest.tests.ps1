@@ -83,8 +83,16 @@ ModuleVersion = '1.0.0.0'
             $filepath = Join-Path $directory "TestManifest/ManifestGoodPSv3.psd1"
             [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0") | Should Be $true
         }
+    }
 
-
+    Context "When given a non module manifest file" {
+        It "does not flag a PowerShell data file" {
+            Invoke-ScriptAnalyzer `
+                -Path "$directory/TestManifest/PowerShellDataFile.psd1" `
+                -IncludeRule "PSMissingModuleManifestField" `
+                -OutVariable ruleViolation
+            $ruleViolation.Count | Should Be 0
+        }
     }
 }
 
