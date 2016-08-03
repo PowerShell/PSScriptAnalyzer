@@ -1,8 +1,9 @@
 ﻿Import-Module -Verbose PSScriptAnalyzer
 $sa = Get-Command Get-ScriptAnalyzerRule
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$singularNouns = "PSUseSingularNouns"
+$singularNouns = "PSUseSingularNouns" # this rule does not exist for coreclr version
 $approvedVerbs = "PSUseApprovedVerbs"
+$cmdletAliases = "PSAvoidUsingCmdletAliases"
 $dscIdentical = "PSDSCUseIdenticalParametersForDSC"
 
 Describe "Test available parameters" {
@@ -36,9 +37,9 @@ Describe "Test available parameters" {
 Describe "Test Name parameters" {
     Context "When used correctly" {
         It "works with 1 name" {
-            $rule = Get-ScriptAnalyzerRule -Name $singularNouns
+            $rule = Get-ScriptAnalyzerRule -Name $cmdletAliases
             $rule.Count | Should Be 1
-            $rule[0].RuleName | Should Be $singularNouns
+            $rule[0].RuleName | Should Be $cmdletAliases
         }
 
         It "works for DSC Rule" {
@@ -47,16 +48,21 @@ Describe "Test Name parameters" {
             $rule[0].RuleName | Should Be $dscIdentical
         }
 
-        It "works with 3 names" {
-            $rules = Get-ScriptAnalyzerRule -Name $approvedVerbs, $singularNouns
+        It "works with 2 names" {
+            $rules = Get-ScriptAnalyzerRule -Name $approvedVerbs, $cmdletAliases
             $rules.Count | Should Be 2
-            ($rules | Where-Object {$_.RuleName -eq $singularNouns}).Count | Should Be 1
+            ($rules | Where-Object {$_.RuleName -eq $cmdletAliases}).Count | Should Be 1
             ($rules | Where-Object {$_.RuleName -eq $approvedVerbs}).Count | Should Be 1
         }
 
         It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-			$defaultRules.Count | Should be 41
+            $expectedNumRules = 41
+            if ((Test-PSEditionCoreClr))
+            {
+                $expectedNumRules = 40
+            }
+			$defaultRules.Count | Should be $expectedNumRules
 		}
 
         It "is a positional parameter" {
@@ -72,9 +78,9 @@ Describe "Test Name parameters" {
         }
 
         It "1 incorrect and 1 correct" {
-            $rule = Get-ScriptAnalyzerRule -Name $singularNouns, "This is a wrong name"
+            $rule = Get-ScriptAnalyzerRule -Name $cmdletAliases, "This is a wrong name"
             $rule.Count | Should Be 1
-            $rule[0].RuleName | Should Be $singularNouns
+            $rule[0].RuleName | Should Be $cmdletAliases
         }
     }
 }
