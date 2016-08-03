@@ -1602,6 +1602,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return false;
         }
 
+        /// <summary>
+        /// Gets valid keys of a PowerShell module manifest file for a given PowerShell version
+        /// </summary>
+        /// <param name="powershellVersion">Version parameter with valid values: 5.0, 4.0 and 3.0</param>
+        /// <returns>Returns an enumerator over valid keys</returns>
         public static IEnumerable<string> GetModuleManifestKeys(Version powershellVersion)
         {
             if (powershellVersion == null)
@@ -1651,11 +1656,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return keys;
         }
 
+        /// <summary>
+        /// Gets deprecated keys of PowerShell module manifest
+        /// </summary>
+        /// <returns>Returns an enumerator over deprecated keys</returns>
         public static IEnumerable<string> GetDeprecatedModuleManifestKeys()
         {
             return new List<string> { "ModuleToProcess" };
         }
 
+        /// <summary>
+        /// Checks if a given file is a valid PowerShell module manifest
+        /// </summary>
+        /// <param name="filepath">Path to module manifest</param>
+        /// <returns>true if given filepath points to a module manifest, otherwise false</returns>
         public static bool IsModuleManifest(string filepath)
         {
             // 4.0 and 3.0 contain the same keys. Hence, compare only with 4.0.
@@ -1663,6 +1677,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 || IsModuleManifest(filepath, new Version("4.0"));
         }
 
+        /// <summary>
+        /// Checks if a given file is a valid PowerShell module manifest
+        /// </summary>
+        /// <param name="filepath">Path to module manifest</param>
+        /// <param name="powershellVersion">Version parameter with valid values: 5.0, 4.0 and 3.0</param>
+        /// <returns>true if given filepath points to a module manifest, otherwise false</returns>
         public static bool IsModuleManifest(string filepath, Version powershellVersion)
         {
             Token[] tokens;
@@ -1690,6 +1710,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             var validKeys = GetModuleManifestKeys(powershellVersion);
             var allKeys = validKeys.Concat(GetDeprecatedModuleManifestKeys());
+
             // check if all the keys in hast.keyvaluepairs are present in keys
             int matchCount = 0;
             foreach(var pair in hast.KeyValuePairs)
