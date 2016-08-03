@@ -1,9 +1,12 @@
 Import-Module PSScriptAnalyzer
+$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+
 $nounViolationMessage = "The cmdlet 'Verb-Files' uses a plural noun. A singular noun should be used instead."
 $verbViolationMessage = "The cmdlet 'Verb-Files' uses an unapproved verb."
 $nounViolationName = "PSUseSingularNouns"
 $verbViolationName = "PSUseApprovedVerbs"
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1
 $nounViolations = $violations | Where-Object {$_.RuleName -eq $nounViolationName}
 $verbViolations = $violations | Where-Object {$_.RuleName -eq $verbViolationName}
@@ -11,18 +14,22 @@ $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1
 $nounNoViolations = $noViolations | Where-Object {$_.RuleName -eq $nounViolationName}
 $verbNoViolations = $noViolations | Where-Object {$_.RuleName -eq $verbViolationName}
 
-Describe "UseSingularNouns" {
-    Context "When there are violations" {
-        It "has a cmdlet singular noun violation" {
-            $nounViolations.Count | Should Be 1
-        }
+# this rule doesn't exist in the non desktop version of PSScriptAnalyzer
+if (-not (Test-PSEditionCoreCLR))
+{
+    Describe "UseSingularNouns" {
+        Context "When there are violations" {
+            It "has a cmdlet singular noun violation" {
+                $nounViolations.Count | Should Be 1
+            }
 
-        It "has the correct description message" {
-            $nounViolations[0].Message | Should Match $nounViolationMessage
-        }
+            It "has the correct description message" {
+                $nounViolations[0].Message | Should Match $nounViolationMessage
+            }
 
-        It "has the correct extent" {
-        $nounViolations[0].Extent.Text | Should be "Verb-Files"
+            It "has the correct extent" {
+            $nounViolations[0].Extent.Text | Should be "Verb-Files"
+            }
         }
     }
 
@@ -59,9 +66,9 @@ Describe "UseApprovedVerbs" {
             $verbViolations[0].Message | Should Match $verbViolationMessage
         }
 
-	It "has the correct extent" {
-            $verbViolations[0].Extent.Text | Should be "Verb-Files"
-	}
+        It "has the correct extent" {
+                $verbViolations[0].Extent.Text | Should be "Verb-Files"
+        }
     }
 
     Context "When there are no violations" {
