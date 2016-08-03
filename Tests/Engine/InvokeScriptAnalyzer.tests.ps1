@@ -9,6 +9,7 @@ if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
 $sa = Get-Command Invoke-ScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $singularNouns = "PSUseSingularNouns"
+$approvedVerb = "PSUseApprovedVerbs"
 $rules = Get-ScriptAnalyzerRule -Name ($singularNouns, "PSUseApprovedVerbs")
 $avoidRules = Get-ScriptAnalyzerRule -Name "PSAvoid*"
 $useRules = "PSUse*"
@@ -242,13 +243,19 @@ Describe "Test ExcludeRule" {
 Describe "Test IncludeRule" {
     Context "When used correctly" {
         It "includes 1 rule" {
-            $violations = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $singularNouns | Where-Object {$_.RuleName -eq $singularNouns}
+            $violations = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $approvedVerb | Where-Object {$_.RuleName -eq $approvedVerb}
             $violations.Count | Should Be 1
         }
 
-        It "includes 2 rules" {
+        It "includes the given rules" {
+            # CoreCLR version of PSScriptAnalyzer does not contain PSUseSingularNouns rule
+            $expectedNumViolations = 2
+            if ((Test-PSEditionCoreCLR))
+            {
+                $expectedNumViolations = 1
+            }
             $violations = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $rules
-            $violations.Count | Should Be 2
+            $violations.Count | Should Be $expectedNumViolations
         }
     }
 
@@ -266,14 +273,20 @@ Describe "Test IncludeRule" {
         }
 
         it "includes 2 wildcardrules" {
+            # CoreCLR version of PSScriptAnalyzer does not contain PSUseSingularNouns rule
+            $expectedNumViolations = 4
+            if ((Test-PSEditionCoreCLR))
+            {
+                $expectedNumViolations = 3
+            }
             $includeWildcard = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
             $includeWildcard += Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -IncludeRule $useRules
-            $includeWildcard.Count | Should be 4
+            $includeWildcard.Count | Should be $expectedNumViolations
         }
     }
 }
 
-Describe "Test Exclude And Include" {
+Describe "Test Exclude And Include" {1
     It "Exclude and Include different rules" {
         $violations = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -IncludeRule "PSAvoidUsingEmptyCatchBlock" -ExcludeRule "PSAvoidUsingPositionalParameters"
         $violations.Count | Should be 1
