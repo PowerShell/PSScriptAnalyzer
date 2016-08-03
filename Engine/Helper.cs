@@ -1651,6 +1651,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return keys;
         }
 
+        public static IEnumerable<string> GetDeprecatedModuleManifestKeys()
+        {
+            return new List<string> { "ModuleToProcess" };
+        }
+
+        public static bool IsModuleManifest(string filepath)
+        {
+            // 4.0 and 3.0 contain the same keys. Hence, compare only with 4.0.
+            return IsModuleManifest(filepath, new Version("5.0"))
+                || IsModuleManifest(filepath, new Version("4.0"));
+        }
+
         public static bool IsModuleManifest(string filepath, Version powershellVersion)
         {
             Token[] tokens;
@@ -1676,8 +1688,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return false;
             }
-            var keys = GetModuleManifestKeys(powershellVersion);
-
+            var validKeys = GetModuleManifestKeys(powershellVersion);
+            var allKeys = validKeys.Concat(GetDeprecatedModuleManifestKeys());
             // check if all the keys in hast.keyvaluepairs are present in keys
             int matchCount = 0;
             foreach(var pair in hast.KeyValuePairs)
@@ -1687,7 +1699,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     break;
                 }
-                foreach(var key in keys)
+                foreach(var key in allKeys)
                 {
                     if (key.Equals(pairKey.Value, StringComparison.OrdinalIgnoreCase))
                     {
