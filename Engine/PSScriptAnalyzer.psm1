@@ -2,6 +2,11 @@
 # Script module for module 'PSScriptAnalyzer'
 #
 
+function Test-PSEditionCoreCLR
+{
+    ($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')
+}
+
 # Clear PSDefaultParameterValues in the module scope and enable strict mode
 $PSDefaultParameterValues.Clear()
 Set-StrictMode -Version Latest
@@ -14,7 +19,7 @@ $PSModuleRoot = $PSModule.ModuleBase
 $binaryModuleRoot = $PSModuleRoot
 
 
-if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')) {
+if ((Test-PSEditionCoreCLR)) {
     $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'coreclr'
 }
 else
