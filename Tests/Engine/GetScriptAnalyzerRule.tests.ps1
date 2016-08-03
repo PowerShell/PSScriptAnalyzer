@@ -1,6 +1,9 @@
-﻿Import-Module -Verbose PSScriptAnalyzer
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+Import-Module -Verbose PSScriptAnalyzer
+$testRootDirectory = Split-Path -Parent $directory
+Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 $sa = Get-Command Get-ScriptAnalyzerRule
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 $singularNouns = "PSUseSingularNouns" # this rule does not exist for coreclr version
 $approvedVerbs = "PSUseApprovedVerbs"
 $cmdletAliases = "PSAvoidUsingCmdletAliases"

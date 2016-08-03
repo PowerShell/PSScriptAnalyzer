@@ -4,6 +4,9 @@
 if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
 {
 	Import-Module PSScriptAnalyzer
+    $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $testRootDirectory = Split-Path -Parent $directory
+    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 }
 
 $sa = Get-Command Invoke-ScriptAnalyzer
