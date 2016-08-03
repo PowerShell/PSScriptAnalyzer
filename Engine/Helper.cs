@@ -1604,8 +1604,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         public static IEnumerable<string> GetModuleManifestKeys(Version powershellVersion)
         {
+            if (powershellVersion == null)
+            {
+                throw new ArgumentNullException("powershellVersion");
+            }
             var keys = new List<string>();
-
             var keysCommon = new List<string> {
                     "RootModule",
                     "ModuleVersion",
@@ -1635,24 +1638,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     "PrivateData",
                     "HelpInfoURI",
                     "DefaultCommandPrefix"};
-
             keys.AddRange(keysCommon);
-
-            // default to version 5.0
-            if (powershellVersion == null || powershellVersion.Equals(new Version("5.0")))
+            if (powershellVersion.Equals(new Version("5.0")))
             {
                 keys.Add("DscResourcesToExport");
+            }
+            else if (!powershellVersion.Equals(new Version("4.0"))
+                && !powershellVersion.Equals(new Version("3.0")))
+            {
+                throw new ArgumentException("Invalid PowerShell version. Choose from 3.0, 4.0 or 5.0");
             }
             return keys;
         }
 
-        public static bool IsModuleManifest(string filepath)
+        public static bool IsModuleManifest(string filepath, Version powershellVersion)
         {
             Token[] tokens;
             ParseError[] errors;
             if (filepath == null)
             {
                 throw new ArgumentNullException("filepath");
+            }
+            if (powershellVersion == null)
+            {
+                throw new ArgumentNullException("powershellVersion");
             }
             if (!Path.GetExtension(filepath).Equals(".psd1", StringComparison.OrdinalIgnoreCase))
             {
@@ -1667,7 +1676,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return false;
             }
-            var keys = GetModuleManifestKeys(null);
+            var keys = GetModuleManifestKeys(powershellVersion);
+
+            // check if all the keys in hast.keyvaluepairs are present in keys
             int matchCount = 0;
             foreach(var pair in hast.KeyValuePairs)
             {
