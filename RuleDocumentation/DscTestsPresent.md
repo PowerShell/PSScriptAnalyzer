@@ -42,13 +42,13 @@ Let's assume we have class based resource with a following file structure:
 
 * MyDscResource
     * MyDscResource.psm1
-    * MyDscresource.psd1
+    * MyDscResource.psd1
 
 In this case, to fix this warning, we should add tests in a following way:
 
 * MyDscResource
     * MyDscResource.psm1
-    * MyDscresource.psd1
+    * MyDscResource.psd1
     * Tests
       * MyDscResource_Tests.ps1
 
