@@ -27,6 +27,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class CmdletSingularNoun : IScriptRule {
+
+        private readonly string[] nounWhiteList =
+        {
+            "Data"
+        };
+
         /// <summary>
         /// Checks that all defined cmdlet use singular noun
         /// </summary>
@@ -57,12 +63,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (!ps.IsSingular(noun) && ps.IsPlural(noun))
                     {
                         IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
-
+                        if (nounWhiteList.Contains(noun, StringComparer.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
                         if (null == extent)
                         {
                             extent = funcAst.Extent;
                         }
-
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
                             extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
