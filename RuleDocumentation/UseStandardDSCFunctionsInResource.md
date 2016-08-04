@@ -4,7 +4,7 @@
 
 ##Description
 
-DSC Resource must implement Get, Set and Test-TargetResource functions. DSC Class must implement Get, Set and Test functions.
+DSC Resource must implement Get-TargetResource, Set-TargetResource and Test-TargetResource functions. DSC Class must implement Get, Set and Test functions.
 
 
 ##How to Fix
