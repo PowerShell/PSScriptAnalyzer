@@ -1613,6 +1613,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 throw new ArgumentNullException("powershellVersion");
             }
+            if (!IsPowerShellVersionSupported(powershellVersion))
+            {
+                throw new ArgumentException("Invalid PowerShell version. Choose from 3.0, 4.0 or 5.0");
+            }
             var keys = new List<string>();
             var keysCommon = new List<string> {
                     "RootModule",
@@ -1644,14 +1648,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     "HelpInfoURI",
                     "DefaultCommandPrefix"};
             keys.AddRange(keysCommon);
-            if (powershellVersion.Equals(new Version("5.0")))
+            if (powershellVersion.Major == 5)
             {
                 keys.Add("DscResourcesToExport");
-            }
-            else if (!powershellVersion.Equals(new Version("4.0"))
-                && !powershellVersion.Equals(new Version("3.0")))
-            {
-                throw new ArgumentException("Invalid PowerShell version. Choose from 3.0, 4.0 or 5.0");
             }
             return keys;
         }
@@ -1666,15 +1665,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Checks if a given file is a valid PowerShell module manifest
+        /// Get a mapping between string type keys and StatementAsts from module manifest hashtable ast
+        /// 
+        /// This is a workaround as SafeGetValue is not supported on PS v5 and below.
         /// </summary>
-        /// <param name="filepath">Path to module manifest</param>
-        /// <returns>true if given filepath points to a module manifest, otherwise false</returns>
-        public static bool IsModuleManifest(string filepath)
+        /// <param name="hast">Hashtable Ast obtained from module manifest</param>
+        /// <returns>A dictionary that maps string keys to values of StatementAst type</returns>
+        private static Dictionary<string, StatementAst> GetMapFromHashtableAst(HashtableAst hast)
         {
-            // 4.0 and 3.0 contain the same keys. Hence, compare only with 4.0.
-            return IsModuleManifest(filepath, new Version("5.0"))
-                || IsModuleManifest(filepath, new Version("4.0"));
+            var map = new Dictionary<string, StatementAst>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in hast.KeyValuePairs)
+            {
+                var key = pair.Item1 as StringConstantExpressionAst;
+                if (key == null)
+                {
+                    return null;
+                }
+                map[key.Value] = pair.Item2;
+            }
+            return map;
+        }
+
+        /// <summary>
+        /// Checks if the version is supported
+        /// 
+        /// PowerShell versions with Major 5, 4 and 3 are supported
+        /// </summary>
+        /// <param name="version">PowerShell version</param>
+        /// <returns>true if the given version is supported else false</returns>
+        public static bool IsPowerShellVersionSupported(Version version)
+        {
+            if (version == null)
+            {
+                throw new ArgumentNullException("version");
+            }
+
+            switch(version.Major)
+            {
+                case 5:
+                case 4:
+                case 3:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>
@@ -1683,7 +1717,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="filepath">Path to module manifest</param>
         /// <param name="powershellVersion">Version parameter with valid values: 5.0, 4.0 and 3.0</param>
         /// <returns>true if given filepath points to a module manifest, otherwise false</returns>
-        public static bool IsModuleManifest(string filepath, Version powershellVersion)
+        public static bool IsModuleManifest(string filepath, Version powershellVersion = null)
         {
             Token[] tokens;
             ParseError[] errors;
@@ -1691,9 +1725,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 throw new ArgumentNullException("filepath");
             }
-            if (powershellVersion == null)
+            if (powershellVersion != null
+                && !IsPowerShellVersionSupported(powershellVersion))
             {
-                throw new ArgumentNullException("powershellVersion");
+                return false;
             }
             if (!Path.GetExtension(filepath).Equals(".psd1", StringComparison.OrdinalIgnoreCase))
             {
@@ -1708,28 +1743,45 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return false;
             }
-            var validKeys = GetModuleManifestKeys(powershellVersion);
-            var allKeys = validKeys.Concat(GetDeprecatedModuleManifestKeys());
-
-            // check if all the keys in hast.keyvaluepairs are present in keys
-            int matchCount = 0;
-            foreach(var pair in hast.KeyValuePairs)
+            var map = GetMapFromHashtableAst(hast);
+            var deprecatedKeys = GetDeprecatedModuleManifestKeys();
+            IEnumerable<string> allKeys;
+            if (powershellVersion != null)
             {
-                var pairKey = pair.Item1 as StringConstantExpressionAst;
-                if (pairKey == null)
+                allKeys = GetModuleManifestKeys(powershellVersion);
+            }
+            else
+            {
+                Version version = null;
+                if (map.ContainsKey("PowerShellVersion"))
                 {
-                    break;
-                }
-                foreach(var key in allKeys)
-                {
-                    if (key.Equals(pairKey.Value, StringComparison.OrdinalIgnoreCase))
+                    var versionStrAst = map["PowerShellVersion"].Find(x => x is StringConstantExpressionAst, false);
+                    if (versionStrAst != null)
                     {
-                        matchCount++;
-                        break;
+                        try
+                        {
+                            version = new Version((versionStrAst as StringConstantExpressionAst).Value);
+                        }
+                        catch
+                        {
+                            // we just ignore if the value is not a valid version
+                        }
                     }
                 }
+                if (version != null
+                    && IsPowerShellVersionSupported(version))
+                {
+                    allKeys = GetModuleManifestKeys(version);
+                }
+                else
+                {
+                    // default to version 5.0
+                    allKeys = GetModuleManifestKeys(new Version("5.0"));
+                }
             }
-            return matchCount == hast.KeyValuePairs.Count;
+
+            // check if the keys given in module manifest are a proper subset of Keys
+            return map.Keys.All(x => allKeys.Concat(deprecatedKeys).Contains(x, StringComparer.OrdinalIgnoreCase));
         }
 #endregion Methods
     }
