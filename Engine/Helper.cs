@@ -34,6 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private CommandInvocationIntrinsics invokeCommand;
         private IOutputWriter outputWriter;
         private Object getCommandLock = new object();
+        private readonly static Version minSupportedPSVersion = new Version(3, 0);
 
         #endregion
 
@@ -1605,7 +1606,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// Gets valid keys of a PowerShell module manifest file for a given PowerShell version
         /// </summary>
-        /// <param name="powershellVersion">Version parameter with valid values: 5.0, 4.0 and 3.0</param>
+        /// <param name="powershellVersion">Version parameter; valid if >= 3.0</param>
         /// <returns>Returns an enumerator over valid keys</returns>
         public static IEnumerable<string> GetModuleManifestKeys(Version powershellVersion)
         {
@@ -1615,7 +1616,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             if (!IsPowerShellVersionSupported(powershellVersion))
             {
-                throw new ArgumentException("Invalid PowerShell version. Choose from 3.0, 4.0 or 5.0");
+                throw new ArgumentException("Invalid PowerShell version. Choose from version greater than or equal to 3.0");
             }
             var keys = new List<string>();
             var keysCommon = new List<string> {
@@ -1648,9 +1649,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     "HelpInfoURI",
                     "DefaultCommandPrefix"};
             keys.AddRange(keysCommon);
-            if (powershellVersion.Major == 5)
+            if (powershellVersion.Major >= 5)
             {
                 keys.Add("DscResourcesToExport");
+            }
+            if (powershellVersion >= new Version(5, 1))
+            {
+                keys.Add("CompatiblePSEditions");
             }
             return keys;
         }
@@ -1689,7 +1694,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// Checks if the version is supported
         /// 
-        /// PowerShell versions with Major 5, 4 and 3 are supported
+        /// PowerShell versions with Major greater than 3 are supported
         /// </summary>
         /// <param name="version">PowerShell version</param>
         /// <returns>true if the given version is supported else false</returns>
@@ -1699,23 +1704,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 throw new ArgumentNullException("version");
             }
-
-            switch(version.Major)
-            {
-                case 5:
-                case 4:
-                case 3:
-                    return true;
-                default:
-                    return false;
-            }
+            return version >= minSupportedPSVersion;
         }
 
         /// <summary>
         /// Checks if a given file is a valid PowerShell module manifest
         /// </summary>
         /// <param name="filepath">Path to module manifest</param>
-        /// <param name="powershellVersion">Version parameter with valid values: 5.0, 4.0 and 3.0</param>
+        /// <param name="powershellVersion">Version parameter; valid if >= 3.0</param>
         /// <returns>true if given filepath points to a module manifest, otherwise false</returns>
         public static bool IsModuleManifest(string filepath, Version powershellVersion = null)
         {
@@ -1775,8 +1771,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 else
                 {
-                    // default to version 5.0
-                    allKeys = GetModuleManifestKeys(new Version("5.0"));
+                    // default to version 5.1
+                    allKeys = GetModuleManifestKeys(new Version("5.1"));
                 }
             }
 
