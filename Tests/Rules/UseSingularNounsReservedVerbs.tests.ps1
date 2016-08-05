@@ -21,22 +21,25 @@ Describe "UseSingularNouns" {
             $nounViolations[0].Message | Should Match $nounViolationMessage
         }
 
-	It "has the correct extent" {
-	   $nounViolations[0].Extent.Text | Should be "Verb-Files"
-	}
-
-    It "excludes items from noun whitelist" {
-        $nounViolationScript = @'
-        Function Add-SomeData 
-        {
-            Write-Output "Adding some data"
+        It "has the correct extent" {
+        $nounViolations[0].Extent.Text | Should be "Verb-Files"
         }
-'@
-        Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
-            -IncludeRule "PSUseSingularNouns" `
-            -OutVariable violations
-        $violations.Count | Should Be 0
     }
+
+    Context "When function names have nouns from whitelist" {
+
+        It "ignores function name ending with Data" {
+            $nounViolationScript = @'
+Function Add-SomeData
+{
+    Write-Output "Adding some data"
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
+                -IncludeRule "PSUseSingularNouns" `
+                -OutVariable violations
+            $violations.Count | Should Be 0
+        }
     }
 
     Context "When there are no violations" {
