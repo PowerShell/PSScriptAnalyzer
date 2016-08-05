@@ -93,9 +93,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         
         }
 
-        private string GetListLiteral<T>(Dictionary<string, T> exportedItems)
+        private string GetListLiteral<T>(Dictionary<string, T> exportedItemsDict)
         {
             const int lineWidth = 64;
+            var exportedItems = new SortedDictionary<string, T>(exportedItemsDict);
             if (exportedItems == null || exportedItems.Keys == null)
             {
                 return null;

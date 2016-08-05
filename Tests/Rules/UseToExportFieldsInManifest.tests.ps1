@@ -43,8 +43,8 @@ Describe "UseManifestExportFields" {
 	It "suggests corrections for FunctionsToExport with wildcard" {
 	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardPath
 	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsWildcardPath
-	    Test-CorrectionExtent $violationFilepath $violations[0] 1 "'*'" "@('Get-Foo', 'Get-Bar')"
-	    $violations[0].SuggestedCorrections[0].Description | Should Be "Replace '*' with @('Get-Foo', 'Get-Bar')"
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1 "'*'" "@('Get-Bar', 'Get-Foo')"
+	    $violations[0].SuggestedCorrections[0].Description | Should Be "Replace '*' with @('Get-Bar', 'Get-Foo')"
 	}
 
         It "detects FunctionsToExport with null" {
@@ -56,7 +56,8 @@ Describe "UseManifestExportFields" {
 	It "suggests corrections for FunctionsToExport with null and line wrapping" {
 	    $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsNullPath
 	    $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsNullPath
-	    Test-CorrectionExtent $violationFilepath $violations[0] 1  '$null' "@('Get-Foo1', 'Get-Foo2', 'Get-Foo3', 'Get-Foo4', 'Get-Foo5', 'Get-Foo6', `r`n`t`t'Get-Foo7', 'Get-Foo8', 'Get-Foo9', 'Get-Foo10', 'Get-Foo11', `r`n`t`t'Get-Foo12')"
+        $expectedCorrectionExtent = "@('Get-Foo1', 'Get-Foo10', 'Get-Foo11', 'Get-Foo12', 'Get-Foo2', 'Get-Foo3', {0}`t`t'Get-Foo4', 'Get-Foo5', 'Get-Foo6', 'Get-Foo7', 'Get-Foo8', {0}`t`t'Get-Foo9')" -f [System.Environment]::NewLine
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1  '$null' $expectedCorrectionExtent
 	}
 
         It "detects array element containing wildcard" {
@@ -84,7 +85,7 @@ Describe "UseManifestExportFields" {
 	It "suggests corrections for AliasesToExport with wildcard" {
 	    $violations = Run-PSScriptAnalyzerRule $testManifestBadAliasesWildcardPath
 	    $violationFilepath = Join-path $testManifestPath $testManifestBadAliasesWildcardPath
-	    Test-CorrectionExtent $violationFilepath $violations[0] 1  "'*'" "@('gfoo', 'gbar')"
+	    Test-CorrectionExtent $violationFilepath $violations[0] 1  "'*'" "@('gbar', 'gfoo')"
 	}
 
         It "detects all the *ToExport violations" {

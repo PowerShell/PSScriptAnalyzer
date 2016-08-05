@@ -27,6 +27,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// </summary>
     [Export(typeof(IScriptRule))]
     public class CmdletSingularNoun : IScriptRule {
+
+        private readonly string[] nounWhiteList =
+        {
+            "Data"
+        };
+
         /// <summary>
         /// Checks that all defined cmdlet use singular noun
         /// </summary>
@@ -46,23 +52,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (funcAst.Name != null && funcAst.Name.Contains('-'))
                 {
                     funcNamePieces = funcAst.Name.Split(funcSeperator);
-                    String noun = funcNamePieces[1];
+                    String nounPart = funcNamePieces[1];
 
                     // Convert the noun part of the function into a series of space delimited words
                     // This helps the PluralizationService to provide an accurate determination about the plurality of the string
-                    noun = SplitCamelCaseString(noun);
-
+                    nounPart = SplitCamelCaseString(nounPart);
+                    var words = nounPart.Split(new char [] { ' ' });
+                    var noun = words.LastOrDefault();
+                    if (noun == null)
+                    {
+                        continue;
+                    }
                     var ps = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
 
                     if (!ps.IsSingular(noun) && ps.IsPlural(noun))
                     {
                         IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
-
+                        if (nounWhiteList.Contains(noun, StringComparer.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
                         if (null == extent)
                         {
                             extent = funcAst.Extent;
                         }
-
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
                             extent, GetName(), DiagnosticSeverity.Warning, fileName);
                     }
