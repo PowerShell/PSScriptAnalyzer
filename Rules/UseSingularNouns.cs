@@ -52,12 +52,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (funcAst.Name != null && funcAst.Name.Contains('-'))
                 {
                     funcNamePieces = funcAst.Name.Split(funcSeperator);
-                    String noun = funcNamePieces[1];
+                    String nounPart = funcNamePieces[1];
 
                     // Convert the noun part of the function into a series of space delimited words
                     // This helps the PluralizationService to provide an accurate determination about the plurality of the string
-                    noun = SplitCamelCaseString(noun);
-
+                    nounPart = SplitCamelCaseString(nounPart);
+                    var words = nounPart.Split(new char [] { ' ' });
+                    var noun = words.LastOrDefault();
+                    if (noun == null)
+                    {
+                        continue;
+                    }
                     var ps = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
 
                     if (!ps.IsSingular(noun) && ps.IsPlural(noun))
