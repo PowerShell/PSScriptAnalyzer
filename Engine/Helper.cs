@@ -34,6 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private CommandInvocationIntrinsics invokeCommand;
         private IOutputWriter outputWriter;
         private Object getCommandLock = new object();
+        private readonly static Version minSupportedPSVersion = new Version(3, 0);
 
         #endregion
 
@@ -1602,6 +1603,182 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return false;
         }
 
+        /// <summary>
+        /// Gets valid keys of a PowerShell module manifest file for a given PowerShell version
+        /// </summary>
+        /// <param name="powershellVersion">Version parameter; valid if >= 3.0</param>
+        /// <returns>Returns an enumerator over valid keys</returns>
+        public static IEnumerable<string> GetModuleManifestKeys(Version powershellVersion)
+        {
+            if (powershellVersion == null)
+            {
+                throw new ArgumentNullException("powershellVersion");
+            }
+            if (!IsPowerShellVersionSupported(powershellVersion))
+            {
+                throw new ArgumentException("Invalid PowerShell version. Choose from version greater than or equal to 3.0");
+            }
+            var keys = new List<string>();
+            var keysCommon = new List<string> {
+                    "RootModule",
+                    "ModuleVersion",
+                    "GUID",
+                    "Author",
+                    "CompanyName",
+                    "Copyright",
+                    "Description",
+                    "PowerShellVersion",
+                    "PowerShellHostName",
+                    "PowerShellHostVersion",
+                    "DotNetFrameworkVersion",
+                    "CLRVersion",
+                    "ProcessorArchitecture",
+                    "RequiredModules",
+                    "RequiredAssemblies",
+                    "ScriptsToProcess",
+                    "TypesToProcess",
+                    "FormatsToProcess",
+                    "NestedModules",
+                    "FunctionsToExport",
+                    "CmdletsToExport",
+                    "VariablesToExport",
+                    "AliasesToExport",
+                    "ModuleList",
+                    "FileList",
+                    "PrivateData",
+                    "HelpInfoURI",
+                    "DefaultCommandPrefix"};
+            keys.AddRange(keysCommon);
+            if (powershellVersion.Major >= 5)
+            {
+                keys.Add("DscResourcesToExport");
+            }
+            if (powershellVersion >= new Version(5, 1))
+            {
+                keys.Add("CompatiblePSEditions");
+            }
+            return keys;
+        }
+
+        /// <summary>
+        /// Gets deprecated keys of PowerShell module manifest
+        /// </summary>
+        /// <returns>Returns an enumerator over deprecated keys</returns>
+        public static IEnumerable<string> GetDeprecatedModuleManifestKeys()
+        {
+            return new List<string> { "ModuleToProcess" };
+        }
+
+        /// <summary>
+        /// Get a mapping between string type keys and StatementAsts from module manifest hashtable ast
+        /// 
+        /// This is a workaround as SafeGetValue is not supported on PS v5 and below.
+        /// </summary>
+        /// <param name="hast">Hashtable Ast obtained from module manifest</param>
+        /// <returns>A dictionary that maps string keys to values of StatementAst type</returns>
+        private static Dictionary<string, StatementAst> GetMapFromHashtableAst(HashtableAst hast)
+        {
+            var map = new Dictionary<string, StatementAst>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in hast.KeyValuePairs)
+            {
+                var key = pair.Item1 as StringConstantExpressionAst;
+                if (key == null)
+                {
+                    return null;
+                }
+                map[key.Value] = pair.Item2;
+            }
+            return map;
+        }
+
+        /// <summary>
+        /// Checks if the version is supported
+        /// 
+        /// PowerShell versions with Major greater than 3 are supported
+        /// </summary>
+        /// <param name="version">PowerShell version</param>
+        /// <returns>true if the given version is supported else false</returns>
+        public static bool IsPowerShellVersionSupported(Version version)
+        {
+            if (version == null)
+            {
+                throw new ArgumentNullException("version");
+            }
+            return version >= minSupportedPSVersion;
+        }
+
+        /// <summary>
+        /// Checks if a given file is a valid PowerShell module manifest
+        /// </summary>
+        /// <param name="filepath">Path to module manifest</param>
+        /// <param name="powershellVersion">Version parameter; valid if >= 3.0</param>
+        /// <returns>true if given filepath points to a module manifest, otherwise false</returns>
+        public static bool IsModuleManifest(string filepath, Version powershellVersion = null)
+        {
+            Token[] tokens;
+            ParseError[] errors;
+            if (filepath == null)
+            {
+                throw new ArgumentNullException("filepath");
+            }
+            if (powershellVersion != null
+                && !IsPowerShellVersionSupported(powershellVersion))
+            {
+                return false;
+            }
+            if (!Path.GetExtension(filepath).Equals(".psd1", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            //using parsefile causes the parser to crash!
+            string fileContent = File.ReadAllText(filepath);
+            var ast = Parser.ParseInput(fileContent, out tokens, out errors);
+            var hast = ast.Find(x => x is HashtableAst, false) as HashtableAst;
+            if (hast == null)
+            {
+                return false;
+            }
+            var map = GetMapFromHashtableAst(hast);
+            var deprecatedKeys = GetDeprecatedModuleManifestKeys();
+            IEnumerable<string> allKeys;
+            if (powershellVersion != null)
+            {
+                allKeys = GetModuleManifestKeys(powershellVersion);
+            }
+            else
+            {
+                Version version = null;
+                if (map.ContainsKey("PowerShellVersion"))
+                {
+                    var versionStrAst = map["PowerShellVersion"].Find(x => x is StringConstantExpressionAst, false);
+                    if (versionStrAst != null)
+                    {
+                        try
+                        {
+                            version = new Version((versionStrAst as StringConstantExpressionAst).Value);
+                        }
+                        catch
+                        {
+                            // we just ignore if the value is not a valid version
+                        }
+                    }
+                }
+                if (version != null
+                    && IsPowerShellVersionSupported(version))
+                {
+                    allKeys = GetModuleManifestKeys(version);
+                }
+                else
+                {
+                    // default to version 5.1
+                    allKeys = GetModuleManifestKeys(new Version("5.1"));
+                }
+            }
+
+            // check if the keys given in module manifest are a proper subset of Keys
+            return map.Keys.All(x => allKeys.Concat(deprecatedKeys).Contains(x, StringComparer.OrdinalIgnoreCase));
+        }
 #endregion Methods
     }
 

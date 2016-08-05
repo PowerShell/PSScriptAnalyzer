@@ -35,9 +35,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>A List of diagnostic results of this rule</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
-
-            if (String.Equals(System.IO.Path.GetExtension(fileName), ".psd1", StringComparison.OrdinalIgnoreCase))
+            if (ast == null)
+            {
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            }
+            if (fileName == null)
+            {
+                yield break;
+            }
+            if (Helper.IsModuleManifest(fileName))
             {
                 IEnumerable<ErrorRecord> errorRecords;
                 var psModuleInfo = Helper.Instance.GetModuleManifest(fileName, out errorRecords);

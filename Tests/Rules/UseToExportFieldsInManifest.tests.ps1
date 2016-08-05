@@ -99,6 +99,16 @@ Describe "UseManifestExportFields" {
             $results.Count | Should be 0
         }        
     }
+
+    Context "When given a non module manifest file" {
+        It "does not flag a PowerShell data file" {
+            Invoke-ScriptAnalyzer `
+                -Path "$directory/TestManifest/PowerShellDataFile.psd1" `
+                -IncludeRule "PSUseToExportFieldsInManifest" `
+                -OutVariable ruleViolation
+            $ruleViolation.Count | Should Be 0
+        }
+    }
 }
 
 
