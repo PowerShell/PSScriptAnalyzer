@@ -6,7 +6,7 @@ The value of the ```HelpMessage``` attribute should not be an empty string or a 
 function or CMDLet.
 
 ##How to Fix
-Specify a value for the HelpMessage attribute.
+Specify a value for the ```HelpMessage``` attribute.
 
 ##Example
 ###Wrong:
