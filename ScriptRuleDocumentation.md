@@ -1,11 +1,13 @@
 ##Documentation for Customized Rules in PowerShell Scripts
-PSScriptAnalyzer uses MEF(Managed Extensibility Framework) to import all rules defined in the assembly. It can also consume rules written in PowerShell scripts. When calling Invoke-ScriptAnalyzer, users can pass customized rules using parameter -CustomizedRulePath to apply rule checkings on the scripts. 
+PSScriptAnalyzer uses MEF(Managed Extensibility Framework) to import all rules defined in the assembly. It can also consume rules written in PowerShell scripts. 
 
-This documentation serves as a basic guideline on how to define customized rules.
+When calling Invoke-ScriptAnalyzer, users can specify custom rules using the parameter ```CustomizedRulePath```.
+
+The purpose of this documentation is to server as a basic guide on creating your own customized rules.
 
 ###Basics
 - Functions should have comment-based help. Make sure .DESCRIPTION field is there, as it will be consumed as rule description for the customized rule.
-```
+``` PowerShell
 <#
 .SYNOPSIS
     Name of your rule.
@@ -19,36 +21,38 @@ This documentation serves as a basic guideline on how to define customized rules
 ```
 
 - Output type should be DiagnosticRecord:
-```
+``` PowerShell
 [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
 ```
 
 - Make sure each function takes either a Token or an Ast as a parameter
-```
+``` PowerShell
 Param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.Language.ScriptBlockAst]
-        $testAst
-    )
+(
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [System.Management.Automation.Language.ScriptBlockAst]
+    $testAst
+)
 ```
 
 - DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
-```
-$result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{"Message"  = "This is a sample rule"; 
-     "Extent"   = $ast.Extent;
-     "RuleName" = $PSCmdlet.MyInvocation.InvocationName;
-     "Severity" = "Warning"}
+``` PowerShell
+$result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{
+    "Message"  = "This is a sample rule"
+    "Extent"   = $ast.Extent
+    "RuleName" = $PSCmdlet.MyInvocation.InvocationName
+    "Severity" = "Warning"
+}
 ```
 
 - Make sure you export the function(s) at the end of the script using Export-ModuleMember
-```
+``` PowerShell
 Export-ModuleMember -Function (FunctionName)
 ```
 
 ###Example
-```
+``` PowerShell
 <#
 .SYNOPSIS
     Uses #Requires -RunAsAdministrator instead of your own methods.
@@ -155,4 +159,5 @@ function Measure-RequiresRunAsAdministrator
     }
 }
 ```
+
 More examples can be found in *Tests\Engine\CommunityRules*

@@ -1,27 +1,25 @@
 #UsePSCredentialType
 **Severity Level: Warning**
 
-
 ##Description
-
-Checks that cmdlets that have a Credential parameter accept PSCredential. This comes from the PowerShell teams best practices.
+If the CMDLet or function has a Credential parameter, the parameter must accept the ```PSCredential``` type.
 
 ##How to Fix
-
-Please change the parameter type to be PSCredential.
+Change the Credential parameter's type to be ```PSCredential```.
 
 ##Example
+###Wrong:
+``` PowerShell
+function Credential([String]$Credential) 
+{
+	...
+}
+```
 
-Wrong:
-
-	function Credential([String]$Credential) 
-	{
-		...
-	}
-
-Correct:
-
-	function Credential([PSCredential]$Credential) 
-	{
-		...
-	}
+###Correct:
+``` PowerShell
+function Credential([PSCredential]$Credential) 
+{
+	...
+}
+```

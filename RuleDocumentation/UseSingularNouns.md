@@ -2,25 +2,24 @@
 **Severity Level: Warning**
 
 ##Description
-
-Cmdlet should use singular instead of plural nouns. This comes from the PowerShell teams best practices.
+PowerShell team best practices state CMDLets should use singular nouns and not plurals.
 
 ##How to Fix
-
-Please correct the plural nouns to be singluar.
+Change plurals to singular.
 
 ##Example
+###Wrong：
+``` PowerShell
+function Get-Files
+{
+	...
+}
+```
 
-Wrong：
-
-	function Get-Files
-	{
-		...
-	}
-
-Correct: 
-
-	function Get-File
-	{
-		...
-	}
+###Correct: 
+``` PowerShell
+function Get-File
+{
+	...
+}
+```

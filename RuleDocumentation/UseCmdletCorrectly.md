@@ -1,22 +1,28 @@
 #UseCmdletCorrectly 
 **Severity Level: Warning**
 
-
 ##Description
-
-Cmdlets must be invoked with the correct syntax and parameters. For example, calling Set-Date with no parameters would be triggered by this rule since it has a required date parameter. 
+Whenever we call a command, care should be taken that it is invoked with the correct syntax and parameters.
 
 ##How to Fix
-
-To fix a violation of this rule, please use mandatory parameters when calling cmdlets.
+Specify all mandatory parameters when calling commands.
 
 ##Example
-
-Wrong： 
-
+###Wrong： 
+``` PowerShell
+Function Set-TodaysDate ()
+{
 	Set-Date
+	...
+}
+```
 
-Correct: 
-
+###Correct:
+``` PowerShell
+Function Set-TodaysDate ()
+{
 	$date = Get-Date
 	Set-Date -Date $t
+	...
+}
+```

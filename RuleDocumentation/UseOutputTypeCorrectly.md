@@ -1,37 +1,36 @@
 ﻿#UseOutputTypeCorrectly 
 **Severity Level: Information**
 
-
 ##Description
+A command should return the same type as declared in ```OutputType```.
 
-If a return type is declared, the cmdlet must return that type. If a type is returned, a return type must be declared.
+You can get more details by running ```Get-Help about_Functions_OutputTypeAttribute``` command in Windows PowerShell.
 
 ##How to Fix
-
-To fix a violation of this rule, please check the OuputType attribute lists and the types that are returned in your code. You can get more details by running “Get-Help about_Functions_OutputTypeAttribute” command in Windows PowerShell. 
-
-##Example
+Specify that the OutputType attribute lists and the types returned in the CMDLet match.
 
 ##Example
-Wrong:
+###Wrong:
+``` PowerShell
+function Get-Foo
+{
+        [CmdletBinding()]
+        [OutputType([String])]
+        Param(
+        )
+        return 4
+}
+```
 
-	function Get-Foo
-	{
-            [CmdletBinding()]
-            [OutputType([String])]
-            Param(
-            )
-            return "4
-	}
+###Correct:
+``` PowerShell
+function Get-Foo
+{
+        [CmdletBinding()]
+        [OutputType([String])]
+        Param(
+        )
 
-Correct:
-
-	function Get-Foo
-	{
-            [CmdletBinding()]
-            [OutputType([String])]
-            Param(
-            )
-
-            return "bar"
-	}
+        return "bar"
+}
+```

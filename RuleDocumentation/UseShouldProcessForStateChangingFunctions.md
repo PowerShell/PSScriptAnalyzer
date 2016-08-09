@@ -2,29 +2,44 @@
 **Severity Level: Warning**
 
 ##Description
+Functions whose verbs change system state should support ```ShouldProcess```.
 
-Functions that have verbs like New, Start, Stop, Set, Reset and Restart that change system state should support 'ShouldProcess'
+Verbs that should support ```ShouldProcess```:
+	- ```New```
+	- ```Reset```
+	- ```Restart```
+	- ```Set```
+	- ```Start```
+	- ```Stop```
 
 ##How to Fix
-
-To fix a violation of this rule, please add attribute SupportsShouldProcess. eg: [CmdletBinding(SupportsShouldProcess = $true)] to the function.
+Include the attribute ```SupportsShouldProcess```, in the ```CmdletBindingBinding```.
 
 ##Example
-
-Wrong:
-```
+###Wrong:
+``` PowerShell
 	function Set-ServiceObject
 	{
 	    [CmdletBinding()]
-    	    param ([string]$c)
+		param 
+		(
+			[string]
+			$Parameter1
+		)
+		...
 	}
 ```
 
-Correct: 
-```
+###Correct: 
+``` PowerShell
 	function Set-ServiceObject
 	{
 	    [CmdletBinding(SupportsShouldProcess = $true)]
-	    param ([string]$c)
+	    param 
+		(
+			[string]
+			$Parameter1
+		)
+		...
 	}
 ```

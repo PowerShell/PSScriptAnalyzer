@@ -1,61 +1,48 @@
 #AvoidUsingPlainTextForPassword 
 **Severity Level: Warning**
 
-
 ##Description
+Password parameters that take in plaintext will expose passwords and compromise the security of your system. Passwords should be stored in the 
+```SecureString``` type.
 
-Password parameters that take in plaintext will expose passwords and compromise the security of your system.
+The following parameters are considered password parameters (this is not case sensitive):
+    - Password
+    - Pass
+    - Passwords
+    - Passphrase
+    - Passphrases
+    - PasswordParam
+
+If a parameter is defined with a name in the above list, it should be declared with type ```SecureString```
 
 ##How to Fix
-
-To fix a violation of this rule, please use SecureString as the type of password parameter.
+Change the type to ```SecureString```.
 
 ##Example
-
-Wrong： 
-```
-    function Test-Script
-    {
-        [CmdletBinding()]
-        [Alias()]
-        [OutputType([int])]
-        Param
-        (
-            [string]
-            $Password,
-            [string]
-            $Pass,
-            [string[]]
-            $Passwords,
-            $Passphrases,
-            $Passwordparam
-        )
-        ...
-    }
+###Wrong： 
+``` PowerShell
+function Test-Script
+{
+    [CmdletBinding()]
+    Param
+    (
+        [string]
+        $Password
+    )
+    ...
+}
 ```
 
-Correct: 
-
-```
-    function Test-Script
-    {
-        [CmdletBinding()]
-        [Alias()]
-        [OutputType([Int])]
-        Param
-        (
-            [SecureString]
-            $Password,
-            [System.Security.SecureString]
-            $Pass,
-            [SecureString[]]
-            $Passwords,
-            [SecureString]
-            $Passphrases,
-            [SecureString]
-            $PasswordParam
-        )
-        ...
-    }
-
+###Correct: 
+``` PowerShell
+function Test-Script
+{
+    [CmdletBinding()]
+    Param
+    (
+        [SecureString]
+        $Password
+    )
+    ...
+}
 ```

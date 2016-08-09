@@ -5,6 +5,7 @@ The following guidelines come from a combined effort from both the PowerShell te
 
 ##Cmdlet Design Rules
 ###Severity: Error
+
 ###Severity: Warning
   - Use Only Approved Verbs [UseApprovedVerbs](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseApprovedVerbs.md)
   - Cmdlets Names: Characters that cannot be Used [AvoidReservedCharInCmdlet](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidReservedCharInCmdlet.md)
@@ -65,8 +66,6 @@ The following guidelines come from a combined effort from both the PowerShell te
     - Copy $Error[0] to your own variable
   - Avoid using pipelines in scripts
   - If a return type is declared, the cmdlet must return that type. If a type is returned, a return type must be declared.
-  
-
 
 ##Scripting Style
 ###Severity: Error
@@ -101,7 +100,6 @@ The following guidelines come from a combined effort from both the PowerShell te
 ###Severity: TBD
   - APIKey and Credentials variables that are initialized (information disclosure)
 
-
 ##DSC Related Rules
 ###Severity: Error
   - Use standard DSC methods [UseStandardDSCFunctionsInResource](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseStandardDSC FunctionsInResource.md)
@@ -112,9 +110,9 @@ The following guidelines come from a combined effort from both the PowerShell te
 
 ###Severity: Information
   - All of the following three rule are grouped by: [ReturnCorrectTypeDSCFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/ReturnCorrectTypeDSCFunctions.md)
-    - Avoid return any object from a Set-TargetResource function
-    - Returning a Boolean object from a Test-TargetResource function
-    - Returning an object from a Get-TargetResource function
+    - Avoid return any object from a Set-TargetResource or Set (Class Based) function
+    - Returning a Boolean object from a Test-TargetResource or Test (Class Based) function
+    - Returning an object from a Get-TargetResource or Get (Class Based) function
   - DSC resources should have DSC tests [DSCTestsPresent](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/DscTestsPresent.md)
   - DSC resources should have DSC examples [DSCExamplesPresent](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/DscExamplesPresent.md)
   
@@ -125,11 +123,9 @@ The following guidelines come from a combined effort from both the PowerShell te
   - Use ShouldProcess for a Set DSC method
   - Resource module contains DscResources folder which contains the resources [IssueOpened](https://github.com/PowerShell/PSScriptAnalyzer/issues/130)
 
-
-
 ###Reference:
-* Cmdlet Development Guidelines from MSDN site (Cmdlet Development Guidelines)
-
-* The Community Book of PowerShell Practices (Compiled by Don Jones and Matt Penny and the Windows PowerShell Community)
-
-* [PowerShell DSC Resource Design and Testing Checklist](http://blogs.msdn.com/b/powershell/archive/2014/11/18/powershell-dsc-resource-design-and-testing-checklist.aspx)
+* Cmdlet Development Guidelines from MSDN site (Cmdlet Development Guidelines): https://msdn.microsoft.com/en-us/library/ms714657(v=vs.85).aspx 
+* The Community Book of PowerShell Practices (Compiled by Don Jones and Matt Penny and the Windows PowerShell Community): https://powershell.org/community-book-of-powershell-practices/
+* PowerShell DSC Resource Design and Testing Checklist: http://blogs.msdn.com/b/powershell/archive/2014/11/18/powershell-dsc-resource-design-and-testing-checklist.aspx
+* DSC Guidelines can also be found in the DSC Resources Repository: https://github.com/PowerShell/DscResources
+* The Unofficial PowerShell Best Practices and Style Guide: https://github.com/PoshCode/PowerShellPracticeAndStyle

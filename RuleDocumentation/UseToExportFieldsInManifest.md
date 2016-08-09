@@ -1,28 +1,40 @@
 #UseToExportFieldsInManifest 
 **Severity Level: Warning**
 
-
 ##Description
+To improve the performance of module auto-discovery, module manifests should not use wildcards (*) or null (```$null``) in the following entries:
+	- ```AliasesToExport```
+	- ```CmdletsToExport```
+	- ```FunctionsToExport```
+	- ```VariablesToExport```
 
-In a module manifest, AliasesToExport, CmdletsToExport, FunctionsToExport and VariablesToExport fields should not use wildcards or $null in their entries. During module auto-discovery, if any of these entries are missing or $null or wildcard, PowerShell does some potentially expensive work to analyze the rest of the module.
+The use of wildcards or null has the potential to cause PowerShell to perform expensive work to analyse a module during module auto-discovery.
 
 ##How to Fix
-
-Please consider using an explicit list. 
+Use an explicit list in the entries.
 
 ##Example 1
+Suppose there are no functions in your module to export. Then,
 
-Wrong： 
- 	FunctionsToExport = $null
+###Wrong： 
+``` PowerShell
+FunctionsToExport = $null
+```
 
-Correct: 
-	FunctionToExport = @()
+###Correct:
+``` PowerShell 
+FunctionToExport = @()
+```
 
 ##Example 2
 Suppose there are only two functions in your module, Get-Foo and Set-Foo that you want to export. Then,
 
-Wrong:	
-	FunctionsToExport = '*'
+###Wrong:
+``` PowerShell	
+FunctionsToExport = '*'
+```
 
-Correct:
-	FunctionToExport = @(Get-Foo, Set-Foo)	
+###Correct:
+``` PowerShell
+FunctionToExport = @(Get-Foo, Set-Foo)
+```
