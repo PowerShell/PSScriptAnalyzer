@@ -19,7 +19,7 @@ Use other scope modifiers for variables.
 ###Wrong:
 ``` PowerShell
 $Global:var1 = $null
-function NotGlobal ($var)
+function Test-NotGlobal ($var)
 {
 	$a = $var + $var1
 }
@@ -28,7 +28,7 @@ function NotGlobal ($var)
 ###Correct:
 ``` PowerShell
 $var1 = $null
-function NotGlobal ($var1, $var2)
+function Test-NotGlobal ($var1, $var2)
 {
 		$a = $var1 + $var2
 }
