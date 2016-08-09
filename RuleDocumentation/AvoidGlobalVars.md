@@ -6,9 +6,9 @@ A variable is a unit of memory in which values are stored. Windows PowerShell co
 Variables and functions that are present when Windows PowerShell starts have been created in the global scope. 
 
 Globally scoped variables include:
-	- automatic variables
-	- preference variables
-	- variables, aliases, and functions that are in your Windows PowerShell profiles
+	*Automatic variables
+	*Preference variables
+	*Variables, aliases, and functions that are in your Windows PowerShell profiles
 
 To understand more about scoping, see ```Get-Help about_Scopes```.
 
