@@ -1,40 +1,42 @@
 #AvoidTrapStatement
 **Severity Level: Warning**
 
-
 ##Description
+The ```Trap``` keyword specifies a list of statements to run when a terminating error occurs. 
 
-The Trap keyword specifies a list of statements to run when a terminating error occurs. It is designed for administrators. For script developers, you should use try-catch-finally statement.
+Trap statements handle the terminating errors and allow execution of the script or function to continue instead of stopping.
+
+Traps are intended for the use of administrators and not for script and CMDLet developers. PowerShell scripts and CMDLets should make use 
+of ```try{} catch{} finally{}``` statements.
 
 ##How to Fix
-
-To fix a violation of this rule, please remove Trap statements and use try-catch-finally statement instead.
+Replace ```Trap``` statements with ```try{} catch{} finally{}``` statements.
 
 ##Example
+###Wrong：    
+``` PowerShell
+function Test-Trap 
+{
+    trap {"Error found: $_"}
+}
+```
 
-Wrong：    
-```
-    function TrapTest 
+###Correct:    
+``` PowerShell
+function Test-Trap 
+{
+    try 
     {
-    	trap {"Error found: $_"}
-	}
-```
-Correct:    
-```
-    function TrapTest 
+        $a = New-Object "NonExistentObjectType"
+        $a | Get-Member
+    }
+    catch [System.Exception]
     {
-    	try 
-    	{
-            $a = New-Object "dafdf"
-            $a | Get-Member
-        }
-    	catch [System.Exception]
-    	{
-            "Found error"
-    	}
-    	finally
-    	{
-            "End the script"
-    	}
-     }
+        "Found error"
+    }
+    finally
+    {
+        "End the script"
+    }
+    }
  ```

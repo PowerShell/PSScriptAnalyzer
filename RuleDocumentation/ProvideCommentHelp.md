@@ -1,71 +1,59 @@
 #ProvideCommentHelp 
 **Severity Level: Info**
 
-
 ##Description
+Comment based help should be provided for all PowerShell commands. This test only checks for the presence of comment based help and not on the validity or format.
 
-Checks that all cmdlets have a help comment. This rule only checks existence. It does not check the content of the comment.
-
+For assistance on comment based help, use the command ```Get-Help about_comment_based_help``` or the article, "How to Write Cmdlet Help" (http://go.microsoft.com/fwlink/?LinkID=123415).
 
 ##How to Fix
-
-Please consider adding help comment for each cmdlet.
+Include comment based help for each command identified.
 
 ##Example
+###Wrong:
+``` PowerShell
+function Get-File
+{
+    [CmdletBinding()]
+    Param
+    (
+        ...
+    )
+    
+}
+```
 
-Wrong:
-
-    function Verb-Files
-    {
-        [CmdletBinding(DefaultParameterSetName='Parameter Set 1', 
-                      SupportsShouldProcess=$true, 
-                      PositionalBinding=$false,
-                      HelpUri = 'http://www.microsoft.com/',
-                      ConfirmImpact='Medium')]
-        [Alias()]
-        [OutputType([string])]
-        Param
-        (
-            ...
-        )
-       
-    }
-
-Right:
-
-    <#
-    .Synopsis
-       Short description
-    .DESCRIPTION
-       Long description
-    .EXAMPLE
-       Example of how to use this cmdlet
-    .EXAMPLE
-       Another example of how to use this cmdlet
-    .INPUTS
-       Inputs to this cmdlet (if any)
-    .OUTPUTS
-       Output from this cmdlet (if any)
-    .NOTES
-       General notes
-    .COMPONENT
-       The component this cmdlet belongs to
-    .ROLE
-       The role this cmdlet belongs to
-    .FUNCTIONALITY
-       The functionality that best describes this cmdlet
-    #>
-    function Get-File
-    {
-        [CmdletBinding(DefaultParameterSetName='Parameter Set 1', 
-                      SupportsShouldProcess=$true, 
-                      PositionalBinding=$false,
-                      HelpUri = 'http://www.microsoft.com/',
-                      ConfirmImpact='Medium')]
-        [Alias()]
-        [OutputType([string])]
-        Param
-        (
-            ...
-        )
-    }
+###Correct:
+``` PowerShell
+<#
+.Synopsis
+    Short description
+.DESCRIPTION
+    Long description
+.EXAMPLE
+    Example of how to use this cmdlet
+.EXAMPLE
+    Another example of how to use this cmdlet
+.INPUTS
+    Inputs to this cmdlet (if any)
+.OUTPUTS
+    Output from this cmdlet (if any)
+.NOTES
+    General notes
+.COMPONENT
+    The component this cmdlet belongs to
+.ROLE
+    The role this cmdlet belongs to
+.FUNCTIONALITY
+    The functionality that best describes this cmdlet
+#>
+function Get-File
+{
+    [CmdletBinding()]
+    Param
+    (
+        ...
+    )
+    
+}
+```

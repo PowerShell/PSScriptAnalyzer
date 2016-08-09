@@ -1,16 +1,133 @@
 #UseStandardDSCFunctionsInResource
 **Severity Level: Error**
 
-
 ##Description
+All DSC resources are required to implement the correct functions.
 
-DSC Resource must implement Get, Set and Test-TargetResource functions. DSC Class must implement Get, Set and Test functions.
+For non-class based resources:
+* ```Set-TargetResource``` 
+* ```Test-TargetResource```
+* ```Get-TargetResource```
 
+For class based resources:
+* ```Set```
+* ```Test```
+* ```Get```
 
 ##How to Fix
+Add the missing functions to the resource.
 
-To fix a violation of this rule, please add the missing functions to the resouce.
- 
+##Example Non Class Based
+###Wrong:
+``` PowerShell
+function Get-TargetResource
+{
+    [OutputType([Hashtable])]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name
+    )
+    ...
+}
 
-##Example
+function Set-TargetResource
+{
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name
+    )
+    ...
+}
+```
+###Correct:
+``` PowerShell
+function Get-TargetResource
+{
+    [OutputType([Hashtable])]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name
+    )
+    ...
+}
+
+function Set-TargetResource
+{
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name
+    )
+    ...
+}
+
+function Test-TargetResource
+{
+    [OutputType([System.Boolean])]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name
+    )
+    ...
+}
+```
+
+##Example Class Based
+###Wrong:
+``` PowerShell
+[DscResource()]
+class MyDSCResource
+{
+    [DscProperty(Key)]
+    [string] $Name
+
+    [void] Set() 
+    {
+        ...
+    }
+
+    [bool] Test() 
+    {
+        ...
+    }
+}
+
+###Correct:
+``` PowerShell
+[DscResource()]
+class MyDSCResource
+{
+    [DscProperty(Key)]
+    [string] $Name
+
+    [MyDSCResource] Get() 
+    {
+        ...
+    }
+
+    [void] Set() 
+    {
+        ...
+    }
+
+    [bool] Test() 
+    {
+        ...
+    }
+}
+```
+
+
+
+
+
 

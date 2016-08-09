@@ -2,18 +2,20 @@
 **Severity Level: Warning**
 
 ##Description
+When developing PowerShell content that will potentially need to be maintained over time, either by the original author or others, you should use full command names and parameter names.
 
-To fix a violation of this rule, please use named parameters instead of positional parameters when calling a command.
+The use of positional parameters can reduce the readability of code and potentially introduce errors.
 
 ##How to Fix
-
-To fix a violation of this rule, please use named parameters instead of positional parameters when calling a command.
+Use full parameter names when calling commands.
 
 ##Example
-Wrong:
+###Wrong:
+``` PowerShell
+Get-ChildItem *.txt
+```
 
-	Get-ChildItem *.txt
-
-Correct:
-
-	Get-Content -Path *.txt
+###Correct:
+``` PowerShell
+Get-Content -Path *.txt
+```

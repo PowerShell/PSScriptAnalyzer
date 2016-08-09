@@ -1,28 +1,27 @@
 #UseApprovedVerbs 
 **Severity Level: Warning**
 
-
 ##Description
+All CMDLets must used approved verbs.
 
-All defined cmdlets must use approved verbs. This is in line with PowerShell's best practices.
+Approved verbs can be found by running the command ```Get-Verb```.
 
 ##How to Fix
-
-Please consider using full cmdlet name instead of alias. 
+Change the verb in the CMDLet's name to an approved verb. 
 
 ##Example
+###Wrong： 
+``` PowerShell
+function Change-Item
+{
+    ...
+}
+````
 
-Wrong： 
-
-    function Change-Item
-    {
-        ...
-    }
-
-Correct: 
-    
-    function Update-Item
-    {
-        ...
-    }
-
+###Correct: 
+``` PowerShell    
+function Update-Item
+{
+    ...
+}
+```

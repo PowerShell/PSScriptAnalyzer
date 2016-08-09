@@ -1,30 +1,39 @@
 #AvoidUsingUsernameAndPasswordParams
 **Severity Level: Error**
 
-
 ##Description
-
-Functions should only take in a credential parameter of type PSCredential instead of username and password parameters.
+To standardize command parameters, credentials should be accept as objects of type ```PSCredential```. Functions should not make use of username or password parameters.
 
 ##How to Fix
-
-To fix a violation of this rule, please pass username and password as a PSCredential type parameter.
+Change the parameter to type ```PSCredential```.
 
 ##Example
+###Wrong：    
+``` PowerShell
+function Test-Script
+{
+    [CmdletBinding()]
+    Param
+    (
+        [String]
+        $Username,
+        [SecureString]
+        $Password
+    )
+    ...
+}
+```
 
-Wrong：    
-```
-    [int]
-    $Param2,
-    [SecureString]
-    $Password,
-    [string]
-    $Username
-```
-
-Correct:   
-```
-    function MyFunction3 ([PSCredential]$Username, $Passwords)
-    {
-    }
+###Correct:   
+``` PowerShell
+function Test-Script
+{
+    [CmdletBinding()]
+    Param
+    (
+        [PSCredential]
+        $Credential
+    )
+    ...
+}
 ```
