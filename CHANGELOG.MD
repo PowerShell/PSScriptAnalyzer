@@ -1,3 +1,23 @@
+## Release v1.6.1
+
+Here are some improvements since the last release.
+
+- Fix `SaveDscDependency` switch implementation, which use fail if more than one parameter is given to `Import-DSCResource` dynamic keyword.
+- Add support for external AST based rule suppression
+- Fix rule suppression caused by inavlid offsets
+- Whitelist `Data` in `PSUseSingularNoun` rule
+- Fix rule documentation of `PSDSCExamplesPresent`
+- Fix false positives caused by PSD1 files which are not module manifests 
+    - affects `PSUseToExportFieldsInManifest`, `PSMissingModuleManifestField` and `PSAvoidUsingDeprecatedManifestFields` rules
+- Use PlatyPS for generating MAML based documentation
+- Add build script to automate building and testing the solution
+ 
+A big **Thank You!** to the following folks for making PSScriptAnalyzer even better:
+- [Kieran Jacobsen (@kjacobsen)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=kjacobsen): Fix rule documentation of `PSDSCExamplesPresent` [PR #591](https://github.com/PowerShell/PSScriptAnalyzer/pull/591)
+- [Charlie Schmidt (@charlieschmidt)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=charlieschmidt): Suppress External Rules [PR #585](https://github.com/PowerShell/PSScriptAnalyzer/pull/585)
+- [June Blender (@juneb)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=juneb): Add tests for module help [058f65e1](https://github.com/PowerShell/PSScriptAnalyzer/commit/058f65e1f6278222378fedf444eecb2e32865b1e)
+- [Shayde Nofziger (@Blackbaud-ShaydeNofziger)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=Blackbaud-ShaydeNofziger): Fix rule name typo and comment [PR #560](https://github.com/PowerShell/PSScriptAnalyzer/pull/560)
+
 ## Release v1.6.0
 
 ### Engine
