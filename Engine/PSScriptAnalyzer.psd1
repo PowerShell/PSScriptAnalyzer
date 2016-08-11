@@ -3,7 +3,7 @@
 #
 
 @{
- 
+
 # Author of this module
 Author = 'Microsoft Corporation'
 
@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.6.0'
+ModuleVersion = '1.6.1'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -62,16 +62,16 @@ FormatsToProcess = @('ScriptAnalyzer.format.ps1xml')
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = '*'
+FunctionsToExport = @()
 
 # Cmdlets to export from this module
 CmdletsToExport = @('Get-ScriptAnalyzerRule','Invoke-ScriptAnalyzer')
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = @()
 
 # Aliases to export from this module
-AliasesToExport = '*'
+AliasesToExport = @()
 
 # List of all modules packaged with this module
 # ModuleList = @()
@@ -86,7 +86,13 @@ PrivateData = @{
         LicenseUri = 'https://github.com/PowerShell/PSScriptAnalyzer/blob/master/LICENSE'
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
         IconUri = ''
-        ReleaseNotes = ''
+        ReleaseNotes = @'
+* Added support for external AST based rule suppression.
+* Fixed `SaveDscDependency` switch implementation, which use fail if more than one parameter is given to `Import-DSCResource` dynamic keyword.
+* Fixed rule suppression caused by inavlid offsets.
+* Fixed false positives caused by PSD1 files which are not module manifests. This affects `PSUseToExportFieldsInManifest`, `PSMissingModuleManifestField` and `PSAvoidUsingDeprecatedManifestFields` rules
+* Created a whitelist for `PSUseSingularNoun` rule to ignore `Data` noun.
+'@
     }
 }
 
