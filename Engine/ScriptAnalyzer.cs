@@ -1290,6 +1290,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+#if !PSV3
         private bool TrySaveModules(ParseError[] errors, ScriptBlockAst scriptAst)
         {
             bool modulesSaved = false;
@@ -1323,6 +1324,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             return modulesSaved;
         }
+#endif // !PSV3
 
         private IEnumerable<DiagnosticRecord> AnalyzeFile(string filePath)
         {
