@@ -6,12 +6,12 @@ Password parameters that take in plaintext will expose passwords and compromise 
 ```SecureString``` type.
 
 The following parameters are considered password parameters (this is not case sensitive):
-    - Password
-    - Pass
-    - Passwords
-    - Passphrase
-    - Passphrases
-    - PasswordParam
+* Password
+* Pass
+* Passwords
+* Passphrase
+* Passphrases
+* PasswordParam
 
 If a parameter is defined with a name in the above list, it should be declared with type ```SecureString```
 
