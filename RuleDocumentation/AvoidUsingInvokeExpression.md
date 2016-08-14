@@ -1,22 +1,21 @@
 #AvoidUsingInvokeExpression
 **Severity Level: Warning**
 
-
 ##Description
+Care must be taken when using the ```Invoke-Expression``` command. The ```Invoke-Expression``` executes the specified string and returns the results. 
 
-The Invoke-Expression cmdlet evaluates or runs a specified string as a command and returns the results of the expression or command. It can be extraordinarily powerful so it is not that you want to never use it but you need to be very careful about using it.  In particular, you are probably on safe ground if the data only comes from the program itself.  If you include any data provided from the user - you need to protect yourself from Code Injection. 
-
+Code injection into your application or script can occur if the expression passed as a string includes any data provided from the user.
 
 ##How to Fix
-
-To fix a violation of this rule, please remove Invoke-Expression from script and find other options instead.
+Remove the use of ```Invoke-Expression```.
 
 ##Example
+###Wrong： 
+``` PowerShell
+Invoke-Expression "Get-Process"
+```
 
-Wrong： 
-
-	Invoke-Expression "Get-Process"
-
-Correct: 
-
-	Get-Process
+###Correct: 
+``` PowerShell
+Get-Process
+```

@@ -1,28 +1,24 @@
 #ProvideDefaultParameterValue
 **Severity Level: Warning**
 
-
 ##Description
-Parameters must have a default value as uninitialized parameters will lead to potential bugs in the scripts.
+Just like non-global scoped variables, parameters must have a default value if they are not mandatory, i.e ```Mandatory=$false```. 
+Having optional parameters without default values leads to uninitialized variables leading to potential bugs.
 
 ##How to Fix
-
-To fix a violation of this rule, please specify a default value for all parameters.
+Specify a default value for all parameters that are not mandatory.
 
 ##Example
-
-Wrong： 
-
-```
+###Wrong： 
+``` PowerShell
 function Test($Param1)
 {
 	$Param1
 }
 ```
 
-Correct: 
-
-```
+###Correct: 
+``` PowerShell
 function Test($Param1 = $null)
 {
 	$Param1

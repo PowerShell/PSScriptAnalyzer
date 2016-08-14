@@ -1,30 +1,30 @@
 #ProvideVerboseMessage 
 **Severity Level: Information**
 
-
 ##Description
-
-Checks that Write-Verbose is called at least once in every cmdlet or script. This is in line with the PowerShell best practices.
-
+Best practice recommends that additional user information is provided within commands, functions and scripts using ```Write-Verbose```.
+ 
 ##How to Fix
-
-Please consider adding Write-Verbose in each cmdlet.
+Make use of the ```Write-Verbose``` command.
 
 ##Example
-Correct
-```
-Function TestFunction1
+###Wrong： 
+``` PowerShell
+Function Test-Function
 {
-    [cmdletbinding()]
+    [CmdletBinding()]
+    Param()
+    ...
+}
+```
+
+###Correct:
+``` PowerShell
+Function Test-Function
+{
+    [CmdletBinding()]
     Param()
     Write-Verbose "Verbose output"
-
-}
-
-Function TestFunction2
-{
-    [cmdletbinding()]
-    Param(）
-    Write-Verbose "Verbose output"
+    ...
 }
 ```

@@ -1,17 +1,97 @@
 #UseIdenticalParametersDSC 
 **Severity Level: Error**
 
-
 ##Description
-
-The Test and Set-TargetResource functions of DSC Resource must have the same parameters.
-
+The ```Get-TargetResource```, ```Test-TargetResource``` and ```Set-TargetResource``` functions of DSC Resource must have the same parameters.
 
 ##How to Fix
+Correct the parameters for the functions in DSC resource.
 
-To fix a violation of this rule, please correct the mandatory parameters for Test and Set-TargetResource functions in DSC resource.
+##Example Non Class Based
+###Wrong:
+``` PowerShell
+function Get-TargetResource
+{
+    [OutputType([Hashtable])]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name,
 
+        [String]
+        $TargetResource
+    )
+    ...
+}
 
-##Example
+function Set-TargetResource
+{
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name
+    )
+    ...
+}
 
+function Test-TargetResource
+{
+    [OutputType([System.Boolean])]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name
+    )
+    ...
+}
+```
 
+###Correct:
+``` PowerShell
+function Get-TargetResource
+{
+    [OutputType([Hashtable])]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name,
+
+        [String]
+        $TargetResource
+    )
+    ...
+}
+
+function Set-TargetResource
+{
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name,
+
+        [String]
+        $TargetResource
+    )
+    ...
+}
+
+function Test-TargetResource
+{
+    [OutputType([System.Boolean])]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
+        $Name,
+
+        [String]
+        $TargetResource
+    )
+    ...
+}
+```

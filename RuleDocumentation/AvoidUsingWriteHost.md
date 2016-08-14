@@ -1,34 +1,33 @@
 #AvoidUsingWriteHost 
 **Severity Level: Warning**
 
-
 ##Description
+The use of ```Write-Host``` is greatly discouraged unless in the use of commands with the ```Show``` verb. The ```Show``` verb explicitly means "show on the screen, with no 
+other possibilities".
 
-It is generally accepted that you should never use Write-Host to create any script output whatsoever, unless your script (or function, or whatever) uses the Show verb (as in, Show-Performance). That verb explicitly means “show on the screen, with no other possibilities.” Like Show-Command.
+Commands with the ```Show``` verb do not have this check applied.
 
 ##How to Fix
-
-PTo fix a violation of this rule, please replace Write-Host with Write-Output.
+Replace ```Write-Host``` with ```Write-Output``` or ```Write-Verbose```.
 
 ##Example
-
-Wrong： 
-
-```
+###Wrong： 
+``` PowerShell
 function Test
 {
 	...
 	Write-Host "Executing.."
+	...
 }
 ```
 
-Correct: 
-
-```
+###Correct: 
+``` PowerShell
 function Test
 {
 	...
 	Write-Output "Executing.."
+	...
 }
 
 function Show-Something

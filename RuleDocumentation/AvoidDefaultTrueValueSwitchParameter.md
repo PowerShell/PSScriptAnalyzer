@@ -1,32 +1,43 @@
 #AvoidDefaultTrueValueSwitchParameter 
 **Severity Level: Warning**
 
-
 ##Description
-
-Switch Parameters Should Not Default To True
-
+Switch parameters for commands should default to false.
 
 ##How to Fix
-
-Please change the default value of the switch parameter to be false.
+Change the default value of the switch parameter to be false.
 
 ##Example
-
-Wrong：    
-
+###Wrong：    
+``` PowerShell
+function Test-Script
+{
+    [CmdletBinding()]
     Param
-    (      …
+    (
+        [String]
         $Param1,
+        
         [switch]
         $Switch=$True
     )
+    ...
+}
+```
 
-Correct:    
-
+###Correct:    
+``` PowerShell
+function Test-Script
+{
+    [CmdletBinding()]
     Param
-    (      …
+    (
+        [String]
         $Param1,
+
         [switch]
         $Switch=$False
     )
+    ...
+}
+```

@@ -1,31 +1,35 @@
 #AvoidReservedParams
 **Severity Level: Error**
 
-
 ##Description
-
-You cannot use reserved common parameters in an advanced function. If these parameters are defined by the user, an error generally occurs.
+You cannot use reserved common parameters in an advanced function.
 
 ##How to Fix
-
-To fix a violation of this rule, please change the name of your parameter.
+Change the name of the parameter.
 
 ##Example
-
-Wrong： 
-```
+###Wrong： 
+``` PowerShell
 function Test
 {
     [CmdletBinding]
-    Param($ErrorVariable, $b)
+    Param
+    (
+        $ErrorVariable, 
+        $Parameter2
+    )
 }
 ```
 
-Correct:
-```
+###Correct:
+``` PowerShell
 function Test
 {
     [CmdletBinding]
-    Param($err, $b)
+    Param
+    (
+        $Err, 
+        $Parameter2
+    )
 }
 ```

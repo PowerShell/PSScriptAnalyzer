@@ -1,24 +1,42 @@
 #AvoidUsingComputerNameHardcoded 
 **Severity Level: Error**
 
-
 ##Description
-
-The ComputerName parameter of a cmdlet should not be hardcoded as this will expose sensitive information about the system.
+The names of computers should never be hard coded as this will expose sensitive information. The ```ComputerName``` parameter should never have a hard coded value.
 
 ##How to Fix
+Remove hard coded computer names.
 
-Please consider using full cmdlet name instead of alias. 
+##Example 1
+###Wrong： 
+``` PowerShell
+Function Invoke-MyRemoteCommand ()
+{
+	Invoke-Command -Port 343 -ComputerName "hardcoderemotehostname"
+} 
+```
 
-##Example
+###Correct: 
+``` PowerShell
+Function Invoke-MyCommand ($ComputerName)
+{
+	Invoke-Command -Port 343 -ComputerName $ComputerName
+} 
+```
 
-Wrong： 
+##Example 2
+###Wrong： 
+``` PowerShell
+Function Invoke-MyLocalCommand ()
+{
+	Invoke-Command -Port 343 -ComputerName "hardcodelocalhostname"
+} 
+```
 
-	Invoke-Command -Port 343 -ComputerName "hardcode1"
-	Invoke-Command -ComputerName:"hardcode2"
-
-
-Correct: 
-
-	Invoke-Command -ComputerName $comp
-	Invoke-Command -ComputerName $env:COMPUTERNAME
+###Correct: 
+``` PowerShell
+Function Invoke-MyLocalCommand ()
+{
+	Invoke-Command -Port 343 -ComputerName $env:COMPUTERNAME
+} 
+```
