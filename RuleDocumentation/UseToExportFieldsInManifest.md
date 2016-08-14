@@ -3,10 +3,10 @@
 
 ##Description
 To improve the performance of module auto-discovery, module manifests should not use wildcards (*) or null (```$null``) in the following entries:
-	- ```AliasesToExport```
-	- ```CmdletsToExport```
-	- ```FunctionsToExport```
-	- ```VariablesToExport```
+* ```AliasesToExport```
+* ```CmdletsToExport```
+* ```FunctionsToExport```
+* ```VariablesToExport```
 
 The use of wildcards or null has the potential to cause PowerShell to perform expensive work to analyse a module during module auto-discovery.
 
