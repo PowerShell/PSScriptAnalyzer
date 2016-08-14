@@ -6,7 +6,7 @@ A module manifest is a ```.psd1``` file that contains a hash table. The keys and
 prerequisites, and determine how the components are processed. 
 
 Module manifests must contain the following keys (and a corresponding value) to be considered valid:
-    - ```ModuleVersion```
+* ```ModuleVersion```
 
 All other keys are optional. The order of the entries is not important.
 
