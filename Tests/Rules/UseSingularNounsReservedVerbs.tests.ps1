@@ -31,27 +31,27 @@ if (-not (Test-PSEditionCoreCLR))
             $nounViolations[0].Extent.Text | Should be "Verb-Files"
             }
         }
-    }
 
-    Context "When function names have nouns from whitelist" {
+        Context "When function names have nouns from whitelist" {
 
-        It "ignores function name ending with Data" {
-            $nounViolationScript = @'
+            It "ignores function name ending with Data" {
+                $nounViolationScript = @'
 Function Add-SomeData
 {
     Write-Output "Adding some data"
 }
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
-                -IncludeRule "PSUseSingularNouns" `
-                -OutVariable violations
-            $violations.Count | Should Be 0
+                Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
+                    -IncludeRule "PSUseSingularNouns" `
+                    -OutVariable violations
+                $violations.Count | Should Be 0
+            }
         }
-    }
 
-    Context "When there are no violations" {
-        It "returns no violations" {
-            $nounNoViolations.Count | Should Be 0
+        Context "When there are no violations" {
+            It "returns no violations" {
+                $nounNoViolations.Count | Should Be 0
+            }
         }
     }
 }

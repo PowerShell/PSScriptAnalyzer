@@ -16,13 +16,13 @@ using System.Collections.Generic;
 using System.Management.Automation.Language;
 using System.Management.Automation;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-using System.ComponentModel.Composition;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Text;
+using System.Globalization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {

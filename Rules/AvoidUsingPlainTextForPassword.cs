@@ -47,7 +47,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Iterates all ParamAsts and check if their names are on the list.
             foreach (ParameterAst paramAst in paramAsts)
             {
-                TypeInfo paramType = (TypeInfo) paramAst.StaticType;
+                Type paramType = paramAst.StaticType;
                 bool hasPwd = false;
                 String paramName = paramAst.Name.VariablePath.ToString();
                                 
