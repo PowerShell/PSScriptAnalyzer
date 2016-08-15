@@ -7,7 +7,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1 | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\DSCResources\MSFT_WaitForAny\MSFT_WaitForAny.psm1 | Where-Object {$_.RuleName -eq $violationName}
 
-if ($PSVersionTable.PSVersion -ge [Version]'5.0')
+if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
 {
     $classViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResources\BadDscResource\BadDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
     $noClassViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
@@ -31,7 +31,7 @@ Describe "StandardDSCFunctionsInResource" {
     }
 }
 
-if ($PSVersionTable.PSVersion -ge [Version]'5.0') {
+if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
  Describe "StandardDSCFunctionsInClass" {
     Context "When there are violations" {
         It "has 1 missing standard DSC functions violation" {

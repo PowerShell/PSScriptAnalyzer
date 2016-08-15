@@ -20,7 +20,7 @@ if ((Test-PSEditionCoreCLRLinux))
 }
 
 # DSC Module saving is not supported in versions less than PSv5
-if (($PSVersionTable.PSVersion -lt [Version]'5.0'))
+if (($PSVersionTable.PSVersion -lt [Version]'5.0.0'))
 {
     return
 }

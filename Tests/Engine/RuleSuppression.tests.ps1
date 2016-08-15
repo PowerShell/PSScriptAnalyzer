@@ -103,7 +103,7 @@ function SuppressPwdParam()
     }
 
     Context "Rule suppression within DSC Configuration definition" {
-        It "Suppresses rule" -skip:((Test-PSEditionCoreCLRLinux) -or ($PSVersionTable.PSVersion -ge [Version]'5.0')) {
+        It "Suppresses rule" -skip:((Test-PSEditionCoreCLRLinux) -or ($PSVersionTable.PSVersion -ge [Version]'5.0.0')) {
             $suppressedRule = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -SuppressedOnly
             $suppressedRule.Count | Should Be 1
         }

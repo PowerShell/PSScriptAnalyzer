@@ -1,4 +1,4 @@
-﻿if ($PSVersionTable.PSVersion -ge [Version]'5.0') {
+﻿if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
 
 # Check if PSScriptAnalyzer is already loaded so we don't
 # overwrite a test version of Invoke-ScriptAnalyzer by

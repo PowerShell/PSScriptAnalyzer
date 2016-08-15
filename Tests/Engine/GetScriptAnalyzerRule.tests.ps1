@@ -1,4 +1,5 @@
-﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+﻿
+$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 Import-Module -Verbose PSScriptAnalyzer
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
@@ -94,7 +95,7 @@ Describe "Test RuleExtension" {
     Context "When used correctly" {
 
 		$expectedNumCommunityRules = 10
-		if ($PSVersionTable.PSVersion -ge [Version]'4.0')
+		if ($PSVersionTable.PSVersion -ge [Version]'4.0.0')
 		{
 			$expectedNumCommunityRules = 12
 		}

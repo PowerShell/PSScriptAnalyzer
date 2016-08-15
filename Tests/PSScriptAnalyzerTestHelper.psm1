@@ -30,12 +30,12 @@ Function Test-CorrectionExtent
 
 Function Test-PSEditionCoreCLR
 {
-    ($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')
+    [bool]$IsCoreCLR
 }
 
 Function Test-PSEditionCoreCLRLinux
 {
-    (Test-PSEditionCoreCLR) -and ($env:OS -eq "Linux")
+    (Test-PSEditionCoreCLR) -and $IsLinux
 }
 
 Export-ModuleMember -Function Get-ExtentText

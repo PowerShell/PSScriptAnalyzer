@@ -59,32 +59,32 @@ ModuleVersion = '1.0.0.0'
     Context "Validate the contents of a .psd1 file" {
         It "detects a valid module manifest file" {
             $filepath = Join-Path $directory "TestManifest/ManifestGood.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0") | Should Be $true
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should Be $true
         }
 
         It "detects a .psd1 file which is not module manifest" {
             $filepath = Join-Path $directory "TestManifest/PowerShellDataFile.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0") | Should Be $false
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should Be $false
         }
 
         It "detects valid module manifest file for PSv5" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGoodPSv5.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0") | Should Be $true
+            $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv5.psd1"
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should Be $true
         }
 
         It "does not validate PSv5 module manifest file for PSv3 check" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGoodPSv5.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0") | Should Be $false
+            $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv5.psd1"
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0.0") | Should Be $false
         }
 
         It "detects valid module manifest file for PSv4" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGoodPSv4.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"4.0") | Should Be $true
+            $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv4.psd1"
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"4.0.0") | Should Be $true
         }
 
         It "detects valid module manifest file for PSv3" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGoodPSv3.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0") | Should Be $true
+            $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv3.psd1"
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0.0") | Should Be $true
         }
     }
 

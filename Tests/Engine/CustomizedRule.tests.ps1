@@ -1,4 +1,5 @@
-﻿# Check if PSScriptAnalyzer is already loaded so we don't
+﻿
+# Check if PSScriptAnalyzer is already loaded so we don't
 # overwrite a test version of Invoke-ScriptAnalyzer by
 # accident
 if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
@@ -195,7 +196,7 @@ Describe "Test importing correct customized rules" {
                 $customizedRulePath.Count | Should Be 1
             }
 
-		if ($PSVersionTable.PSVersion -ge [Version]'5.0')
+		if ($PSVersionTable.PSVersion -lt [Version]'5.0.0')
 		{
 			It "loads custom rules that contain version in their path" {
 			$customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath $directory\VersionedSampleRule\SampleRuleWithVersion

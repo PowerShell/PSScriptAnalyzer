@@ -227,7 +227,7 @@ function Measure-RequiresModules
 
 # The two rules in the following if block use StaticParameterBinder class. 
 # StaticParameterBinder class was introduced in PSv4. 
-if ($PSVersionTable.PSVersion -ge [Version]'4.0')
+if ($PSVersionTable.PSVersion -ge [Version]'4.0.0')
 {
 	<#
 	.SYNOPSIS

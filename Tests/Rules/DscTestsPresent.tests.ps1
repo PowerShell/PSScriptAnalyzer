@@ -3,7 +3,7 @@ Import-Module -Verbose PSScriptAnalyzer
 $currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ruleName = "PSDSCDscTestsPresent"
 
-if ($PSVersionTable.PSVersion -ge [Version]'5.0') {
+if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
 
  Describe "DscTestsPresent rule in class based resource" {
     

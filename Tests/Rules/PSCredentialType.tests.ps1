@@ -17,7 +17,7 @@ Describe "PSCredentialType" {
     }
 
     $expectedViolationCount = 0
-    if ($PSVersionTable.PSVersion -lt [Version]'5.0')
+    if ($PSVersionTable.PSVersion -lt [Version]'5.0.0')
     {
         $expectedViolationCount = 1
     }
