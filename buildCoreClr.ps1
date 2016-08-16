@@ -10,6 +10,14 @@
     [string]$Configuration = "Debug"
 )
 
+Function Test-DotNetRestore
+{
+    param(
+        [string] $projectPath
+    )
+    Test-Path (Join-Path $projectPath 'project.lock.json')
+}
+
 $solutionDir = Split-Path $MyInvocation.InvocationName
 if (-not (Test-Path "$solutionDir/global.json"))
 {
@@ -33,14 +41,24 @@ if ($Framework -eq "netstandard1.6")
 
 if ($build)
 {
+
+    if (-not (Test-DotNetRestore((Join-Path $solutionDir Engine))))
+    {
+        throw "Please restore project Engine"
+    }
     .\New-StronglyTypedCsFileForResx.ps1 Engine
     Push-Location Engine\
-    dotnet build
+    dotnet build --framework $Framework --configuration $Configuration
     Pop-Location
 
+
+    if (-not (Test-DotNetRestore((Join-Path $solutionDir Rules))))
+    {
+        throw "Please restore project Rules"
+    }
     .\New-StronglyTypedCsFileForResx.ps1 Rules
     Push-Location Rules\
-    dotnet build
+    dotnet build --framework $Framework --configuration $Configuration
     Pop-Location
 
     Function CopyToDestinationDir($itemsToCopy, $destination)
