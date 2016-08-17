@@ -49,24 +49,54 @@ Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-Exclud
 Requirements
 ============
 
-WS2012R2 / Windows 8.1 / Windows OS running a **minimum of PowerShell v3.0**
+### Windows
+- Windows PowerShell 3.0 or greater
+- PowerShell Core
 
-A Windows OS with PowerShell v5.0 [Windows Management Framework 5.0 Preview](http://go.microsoft.com/fwlink/?LinkId=398175) is also supported
+### Linux (*Tested only on Ubuntu 14.04*)
+- PowerShell Core
 
-
-Installation
+Get PSScriptAnalyzer
 ============
 
-1. Build the Code using Visual Studio [solution part of the repo] and navigate to the binplace location [``~/ProjectRoot/PSScriptAnalyzer``]
+### PowerShell Gallery
 
-2. In PowerShell Console:
 ```powershell
-Import-Module PSScriptAnalyzer
+Install-Module -Name PSScriptAnalyzer
 ```
-If you have previous version of PSScriptAnalyzer installed on your machine, you may need to override old binaries by copying content of [``~/ProjectRoot/PSScriptAnalyzer``] to PSModulePath.
+
+### Source
+
+#### Dependencies
+* Visual Studio 2015
+* [PlatyPS 0.5.0 or greater](https://github.com/PowerShell/platyPS)
+
+#### Steps
+* Obtain the source
+    - Download the latest source code from the release page (https://github.com/PowerShell/PSScriptAnalyzer/releases) OR
+    - Clone the repository (needs git)
+    ```powershell
+    git clone https://github.com/PowerShell/PSScriptAnalyzer
+    ```
+* Navigate to the source directory
+```powershell
+cd path/to/PSScriptAnalyzer
+```
+* Build for your platform
+    * Windows PowerShell version 5.0 and greater
+    ```powershell
+    .\build.ps1 -Configuration "Release" -BuildSolution -BuildDocs
+    ```
+    * Windows PowerShell version 3.0 and 4.0
+    ```powershell
+    .\build.ps1 -Configuration "PSV3 Release" -BuildSolution -BuildDocs
+    ```
+* Import the module
+```powershell
+Import-Module /path/to/PSScriptAnalyzer/out/PSScriptAnalyzer
+```
 
 To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell console to obtain the built-in rules
-
 
 Suppressing Rules
 =================
@@ -146,7 +176,7 @@ To match all functions/variables/parameters/objects, use `*` as the value of the
     Param(
     )
 
-**Note**: Rule suppression is currently supported only for built-in rules. 
+**Note**: Rule suppression is currently supported only for built-in rules.
 
 Settings Support in ScriptAnalyzer
 ========================================
@@ -227,7 +257,7 @@ PS> Get-Content C:\tmp\test.ps1
 gci C:\
 ```
 
-Invoking PSScriptAnalyzer on the file gives the following output. 
+Invoking PSScriptAnalyzer on the file gives the following output.
 
 ```powershell
 PS>$diagnosticRecord = Invoke-ScriptAnalyzer -Path C:\tmp\test.p1
@@ -254,9 +284,9 @@ class DiagnosticRecord
 
 The `*LineNumber` and `*ColumnNumber` properties give the region of the script that can be replaced by the contents of `Text` property, i.e., replace gci with Get-ChildItem.
 
-The main motivation behind having `SuggestedCorrections` is to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid `SuggestedCorrection` only for the following rules, while gradually adding this feature to more rules. 
+The main motivation behind having `SuggestedCorrections` is to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid `SuggestedCorrection` only for the following rules, while gradually adding this feature to more rules.
 
-  * AvoidAlias.cs 
+  * AvoidAlias.cs
   * AvoidUsingPlainTextForPassword.cs
   * MisleadingBacktick.cs
   * MissingModuleManifestField.cs
