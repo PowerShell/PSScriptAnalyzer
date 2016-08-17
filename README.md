@@ -3,23 +3,7 @@
 Announcements
 =============
 
-###### [Get the latest PSScriptAnalyzer version from PowerShellGallery](https://www.powershellgallery.com/packages/PSScriptAnalyzer)
-
-###### [VSCode-PowerShell has built-in ScriptAnalyzer support](https://marketplace.visualstudio.com/items?itemName=ms-vscode.PowerShell)
-
-###### [ISE-Steroids has ScriptAnalyzer integration](http://www.powertheshell.com/psscriptanalyzer-integration-and-more/)
-
-###### [ISE Add-On for ScriptAnalyzer is available in PowerShellGallery](https://www.powershellgallery.com/packages/ISEScriptAnalyzerAddOn/)
-
-
-=============
-
-##### ScriptAnalyzer community meeting schedule:
-
- - Next Meeting - June 2, 2016 - 11am to 12pm PDT
-    - [Meeting Agenda](https://github.com/PowerShell/PSScriptAnalyzer/wiki/Community-Meeting-Agenda)
- - [Notes and recordings from earlier meetings](https://github.com/PowerShell/PSScriptAnalyzer/wiki)
-
+###### [PSScriptAnalyzer 1.7.0 also supports PowerShell on Ubuntu 14.04!](https://www.powershellgallery.com/packages/PSScriptAnalyzer)
 
 =============
 #####Builds

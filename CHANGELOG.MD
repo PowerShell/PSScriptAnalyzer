@@ -1,7 +1,9 @@
-## Release v1.6.1
+## Release v1.7.0
 
 Here are some improvements since the last release.
 
+- Add support for PowerShell Core
+    - Tested on PowerShell Core on Windows and Ubuntu 14.04
 - Fix `SaveDscDependency` switch implementation, which use fail if more than one parameter is given to `Import-DSCResource` dynamic keyword.
 - Add support for external AST based rule suppression
 - Fix rule suppression caused by inavlid offsets

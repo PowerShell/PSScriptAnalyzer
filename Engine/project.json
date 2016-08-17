@@ -1,7 +1,6 @@
 {
   "name": "Microsoft.Windows.PowerShell.ScriptAnalyzer",
-  "version": "1.0.0-*",
-  "authors": ["kapilmb"],
+  "version": "1.7.0",
   "dependencies": {
 "System.Management.Automation": "1.0.0-alpha.9.4808"
     },
