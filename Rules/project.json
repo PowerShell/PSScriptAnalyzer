@@ -3,7 +3,7 @@
   "version": "1.0.0-*",
   "authors": ["kapilmb"],
   "dependencies": {
-    "System.Management.Automation": "1.0.0-*",
+    "System.Management.Automation": "1.0.0-alpha.9.4808",
     "Engine": "1.0.0-*"
   },
   "frameworks": {
