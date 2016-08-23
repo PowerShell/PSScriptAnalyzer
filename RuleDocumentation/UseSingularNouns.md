@@ -1,8 +1,8 @@
-#UseSingularNouns 
+﻿#UseSingularNouns
 **Severity Level: Warning**
 
 ##Description
-PowerShell team best practices state CMDLets should use singular nouns and not plurals.
+PowerShell team best practices state cmdlets should use singular nouns and not plurals.
 
 ##How to Fix
 Change plurals to singular.
@@ -16,7 +16,7 @@ function Get-Files
 }
 ```
 
-###Correct: 
+###Correct:
 ``` PowerShell
 function Get-File
 {

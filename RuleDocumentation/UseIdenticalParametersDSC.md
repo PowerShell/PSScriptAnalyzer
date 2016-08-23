@@ -1,8 +1,8 @@
-#UseIdenticalParametersDSC 
+﻿#UseIdenticalParametersDSC
 **Severity Level: Error**
 
 ##Description
-The ```Get-TargetResource```, ```Test-TargetResource``` and ```Set-TargetResource``` functions of DSC Resource must have the same parameters.
+The `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions of DSC Resource must have the same parameters.
 
 ##How to Fix
 Correct the parameters for the functions in DSC resource.

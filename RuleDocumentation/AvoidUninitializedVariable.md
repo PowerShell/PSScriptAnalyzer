@@ -1,8 +1,8 @@
-#AvoidUninitializedVariable
+﻿#AvoidUninitializedVariable
 **Severity Level: Warning**
 
 ##Description
-A variable is a unit of memory in which values are stored. Windows PowerShell controls access to variables, functions, aliases, and drives through a mechanism known as scoping. 
+A variable is a unit of memory in which values are stored. Windows PowerShell controls access to variables, functions, aliases, and drives through a mechanism known as scoping.
 
 All non-global variables must be initialized, otherwise potential bugs could be introduced.
 
@@ -10,7 +10,7 @@ All non-global variables must be initialized, otherwise potential bugs could be 
 Initialize non-global variables.
 
 ##Example
-###Wrong：    
+###Wrong：
 ``` PowerShell
 function NotGlobal {
 	$localVars = "Localization?"
@@ -18,7 +18,7 @@ function NotGlobal {
 	Write-Output $uninitialized
 }
 
-###Correct:   
+###Correct:
 ``` PowerShell
 function NotGlobal {
 	$localVars = "Localization?"

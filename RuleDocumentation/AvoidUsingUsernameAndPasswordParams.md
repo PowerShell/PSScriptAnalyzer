@@ -1,14 +1,14 @@
-#AvoidUsingUsernameAndPasswordParams
+﻿#AvoidUsingUsernameAndPasswordParams
 **Severity Level: Error**
 
 ##Description
-To standardize command parameters, credentials should be accept as objects of type ```PSCredential```. Functions should not make use of username or password parameters.
+To standardize command parameters, credentials should be accepted as objects of type ```PSCredential```. Functions should not make use of username or password parameters.
 
 ##How to Fix
 Change the parameter to type ```PSCredential```.
 
 ##Example
-###Wrong：    
+###Wrong：
 ``` PowerShell
 function Test-Script
 {
@@ -24,7 +24,7 @@ function Test-Script
 }
 ```
 
-###Correct:   
+###Correct:
 ``` PowerShell
 function Test-Script
 {

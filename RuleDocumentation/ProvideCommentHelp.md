@@ -1,4 +1,4 @@
-#ProvideCommentHelp 
+﻿#ProvideCommentHelp
 **Severity Level: Info**
 
 ##Description
@@ -19,7 +19,7 @@ function Get-File
     (
         ...
     )
-    
+
 }
 ```
 
@@ -54,6 +54,6 @@ function Get-File
     (
         ...
     )
-    
+
 }
 ```

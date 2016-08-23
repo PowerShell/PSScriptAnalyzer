@@ -1,4 +1,4 @@
-#AvoidUsingPositionalParameters 
+﻿#AvoidUsingPositionalParameters
 **Severity Level: Warning**
 
 ##Description

@@ -1,9 +1,9 @@
-#AvoidGlobalVars 
+﻿#AvoidGlobalVars
 **Severity Level: Warning**
 
 ##Description
-A variable is a unit of memory in which values are stored. Windows PowerShell controls access to variables, functions, aliases, and drives through a mechanism known as scoping. 
-Variables and functions that are present when Windows PowerShell starts have been created in the global scope. 
+A variable is a unit of memory in which values are stored. Windows PowerShell controls access to variables, functions, aliases, and drives through a mechanism known as scoping.
+Variables and functions that are present when Windows PowerShell starts have been created in the global scope.
 
 Globally scoped variables include:
 * Automatic variables

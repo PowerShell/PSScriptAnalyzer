@@ -1,14 +1,14 @@
-#ProvideVerboseMessage 
+﻿#ProvideVerboseMessage
 **Severity Level: Information**
 
 ##Description
-Best practice recommends that additional user information is provided within commands, functions and scripts using ```Write-Verbose```.
- 
+Best practice recommends that additional user information is provided within commands, functions and scripts using `Write-Verbose`.
+
 ##How to Fix
-Make use of the ```Write-Verbose``` command.
+Make use of the `Write-Verbose` command.
 
 ##Example
-###Wrong： 
+###Wrong：
 ``` PowerShell
 Function Test-Function
 {

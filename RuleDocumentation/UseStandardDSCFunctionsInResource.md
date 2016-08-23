@@ -1,18 +1,18 @@
-#UseStandardDSCFunctionsInResource
+﻿#UseStandardDSCFunctionsInResource
 **Severity Level: Error**
 
 ##Description
 All DSC resources are required to implement the correct functions.
 
 For non-class based resources:
-* ```Set-TargetResource``` 
-* ```Test-TargetResource```
-* ```Get-TargetResource```
+* `Set-TargetResource`
+* `Test-TargetResource`
+* `Get-TargetResource`
 
 For class based resources:
-* ```Set```
-* ```Test```
-* ```Get```
+* `Set`
+* `Test`
+* `Get`
 
 ##How to Fix
 Add the missing functions to the resource.
@@ -90,12 +90,12 @@ class MyDSCResource
     [DscProperty(Key)]
     [string] $Name
 
-    [void] Set() 
+    [void] Set()
     {
         ...
     }
 
-    [bool] Test() 
+    [bool] Test()
     {
         ...
     }
@@ -109,25 +109,19 @@ class MyDSCResource
     [DscProperty(Key)]
     [string] $Name
 
-    [MyDSCResource] Get() 
+    [MyDSCResource] Get()
     {
         ...
     }
 
-    [void] Set() 
+    [void] Set()
     {
         ...
     }
 
-    [bool] Test() 
+    [bool] Test()
     {
         ...
     }
 }
 ```
-
-
-
-
-
-

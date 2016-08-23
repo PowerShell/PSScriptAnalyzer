@@ -1,4 +1,4 @@
-#UseBOMForUnicodeEncodedFile
+﻿#UseBOMForUnicodeEncodedFile
 **Severity Level: Warning**
 
 ##Description

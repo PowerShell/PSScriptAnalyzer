@@ -1,7 +1,7 @@
 ##Documentation for Customized Rules in PowerShell Scripts
 PSScriptAnalyzer uses MEF(Managed Extensibility Framework) to import all rules defined in the assembly. It can also consume rules written in PowerShell scripts. 
 
-When calling Invoke-ScriptAnalyzer, users can specify custom rules using the parameter ```CustomizedRulePath```.
+When calling Invoke-ScriptAnalyzer, users can specify custom rules using the parameter `CustomizedRulePath`.
 
 The purpose of this documentation is to server as a basic guide on creating your own customized rules.
 

@@ -1,14 +1,14 @@
-#UseDeclaredVarsMoreThanAssignments 
+﻿#UseDeclaredVarsMoreThanAssignments
 **Severity Level: Warning**
 
 ##Description
 Generally variables that are not used more than their assignments are considered wasteful and not needed.
 
 ##How to Fix
-Remove the variables that are declared but not used outside of the function.
+Remove the variables that are declared but not used.
 
 ##Example
-###Wrong： 
+###Wrong：
 ``` PowerShell
 function Test
 {
@@ -18,7 +18,7 @@ function Test
 }
 ```
 
-###Correct: 
+###Correct:
 ``` PowerShell
 function Test
 {

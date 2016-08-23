@@ -1,4 +1,4 @@
-#AvoidReservedParams
+﻿#AvoidReservedParams
 **Severity Level: Error**
 
 ##Description
@@ -8,14 +8,14 @@ You cannot use reserved common parameters in an advanced function.
 Change the name of the parameter.
 
 ##Example
-###Wrong： 
+###Wrong：
 ``` PowerShell
 function Test
 {
     [CmdletBinding]
     Param
     (
-        $ErrorVariable, 
+        $ErrorVariable,
         $Parameter2
     )
 }
@@ -28,7 +28,7 @@ function Test
     [CmdletBinding]
     Param
     (
-        $Err, 
+        $Err,
         $Parameter2
     )
 }

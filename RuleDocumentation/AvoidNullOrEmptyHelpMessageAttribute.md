@@ -1,12 +1,12 @@
-#AvoidNullOrEmtpyHelpMessageAttribute
+﻿#AvoidNullOrEmtpyHelpMessageAttribute
 **Severity Level: Warning**
 
 ##Description
-The value of the ```HelpMessage``` attribute should not be an empty string or a null value as this causes PowerShell's interpreter to throw an mirror when executing the
-function or CMDLet.
+The value of the `HelpMessage` attribute should not be an empty string or a null value as this causes PowerShell's interpreter to throw an mirror when executing the
+function or cmdlet.
 
 ##How to Fix
-Specify a value for the ```HelpMessage``` attribute.
+Specify a value for the `HelpMessage` attribute.
 
 ##Example
 ###Wrong:
@@ -15,7 +15,7 @@ Function BadFuncEmptyHelpMessageEmpty
 {
 	Param(
 		[Parameter(HelpMessage='')]
-		[String] 
+		[String]
 		$Param
 	)
 
@@ -26,7 +26,7 @@ Function BadFuncEmptyHelpMessageNull
 {
 	Param(
 		[Parameter(HelpMessage=$null)]
-		[String] 
+		[String]
 		$Param
 	)
 
@@ -37,7 +37,7 @@ Function BadFuncEmptyHelpMessageNoAssignment
 {
 	Param(
 		[Parameter(HelpMessage)]
-		[String] 
+		[String]
 		$Param
 	)
 
@@ -51,7 +51,7 @@ Function GoodFuncHelpMessage
 {
 	Param(
 		[Parameter(HelpMessage='This is helpful')]
-		[String] 
+		[String]
 		$Param
 	)
 

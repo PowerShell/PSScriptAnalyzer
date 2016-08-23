@@ -1,4 +1,4 @@
-#UseCmdletCorrectly 
+﻿#UseCmdletCorrectly
 **Severity Level: Warning**
 
 ##Description
@@ -8,7 +8,7 @@ Whenever we call a command, care should be taken that it is invoked with the cor
 Specify all mandatory parameters when calling commands.
 
 ##Example
-###Wrong： 
+###Wrong：
 ``` PowerShell
 Function Set-TodaysDate ()
 {

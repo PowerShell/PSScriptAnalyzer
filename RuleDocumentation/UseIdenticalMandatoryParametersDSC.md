@@ -1,8 +1,8 @@
-#UseIdenticalMandatoryParametersDSC 
+﻿#UseIdenticalMandatoryParametersDSC
 **Severity Level: Error**
 
 ##Description
-The ```Get-TargetResource```, ```Test-TargetResource``` and ```Set-TargetResource``` functions of DSC Resource must have the same mandatory parameters.
+The `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions of DSC Resource must have the same mandatory parameters.
 
 ##How to Fix
 Correct the mandatory parameters for the functions in DSC resource.

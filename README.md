@@ -14,14 +14,14 @@ Announcements
 
 Introduction
 ============
-PSScriptAnalyzer is a static code checker for Windows PowerShell modules and scripts. PSScriptAnalyzer checks the quality of Windows PowerShell code by running a set of rules. 
-The rules are based on PowerShell best practices identified by PowerShell Team and the community. It generates DiagnosticResults (errors and warnings) to inform users about potential 
+PSScriptAnalyzer is a static code checker for Windows PowerShell modules and scripts. PSScriptAnalyzer checks the quality of Windows PowerShell code by running a set of rules.
+The rules are based on PowerShell best practices identified by PowerShell Team and the community. It generates DiagnosticResults (errors and warnings) to inform users about potential
 code defects and suggests possible solutions for improvements.
 
-PSScriptAnalyzer is shipped with a collection of built-in rules that checks various aspects of PowerShell code such as presence of uninitialized variables, usage of PSCredential Type, 
+PSScriptAnalyzer is shipped with a collection of built-in rules that checks various aspects of PowerShell code such as presence of uninitialized variables, usage of PSCredential Type,
 usage of Invoke-Expression etc. Additional functionalities such as exclude/include specific rules are also supported.
 
-PSScriptAnalyzer CMDLets
+PSScriptAnalyzer Cmdlets
 ======================
 ``` PowerShell
 Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>] [-Severity <string[]>]
@@ -79,7 +79,7 @@ cd path/to/PSScriptAnalyzer
 Import-Module /path/to/PSScriptAnalyzer/out/PSScriptAnalyzer
 ```
 
-To confirm installation: run ```Get-ScriptAnalyzerRule``` in the PowerShell console to obtain the built-in rules
+To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the built-in rules
 
 Suppressing Rules
 =================
@@ -112,7 +112,7 @@ function SuppressTwoVariables()
 }
 ```
 
-Use the `SuppressMessageAttribute`'s `Scope` property to limit rule suppression to functions or classes within the attribute's scope. 
+Use the `SuppressMessageAttribute`'s `Scope` property to limit rule suppression to functions or classes within the attribute's scope.
 
 Use the value `Function` to suppress violations on all functions within the attribute's scope. Use the value `Class` to suppress violations on all classes within the attribute's scope:
 
@@ -173,8 +173,8 @@ Param(
 
 Settings Support in ScriptAnalyzer
 ========================================
-Settings that describe ScriptAnalyzer rules to include/exclude based on ```Severity``` can be created and supplied to
-```Invoke-ScriptAnalyzer``` using the ```Setting``` parameter. This enables a user to create a custom configuration for a specific environment.
+Settings that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to
+`Invoke-ScriptAnalyzer` using the `Setting` parameter. This enables a user to create a custom configuration for a specific environment.
 
 Using Settings support:
 
@@ -237,12 +237,12 @@ public System.Collections.Generic.IEnumerable<IRule> GetRule(string[] moduleName
 
 Violation Correction
 ====================
-Most violations can be fixed by replacing the violation causing content with the correct alternative. 
+Most violations can be fixed by replacing the violation causing content with the correct alternative.
 
-In an attempt to provide the user with the ability to correct the violation we provide a property, ```SuggestedCorrections```, in each DiagnosticRecord instance,
+In an attempt to provide the user with the ability to correct the violation we provide a property, `SuggestedCorrections`, in each DiagnosticRecord instance,
 that contains information needed to rectify the violation.
 
-For example, consider a script ```C:\tmp\test.ps1``` with the following content:
+For example, consider a script `C:\tmp\test.ps1` with the following content:
 ``` PowerShell
 PS> Get-Content C:\tmp\test.ps1
 gci C:\

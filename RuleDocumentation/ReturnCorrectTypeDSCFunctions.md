@@ -1,18 +1,18 @@
-#ReturnCorrectTypeDSCFunctions 
+﻿#ReturnCorrectTypeDSCFunctions
 **Severity Level: Information**
 
 ##Description
 The functions in DSC resources have specific return objects.
 
 For non-class based resources:
-* ```Set-TargetResource``` must not return any value.
-* ```Test-TargetResource``` must return a boolean.
-* ```Get-TargetResource``` must return a hash table.
+* `Set-TargetResource` must not return any value.
+* `Test-TargetResource` must return a boolean.
+* `Get-TargetResource` must return a hash table.
 
 For class based resources:
-* ```Set``` must not return any value.
-* ```Test``` must return a boolean.
-* ```Get``` must return an instance of the DSC class.
+* `Set` must not return any value.
+* `Test` must return a boolean.
+* `Get` must return an instance of the DSC class.
 
 ##How to Fix
 Ensure that each function returns the correct type.
@@ -101,17 +101,17 @@ class MyDSCResource
     [DscProperty(Key)]
     [string] $Name
 
-    [String] Get() 
+    [String] Get()
     {
         ...
     }
 
-    [String] Set() 
+    [String] Set()
     {
         ...
     }
 
-    [bool] Test() 
+    [bool] Test()
     {
         ...
     }
@@ -126,21 +126,19 @@ class MyDSCResource
     [DscProperty(Key)]
     [string] $Name
 
-    [MyDSCResource] Get() 
+    [MyDSCResource] Get()
     {
         ...
     }
 
-    [void] Set() 
+    [void] Set()
     {
         ...
     }
 
-    [bool] Test() 
+    [bool] Test()
     {
         ...
     }
 }
 ```
-
-
