@@ -40,6 +40,6 @@ In this case, to fix this warning, we should add examples in a following way:
 * MyDscResource
     * MyDscResource.psm1
     * MyDscResource.psd1
-    * Tests
+    * Examples
       * MyDscResource_Example1.ps1
       * MyDscResource_Example2.ps1
