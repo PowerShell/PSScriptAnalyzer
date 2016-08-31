@@ -165,6 +165,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        public Dictionary<string, Dictionary<string, object>> GetRuleArguments()
+        {
+            return ruleArguments;
+        }
+
+        public Dictionary<string, object> GetRuleArguments(string ruleName)
+        {
+            if (ruleArguments.ContainsKey(ruleName))
+            {
+                return ruleArguments[ruleName];
+            }
+            return null;
+        }
+
+        public void SetRuleArguments(Dictionary<string, Dictionary<string, object>> ruleArgs)
+        {
+            if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
+            {
+                throw new ArgumentException(
+                    "Input dictionary should have OrdinalIgnoreCase comparer.",
+                    "ruleArgs");
+            }
+            ruleArguments = ruleArgs;
+        }
         /// <summary>
         /// Returns all the rule arguments
         /// </summary>
