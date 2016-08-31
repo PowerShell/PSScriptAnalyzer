@@ -35,6 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private IOutputWriter outputWriter;
         private Object getCommandLock = new object();
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
+        private Dictionary<string, Dictionary<string, object>> ruleArguments;
 
         #endregion
 
@@ -113,14 +114,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-                                    
+
         }
 
         /// <summary>
         /// Initializes the Helper class.
         /// </summary>
         /// <param name="invokeCommand">
-        /// A CommandInvocationIntrinsics instance for use in gathering 
+        /// A CommandInvocationIntrinsics instance for use in gathering
         /// information about available commands and aliases.
         /// </param>
         /// <param name="outputWriter">
@@ -145,6 +146,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             AliasToCmdletDictionary = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
+            ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -161,6 +163,59 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 AliasToCmdletDictionary.Add(aliasInfo.Name, aliasInfo.Definition);
             }
+        }
+
+        /// <summary>
+        /// Returns all the rule arguments
+        /// </summary>
+        /// <returns>Dictionary that maps between rule name to their named arguments</returns>
+        public Dictionary<string, Dictionary<string, object>> GetRuleArguments()
+        {
+            return ruleArguments;
+        }
+
+        /// <summary>
+        /// Get the parameters corresponding to the given rule name
+        /// </summary>
+        /// <param name="ruleName"></param>
+        /// <returns>Dictionary of argument names mapped to values. If ruleName is not a valid key, returns null</returns>
+        public Dictionary<string, object> GetRuleArguments(string ruleName)
+        {
+            if (ruleArguments.ContainsKey(ruleName))
+            {
+                return ruleArguments[ruleName];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the arguments for consumption by rules
+        /// </summary>
+        /// <param name="ruleArgs">A hashtable with rule names as keys</param>
+        public void SetRuleArguments(Dictionary<string, object> ruleArgs)
+        {
+            if (ruleArgs == null)
+            {
+                return;
+            }
+
+            if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
+            {
+                throw new ArgumentException(
+                    "Input dictionary should have OrdinalIgnoreCase comparer.",
+                    "ruleArgs");
+            }
+            var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>();
+            foreach (var rule in ruleArgs.Keys)
+            {
+                var argsDict = ruleArgs[rule] as Dictionary<string, object>;
+                if (argsDict == null)
+                {
+                    return;
+                }
+                ruleArgsDict[rule] = argsDict;
+            }
+            ruleArguments = ruleArgsDict;
         }
 
         /// <summary>
@@ -231,7 +286,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return false;
         }
-        
+
         /// <summary>
         /// Gets the module manifest
         /// </summary>
@@ -471,13 +526,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (String.IsNullOrWhiteSpace(name) || scopes == null)
             {
                 return name;
-            }            
+            }
 
             // checks whether function name starts with scope
             foreach (string scope in scopes)
             {
                 // trim the scope part
-                if (name.IndexOf(scope, StringComparison.OrdinalIgnoreCase) == 0) 
+                if (name.IndexOf(scope, StringComparison.OrdinalIgnoreCase) == 0)
 
                 {
                     return name.Substring(scope.Length);
@@ -598,7 +653,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         arguments += 1;
                     }
-                
+
             }
 
             // if not the first element in a pipeline, increase the number of arguments by 1
@@ -724,10 +779,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (null == functionDefinitionAst)
             {
                 return null;
-            }            
+            }
             var funcNameTokens = Tokens.Where(
-                token => 
-                ContainsExtent(functionDefinitionAst.Extent, token.Extent) 
+                token =>
+                ContainsExtent(functionDefinitionAst.Extent, token.Extent)
                 && token.Text.Equals(functionDefinitionAst.Name));
             var funcNameToken = funcNameTokens.FirstOrDefault();
             return funcNameToken == null ? null : funcNameToken.Extent;
@@ -919,7 +974,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="classes"></param>
         /// <param name="scriptAst"></param>
         /// <returns></returns>
-        
+
 #if PSV3
 
         public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret)
@@ -990,7 +1045,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="scopeAst"></param>
         /// <param name="classes"></param>
         /// <returns></returns>
-        
+
 #if PSV3
 
         public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst)
@@ -1050,9 +1105,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="psClass"></param>
         /// <param name="analysisDetails"></param>
         /// <returns></returns>
-        
+
 #if PSV3
-        
+
         internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, VariableAnalysisDetails analysisDetails)
 
 #else
@@ -1241,8 +1296,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (typeAst.Members == null)
             {
-                return result;            
-            }            
+                return result;
+            }
 
             foreach (var member in typeAst.Members)
             {
@@ -1469,11 +1524,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 outPaths.Add(path);
             }
-            
+
             return outPaths.ToArray();
-            
+
         }
-        
+
         /// <summary>
         /// Check if the function name starts with one of potentailly state changing verbs
         /// </summary>
@@ -1671,8 +1726,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         /// <summary>
         /// Get a mapping between string type keys and StatementAsts from module manifest hashtable ast
-        /// 
-        /// This is a workaround as SafeGetValue is not supported on PS v5 and below.
+        ///
+        /// This is a workaround as SafeGetValue is not supported on PS v4 and below.
         /// </summary>
         /// <param name="hast">Hashtable Ast obtained from module manifest</param>
         /// <returns>A dictionary that maps string keys to values of StatementAst type</returns>
@@ -1693,7 +1748,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         /// <summary>
         /// Checks if the version is supported
-        /// 
+        ///
         /// PowerShell versions with Major greater than 3 are supported
         /// </summary>
         /// <param name="version">PowerShell version</param>
@@ -1910,7 +1965,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 #if PSV3
 
             statementAst.Visit(this);
-            
+
 #else
 
             TypeDefinitionAst typeAst = statementAst as TypeDefinitionAst;
@@ -2664,7 +2719,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Find the pipeline output
         /// </summary>
         /// <param name="ast"></param>
-        
+
 #if PSV3
 
         public FindPipelineOutput(FunctionDefinitionAst ast)
@@ -2695,7 +2750,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Get list of outputTypes from functiondefinitionast funcast
         /// </summary>
         /// <returns></returns>
-        
+
 #if PSV3
 
         public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst)

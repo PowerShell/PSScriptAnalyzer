@@ -166,6 +166,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException("runspace");
             }
 
+            //initialize helper
+            Helper.Instance = new Helper(
+                runspace.SessionStateProxy.InvokeCommand,
+                outputWriter);
+            Helper.Instance.Initialize();
+
+
             this.Initialize(
                 outputWriter,
                 runspace.SessionStateProxy.Path,
@@ -237,7 +244,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.severity = (severityList.Count() == 0) ? null : severityList.ToArray();
             this.includeRule = (includeRuleList.Count() == 0) ? null : includeRuleList.ToArray();
             this.excludeRule = (excludeRuleList.Count() == 0) ? null : excludeRuleList.ToArray();
-
+            if (settings != null
+                && settings.ContainsKey("Rules"))
+            {
+                var ruleArgs = settings["Rules"] as Dictionary<string, object>;
+                Helper.Instance.SetRuleArguments(ruleArgs);
+            }
             return true;
         }
 
@@ -799,10 +811,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private void LoadRules(Dictionary<string, List<string>> result, CommandInvocationIntrinsics invokeCommand, bool loadBuiltInRules)
         {
             List<string> paths = new List<string>();
-
-            // Initialize helper
-            Helper.Instance = new Helper(invokeCommand, this.outputWriter);
-            Helper.Instance.Initialize();
 
             // Clear external rules for each invoke.
             this.ScriptRules = null;

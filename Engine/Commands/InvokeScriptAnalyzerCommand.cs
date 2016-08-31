@@ -210,6 +210,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         protected override void BeginProcessing()
         {
+            // Initialize helper
+            Helper.Instance = new Helper(
+                SessionState.InvokeCommand,
+                this);
+            Helper.Instance.Initialize();
+
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);
 
