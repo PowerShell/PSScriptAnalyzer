@@ -40,6 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         #region Private members
 
         private IOutputWriter outputWriter;
+        private Dictionary<string, object> settings;
 #if !CORECLR
         private CompositionContainer container;
 #endif // !CORECLR
@@ -87,13 +88,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 #else
         [ImportMany]
         public IEnumerable<IScriptRule> ScriptRules { get; private set; }
-
         [ImportMany]
         public IEnumerable<ITokenRule> TokenRules { get; private set; }
-
         [ImportMany]
         public IEnumerable<ILogger> Loggers { get; private set; }
-
         [ImportMany]
         public IEnumerable<IDSCResourceRule> DSCResourceRules { get; private set; }
         // Initializes via ImportMany
@@ -273,6 +271,135 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return true;
         }
 
+        private Dictionary<string, object> GetDictionaryFromHashTableAst(
+            HashtableAst hashTableAst,
+            IOutputWriter writer,
+            string profile,
+            out bool hasError)
+        {
+            hasError = false;
+            var output = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in hashTableAst.KeyValuePairs)
+            {
+                var keyAst = kvp.Item1 as StringConstantExpressionAst;
+                if (keyAst == null)
+                {
+                    // first item (the key) should be a string
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.WrongKeyFormat,
+                                    kvp.Item1.Extent.StartLineNumber,
+                                    kvp.Item1.Extent.StartColumnNumber,
+                                    profile)),
+                            Strings.ConfigurationKeyNotAString,
+                            ErrorCategory.InvalidData,
+                            profile));
+                    hasError = true;
+                    continue;
+                }
+                var key = keyAst.Value;
+                // parse the item2 as array
+                PipelineAst pipeAst = kvp.Item2 as PipelineAst;
+                List<string> rhsList = new List<string>();
+                if (pipeAst != null)
+                {
+                    ExpressionAst pureExp = pipeAst.GetPureExpression();
+                    if (pureExp is StringConstantExpressionAst)
+                    {
+                        rhsList.Add((pureExp as StringConstantExpressionAst).Value);
+                    }
+                    else if (pureExp is HashtableAst)
+                    {
+                        output[key] = GetDictionaryFromHashTableAst(
+                            pureExp as HashtableAst,
+                            writer,
+                            profile,
+                            out hasError);
+                        continue;
+                    }
+                    else
+                    {
+                        ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
+                        if (arrayLitAst == null && pureExp is ArrayExpressionAst)
+                        {
+                            ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
+                            // Statements property is never null
+                            if (arrayExp.SubExpression != null)
+                            {
+                                StatementAst stateAst = arrayExp.SubExpression.Statements.FirstOrDefault();
+                                if (stateAst != null && stateAst is PipelineAst)
+                                {
+                                    CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.FirstOrDefault();
+                                    if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
+                                    {
+                                        CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
+                                        if (cmdExpAst.Expression is StringConstantExpressionAst)
+                                        {
+                                            rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
+                                        }
+                                        else
+                                        {
+                                            arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (arrayLitAst != null)
+                        {
+                            foreach (var element in arrayLitAst.Elements)
+                            {
+                                // all the values in the array needs to be string
+                                if (!(element is StringConstantExpressionAst))
+                                {
+                                    outputWriter.WriteError(
+                                        new ErrorRecord(
+                                            new InvalidDataException(
+                                                string.Format(
+                                                    CultureInfo.CurrentCulture,
+                                                    Strings.WrongValueFormat,
+                                                    element.Extent.StartLineNumber,
+                                                    element.Extent.StartColumnNumber,
+                                                    "")),
+                                        Strings.ConfigurationValueNotAString,
+                                        ErrorCategory.InvalidData,
+                                        null));
+                                    hasError = true;
+                                    continue;
+                                }
+
+                                rhsList.Add((element as StringConstantExpressionAst).Value);
+                            }
+                        }
+                    }
+                }
+
+                if (rhsList.Count == 0)
+                {
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.WrongValueFormat,
+                                    kvp.Item2.Extent.StartLineNumber,
+                                    kvp.Item2.Extent.StartColumnNumber,
+                                    profile)),
+                            Strings.ConfigurationValueWrongFormat,
+                            ErrorCategory.InvalidData,
+                            profile));
+                    hasError = true;
+                    continue;
+                }
+                output[key] = rhsList;
+            }
+            return output;
+        }
+
         private bool ParseProfileHashtable(Hashtable profile, PathIntrinsics path, IOutputWriter writer,
             List<string> severityList, List<string> includeRuleList, List<string> excludeRuleList)
         {
@@ -319,7 +446,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 // if we get here then everything is good
-
                 List<string> values = new List<string>();
 
                 if (value is string)
@@ -390,91 +516,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 else
                 {
                     HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
-
-                    foreach (var kvp in hashTableAst.KeyValuePairs)
+                    settings = GetDictionaryFromHashTableAst(
+                        hashTableAst,
+                        writer,
+                        profile,
+                        out hasError);
+                    foreach (var key in settings.Keys)
                     {
-                        if (!(kvp.Item1 is StringConstantExpressionAst))
+                        var rhsList = settings[key] as List<string>;
+                        if (rhsList == null)
                         {
-                            // first item (the key) should be a string
-                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
-                                Strings.ConfigurationKeyNotAString, ErrorCategory.InvalidData, profile));
-                            hasError = true;
                             continue;
                         }
-
-                        // parse the item2 as array
-                        PipelineAst pipeAst = kvp.Item2 as PipelineAst;
-                        List<string> rhsList = new List<string>();
-                        if (pipeAst != null)
+                        if (!AddProfileItem(key, rhsList, severityList, includeRuleList, excludeRuleList))
                         {
-                            ExpressionAst pureExp = pipeAst.GetPureExpression();
-                            if (pureExp is StringConstantExpressionAst)
-                            {
-                                rhsList.Add((pureExp as StringConstantExpressionAst).Value);
-                            }
-                            else
-                            {
-                                ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
-                                if (arrayLitAst == null && pureExp is ArrayExpressionAst)
-                                {
-                                    ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
-                                    // Statements property is never null
-                                    if (arrayExp.SubExpression != null)
-                                    {
-                                        StatementAst stateAst = arrayExp.SubExpression.Statements.FirstOrDefault();
-                                        if (stateAst != null && stateAst is PipelineAst)
-                                        {
-                                            CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.FirstOrDefault();
-                                            if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
-                                            {
-                                                CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
-                                                if (cmdExpAst.Expression is StringConstantExpressionAst)
-                                                {
-                                                    rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
-                                                }
-                                                else
-                                                {
-                                                    arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (arrayLitAst != null)
-                                {
-                                    foreach (var element in arrayLitAst.Elements)
-                                    {
-                                        // all the values in the array needs to be string
-                                        if (!(element is StringConstantExpressionAst))
-                                        {
-                                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile)),
-                                                Strings.ConfigurationValueNotAString, ErrorCategory.InvalidData, profile));
-                                            hasError = true;
-                                            continue;
-                                        }
-
-                                        rhsList.Add((element as StringConstantExpressionAst).Value);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (rhsList.Count == 0)
-                        {
-                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile)),
-                                Strings.ConfigurationValueWrongFormat, ErrorCategory.InvalidData, profile));
-                            hasError = true;
-                            continue;
-                        }
-
-                        string key = (kvp.Item1 as StringConstantExpressionAst).Value.ToLower();
-
-                        if(!AddProfileItem(key, rhsList, severityList, includeRuleList, excludeRuleList))
-                        {
-                            writer.WriteError(new ErrorRecord(
-                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, key, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
-                                    Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
+                            writer.WriteError(
+                                new ErrorRecord(
+                                    new InvalidDataException(
+                                        string.Format(
+                                            CultureInfo.CurrentCulture,
+                                            Strings.WrongKey,
+                                            key,
+                                            profile)),
+                                    Strings.WrongConfigurationKey,
+                                    ErrorCategory.InvalidData,
+                                    profile));
                             hasError = true;
                         }
                     }
@@ -517,7 +583,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // But for Core CLR we need to load it explicitly
             this.Loggers = GetInterfaceImplementationsFromAssembly<ILogger>();
 #endif
-
             #region Initializes Rules
 
             var includeRuleList = new List<string>();
@@ -1887,7 +1952,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
             }
-            
+
             #endregion
 
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
