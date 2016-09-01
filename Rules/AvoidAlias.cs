@@ -62,11 +62,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
             IEnumerable<string> aliases = obj as IEnumerable<string>;
-            if (obj == null)
+            if (aliases == null)
             {
-                return;
+                // try with enumerable objects
+                var enumerableObjs = obj as IEnumerable<object>;
+                if (enumerableObjs == null)
+                {
+                    return;
+                }
+                foreach (var x in enumerableObjs)
+                {
+                    var y = x as string;
+                    if (y == null)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        whiteList.Add(y);
+                    }
+                }
             }
-            whiteList.AddRange(aliases);
+            else
+            {
+                whiteList.AddRange(aliases);
+            }
         }
 
         /// <summary>
