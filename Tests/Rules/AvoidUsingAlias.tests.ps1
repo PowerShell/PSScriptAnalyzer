@@ -31,4 +31,27 @@ Describe "AvoidUsingAlias" {
             $noViolations.Count | Should Be 0
         }
     }
+
+    Context "Settings file provides whitelist" {
+        $whiteListTestScriptDef = 'gci; cd; iwr'
+
+        It "honors the whitelist provided as hashtable" {
+            $settings = @{
+                'Rules' = @{
+                    'PSAvoidUsingCmdletAliases' = @{
+                        'Whitelist' = @('cd')
+                    }
+                }
+            }
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $whiteListTestScriptDef -Settings $settings -IncludeRule $violationName
+            $violations.Count | Should Be 2
+        }
+
+        It "honors the whitelist provided through settings file" {
+            # even though join-path returns string, if we do not use tostring, then invoke-scriptanalyzer cannot cast it to string type
+            $settingsFilePath = (Join-Path $directory (Join-Path 'TestSettings' 'AvoidAliasSettings.psd1')).ToString()
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $whiteListTestScriptDef -Settings $settingsFilePath -IncludeRule $violationName
+            $violations.Count | Should be 2
+        }
+    }
 }
