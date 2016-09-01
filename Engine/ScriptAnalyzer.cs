@@ -421,77 +421,107 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             validKeys.Add("severity");
             validKeys.Add("includerules");
             validKeys.Add("excluderules");
+            validKeys.Add("rules");
 
             foreach (var obj in profile.Keys)
             {
                 string key = obj as string;
-
-                // key should be a string
                 if (key == null)
                 {
-                    writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.KeyNotString, key)),
-                        Strings.ConfigurationKeyNotAString, ErrorCategory.InvalidData, profile));
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.KeyNotString, key)),
+                            Strings.ConfigurationKeyNotAString,
+                            ErrorCategory.InvalidData,
+                            profile));
                     hasError = true;
                     continue;
                 }
 
-                // checks whether it falls into list of valid keys
-                if (!validKeys.Contains(key))
-                {
-                    writer.WriteError(new ErrorRecord(
-                        new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, key)),
-                        Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
-                    hasError = true;
-                    continue;
-                }
-
+                key = key.ToLower();
                 object value = profile[obj];
-
-                // value must be either string or collections of string or array
-                if (value == null || !(value is string || value is IEnumerable<string> || value.GetType().IsArray))
+                switch (key)
                 {
-                    writer.WriteError(new ErrorRecord(
-                                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
-                                            Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
-                    hasError = true;
-                    continue;
-                }
-
-                // if we get here then everything is good
-                List<string> values = new List<string>();
-
-                if (value is string)
-                {
-                    values.Add(value as string);
-                }
-                else if (value is IEnumerable<string>)
-                {
-                    values.Union(value as IEnumerable<string>);
-                }
-                else if (value.GetType().IsArray)
-                {
-                    // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
-                    foreach (var val in value as IEnumerable)
-                    {
-                        if (val is string)
+                    case "severity":
+                    case "includerules":
+                    case "excluderules":
+                        // value must be either string or collections of string or array
+                        if (value == null
+                            || !(value is string
+                                || value is IEnumerable<string>
+                                || value.GetType().IsArray))
                         {
-                            values.Add(val as string);
-                        }
-                        else
-                        {
-                            writer.WriteError(new ErrorRecord(
-                                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, key)),
-                                                    Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
+                            writer.WriteError(
+                                new ErrorRecord(
+                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
+                                    Strings.WrongConfigurationKey,
+                                    ErrorCategory.InvalidData,
+                                    profile));
                             hasError = true;
-                            continue;
+                            break;
                         }
-                    }
+                        List<string> values = new List<string>();
+                        if (value is string)
+                        {
+                            values.Add(value as string);
+                        }
+                        else if (value is IEnumerable<string>)
+                        {
+                            values.Union(value as IEnumerable<string>);
+                        }
+                        else if (value.GetType().IsArray)
+                        {
+                            // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
+                            foreach (var val in value as IEnumerable)
+                            {
+                                if (val is string)
+                                {
+                                    values.Add(val as string);
+                                }
+                                else
+                                {
+                                    writer.WriteError(
+                                        new ErrorRecord(
+                                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, key)),
+                                            Strings.WrongConfigurationKey,
+                                            ErrorCategory.InvalidData,
+                                            profile));
+                                    hasError = true;
+                                    break;
+                                }
+                            }
+                        }
+                        AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
+                        settings[key] = values;
+                        break;
+
+                    case "rules":
+                        var ruleDict = value as Dictionary<string, object>;
+                        if (ruleDict == null)
+                        {
+                            writer.WriteError(
+                                new ErrorRecord(
+                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
+                                    Strings.WrongConfigurationKey,
+                                    ErrorCategory.InvalidData,
+                                    profile));
+                            hasError = true;
+                            break;
+                        }
+                        settings[key] = ruleDict;
+                        break;
+
+                    default:
+                        writer.WriteError(
+                            new ErrorRecord(
+                                new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, key)),
+                                Strings.WrongConfigurationKey,
+                                ErrorCategory.InvalidData,
+                                profile));
+                        hasError = true;
+                        break;
                 }
-
-                AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
-
             }
-
             return hasError;
         }
 
