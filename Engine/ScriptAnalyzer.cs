@@ -412,6 +412,66 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return output;
         }
 
+        /// <summary>
+        /// Recursively convert hashtable to dictionary
+        /// </summary>
+        /// <param name="hashtable"></param>
+        /// <returns>Dictionary that maps string to object</returns>
+        private Dictionary<string, object> GetDictionaryFromHashtable(
+            Hashtable hashtable,
+            IOutputWriter writer,
+            out bool hasError)
+        {
+            var dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            hasError = false;
+            foreach (var obj in hashtable.Keys)
+            {
+                string key = obj as string;
+                if (key == null)
+                {
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.KeyNotString, key)),
+                            Strings.ConfigurationKeyNotAString,
+                            ErrorCategory.InvalidData,
+                            hashtable));
+                    hasError = true;
+                    return null;
+                }
+                var valueHashtableObj = hashtable[obj];
+                if (valueHashtableObj == null)
+                {
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, valueHashtableObj, key)),
+                            Strings.WrongConfigurationKey,
+                            ErrorCategory.InvalidData,
+                            hashtable));
+                    hasError = true;
+                    return null;
+                }
+                var valueHashtable = valueHashtableObj as Hashtable;
+                if (valueHashtable == null)
+                {
+                    dictionary.Add(key, valueHashtableObj);
+                }
+                else
+                {
+                    var dict = GetDictionaryFromHashtable(valueHashtable, writer, out hasError);
+                    if (dict != null)
+                    {
+                        dictionary.Add(key, dict);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+            }
+            return dictionary;
+        }
+
         private bool ParseProfileHashtable(Hashtable profile, PathIntrinsics path, IOutputWriter writer,
             List<string> severityList, List<string> includeRuleList, List<string> excludeRuleList)
         {
@@ -423,23 +483,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             validKeys.Add("excluderules");
             validKeys.Add("rules");
 
-            foreach (var obj in profile.Keys)
+            settings = GetDictionaryFromHashtable(profile, writer, out hasError);
+            if (hasError)
             {
-                string key = obj as string;
-                if (key == null)
-                {
-                    writer.WriteError(
-                        new ErrorRecord(
-                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.KeyNotString, key)),
-                            Strings.ConfigurationKeyNotAString,
-                            ErrorCategory.InvalidData,
-                            profile));
-                    hasError = true;
-                    continue;
-                }
-
-                key = key.ToLower();
-                object value = profile[obj];
+                return hasError;
+            }
+            foreach (var settingKey in settings.Keys)
+            {
+                var key = settingKey.ToLower();
+                object value = settings[key];
                 switch (key)
                 {
                     case "severity":
@@ -496,19 +548,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "rules":
-                        var ruleDict = value as Dictionary<string, object>;
-                        if (ruleDict == null)
-                        {
-                            writer.WriteError(
-                                new ErrorRecord(
-                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
-                                    Strings.WrongConfigurationKey,
-                                    ErrorCategory.InvalidData,
-                                    profile));
-                            hasError = true;
-                            break;
-                        }
-                        settings[key] = ruleDict;
                         break;
 
                     default:
