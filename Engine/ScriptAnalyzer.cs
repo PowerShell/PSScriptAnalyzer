@@ -204,11 +204,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // profile was not given
             if (profileObject == null)
             {
+                writer.WriteVerbose("No settings hashtable or file to consume");
                 return true;
             }
 
             if (!(profileObject is string || profileObject is Hashtable))
             {
+                writer.WriteWarning("Settings parameter should be a hashtable or a filepath");
                 return false;
             }
 
