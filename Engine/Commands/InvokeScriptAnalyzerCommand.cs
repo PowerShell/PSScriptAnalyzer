@@ -219,8 +219,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);
 
-            if (!ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this))
+            var settingFileHasErrors = false;
+            if (settings == null)
             {
+                // add a directory separator character because if there is no trailing separator character, it will return the parent
+                var directory = System.IO.Path.GetDirectoryName(path + System.IO.Path.DirectorySeparatorChar);
+                this.WriteVerbose(
+                    String.Format(
+                        "Settings not provided. Will look for settings file in the given path {0}.",
+                        path));
+                var settingsFileAutoDiscovered = false;
+                if (Directory.Exists(directory))
+                {
+                    // if settings are not provided explicitly, look for it in the given path
+                    // check if pssasettings.psd1 exists
+                    var settingsFilename = "PSScriptAnalyzerSettings.psd1";
+                    var settingsFilepath = System.IO.Path.Combine(directory, settingsFilename);
+                    if (File.Exists(settingsFilepath))
+                    {
+                        settingsFileAutoDiscovered = true;
+                        this.WriteVerbose(
+                            String.Format(
+                                "Found {0} in {1}. Will use it to provide settings for this invocation.",
+                                settingsFilename,
+                                directory));
+                        settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(settingsFilepath, this.SessionState.Path, this);
+
+                    }
+                }
+
+                if (!settingsFileAutoDiscovered)
+                {
+                    this.WriteVerbose(
+                        String.Format(
+                            "Cannot find a settings file in the given path {0}.",
+                            path));
+                }
+            }
+            else
+            {
+                settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this);
+            }
+
+            if (settingFileHasErrors)
+            {
+                this.WriteWarning("Cannot parse settings. Will abort the invocation.");
                 stopProcessing = true;
                 return;
             }
