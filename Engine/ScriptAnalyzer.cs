@@ -40,6 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         #region Private members
 
         private IOutputWriter outputWriter;
+        private Dictionary<string, object> settings;
 #if !CORECLR
         private CompositionContainer container;
 #endif // !CORECLR
@@ -87,13 +88,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 #else
         [ImportMany]
         public IEnumerable<IScriptRule> ScriptRules { get; private set; }
-
         [ImportMany]
         public IEnumerable<ITokenRule> TokenRules { get; private set; }
-
         [ImportMany]
         public IEnumerable<ILogger> Loggers { get; private set; }
-
         [ImportMany]
         public IEnumerable<IDSCResourceRule> DSCResourceRules { get; private set; }
         // Initializes via ImportMany
@@ -168,6 +166,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException("runspace");
             }
 
+            //initialize helper
+            Helper.Instance = new Helper(
+                runspace.SessionStateProxy.InvokeCommand,
+                outputWriter);
+            Helper.Instance.Initialize();
+
+
             this.Initialize(
                 outputWriter,
                 runspace.SessionStateProxy.Path,
@@ -199,11 +204,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // profile was not given
             if (profileObject == null)
             {
+                writer.WriteVerbose("No settings hashtable or file to consume");
                 return true;
             }
 
             if (!(profileObject is string || profileObject is Hashtable))
             {
+                writer.WriteWarning("Settings parameter should be a hashtable or a filepath");
                 return false;
             }
 
@@ -239,7 +246,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.severity = (severityList.Count() == 0) ? null : severityList.ToArray();
             this.includeRule = (includeRuleList.Count() == 0) ? null : includeRuleList.ToArray();
             this.excludeRule = (excludeRuleList.Count() == 0) ? null : excludeRuleList.ToArray();
-
+            if (settings != null
+                && settings.ContainsKey("Rules"))
+            {
+                var ruleArgs = settings["Rules"] as Dictionary<string, object>;
+                Helper.Instance.SetRuleArguments(ruleArgs);
+            }
             return true;
         }
 
@@ -273,6 +285,195 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return true;
         }
 
+        private Dictionary<string, object> GetDictionaryFromHashTableAst(
+            HashtableAst hashTableAst,
+            IOutputWriter writer,
+            string profile,
+            out bool hasError)
+        {
+            hasError = false;
+            var output = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in hashTableAst.KeyValuePairs)
+            {
+                var keyAst = kvp.Item1 as StringConstantExpressionAst;
+                if (keyAst == null)
+                {
+                    // first item (the key) should be a string
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.WrongKeyFormat,
+                                    kvp.Item1.Extent.StartLineNumber,
+                                    kvp.Item1.Extent.StartColumnNumber,
+                                    profile)),
+                            Strings.ConfigurationKeyNotAString,
+                            ErrorCategory.InvalidData,
+                            profile));
+                    hasError = true;
+                    continue;
+                }
+                var key = keyAst.Value;
+                // parse the item2 as array
+                PipelineAst pipeAst = kvp.Item2 as PipelineAst;
+                List<string> rhsList = new List<string>();
+                if (pipeAst != null)
+                {
+                    ExpressionAst pureExp = pipeAst.GetPureExpression();
+                    if (pureExp is StringConstantExpressionAst)
+                    {
+                        rhsList.Add((pureExp as StringConstantExpressionAst).Value);
+                    }
+                    else if (pureExp is HashtableAst)
+                    {
+                        output[key] = GetDictionaryFromHashTableAst(
+                            pureExp as HashtableAst,
+                            writer,
+                            profile,
+                            out hasError);
+                        continue;
+                    }
+                    else
+                    {
+                        ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
+                        if (arrayLitAst == null && pureExp is ArrayExpressionAst)
+                        {
+                            ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
+                            // Statements property is never null
+                            if (arrayExp.SubExpression != null)
+                            {
+                                StatementAst stateAst = arrayExp.SubExpression.Statements.FirstOrDefault();
+                                if (stateAst != null && stateAst is PipelineAst)
+                                {
+                                    CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.FirstOrDefault();
+                                    if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
+                                    {
+                                        CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
+                                        if (cmdExpAst.Expression is StringConstantExpressionAst)
+                                        {
+                                            rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
+                                        }
+                                        else
+                                        {
+                                            arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (arrayLitAst != null)
+                        {
+                            foreach (var element in arrayLitAst.Elements)
+                            {
+                                // all the values in the array needs to be string
+                                if (!(element is StringConstantExpressionAst))
+                                {
+                                    outputWriter.WriteError(
+                                        new ErrorRecord(
+                                            new InvalidDataException(
+                                                string.Format(
+                                                    CultureInfo.CurrentCulture,
+                                                    Strings.WrongValueFormat,
+                                                    element.Extent.StartLineNumber,
+                                                    element.Extent.StartColumnNumber,
+                                                    "")),
+                                        Strings.ConfigurationValueNotAString,
+                                        ErrorCategory.InvalidData,
+                                        null));
+                                    hasError = true;
+                                    continue;
+                                }
+
+                                rhsList.Add((element as StringConstantExpressionAst).Value);
+                            }
+                        }
+                    }
+                }
+
+                if (rhsList.Count == 0)
+                {
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.WrongValueFormat,
+                                    kvp.Item2.Extent.StartLineNumber,
+                                    kvp.Item2.Extent.StartColumnNumber,
+                                    profile)),
+                            Strings.ConfigurationValueWrongFormat,
+                            ErrorCategory.InvalidData,
+                            profile));
+                    hasError = true;
+                    continue;
+                }
+                output[key] = rhsList;
+            }
+            return output;
+        }
+
+        /// <summary>
+        /// Recursively convert hashtable to dictionary
+        /// </summary>
+        /// <param name="hashtable"></param>
+        /// <returns>Dictionary that maps string to object</returns>
+        private Dictionary<string, object> GetDictionaryFromHashtable(
+            Hashtable hashtable,
+            IOutputWriter writer,
+            out bool hasError)
+        {
+            var dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            hasError = false;
+            foreach (var obj in hashtable.Keys)
+            {
+                string key = obj as string;
+                if (key == null)
+                {
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.KeyNotString, key)),
+                            Strings.ConfigurationKeyNotAString,
+                            ErrorCategory.InvalidData,
+                            hashtable));
+                    hasError = true;
+                    return null;
+                }
+                var valueHashtableObj = hashtable[obj];
+                if (valueHashtableObj == null)
+                {
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, valueHashtableObj, key)),
+                            Strings.WrongConfigurationKey,
+                            ErrorCategory.InvalidData,
+                            hashtable));
+                    hasError = true;
+                    return null;
+                }
+                var valueHashtable = valueHashtableObj as Hashtable;
+                if (valueHashtable == null)
+                {
+                    dictionary.Add(key, valueHashtableObj);
+                }
+                else
+                {
+                    var dict = GetDictionaryFromHashtable(valueHashtable, writer, out hasError);
+                    if (dict != null)
+                    {
+                        dictionary.Add(key, dict);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+            }
+            return dictionary;
+        }
+
         private bool ParseProfileHashtable(Hashtable profile, PathIntrinsics path, IOutputWriter writer,
             List<string> severityList, List<string> includeRuleList, List<string> excludeRuleList)
         {
@@ -282,78 +483,86 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             validKeys.Add("severity");
             validKeys.Add("includerules");
             validKeys.Add("excluderules");
+            validKeys.Add("rules");
 
-            foreach (var obj in profile.Keys)
+            settings = GetDictionaryFromHashtable(profile, writer, out hasError);
+            if (hasError)
             {
-                string key = obj as string;
-
-                // key should be a string
-                if (key == null)
-                {
-                    writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.KeyNotString, key)),
-                        Strings.ConfigurationKeyNotAString, ErrorCategory.InvalidData, profile));
-                    hasError = true;
-                    continue;
-                }
-
-                // checks whether it falls into list of valid keys
-                if (!validKeys.Contains(key))
-                {
-                    writer.WriteError(new ErrorRecord(
-                        new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, key)),
-                        Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
-                    hasError = true;
-                    continue;
-                }
-
-                object value = profile[obj];
-
-                // value must be either string or collections of string or array
-                if (value == null || !(value is string || value is IEnumerable<string> || value.GetType().IsArray))
-                {
-                    writer.WriteError(new ErrorRecord(
-                                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
-                                            Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
-                    hasError = true;
-                    continue;
-                }
-
-                // if we get here then everything is good
-
-                List<string> values = new List<string>();
-
-                if (value is string)
-                {
-                    values.Add(value as string);
-                }
-                else if (value is IEnumerable<string>)
-                {
-                    values.Union(value as IEnumerable<string>);
-                }
-                else if (value.GetType().IsArray)
-                {
-                    // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
-                    foreach (var val in value as IEnumerable)
-                    {
-                        if (val is string)
-                        {
-                            values.Add(val as string);
-                        }
-                        else
-                        {
-                            writer.WriteError(new ErrorRecord(
-                                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, key)),
-                                                    Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
-                            hasError = true;
-                            continue;
-                        }
-                    }
-                }
-
-                AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
-
+                return hasError;
             }
+            foreach (var settingKey in settings.Keys)
+            {
+                var key = settingKey.ToLower();
+                object value = settings[key];
+                switch (key)
+                {
+                    case "severity":
+                    case "includerules":
+                    case "excluderules":
+                        // value must be either string or collections of string or array
+                        if (value == null
+                            || !(value is string
+                                || value is IEnumerable<string>
+                                || value.GetType().IsArray))
+                        {
+                            writer.WriteError(
+                                new ErrorRecord(
+                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
+                                    Strings.WrongConfigurationKey,
+                                    ErrorCategory.InvalidData,
+                                    profile));
+                            hasError = true;
+                            break;
+                        }
+                        List<string> values = new List<string>();
+                        if (value is string)
+                        {
+                            values.Add(value as string);
+                        }
+                        else if (value is IEnumerable<string>)
+                        {
+                            values.Union(value as IEnumerable<string>);
+                        }
+                        else if (value.GetType().IsArray)
+                        {
+                            // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
+                            foreach (var val in value as IEnumerable)
+                            {
+                                if (val is string)
+                                {
+                                    values.Add(val as string);
+                                }
+                                else
+                                {
+                                    writer.WriteError(
+                                        new ErrorRecord(
+                                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, key)),
+                                            Strings.WrongConfigurationKey,
+                                            ErrorCategory.InvalidData,
+                                            profile));
+                                    hasError = true;
+                                    break;
+                                }
+                            }
+                        }
+                        AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
+                        settings[key] = values;
+                        break;
 
+                    case "rules":
+                        break;
+
+                    default:
+                        writer.WriteError(
+                            new ErrorRecord(
+                                new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, key)),
+                                Strings.WrongConfigurationKey,
+                                ErrorCategory.InvalidData,
+                                profile));
+                        hasError = true;
+                        break;
+                }
+            }
             return hasError;
         }
 
@@ -390,91 +599,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 else
                 {
                     HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
-
-                    foreach (var kvp in hashTableAst.KeyValuePairs)
+                    settings = GetDictionaryFromHashTableAst(
+                        hashTableAst,
+                        writer,
+                        profile,
+                        out hasError);
+                    foreach (var key in settings.Keys)
                     {
-                        if (!(kvp.Item1 is StringConstantExpressionAst))
+                        var rhsList = settings[key] as List<string>;
+                        if (rhsList == null)
                         {
-                            // first item (the key) should be a string
-                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyFormat, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
-                                Strings.ConfigurationKeyNotAString, ErrorCategory.InvalidData, profile));
-                            hasError = true;
                             continue;
                         }
-
-                        // parse the item2 as array
-                        PipelineAst pipeAst = kvp.Item2 as PipelineAst;
-                        List<string> rhsList = new List<string>();
-                        if (pipeAst != null)
+                        if (!AddProfileItem(key, rhsList, severityList, includeRuleList, excludeRuleList))
                         {
-                            ExpressionAst pureExp = pipeAst.GetPureExpression();
-                            if (pureExp is StringConstantExpressionAst)
-                            {
-                                rhsList.Add((pureExp as StringConstantExpressionAst).Value);
-                            }
-                            else
-                            {
-                                ArrayLiteralAst arrayLitAst = pureExp as ArrayLiteralAst;
-                                if (arrayLitAst == null && pureExp is ArrayExpressionAst)
-                                {
-                                    ArrayExpressionAst arrayExp = pureExp as ArrayExpressionAst;
-                                    // Statements property is never null
-                                    if (arrayExp.SubExpression != null)
-                                    {
-                                        StatementAst stateAst = arrayExp.SubExpression.Statements.FirstOrDefault();
-                                        if (stateAst != null && stateAst is PipelineAst)
-                                        {
-                                            CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.FirstOrDefault();
-                                            if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
-                                            {
-                                                CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
-                                                if (cmdExpAst.Expression is StringConstantExpressionAst)
-                                                {
-                                                    rhsList.Add((cmdExpAst.Expression as StringConstantExpressionAst).Value);
-                                                }
-                                                else
-                                                {
-                                                    arrayLitAst = cmdExpAst.Expression as ArrayLiteralAst;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (arrayLitAst != null)
-                                {
-                                    foreach (var element in arrayLitAst.Elements)
-                                    {
-                                        // all the values in the array needs to be string
-                                        if (!(element is StringConstantExpressionAst))
-                                        {
-                                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, element.Extent.StartLineNumber, element.Extent.StartColumnNumber, profile)),
-                                                Strings.ConfigurationValueNotAString, ErrorCategory.InvalidData, profile));
-                                            hasError = true;
-                                            continue;
-                                        }
-
-                                        rhsList.Add((element as StringConstantExpressionAst).Value);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (rhsList.Count == 0)
-                        {
-                            writer.WriteError(new ErrorRecord(new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueFormat, kvp.Item2.Extent.StartLineNumber, kvp.Item2.Extent.StartColumnNumber, profile)),
-                                Strings.ConfigurationValueWrongFormat, ErrorCategory.InvalidData, profile));
-                            hasError = true;
-                            continue;
-                        }
-
-                        string key = (kvp.Item1 as StringConstantExpressionAst).Value.ToLower();
-
-                        if(!AddProfileItem(key, rhsList, severityList, includeRuleList, excludeRuleList))
-                        {
-                            writer.WriteError(new ErrorRecord(
-                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKey, key, kvp.Item1.Extent.StartLineNumber, kvp.Item1.Extent.StartColumnNumber, profile)),
-                                    Strings.WrongConfigurationKey, ErrorCategory.InvalidData, profile));
+                            writer.WriteError(
+                                new ErrorRecord(
+                                    new InvalidDataException(
+                                        string.Format(
+                                            CultureInfo.CurrentCulture,
+                                            Strings.WrongKey,
+                                            key,
+                                            profile)),
+                                    Strings.WrongConfigurationKey,
+                                    ErrorCategory.InvalidData,
+                                    profile));
                             hasError = true;
                         }
                     }
@@ -517,7 +666,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // But for Core CLR we need to load it explicitly
             this.Loggers = GetInterfaceImplementationsFromAssembly<ILogger>();
 #endif
-
             #region Initializes Rules
 
             var includeRuleList = new List<string>();
@@ -734,10 +882,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private void LoadRules(Dictionary<string, List<string>> result, CommandInvocationIntrinsics invokeCommand, bool loadBuiltInRules)
         {
             List<string> paths = new List<string>();
-
-            // Initialize helper
-            Helper.Instance = new Helper(invokeCommand, this.outputWriter);
-            Helper.Instance.Initialize();
 
             // Clear external rules for each invoke.
             this.ScriptRules = null;
@@ -1887,7 +2031,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
             }
-            
+
             #endregion
 
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers

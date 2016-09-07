@@ -385,7 +385,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid key in the settings hashtable: line {1} column {2} in file {3}. Valid keys are ExcludeRules, IncludeRules and Severity..
+        ///   Looks up a localized string similar to {0} is not a valid key in the settings hashtable: file {3}. Valid keys are ExcludeRules, IncludeRules and Severity..
         /// </summary>
         internal static string WrongKey {
             get {
