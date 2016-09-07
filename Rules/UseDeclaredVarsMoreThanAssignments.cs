@@ -1,4 +1,3 @@
-//
 // Copyright (c) Microsoft Corporation.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -8,16 +7,15 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
 
 using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -37,77 +35,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>A List of results from this rule</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
-
-            IEnumerable<Ast> assignmentAsts = ast.FindAll(testAst => testAst is AssignmentStatementAst, true);
-            IEnumerable<Ast> varAsts = ast.FindAll(testAst => testAst is VariableExpressionAst, true);
-            IEnumerable<Ast> varsInAssignment;
-
-            Dictionary<string, AssignmentStatementAst> assignments = new Dictionary<string, AssignmentStatementAst>(StringComparer.OrdinalIgnoreCase);
-
-            string varKey;
-            bool inAssignment;
-
-            if (assignmentAsts != null)
+            if (ast == null)
             {
-                foreach (AssignmentStatementAst assignmentAst in assignmentAsts)
-                {
-                    // Only checks for the case where lhs is a variable. Ignore things like $foo.property
-                    VariableExpressionAst assignmentVarAst = assignmentAst.Left as VariableExpressionAst;
-
-                    if (assignmentVarAst != null)
-                    {
-                        //Ignore if variable is global or environment variable or scope is function
-                        if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst, ast)
-                            && !assignmentVarAst.VariablePath.IsScript
-                            && !string.Equals(assignmentVarAst.VariablePath.DriveName, "function", StringComparison.OrdinalIgnoreCase))
-                        {
-
-                            string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
-
-                            if (!assignments.ContainsKey(variableName))
-                            {
-                                assignments.Add(variableName, assignmentAst);
-                            }
-                        }
-                    }
-                }
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
 
-            if (varAsts != null)
+            var scriptBlockAsts = ast.FindAll(x => x is ScriptBlockAst, true);
+            if (scriptBlockAsts == null)
             {
-                foreach (VariableExpressionAst varAst in varAsts)
-                {
-                    varKey = Helper.Instance.VariableNameWithoutScope(varAst.VariablePath);
-                    inAssignment = false;
-
-                    if (assignments.ContainsKey(varKey))
-                    {
-                            varsInAssignment = assignments[varKey].Left.FindAll(testAst => testAst is VariableExpressionAst, true); ;
-
-                            //Checks if this variableAst is part of the logged assignment
-                            foreach (VariableExpressionAst varInAssignment in varsInAssignment)
-                            {
-                                inAssignment |= varInAssignment.Equals(varAst);
-                            }
-
-                            if (!inAssignment)
-                            {
-                                assignments.Remove(varKey);
-                            }
-                            //Check if variable belongs to PowerShell built-in variables
-                            if (Helper.Instance.HasSpecialVars(varKey))
-                            {
-                                assignments.Remove(varKey);
-                            }
-                    }
-                }
+                yield break;
             }
 
-            foreach (string key in assignments.Keys)
+            foreach (var scriptBlockAst in scriptBlockAsts)
             {
-                yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseDeclaredVarsMoreThanAssignmentsError, key),
-                    assignments[key].Left.Extent, GetName(), DiagnosticSeverity.Warning, fileName, key);
+                var sbAst = scriptBlockAst as ScriptBlockAst;
+                foreach (var diagnosticRecord in AnalyzeScriptBlockAst(sbAst, fileName))
+                {
+                    yield return diagnosticRecord;
+                }
             }
         }
 
@@ -162,10 +107,92 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
+
+        /// <summary>
+        /// Checks if a variable is initialized and referenced in either its assignment or children scopes
+        /// </summary>
+        /// <param name="scriptBlockAst">Ast of type ScriptBlock</param>
+        /// <param name="fileName">Name of file containing the ast</param>
+        /// <returns>An enumerable containing diagnostic records</returns>
+        private IEnumerable<DiagnosticRecord> AnalyzeScriptBlockAst(ScriptBlockAst scriptBlockAst, string fileName)
+        {
+            IEnumerable<Ast> assignmentAsts = scriptBlockAst.FindAll(testAst => testAst is AssignmentStatementAst, false);
+            IEnumerable<Ast> varAsts = scriptBlockAst.FindAll(testAst => testAst is VariableExpressionAst, true);
+            IEnumerable<Ast> varsInAssignment;
+
+            Dictionary<string, AssignmentStatementAst> assignments = new Dictionary<string, AssignmentStatementAst>(StringComparer.OrdinalIgnoreCase);
+
+            string varKey;
+            bool inAssignment;
+
+            if (assignmentAsts == null)
+            {
+                yield break;
+            }
+
+            foreach (AssignmentStatementAst assignmentAst in assignmentAsts)
+            {
+                // Only checks for the case where lhs is a variable. Ignore things like $foo.property
+                VariableExpressionAst assignmentVarAst = assignmentAst.Left as VariableExpressionAst;
+
+                if (assignmentVarAst != null)
+                {
+                    // Ignore if variable is global or environment variable or scope is function
+                    if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst, scriptBlockAst)
+                        && !assignmentVarAst.VariablePath.IsScript
+                        && !string.Equals(assignmentVarAst.VariablePath.DriveName, "function", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
+
+                        if (!assignments.ContainsKey(variableName))
+                        {
+                            assignments.Add(variableName, assignmentAst);
+                        }
+                    }
+                }
+            }
+
+            if (varAsts != null)
+            {
+                foreach (VariableExpressionAst varAst in varAsts)
+                {
+                    varKey = Helper.Instance.VariableNameWithoutScope(varAst.VariablePath);
+                    inAssignment = false;
+
+                    if (assignments.ContainsKey(varKey))
+                    {
+                        varsInAssignment = assignments[varKey].Left.FindAll(testAst => testAst is VariableExpressionAst, true);
+
+                        // Checks if this variableAst is part of the logged assignment
+                        foreach (VariableExpressionAst varInAssignment in varsInAssignment)
+                        {
+                            inAssignment |= varInAssignment.Equals(varAst);
+                        }
+
+                        if (!inAssignment)
+                        {
+                            assignments.Remove(varKey);
+                        }
+
+                        // Check if variable belongs to PowerShell built-in variables
+                        if (Helper.Instance.HasSpecialVars(varKey))
+                        {
+                            assignments.Remove(varKey);
+                        }
+                    }
+                }
+            }
+
+            foreach (string key in assignments.Keys)
+            {
+                yield return new DiagnosticRecord(
+                    string.Format(CultureInfo.CurrentCulture, Strings.UseDeclaredVarsMoreThanAssignmentsError, key),
+                    assignments[key].Left.Extent,
+                    GetName(),
+                    DiagnosticSeverity.Warning,
+                    fileName,
+                    key);
+            }
+        }
     }
-
 }
-
-
-
-
