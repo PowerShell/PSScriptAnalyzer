@@ -15,6 +15,23 @@ Describe "UseDeclaredVarsMoreThanAssignments" {
             $violations[1].Message | Should Match $violationMessage
         }
 
+        It "flags the variable in the correct scope" {
+            $target = @'
+function MyFunc1() {
+    $a = 1
+    $b = 1
+    $a + $b
+}
+
+function MyFunc2() {
+    $a = 1
+    $b = 1
+    $a + $a
+}
+'@
+            $local:violations = Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName
+            $local:violations.Count | Should Be 1
+        }
     }
 
     Context "When there are no violations" {
