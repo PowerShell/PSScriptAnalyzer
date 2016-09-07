@@ -1726,7 +1726,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Checks that variables are used in more than just their assignment. Generally this is a red flag that a variable is not needed..
+        ///   Looks up a localized string similar to Ensure declared variables are used elsewhere in the script and not just during assignment..
         /// </summary>
         internal static string UseDeclaredVarsMoreThanAssignmentsDescription {
             get {

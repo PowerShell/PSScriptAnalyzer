@@ -160,7 +160,7 @@
     <value>Cmdlet Verbs</value>
   </data>
   <data name="UseDeclaredVarsMoreThanAssignmentsDescription" xml:space="preserve">
-    <value>Checks that variables are used in more than just their assignment. Generally this is a red flag that a variable is not needed.</value>
+    <value>Ensure declared variables are used elsewhere in the script and not just during assignment.</value>
   </data>
   <data name="UseDeclaredVarsMoreThanAssignmentsError" xml:space="preserve">
     <value>The variable '{0}' is assigned but never used.</value>
