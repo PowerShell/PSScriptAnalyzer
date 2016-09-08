@@ -1825,6 +1825,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Create hashtables with literal initializers.
+        /// </summary>
+        internal static string UseLiteralInitilializerForHashtableCommonName {
+            get {
+                return ResourceManager.GetString("UseLiteralInitilializerForHashtableCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create a hashtable using a constructor without specifying IEqualityComparer for string type keys result in case-sensitive lookup of keys..
+        /// </summary>
+        internal static string UseLiteralInitilializerForHashtableDescription {
+            get {
+                return ResourceManager.GetString("UseLiteralInitilializerForHashtableDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create hashtables with literal initliazers.
+        /// </summary>
+        internal static string UseLiteralInitilializerForHashtableError {
+            get {
+                return ResourceManager.GetString("UseLiteralInitilializerForHashtableError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseLiteralInitializerForHashtable.
+        /// </summary>
+        internal static string UseLiteralInitilializerForHashtableName {
+            get {
+                return ResourceManager.GetString("UseLiteralInitilializerForHashtableName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use OutputType Correctly.
         /// </summary>
         internal static string UseOutputTypeCorrectlyCommonName {
