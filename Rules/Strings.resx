@@ -826,7 +826,7 @@
     <value>Create hashtables with literal initializers</value>
   </data>
   <data name="UseLiteralInitilializerForHashtableDescription" xml:space="preserve">
-    <value>Create a hashtable using a constructor without specifying IEqualityComparer for string type keys result in case-sensitive lookup of keys.</value>
+    <value>Use literal initializer, @{{}}, for creating a hashtable as they are case-insensitive by default</value>
   </data>
   <data name="UseLiteralInitilializerForHashtableError" xml:space="preserve">
     <value>Create hashtables with literal initliazers</value>

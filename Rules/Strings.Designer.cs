@@ -1834,7 +1834,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create a hashtable using a constructor without specifying IEqualityComparer for string type keys result in case-sensitive lookup of keys..
+        ///   Looks up a localized string similar to Use literal initializer, \@\{\}, for creating a hashtable as they are case-insensitive by default.
         /// </summary>
         internal static string UseLiteralInitilializerForHashtableDescription {
             get {
