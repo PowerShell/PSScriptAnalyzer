@@ -73,16 +73,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private int endColumnNumber;
         private string text;
         private string description;
-    
+
         public CorrectionExtent(
-            int startLineNumber, 
-            int endLineNumber, 
-            int startColumnNumber, 
-            int endColumnNumber, 
-            string text, 
-            string file) 
+            int startLineNumber,
+            int endLineNumber,
+            int startColumnNumber,
+            int endColumnNumber,
+            string text,
+            string file)
             : this(
-                  startLineNumber, 
+                  startLineNumber,
                   endLineNumber,
                   startColumnNumber,
                   endColumnNumber,
@@ -93,11 +93,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         public CorrectionExtent(
-            int startLineNumber, 
-            int endLineNumber, 
-            int startColumnNumber, 
-            int endColumnNumber, 
-            string text, 
+            int startLineNumber,
+            int endLineNumber,
+            int startColumnNumber,
+            int endColumnNumber,
+            string text,
             string file,
             string description)
         {
@@ -115,9 +115,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
         private void ThrowIfInvalidArguments()
         {
-            ThrowIfNull<string>(file, "filename");
             ThrowIfNull<string>(text, "text");
-            ThrowIfDecreasing(startLineNumber, endLineNumber, "start line number cannot be less than end line number");            
+            ThrowIfDecreasing(startLineNumber, endLineNumber, "start line number cannot be less than end line number");
             if (startLineNumber == endLineNumber)
             {
                 ThrowIfDecreasing(StartColumnNumber, endColumnNumber, "start column number cannot be less than end column number for a one line extent");
