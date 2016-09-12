@@ -174,15 +174,15 @@ Param(
 Settings Support in ScriptAnalyzer
 ========================================
 Settings that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to
-`Invoke-ScriptAnalyzer` using the `Setting` parameter. This enables a user to create a custom configuration for a specific environment.
+`Invoke-ScriptAnalyzer` using the `Setting` parameter. This enables a user to create a custom configuration for a specific environment. We support the following modes for specifying the settings file.
 
-Using Settings support:
+## Explicit
 
 The following example excludes two rules from the default set of rules and any rule
 that does not output an Error or Warning diagnostic record.
 
 ``` PowerShell
-# ScriptAnalyzerSettings.psd1
+# PSScriptAnalyzerSettings.psd1
 @{
     Severity=@('Error','Warning')
     ExcludeRules=@('PSAvoidUsingCmdletAliases',
@@ -199,7 +199,7 @@ Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting ScriptAnalyzerSettings.psd1
 The next example selects a few rules to execute instead of all the default rules.
 
 ``` PowerShell
-# ScriptAnalyzerSettings.psd1
+# PSScriptAnalyzerSettings.psd1
 @{
     IncludeRules=@('PSAvoidUsingPlainTextForPassword',
                 'PSAvoidUsingConvertToSecureStringWithPlainText')
@@ -210,6 +210,15 @@ Then invoke that settings file when using:
 ``` PowerShell
 Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting ScriptAnalyzerSettings.psd1
 ```
+
+## Implicit
+If you place a PSScriptAnayzer settings file named `PSScriptAnalyzerSettings.psd1` in your project root, PSScriptAnalyzer will discover it if you pass the project root as the `Path` parameter.
+
+```PowerShell
+Invoke-ScriptAnalyzer -Path "C:\path\to\project" -Recurse
+```
+
+Note that providing settings explicitly takes higher precedence over this implicit mode. Sample settings files are provided [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/Engine/Settings).
 
 ScriptAnalyzer as a .NET library
 ================================

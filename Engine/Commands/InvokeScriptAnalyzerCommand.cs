@@ -38,6 +38,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
+        #region Private variables
+        List<string> processedPaths;
+        #endregion // Private variables
+
         #region Parameters
         /// <summary>
         /// Path: The path to the file or folder to invoke PSScriptAnalyzer on.
@@ -218,9 +222,63 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);
-
-            if (!ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this))
+            if (IsFileParameterSet())
             {
+                ProcessPath();
+            }
+
+            var settingFileHasErrors = false;
+            if (settings == null
+                && processedPaths != null
+                && processedPaths.Count == 1)
+            {
+                // add a directory separator character because if there is no trailing separator character, it will return the parent
+                var directory = processedPaths[0].TrimEnd(System.IO.Path.DirectorySeparatorChar);
+                if (File.Exists(directory))
+                {
+                    // if given path is a file, get its directory
+                    directory = System.IO.Path.GetDirectoryName(directory);
+                }
+
+                this.WriteVerbose(
+                    String.Format(
+                        "Settings not provided. Will look for settings file in the given path {0}.",
+                        path));
+                var settingsFileAutoDiscovered = false;
+                if (Directory.Exists(directory))
+                {
+                    // if settings are not provided explicitly, look for it in the given path
+                    // check if pssasettings.psd1 exists
+                    var settingsFilename = "PSScriptAnalyzerSettings.psd1";
+                    var settingsFilepath = System.IO.Path.Combine(directory, settingsFilename);
+                    if (File.Exists(settingsFilepath))
+                    {
+                        settingsFileAutoDiscovered = true;
+                        this.WriteVerbose(
+                            String.Format(
+                                "Found {0} in {1}. Will use it to provide settings for this invocation.",
+                                settingsFilename,
+                                directory));
+                        settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(settingsFilepath, this.SessionState.Path, this);
+                    }
+                }
+
+                if (!settingsFileAutoDiscovered)
+                {
+                    this.WriteVerbose(
+                        String.Format(
+                            "Cannot find a settings file in the given path {0}.",
+                            path));
+                }
+            }
+            else
+            {
+                settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this);
+            }
+
+            if (settingFileHasErrors)
+            {
+                this.WriteWarning("Cannot parse settings. Will abort the invocation.");
                 stopProcessing = true;
                 return;
             }
@@ -287,15 +345,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private void ProcessInput()
         {
             IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
-            if (String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase))
+            if (IsFileParameterSet())
             {
-                // throws Item Not Found Exception
-                Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
-                foreach (PathInfo p in paths)
+                foreach (var p in processedPaths)
                 {
-                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(
-                        this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path),
-                        this.recurse);
+                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.recurse);
                     WriteToOutput(diagnosticsList);
                 }
             }
@@ -315,6 +369,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     logger.LogObject(diagnostic, this);
                 }
             }
+        }
+
+        private void ProcessPath()
+        {
+            Collection<PathInfo> paths = this.SessionState.Path.GetResolvedPSPathFromPSPath(path);
+            processedPaths = new List<string>();
+            foreach (PathInfo p in paths)
+            {
+                processedPaths.Add(this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(p.Path));
+            }
+        }
+
+        private bool IsFileParameterSet()
+        {
+            return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
         }
 #endregion
     }
