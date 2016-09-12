@@ -16,7 +16,7 @@ Describe "Test available parameters" {
         It "has a RuleName parameter" {
             $params.ContainsKey("Name") | Should Be $true
         }
-        
+
         It "accepts string" {
             $params["Name"].ParameterType.FullName | Should Be "System.String[]"
         }
@@ -61,10 +61,10 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 41
+            $expectedNumRules = 42
             if ((Test-PSEditionCoreClr))
             {
-                $expectedNumRules = 40
+                $expectedNumRules = 41
             }
 			$defaultRules.Count | Should be $expectedNumRules
 		}
@@ -117,7 +117,7 @@ Describe "Test RuleExtension" {
 
         It "with Name of a built-in rules" {
             $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns
-            $ruleExtension.Count | Should Be 0            
+            $ruleExtension.Count | Should Be 0
         }
 
         It "with Names of built-in, DSC and non-built-in rules" {
@@ -137,7 +137,7 @@ Describe "Test RuleExtension" {
             }
             catch
             {
-                $Error[0].FullyQualifiedErrorId | should match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.GetScriptAnalyzerRuleCommand"            
+                $Error[0].FullyQualifiedErrorId | should match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.GetScriptAnalyzerRuleCommand"
             }
         }
 

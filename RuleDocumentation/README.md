@@ -38,6 +38,7 @@
 |[UseDeclaredVarsMoreThanAssignments](./UseDeclaredVarsMoreThanAssignments.md) | Warning|
 |[UseIdenticalMandatoryParametersDSC](./UseIdenticalMandatoryParametersDSC.md) | Error |
 |[UseIdenticalParametersDSC](./UseIdenticalParametersDSC.md) | Error |
+|[UseLiteralInitializerForHashtable](./UseLiteralInitializerForHashtable.md) | Warning |
 |[UseOutputTypeCorrectly](./UseOutputTypeCorrectly.md) | Information|
 |[UsePSCredentialType](./UsePSCredentialType.md) | Warning|
 |[UseShouldProcessCorrectly](./UseShouldProcessCorrectly.md) | Warning|

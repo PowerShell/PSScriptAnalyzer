@@ -342,6 +342,52 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 && string.Equals("MissingMemberException", errorRecord.CategoryInfo.Reason, StringComparison.OrdinalIgnoreCase);
         }
 
+        public IEnumerable<string> GetStringsFromExpressionAst(ExpressionAst exprAst)
+        {
+            if (exprAst == null)
+            {
+                throw new ArgumentNullException("exprAst");
+            }
+
+            var result = new List<string>();
+            if (exprAst is StringConstantExpressionAst)
+            {
+                result.Add((exprAst as StringConstantExpressionAst).Value);
+            }
+            // Array of the form "v-n", "v-n1"
+            else if (exprAst is ArrayLiteralAst)
+            {
+                result.AddRange(Helper.Instance.GetStringsFromArrayLiteral(exprAst as ArrayLiteralAst));
+            }
+            // Array of the form @("v-n", "v-n1")
+            else if (exprAst is ArrayExpressionAst)
+            {
+                ArrayExpressionAst arrExAst = exprAst as ArrayExpressionAst;
+                if (arrExAst.SubExpression != null && arrExAst.SubExpression.Statements != null)
+                {
+                    foreach (StatementAst stAst in arrExAst.SubExpression.Statements)
+                    {
+                        if (stAst is PipelineAst)
+                        {
+                            PipelineAst pipeAst = stAst as PipelineAst;
+                            if (pipeAst.PipelineElements != null)
+                            {
+                                foreach (CommandBaseAst cmdBaseAst in pipeAst.PipelineElements)
+                                {
+                                    if (cmdBaseAst is CommandExpressionAst)
+                                    {
+                                        result.AddRange(Helper.Instance.GetStringsFromArrayLiteral((cmdBaseAst as CommandExpressionAst).Expression as ArrayLiteralAst));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Get the list of exported function by analyzing the ast
         /// </summary>
@@ -433,41 +479,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     if (exprAst != null)
                     {
-                        // One string so just add this to the list
-                        if (exprAst is StringConstantExpressionAst)
-                        {
-                            exportedFunctions.Add((exprAst as StringConstantExpressionAst).Value);
-                        }
-                        // Array of the form "v-n", "v-n1"
-                        else if (exprAst is ArrayLiteralAst)
-                        {
-                            exportedFunctions.UnionWith(Helper.Instance.GetStringsFromArrayLiteral(exprAst as ArrayLiteralAst));
-                        }
-                        // Array of the form @("v-n", "v-n1")
-                        else if (exprAst is ArrayExpressionAst)
-                        {
-                            ArrayExpressionAst arrExAst = exprAst as ArrayExpressionAst;
-                            if (arrExAst.SubExpression != null && arrExAst.SubExpression.Statements != null)
-                            {
-                                foreach (StatementAst stAst in arrExAst.SubExpression.Statements)
-                                {
-                                    if (stAst is PipelineAst)
-                                    {
-                                        PipelineAst pipeAst = stAst as PipelineAst;
-                                        if (pipeAst.PipelineElements != null)
-                                        {
-                                            foreach (CommandBaseAst cmdBaseAst in pipeAst.PipelineElements)
-                                            {
-                                                if (cmdBaseAst is CommandExpressionAst)
-                                                {
-                                                    exportedFunctions.UnionWith(Helper.Instance.GetStringsFromArrayLiteral((cmdBaseAst as CommandExpressionAst).Expression as ArrayLiteralAst));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        exportedFunctions.UnionWith(Helper.Instance.GetStringsFromExpressionAst(exprAst));
                     }
 
                     i += 1;
