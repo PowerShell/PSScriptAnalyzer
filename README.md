@@ -218,7 +218,7 @@ If you place a PSScriptAnayzer settings file named `PSScriptAnalyzerSettings.psd
 Invoke-ScriptAnalyzer -Path "C:\path\to\project" -Recurse
 ```
 
-Note that providing settings explicitly takes higher precedence over this implicit mode. Sample settings files are provided [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/Engine/Settings).
+Note that providing settings explicitly takes higher precedence over this implicit mode. Sample settings files are provided [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/Engine/Settings).
 
 ScriptAnalyzer as a .NET library
 ================================
