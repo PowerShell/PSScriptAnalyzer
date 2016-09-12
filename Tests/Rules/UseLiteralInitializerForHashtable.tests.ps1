@@ -6,11 +6,12 @@ Describe "UseLiteralInitlializerForHashtable" {
         It "has violation" {
             $violationScriptDef = @'
             $htable1 = new-object hashtable
-            $htable2 = new-object system.collection.hashtable
+            $htable2 = new-object system.collections.hashtable
             $htable3 = new-object -Typename hashtable -ArgumentList 10
+            $htable4 = new-object collections.hashtable
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $violationScriptDef -IncludeRule $ruleName
-            $violations.Count | Should Be 3
+            $violations.Count | Should Be 4
         }
 
         It "does not detect violation if arguments given to new-object contain ignore case string comparer" {
@@ -37,11 +38,12 @@ Describe "UseLiteralInitlializerForHashtable" {
         It "has violation" {
             $violationScriptDef = @'
             $htable1 = [hashtable]::new()
-            $htable2 = [system.collection.hashtable]::new()
+            $htable2 = [system.collections.hashtable]::new()
             $htable3 = [hashtable]::new(10)
+            $htable4 = [collections.hashtable]::new()
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $violationScriptDef -IncludeRule $ruleName
-            $violations.Count | Should Be 3
+            $violations.Count | Should Be 4
         }
 
         It "does not detect violation if arguments given to [hashtable]::new contain ignore case string comparer" {

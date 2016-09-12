@@ -38,7 +38,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             var presetTypeNames = new string[]
             {
-                "system.collection.hashtable",
+                "system.collections.hashtable",
+                "collections.hashtable",
                 "hashtable"
             };
             presetTypeNameSet = new HashSet<string>(presetTypeNames, StringComparer.OrdinalIgnoreCase);
@@ -204,12 +205,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            if (argumentList != null)
+
+            if (argumentList != null
+                && HasIgnoreCaseComparerArg(argumentList))
             {
-                if (argumentList.Any(arg => arg != null && arg.EndsWith("ignorecase", StringComparison.OrdinalIgnoreCase)))
-                {
-                    return;
-                }
+                return;
             }
 
             var dr = new DiagnosticRecord(
@@ -225,6 +225,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         /// <summary>
         /// Interpret the named and unnamed arguments and assign them their corresponding parameters
+        ///
+        /// PSv4 onwards there exists System.Management.Automation.Language.StaticParameterBinder.BindCommand to
+        /// achieve identical objective. But since we support PSSA on PSv3 too we need this implementation.
         /// </summary>
         /// <param name="commandAst">An non-null instance of CommandAst. Expects it be commandast of "new-object" command</param>
         /// <param name="typeName">Returns the TypeName argument</param>
@@ -356,9 +359,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="arguments">A collection of argument asts. Neither this nor any elements within it should be null</param>
         private bool HasIgnoreCaseComparerArg(ReadOnlyCollection<ExpressionAst> arguments)
         {
+            var argumentsAsStrings = new List<string>();
             foreach (var arg in arguments)
             {
                 var memberExprAst = arg as MemberExpressionAst;
+                argumentsAsStrings.Add(null);
                 if (memberExprAst == null)
                 {
                     continue;
@@ -369,13 +374,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
+                argumentsAsStrings[argumentsAsStrings.Count - 1] = strConstExprAst.Value;
+            }
+            return HasIgnoreCaseComparerArg(argumentsAsStrings);
+        }
 
-                if (strConstExprAst.Value.EndsWith("ignorecase"))
+        /// <summary>
+        /// Checks if any argument in the given collection ends with "ignorecase"
+        /// </summary>
+        /// <param name="arguments">An enumerable of type string. Elements can be null but the collection must be non-null  .</param>
+        /// <returns></returns>
+        private bool HasIgnoreCaseComparerArg(IEnumerable<string> arguments)
+        {
+
+            foreach (var arg in arguments)
+            {
+                if (arg == null)
+                {
+                    continue;
+                }
+                if (arg.EndsWith("ignorecase", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
             }
-
             return false;
         }
 
