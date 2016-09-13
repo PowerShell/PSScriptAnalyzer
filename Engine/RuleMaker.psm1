@@ -103,7 +103,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }}
 
             // your code goes here
-            yield return new DiagnosticRecord()
+            yield return new DiagnosticRecord();
         }}
 
         /// <summary>
@@ -203,7 +203,7 @@ Function Get-RuleDocumentationPath($Rule)
     $ruleDocPath
 }
 
-Function New-RuleDocumentation($Rule)
+Function Add-RuleDocumentation($Rule)
 {
     $ruleDocTemplate = @"
 # {0}
@@ -383,6 +383,9 @@ Function Add-Rule
     $undoStack = New-Object 'System.Collections.Stack'
     $success = $false
     try {
+        Add-RuleDocumentation $rule
+        $undoStack.Push((Get-Item -Path Function:\Remove-RuleDocumentation))
+
         Add-RuleTest $rule
         $undoStack.Push((Get-Item -Path Function:\Remove-RuleTest))
 
@@ -418,6 +421,7 @@ Function Remove-Rule
     Remove-RuleStrings $rule
     Remove-RuleSource $rule
     Remove-RuleTest $rule
+    Remove-RuleDocumentation $rule
 }
 
 Export-ModuleMember -Function Add-Rule
