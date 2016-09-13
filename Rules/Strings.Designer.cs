@@ -1717,6 +1717,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use compatible cmdlets.
+        /// </summary>
+        internal static string UseCompatibleCmdletsCommonName {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdletsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use cmdlets compatible with the given PowerShell version and edition and operating system.
+        /// </summary>
+        internal static string UseCompatibleCmdletsDescription {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdletsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not compatible with PowerShell version {0}, edition {1} and OS {2}.
+        /// </summary>
+        internal static string UseCompatibleCmdletsError {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdletsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleCmdlets.
+        /// </summary>
+        internal static string UseCompatibleCmdletsName {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdletsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extra Variables.
         /// </summary>
         internal static string UseDeclaredVarsMoreThanAssignmentsCommonName {
@@ -1834,7 +1870,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use literal initializer, \@\{\}, for creating a hashtable as they are case-insensitive by default.
+        ///   Looks up a localized string similar to Use literal initializer, @{{}}, for creating a hashtable as they are case-insensitive by default.
         /// </summary>
         internal static string UseLiteralInitilializerForHashtableDescription {
             get {

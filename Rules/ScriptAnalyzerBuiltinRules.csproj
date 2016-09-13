@@ -114,6 +114,7 @@
     <Compile Include="UseStandardDSCFunctionsInResource.cs" />
     <Compile Include="UseUTF8EncodingForHelpFile.cs" />
     <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
+    <Compile Include="UseCompatibleCmdlets.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\ScriptAnalyzerEngine.csproj">

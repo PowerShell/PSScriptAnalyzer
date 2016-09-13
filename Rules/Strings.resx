@@ -834,4 +834,16 @@
   <data name="UseLiteralInitilializerForHashtableName" xml:space="preserve">
     <value>UseLiteralInitializerForHashtable</value>
   </data>
+  <data name="UseCompatibleCmdletsName" xml:space="preserve">
+    <value>UseCompatibleCmdlets</value>
+  </data>
+  <data name="UseCompatibleCmdletsCommonName" xml:space="preserve">
+    <value>Use compatible cmdlets</value>
+  </data>
+  <data name="UseCompatibleCmdletsDescription" xml:space="preserve">
+    <value>Use cmdlets compatible with the given PowerShell version and edition and operating system</value>
+  </data>
+  <data name="UseCompatibleCmdletsError" xml:space="preserve">
+    <value>{0} is not compatible with PowerShell version {0}, edition {1} and OS {2}</value>
+  </data>
 </root>
