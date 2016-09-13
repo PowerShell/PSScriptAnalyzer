@@ -419,3 +419,6 @@ Function Remove-Rule
     Remove-RuleSource $rule
     Remove-RuleTest $rule
 }
+
+Export-ModuleMember -Function Add-Rule
+Export-ModuleMember -Function Remove-Rule
