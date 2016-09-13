@@ -178,7 +178,7 @@ Function Get-RuleSource($Rule)
     $source
 }
 
-Function New-RuleSource($Rule)
+Function Add-RuleSource($Rule)
 {
     $ruleSourceFilepath = Get-RuleSourcePath $Rule
     $ruleSource = Get-RuleSource $Rule
@@ -247,6 +247,7 @@ Function Get-RuleStrings
     $stringsFilepath = Get-RuleStringsPath
     [xml]$stringsXml = New-Object xml
     $stringsXml.Load($stringsFilepath)
+    $stringsXml
 }
 
 Function Set-RuleStrings
@@ -272,7 +273,7 @@ Function Add-RuleStrings($Rule)
         $dataNode.Attributes.Append($nameAttr)
         $dataNode.Attributes.Append($xmlspaceAttr)
         $dataNode.AppendChild($valueElem)
-        $stringsXml.AppendChild($dataNode)
+        $stringsXml.root.AppendChild($dataNode)
     }
 
     Add-Node ($Rule.Name + 'Name') $Rule.Name
@@ -328,14 +329,93 @@ Function Remove-RuleFromProject($Rule)
     Set-RuleProjectXml $projectXml
 }
 
-Function New-Rule
+Function Get-RuleTestFilePath($Rule)
+{
+    $testRoot = Join-Path (Get-SolutionRoot) 'Tests'
+    $ruleTestRoot = Join-Path $testRoot 'Rules'
+    $ruleTestFileName = $Rule.Name + ".tests.ps1"
+    $ruleTestFilePath = Join-Path $ruleTestRoot $ruleTestFileName
+    $ruleTestFilePath
+}
+
+
+Function Add-RuleTest($Rule)
+{
+    $ruleTestFilePath = Get-RuleTestFilePath $Rule
+    New-Item -Path $ruleTestFilePath -ItemType File
+    $ruleTestTemplate = @'
+Import-Module PSScriptAnalyzer
+$ruleName = "{0}"
+
+Describe "{0}" {{
+    Context "" {{
+        It "" {{
+        }}
+    }}
+}}
+'@
+    $ruleTestSource = $ruleTestTemplate -f $Rule.Name
+    Set-Content -Path $ruleTestFilePath -Value $ruleTestSource -Encoding UTF8
+}
+
+Function Remove-RuleTest($Rule)
+{
+    $ruleTestFilePath = Get-RuleTestFilePath $Rule
+    Remove-Item -Path $ruleTestFilePath
+}
+
+Function Add-Rule
 {
     param(
+        [Parameter(Mandatory=$true)]
         [string] $Name,
+
+        [ValidateSet("Error", "Warning", "Information")]
         [string] $Severity,
+
         [string] $CommonName,
+
         [string] $Description,
+
         [string] $Error)
 
-    $rule = New-RuleObject $Name $Severity $CommonName $Description $Error
+    $rule = New-RuleObject -Name $Name -Severity $Severity -CommonName $CommonName -Description $Description -Error $Error
+    $undoStack = New-Object 'System.Collections.Stack'
+    $success = $false
+    try {
+        Add-RuleTest $rule
+        $undoStack.Push((Get-Item -Path Function:\Remove-RuleTest))
+
+        Add-RuleSource $rule
+        $undoStack.Push((Get-Item -Path Function:\Remove-RuleSource))
+
+        Add-RuleStrings $rule
+        $undoStack.Push((Get-Item -Path Function:\Remove-RuleStrings))
+
+        Add-RuleToProject $rule
+        $undoStack.Push((Get-Item -Path Function:\Remove-RuleFromProject))
+
+        $success = $true
+    }
+    finally {
+        if (-not $success)
+        {
+            while ($undoStack.Count -ne 0)
+            {
+                & ($undoStack.Pop()) $rule
+            }
+        }
+    }
+}
+
+Function Remove-Rule
+{
+    param(
+        [string] $Name
+    )
+    $rule = New-RuleObject -Name $Name
+    Remove-RuleFromProject $rule
+    Remove-RuleStrings $rule
+    Remove-RuleSource $rule
+    Remove-RuleTest $rule
 }
