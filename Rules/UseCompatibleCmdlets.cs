@@ -14,9 +14,13 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Text.RegularExpressions;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+
+using Newtonsoft.Json;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -26,8 +30,172 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class UseCompatibleCmdlets : IScriptRule
+    class UseCompatibleCmdlets : AstVisitor, IScriptRule
     {
+        private List<DiagnosticRecord> diagnosticRecords;
+        private Dictionary<string, HashSet<string>> psCmdletMap;
+        private readonly List<string> validParameters;
+        private CommandAst curCmdletAst;
+        private Dictionary<string, bool> curCmdletCompatibilityMap;
+        private Dictionary<string, dynamic> platformSpecMap;
+        private string scriptPath;
+
+        public UseCompatibleCmdlets()
+        {
+            diagnosticRecords = new List<DiagnosticRecord>();
+            psCmdletMap = new Dictionary<string, HashSet<string>>();
+            validParameters = new List<string> { "mode", "uri", "compatibility" };
+            curCmdletCompatibilityMap = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+            platformSpecMap = new Dictionary<string, dynamic>(StringComparer.OrdinalIgnoreCase);
+            SetupCmdletsDictionary();
+        }
+
+        private void SetupCmdletsDictionary()
+        {
+            Dictionary<string, object> ruleArgs = Helper.Instance.GetRuleArguments(GetName());
+            if (ruleArgs == null)
+            {
+                return;
+            }
+
+            if (!RuleParamsValid(ruleArgs))
+            {
+                return;
+            }
+
+            var compatibilityList = ruleArgs["compatibility"] as List<string>;
+            if (compatibilityList == null)
+            {
+                return;
+            }
+
+            foreach (var compat in compatibilityList)
+            {
+                string psedition, psversion, os;
+                if (GetVersionInfoFromPlatformString(compat, out psedition, out psversion, out os))
+                {
+                    platformSpecMap.Add(compat, new { PSEdition = psedition, PSVersion = psversion, OS = os });
+                    curCmdletCompatibilityMap.Add(compat, false);
+                }
+            }
+
+            var mode = GetStringArgFromListStringArg(ruleArgs["mode"]);
+            switch (mode)
+            {
+                case "online":
+                    ProcessOnlineModeArgs(ruleArgs);
+                    break;
+
+                case "offline":
+                    ProcessOfflineModeArgs(ruleArgs);
+                    break;
+
+                case null:
+                default:
+                    return;
+            }
+        }
+
+        private bool GetVersionInfoFromPlatformString(
+            string fileName,
+            out string psedition,
+            out string psversion,
+            out string os)
+        {
+            psedition = null;
+            psversion = null;
+            os = null;
+            const string pattern = @"^(?<psedition>core|desktop)-(?<psversion>[\S]+)-(?<os>windows|linux|macOS)$";
+            var match = Regex.Match(fileName, pattern, RegexOptions.IgnoreCase);
+            if (match == Match.Empty)
+            {
+                return false;
+            }
+            psedition = match.Groups["psedition"].Value;
+            psversion = match.Groups["psversion"].Value;
+            os = match.Groups["os"].Value;
+            return true;
+        }
+
+        private string GetStringArgFromListStringArg(object arg)
+        {
+            if (arg == null)
+            {
+                return null;
+            }
+            var strList = arg as List<string>;
+            if (strList == null
+                || strList.Count != 1)
+            {
+                return null;
+            }
+            return strList[0];
+        }
+
+        private void ProcessOfflineModeArgs(Dictionary<string, object> ruleArgs)
+        {
+            var uri = GetStringArgFromListStringArg(ruleArgs["uri"]);
+            if (uri == null)
+            {
+                // TODO: log this
+                return;
+            }
+            if (!Directory.Exists(uri))
+            {
+                // TODO: log this
+                return;
+            }
+            foreach (var filePath in Directory.EnumerateFiles(uri))
+            {
+                var extension = Path.GetExtension(filePath);
+                if (String.IsNullOrWhiteSpace(extension)
+                    || !extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+                if (!platformSpecMap.ContainsKey(fileNameWithoutExt))
+                {
+                    continue;
+                }
+
+                psCmdletMap[fileNameWithoutExt] = GetCmdletsFromData(JsonConvert.DeserializeObject(File.ReadAllText(filePath)));
+            }
+        }
+
+        private HashSet<string> GetCmdletsFromData(dynamic deserializedObject)
+        {
+            var cmdlets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var module in deserializedObject)
+            {
+                if (module.HasValues == false)
+                {
+                    continue;
+                }
+
+                foreach (var cmdlet in module.Value)
+                {
+                    if (cmdlet.Name != null)
+                    {
+                        cmdlets.Add(cmdlet.Name);
+                    }
+                }
+            }
+            return cmdlets;
+        }
+
+        private void ProcessOnlineModeArgs(Dictionary<string, object> ruleArgs)
+        {
+            throw new NotImplementedException();
+        }
+
+        private bool RuleParamsValid(Dictionary<string, object> ruleArgs)
+        {
+            return ruleArgs.Keys.All(
+                key => validParameters.Any(x => x.Equals(key, StringComparison.OrdinalIgnoreCase)));
+        }
+
         /// <summary>
         /// Analyzes the given ast to find the [violation]
         /// </summary>
@@ -41,8 +209,80 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            // your code goes here
-            yield return new DiagnosticRecord();
+            scriptPath = fileName;
+            diagnosticRecords.Clear();
+            ast.Visit(this);
+            foreach(var dr in diagnosticRecords)
+            {
+                yield return dr;
+            }
+        }
+
+
+        public override AstVisitAction VisitCommand(CommandAst commandAst)
+        {
+            if (commandAst == null)
+            {
+                return AstVisitAction.SkipChildren;
+            }
+
+            var commandName = commandAst.GetCommandName();
+            if (commandName == null)
+            {
+                return AstVisitAction.SkipChildren;
+            }
+
+            curCmdletAst = commandAst;
+            CheckCompatibility();
+            GenerateDiagnosticRecords();
+            return AstVisitAction.Continue;
+        }
+
+        private void GenerateDiagnosticRecords()
+        {
+            foreach (var curCmdletCompat in curCmdletCompatibilityMap)
+            {
+                if (!curCmdletCompat.Value)
+                {
+                    var cmdletName = curCmdletAst.GetCommandName();
+                    var platformInfo = platformSpecMap[curCmdletCompat.Key];
+                    var funcNameTokens = Helper.Instance.Tokens.Where(
+                                                token =>
+                                                Helper.ContainsExtent(curCmdletAst.Extent, token.Extent)
+                                                && token.Text.Equals(cmdletName));
+                    var funcNameToken = funcNameTokens.FirstOrDefault();
+                    var extent = funcNameToken == null ? null : funcNameToken.Extent;
+                    diagnosticRecords.Add(new DiagnosticRecord(
+                        String.Format(
+                            Strings.UseCompatibleCmdletsError,
+                            cmdletName,
+                            platformInfo.PSEdition,
+                            platformInfo.PSVersion,
+                            platformInfo.OS),
+                        extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        scriptPath,
+                        null,
+                        null));
+                }
+            }
+        }
+
+        private void CheckCompatibility()
+        {
+            string commandName = curCmdletAst.GetCommandName();
+            foreach (var platformSpec in psCmdletMap)
+            {
+                if (platformSpec.Value.Contains(commandName))
+                {
+                    curCmdletCompatibilityMap[platformSpec.Key] = true;
+                }
+                else
+                {
+                    curCmdletCompatibilityMap[platformSpec.Key] = false;
+                }
+            }
         }
 
         /// <summary>

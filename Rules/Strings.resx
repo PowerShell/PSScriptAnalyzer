@@ -844,6 +844,6 @@
     <value>Use cmdlets compatible with the given PowerShell version and edition and operating system</value>
   </data>
   <data name="UseCompatibleCmdletsError" xml:space="preserve">
-    <value>{0} is not compatible with PowerShell version {0}, edition {1} and OS {2}</value>
+    <value>'{0}' is not compatible with PowerShell edition '{1}', version '{2}' and OS '{3}'</value>
   </data>
 </root>

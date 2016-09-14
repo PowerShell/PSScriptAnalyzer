@@ -1735,7 +1735,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not compatible with PowerShell version {0}, edition {1} and OS {2}.
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not compatible with PowerShell edition &apos;{1}&apos;, version &apos;{2}&apos; and OS &apos;{3}&apos;.
         /// </summary>
         internal static string UseCompatibleCmdletsError {
             get {
