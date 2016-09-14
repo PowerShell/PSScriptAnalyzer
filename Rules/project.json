@@ -3,7 +3,8 @@
   "version": "1.7.0",
   "dependencies": {
     "System.Management.Automation": "1.0.0-alpha.9.4808",
-    "Engine": "1.7.0"
+    "Engine": "1.7.0",
+    "Newtonsoft.Json": "*"
   },
   "frameworks": {
     "net451": {
