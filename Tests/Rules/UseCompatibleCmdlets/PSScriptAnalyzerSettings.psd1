@@ -1,9 +1,9 @@
 @{
     'Rules' = @{
         'PSUseCompatibleCmdlets' = @{
-            'mode' = 'offline',
-            'path' = '.'
-            'compatibility' = @{'core_6.0.0-alpha_windows'}
+            'compatibility' = @("core-6.0.0-alpha-windows")
+            'mode' = "offline"
+            'uri' = "C:\users\kabawany\Source\Repos\PSScriptAnalyzer\Tests\Rules\UseCompatibleCmdlets"
         }
     }
 }
