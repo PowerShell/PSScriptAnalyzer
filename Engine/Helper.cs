@@ -806,7 +806,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="set"></param>
         /// <param name="subset"></param>
         /// <returns>True or False</returns>
-        private bool ContainsExtent(IScriptExtent set, IScriptExtent subset)
+        public static bool ContainsExtent(IScriptExtent set, IScriptExtent subset)
         {
             if (set == null || subset == null)
             {
