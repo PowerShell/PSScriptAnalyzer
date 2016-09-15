@@ -25,7 +25,8 @@ if (-not (Test-Path "$solutionDir/global.json"))
 }
 
 $itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-    "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
+    "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll",
+    "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll")
 
 $itemsToCopyCommon = @("$solutionDir\Engine\PSScriptAnalyzer.psd1",
     "$solutionDir\Engine\PSScriptAnalyzer.psm1",
