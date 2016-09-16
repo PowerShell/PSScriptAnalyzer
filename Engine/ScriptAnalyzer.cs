@@ -861,10 +861,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             "Creating Instance of {0}", type.Name));
 
                     var ruleObj = Activator.CreateInstance(type);
-                    outputWriter.WriteVerbose(
-                        string.Format(
-                            "Created Instance of {0}", type.Name));
-
                     T rule = ruleObj as T;
                     if (rule == null)
                     {

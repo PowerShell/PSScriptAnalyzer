@@ -37,7 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             get { return whiteList; }
         }
 
-        AvoidAlias()
+        public AvoidAlias()
         {
             isPropertiesSet = false;
         }
