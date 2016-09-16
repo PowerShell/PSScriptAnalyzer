@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class UseLiteralInitializerForHashtable : AstVisitor, IScriptRule
+    public class UseLiteralInitializerForHashtable : AstVisitor, IScriptRule
     {
         private List<DiagnosticRecord> diagnosticRecords;
         private HashSet<string> presetTypeNameSet;

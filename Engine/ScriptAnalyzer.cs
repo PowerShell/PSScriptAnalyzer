@@ -861,10 +861,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             "Creating Instance of {0}", type.Name));
 
                     var ruleObj = Activator.CreateInstance(type);
-                    outputWriter.WriteVerbose(
-                        string.Format(
-                            "Created Instance of {0}", type.Name));
-
                     T rule = ruleObj as T;
                     if (rule == null)
                     {
@@ -1164,7 +1160,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     // Find all AstTypes that appeared in rule groups.
                     IEnumerable<Ast> childAsts = ast.FindAll(new Func<Ast, bool>((testAst) =>
-                        (astRuleGroup.Key.IndexOf(testAst.GetType().FullName, StringComparison.OrdinalIgnoreCase) != -1)), false);
+                        (astRuleGroup.Key.IndexOf(testAst.GetType().FullName, StringComparison.OrdinalIgnoreCase) != -1)), true);
 
                     foreach (Ast childAst in childAsts)
                     {
