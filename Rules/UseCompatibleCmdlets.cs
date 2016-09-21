@@ -17,6 +17,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
@@ -100,21 +101,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            var mode = GetStringArgFromListStringArg(ruleArgs["mode"]);
-            switch (mode)
+            object modeObject;
+            if (ruleArgs.TryGetValue("mode", out modeObject))
             {
-                case "online":
-                    ProcessOnlineModeArgs(ruleArgs);
-                    break;
+                // This is for testing only. User should not be specifying mode!
+                var mode = GetStringArgFromListStringArg(modeObject);
+                switch (mode)
+                {
+                    case "online":
+                        ProcessOnlineModeArgs(ruleArgs);
+                        break;
 
-                case "offline":
-                    ProcessOfflineModeArgs(ruleArgs);
-                    break;
+                    case "offline":
+                        ProcessOfflineModeArgs(ruleArgs);
+                        break;
 
-                case null:
-                default:
-                    return;
+                    case null:
+                    default:
+                        break;
+                }
+
+                return;
             }
+
+            // Find the compatibility files in Settings folder
+            var path = this.GetType().GetTypeInfo().Assembly.Location;
+            if (String.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            var settingsPath = Path.Combine(Path.GetDirectoryName(path), "Settings");
+            if (!Directory.Exists(settingsPath))
+            {
+                return;
+            }
+            ProcessDirectory(settingsPath);
         }
 
         private bool GetVersionInfoFromPlatformString(
@@ -166,7 +188,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // TODO: log this
                 return;
             }
-            foreach (var filePath in Directory.EnumerateFiles(uri))
+
+            ProcessDirectory(uri);
+        }
+
+        private void ProcessDirectory(string path)
+        {
+            foreach (var filePath in Directory.EnumerateFiles(path))
             {
                 var extension = Path.GetExtension(filePath);
                 if (String.IsNullOrWhiteSpace(extension)
