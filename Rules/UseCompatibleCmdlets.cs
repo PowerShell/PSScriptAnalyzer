@@ -21,7 +21,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -209,28 +209,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                psCmdletMap[fileNameWithoutExt] = GetCmdletsFromData(JsonConvert.DeserializeObject(File.ReadAllText(filePath)));
+                psCmdletMap[fileNameWithoutExt] = GetCmdletsFromData(JObject.Parse(File.ReadAllText(filePath)));
             }
         }
 
         private HashSet<string> GetCmdletsFromData(dynamic deserializedObject)
         {
             var cmdlets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var module in deserializedObject)
+            dynamic modules = deserializedObject.Modules;
+            foreach (var module in modules)
             {
-                if (module.HasValues == false)
+                foreach (var cmdlet in module.ExportedCommands)
                 {
-                    continue;
-                }
-
-                foreach (var cmdlet in module.Value)
-                {
-                    if (cmdlet.Name != null)
-                    {
-                        cmdlets.Add(cmdlet.Name);
-                    }
+                    var name = cmdlet.Name.Value as string;
+                    cmdlets.Add(name);
                 }
             }
+
             return cmdlets;
         }
 
