@@ -63,15 +63,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            var compatibilityList = ruleArgs["compatibility"] as List<string>;
-            if (compatibilityList == null)
+            var compatibilityObjectArr = ruleArgs["compatibility"] as object[];
+            var compatibilityList = new List<string>();
+            if (compatibilityObjectArr == null)
             {
-                return;
+                compatibilityList = ruleArgs["compatibility"] as List<string>;
+                if (compatibilityList == null)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                foreach (var compatItem in compatibilityObjectArr)
+                {
+                    var compatString = compatItem as string;
+                    if (compatString == null)
+                    {
+                        // ignore (warn) non-string invalid entries
+                        continue;
+                    }
+
+                    compatibilityList.Add(compatString);
+                }
             }
 
             foreach (var compat in compatibilityList)
             {
                 string psedition, psversion, os;
+
+                // ignore (warn) invalid entries
                 if (GetVersionInfoFromPlatformString(compat, out psedition, out psversion, out os))
                 {
                     platformSpecMap.Add(compat, new { PSEdition = psedition, PSVersion = psversion, OS = os });
