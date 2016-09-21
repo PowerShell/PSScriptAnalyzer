@@ -77,6 +77,9 @@ if ($build)
     (Get-Content "$destinationDir\PSScriptAnalyzer.psd1") -replace "ModuleVersion = '1.6.0'","ModuleVersion = '0.0.1'" | Out-File "$destinationDir\PSScriptAnalyzer.psd1" -Encoding ascii
 
     CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
+
+    # Copy Settings File
+    Copy-Item -Path "$solutionDir/Engine/Settings" -Destination $destinationDir -Force -Recurse -Verbose
 }
 
 $modulePath = "$HOME\Documents\WindowsPowerShell\Modules";
