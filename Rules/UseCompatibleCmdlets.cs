@@ -105,7 +105,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             psedition = null;
             psversion = null;
             os = null;
-            const string pattern = @"^(?<psedition>core|desktop)-(?<psversion>[\S]+)-(?<os>windows|linux|macOS)$";
+            const string pattern = @"^(?<psedition>core|desktop)-(?<psversion>[\S]+)-(?<os>windows|linux|osx)$";
             var match = Regex.Match(fileName, pattern, RegexOptions.IgnoreCase);
             if (match == Match.Empty)
             {
