@@ -364,19 +364,57 @@ Function Remove-RuleTest($Rule)
     Remove-Item -Path $ruleTestFilePath
 }
 
+<#
+.SYNOPSIS
+    Adds a C# based builtin rule to Rules project in PSScriptAnalyzer solution
+.EXAMPLE
+    C:\PS> Add-Rule -Name UseCompatibleCmdlets -Severity Warning -CommonName 'Use Compatible Cmdlets' -Description 'Checks if a cmdlet is compatible with a given PowerShell version, edition and os combination' -Error '{0} command is not compatible with PowerShell version {1}, edition {2} and OS {3}'
+
+    This will result in the following.
+        - create {PScriptAnalyzerSolutionRoot}/Rules/UseCompatibleCmdlets.cs
+        - create {PScriptAnalyzerSolutionRoot}/Tests/Rules/UseCompatibleCmdlets.tests.ps1
+        - create {PScriptAnalyzerSolutionRoot}/RuleDocumentation/UseCompatibleCmdlets.md
+        - update {PScriptAnalyzerSolutionRoot}/Rules/Strings.resx
+        - update {PScriptAnalyzerSolutionRoot}/Rules/ScriptAnalyzerBuiltinRules.csproj
+
+.PARAMETER Name
+    Rule name. An entry in Strings.resx is created for this value.
+
+.PARAMETER Severity
+    Severity of the rule from on the following values: {Information, Warning, Error}
+
+.PARAMETER CommonName
+    A somewhat verbose name of of the rule. An entry in Strings.resx is created for this value.
+
+.PARAMETER Description
+    Rule description. An entry in Strings.resx is created for this value.
+
+.PARAMETER Error
+    Error message. An entry in Strings.resx is created for this value.
+
+.INPUTS
+    None
+
+.OUTPUTS
+    None
+#>
 Function Add-Rule
 {
     param(
         [Parameter(Mandatory=$true)]
         [string] $Name,
 
+        [Parameter(Mandatory=$true)]
         [ValidateSet("Error", "Warning", "Information")]
         [string] $Severity,
 
+        [Parameter(Mandatory=$true)]
         [string] $CommonName,
 
+        [Parameter(Mandatory=$true)]
         [string] $Description,
 
+        [Parameter(Mandatory=$true)]
         [string] $Error)
 
     $rule = New-RuleObject -Name $Name -Severity $Severity -CommonName $CommonName -Description $Description -Error $Error
@@ -411,6 +449,26 @@ Function Add-Rule
     }
 }
 
+<#
+.SYNOPSIS
+    Removes a rule from builtin rules
+
+.EXAMPLE
+    C:\PS> Remove-Rule -Name UseCompatibleCmdlets
+
+    This will result in the following.
+    - remove {PScriptAnalyzerSolutionRoot}/Rules/UseCompatibleCmdlets.cs
+    - remove {PScriptAnalyzerSolutionRoot}/Tests/Rules/UseCompatibleCmdlets.tests.ps1
+    - remove {PScriptAnalyzerSolutionRoot}/RuleDocumentation/UseCompatibleCmdlets.md
+    - remove UseCompatibleCmdlets entries from {PScriptAnalyzerSolutionRoot}/Rules/Strings.resx
+    - remove UseCompatibleCmdlets entries from {PScriptAnalyzerSolutionRoot}/Rules/ScriptAnalyzerBuiltinRules.csproj
+
+.INPUTS
+    None
+
+.OUTPUTS
+    None
+#>
 Function Remove-Rule
 {
     param(
