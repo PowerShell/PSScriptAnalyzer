@@ -1,3 +1,34 @@
+<#
+.SYNOPSIS
+    Create a JSON file containing module found in $pshome and their corresponding exported commands
+
+.EXAMPLE
+    C:\PS> ./New-CommandDataFile.ps1
+
+    Suppose this file is run on the following version of PowerShell: PSVersion = 6.0.0-aplha, PSEdition = Core, and Windows 10 operating system. Then this script will create a file named core-6.0.0-alpha-windows.json that contains a JSON object of the following form:
+    {
+        "Modules" : [
+            "Module1" : {
+                "Name" : "Module1"
+                .
+                .
+                "ExportedCommands" : {...}
+            }
+            .
+            .
+            .
+        ]
+        "JsonVersion" : "0.0.1"
+    }
+
+.INPUTS
+    None
+
+.OUTPUTS
+    None
+
+#>
+
 $jsonVersion = "0.0.1"
 $builtinModulePath = Join-Path $pshome 'Modules'
 if (-not (Test-Path $builtinModulePath))
