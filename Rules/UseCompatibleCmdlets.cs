@@ -131,11 +131,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
+            var settingsPath = GetSettingsDirectory();
+            if (settingsPath == null)
+            {
+                return;
+            }
+
+            ProcessDirectory(settingsPath);
+        }
+
+        private void ResetCurCmdletCompatibilityMap()
+        {
+            // cannot iterate over collection and change the values, hence the conversion to list
+            foreach(var key in curCmdletCompatibilityMap.Keys.ToList())
+            {
+                curCmdletCompatibilityMap[key] = true;
+            }
+        }
+
+        private string GetSettingsDirectory()
+        {
             // Find the compatibility files in Settings folder
             var path = this.GetType().GetTypeInfo().Assembly.Location;
             if (String.IsNullOrWhiteSpace(path))
             {
-                return;
+                return null;
             }
 
             var settingsPath = Path.Combine(Path.GetDirectoryName(path), "Settings");
@@ -147,10 +167,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 settingsPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(path)), "Settings");
                 if (!Directory.Exists(settingsPath))
                 {
-                    return;
+                    return null;
                 }
             }
-            ProcessDirectory(settingsPath);
+
+            return settingsPath;
         }
 
         private bool GetVersionInfoFromPlatformString(
@@ -224,6 +245,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 psCmdletMap[fileNameWithoutExt] = GetCmdletsFromData(JObject.Parse(File.ReadAllText(filePath)));
+            }
+
+            RemoveUnavailableKeys();
+        }
+
+        private void RemoveUnavailableKeys()
+        {
+            var keysToRemove = new List<string>();
+            foreach (var key in platformSpecMap.Keys)
+            {
+                if (!psCmdletMap.ContainsKey(key))
+                {
+                    keysToRemove.Add(key);
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                platformSpecMap.Remove(key);
+                curCmdletCompatibilityMap.Remove(key);
             }
         }
 
