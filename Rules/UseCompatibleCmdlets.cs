@@ -31,7 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class UseCompatibleCmdlets : AstVisitor, IScriptRule
+    public class UseCompatibleCmdlets : AstVisitor, IScriptRule
     {
         private List<DiagnosticRecord> diagnosticRecords;
         private Dictionary<string, HashSet<string>> psCmdletMap;
@@ -104,7 +104,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (GetVersionInfoFromPlatformString(compat, out psedition, out psversion, out os))
                 {
                     platformSpecMap.Add(compat, new { PSEdition = psedition, PSVersion = psversion, OS = os });
-                    curCmdletCompatibilityMap.Add(compat, false);
+                    curCmdletCompatibilityMap.Add(compat, true);
                 }
             }
 
@@ -339,6 +339,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             curCmdletAst = commandAst;
+            ResetCurCmdletCompatibilityMap();
             CheckCompatibility();
             GenerateDiagnosticRecords();
             return AstVisitAction.Continue;
