@@ -25,19 +25,18 @@ if (-not (Test-Path "$solutionDir/global.json"))
 }
 
 $itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-    "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll",
-    "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll")
+    "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
 
 $itemsToCopyCommon = @("$solutionDir\Engine\PSScriptAnalyzer.psd1",
     "$solutionDir\Engine\PSScriptAnalyzer.psm1",
     "$solutionDir\Engine\ScriptAnalyzer.format.ps1xml",
     "$solutionDir\Engine\ScriptAnalyzer.types.ps1xml")
 
-$destinationDir = "$solutionDir/out/PSScriptAnalyzer"
-$destinationDirBinaries = "$destinationDir"
+$destinationDir = "$solutionDir\out\PSScriptAnalyzer"
+$destinationDirBinaries = $destinationDir
 if ($Framework -eq "netstandard1.6")
 {
-    $destinationDirBinaries = "$destinationDir/coreclr"
+    $destinationDirBinaries = "$destinationDir\coreclr"
 }
 
 if ($build)
@@ -79,7 +78,13 @@ if ($build)
     CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 
     # Copy Settings File
-    Copy-Item -Path "$solutionDir/Engine/Settings" -Destination $destinationDir -Force -Recurse -Verbose
+    Copy-Item -Path "$solutionDir\Engine\Settings" -Destination $destinationDir -Force -Recurse -Verbose
+
+    # copy newtonsoft dll if net451 framework
+    if ($Framework -eq "net451")
+    {
+        copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDir -Verbose
+    }
 }
 
 $modulePath = "$HOME\Documents\WindowsPowerShell\Modules";
