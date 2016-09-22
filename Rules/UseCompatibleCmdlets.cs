@@ -40,15 +40,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private Dictionary<string, bool> curCmdletCompatibilityMap;
         private Dictionary<string, dynamic> platformSpecMap;
         private string scriptPath;
+        private bool IsInitialized;
 
         public UseCompatibleCmdlets()
         {
+            validParameters = new List<string> { "mode", "uri", "compatibility" };
+            IsInitialized = false;
+        }
+
+        private void Initialize()
+        {
             diagnosticRecords = new List<DiagnosticRecord>();
             psCmdletMap = new Dictionary<string, HashSet<string>>();
-            validParameters = new List<string> { "mode", "uri", "compatibility" };
             curCmdletCompatibilityMap = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
             platformSpecMap = new Dictionary<string, dynamic>(StringComparer.OrdinalIgnoreCase);
             SetupCmdletsDictionary();
+            IsInitialized = true;
         }
 
         private void SetupCmdletsDictionary()
@@ -134,7 +141,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var settingsPath = Path.Combine(Path.GetDirectoryName(path), "Settings");
             if (!Directory.Exists(settingsPath))
             {
-                return;
+                // try one level down as the PSScriptAnalyzer module structure is not consistent
+                // CORECLR binaries are in PSScriptAnalyzer/coreclr/, PowerShell v3 binaries are in PSScriptAnalyzer/PSv3/
+                // and PowerShell v5 binaries are in PSScriptAnalyzer/
+                settingsPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(path)), "Settings");
+                if (!Directory.Exists(settingsPath))
+                {
+                    return;
+                }
             }
             ProcessDirectory(settingsPath);
         }
@@ -248,6 +262,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>A an enumerable type containing the violations</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
+            // we do not want to initialize the data structures if the rule is not being used for analysis
+            // hence we initialize when this method is called for the first time
+            if (!IsInitialized)
+            {
+                Initialize();
+            }
+
             if (ast == null)
             {
                 throw new ArgumentNullException("ast");
