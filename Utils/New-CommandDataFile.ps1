@@ -87,4 +87,4 @@ $shortModuleInfos = Get-ChildItem -Path $builtinModulePath `
     }
 }
 $jsonData['Modules'] = $shortModuleInfos
-$jsonData | ConvertTo-Json -Depth 4 | Out-File ((Get-CmdletDataFileName))
+$jsonData | ConvertTo-Json -Depth 4 | Out-File ((Get-CmdletDataFileName)) -Encoding utf8
