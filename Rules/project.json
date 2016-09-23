@@ -2,9 +2,9 @@
   "name": "Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules",
   "version": "1.7.0",
   "dependencies": {
-    "System.Management.Automation": "1.0.0-alpha.9.4808",
+    "System.Management.Automation": "1.0.0-alpha10",
     "Engine": "1.7.0",
-    "Newtonsoft.Json": "*"
+    "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
     "net451": {
