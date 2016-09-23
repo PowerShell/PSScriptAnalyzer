@@ -39,6 +39,7 @@ if ($Framework -eq "netstandard1.6")
     $destinationDirBinaries = "$destinationDir\coreclr"
 }
 
+
 if ($build)
 {
 
@@ -73,8 +74,6 @@ if ($build)
         }
     }
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
-    (Get-Content "$destinationDir\PSScriptAnalyzer.psd1") -replace "ModuleVersion = '1.6.0'","ModuleVersion = '0.0.1'" | Out-File "$destinationDir\PSScriptAnalyzer.psd1" -Encoding ascii
-
     CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 
     # Copy Settings File
