@@ -38,7 +38,8 @@ if (-not (Test-Path $builtinModulePath))
 
 Function IsPSEditionDesktop
 {
-    $PSEdition -eq $null -or $PSEdition -eq 'Desktop'
+    $edition = Get-Variable -Name PSEdition -ErrorAction Ignore
+    ($edition -eq $null) -or ($edition -eq 'Desktop')
 }
 
 Function Get-CmdletDataFileName

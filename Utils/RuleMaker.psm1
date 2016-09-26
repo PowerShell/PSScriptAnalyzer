@@ -25,7 +25,7 @@ Function Get-SolutionRoot
     $solutionFilename = 'psscriptanalyzer.sln'
     if (-not (Test-Path (Join-Path $root $solutionFilename)))
     {
-        $null
+        return $null
     }
     $root
 }
@@ -35,7 +35,7 @@ Function Get-RuleProjectRoot
     $slnRoot = Get-SolutionRoot
     if ($slnRoot -eq $null)
     {
-        $null
+        return $null
     }
     Join-Path $slnRoot "Rules"
 }
@@ -45,7 +45,7 @@ Function Get-RuleProjectFile
     $prjRoot = Get-RuleProjectRoot
     if ($prjRoot -eq $null)
     {
-        $null
+        return $null
     }
     Join-Path $prjRoot "ScriptAnalyzerBuiltinRules.csproj"
 }
