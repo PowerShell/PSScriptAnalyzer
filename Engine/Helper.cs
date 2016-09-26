@@ -3555,4 +3555,130 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return null;
         }
     }
+
+    /// Class to represent a directed graph
+    public class Digraph<T>
+    {
+        public int NumVertices
+        {
+            get { return graph.Count; }
+        }
+
+        private List<List<int>> graph;
+        private Dictionary<T, int> vertexIndexMap;
+
+
+        private int GetIndex(T vertex)
+        {
+            int idx;
+            return vertexIndexMap.TryGetValue(vertex, out idx) ? idx : -1;
+        }
+
+        public IEnumerable<T> GetNeighbors(T vertex)
+        {
+            ValidateVertexArgument(vertex);
+            var idx = GetIndex(vertex);
+            var idxVertexMap = vertexIndexMap.ToDictionary(x => x.Value, x => x.Key);
+            foreach (var neighbor in graph[idx])
+            {
+                yield return idxVertexMap[neighbor];
+            }
+        }
+
+        public int GetNumNeighbors(T vertex)
+        {
+            ValidateVertexArgument(vertex);
+            return graph[GetIndex(vertex)].Count;
+        }
+
+        public Digraph()
+        {
+            graph = new List<List<int>> ();
+            vertexIndexMap = new Dictionary<T, int>();
+        }
+
+        public void AddVertex(T vertex)
+        {
+            if (vertex == null)
+            {
+                throw new ArgumentNullException("vertex");
+            }
+
+            if (GetIndex(vertex) != -1)
+            {
+                throw new ArgumentException("Vertex already present! Cannot add it to the Digraph", "vertex");
+            }
+
+            vertexIndexMap.Add(vertex, graph.Count);
+            graph.Add(new List<int>());
+        }
+
+        public void AddEdge(T fromVertex, T toVertex)
+        {
+            ValidateVertexArgument(fromVertex);
+            ValidateVertexArgument(toVertex);
+
+            var toIdx = GetIndex(toVertex);
+            var fromVertexList = graph[GetIndex(fromVertex)];
+            if (!fromVertexList.Contains(toIdx))
+            {
+                fromVertexList.Add(toIdx);
+            }
+        }
+
+        public bool IsConnected(T vertex1, T vertex2)
+        {
+            ValidateVertexArgument(vertex1);
+            ValidateVertexArgument(vertex2);
+            var visited = new bool[graph.Count];
+            return IsConnected(GetIndex(vertex1), GetIndex(vertex2), ref visited);
+        }
+
+        private bool IsConnected(int fromIdx, int toIdx, ref bool[] visited)
+        {
+            visited[fromIdx] = true;
+            if (fromIdx == toIdx)
+            {
+                return true;
+            }
+
+            bool isConnected = false;
+            foreach(var vertexIdx in graph[fromIdx])
+            {
+                if (!visited[vertexIdx])
+                {
+                    isConnected |= IsConnected(vertexIdx, toIdx, ref visited);
+                }
+
+                if (isConnected) // no need to search further
+                {
+                    break;
+                }
+            }
+
+            return isConnected;
+        }
+
+        private void ValidateNotNull(T vertex)
+        {
+            if (vertex == null)
+            {
+                throw new ArgumentNullException("vertex");
+            }
+        }
+
+        private void ValidateVertexPresence(T vertex)
+        {
+            if (GetIndex(vertex) == -1)
+            {
+                throw new ArgumentOutOfRangeException("vertex not present in the Digraph.", "vertex");
+            }
+        }
+
+        private void ValidateVertexArgument(T vertex)
+        {
+            ValidateNotNull(vertex);
+            ValidateVertexPresence(vertex);
+        }
+    }
 }
