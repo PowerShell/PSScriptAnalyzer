@@ -46,3 +46,4 @@
 |[UseSingularNouns](./UseSingularNouns.md) | Warning|
 |[UseStandardDSCFunctionsInResource](./UseStandardDSCFunctionsInResource.md) | Error |
 |[UseToExportFieldsInManifest](./UseToExportFieldsInManifest.md) | Warning|
+|[UseCompatibleCmdlets](./UseCompatibleCmdlets.md) | Warning|

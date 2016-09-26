@@ -32,12 +32,13 @@ $itemsToCopyCommon = @("$solutionDir\Engine\PSScriptAnalyzer.psd1",
     "$solutionDir\Engine\ScriptAnalyzer.format.ps1xml",
     "$solutionDir\Engine\ScriptAnalyzer.types.ps1xml")
 
-$destinationDir = "$solutionDir/out/PSScriptAnalyzer"
-$destinationDirBinaries = "$destinationDir"
+$destinationDir = "$solutionDir\out\PSScriptAnalyzer"
+$destinationDirBinaries = $destinationDir
 if ($Framework -eq "netstandard1.6")
 {
-    $destinationDirBinaries = "$destinationDir/coreclr"
+    $destinationDirBinaries = "$destinationDir\coreclr"
 }
+
 
 if ($build)
 {
@@ -73,9 +74,16 @@ if ($build)
         }
     }
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
-    (Get-Content "$destinationDir\PSScriptAnalyzer.psd1") -replace "ModuleVersion = '1.6.0'","ModuleVersion = '0.0.1'" | Out-File "$destinationDir\PSScriptAnalyzer.psd1" -Encoding ascii
-
     CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
+
+    # Copy Settings File
+    Copy-Item -Path "$solutionDir\Engine\Settings" -Destination $destinationDir -Force -Recurse -Verbose
+
+    # copy newtonsoft dll if net451 framework
+    if ($Framework -eq "net451")
+    {
+        copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDir -Verbose
+    }
 }
 
 $modulePath = "$HOME\Documents\WindowsPowerShell\Modules";

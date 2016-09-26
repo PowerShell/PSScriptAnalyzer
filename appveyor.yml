@@ -1,10 +1,12 @@
 os:
-    - "WMF 5"
     - "Visual Studio 2015"
-    - "Windows Server 2012"
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
+
+# cache nuget packages
+cache:
+    - '%USERPROFILE%\.nuget\packages -> **\project.json'
 
 # Install Pester
 install:
@@ -13,13 +15,11 @@ install:
 
 build_script:
     - ps: |
-        $buildConfig = 'Release'
-        if ($PSVersionTable.PSVersion -lt [Version]'5.0')
-        {
-            $buildConfig = 'PSV3 Release'
-        }
-        & 'C:\Program Files (x86)\MSBuild\12.0\Bin\MSBuild.exe' 'C:\projects\psscriptanalyzer\PSScriptAnalyzer.sln' /P:Configuration=$buildConfig /logger:'C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll'
+        Push-Location C:\projects\psscriptanalyzer
+        dotnet restore
+        C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
+        Pop-Location
 
 # branches to build
 branches:
