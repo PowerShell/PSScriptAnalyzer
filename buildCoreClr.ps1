@@ -6,9 +6,14 @@
     [ValidateSet("net451", "netstandard1.6")]
     [string]$Framework = "netstandard1.6",
 
-    [ValidateSet("Debug", "Release")]
+    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
     [string]$Configuration = "Debug"
 )
+
+if ($Configuration -match "PSv3" -and $Framework -eq "netstandard1.6")
+{
+    throw ("{0} configuration is not applicable to {1} framework" -f $Configuration,$Framework)
+}
 
 Function Test-DotNetRestore
 {
@@ -37,6 +42,9 @@ $destinationDirBinaries = $destinationDir
 if ($Framework -eq "netstandard1.6")
 {
     $destinationDirBinaries = "$destinationDir\coreclr"
+}
+elseif ($Configuration -match 'PSv3') {
+    $destinationDirBinaries = "$destinationDir\PSv3"
 }
 
 
@@ -82,7 +90,7 @@ if ($build)
     # copy newtonsoft dll if net451 framework
     if ($Framework -eq "net451")
     {
-        copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDir -Verbose
+        copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries -Verbose
     }
 }
 
@@ -96,7 +104,6 @@ if ($uninstall)
     {
         Remove-Item -Recurse $pssaModulePath -Verbose
     }
-
 }
 
 if ($install)
