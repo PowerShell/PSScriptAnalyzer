@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
@@ -130,6 +131,103 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 
+
+
+    class FunctionReferenceDigraphCreator : AstVisitor
+    {
+        private Digraph<string> digraph;
+
+        private bool isWithinFunctionDefinition;
+        private string functionName;
+
+        public Digraph<string> GetDigraph()
+        {
+            return digraph;
+        }
+        public FunctionReferenceDigraphCreator()
+        {
+            digraph = new Digraph<string>(StringComparer.OrdinalIgnoreCase);
+            isWithinFunctionDefinition = false;
+        }
+
+        public override AstVisitAction VisitCommand(CommandAst ast)
+        {
+            if (ast == null)
+            {
+                return AstVisitAction.SkipChildren;
+            }
+
+            var cmdName = ast.GetCommandName();
+            AddVertex(cmdName);
+            if (isWithinFunctionDefinition)
+            {
+                AddEdge(functionName, cmdName);
+            }
+            return AstVisitAction.Continue;
+        }
+
+        public void AddVertex(string name)
+        {
+            if (!digraph.ContainsVertex(name))
+            {
+                digraph.AddVertex(name);
+            }
+        }
+
+        public void AddEdge(string fromV, string toV)
+        {
+            if (!digraph.GetNeighbors(fromV).Contains(toV, StringComparer.OrdinalIgnoreCase))
+            {
+                digraph.AddEdge(fromV, toV);
+            }
+        }
+
+        public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst ast)
+        {
+            if (ast == null)
+            {
+                return AstVisitAction.SkipChildren;
+            }
+
+            isWithinFunctionDefinition = true;
+            functionName = ast.Name;
+            AddVertex(ast.Name);
+            ast.Body.Visit(this);
+            isWithinFunctionDefinition = false;
+            return AstVisitAction.SkipChildren;
+        }
+
+        public override AstVisitAction VisitInvokeMemberExpression(InvokeMemberExpressionAst ast)
+        {
+            if (ast == null)
+            {
+                return AstVisitAction.SkipChildren;
+            }
+
+            var expr = ast.Expression.Extent.Text;
+            var memberExprAst = ast.Member as StringConstantExpressionAst;
+            if (memberExprAst == null)
+            {
+                return AstVisitAction.Continue;
+            }
+
+            var member = memberExprAst.Value;
+            if (string.IsNullOrWhiteSpace(member))
+            {
+                return AstVisitAction.Continue;
+            }
+
+            AddVertex(expr);
+            AddVertex(member);
+            AddEdge(expr, member);
+            if (isWithinFunctionDefinition)
+            {
+                AddEdge(functionName, expr);
+            }
+
+            return AstVisitAction.Continue;
+        }
+    }
 }
 
 
