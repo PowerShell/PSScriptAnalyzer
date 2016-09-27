@@ -30,6 +30,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseShouldProcessCorrectly : IScriptRule
     {
+        private Ast ast;
+        private string fileName;
+        private FunctionReferenceDigraph funcDigraph;
+
+        private List<DiagnosticRecord> diagnosticRecords;
+
+        private readonly Vertex shouldProcessVertex;
+        private readonly Vertex shouldContinueVertex;
+
+
+        public UseShouldProcessCorrectly()
+        {
+            diagnosticRecords = new List<DiagnosticRecord>();
+            shouldContinueVertex = new Vertex {name="ShouldContinue", ast=null};
+            shouldProcessVertex = new Vertex {name="ShouldProcess", ast=null};
+        }
+
         /// <summary>
         /// AnalyzeScript: Analyzes the ast to check that if the ShouldProcess attribute is present, the function calls ShouldProcess and vice versa.
         /// </summary>
@@ -40,40 +57,65 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
-            IEnumerable<Ast> attributeAsts;
-            IEnumerable<Ast> memberAsts;
-            IScriptExtent extent;
-            string funcName;
-            string supportsShouldProcess = "SupportsShouldProcess";
-            string trueString = "$true";
-            bool hasShouldProcessAttribute;
-            bool callsShouldProcess;
+            diagnosticRecords.Clear();
+            this.ast = ast;
+            this.fileName = fileName;
+            funcDigraph = new FunctionReferenceDigraph();
+            ast.Visit(funcDigraph);
+            FindViolations();
+            foreach (var dr in diagnosticRecords)
+            {
+                yield return dr;
+            }
 
-            foreach (FunctionDefinitionAst funcDefAst in funcDefAsts) {
-                extent = funcDefAst.Extent;
-                funcName = funcDefAst.Name;
+            // yield break;
 
-                hasShouldProcessAttribute = false;
-                callsShouldProcess = false;
+            // IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
+            // IEnumerable<Ast> attributeAsts;
+            // IEnumerable<Ast> memberAsts;
+            // IScriptExtent extent;
+            // string funcName;
+            // string supportsShouldProcess = "SupportsShouldProcess";
+            // string trueString = "$true";
+            // bool hasShouldProcessAttribute;
+            // bool callsShouldProcess;
 
-                attributeAsts = funcDefAst.FindAll(testAst => testAst is NamedAttributeArgumentAst, true);
-                foreach (NamedAttributeArgumentAst attributeAst in attributeAsts) {
-                    hasShouldProcessAttribute |= ((attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase))
-                        // checks for the case if the user just use the attribute without setting it to true
-                        || (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.ExpressionOmitted));
-                }
+            // foreach (FunctionDefinitionAst funcDefAst in funcDefAsts) {
+            //     extent = funcDefAst.Extent;
+            //     funcName = funcDefAst.Name;
 
-                memberAsts = funcDefAst.FindAll(testAst => testAst is MemberExpressionAst, true);
-                foreach (MemberExpressionAst memberAst in memberAsts) {
-                    callsShouldProcess |= memberAst.Member.Extent.Text.Equals("ShouldProcess", StringComparison.OrdinalIgnoreCase) || memberAst.Member.Extent.Text.Equals("ShouldContinue", StringComparison.OrdinalIgnoreCase);
-                }
+            //     hasShouldProcessAttribute = false;
+            //     callsShouldProcess = false;
 
-                if (hasShouldProcessAttribute && !callsShouldProcess) {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessErrorHasAttribute, funcName), extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                }
-                else if (!hasShouldProcessAttribute && callsShouldProcess) {
-                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessErrorHasCmdlet, funcName), extent, GetName(), DiagnosticSeverity.Warning, fileName);
+            //     attributeAsts = funcDefAst.FindAll(testAst => testAst is NamedAttributeArgumentAst, true);
+            //     foreach (NamedAttributeArgumentAst attributeAst in attributeAsts) {
+            //         hasShouldProcessAttribute |= ((attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase))
+            //             // checks for the case if the user just use the attribute without setting it to true
+            //             || (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.ExpressionOmitted));
+            //     }
+
+            //     memberAsts = funcDefAst.FindAll(testAst => testAst is MemberExpressionAst, true);
+            //     foreach (MemberExpressionAst memberAst in memberAsts) {
+            //         callsShouldProcess |= memberAst.Member.Extent.Text.Equals("ShouldProcess", StringComparison.OrdinalIgnoreCase) || memberAst.Member.Extent.Text.Equals("ShouldContinue", StringComparison.OrdinalIgnoreCase);
+            //     }
+
+            //     if (hasShouldProcessAttribute && !callsShouldProcess) {
+            //         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessErrorHasAttribute, funcName), extent, GetName(), DiagnosticSeverity.Warning, fileName);
+            //     }
+            //     else if (!hasShouldProcessAttribute && callsShouldProcess) {
+            //          yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessErrorHasCmdlet, funcName), extent, GetName(), DiagnosticSeverity.Warning, fileName);
+            //     }
+            // }
+        }
+
+        private void FindViolations()
+        {
+            foreach (var v in funcDigraph.GetVertices())
+            {
+                var dr = GetViolation(v);
+                if (dr != null)
+                {
+                    diagnosticRecords.Add(dr);
                 }
             }
         }
@@ -129,25 +171,187 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return string.Format(CultureInfo.CurrentCulture,Strings.SourceName);
         }
+
+        private DiagnosticRecord GetViolation(Vertex v)
+        {
+            bool callsShouldProcess = funcDigraph.IsConnected(v, shouldContinueVertex)
+                        || funcDigraph.IsConnected(v, shouldProcessVertex);
+            FunctionDefinitionAst fast = v.ast as FunctionDefinitionAst;
+            if (fast == null)
+            {
+                return null;
+            }
+
+            if (DeclaresSupportsShouldProcess(fast))
+            {
+                if (!callsShouldProcess)
+                {
+                    return new DiagnosticRecord(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ShouldProcessErrorHasAttribute,
+                            fast.Name),
+                        ast.Extent,
+                        GetName(),
+                        DiagnosticSeverity.Warning,
+                        ast.Extent.File);
+                }
+            }
+            else
+            {
+                if (callsShouldProcess)
+                {
+                    // check if upstream function declares SupportShouldProcess\
+                    // if so, this might just be a helper function
+                    // do not flag this case
+                    if (UpstreamDeclaresShouldProcess(v))
+                    {
+                        return null;
+                    }
+
+                    return new DiagnosticRecord(
+                         string.Format(
+                             CultureInfo.CurrentCulture,
+                             Strings.ShouldProcessErrorHasCmdlet,
+                             fast.Name),
+                            v.ast.Extent,
+                            GetName(),
+                            DiagnosticSeverity.Warning,
+                            fileName);
+                }
+            }
+
+            return null;
+        }
+
+        private bool UpstreamDeclaresShouldProcess(Vertex v)
+        {
+            var equalityComparer = new VertexEqualityComparer();
+            foreach (var vertex in funcDigraph.GetVertices())
+            {
+                if (equalityComparer.Equals(vertex, v))
+                {
+                    continue;
+                }
+
+                var fast = vertex.ast as FunctionDefinitionAst;
+                if (fast == null)
+                {
+                    continue;
+                }
+
+                if (DeclaresSupportsShouldProcess(fast)
+                    && funcDigraph.IsConnected(vertex, v))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool DeclaresSupportsShouldProcess(FunctionDefinitionAst ast)
+        {
+            if (ast.Body.ParamBlock == null)
+            {
+                return false;
+            }
+
+            foreach (var attr in ast.Body.ParamBlock.Attributes)
+            {
+                if (attr.NamedArguments == null)
+                {
+                    continue;
+                }
+
+                foreach (var namedArg in attr.NamedArguments)
+                {
+                    if (namedArg.ArgumentName.Equals(
+                        "SupportsShouldProcess",
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        var argAst = namedArg.Argument as VariableExpressionAst;
+                        if (argAst != null)
+                        {
+                            if (argAst.VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            return namedArg.ExpressionOmitted;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+    }
+
+    class Vertex
+    {
+        public string name;
+        public Ast ast;
+        public override string ToString()
+        {
+            return name;
+        }
+    }
+
+    class VertexEqualityComparer : IEqualityComparer<Vertex>
+    {
+        public bool Equals(Vertex x, Vertex y)
+        {
+            if (x == null && y == null)
+            {
+                return true;
+            }
+            else if (x == null || y == null)
+            {
+                return false;
+            }
+            else if (x.name.Equals(y.name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public int GetHashCode(Vertex obj)
+        {
+            return obj.name.GetHashCode();
+        }
     }
 
 
 
-    class FunctionReferenceDigraphCreator : AstVisitor
+    class FunctionReferenceDigraph : AstVisitor
     {
-        private Digraph<string> digraph;
+        private Digraph<Vertex> digraph;
 
-        private bool isWithinFunctionDefinition;
-        private string functionName;
+        private Stack<Vertex> functionVisitStack;
+        private bool IsWithinFunctionDefinition()
+        {
+            return functionVisitStack.Count > 0;
+        }
 
-        public Digraph<string> GetDigraph()
+        private Vertex GetCurrentFunctionContext()
+        {
+            return functionVisitStack.Peek();
+        }
+
+        public Digraph<Vertex> GetDigraph()
         {
             return digraph;
         }
-        public FunctionReferenceDigraphCreator()
+        public FunctionReferenceDigraph()
         {
-            digraph = new Digraph<string>(StringComparer.OrdinalIgnoreCase);
-            isWithinFunctionDefinition = false;
+            digraph = new Digraph<Vertex>(new VertexEqualityComparer());
+            functionVisitStack = new Stack<Vertex>();
         }
 
         public override AstVisitAction VisitCommand(CommandAst ast)
@@ -158,15 +362,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var cmdName = ast.GetCommandName();
-            AddVertex(cmdName);
-            if (isWithinFunctionDefinition)
+            var vertex = new Vertex {name = cmdName, ast = ast};
+            AddVertex(vertex);
+            if (IsWithinFunctionDefinition())
             {
-                AddEdge(functionName, cmdName);
+                AddEdge(GetCurrentFunctionContext(), vertex);
             }
             return AstVisitAction.Continue;
         }
 
-        public void AddVertex(string name)
+        public void AddVertex(Vertex name)
         {
             if (!digraph.ContainsVertex(name))
             {
@@ -174,9 +379,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        public void AddEdge(string fromV, string toV)
+        public void AddEdge(Vertex fromV, Vertex toV)
         {
-            if (!digraph.GetNeighbors(fromV).Contains(toV, StringComparer.OrdinalIgnoreCase))
+            if (!digraph.GetNeighbors(fromV).Contains(toV, new VertexEqualityComparer()))
             {
                 digraph.AddEdge(fromV, toV);
             }
@@ -189,11 +394,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.SkipChildren;
             }
 
-            isWithinFunctionDefinition = true;
-            functionName = ast.Name;
-            AddVertex(ast.Name);
+            var functionVertex = new Vertex {name=ast.Name, ast=ast};
+            functionVisitStack.Push(functionVertex);
+            AddVertex(functionVertex);
             ast.Body.Visit(this);
-            isWithinFunctionDefinition = false;
+            functionVisitStack.Pop();
             return AstVisitAction.SkipChildren;
         }
 
@@ -217,15 +422,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-            AddVertex(expr);
-            AddVertex(member);
-            AddEdge(expr, member);
-            if (isWithinFunctionDefinition)
+            var exprVertex = new Vertex {name=expr, ast=ast.Expression};
+            var memberVertex = new Vertex {name=memberExprAst.Value, ast=memberExprAst};
+            AddVertex(exprVertex);
+            AddVertex(memberVertex);
+            AddEdge(exprVertex, memberVertex);
+            if (IsWithinFunctionDefinition())
             {
-                AddEdge(functionName, expr);
+                AddEdge(GetCurrentFunctionContext(), exprVertex);
             }
 
             return AstVisitAction.Continue;
+        }
+
+        public IEnumerable<Vertex> GetVertices()
+        {
+            return digraph.GetVertices();
+        }
+
+        internal bool IsConnected(Vertex vertex, Vertex shouldVertex)
+        {
+            if (digraph.ContainsVertex(vertex)
+                && digraph.ContainsVertex(shouldVertex))
+            {
+                return digraph.IsConnected(vertex, shouldVertex);
+            }
+            return false;
         }
     }
 }
