@@ -3566,6 +3566,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             graph = new List<List<int>> ();
         }
 
+        public Digraph(int numVertices, List<Tuple<int, int>> edges) : this()
+        {
+            for (int v = 0; v < numVertices; v++)
+            {
+                AddVertex();
+            }
+
+            foreach (Tuple<int, int> tuple in edges)
+            {
+                var fromV = tuple.Item1;
+                var toV = tuple.Item2;
+                ValidateVertex(fromV);
+                ValidateVertex(toV);
+                AddEdge(fromV, toV);
+            }
+        }
+
         public int GetNumVertices()
         {
             return graph.Count;
@@ -3587,12 +3604,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return vertex >= 0 && vertex < graph.Count;
         }
 
-        public void AddVertex()
+        protected void AddVertex()
         {
             graph.Add(new List<int>());
         }
 
-        public void AddEdge(int fromVertex, int toVertex)
+        protected void AddEdge(int fromVertex, int toVertex)
         {
             ValidateVertex(fromVertex);
             ValidateVertex(toVertex);

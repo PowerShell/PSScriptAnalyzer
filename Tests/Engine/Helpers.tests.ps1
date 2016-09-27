@@ -1,14 +1,17 @@
 Import-Module PSScriptAnalyzer
 
+
+Function ConvertType($x)
+{
+    $z = [System.Collections.Generic.List[Tuple[int,int]]]::new()
+    $x | ForEach-Object {$z.Add([System.Tuple[int,int]]::new($_[0], $_[1]))}
+    return $z
+}
+
 Describe "Test Directed Graph" {
     Context "When a graph is created" {
-        $digraph = New-Object -TypeName 'Microsoft.Windows.PowerShell.ScriptAnalyzer.DiGraph'
-        0..4 | ForEach-Object {$digraph.AddVertex()}
-
-        $digraph.AddEdge(0, 1);
-        $digraph.AddEdge(0, 4);
-        $digraph.AddEdge(1, 3);
-
+        $edges = ConvertType (0,1),(0,4),(1,3)
+        $digraph = New-Object -TypeName 'Microsoft.Windows.PowerShell.ScriptAnalyzer.DiGraph' -ArgumentList 5,$edges
         It "correctly adds the vertices" {
             $digraph.GetNumVertices() | Should Be 5
         }
