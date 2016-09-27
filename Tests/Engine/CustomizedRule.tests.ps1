@@ -196,9 +196,7 @@ Describe "Test importing correct customized rules" {
                 $customizedRulePath.Count | Should Be 1
             }
 
-		if ($PSVersionTable.PSVersion -lt [Version]'5.0.0')
-		{
-			It "loads custom rules that contain version in their path" {
+			It "loads custom rules that contain version in their path" -Skip:($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 			$customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath $directory\VersionedSampleRule\SampleRuleWithVersion
 			$customizedRulePath.Count | Should Be 1
 
@@ -206,14 +204,12 @@ Describe "Test importing correct customized rules" {
 			$customizedRulePath.Count | Should Be 1
 			}
 
-			It "loads custom rules that contain version in their path with the RecurseCustomRule switch" {
+			It "loads custom rules that contain version in their path with the RecurseCustomRule switch" -Skip:($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 			$customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath $directory\VersionedSampleRule -RecurseCustomRulePath
 			$customizedRulePath.Count | Should Be 1
 
 			$customizedRulePath = Get-ScriptAnalyzerRule -CustomRulePath $directory\VersionedSampleRule -RecurseCustomRulePath
 			$customizedRulePath.Count | Should Be 1
-
-			}
 		}
         }
 
