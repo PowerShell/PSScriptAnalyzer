@@ -4,6 +4,21 @@
   "dependencies": {
 "System.Management.Automation": "1.0.0-alpha10"
     },
+
+  "configurations": {
+    "PSV3Release": {
+        "buildOptions": {
+            "define": [ "PSV3", "PSV5" ],
+            "optimize": true
+        }
+    },
+    "PSV3Debug": {
+        "buildOptions": {
+            "define": [ "PSV3", "DEBUG" ]
+        }
+    }
+  },
+
   "frameworks": {
     "net451": {
         "frameworkAssemblies": {
@@ -16,18 +31,6 @@
               "Strings.Designer.Core.cs",
               "Strings.Designer.cs"
               ]
-          }
-        },
-        "configurations": {
-          "PSV3 Release": {
-              "buildOptions": {
-                  "define": [ "PSV3" ]
-              }
-          },
-          "PSV3 Debug": {
-              "buildOptions": {
-                  "define": [ "PSV3", "DEBUG" ]
-              }
           }
         }
     },
