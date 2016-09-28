@@ -187,6 +187,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid creating aliases with a Global scope..
+        /// </summary>
+        internal static string AvoidGlobalFunctionsAliasError {
+            get {
+                return ResourceManager.GetString("AvoidGlobalFunctionsAliasError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid global functiosn and aliases.
+        /// </summary>
+        internal static string AvoidGlobalFunctionsCommonName {
+            get {
+                return ResourceManager.GetString("AvoidGlobalFunctionsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checks that global functions and aliases are not used. Global functions are strongly discouraged as they can cause errors across different systems..
+        /// </summary>
+        internal static string AvoidGlobalFunctionsDescription {
+            get {
+                return ResourceManager.GetString("AvoidGlobalFunctionsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid creating functions with a Global scope..
+        /// </summary>
+        internal static string AvoidGlobalFunctionsError {
+            get {
+                return ResourceManager.GetString("AvoidGlobalFunctionsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidGlobalFunctions.
+        /// </summary>
+        internal static string AvoidGlobalFunctionsName {
+            get {
+                return ResourceManager.GetString("AvoidGlobalFunctionsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No Global Variables.
         /// </summary>
         internal static string AvoidGlobalVarsCommonName {

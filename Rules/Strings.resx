@@ -846,4 +846,19 @@
   <data name="UseCompatibleCmdletsError" xml:space="preserve">
     <value>'{0}' is not compatible with PowerShell edition '{1}', version '{2}' and OS '{3}'</value>
   </data>
+  <data name="AvoidGlobalFunctionsAliasError" xml:space="preserve">
+    <value>Avoid creating aliases with a Global scope.</value>
+  </data>
+  <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
+    <value>Avoid global functiosn and aliases</value>
+  </data>
+  <data name="AvoidGlobalFunctionsDescription" xml:space="preserve">
+    <value>Checks that global functions and aliases are not used. Global functions are strongly discouraged as they can cause errors across different systems.</value>
+  </data>
+  <data name="AvoidGlobalFunctionsError" xml:space="preserve">
+    <value>Avoid creating functions with a Global scope.</value>
+  </data>
+  <data name="AvoidGlobalFunctionsName" xml:space="preserve">
+    <value>AvoidGlobalFunctions</value>
+  </data>
 </root>

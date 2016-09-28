@@ -61,10 +61,10 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 43
+            $expectedNumRules = 44
             if ((Test-PSEditionCoreClr))
             {
-                $expectedNumRules = 42
+                $expectedNumRules = 43
             }
 			$defaultRules.Count | Should be $expectedNumRules
 		}
