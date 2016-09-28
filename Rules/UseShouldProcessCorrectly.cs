@@ -67,45 +67,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 yield return dr;
             }
-
-            // yield break;
-
-            // IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
-            // IEnumerable<Ast> attributeAsts;
-            // IEnumerable<Ast> memberAsts;
-            // IScriptExtent extent;
-            // string funcName;
-            // string supportsShouldProcess = "SupportsShouldProcess";
-            // string trueString = "$true";
-            // bool hasShouldProcessAttribute;
-            // bool callsShouldProcess;
-
-            // foreach (FunctionDefinitionAst funcDefAst in funcDefAsts) {
-            //     extent = funcDefAst.Extent;
-            //     funcName = funcDefAst.Name;
-
-            //     hasShouldProcessAttribute = false;
-            //     callsShouldProcess = false;
-
-            //     attributeAsts = funcDefAst.FindAll(testAst => testAst is NamedAttributeArgumentAst, true);
-            //     foreach (NamedAttributeArgumentAst attributeAst in attributeAsts) {
-            //         hasShouldProcessAttribute |= ((attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.Argument.Extent.Text.Equals(trueString, StringComparison.OrdinalIgnoreCase))
-            //             // checks for the case if the user just use the attribute without setting it to true
-            //             || (attributeAst.ArgumentName.Equals(supportsShouldProcess, StringComparison.OrdinalIgnoreCase) && attributeAst.ExpressionOmitted));
-            //     }
-
-            //     memberAsts = funcDefAst.FindAll(testAst => testAst is MemberExpressionAst, true);
-            //     foreach (MemberExpressionAst memberAst in memberAsts) {
-            //         callsShouldProcess |= memberAst.Member.Extent.Text.Equals("ShouldProcess", StringComparison.OrdinalIgnoreCase) || memberAst.Member.Extent.Text.Equals("ShouldContinue", StringComparison.OrdinalIgnoreCase);
-            //     }
-
-            //     if (hasShouldProcessAttribute && !callsShouldProcess) {
-            //         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessErrorHasAttribute, funcName), extent, GetName(), DiagnosticSeverity.Warning, fileName);
-            //     }
-            //     else if (!hasShouldProcessAttribute && callsShouldProcess) {
-            //          yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessErrorHasCmdlet, funcName), extent, GetName(), DiagnosticSeverity.Warning, fileName);
-            //     }
-            // }
         }
 
         private void FindViolations()
