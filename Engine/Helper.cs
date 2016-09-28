@@ -3557,24 +3557,71 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     }
 
     /// Class to represent a directed graph
-    /// Class to represent a directed graph
     public class Digraph<T>
     {
+        private List<List<int>> graph;
+        private Dictionary<T, int> vertexIndexMap;
+
+        /// <summary>
+        /// Public constructor
+        /// </summary>
+        public Digraph()
+        {
+            graph = new List<List<int>>();
+            vertexIndexMap = new Dictionary<T, int>();
+        }
+
+        /// <summary>
+        /// Construct digraph with an EqualityComparer used for comparing type T
+        /// </summary>
+        /// <param name="equalityComparer"></param>
+        public Digraph(IEqualityComparer<T> equalityComparer) : this()
+        {
+            if (equalityComparer == null)
+            {
+                throw new ArgumentNullException("equalityComparer");
+            }
+
+            vertexIndexMap = new Dictionary<T, int>(equalityComparer);
+        }
+
+        /// <summary>
+        /// Return the number of vertices in the graph
+        /// </summary>
         public int NumVertices
         {
             get { return graph.Count; }
         }
 
-        private List<List<int>> graph;
-        private Dictionary<T, int> vertexIndexMap;
-
-
-        private int GetIndex(T vertex)
+        /// <summary>
+        /// Return an enumerator over the vertices in the graph
+        /// </summary>
+        public IEnumerable<T> GetVertices()
         {
-            int idx;
-            return vertexIndexMap.TryGetValue(vertex, out idx) ? idx : -1;
+            return vertexIndexMap.Keys;
         }
 
+        /// <summary>
+        /// Check if the given vertex is part of the graph.
+        ///
+        /// If the vertex is null, it will throw an ArgumentNullException.
+        /// If the vertex is non-null but not present in the graph, it will throw an ArgumentOutOfRangeException
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns>True if the graph contains the vertex, otherwise false</returns>
+        public bool ContainsVertex(T vertex)
+        {
+            return vertexIndexMap.Keys.Contains(vertex);
+        }
+
+        /// <summary>
+        /// Get the neighbors of a given vertex
+        ///
+        /// If the vertex is null, it will throw an ArgumentNullException.
+        /// If the vertex is non-null but not present in the graph, it will throw an ArgumentOutOfRangeException
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns>An enumerator over the neighbors of the vertex</returns>
         public IEnumerable<T> GetNeighbors(T vertex)
         {
             ValidateVertexArgument(vertex);
@@ -3586,40 +3633,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        public IEnumerable<T> GetVertices()
-        {
-            return vertexIndexMap.Keys;
-        }
-
-        public bool ContainsVertex(T vertex)
-        {
-            return vertexIndexMap.Keys.Contains(vertex);
-        }
-
+        /// <summary>
+        /// Gets the number of neighbors of the given vertex
+        ///
+        /// If the vertex is null, it will throw an ArgumentNullException.
+        /// If the vertex is non-null but not present in the graph, it will throw an ArgumentOutOfRangeException
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns></returns>
         public int GetNumNeighbors(T vertex)
         {
             ValidateVertexArgument(vertex);
             return graph[GetIndex(vertex)].Count;
         }
 
-        public Digraph()
-        {
-            graph = new List<List<int>> ();
-            vertexIndexMap = new Dictionary<T, int>();
-        }
-
-        public Digraph(IEqualityComparer<T> comparer) : this()
-        {
-            vertexIndexMap = new Dictionary<T, int> (comparer);
-        }
-
+        /// <summary>
+        /// Add a vertex to the graph
+        ///
+        /// If the vertex is null, it will throw an ArgumentNullException.
+        /// If the vertex is non-null but already present in the graph, it will throw an ArgumentException
+        /// </summary>
+        /// <param name="vertex"></param>
         public void AddVertex(T vertex)
         {
-            if (vertex == null)
-            {
-                throw new ArgumentNullException("vertex");
-            }
-
+            ValidateNotNull(vertex);
             if (GetIndex(vertex) != -1)
             {
                 throw new ArgumentException("Vertex already present! Cannot add it to the Digraph", "vertex");
@@ -3629,6 +3666,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             graph.Add(new List<int>());
         }
 
+        /// <summary>
+        /// Add an edge from one vertex to another
+        ///
+        /// If any input vertex is null, it will throw an ArgumentNullException
+        /// If an edge is already present between the given vertices, it will throw an ArgumentException
+        /// </summary>
+        /// <param name="fromVertex"></param>
+        /// <param name="toVertex"></param>
         public void AddEdge(T fromVertex, T toVertex)
         {
             ValidateVertexArgument(fromVertex);
@@ -3649,14 +3694,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        /// <summary>
+        /// Checks if a vertex is connected to another vertex within the graph
+        /// </summary>
+        /// <param name="vertex1"></param>
+        /// <param name="vertex2"></param>
+        /// <returns></returns>
         public bool IsConnected(T vertex1, T vertex2)
         {
             ValidateVertexArgument(vertex1);
             ValidateVertexArgument(vertex2);
+
             var visited = new bool[graph.Count];
             return IsConnected(GetIndex(vertex1), GetIndex(vertex2), ref visited);
         }
 
+        /// <summary>
+        /// Check if two vertices are connected
+        /// </summary>
+        /// <param name="fromIdx">Origin vertex</param>
+        /// <param name="toIdx">Destination vertex</param>
+        /// <param name="visited">A boolean array indicating whether a vertex has been visited or not</param>
+        /// <returns>True if the vertices are conneted, otherwise false</returns>
         private bool IsConnected(int fromIdx, int toIdx, ref bool[] visited)
         {
             visited[fromIdx] = true;
@@ -3682,6 +3741,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return isConnected;
         }
 
+        /// <summary>
+        /// Throw an ArgumentNullException if vertex is null
+        /// </summary>
         private void ValidateNotNull(T vertex)
         {
             if (vertex == null)
@@ -3690,6 +3752,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        /// <summary>
+        /// Throw an ArgumentOutOfRangeException if vertex is not present in the graph
+        /// </summary>
         private void ValidateVertexPresence(T vertex)
         {
             if (GetIndex(vertex) == -1)
@@ -3698,10 +3763,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        /// <summary>
+        /// Throw exception if vertex is null or not present in graph
+        /// </summary>
         private void ValidateVertexArgument(T vertex)
         {
             ValidateNotNull(vertex);
             ValidateVertexPresence(vertex);
         }
+
+        /// <summary>
+        /// Get the index of the vertex in the graph array
+        /// </summary>
+        private int GetIndex(T vertex)
+        {
+            int idx;
+            return vertexIndexMap.TryGetValue(vertex, out idx) ? idx : -1;
+        }
+
     }
 }
