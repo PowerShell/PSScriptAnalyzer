@@ -37,13 +37,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private List<DiagnosticRecord> diagnosticRecords;
 
         private readonly Vertex shouldProcessVertex;
-        private readonly Vertex shouldContinueVertex;
-
 
         public UseShouldProcessCorrectly()
         {
             diagnosticRecords = new List<DiagnosticRecord>();
-            shouldContinueVertex = new Vertex {name="ShouldContinue", ast=null};
             shouldProcessVertex = new Vertex {name="ShouldProcess", ast=null};
         }
 
@@ -143,8 +140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>An instance of DiagnosticRecord if it find violation, otherwise null</returns>
         private DiagnosticRecord GetViolation(Vertex v)
         {
-            bool callsShouldProcess = funcDigraph.IsConnected(v, shouldContinueVertex)
-                        || funcDigraph.IsConnected(v, shouldProcessVertex);
+            bool callsShouldProcess = funcDigraph.IsConnected(v, shouldProcessVertex);
             FunctionDefinitionAst fast = v.ast as FunctionDefinitionAst;
             if (fast == null)
             {
