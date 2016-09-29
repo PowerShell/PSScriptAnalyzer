@@ -3659,7 +3659,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ValidateNotNull(vertex);
             if (GetIndex(vertex) != -1)
             {
-                throw new ArgumentException("Vertex already present! Cannot add it to the Digraph", "vertex");
+                throw new ArgumentException(
+                    String.Format(
+                        Strings.DigraphVertexAlreadyExists,
+                        vertex),
+                    "vertex");
             }
 
             vertexIndexMap.Add(vertex, graph.Count);
@@ -3684,7 +3688,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (fromVertexList.Contains(toIdx))
             {
                 throw new ArgumentException(String.Format(
-                    "Edge from {0} to {1} already present.",
+                    Strings.DigraphEdgeAlreadyExists,
                     fromVertex.ToString(),
                     toVertex.ToString()));
             }
@@ -3759,7 +3763,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             if (GetIndex(vertex) == -1)
             {
-                throw new ArgumentOutOfRangeException("vertex not present in the Digraph.", "vertex");
+                throw new ArgumentOutOfRangeException(
+                    String.Format(
+                        Strings.DigraphVertexDoesNotExists,
+                        vertex.ToString()),
+                    "vertex");
             }
         }
 
