@@ -3611,7 +3611,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>True if the graph contains the vertex, otherwise false</returns>
         public bool ContainsVertex(T vertex)
         {
-            return vertexIndexMap.Keys.Contains(vertex);
+            return vertexIndexMap.ContainsKey(vertex);
         }
 
         /// <summary>

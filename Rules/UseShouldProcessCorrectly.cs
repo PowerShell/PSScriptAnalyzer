@@ -41,7 +41,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public UseShouldProcessCorrectly()
         {
             diagnosticRecords = new List<DiagnosticRecord>();
-            shouldProcessVertex = new Vertex {name="ShouldProcess", ast=null};
+            shouldProcessVertex = new Vertex("ShouldProcess", null);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private DiagnosticRecord GetViolation(Vertex v)
         {
             bool callsShouldProcess = funcDigraph.IsConnected(v, shouldProcessVertex);
-            FunctionDefinitionAst fast = v.ast as FunctionDefinitionAst;
+            FunctionDefinitionAst fast = v.Ast as FunctionDefinitionAst;
             if (fast == null)
             {
                 return null;
@@ -179,7 +179,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                              CultureInfo.CurrentCulture,
                              Strings.ShouldProcessErrorHasCmdlet,
                              fast.Name),
-                            v.ast.Extent,
+                            v.Ast.Extent,
                             GetName(),
                             DiagnosticSeverity.Warning,
                             fileName);
@@ -196,15 +196,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>true if an upstream function declares SupportsShouldProcess, otherwise false</returns>
         private bool UpstreamDeclaresShouldProcess(Vertex v)
         {
-            var equalityComparer = new VertexEqualityComparer();
             foreach (var vertex in funcDigraph.GetVertices())
             {
-                if (equalityComparer.Equals(vertex, v))
+                if (v.Equals(vertex))
                 {
                     continue;
                 }
 
-                var fast = vertex.ast as FunctionDefinitionAst;
+                var fast = vertex.Ast as FunctionDefinitionAst;
                 if (fast == null)
                 {
                     continue;
@@ -269,8 +268,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// </summary>
     class Vertex
     {
-        public string name;
-        public Ast ast;
+        public string Name {get { return name;}}
+        public Ast Ast {get {return ast; }}
+
+        private string name;
+        private Ast ast;
+
+        public Vertex()
+        {
+            name = String.Empty;
+        }
+
+        public Vertex (string name, Ast ast)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException("name");
+            }
+            this.name = name;
+            this.ast = ast;
+        }
 
         /// <summary>
         /// Returns string representation of a Vertex instance
@@ -279,46 +296,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return name;
         }
-    }
-
-    /// <summary>
-    /// Implements IEqualityComparer interface for Vertex class
-    /// </summary>
-    class VertexEqualityComparer : IEqualityComparer<Vertex>
-    {
 
         /// <summary>
         /// Compares two instances of Vertex class to check for equality
         /// </summary>
-        public bool Equals(Vertex x, Vertex y)
+        public override bool Equals(Object other)
         {
-            if (x == null && y == null)
-            {
-                return true;
-            }
-            else if (x == null || y == null)
+            var otherVertex = other as Vertex;
+            if (otherVertex == null)
             {
                 return false;
             }
-            else if (x.name.Equals(y.name, StringComparison.OrdinalIgnoreCase))
+
+            if (name.Equals(otherVertex.name, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         /// <summary>
         /// Returns the Hash code of the given Vertex instance
         /// </summary>
-        public int GetHashCode(Vertex obj)
+        public override int GetHashCode()
         {
-            return obj.name.GetHashCode();
+            return name.GetHashCode();
         }
     }
-
 
     /// <summary>
     /// Class to encapsulate a function call graph and related actions
@@ -358,7 +363,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public FunctionReferenceDigraph()
         {
-            digraph = new Digraph<Vertex>(new VertexEqualityComparer());
+            digraph = new Digraph<Vertex>();
             functionVisitStack = new Stack<Vertex>();
         }
 
@@ -380,7 +385,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="toV">end of the edge</param>
         public void AddEdge(Vertex fromV, Vertex toV)
         {
-            if (!digraph.GetNeighbors(fromV).Contains(toV, new VertexEqualityComparer()))
+            if (!digraph.GetNeighbors(fromV).Contains(toV))
             {
                 digraph.AddEdge(fromV, toV);
             }
@@ -396,7 +401,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.SkipChildren;
             }
 
-            var functionVertex = new Vertex { name = ast.Name, ast = ast };
+            var functionVertex = new Vertex (ast.Name, ast);
             functionVisitStack.Push(functionVertex);
             AddVertex(functionVertex);
             ast.Body.Visit(this);
@@ -415,12 +420,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var cmdName = ast.GetCommandName();
-            var vertex = new Vertex { name = cmdName, ast = ast };
+            if (cmdName == null)
+            {
+                return AstVisitAction.Continue;
+            }
+
+            var vertex = new Vertex (cmdName, ast);
             AddVertex(vertex);
             if (IsWithinFunctionDefinition())
             {
                 AddEdge(GetCurrentFunctionContext(), vertex);
             }
+
             return AstVisitAction.Continue;
         }
 
@@ -452,8 +463,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // necessarily a function, we do it because we are mainly interested in
             // finding connection between a function and ShouldProcess and this approach
             // prevents any unnecessary complexity.
-            var exprVertex = new Vertex {name=expr, ast=ast.Expression};
-            var memberVertex = new Vertex {name=memberExprAst.Value, ast=memberExprAst};
+            var exprVertex = new Vertex (expr, ast.Expression);
+            var memberVertex = new Vertex (memberExprAst.Value, memberExprAst);
             AddVertex(exprVertex);
             AddVertex(memberVertex);
             AddEdge(exprVertex, memberVertex);
