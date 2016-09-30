@@ -19,6 +19,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
+using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -261,6 +262,54 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             return false;
         }
+
+        private bool DeclaresSupportsShouldProcess(string cmdName)
+        {
+            if (String.IsNullOrWhiteSpace(cmdName))
+            {
+                return false;
+            }
+
+            try
+            {
+                using (var ps = System.Management.Automation.PowerShell.Create())
+                {
+                    ps.AddCommand("Get-command").AddArgument("cmdName");
+                    var cmdInfo = ps.Invoke<System.Management.Automation.CmdletInfo>().FirstOrDefault();
+                    if (cmdInfo == null)
+                    {
+                        return false;
+                    }
+                    var attributes = cmdInfo.ImplementingType.GetTypeInfo().GetCustomAttributes(
+                        typeof(System.Management.Automation.CmdletCommonMetadataAttribute),
+                        true);
+
+                    foreach (var attr in attributes)
+                    {
+                        var cmdletAttribute = attr as System.Management.Automation.CmdletAttribute;
+                        if (cmdletAttribute == null)
+                        {
+                            continue;
+                        }
+
+                        if (cmdletAttribute.SupportsShouldProcess)
+                        {
+                            return true;
+                        }
+                    }
+                    if (attributes.Count() == 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch (System.Management.Automation.CommandNotFoundException e)
+            {
+                return false;
+            }
+
+            return false;
+        }
     }
 
     /// <summary>
@@ -424,6 +473,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return AstVisitAction.Continue;
             }
+
+            // if command is part of a binary module
+            //   for now just check if (Get-Command <CommandName>).DLL end with dll extension
+            // if so, check if it declares SupportsShouldProcess
+            // if so, then assume it also calls ShouldProcess
+            // because we do not have a way to analyze its definition
+            // to actually verify it is indeed calling ShouddProcess
+
+            // if (IsPartOfBinaryModule(cmdName, out cmdInfo))
+            //   if (HasSupportShouldProcessAttribute(cmdInfo))
+            //     AddEdge(cmdName, shouldProcessVertex)
 
             var vertex = new Vertex (cmdName, ast);
             AddVertex(vertex);
