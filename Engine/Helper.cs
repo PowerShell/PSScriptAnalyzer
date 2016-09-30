@@ -3572,7 +3572,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Construct digraph with an EqualityComparer used for comparing type T
+        /// Construct a directed graph that uses an EqualityComparer object for comparison with its vertices
+        ///
+        /// The class allows its client to use their choice of vertex type. To allow comparison for such a
+        /// vertex type, client can pass their own EqualityComparer object
         /// </summary>
         /// <param name="equalityComparer"></param>
         public Digraph(IEqualityComparer<T> equalityComparer) : this()
@@ -3728,21 +3731,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return true;
             }
 
-            bool isConnected = false;
             foreach(var vertexIdx in graph[fromIdx])
             {
                 if (!visited[vertexIdx])
                 {
-                    isConnected |= IsConnected(vertexIdx, toIdx, ref visited);
-                }
-
-                if (isConnected) // no need to search further
-                {
-                    break;
+                    if(IsConnected(vertexIdx, toIdx, ref visited))
+                    {
+                        return true;
+                    }
                 }
             }
 
-            return isConnected;
+            return false;
         }
 
         /// <summary>

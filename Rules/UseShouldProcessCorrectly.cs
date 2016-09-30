@@ -140,13 +140,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>An instance of DiagnosticRecord if it find violation, otherwise null</returns>
         private DiagnosticRecord GetViolation(Vertex v)
         {
-            bool callsShouldProcess = funcDigraph.IsConnected(v, shouldProcessVertex);
             FunctionDefinitionAst fast = v.Ast as FunctionDefinitionAst;
             if (fast == null)
             {
                 return null;
             }
 
+            bool callsShouldProcess = funcDigraph.IsConnected(v, shouldProcessVertex);
             if (DeclaresSupportsShouldProcess(fast))
             {
                 if (!callsShouldProcess)
