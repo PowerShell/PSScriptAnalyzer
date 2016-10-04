@@ -13,6 +13,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 #if !CORECLR
@@ -34,9 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private Ast ast;
         private string fileName;
         private FunctionReferenceDigraph funcDigraph;
-
         private List<DiagnosticRecord> diagnosticRecords;
-
         private readonly Vertex shouldProcessVertex;
 
         public UseShouldProcessCorrectly()
@@ -53,13 +52,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>A List of diagnostic results of this rule</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            if (ast == null)
+            {
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            }
 
             diagnosticRecords.Clear();
             this.ast = ast;
             this.fileName = fileName;
             funcDigraph = new FunctionReferenceDigraph();
             ast.Visit(funcDigraph);
+            CheckForSupportShouldProcess();
             FindViolations();
             foreach (var dr in diagnosticRecords)
             {
@@ -226,89 +229,116 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>True if the given function declares SupportShouldProcess, otherwise null</returns>
         private bool DeclaresSupportsShouldProcess(FunctionDefinitionAst ast)
         {
-            if (ast.Body.ParamBlock == null)
+            if (ast.Body.ParamBlock == null
+                || ast.Body.ParamBlock.Attributes == null)
             {
                 return false;
             }
 
-            foreach (var attr in ast.Body.ParamBlock.Attributes)
+            var shouldProcessAttribute = Helper.Instance.GetShouldProcessAttributeAst(ast.Body.ParamBlock.Attributes);
+            if (shouldProcessAttribute == null)
             {
-                if (attr.NamedArguments == null)
-                {
-                    continue;
-                }
-
-                foreach (var namedArg in attr.NamedArguments)
-                {
-                    if (namedArg.ArgumentName.Equals(
-                        "SupportsShouldProcess",
-                        StringComparison.OrdinalIgnoreCase))
-                    {
-                        var argAst = namedArg.Argument as VariableExpressionAst;
-                        if (argAst != null)
-                        {
-                            if (argAst.VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase))
-                            {
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            return namedArg.ExpressionOmitted;
-                        }
-                    }
-                }
+                return false;
             }
 
-            return false;
+            return Helper.Instance.GetNamedArgumentAttributeValue(shouldProcessAttribute);
         }
 
-        private bool DeclaresSupportsShouldProcess(string cmdName)
+        private CommandInfo GetCommandInfo(string cmdName)
+        {
+            try
+            {
+                using (var ps = System.Management.Automation.PowerShell.Create())
+                {
+                    var cmdInfo = ps.AddCommand("Get-Command")
+                                    .AddArgument(cmdName)
+                                    .Invoke<CommandInfo>()
+                                    .FirstOrDefault();
+                    return cmdInfo;
+                }
+            }
+            catch (System.Management.Automation.CommandNotFoundException)
+            {
+                return null;
+            }
+        }
+
+        private bool SupportsShouldProcess(string cmdName)
         {
             if (String.IsNullOrWhiteSpace(cmdName))
             {
                 return false;
             }
 
-            try
-            {
-                using (var ps = System.Management.Automation.PowerShell.Create())
-                {
-                    ps.AddCommand("Get-command").AddArgument("cmdName");
-                    var cmdInfo = ps.Invoke<System.Management.Automation.CmdletInfo>().FirstOrDefault();
-                    if (cmdInfo == null)
-                    {
-                        return false;
-                    }
-                    var attributes = cmdInfo.ImplementingType.GetTypeInfo().GetCustomAttributes(
-                        typeof(System.Management.Automation.CmdletCommonMetadataAttribute),
-                        true);
-
-                    foreach (var attr in attributes)
-                    {
-                        var cmdletAttribute = attr as System.Management.Automation.CmdletAttribute;
-                        if (cmdletAttribute == null)
-                        {
-                            continue;
-                        }
-
-                        if (cmdletAttribute.SupportsShouldProcess)
-                        {
-                            return true;
-                        }
-                    }
-                    if (attributes.Count() == 0)
-                    {
-                        return false;
-                    }
-                }
-            }
-            catch (System.Management.Automation.CommandNotFoundException e)
+            var cmdInfo = GetCommandInfo(cmdName);
+            if (cmdInfo == null)
             {
                 return false;
             }
 
+            var cmdletInfo = cmdInfo as CmdletInfo;
+            if (cmdletInfo == null)
+            {
+                // check if it is of functioninfo type
+                var funcInfo = cmdInfo as FunctionInfo;
+                if (funcInfo != null
+                    && funcInfo.CmdletBinding
+                    && funcInfo.ScriptBlock != null
+                    && funcInfo.ScriptBlock.Attributes != null)
+                {
+                    foreach (var attr in funcInfo.ScriptBlock.Attributes)
+                    {
+                        var cmdletBindingAttr = attr as CmdletBindingAttribute;
+                        if (cmdletBindingAttr != null)
+                        {
+                            return cmdletBindingAttr.SupportsShouldProcess;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            var attributes = cmdletInfo.ImplementingType.GetTypeInfo().GetCustomAttributes(
+                typeof(System.Management.Automation.CmdletCommonMetadataAttribute),
+                true);
+
+            foreach (var attr in attributes)
+            {
+                var cmdletAttribute = attr as System.Management.Automation.CmdletAttribute;
+                if (cmdletAttribute != null)
+                {
+                    return cmdletAttribute.SupportsShouldProcess;
+                }
+            }
+
             return false;
+        }
+
+        private void CheckForSupportShouldProcess()
+        {
+            var commandsWithSupportShouldProcess = new List<Vertex>();
+
+            // for all the vertices without any neighbors check if they support shouldprocess
+            foreach (var v in funcDigraph.GetVertices())
+            {
+                if (funcDigraph.GetOutDegree(v) == 0)
+                {
+                    if (SupportsShouldProcess(v.Name))
+                    {
+                        commandsWithSupportShouldProcess.Add(v);
+                    }
+                }
+            }
+
+            if (commandsWithSupportShouldProcess.Count > 0)
+            {
+                funcDigraph.AddVertex(shouldProcessVertex);
+                foreach(var v in commandsWithSupportShouldProcess)
+                {
+                    funcDigraph.AddEdge(v, shouldProcessVertex);
+                }
+            }
         }
     }
 
@@ -370,7 +400,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public override int GetHashCode()
         {
-            return name.GetHashCode();
+            return name.ToLower().GetHashCode();
         }
     }
 
@@ -484,7 +514,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // if (IsPartOfBinaryModule(cmdName, out cmdInfo))
             //   if (HasSupportShouldProcessAttribute(cmdInfo))
             //     AddEdge(cmdName, shouldProcessVertex)
-
             var vertex = new Vertex (cmdName, ast);
             AddVertex(vertex);
             if (IsWithinFunctionDefinition())
@@ -550,7 +579,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="vertex">Origin vertxx</param>
         /// <param name="shouldVertex">Destination vertex</param>
         /// <returns></returns>
-        internal bool IsConnected(Vertex vertex, Vertex shouldVertex)
+        public bool IsConnected(Vertex vertex, Vertex shouldVertex)
         {
             if (digraph.ContainsVertex(vertex)
                 && digraph.ContainsVertex(shouldVertex))
@@ -558,6 +587,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return digraph.IsConnected(vertex, shouldVertex);
             }
             return false;
+        }
+
+        public int GetOutDegree(Vertex v)
+        {
+            return digraph.GetOutDegree(v);
         }
     }
 }
