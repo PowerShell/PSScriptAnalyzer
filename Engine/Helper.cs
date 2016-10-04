@@ -3555,4 +3555,239 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return null;
         }
     }
+
+    /// Class to represent a directed graph
+    public class Digraph<T>
+    {
+        private List<List<int>> graph;
+        private Dictionary<T, int> vertexIndexMap;
+
+        /// <summary>
+        /// Public constructor
+        /// </summary>
+        public Digraph()
+        {
+            graph = new List<List<int>>();
+            vertexIndexMap = new Dictionary<T, int>();
+        }
+
+        /// <summary>
+        /// Construct a directed graph that uses an EqualityComparer object for comparison with its vertices
+        ///
+        /// The class allows its client to use their choice of vertex type. To allow comparison for such a
+        /// vertex type, client can pass their own EqualityComparer object
+        /// </summary>
+        /// <param name="equalityComparer"></param>
+        public Digraph(IEqualityComparer<T> equalityComparer) : this()
+        {
+            if (equalityComparer == null)
+            {
+                throw new ArgumentNullException("equalityComparer");
+            }
+
+            vertexIndexMap = new Dictionary<T, int>(equalityComparer);
+        }
+
+        /// <summary>
+        /// Return the number of vertices in the graph
+        /// </summary>
+        public int NumVertices
+        {
+            get { return graph.Count; }
+        }
+
+        /// <summary>
+        /// Return an enumerator over the vertices in the graph
+        /// </summary>
+        public IEnumerable<T> GetVertices()
+        {
+            return vertexIndexMap.Keys;
+        }
+
+        /// <summary>
+        /// Check if the given vertex is part of the graph.
+        ///
+        /// If the vertex is null, it will throw an ArgumentNullException.
+        /// If the vertex is non-null but not present in the graph, it will throw an ArgumentOutOfRangeException
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns>True if the graph contains the vertex, otherwise false</returns>
+        public bool ContainsVertex(T vertex)
+        {
+            return vertexIndexMap.ContainsKey(vertex);
+        }
+
+        /// <summary>
+        /// Get the neighbors of a given vertex
+        ///
+        /// If the vertex is null, it will throw an ArgumentNullException.
+        /// If the vertex is non-null but not present in the graph, it will throw an ArgumentOutOfRangeException
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns>An enumerator over the neighbors of the vertex</returns>
+        public IEnumerable<T> GetNeighbors(T vertex)
+        {
+            ValidateVertexArgument(vertex);
+            var idx = GetIndex(vertex);
+            var idxVertexMap = vertexIndexMap.ToDictionary(x => x.Value, x => x.Key);
+            foreach (var neighbor in graph[idx])
+            {
+                yield return idxVertexMap[neighbor];
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of neighbors of the given vertex
+        ///
+        /// If the vertex is null, it will throw an ArgumentNullException.
+        /// If the vertex is non-null but not present in the graph, it will throw an ArgumentOutOfRangeException
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns></returns>
+        public int GetOutDegree(T vertex)
+        {
+            ValidateVertexArgument(vertex);
+            return graph[GetIndex(vertex)].Count;
+        }
+
+        /// <summary>
+        /// Add a vertex to the graph
+        ///
+        /// If the vertex is null, it will throw an ArgumentNullException.
+        /// If the vertex is non-null but already present in the graph, it will throw an ArgumentException
+        /// </summary>
+        /// <param name="vertex"></param>
+        public void AddVertex(T vertex)
+        {
+            ValidateNotNull(vertex);
+            if (GetIndex(vertex) != -1)
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        Strings.DigraphVertexAlreadyExists,
+                        vertex),
+                    "vertex");
+            }
+
+            vertexIndexMap.Add(vertex, graph.Count);
+            graph.Add(new List<int>());
+        }
+
+        /// <summary>
+        /// Add an edge from one vertex to another
+        ///
+        /// If any input vertex is null, it will throw an ArgumentNullException
+        /// If an edge is already present between the given vertices, it will throw an ArgumentException
+        /// </summary>
+        /// <param name="fromVertex"></param>
+        /// <param name="toVertex"></param>
+        public void AddEdge(T fromVertex, T toVertex)
+        {
+            ValidateVertexArgument(fromVertex);
+            ValidateVertexArgument(toVertex);
+
+            var toIdx = GetIndex(toVertex);
+            var fromVertexList = graph[GetIndex(fromVertex)];
+            if (fromVertexList.Contains(toIdx))
+            {
+                throw new ArgumentException(String.Format(
+                    Strings.DigraphEdgeAlreadyExists,
+                    fromVertex.ToString(),
+                    toVertex.ToString()));
+            }
+            else
+            {
+                fromVertexList.Add(toIdx);
+            }
+        }
+
+        /// <summary>
+        /// Checks if a vertex is connected to another vertex within the graph
+        /// </summary>
+        /// <param name="vertex1"></param>
+        /// <param name="vertex2"></param>
+        /// <returns></returns>
+        public bool IsConnected(T vertex1, T vertex2)
+        {
+            ValidateVertexArgument(vertex1);
+            ValidateVertexArgument(vertex2);
+
+            var visited = new bool[graph.Count];
+            return IsConnected(GetIndex(vertex1), GetIndex(vertex2), ref visited);
+        }
+
+        /// <summary>
+        /// Check if two vertices are connected
+        /// </summary>
+        /// <param name="fromIdx">Origin vertex</param>
+        /// <param name="toIdx">Destination vertex</param>
+        /// <param name="visited">A boolean array indicating whether a vertex has been visited or not</param>
+        /// <returns>True if the vertices are conneted, otherwise false</returns>
+        private bool IsConnected(int fromIdx, int toIdx, ref bool[] visited)
+        {
+            visited[fromIdx] = true;
+            if (fromIdx == toIdx)
+            {
+                return true;
+            }
+
+            foreach(var vertexIdx in graph[fromIdx])
+            {
+                if (!visited[vertexIdx])
+                {
+                    if(IsConnected(vertexIdx, toIdx, ref visited))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Throw an ArgumentNullException if vertex is null
+        /// </summary>
+        private void ValidateNotNull(T vertex)
+        {
+            if (vertex == null)
+            {
+                throw new ArgumentNullException("vertex");
+            }
+        }
+
+        /// <summary>
+        /// Throw an ArgumentOutOfRangeException if vertex is not present in the graph
+        /// </summary>
+        private void ValidateVertexPresence(T vertex)
+        {
+            if (GetIndex(vertex) == -1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    String.Format(
+                        Strings.DigraphVertexDoesNotExists,
+                        vertex.ToString()),
+                    "vertex");
+            }
+        }
+
+        /// <summary>
+        /// Throw exception if vertex is null or not present in graph
+        /// </summary>
+        private void ValidateVertexArgument(T vertex)
+        {
+            ValidateNotNull(vertex);
+            ValidateVertexPresence(vertex);
+        }
+
+        /// <summary>
+        /// Get the index of the vertex in the graph array
+        /// </summary>
+        private int GetIndex(T vertex)
+        {
+            int idx;
+            return vertexIndexMap.TryGetValue(vertex, out idx) ? idx : -1;
+        }
+
+    }
 }
