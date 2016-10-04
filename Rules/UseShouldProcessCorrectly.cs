@@ -244,6 +244,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return Helper.Instance.GetNamedArgumentAttributeValue(shouldProcessAttribute);
         }
 
+        /// <summary>
+        /// Get a CommandInfo object of the given command name
+        /// </summary>
+        /// <returns>Returns null if command does not exists</returns>
         private CommandInfo GetCommandInfo(string cmdName)
         {
             try
@@ -263,6 +267,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+        /// <summary>
+        /// Checks if the given command supports ShouldProcess
+        /// </summary>
+        /// <returns>False if input is null. If the input command has declares SupportsShouldProcess attribute, returns true</returns>
         private bool SupportsShouldProcess(string cmdName)
         {
             if (String.IsNullOrWhiteSpace(cmdName))
@@ -315,6 +323,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
+        /// <summary>
+        /// Add a ShouldProcess edge from a command vertex if the command supports ShouldProcess
+        /// </summary>
         private void CheckForSupportShouldProcess()
         {
             var commandsWithSupportShouldProcess = new List<Vertex>();
@@ -589,6 +600,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
+        /// <summary>
+        /// Get the number of edges out of the given vertex
+        /// </summary>
         public int GetOutDegree(Vertex v)
         {
             return digraph.GetOutDegree(v);
