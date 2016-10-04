@@ -18,7 +18,7 @@ Describe "Test Directed Graph" {
         }
 
         It "correctly adds the edges" {
-            $digraph.GetNumNeighbors('v1') | Should Be 2
+            $digraph.GetOutDegree('v1') | Should Be 2
             $neighbors = $digraph.GetNeighbors('v1')
             $neighbors -contains 'v2' | Should Be $true
             $neighbors -contains 'v5' | Should Be $true

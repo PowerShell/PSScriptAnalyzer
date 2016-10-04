@@ -3644,7 +3644,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="vertex"></param>
         /// <returns></returns>
-        public int GetNumNeighbors(T vertex)
+        public int GetOutDegree(T vertex)
         {
             ValidateVertexArgument(vertex);
             return graph[GetIndex(vertex)].Count;
