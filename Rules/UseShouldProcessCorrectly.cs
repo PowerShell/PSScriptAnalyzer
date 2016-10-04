@@ -170,7 +170,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (callsShouldProcess)
                 {
-                    // check if upstream function declares SupportShouldProcess\
+                    // check if upstream function declares SupportShouldProcess
                     // if so, this might just be a helper function
                     // do not flag this case
                     if (UpstreamDeclaresShouldProcess(v))
@@ -515,16 +515,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-            // if command is part of a binary module
-            //   for now just check if (Get-Command <CommandName>).DLL end with dll extension
-            // if so, check if it declares SupportsShouldProcess
-            // if so, then assume it also calls ShouldProcess
-            // because we do not have a way to analyze its definition
-            // to actually verify it is indeed calling ShouddProcess
-
-            // if (IsPartOfBinaryModule(cmdName, out cmdInfo))
-            //   if (HasSupportShouldProcessAttribute(cmdInfo))
-            //     AddEdge(cmdName, shouldProcessVertex)
             var vertex = new Vertex (cmdName, ast);
             AddVertex(vertex);
             if (IsWithinFunctionDefinition())
