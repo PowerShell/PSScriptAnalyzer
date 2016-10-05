@@ -7,7 +7,7 @@ If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also 
 For more information, please refer to `about_Functions_Advanced_Methods` and `about_Functions_CmdletBindingAttribute`
 
 ##How to Fix
-To fix a violation of this rule, please call `ShouldProcess` method when a cmdlet declares `SupportsShouldProcess` attribute. Or please add `SupportsShouldProcess` attribute argument when calling `ShouldProcess`.
+To fix a violation of this rule, please call `ShouldProcess` method when a cmdlet declares `SupportsShouldProcess` attribute. Or please add `SupportsShouldProcess` attribute argument when calling `ShouldProcess`
 
 ##Example
 ###Wrong：

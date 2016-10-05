@@ -155,10 +155,10 @@ function PositionalParametersNotAllowed()
     }
 }
 
-# The script analyzer will skip this violation
+# PSScriptAnalyzer will skip this violation
 PositionalParametersAllowed 'value1'
 
-# The script analyzer will report this violation
+# PSScriptAnalyzer will report this violation
 PositionalParametersNotAllowed 'value1
 ```
 
