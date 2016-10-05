@@ -1,16 +1,36 @@
-﻿[![Join the chat at https://gitter.im/PowerShell/PSScriptAnalyzer](https://badges.gitter.im/PowerShell/PSScriptAnalyzer.svg)](https://gitter.im/PowerShell/PSScriptAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/PowerShell/PSScriptAnalyzer](https://badges.gitter.im/PowerShell/PSScriptAnalyzer.svg)](https://gitter.im/PowerShell/PSScriptAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Announcements
-=============
-
-###### [PSScriptAnalyzer 1.7.0 also supports PowerShell on Ubuntu 14.04!](https://www.powershellgallery.com/packages/PSScriptAnalyzer)
-
-##### Builds
 |Master   |  Development |
 |:------:|:------:|:-------:|:-------:|
 [![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/development?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/development) |
 
-#### Code Review Dashboard on [reviewable.io](https://reviewable.io/reviews/PowerShell/PSScriptAnalyzer#-)
+Table of Contents
+=================
+
+<!-- toc -->
+
+- [Introduction](#introduction)
+- [Usage](#usage)
+- [Installation](#installation)
+    + [From PowerShell Gallery](#from-powershell-gallery)
+      - [Requirements](#requirements)
+        * [Windows](#windows)
+        * [Linux (*Tested only on Ubuntu 14.04*)](#linux-tested-only-on-ubuntu-1404)
+    + [From Source](#from-source)
+      - [Requirements](#requirements-1)
+      - [Steps](#steps)
+      - [Tests](#tests)
+- [Suppressing Rules](#suppressing-rules)
+- [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
+  * [Explicit](#explicit)
+  * [Implicit](#implicit)
+- [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
+- [Violation Correction](#violation-correction)
+- [Project Management Dashboard](#project-management-dashboard)
+- [Contributing to ScriptAnalyzer](#contributing-to-scriptanalyzer)
+- [Code of Conduct](#code-of-conduct)
+
+<!-- tocstop -->
 
 Introduction
 ============
@@ -21,7 +41,7 @@ code defects and suggests possible solutions for improvements.
 PSScriptAnalyzer is shipped with a collection of built-in rules that checks various aspects of PowerShell code such as presence of uninitialized variables, usage of PSCredential Type,
 usage of Invoke-Expression etc. Additional functionalities such as exclude/include specific rules are also supported.
 
-PSScriptAnalyzer Cmdlets
+Usage
 ======================
 ``` PowerShell
 Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>] [-Severity <string[]>]
@@ -29,29 +49,27 @@ Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<Com
 Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [<CommonParameters>]
 ```
 
-Requirements
+Installation
 ============
 
-### Windows
-- Windows PowerShell 3.0 or greater
-- PowerShell Core
-
-### Linux (*Tested only on Ubuntu 14.04*)
-- PowerShell Core
-
-Get PSScriptAnalyzer
-============
-
-### PowerShell Gallery
-
+### From PowerShell Gallery
 ```powershell
 Install-Module -Name PSScriptAnalyzer
 ```
 
-### Source
+#### Requirements
 
-#### Dependencies
-* Visual Studio 2015
+##### Windows
+- Windows PowerShell 3.0 or greater
+- PowerShell Core
+
+##### Linux (*Tested only on Ubuntu 14.04*)
+- PowerShell Core
+
+### From Source
+
+#### Requirements
+* .Net Core
 * [PlatyPS 0.5.0 or greater](https://github.com/PowerShell/platyPS)
 
 #### Steps
@@ -62,17 +80,25 @@ Install-Module -Name PSScriptAnalyzer
     git clone https://github.com/PowerShell/PSScriptAnalyzer
     ```
 * Navigate to the source directory
-```powershell
-cd path/to/PSScriptAnalyzer
-```
+    ```powershell
+    cd path/to/PSScriptAnalyzer
+    ```
 * Build for your platform
     * Windows PowerShell version 5.0 and greater
     ```powershell
-    .\build.ps1 -Configuration "Release" -BuildSolution -BuildDocs
+    .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
     ```
     * Windows PowerShell version 3.0 and 4.0
     ```powershell
-    .\build.ps1 -Configuration "PSV3 Release" -BuildSolution -BuildDocs
+    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
+    ```
+    * PowerShell Core
+    ```powershell
+    .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+    ```
+* Build documenatation
+    ```powershell
+    .\build.ps1 -BuildDocs
     ```
 * Import the module
 ```powershell
@@ -80,6 +106,23 @@ Import-Module /path/to/PSScriptAnalyzer/out/PSScriptAnalyzer
 ```
 
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the built-in rules
+
+#### Tests
+Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
+
+* Ensure Pester is installed on the machine
+* Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
+* Go the Tests folder in your local repository
+* Run Engine Tests:
+``` PowerShell
+cd /path/to/PSScriptAnalyzer/Tests/Engine
+Invoke-Pester
+```
+* Run Tests for Built-in rules:
+``` PowerShell
+cd /path/to/PSScriptAnalyzer/Tests/Rules
+Invoke-Pester
+```
 
 Suppressing Rules
 =================
@@ -289,31 +332,6 @@ The main motivation behind having `SuggestedCorrections` is to enable quick-fix 
 * MisleadingBacktick.cs
 * MissingModuleManifestField.cs
 * UseToExportFieldsInManifest.cs
-
-Building the Code
-=================
-
-Use Visual Studio to build "PSScriptAnalyzer.sln". Use ~/PSScriptAnalyzer/ folder to load PSScriptAnalyzer.psd1
-
-**Note: If there are any build errors, please refer to Requirements section and make sure all dependencies are properly installed**
-
-
-Running Tests
-=============
-
-Pester-based ScriptAnalyzer Tests are located in `<branch>/PSScriptAnalyzer/Tests` folder.
-
-1. Ensure Pester is installed on the machine
-2. Go the Tests folder in your local repository
-3. Run Engine Tests:
-``` PowerShell
-.\InvokeScriptAnalyzer.tests.ps1
-```
-4. Run Tests for Built-in rules:
-``` PowerShell
-.\*.ps1 (Example - .\ AvoidConvertToSecureStringWithPlainText.ps1)
-```
-You can also run all tests under \Engine or \Rules by calling Invoke-Pester in the Engine/Rules directory.
 
 Project Management Dashboard
 ==============================
