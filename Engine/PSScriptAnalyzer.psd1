@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.7.0'
+ModuleVersion = '1.8.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -87,13 +87,20 @@ PrivateData = @{
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
         IconUri = ''
         ReleaseNotes = @'
-* Added support for PowerShell on Linux
-    - SaveDscDependency switch is not functional for PowerShell on Linux
-* Added support for external AST based rule suppression.
-* Fixed `SaveDscDependency` switch implementation, which use fail if more than one parameter is given to `Import-DSCResource` dynamic keyword.
-* Fixed rule suppression caused by inavlid offsets.
-* Fixed false positives caused by PSD1 files which are not module manifests. This affects `PSUseToExportFieldsInManifest`, `PSMissingModuleManifestField` and `PSAvoidUsingDeprecatedManifestFields` rules
-* Created a whitelist for `PSUseSingularNoun` rule to ignore `Data` noun.
+### Added
+- New rule to check cmdlet compatibility between different PowerShell flavors
+- New rule to warn when using Hashtable constructor
+- Feature to pass parameters to rules from settings file
+- Feature to discover settings file
+- Enhancement to PSShouldProcess rule to check for ShouldProcess implementation in downstream functions
+- A helper module to create `C#` based builtin rules
+
+### Fixed
+- False negatives for identically named variables
+- Passing `*Ast` arguments to external rules
+
+### Changed
+- PSShouldProcess rule to not check for presence of `ShouldContinue` when `SupportsShouldProcess` is declared
 '@
     }
 }
