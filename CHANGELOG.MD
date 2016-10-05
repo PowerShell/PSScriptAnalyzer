@@ -1,4 +1,21 @@
-## Release v1.7.0
+﻿## [1.8.0](https://github.com/PowerShell/PSScriptAnalyzer/compare/1.7.0...HEAD) - 2016/10/05
+
+### Added
+- New [rule](RuleDocumentation/UseCompatibleCmdlets.md) to check cmdlet compatibility between different PowerShell flavors
+- New [rule](RuleDocumentation/UseLiteralInitializerForHashtable.md) to warn when using Hashtable constructor
+- Feature to [pass parameters to rules from settings file](RuleDocumentation/AvoidAlias.md)
+- Feature to [discover settings file](README.md#settings-support-in-scriptanalyzer )
+- Enhancement to [PSShouldProcess](RuleDocumentation/UseShouldProcessCorrectly.md) rule to check for ShouldProcess implementation in downstream functions
+- A helper [module](Utils/RuleMaker.psm1) to create `C#` based builtin rules
+
+### Fixed
+- False negatives for identically named variables (#552)
+- Passing `*Ast` arguments to external rules (#614)
+
+### Changed
+- PSShouldProcess rule to not check for presence of `ShouldContinue` when `SupportsShouldProcess` is declared
+
+## [1.7.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.7.0)
 
 Here are some improvements since the last release.
 
