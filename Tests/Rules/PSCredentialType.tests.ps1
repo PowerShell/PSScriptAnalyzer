@@ -14,6 +14,21 @@ Describe "PSCredentialType" {
         It "has the correct description message" {
             $violations[0].Message | Should Be $violationMessage
         }
+
+        It "detects attributes on the same line" {
+            $scriptDef = @'
+function Get-Credential
+{
+    param(
+    [PSCredential][System.Management.Automation.Credential()]
+    $Credential
+    )
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule $violationName
+            $violations.Count | Should Be 0
+        }
+
     }
 
     $expectedViolationCount = 0
