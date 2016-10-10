@@ -15,7 +15,7 @@ Describe "PSCredentialType" {
             $violations[0].Message | Should Be $violationMessage
         }
 
-        It "detects attributes on the same line" {
+        It "detects attributes on the same line without space" {
             $scriptDef = @'
 function Get-Credential
 {
