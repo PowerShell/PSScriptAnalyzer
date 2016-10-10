@@ -115,7 +115,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var credentialAttribute = parameter.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
 
                 // check that both exists and pscredentialtype comes before credential attribute
-                if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset < credentialAttribute.Extent.StartOffset)
+                if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset <= credentialAttribute.Extent.StartOffset)
                 {
                     return false;
                 }
