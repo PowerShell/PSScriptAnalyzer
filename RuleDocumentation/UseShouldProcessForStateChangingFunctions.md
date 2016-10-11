@@ -6,11 +6,13 @@ Functions whose verbs change system state should support `ShouldProcess`.
 
 Verbs that should support `ShouldProcess`:
 * `New`
-* `Reset`
-* `Restart`
 * `Set`
+* `Remove`
 * `Start`
 * `Stop`
+* `Restart`
+* `Reset`
+* `Update`
 
 ##How to Fix
 Include the attribute `SupportsShouldProcess`, in the `CmdletBindingBinding`.

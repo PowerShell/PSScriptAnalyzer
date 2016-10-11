@@ -1555,13 +1555,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Array of verbs that can potentially change the state of a system
             string[] stateChangingVerbs =
             {
-                "Restart-",
-                "Stop-",
                 "New-",
                 "Set-",
-                "Update-",
+                "Remove-",
+                "Start-",
+                "Stop-",
+                "Restart-",
                 "Reset-",
-                "Remove-"
+                "Update-"
             };
             foreach (var verb in stateChangingVerbs)
             {
