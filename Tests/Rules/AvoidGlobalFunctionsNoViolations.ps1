@@ -1,5 +1,5 @@
 ﻿
-function functionName {} 
+function global:functionName {} 
 {
 	New-Alias -Name Name -Scope `
 	Script -Value Value

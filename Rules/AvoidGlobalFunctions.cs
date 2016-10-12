@@ -1,12 +1,9 @@
 ﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Management.Automation.Language;
-using System.Globalization;
 using System.ComponentModel.Composition;
+using System.Globalization;
+using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -41,7 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public override AstVisitAction VisitCommandParameter(CommandParameterAst commandParameterAst)
         {
-            if(isScopeParameterForNewAliasCmdlet(commandParameterAst))
+            if(IsScopeParameterForNewAliasCmdlet(commandParameterAst))
             {
                 if ((commandParameterAst.Argument != null)   // if the cmdlet looks like -Scope:Global check Parameter.Argument
                     && (commandParameterAst.Argument.ToString().Equals("Global", StringComparison.OrdinalIgnoreCase)))
@@ -77,7 +74,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst functionDefinitionAst)
         {
-            if (functionDefinitionAst.Name.StartsWith("Global:", StringComparison.OrdinalIgnoreCase))
+            if (functionDefinitionAst.Name.StartsWith("Global:", StringComparison.OrdinalIgnoreCase) && IsModule())
             {
                 records.Add(new DiagnosticRecord(
                                 string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalFunctionsError),
@@ -92,6 +89,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
         #endregion
 
+        private bool IsModule()
+        {
+            return fileName.EndsWith(".psm1");
+        }
+
         private Ast FindNextAst(Ast ast)
         {
             IEnumerable<Ast> matchingLevelAsts = ast.Parent.FindAll(item => item is Ast, true );
@@ -101,14 +103,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (currentClosest == null)
                 {
-                    if (isAstAfter(ast, matchingLevelAst)) 
+                    if (IsAstAfter(ast, matchingLevelAst)) 
                     {
                         currentClosest = matchingLevelAst;
                     }
                 }
                 else
                 {
-                    if((isAstAfter(ast, matchingLevelAst)) && (isAstAfter(matchingLevelAst, currentClosest)))
+                    if((IsAstAfter(ast, matchingLevelAst)) && (IsAstAfter(matchingLevelAst, currentClosest)))
                     {
                         currentClosest = matchingLevelAst;
                     }
@@ -118,7 +120,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return currentClosest;
         }
 
-        private bool isAstAfter(Ast ast1, Ast ast2)
+        private bool IsAstAfter(Ast ast1, Ast ast2)
         {
             if(ast1.Extent.EndLineNumber > ast2.Extent.StartLineNumber)  // ast1 ends on a line after ast2 starts
             {
@@ -141,7 +143,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        private bool isScopeParameterForNewAliasCmdlet(CommandParameterAst commandParameterAst)
+        private bool IsScopeParameterForNewAliasCmdlet(CommandParameterAst commandParameterAst)
         {
             if (commandParameterAst == null || commandParameterAst.ParameterName == null)
                 return false;
