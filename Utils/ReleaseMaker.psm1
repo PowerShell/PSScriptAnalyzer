@@ -141,3 +141,5 @@ function Set-ContentUtf8NoBom {
     $utfNoBom = [System.Text.UTF8Encoding]::new($false)
     [System.IO.File]::WriteAllLines($path, $content, $utfNoBom)
 }
+
+Export-ModuleMember -Function New-Release
