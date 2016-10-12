@@ -18,6 +18,7 @@ Function New-Release
     $solutionRoot = (Get-SolutionPath)
 
     $enginePath = Join-Path $solutionRoot "Engine"
+
     # Check if the changelog has entry for $newVer
     $moduleManifestPath = Join-Path $enginePath "PSScriptAnalyzer.psd1"
     $changelogPath = Join-Path $solutionRoot 'CHANGELOG.MD'
@@ -57,15 +58,17 @@ Function New-Release
         }
     }
 
+    # update version
     Update-Version $newVer $oldVer $solutionRoot
-
 
     $changelogRegexPattern = "##\s\[{0}\].*\n((?:.*\n)+)##\s\[{1}\].*" `
                                 -f [regex]::Escape($newVer),[regex]::Escape($oldVer)
     $changelogRegex = [regex]::new($changelogRegexPattern)
     $matches = $changelogRegex.Match((get-content $changelogPath -raw))
     $changelog = $matches.Groups[1].Value.Trim()
-    Write-Host $changelog
+
+    Write-Verbose 'CHANGELOG'
+    Write-Verbose $changelog
 
     $releaseNotesPattern = `
         "(?<releaseNotesBegin>ReleaseNotes\s*=\s*@')(?<releaseNotes>(?:.*\n)*)(?<releaseNotesEnd>'@)"
@@ -81,6 +84,7 @@ Function New-Release
     # build the module
     pushd $solutionRoot
     remove-item out/ -recurse -force
+    dotnet restore
     .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
     .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
     .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
