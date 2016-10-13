@@ -3,6 +3,21 @@ Function Get-SolutionPath
     Split-Path $PSScriptRoot -Parent
 }
 
+Function Get-ChangeLogPath
+{
+    Join-Path (Get-SolutionPath) 'CHANGELOG.MD'
+}
+
+Function Get-EngineProjectPath
+{
+    Join-Path (Get-SolutionPath) 'Engine'
+}
+
+Function Get-ModuleManifestPath
+{
+    Join-Path (Get-EngineProjectPath) 'PSScriptAnalyzer.psd1'
+}
+
 Function New-Release
 {
     [CmdletBinding()]
@@ -15,15 +30,9 @@ Function New-Release
         $isVersionGiven = $false
     }
 
-    $solutionRoot = (Get-SolutionPath)
-
-    $enginePath = Join-Path $solutionRoot "Engine"
-
-    # Check if the changelog has entry for $newVer
-    $moduleManifestPath = Join-Path $enginePath "PSScriptAnalyzer.psd1"
-    $changelogPath = Join-Path $solutionRoot 'CHANGELOG.MD'
-    $matches = [regex]::new("\[(\d+\.\d+\.\d+)\]").Matches((get-content $changelogPath -raw))
-    $versions = $matches | ForEach-Object {$_.Groups[1].Value}
+    $solutionRoot = Get-SolutionPath
+    $enginePath = Get-EngineProjectPath
+    $versions = Get-VersionsFromChangeLog
     if ($versions.Count -le 2)
     {
         throw "This edge condition for the number versions less that 2 is not implemented."
@@ -61,6 +70,39 @@ Function New-Release
     # update version
     Update-Version $newVer $oldVer $solutionRoot
 
+    # copy release notes from changelog to module manifest
+    Update-ReleaseNotesInModuleManifest $newVer $oldVer
+
+    # build the module
+    pushd $solutionRoot
+    remove-item out/ -recurse -force
+    dotnet restore
+    .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
+    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
+    .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+    .\build.ps1 -BuildDocs
+    popd
+
+}
+
+function Get-VersionsFromChangeLog
+{
+    $moduleManifestPath = Get-ModuleManifestPath
+    $changelogPath = Get-ChangeLogPath
+    $matches = [regex]::new("\[(\d+\.\d+\.\d+)\]").Matches((get-content $changelogPath -raw))
+    $versions = $matches | ForEach-Object {$_.Groups[1].Value}
+    $versions
+}
+
+function Update-ReleaseNotesInModuleManifest
+{
+    [CmdletBinding()]
+    param($newVer, $oldVer)
+
+    $moduleManifestPath = Get-ModuleManifestPath
+    Write-Verbose ("Module manifest: {0}" -f $moduleManifestPath)
+    $changelogPath = Get-ChangeLogPath
+    Write-Verbose ("CHANGELOG: {0}" -f $changelogPath)
     $changelogRegexPattern = "##\s\[{0}\].*\n((?:.*\n)+)##\s\[{1}\].*" `
                                 -f [regex]::Escape($newVer),[regex]::Escape($oldVer)
     $changelogRegex = [regex]::new($changelogRegexPattern)
@@ -80,17 +122,6 @@ Function New-Release
     $r = [regex]::new($releaseNotesPattern)
     $updatedManifestContent = $r.Replace([System.IO.File]::ReadAllText($moduleManifestPath), $replacement)
     Set-ContentUtf8NoBom $moduleManifestPath $updatedManifestContent
-
-    # build the module
-    pushd $solutionRoot
-    remove-item out/ -recurse -force
-    dotnet restore
-    .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
-    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
-    .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
-    .\build.ps1 -BuildDocs
-    popd
-
 }
 
 function Combine-Path
