@@ -74,15 +74,7 @@ Function New-Release
     Update-ReleaseNotesInModuleManifest $newVer $oldVer
 
     # build the module
-    pushd $solutionRoot
-    remove-item out/ -recurse -force
-    dotnet restore
-    .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
-    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
-    .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
-    .\build.ps1 -BuildDocs
-    popd
-
+    New-ReleaseBuild
 }
 
 function Get-VersionsFromChangeLog
@@ -92,6 +84,25 @@ function Get-VersionsFromChangeLog
     $matches = [regex]::new("\[(\d+\.\d+\.\d+)\]").Matches((get-content $changelogPath -raw))
     $versions = $matches | ForEach-Object {$_.Groups[1].Value}
     $versions
+}
+
+function New-ReleaseBuild
+{
+    $solutionPath = Get-SolutionPath
+    pushd $solutionPath
+    try
+    {
+        remove-item out/ -recurse -force
+        dotnet restore
+        .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
+        .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
+        .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+        .\build.ps1 -BuildDocs
+    }
+    finally
+    {
+        popd
+    }
 }
 
 function Update-ReleaseNotesInModuleManifest
@@ -174,3 +185,4 @@ function Set-ContentUtf8NoBom {
 }
 
 Export-ModuleMember -Function New-Release
+Export-ModuleMember -Function New-ReleaseBuild
