@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.8.0'
+ModuleVersion = '1.8.1'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -88,19 +88,11 @@ PrivateData = @{
         IconUri = ''
         ReleaseNotes = @'
 ### Added
-- New rule to check cmdlet compatibility between different PowerShell flavors
-- New rule to warn when using Hashtable constructor
-- Feature to pass parameters to rules from settings file
-- Feature to discover settings file
-- Enhancement to PSShouldProcess rule to check for ShouldProcess implementation in downstream functions
-- A helper module to create `C#` based builtin rules
+- Catalog file to play nicely with PowerShellGet, version `1.1.0.0`
 
 ### Fixed
-- False negatives for identically named variables
-- Passing `*Ast` arguments to external rules
-
-### Changed
-- PSShouldProcess rule to not check for presence of `ShouldContinue` when `SupportsShouldProcess` is declared
+- [PSUsePSCredentialType](RuleDocumentation/UsePSCredentialType.md) rule to check for attributes on same line without an whitespace between them.
+- [PSUseShouldProcessForStateChangingFunctions](RuleDocumentation/UseShouldProcessForStateChangingFunctions.md) rule to check for `start` verb (#634)
 '@
     }
 }
@@ -112,4 +104,5 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
