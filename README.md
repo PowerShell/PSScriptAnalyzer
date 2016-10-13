@@ -172,44 +172,39 @@ function InternalFunction
 }
 ```
 
-The above example demonstrates how to suppress rule violations for internal functions using the `SuppressMessageAttribute`'s `Scope` property.
+You can further restrict suppression based on a function/parameter/class/variable/object's name by setting the `SuppressMessageAttribute's` `Target` property to a regular expression or a glob pattern. Few examples are given below.
 
-You can further restrict suppression based on a function/parameter/class/variable/object's name by setting the `SuppressMessageAttribute's` `Target` property to a regular expression. Any function/parameter/class/variable/object whose name matches the regular expression is skipped.
-
+Suppress `PSAvoidUsingWriteHost` rule violation in `start-bar` and `start-baz` but not in `start-foo` and `start-bam`:
 ``` PowerShell
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPositionalParameters", Scope="Function", Target="PositionalParametersAllowed")]
-Param(
-)
-
-function PositionalParametersAllowed()
-{
-    Param([string]$Parameter1)
-    {
-        Write-Verbose $Parameter1
-    }
-
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-ba[rz]')]
+param()
+function start-foo {
+    write-host "start-foo"
 }
 
-function PositionalParametersNotAllowed()
-{
-    param([string]$Parameter1)
-    {
-        Write-Verbose $Parameter1
-    }
+function start-bar {
+    write-host "start-bar"
 }
 
-# PSScriptAnalyzer will skip this violation
-PositionalParametersAllowed 'value1'
+function start-baz {
+    write-host "start-baz"
+}
 
-# PSScriptAnalyzer will report this violation
-PositionalParametersNotAllowed 'value1
+function start-bam {
+    write-host "start-bam"
+}
 ```
 
-To match all functions/variables/parameters/objects, use `*` as the value of the Target parameter:
+Suppress violations in all the functions:
 ``` PowerShell
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPositionalParameters", Scope="Function", Target="*")]
-Param(
-)
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", Scope="Function", Target="*")]
+Param()
+```
+
+Suppress violation in `start-bar`, `start-baz` and `start-bam` but not in `start-foo`:
+``` PowerShell
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", Scope="Function", Target="start-b*")]
+Param()
 ```
 
 **Note**: Rule suppression is currently supported only for built-in rules.
