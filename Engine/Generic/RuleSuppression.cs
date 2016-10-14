@@ -20,7 +20,7 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class RuleSuppression
     {
@@ -185,11 +185,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                             case 2:
                                 RuleSuppressionID = (positionalArguments[1] as StringConstantExpressionAst).Value;
                                 goto case 1;
-                            
+
                             case 1:
                                 RuleName = (positionalArguments[0] as StringConstantExpressionAst).Value;
                                 goto default;
-                            
+
                             default:
                                 break;
                         }
@@ -281,7 +281,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     RuleName = String.Empty;
                     Error = Strings.NullRuleNameError;
                 }
-                
+
                 // Must have scope and target together
                 if (String.IsNullOrWhiteSpace(Scope) && !String.IsNullOrWhiteSpace(Target))
                 {
@@ -357,8 +357,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         ruleSupp.Target = "*";
                     }
 
+                    // According to documentation 'target' supports regular expression. But to maintain compatibility with
+                    // previous implementation we interpret '*' as a glob and therefore replace '*' with '.*'
                     // regex for wild card *
-                    Regex reg = new Regex(String.Format("^{0}$", Regex.Escape(ruleSupp.Target).Replace(@"\*", ".*")), RegexOptions.IgnoreCase);
+                    Regex reg = new Regex(String.Format("^{0}$", ruleSupp.Target.Replace(@"*", ".*")), RegexOptions.IgnoreCase);
                     IEnumerable<Ast> targetAsts = null;
 
                     switch (ruleSupp.Scope.ToLower())

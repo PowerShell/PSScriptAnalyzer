@@ -7,6 +7,9 @@ if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
 }
 
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+
 $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$directory\RuleSuppression.ps1")
 $violations = Invoke-ScriptAnalyzer "$directory\RuleSuppression.ps1"
 
@@ -144,6 +147,72 @@ Describe "RuleSuppressionWithScope" {
             $suppression.Count | Should Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidUsingPositionalParameters" }
             $suppression.Count | Should Be 0
+        }
+    }
+
+    Context "Function scope with regular expression" {
+        It "suppresses objects that match the regular expression" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-ba[rz]')]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function start-baz {
+                write-host "start-baz"
+            }
+
+            function start-bam {
+                write-host "start-bam"
+            }
+'@
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
+            $suppressed.Count | Should Be 2
+        }
+
+        It "suppresses objects that match glob pattern with glob in the end" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-*')]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function stop-bar {
+                write-host "stop-bar"
+            }
+'@
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
+            $suppressed.Count | Should Be 2
+        }
+
+        It "suppresses objects that match glob pattern with glob in the begining" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*-bar')]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function start-baz {
+                write-host "start-baz"
+            }
+'@
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
+            $suppressed.Count | Should Be 1
         }
     }
  }
