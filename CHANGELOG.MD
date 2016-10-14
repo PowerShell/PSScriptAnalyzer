@@ -1,4 +1,8 @@
-﻿## [1.8.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.8.1) - 2016-10-13
+﻿## [unreleased](https://github.com/PowerShell/PSScriptAnalyzer/tree/development)
+### Fixed
+- Regular expression in `target` parameter in SuppressMessageAttribute (#638)
+
+## [1.8.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.8.1) - 2016-10-13
 ### Added
 - Catalog file to play nicely with PowerShellGet, version `1.1.0.0`
 
