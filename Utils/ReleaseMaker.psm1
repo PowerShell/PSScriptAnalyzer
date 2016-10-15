@@ -118,9 +118,15 @@ function Update-ReleaseNotesInModuleManifest
                                 -f [regex]::Escape($newVer),[regex]::Escape($oldVer)
     $changelogRegex = [regex]::new($changelogRegexPattern)
     $matches = $changelogRegex.Match((get-content $changelogPath -raw))
-    $changelog = $matches.Groups[1].Value.Trim()
+    $changelogWithHyperlinks = $matches.Groups[1].Value.Trim()
 
-    Write-Verbose 'CHANGELOG'
+    Write-Verbose 'CHANGELOG:'
+    Write-Verbose $changelogWithHyperlinks
+
+    # Remove hyperlinks from changelog to make is suitable for publishing on powershellgallery.com
+    Write-Verbose "Removing hyperlinks from changelog"
+    $changelog = Remove-MarkdownHyperlink $changelogWithHyperlinks
+    Write-Verbose "CHANGELOG without hyperlinks:"
     Write-Verbose $changelog
 
     $releaseNotesPattern = `
@@ -135,11 +141,17 @@ function Update-ReleaseNotesInModuleManifest
     Set-ContentUtf8NoBom $moduleManifestPath $updatedManifestContent
 }
 
+function Remove-MarkdownHyperlink
+{
+    param($markdownContent)
+    $markdownContent -replace "\[(.*)\]\(.*\)",'$1'
+}
+
 function Combine-Path
 {
     if ($args.Count -lt 2)
     {
-        throw "give more than equal to 2 arguments"
+        throw "give more 1 argument"
     }
 
     $path = Join-Path $args[0] $args[1]
