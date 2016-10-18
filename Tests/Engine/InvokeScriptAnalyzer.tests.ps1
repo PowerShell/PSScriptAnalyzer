@@ -317,6 +317,26 @@ Describe "Test Severity" {
              $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity information, warning
             $errors.Count | Should Be 1
         }
+
+        It "works for dsc rules" {
+            $testDataPath = [System.IO.Path]::Combine($(Split-Path $directory -Parent), `
+                                                                'Rules', `
+                                                                'DSCResources', `
+                                                                'MSFT_WaitForAll', `
+                                                                'MSFT_WaitForAll.psm1')
+
+            Function Get-Count {begin{$count=0} process{$count++} end{$count}}
+
+            Invoke-ScriptAnalyzer -Path $testDataPath -Severity Error | `
+                Where-Object {$_.RuleName -eq "PSDSCUseVerboseMessageInDSCResource"} | `
+                Get-Count | `
+                Should Be 0
+
+            Invoke-ScriptAnalyzer -Path $testDataPath -Severity Information | `
+                Where-Object {$_.RuleName -eq "PSDSCUseVerboseMessageInDSCResource"} | `
+                Get-Count | `
+                Should Be 2
+        }
     }
 
     Context "When used incorrectly" {
