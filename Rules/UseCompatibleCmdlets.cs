@@ -41,6 +41,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private Dictionary<string, dynamic> platformSpecMap;
         private string scriptPath;
         private bool IsInitialized;
+        private readonly string referenceFile = "desktop-5.1.14393.206-windows.json";
 
         public UseCompatibleCmdlets()
         {
@@ -271,7 +272,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 switch (mode)
                 {
                     case "offline":
-                        ProcessOfflineModeArgs(ruleArgs);
+                        var uri = GetStringArgFromListStringArg(ruleArgs["uri"]);
+                        if (uri == null
+                            || !Directory.Exists(uri)
+                            || !ContainsReferenceFile(uri))
+                        {
+                            return;
+                        }
+
+                        ProcessDirectory(uri);
                         break;
 
                     case "online": // not implemented yet.
@@ -284,12 +293,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var settingsPath = GetShippedSettingsDirectory();
-            if (settingsPath == null)
+            if (settingsPath == null
+                || !ContainsReferenceFile(settingsPath))
             {
                 return;
             }
 
             ProcessDirectory(settingsPath);
+        }
+
+        /// <summary>
+        /// Checks if the given directory has the reference file
+        /// directory must be non-null
+        /// </summary>
+        private bool ContainsReferenceFile(string directory)
+        {
+            return File.Exists(Path.Combine(directory, referenceFile));
         }
 
         /// <summary>
