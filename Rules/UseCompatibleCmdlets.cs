@@ -42,8 +42,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private string scriptPath;
         private bool IsInitialized;
         private bool hasInitializationError;
-        private string referenceFile;
-        private readonly string defaultReferenceFile = "desktop-5.1.14393.206-windows.json";
+        private string referencePlatform;
+        private readonly string defaultReferencePlatform = "desktop-5.1.14393.206-windows";
 
         public UseCompatibleCmdlets()
         {
@@ -278,15 +278,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             object referenceObject;
             if (ruleArgs.TryGetValue("reference", out referenceObject))
             {
-                referenceFile = referenceObject as string;
-                if (referenceFile == null)
+                referencePlatform = referenceObject as string;
+                if (referencePlatform == null)
                 {
                     return;
                 }
             }
             else
             {
-                referenceFile = defaultReferenceFile;
+                referencePlatform = defaultReferencePlatform;
+            }
+
+            // check if the reference file has valid platformSpec
+            if (!IsValidPlatformString(referencePlatform))
+            {
+                return;
             }
 
             object modeObject;
@@ -336,7 +342,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private bool ContainsReferenceFile(string directory)
         {
-            return File.Exists(Path.Combine(directory, referenceFile));
+            return File.Exists(Path.Combine(directory, referencePlatform + ".json"));
         }
 
         /// <summary>
@@ -377,6 +383,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return settingsPath;
+        }
+
+        private bool IsValidPlatformString(string fileNameWithoutExt)
+        {
+            string psedition, psversion, os;
+            return GetVersionInfoFromPlatformString(
+                fileNameWithoutExt,
+                out psedition,
+                out psversion,
+                out os);
         }
 
         /// <summary>
