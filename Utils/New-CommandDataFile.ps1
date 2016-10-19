@@ -39,7 +39,7 @@ if (-not (Test-Path $builtinModulePath))
 Function IsPSEditionDesktop
 {
     $edition = Get-Variable -Name PSEdition -ErrorAction Ignore
-    ($edition -eq $null) -or ($edition -eq 'Desktop')
+    ($edition -eq $null) -or ($edition.Value -eq 'Desktop') # $edition is of type psvariable
 }
 
 Function Get-CmdletDataFileName
