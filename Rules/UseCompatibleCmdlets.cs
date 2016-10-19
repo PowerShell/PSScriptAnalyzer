@@ -41,6 +41,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private Dictionary<string, dynamic> platformSpecMap;
         private string scriptPath;
         private bool IsInitialized;
+        private bool hasInitializationError;
         private string referenceFile;
         private readonly string defaultReferenceFile = "desktop-5.1.14393.206-windows.json";
 
@@ -124,6 +125,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (!IsInitialized)
             {
                 Initialize();
+            }
+
+            if (hasInitializationError)
+            {
+                yield break;
             }
 
             if (ast == null)
@@ -217,6 +223,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private void SetupCmdletsDictionary()
         {
+            // If the method encounters any error, it returns early
+            // which implies there is an initialization error
+            hasInitializationError = true;
             Dictionary<string, object> ruleArgs = Helper.Instance.GetRuleArguments(GetName());
             if (ruleArgs == null)
             {
@@ -316,6 +325,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             ProcessDirectory(settingsPath);
+
+            // reached this point, so no error
+            hasInitializationError = false;
         }
 
         /// <summary>
