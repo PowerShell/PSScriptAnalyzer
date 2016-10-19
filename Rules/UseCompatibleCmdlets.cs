@@ -283,7 +283,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            var settingsPath = GetSettingsDirectory();
+            var settingsPath = GetShippedSettingsDirectory();
             if (settingsPath == null)
             {
                 return;
@@ -307,7 +307,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the Settings directory from the Module directory structure
         /// </summary>
-        private string GetSettingsDirectory()
+        private string GetShippedSettingsDirectory()
         {
             // Find the compatibility files in Settings folder
             var path = this.GetType().GetTypeInfo().Assembly.Location;
