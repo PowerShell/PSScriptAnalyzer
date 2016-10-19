@@ -274,6 +274,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
+            referencePlatform = defaultReferencePlatform;
+#if DEBUG
             // Setup reference file
             object referenceObject;
             if (ruleArgs.TryGetValue("reference", out referenceObject))
@@ -283,16 +285,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     return;
                 }
-            }
-            else
-            {
-                referencePlatform = defaultReferencePlatform;
-            }
-
-            // check if the reference file has valid platformSpec
-            if (!IsValidPlatformString(referencePlatform))
-            {
-                return;
             }
 
             object modeObject;
@@ -320,6 +312,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
                 }
 
+                return;
+            }
+#endif
+
+            // check if the reference file has valid platformSpec
+            if (!IsValidPlatformString(referencePlatform))
+            {
                 return;
             }
 
