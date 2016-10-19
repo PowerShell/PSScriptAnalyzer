@@ -33,6 +33,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseCompatibleCmdlets : AstVisitor, IScriptRule
     {
+
+        private struct RuleParameters
+        {
+            public string mode;
+            public string[] compatibility;
+            public string referencePlatform;
+        }
+
         private List<DiagnosticRecord> diagnosticRecords;
         private Dictionary<string, HashSet<string>> psCmdletMap;
         private readonly List<string> validParameters;
@@ -44,6 +52,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool hasInitializationError;
         private string referencePlatform;
         private readonly string defaultReferencePlatform = "desktop-5.1.14393.206-windows";
+        private RuleParameters ruleParameters;
 
         public UseCompatibleCmdlets()
         {
@@ -176,12 +185,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private void GenerateDiagnosticRecords()
         {
-            foreach (var curCmdletCompat in curCmdletCompatibilityMap)
+            bool referenceCompatibility = curCmdletCompatibilityMap[referencePlatform];
+            bool requestedCompatibility = ruleParameters.compatibility.Any(x => curCmdletCompatibilityMap[x]);
+
+            // If the command is present in reference platform but not in any of the given platforms.
+            // Or if the command is not present in reference platform but present in any of the given platforms
+            // then declare it as an incompatible cmdlet.
+            // If it is present neither in reference platform nor any given platforms, then it is probably a
+            // non-builtin command and hence do not declare it as an incompatible cmdlet.
+            if (!(referenceCompatibility ^ requestedCompatibility))
             {
-                if (!curCmdletCompat.Value)
+                return;
+            }
+
+            foreach (var platform in ruleParameters.compatibility)
+            {
+                var curCmdletCompat = curCmdletCompatibilityMap[platform];
+                if (!curCmdletCompat)
                 {
                     var cmdletName = curCmdletAst.GetCommandName();
-                    var platformInfo = platformSpecMap[curCmdletCompat.Key];
+                    var platformInfo = platformSpecMap[platform];
                     var funcNameTokens = Helper.Instance.Tokens.Where(
                                                 token =>
                                                 Helper.ContainsExtent(curCmdletAst.Extent, token.Extent)
@@ -262,7 +285,63 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            foreach (var compat in compatibilityList)
+            ruleParameters.compatibility = compatibilityList.ToArray();
+            referencePlatform = defaultReferencePlatform;
+#if DEBUG
+            // Setup reference file
+            object referenceObject;
+            if (ruleArgs.TryGetValue("reference", out referenceObject))
+            {
+                referencePlatform = referenceObject as string;
+                if (referencePlatform == null)
+                {
+                    referencePlatform = GetStringArgFromListStringArg(referenceObject);
+                    if (referencePlatform == null)
+                    {
+                        return;
+                    }
+                }
+            }
+#endif
+            ruleParameters.referencePlatform = referencePlatform;
+
+            // check if the reference file has valid platformSpec
+            if (!IsValidPlatformString(referencePlatform))
+            {
+                return;
+            }
+
+            string settingsPath;
+            settingsPath = GetShippedSettingsDirectory();
+#if DEBUG
+            object modeObject;
+            if (ruleArgs.TryGetValue("mode", out modeObject))
+            {
+                // This is for testing only. User should not be specifying mode!
+                var mode = GetStringArgFromListStringArg(modeObject);
+                ruleParameters.mode = mode;
+                switch (mode)
+                {
+                    case "offline":
+                        settingsPath = GetStringArgFromListStringArg(ruleArgs["uri"]);
+                        break;
+
+                    case "online": // not implemented yet.
+                    case null:
+                    default:
+                        return;
+                }
+
+            }
+#endif
+            if (settingsPath == null
+                || !ContainsReferenceFile(settingsPath))
+            {
+                return;
+            }
+
+            var extentedCompatibilityList = compatibilityList.Concat(Enumerable.Repeat(referencePlatform, 1));
+            foreach (var compat in extentedCompatibilityList)
             {
                 string psedition, psversion, os;
 
@@ -274,62 +353,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            referencePlatform = defaultReferencePlatform;
-#if DEBUG
-            // Setup reference file
-            object referenceObject;
-            if (ruleArgs.TryGetValue("reference", out referenceObject))
-            {
-                referencePlatform = referenceObject as string;
-                if (referencePlatform == null)
-                {
-                    return;
-                }
-            }
-
-            object modeObject;
-            if (ruleArgs.TryGetValue("mode", out modeObject))
-            {
-                // This is for testing only. User should not be specifying mode!
-                var mode = GetStringArgFromListStringArg(modeObject);
-                switch (mode)
-                {
-                    case "offline":
-                        var uri = GetStringArgFromListStringArg(ruleArgs["uri"]);
-                        if (uri == null
-                            || !Directory.Exists(uri)
-                            || !ContainsReferenceFile(uri))
-                        {
-                            return;
-                        }
-
-                        ProcessDirectory(uri);
-                        break;
-
-                    case "online": // not implemented yet.
-                    case null:
-                    default:
-                        break;
-                }
-
-                return;
-            }
-#endif
-
-            // check if the reference file has valid platformSpec
-            if (!IsValidPlatformString(referencePlatform))
+            ProcessDirectory(
+                settingsPath,
+                extentedCompatibilityList);
+            if (psCmdletMap.Keys.Count != extentedCompatibilityList.Count())
             {
                 return;
             }
-
-            var settingsPath = GetShippedSettingsDirectory();
-            if (settingsPath == null
-                || !ContainsReferenceFile(settingsPath))
-            {
-                return;
-            }
-
-            ProcessDirectory(settingsPath);
 
             // reached this point, so no error
             hasInitializationError = false;
@@ -438,29 +468,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Process arguments when 'offline' mode is specified
-        /// </summary>
-        private void ProcessOfflineModeArgs(Dictionary<string, object> ruleArgs)
-        {
-            var uri = GetStringArgFromListStringArg(ruleArgs["uri"]);
-            if (uri == null)
-            {
-                // TODO: log this
-                return;
-            }
-            if (!Directory.Exists(uri))
-            {
-                // TODO: log this
-                return;
-            }
-
-            ProcessDirectory(uri);
-        }
-
-        /// <summary>
         /// Search a directory for files of form [PSEdition]-[PSVersion]-[OS].json
         /// </summary>
-        private void ProcessDirectory(string path)
+        private void ProcessDirectory(string path, IEnumerable<string> acceptablePlatformSpecs)
         {
             foreach (var filePath in Directory.EnumerateFiles(path))
             {
@@ -472,35 +482,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 var fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
-                if (!platformSpecMap.ContainsKey(fileNameWithoutExt))
+                if (acceptablePlatformSpecs != null
+                    && !acceptablePlatformSpecs.Contains(fileNameWithoutExt, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
                 psCmdletMap[fileNameWithoutExt] = GetCmdletsFromData(JObject.Parse(File.ReadAllText(filePath)));
-            }
-
-            RemoveUnavailableKeys();
-        }
-
-        /// <summary>
-        /// Remove keys that are not present in psCmdletMap but present in platformSpecMap and curCmdletCompatibilityMap
-        /// </summary>
-        private void RemoveUnavailableKeys()
-        {
-            var keysToRemove = new List<string>();
-            foreach (var key in platformSpecMap.Keys)
-            {
-                if (!psCmdletMap.ContainsKey(key))
-                {
-                    keysToRemove.Add(key);
-                }
-            }
-
-            foreach (var key in keysToRemove)
-            {
-                platformSpecMap.Remove(key);
-                curCmdletCompatibilityMap.Remove(key);
             }
         }
 
@@ -513,11 +501,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             var cmdlets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             dynamic modules = deserializedObject.Modules;
-            foreach (var module in modules)
+            foreach (dynamic module in modules)
             {
-                foreach (var cmdlet in module.ExportedCommands)
+                if (module.ExportedCommands == null)
                 {
-                    var name = cmdlet.Name.Value as string;
+                    continue;
+                }
+
+                foreach (dynamic cmdlet in module.ExportedCommands)
+                {
+                    var name = cmdlet.Name as string;
+                    if (name == null)
+                    {
+                        name = cmdlet.Name.ToObject<string>();
+                    }
                     cmdlets.Add(name);
                 }
             }
