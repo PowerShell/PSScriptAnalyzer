@@ -41,11 +41,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private Dictionary<string, dynamic> platformSpecMap;
         private string scriptPath;
         private bool IsInitialized;
-        private readonly string referenceFile = "desktop-5.1.14393.206-windows.json";
+        private string referenceFile;
+        private readonly string defaultReferenceFile = "desktop-5.1.14393.206-windows.json";
 
         public UseCompatibleCmdlets()
         {
-            validParameters = new List<string> { "mode", "uri", "compatibility" };
+            validParameters = new List<string> { "mode", "uri", "compatibility", "reference" };
             IsInitialized = false;
         }
 
@@ -262,6 +263,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     platformSpecMap.Add(compat, new { PSEdition = psedition, PSVersion = psversion, OS = os });
                     curCmdletCompatibilityMap.Add(compat, true);
                 }
+            }
+
+            // Setup reference file
+            object referenceObject;
+            if (ruleArgs.TryGetValue("reference", out referenceObject))
+            {
+                referenceFile = referenceObject as string;
+                if (referenceFile == null)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                referenceFile = defaultReferenceFile;
             }
 
             object modeObject;
