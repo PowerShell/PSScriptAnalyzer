@@ -33,12 +33,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseCompatibleCmdlets : AstVisitor, IScriptRule
     {
-
         private struct RuleParameters
         {
             public string mode;
             public string[] compatibility;
-            public string referencePlatform;
+            public string reference;
         }
 
         private List<DiagnosticRecord> diagnosticRecords;
@@ -50,8 +49,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private string scriptPath;
         private bool IsInitialized;
         private bool hasInitializationError;
-        private string referencePlatform;
-        private readonly string defaultReferencePlatform = "desktop-5.1.14393.206-windows";
+        private string reference;
+        private readonly string defaultReference = "desktop-5.1.14393.206-windows";
         private RuleParameters ruleParameters;
 
         public UseCompatibleCmdlets()
@@ -185,7 +184,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private void GenerateDiagnosticRecords()
         {
-            bool referenceCompatibility = curCmdletCompatibilityMap[referencePlatform];
+            bool referenceCompatibility = curCmdletCompatibilityMap[reference];
             bool requestedCompatibility = ruleParameters.compatibility.Any(x => curCmdletCompatibilityMap[x]);
 
             // If the command is present in reference platform but not in any of the given platforms.
@@ -193,6 +192,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // then declare it as an incompatible cmdlet.
             // If it is present neither in reference platform nor any given platforms, then it is probably a
             // non-builtin command and hence do not declare it as an incompatible cmdlet.
+            // Since we do not check for aliases, the XOR-ing will also make sure that aliases are not flagged
+            // as they will be found neither in reference platform nor in given platforms
             if (!(referenceCompatibility ^ requestedCompatibility))
             {
                 return;
@@ -286,27 +287,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             ruleParameters.compatibility = compatibilityList.ToArray();
-            referencePlatform = defaultReferencePlatform;
+            reference = defaultReference;
 #if DEBUG
             // Setup reference file
             object referenceObject;
             if (ruleArgs.TryGetValue("reference", out referenceObject))
             {
-                referencePlatform = referenceObject as string;
-                if (referencePlatform == null)
+                reference = referenceObject as string;
+                if (reference == null)
                 {
-                    referencePlatform = GetStringArgFromListStringArg(referenceObject);
-                    if (referencePlatform == null)
+                    reference = GetStringArgFromListStringArg(referenceObject);
+                    if (reference == null)
                     {
                         return;
                     }
                 }
             }
 #endif
-            ruleParameters.referencePlatform = referencePlatform;
+            ruleParameters.reference = reference;
 
             // check if the reference file has valid platformSpec
-            if (!IsValidPlatformString(referencePlatform))
+            if (!IsValidPlatformString(reference))
             {
                 return;
             }
@@ -340,7 +341,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            var extentedCompatibilityList = compatibilityList.Concat(Enumerable.Repeat(referencePlatform, 1));
+            var extentedCompatibilityList = compatibilityList.Concat(Enumerable.Repeat(reference, 1));
             foreach (var compat in extentedCompatibilityList)
             {
                 string psedition, psversion, os;
@@ -371,7 +372,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private bool ContainsReferenceFile(string directory)
         {
-            return File.Exists(Path.Combine(directory, referencePlatform + ".json"));
+            return File.Exists(Path.Combine(directory, reference + ".json"));
         }
 
         /// <summary>
