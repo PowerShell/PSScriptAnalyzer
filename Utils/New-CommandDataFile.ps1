@@ -84,7 +84,7 @@ $shortModuleInfos = Get-ChildItem -Path $builtinModulePath `
         $commands = Get-Command -Module $module
         $shortCommands = $commands | select -Property Name,@{Label='CommandType';Expression={$_.CommandType.ToString()}},ParameterSets
         $shortModuleInfo = $module | select -Property Name,@{Label='Version';Expression={$_.Version.ToString()}}
-        Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedCommands' -NotePropertyValue $shortCommands -PassThru
+        Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedCommands' -NotePropertyValue $shortCommands
         Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedAliases' -NotePropertyValue $module.ExportedAliases.Keys -PassThru
     }
 }
