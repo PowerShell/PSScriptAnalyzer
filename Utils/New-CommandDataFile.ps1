@@ -112,4 +112,4 @@ Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedAliases' -No
 
 $allShortModuleInfos = $shortModuleInfos + $shortModuleInfo
 $jsonData['Modules'] = $allShortModuleInfos
-$jsonData | ConvertTo-Json -Depth 4 | Out-File ((Get-CmdletDataFileName)) -Encoding ASCII
+$jsonData | ConvertTo-Json -Depth 4 | Out-File ((Get-CmdletDataFileName)) -Encoding utf8
