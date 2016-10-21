@@ -185,24 +185,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private void GenerateDiagnosticRecords()
         {
             bool referenceCompatibility = curCmdletCompatibilityMap[reference];
-            bool requestedCompatibility = ruleParameters.compatibility.Any(x => curCmdletCompatibilityMap[x]);
 
-            // If the command is present in reference platform but not in any of the given platforms.
-            // Or if the command is not present in reference platform but present in any of the given platforms
+            // If the command is present in reference platform but not in any of the target platforms.
+            // Or if the command is not present in reference platform but present in any of the target platforms
             // then declare it as an incompatible cmdlet.
-            // If it is present neither in reference platform nor any given platforms, then it is probably a
+            // If it is present neither in reference platform nor any target platforms, then it is probably a
             // non-builtin command and hence do not declare it as an incompatible cmdlet.
             // Since we do not check for aliases, the XOR-ing will also make sure that aliases are not flagged
-            // as they will be found neither in reference platform nor in given platforms
-            if (!(referenceCompatibility ^ requestedCompatibility))
-            {
-                return;
-            }
-
+            // as they will be found neither in reference platform nor in target platforms
             foreach (var platform in ruleParameters.compatibility)
             {
                 var curCmdletCompat = curCmdletCompatibilityMap[platform];
-                if (!curCmdletCompat)
+                if (!curCmdletCompat && referenceCompatibility)
                 {
                     var cmdletName = curCmdletAst.GetCommandName();
                     var platformInfo = platformSpecMap[platform];
