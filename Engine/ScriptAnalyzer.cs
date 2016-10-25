@@ -1993,7 +1993,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-                foreach (var ruleRecord in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), fileName))
+                foreach (var ruleRecord in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), filePath))
                 {
                     var records = SuppressRule(ruleSuppressions, ruleRecord);
                     foreach (var record in records.Item2)
