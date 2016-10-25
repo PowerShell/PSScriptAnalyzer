@@ -150,6 +150,17 @@ Describe "Test importing correct customized rules" {
             $customizedRulePath.Count | Should Be 1
         }
 
+		It "will set ScriptName property to the target file name" {
+			$violations = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule
+			$violations[0].ScriptName | Should Be 'TestScript.ps1'
+		}
+
+		It "will set ScriptPath property to the target file path" {
+			$violations = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule
+			$expectedScriptPath = Join-Path $directory 'TestScript.ps1'
+			$violations[0].ScriptPath | Should Be $expectedScriptPath
+		}
+
         if (!$testingLibraryUsage)
 		{
             It "will show the custom rule in the results when given a rule folder path with trailing backslash" {
