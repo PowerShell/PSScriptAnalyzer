@@ -38,7 +38,15 @@ Function Test-PSEditionCoreCLRLinux
     (Test-PSEditionCoreCLR) -and $IsLinux
 }
 
+Function Get-Count
+{
+	Begin {$count = 0}
+	Process {$count++}
+	End {$count}
+}
+
 Export-ModuleMember -Function Get-ExtentText
 Export-ModuleMember -Function Test-CorrectionExtent
 Export-ModuleMember -Function Test-PSEditionCoreCLR
 Export-ModuleMember -Function Test-PSEditionCoreCLRLinux
+Export-ModuleMember -Function Get-Count
