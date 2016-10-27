@@ -55,7 +55,7 @@ Foo
             $violations.Count | Should Be 0
         }
 
-        It "finds no violation if downstream function does not declare SupportsShouldProcess" {
+        It "finds violation if downstream function does not declare SupportsShouldProcess" {
               $scriptDef = @'
 function Foo
 {
@@ -80,7 +80,7 @@ function Bar
 Foo
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should Be 1
         }
 
         It "finds no violation for 2 level downstream calls" {
@@ -113,11 +113,11 @@ function Bar
 Foo
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should Be 1
         }
     }
 
-    Context "When downstream function is defined locally in a function scope" {
+    Context "When nested function definition calls ShouldProcess" {
         It "finds no violation" {
             $scriptDef = @'
 function Foo
@@ -142,8 +142,8 @@ function Foo
         }
     }
 
-    Context "When a builtin command with SupportsShouldProcess is called" {
-        It "finds no violation for a cmdlet" {
+    Context "When a builtin command that supports ShouldProcess is called" {
+        It "finds no violation when caller declares SupportsShouldProcess and callee is a cmdlet" {
             $scriptDef = @'
 function Remove-Foo {
 [CmdletBinding(SupportsShouldProcess)]
@@ -158,7 +158,21 @@ function Remove-Foo {
             $violations.Count | Should Be 0
         }
 
-        It "finds no violation for a function" {
+        It "finds no violation when caller does not declare SupportsShouldProcess and callee is a cmdlet" {
+            $scriptDef = @'
+function Remove-Foo {
+    Param(
+        [string] $Path
+    )
+    Write-Verbose "Removing $($path)"
+    Remove-Item -Path $Path
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+            $violations.Count | Should Be 0
+        }
+
+        It "finds no violation when caller declares SupportsShouldProcess and callee is a function" {
             $scriptDef = @'
 function Install-Foo {
 [CmdletBinding(SupportsShouldProcess)]
@@ -172,10 +186,23 @@ function Install-Foo {
             $violations.Count | Should Be 0
         }
 
+        It "finds no violation when caller does not declare SupportsShouldProcess and callee is a function" {
+            $scriptDef = @'
+function Install-Foo {
+    Param(
+        [string] $ModuleName
+    )
+    Install-Module $ModuleName
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+            $violations.Count | Should Be 0
+        }
+
        It "finds no violation for a function with self reference" {
             $scriptDef = @'
 function Install-ModuleWithDeps {
-[CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess)]
     Param(
         [Parameter(ValueFromPipeline)]
         [string] $ModuleName
