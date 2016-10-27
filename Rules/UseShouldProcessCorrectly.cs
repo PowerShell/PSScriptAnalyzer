@@ -37,11 +37,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private FunctionReferenceDigraph funcDigraph;
         private List<DiagnosticRecord> diagnosticRecords;
         private readonly Vertex shouldProcessVertex;
+        private readonly Vertex implicitShouldProcessVertex;
 
         public UseShouldProcessCorrectly()
         {
             diagnosticRecords = new List<DiagnosticRecord>();
             shouldProcessVertex = new Vertex("ShouldProcess", null);
+            implicitShouldProcessVertex = new Vertex("implicitShouldProcessVertex", null);
         }
 
         /// <summary>
@@ -150,10 +152,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
 
-            bool callsShouldProcess = funcDigraph.IsConnected(v, shouldProcessVertex);
             if (DeclaresSupportsShouldProcess(fast))
             {
-                if (!callsShouldProcess)
+                bool callsShouldProcess = funcDigraph.IsConnected(v, shouldProcessVertex);
+                bool callsCommandWithShouldProcess = funcDigraph.IsConnected(v, implicitShouldProcessVertex);
+                if (!callsShouldProcess
+                    && !callsCommandWithShouldProcess)
                 {
                     return new DiagnosticRecord(
                         string.Format(
@@ -168,12 +172,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             else
             {
-                if (callsShouldProcess)
+                if (callsShouldProcessDirectly(v))
                 {
                     // check if upstream function declares SupportShouldProcess
                     // if so, this might just be a helper function
                     // do not flag this case
-                    if (UpstreamDeclaresShouldProcess(v))
+                    if (v.IsNestedFunctionDefinition && UpstreamDeclaresShouldProcess(v))
                     {
                         return null;
                     }
@@ -191,6 +195,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return null;
+        }
+
+        private bool callsShouldProcessDirectly(Vertex vertex)
+        {
+            return funcDigraph.GetNeighbors(vertex).Contains(shouldProcessVertex);
         }
 
         /// <summary>
@@ -344,10 +353,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             if (commandsWithSupportShouldProcess.Count > 0)
             {
-                funcDigraph.AddVertex(shouldProcessVertex);
+                funcDigraph.AddVertex(implicitShouldProcessVertex);
                 foreach(var v in commandsWithSupportShouldProcess)
                 {
-                    funcDigraph.AddEdge(v, shouldProcessVertex);
+                    funcDigraph.AddEdge(v, implicitShouldProcessVertex);
                 }
             }
         }
@@ -359,10 +368,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     class Vertex
     {
         public string Name {get { return name;}}
-        public Ast Ast {get {return ast; }}
+        public Ast Ast
+        {
+            get
+            {
+                return ast;
+            }
+            set
+            {
+                ast = value;
+            }
+        }
+
+        public bool IsNestedFunctionDefinition {get {return isNestedFunctionDefinition;}}
 
         private string name;
         private Ast ast;
+        private bool isNestedFunctionDefinition;
 
         public Vertex()
         {
@@ -377,6 +399,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             this.name = name;
             this.ast = ast;
+        }
+
+        public Vertex (String name, Ast ast, bool isNestedFunctionDefinition)
+            : this(name, ast)
+            {
+            this.isNestedFunctionDefinition = isNestedFunctionDefinition;
         }
 
         /// <summary>
@@ -460,11 +488,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Add a vertex to the graph
         /// </summary>
-        public void AddVertex(Vertex name)
+        public void AddVertex(Vertex vertex)
         {
-            if (!digraph.ContainsVertex(name))
+            bool containsVertex = false;
+
+            // if the graph contains a vertex with name equal to that
+            // of the input vertex, then update the vertex's ast if the
+            // input vertex's ast is of FunctionDefinitionAst type
+            foreach(Vertex v in digraph.GetVertices())
             {
-                digraph.AddVertex(name);
+                if (v.Equals(vertex))
+                {
+                    containsVertex = true;
+                    if (vertex.Ast != null
+                        && vertex.Ast is FunctionDefinitionAst)
+                    {
+                        v.Ast = vertex.Ast;
+                    }
+                    break;
+                }
+            }
+
+            if (!containsVertex)
+            {
+                digraph.AddVertex(vertex);
             }
         }
 
@@ -491,7 +538,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.SkipChildren;
             }
 
-            var functionVertex = new Vertex (ast.Name, ast);
+            var functionVertex = new Vertex(ast.Name, ast, IsWithinFunctionDefinition());
             functionVisitStack.Push(functionVertex);
             AddVertex(functionVertex);
             ast.Body.Visit(this);
@@ -549,18 +596,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Suppose we find <Expression>.<Member>, we split it up and create
-            // and edge from <Expression>-><Member>. Even though <Expression> is not
+            // and edge only to <Member>. Even though <Expression> is not
             // necessarily a function, we do it because we are mainly interested in
             // finding connection between a function and ShouldProcess and this approach
             // prevents any unnecessary complexity.
-            var exprVertex = new Vertex (expr, ast.Expression);
             var memberVertex = new Vertex (memberExprAst.Value, memberExprAst);
-            AddVertex(exprVertex);
             AddVertex(memberVertex);
-            AddEdge(exprVertex, memberVertex);
             if (IsWithinFunctionDefinition())
             {
-                AddEdge(GetCurrentFunctionContext(), exprVertex);
+                AddEdge(GetCurrentFunctionContext(), memberVertex);
             }
 
             return AstVisitAction.Continue;
@@ -596,6 +640,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public int GetOutDegree(Vertex v)
         {
             return digraph.GetOutDegree(v);
+        }
+
+        public IEnumerable<Vertex> GetNeighbors(Vertex v)
+        {
+            return digraph.GetNeighbors(v);
         }
     }
 }
