@@ -70,7 +70,7 @@ Describe "Test Name parameters" {
 		}
 
         It "is a positional parameter" {
-            $rules = Get-ScriptAnalyzerRule *alias*
+            $rules = Get-ScriptAnalyzerRule "PSAvoidUsingCmdletAliases"
             $rules.Count | Should Be 1
         }
     }
