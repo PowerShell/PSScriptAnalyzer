@@ -187,11 +187,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid global aliases..
+        /// </summary>
+        internal static string AvoidGlobalAliasesCommonName {
+            get {
+                return ResourceManager.GetString("AvoidGlobalAliasesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Checks that global aliases are not used. Global aliases are strongly discouraged as they overwrite desired aliases with name conflicts..
+        /// </summary>
+        internal static string AvoidGlobalAliasesDescription {
+            get {
+                return ResourceManager.GetString("AvoidGlobalAliasesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid creating aliases with a Global scope..
         /// </summary>
-        internal static string AvoidGlobalFunctionsAliasError {
+        internal static string AvoidGlobalAliasesError {
             get {
-                return ResourceManager.GetString("AvoidGlobalFunctionsAliasError", resourceCulture);
+                return ResourceManager.GetString("AvoidGlobalAliasesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidGlobalAliases.
+        /// </summary>
+        internal static string AvoidGlobalAliasesName {
+            get {
+                return ResourceManager.GetString("AvoidGlobalAliasesName", resourceCulture);
             }
         }
         

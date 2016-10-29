@@ -70,6 +70,7 @@
     <Compile Include="AvoidAlias.cs" />
     <Compile Include="AvoidDefaultTrueValueSwitchParameter.cs" />
     <Compile Include="AvoidEmptyCatchBlock.cs" />
+    <Compile Include="AvoidGlobalAliases.cs" />
     <Compile Include="AvoidGlobalFunctions.cs" />
     <Compile Include="AvoidGlobalVars.cs" />
     <Compile Include="AvoidInvokingEmptyMembers.cs" />
