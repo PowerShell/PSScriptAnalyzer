@@ -22,8 +22,8 @@
 #>
 function Get-File
 {
-    [CmdletBinding(DefaultParameterSetName='Parameter Set 1', 
-                  SupportsShouldProcess=$true, 
+    [CmdletBinding(DefaultParameterSetName='Parameter Set 1',
+                  SupportsShouldProcess=$true,
                   PositionalBinding=$false,
                   HelpUri = 'http://www.microsoft.com/',
                   ConfirmImpact='Medium')]
@@ -34,17 +34,17 @@ function Get-File
     Param
     (
         # Param1 help description
-        [Parameter(Mandatory=$true, 
+        [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+                   ValueFromPipelineByPropertyName=$true,
+                   ValueFromRemainingArguments=$false,
                    Position=0,
                    ParameterSetName='Parameter Set 1')]
         [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [ValidateCount(0,5)]
         [ValidateSet("sun", "moon", "earth")]
-        [Alias("p1")] 
+        [Alias("p1")]
         $Param1,
 
         # Param2 help description
@@ -131,8 +131,8 @@ function Get-File
 #>
 function Get-Folder
 {
-    [CmdletBinding(DefaultParameterSetName='Parameter Set 1', 
-                  SupportsShouldProcess, 
+    [CmdletBinding(DefaultParameterSetName='Parameter Set 1',
+                  SupportsShouldProcess,
                   PositionalBinding=$false,
                   HelpUri = 'http://www.microsoft.com/',
                   ConfirmImpact='Medium')]
@@ -143,17 +143,17 @@ function Get-Folder
     Param
     (
         # Param1 help description
-        [Parameter(Mandatory=$true, 
+        [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true, 
-                   ValueFromRemainingArguments=$false, 
+                   ValueFromPipelineByPropertyName=$true,
+                   ValueFromRemainingArguments=$false,
                    Position=0,
                    ParameterSetName='Parameter Set 1')]
         [ValidateNotNull()]
         [ValidateNotNullOrEmpty()]
         [ValidateCount(0,5)]
         [ValidateSet("sun", "moon", "earth")]
-        [Alias("p1")] 
+        [Alias("p1")]
         $Param1,
 
         # Param2 help description
@@ -279,13 +279,13 @@ function Get-Reserved*
 
 <#
 .Synopsis
-   function that has a noun that is singular  
+   function that has a noun that is singular
 .DESCRIPTION
-   
+
 .EXAMPLE
-   
+
 .EXAMPLE
-   
+
 #>
 function Get-MyWidgetStatus
 {
@@ -299,7 +299,7 @@ function Get-MyFood
 
     process
     {
-        if ($PSCmdlet.ShouldContinue("Are you sure?"))
+        if ($PSCmdlet.ShouldProcess(("Are you sure?")))
         {
         }
     }

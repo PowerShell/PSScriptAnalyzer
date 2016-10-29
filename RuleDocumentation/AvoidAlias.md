@@ -1,7 +1,7 @@
-﻿#AvoidAlias
+﻿# AvoidAlias
 **Severity Level: Warning**
 
-##Description
+## Description
 An alias is an alternate name or nickname for a CMDLet or for a command element, such as a function, script, file, or executable file.
 You can use the alias instead of the command name in any Windows PowerShell commands.
 
@@ -12,16 +12,30 @@ When developing PowerShell content that will potentially need to be maintained o
 
 The use of full command names also allows for syntax highlighting in sites and applications like GitHub and Visual Studio Code.
 
-##How to Fix
+## How to Fix
 Use the full cmdlet name and not an alias.
 
-##Example
-###Wrong：
+## Alias Whitelist
+To prevent `PSScriptAnalyzer` from flagging your preferred aliases, create a whitelist of the aliases in your settings file and point `PSScriptAnalyzer` to use the settings file. For example, to disable `PSScriptAnalyzer` from flagging `cd`, which is an alias of `Set-Location`, set the settings file content to the following.
+
+```PowerShell
+# PSScriptAnalyzerSettings.psd1
+@{
+    'Rules' = @{
+        'PSAvoidUsingCmdletAliases' = @{
+            'Whitelist' = @('cd')
+        }
+    }
+}
+```
+
+## Example
+### Wrong：
 ``` PowerShell
 gps | Where-Object {$_.WorkingSet -gt 20000000}
 ```
 
-###Correct:
+### Correct:
 ``` PowerShell
 Get-Process | Where-Object {$_.WorkingSet -gt 20000000}
 ```

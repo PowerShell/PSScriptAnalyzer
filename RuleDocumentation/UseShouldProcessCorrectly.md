@@ -2,17 +2,12 @@
 **Severity Level: Warning**
 
 ##Description
-Checks that if the `SupportsShouldProcess` is present, i.e, `[CmdletBinding(SupportsShouldProcess = $true)]`, and then tests if the function or cmdlet calls
-ShouldProcess or ShouldContinue; i.e `$PSCmdlet.ShouldProcess` or `$PSCmdlet.ShouldContinue`.
+If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also call `ShouldProcess`. A violation is any function which either declares `SupportsShouldProcess` attribute but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not does not declare `SupportsShouldProcess`
 
-A violation is any function where `SupportsShouldProcess` that makes no calls to `ShouldProcess` or `ShouldContinue`.
-
-Scripts with one or the other but not both will generally run into an error or unexpected behavior.
+For more information, please refer to `about_Functions_Advanced_Methods` and `about_Functions_CmdletBindingAttribute`
 
 ##How to Fix
-To fix a violation of this rule, please call `ShouldProcess` method in advanced functions when `SupportsShouldProcess` argument is present.
-Or please add `SupportsShouldProcess` argument when calling `ShouldProcess`.
-You can get more details by running `Get-Help about_Functions_CmdletBindingAttribute` and `Get-Help about_Functions_Advanced_Methods` command in Windows PowerShell.
+To fix a violation of this rule, please call `ShouldProcess` method when a cmdlet declares `SupportsShouldProcess` attribute. Or please add `SupportsShouldProcess` attribute argument when calling `ShouldProcess`
 
 ##Example
 ###Wrong：
@@ -26,17 +21,7 @@ You can get more details by running `Get-Help about_Functions_CmdletBindingAttri
 			[Parameter(Mandatory=$true)]
 	        $Path
 	    )
-
-	    Begin
-	    {
-	    }
-	    Process
-	    {
-			"String" | Out-File -FilePath $FilePath
-	    }
-	    End
-	    {
-	    }
+		"String" | Out-File -FilePath $FilePath
 	}
 ```
 
@@ -52,22 +37,13 @@ You can get more details by running `Get-Help about_Functions_CmdletBindingAttri
 	        $Path
 	    )
 
-	    Begin
-	    {
-	    }
-	    Process
-	    {
-			if ($PSCmdlet.ShouldProcess("Target", "Operation"))
-	        {
-				"String" | Out-File -FilePath $FilePath
-			}
-	    }
-	    End
-	    {
-			if ($pscmdlet.ShouldContinue("Yes", "No"))
-			{
-				...
-        	}
-	    }
+		if ($PSCmdlet.ShouldProcess("Target", "Operation"))
+		{
+			"String" | Out-File -FilePath $FilePath
+		}
+		else
+		{
+			Write-Host ('Write "String" to file {0}' -f $FilePath)
+		}
 	}
 ```
