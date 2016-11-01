@@ -83,7 +83,7 @@ Foo
             $violations.Count | Should Be 1
         }
 
-        It "finds no violation for 2 level downstream calls" {
+        It "finds violation for 2 level downstream calls" {
             $scriptDef = @'
 function Foo
 {
@@ -143,7 +143,7 @@ function Foo
     }
 
     Context "When a builtin command that supports ShouldProcess is called" {
-        It "finds no violation when caller declares SupportsShouldProcess and callee is a cmdlet" {
+        It "finds no violation when caller declares SupportsShouldProcess and callee is a cmdlet with ShouldProcess" {
             $scriptDef = @'
 function Remove-Foo {
 [CmdletBinding(SupportsShouldProcess)]
@@ -158,7 +158,7 @@ function Remove-Foo {
             $violations.Count | Should Be 0
         }
 
-        It "finds no violation when caller does not declare SupportsShouldProcess and callee is a cmdlet" {
+        It "finds no violation when caller does not declare SupportsShouldProcess and callee is a cmdlet with ShouldProcess" {
             $scriptDef = @'
 function Remove-Foo {
     Param(
@@ -172,7 +172,7 @@ function Remove-Foo {
             $violations.Count | Should Be 0
         }
 
-        It "finds no violation when caller declares SupportsShouldProcess and callee is a function" {
+        It "finds no violation when caller declares SupportsShouldProcess and callee is a function with ShouldProcess" {
             $scriptDef = @'
 function Install-Foo {
 [CmdletBinding(SupportsShouldProcess)]
@@ -186,7 +186,7 @@ function Install-Foo {
             $violations.Count | Should Be 0
         }
 
-        It "finds no violation when caller does not declare SupportsShouldProcess and callee is a function" {
+        It "finds no violation when caller does not declare SupportsShouldProcess and callee is a function with ShouldProcess" {
             $scriptDef = @'
 function Install-Foo {
     Param(
