@@ -6,7 +6,9 @@
     + to check for commands in Microsoft.PowerShell.Core snapin
     + to ignore aliases
     + to ignore custom defind commands
-
+- PSUseDeclaredVarsMoreThanAssignments rule to ignore the following special variables (#653)
+    + `$PSModuleAutoLoadingPreference`
+    + `$InformationPreference`
 
 ## [1.8.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.8.1) - 2016-10-13
 ### Added
