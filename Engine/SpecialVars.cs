@@ -159,6 +159,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal const string PathExt = "env:PATHEXT";
         internal const string PSEmailServer = "PSEmailServer";
         internal const string PSDefaultParameterValues = "PSDefaultParameterValues";
+        internal const string PSModuleAutoLoadingPreference = "PSModuleAutoLoadingPreference";
         internal const string pwd = "PWD";
         internal const string Null = "null";
         internal const string True = "true";
@@ -179,6 +180,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                     PathExt,
                                                                     PSEmailServer,
                                                                     PSDefaultParameterValues,
+                                                                    PSModuleAutoLoadingPreference,
                                                                     pwd,
                                                                     Null,
                                                                     True,
