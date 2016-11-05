@@ -96,27 +96,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal const string WarningPreference = "WarningPreference";
         internal const string ConfirmPreference = "ConfirmPreference";
         internal const string ProgressPreference = "ProgressPreference";
+        internal const string InformationPreference = "InformationPreference";
 
-        internal static readonly string[] PreferenceVariables = new string[]  
-                                                                {  
-                                                                    DebugPreference,  
-                                                                    VerbosePreference,  
-                                                                    ErrorActionPreference,  
-                                                                    WhatIfPreference,  
-                                                                    WarningPreference,  
+        internal static readonly string[] PreferenceVariables = new string[]
+                                                                {
+                                                                    DebugPreference,
+                                                                    VerbosePreference,
+                                                                    ErrorActionPreference,
+                                                                    WhatIfPreference,
+                                                                    WarningPreference,
                                                                     ConfirmPreference,
-                                                                    ProgressPreference
+                                                                    ProgressPreference,
+                                                                    InformationPreference
                                                                 };
 
-        internal static readonly Type[] PreferenceVariableTypes = new Type[]  
-                                                                {  
-                                                                    /* DebugPreference */   typeof(ActionPreference),  
-                                                                    /* VerbosePreference */ typeof(ActionPreference),  
-                                                                    /* ErrorPreference */   typeof(ActionPreference),  
-                                                                    /* WhatIfPreference */  typeof(SwitchParameter),  
-                                                                    /* WarningPreference */ typeof(ActionPreference),  
-                                                                    /* ConfirmPreference */ typeof(ConfirmImpact), 
+        internal static readonly Type[] PreferenceVariableTypes = new Type[]
+                                                                {
+                                                                    /* DebugPreference */   typeof(ActionPreference),
+                                                                    /* VerbosePreference */ typeof(ActionPreference),
+                                                                    /* ErrorPreference */   typeof(ActionPreference),
+                                                                    /* WhatIfPreference */  typeof(SwitchParameter),
+                                                                    /* WarningPreference */ typeof(ActionPreference),
+                                                                    /* ConfirmPreference */ typeof(ConfirmImpact),
                                                                     /* ProgressPreference */ typeof(Enum),
+                                                                    /* InformationPreference */ typeof(ActionPreference),
                                                                 };
 
         internal enum AutomaticVariable
@@ -156,6 +159,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal const string PathExt = "env:PATHEXT";
         internal const string PSEmailServer = "PSEmailServer";
         internal const string PSDefaultParameterValues = "PSDefaultParameterValues";
+        internal const string PSModuleAutoLoadingPreference = "PSModuleAutoLoadingPreference";
         internal const string pwd = "PWD";
         internal const string Null = "null";
         internal const string True = "true";
@@ -176,6 +180,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                     PathExt,
                                                                     PSEmailServer,
                                                                     PSDefaultParameterValues,
+                                                                    PSModuleAutoLoadingPreference,
                                                                     pwd,
                                                                     Null,
                                                                     True,
