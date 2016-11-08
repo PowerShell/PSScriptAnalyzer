@@ -1,7 +1,11 @@
-﻿Import-Module PSScriptAnalyzer
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+
+Import-Module PSScriptAnalyzer
+Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+
 $violationMessage = "The variable 'declaredVar2' is assigned but never used."
 $violationName = "PSUseDeclaredVarsMoreThanAssignments"
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\UseDeclaredVarsMoreThanAssignments.ps1 | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\UseDeclaredVarsMoreThanAssignmentsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
@@ -29,8 +33,21 @@ function MyFunc2() {
     $a + $a
 }
 '@
-            $local:violations = Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName
-            $local:violations.Count | Should Be 1
+            Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName | `
+            Get-Count | `
+            Should Be 1
+        }
+
+        It "does not flag `$InformationPreference variable" {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$InformationPreference=Stop' -IncludeRule $violationName  | `
+            Get-Count | `
+            Should Be 0
+        }
+
+        It "does not flag `$PSModuleAutoLoadingPreference variable" {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$PSModuleAutoLoadingPreference=None' -IncludeRule $violationName | `
+            Get-Count | `
+            Should Be 0
         }
     }
 

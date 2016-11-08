@@ -1,4 +1,24 @@
-﻿## [1.8.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.8.0) - 2016-10-06
+﻿## [unreleased](https://github.com/PowerShell/PSScriptAnalyzer/tree/development)
+### Fixed
+- Regular expression in `target` parameter in SuppressMessageAttribute (#638)
+- Filtering on severity level for DSC rules (#642)
+- PSUseCompatibleCmdlets rule
+    + to check for commands in Microsoft.PowerShell.Core snapin
+    + to ignore aliases
+    + to ignore custom defind commands
+- PSUseDeclaredVarsMoreThanAssignments rule to ignore the following special variables (#653)
+    + `$PSModuleAutoLoadingPreference`
+    + `$InformationPreference`
+
+## [1.8.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.8.1) - 2016-10-13
+### Added
+- Catalog file to play nicely with PowerShellGet, version `1.1.0.0`
+
+### Fixed
+- [PSUsePSCredentialType](RuleDocumentation/UsePSCredentialType.md) rule to check for attributes on same line without an whitespace between them.
+- [PSUseShouldProcessForStateChangingFunctions](RuleDocumentation/UseShouldProcessForStateChangingFunctions.md) rule to check for `start` verb (#634)
+
+## [1.8.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.8.0) - 2016-10-06
 ### Added
 - New [rule](RuleDocumentation/UseCompatibleCmdlets.md) to check cmdlet compatibility between different PowerShell flavors
 - New [rule](RuleDocumentation/UseLiteralInitializerForHashtable.md) to warn when using Hashtable constructor

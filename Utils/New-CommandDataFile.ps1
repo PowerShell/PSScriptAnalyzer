@@ -39,7 +39,7 @@ if (-not (Test-Path $builtinModulePath))
 Function IsPSEditionDesktop
 {
     $edition = Get-Variable -Name PSEdition -ErrorAction Ignore
-    ($edition -eq $null) -or ($edition -eq 'Desktop')
+    ($edition -eq $null) -or ($edition.Value -eq 'Desktop') # $edition is of type psvariable
 }
 
 Function Get-CmdletDataFileName
@@ -84,8 +84,32 @@ $shortModuleInfos = Get-ChildItem -Path $builtinModulePath `
         $commands = Get-Command -Module $module
         $shortCommands = $commands | select -Property Name,@{Label='CommandType';Expression={$_.CommandType.ToString()}},ParameterSets
         $shortModuleInfo = $module | select -Property Name,@{Label='Version';Expression={$_.Version.ToString()}}
-        Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedCommands' -NotePropertyValue $shortCommands -PassThru
+        Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedCommands' -NotePropertyValue $shortCommands
+        Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedAliases' -NotePropertyValue $module.ExportedAliases.Keys -PassThru
     }
 }
-$jsonData['Modules'] = $shortModuleInfos
+
+# Microsoft.PowerShell.Core is a PSSnapin, hence not handled by the previous code snippet
+# get-module -name 'Microsoft.PowerShell.Core' returns null
+# whereas get-PSSnapin is not available on PowerShell Core, so we resort to the following
+$psCoreSnapinName = 'Microsoft.PowerShell.Core'
+Write-Progress $psCoreSnapinName
+$commands = Get-Command -Module $psCoreSnapinName
+$shortCommands = $commands | select -Property Name,@{Label='CommandType';Expression={$_.CommandType.ToString()}},ParameterSets
+$shortModuleInfo = New-Object -TypeName PSObject -Property @{Name=$psCoreSnapinName; Version=$commands[0].PSSnapin.PSVersion.ToString()}
+Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedCommands' -NotePropertyValue $shortCommands
+
+# Find the exported aliases for the commands in Microsoft.PowerShell.Core
+$aliases = Get-Alias * | where {($commands).Name -contains $_.ResolvedCommandName}
+if ($null -eq $aliases) {
+    $aliases = @()
+}
+else {
+    $aliases = $aliases.Name
+}
+
+Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedAliases' -NotePropertyValue $aliases
+
+$allShortModuleInfos = $shortModuleInfos + $shortModuleInfo
+$jsonData['Modules'] = $allShortModuleInfos
 $jsonData | ConvertTo-Json -Depth 4 | Out-File ((Get-CmdletDataFileName)) -Encoding utf8

@@ -1895,28 +1895,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // Run DSC Class rule
                     foreach (IDSCResourceRule dscResourceRule in this.DSCResourceRules)
                     {
-                        bool includeRegexMatch = false;
-                        bool excludeRegexMatch = false;
-
-                        foreach (Regex include in includeRegexList)
-                        {
-                            if (include.IsMatch(dscResourceRule.GetName()))
-                            {
-                                includeRegexMatch = true;
-                                break;
-                            }
-                        }
-
-                        foreach (Regex exclude in excludeRegexList)
-                        {
-                            if (exclude.IsMatch(dscResourceRule.GetName()))
-                            {
-                                excludeRegexMatch = true;
-                                break;
-                            }
-                        }
-
-                        if ((includeRule == null || includeRegexMatch) && (excludeRule == null || excludeRegexMatch))
+                        if (IsRuleAllowed(dscResourceRule))
                         {
                             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, dscResourceRule.GetName()));
 
@@ -2014,7 +1993,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-                foreach (var ruleRecord in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), fileName))
+                foreach (var ruleRecord in this.GetExternalRecord(scriptAst, scriptTokens, exRules.ToArray(), filePath))
                 {
                     var records = SuppressRule(ruleSuppressions, ruleRecord);
                     foreach (var record in records.Item2)
