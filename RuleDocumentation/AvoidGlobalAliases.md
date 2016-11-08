@@ -13,7 +13,7 @@ Use other scope modifiers for new aliases.
 ##Example
 ###Wrong:
 ``` PowerShell
-nal -Name Name -Value Value -Scope "Global"
+New-Alias -Name Name -Value Value -Scope "Global"
 ```
 
 ###Correct:

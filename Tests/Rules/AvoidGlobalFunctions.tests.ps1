@@ -10,7 +10,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidGlobalFunctionsNoViolation
 
 Describe "$violationName " {
     Context "When there are violations" {
-        It "Has 5 avoid using empty Catch block violations" {
+        It "Has 1 avoid global function violations" {
             $violations.Count | Should Be 1
         }
 

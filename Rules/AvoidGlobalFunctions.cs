@@ -1,11 +1,11 @@
-﻿using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-using System;
+﻿using System;
 using System.Collections.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using System.Management.Automation.Language;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -17,6 +17,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private List<DiagnosticRecord> records;
         private string fileName;
 
+        /// <summary>
+        /// Analyzes the ast to check that global functions are not used within modules.
+        /// </summary>
+        /// <param name="ast">The script's ast</param>
+        /// <param name="fileName">The script's file name</param>
+        /// <returns>A List of diagnostic results of this rule</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null)
@@ -27,15 +33,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             records = new List<DiagnosticRecord>();
             this.fileName = fileName;
 
-            ast.Visit(this);
+            if (IsScriptModule())
+            {
+                ast.Visit(this);
+            }
 
             return records;
         }
 
         #region VisitCommand functions
+        /// <summary>
+        /// Analyzes a FunctionDefinitionAst, if it is declared global a diagnostic record is created.
+        /// </summary>
+        /// <param name="functionDefinitionAst">FunctionDefinitionAst to be analyzed</param>
+        /// <returns>AstVisitAction to continue analysis</returns>
         public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst functionDefinitionAst)
         {
-            if (functionDefinitionAst.Name.StartsWith("Global:", StringComparison.OrdinalIgnoreCase) && IsModule())
+            if (functionDefinitionAst.Name.StartsWith("Global:", StringComparison.OrdinalIgnoreCase))
             {
                 var functionNameExtent = Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst);
 
@@ -52,7 +66,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
         #endregion
 
-        private bool IsModule()
+        /// <summary>
+        /// Determines if analyzing a script module.
+        /// </summary>
+        /// <returns>True is file name ends with ".psm1"</returns>
+        private bool IsScriptModule()
         {
             return fileName.EndsWith(".psm1");
         }
