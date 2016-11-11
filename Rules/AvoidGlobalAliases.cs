@@ -49,55 +49,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>AstVisitAction to continue to analyze the ast's children</returns>
         public override AstVisitAction VisitCommand(CommandAst commandAst)
         {
-            if (!IsNewAliasCmdlet(commandAst))
+            if (IsNewAliasCmdlet(commandAst))
             {
-                return AstVisitAction.SkipChildren;
-            }
+                // check the parameters of the New-Alias cmdlet for scope
+                var parameterBindings = StaticParameterBinder.BindCommand(commandAst);
 
-            return AstVisitAction.Continue;
-        }
-
-        /// <summary>
-        /// Analyzes a CommandParameterAst for the global scope.
-        /// </summary>
-        /// <param name="commandParameterAst">The CommandParameterAst to be analyzed</param>
-        /// <returns>AstVisitAction to skip child ast processing after creating any diagnostic records</returns>
-        public override AstVisitAction VisitCommandParameter(CommandParameterAst commandParameterAst)
-        {
-            if (IsScopeParameterForNewAliasCmdlet(commandParameterAst))
-            {
-                // Check the commandParameterAst Argument property if it exist. This covers the case 
-                // of the cmdlet looking like "New-Alias -Scope:Global"
-
-                if ((commandParameterAst.Argument != null)
-                    && (commandParameterAst.Argument.ToString().Equals("Global", StringComparison.OrdinalIgnoreCase)))
+                if (parameterBindings.BoundParameters.ContainsKey("Scope"))
                 {
-                    records.Add(new DiagnosticRecord(
-                                    string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesError),
-                                    commandParameterAst.Extent,
-                                    GetName(),
-                                    DiagnosticSeverity.Warning,
-                                    fileName,
-                                    commandParameterAst.ParameterName));
-                }
-                else
-                {
-                    // If the commandParameterAst Argument property is null the next ast in the tree
-                    // can still be a string const. This covers the case of the cmdlet looking like
-                    // "New-Alias -Scope Global"
+                    var scopeValue = parameterBindings.BoundParameters["Scope"].ConstantValue;
 
-                    var nextAst = FindNextAst(commandParameterAst) as StringConstantExpressionAst;
-
-                    if ((nextAst != null) 
-                        && ((nextAst).Value.ToString().Equals("Global", StringComparison.OrdinalIgnoreCase)))
+                    if ((scopeValue != null) && (scopeValue.ToString().Equals("Global", StringComparison.OrdinalIgnoreCase)))
                     {
                         records.Add(new DiagnosticRecord(
-                                string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesError),
-                                (nextAst).Extent,
-                                GetName(),
-                                DiagnosticSeverity.Warning,
-                                fileName,
-                                (nextAst).Value));
+                                         string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesError),
+                                         commandAst.Extent,
+                                         GetName(),
+                                         DiagnosticSeverity.Warning,
+                                         fileName));
                     }
                 }
             }
@@ -105,86 +73,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return AstVisitAction.SkipChildren;
         }
         #endregion
-
-        /// <summary>
-        /// Returns the next ast of the same level in the ast tree.
-        /// </summary>
-        /// <param name="ast">Ast used as a base</param>
-        /// <returns>Next ast of the same level in the ast tree</returns>
-        private Ast FindNextAst(Ast ast)
-        {
-            IEnumerable<Ast> matchingLevelAsts = ast.Parent.FindAll(item => item is Ast, true);
-
-            Ast currentClosest = null;
-            foreach (var matchingLevelAst in matchingLevelAsts)
-            {
-                if (currentClosest == null)
-                {
-                    if (IsAstAfter(ast, matchingLevelAst))
-                    {
-                        currentClosest = matchingLevelAst;
-                    }
-                }
-                else
-                {
-                    if ((IsAstAfter(ast, matchingLevelAst)) && (IsAstAfter(matchingLevelAst, currentClosest)))
-                    {
-                        currentClosest = matchingLevelAst;
-                    }
-                }
-            }
-
-            return currentClosest;
-        }
-
-        /// <summary>
-        /// Determines if ast1 is after ast2 in the ast tree.
-        /// </summary>
-        /// <param name="ast1">First ast</param>
-        /// <param name="ast2">Second ast</param>
-        /// <returns>True if ast2 is after ast1 in the ast tree</returns>
-        private bool IsAstAfter(Ast ast1, Ast ast2)
-        {
-            if (ast1.Extent.EndLineNumber > ast2.Extent.StartLineNumber)  // ast1 ends on a line after ast2 starts
-            {
-                return false;
-            }
-            else if (ast1.Extent.EndLineNumber == ast2.Extent.StartLineNumber)
-            {
-                if (ast2.Extent.StartColumnNumber > ast1.Extent.EndColumnNumber)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else   // ast2 starts on a line after ast 1 ends
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Determines if CommandParameterAst is for the "Scope" parameter.
-        /// </summary>
-        /// <param name="commandParameterAst">CommandParameterAst to validate</param>
-        /// <returns>True if the CommandParameterAst is for the Scope parameter</returns>
-        private bool IsScopeParameterForNewAliasCmdlet(CommandParameterAst commandParameterAst)
-        {
-            if (commandParameterAst == null || commandParameterAst.ParameterName == null)
-            {
-                return false;
-            }
-
-            if (commandParameterAst.ParameterName.Equals("Scope", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
 
         /// <summary>
         /// Determines if CommandAst is for the "New-Alias" command, checking aliases.
