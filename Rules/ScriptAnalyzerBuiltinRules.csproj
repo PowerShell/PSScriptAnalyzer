@@ -70,6 +70,8 @@
     <Compile Include="AvoidAlias.cs" />
     <Compile Include="AvoidDefaultTrueValueSwitchParameter.cs" />
     <Compile Include="AvoidEmptyCatchBlock.cs" />
+    <Compile Include="AvoidGlobalAliases.cs" />
+    <Compile Include="AvoidGlobalFunctions.cs" />
     <Compile Include="AvoidGlobalVars.cs" />
     <Compile Include="AvoidInvokingEmptyMembers.cs" />
     <Compile Include="AvoidNullOrEmptyHelpMessageAttribute.cs" />
@@ -95,6 +97,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="UseBOMForUnicodeEncodedFile.cs" />
+    <Compile Include="UseCompatibleCmdlets.cs" />
     <Compile Include="UseLiteralInitializerForHashtable.cs" />
     <Compile Include="UseToExportFieldsInManifest.cs" />
     <Compile Include="UseOutputTypeCorrectly.cs" />
@@ -114,7 +117,6 @@
     <Compile Include="UseStandardDSCFunctionsInResource.cs" />
     <Compile Include="UseUTF8EncodingForHelpFile.cs" />
     <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
-    <Compile Include="UseCompatibleCmdlets.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\ScriptAnalyzerEngine.csproj">

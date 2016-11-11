@@ -61,16 +61,16 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 43
+            $expectedNumRules = 45
             if ((Test-PSEditionCoreClr))
             {
-                $expectedNumRules = 42
+                $expectedNumRules = 44
             }
 			$defaultRules.Count | Should be $expectedNumRules
 		}
 
         It "is a positional parameter" {
-            $rules = Get-ScriptAnalyzerRule *alias*
+            $rules = Get-ScriptAnalyzerRule "PSAvoidUsingCmdletAliases"
             $rules.Count | Should Be 1
         }
     }
