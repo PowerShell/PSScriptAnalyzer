@@ -27,13 +27,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseDeclaredVarsMoreThanAssignments : IScriptRule
     {
-// TODO arrange private and public functions
 // TODO Code formatting
-// TODO inline documentation
         private Dictionary<ScriptBlockAst, Dictionary<string, AssignmentStatementAst>> scriptBlockAssignmentMap;
         private Dictionary<ScriptBlockAst, Dictionary<string, bool>> scriptblockVariableUsageMap;
         private Dictionary<ScriptBlockAst, ScriptBlockAst> scriptBlockAstParentMap;
-
         private Ast ast;
         private string fileName;
 
@@ -71,52 +68,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 yield return diagnosticRecord;
             }
-        }
-
-        private IEnumerable<DiagnosticRecord> GetViolations()
-        {
-            // throw violation if
-            // if a variable in a scope is unused
-            // AND
-            // if it is unused in the parent scopes
-
-            foreach (var sbAst in scriptblockVariableUsageMap.Keys)
-            {
-                foreach (var variable in scriptblockVariableUsageMap[sbAst].Keys)
-                {
-                    if (!DoesScriptBlockUseVariable(sbAst, variable))
-                    {
-                        yield return new DiagnosticRecord(
-                            string.Format(CultureInfo.CurrentCulture, Strings.UseDeclaredVarsMoreThanAssignmentsError, variable),
-                            scriptBlockAssignmentMap[sbAst][variable].Left.Extent,
-                            GetName(),
-                            DiagnosticSeverity.Warning,
-                            fileName,
-                            variable);
-
-                    }
-                }
-            }
-        }
-
-        private bool DoesScriptBlockUseVariable(ScriptBlockAst scriptBlockAst, string variable)
-        {
-            if (scriptblockVariableUsageMap[scriptBlockAst].ContainsKey(variable))
-            {
-                if (!scriptblockVariableUsageMap[scriptBlockAst][variable])
-                {
-                        if (scriptBlockAstParentMap[scriptBlockAst] == null)
-                        {
-                            return false;
-                        }
-
-                        return DoesScriptBlockUseVariable(scriptBlockAstParentMap[scriptBlockAst], variable);
-                }
-
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -181,11 +132,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             IEnumerable<Ast> assignmentAsts = scriptBlockAst.FindAll(testAst => testAst is AssignmentStatementAst, false);
             IEnumerable<Ast> varAsts = scriptBlockAst.FindAll(testAst => testAst is VariableExpressionAst, true);
-            IEnumerable<Ast> varsInAssignment;
-
             Dictionary<string, AssignmentStatementAst> assignments = new Dictionary<string, AssignmentStatementAst>(StringComparer.OrdinalIgnoreCase);
             Dictionary<string, bool> isVariableUsed = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-
             string varKey;
             bool inAssignment;
 
@@ -194,7 +142,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            // TODO Remove key removal
             foreach (AssignmentStatementAst assignmentAst in assignmentAsts)
             {
                 // Only checks for the case where lhs is a variable. Ignore things like $foo.property
@@ -227,19 +174,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (assignments.ContainsKey(varKey))
                     {
-                        varsInAssignment = assignments[varKey].Left.FindAll(testAst => testAst is VariableExpressionAst, true);
-
-
-                        foreach (VariableExpressionAst varInAssignment in varsInAssignment)
-                        {
-                            inAssignment |= varInAssignment.Equals(varAst);
-                        }
+                        // Check if varAst is part of an AssignmentStatementAst
+                        inAssignment = varAst.Parent is AssignmentStatementAst;
 
                         // Check if variable belongs to PowerShell built-in variables
                         // Checks if this variableAst is part of the logged assignment
                         if (!inAssignment || Helper.Instance.HasSpecialVars(varKey))
                         {
-                            assignments.Remove(varKey);
                             isVariableUsed[varKey] = true;
                         }
                     }
@@ -251,24 +192,75 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             scriptBlockAstParentMap[scriptBlockAst] = GetScriptBlockAstParent(scriptBlockAst);
         }
 
+        /// <summary>
+        /// Gets the first upstream node away from the input argument that is of type ScriptBlockAst
+        /// </summary>
+        /// <param name="scriptBlockAst">Ast</param>
+        /// <returns>Null if the input argument's Parent is null
+        /// or if Parent is ast, the input to AnalyzeAst</returns>
         private ScriptBlockAst GetScriptBlockAstParent(Ast scriptBlockAst)
         {
-            if (scriptBlockAst == this.ast)
+            if (scriptBlockAst == this.ast
+                || scriptBlockAst.Parent == null)
             {
                 return null;
             }
-            else
+
+            var parent = scriptBlockAst.Parent as ScriptBlockAst;
+            if (parent == null)
             {
-                var parent = scriptBlockAst.Parent as ScriptBlockAst;
-                if (parent == null)
+                return GetScriptBlockAstParent(scriptBlockAst.Parent);
+            }
+
+            return parent;
+        }
+
+        /// <summary>
+        /// Returns the violations in the given ast
+        /// </summary>
+        private IEnumerable<DiagnosticRecord> GetViolations()
+        {
+            foreach (var sbAst in scriptblockVariableUsageMap.Keys)
+            {
+                foreach (var variable in scriptblockVariableUsageMap[sbAst].Keys)
                 {
-                    return GetScriptBlockAstParent(scriptBlockAst.Parent);
-                }
-                else
-                {
-                    return parent;
+                    if (!DoesScriptBlockUseVariable(sbAst, variable))
+                    {
+                        yield return new DiagnosticRecord(
+                            string.Format(CultureInfo.CurrentCulture, Strings.UseDeclaredVarsMoreThanAssignmentsError, variable),
+                            scriptBlockAssignmentMap[sbAst][variable].Left.Extent,
+                            GetName(),
+                            DiagnosticSeverity.Warning,
+                            fileName,
+                            variable);
+                    }
                 }
             }
         }
+
+        /// <summary>
+        /// Returns true if the input variable argument is used more than just declaration in
+        /// the input scriptblock or in its parent scriptblock, otherwise returns false
+        /// </summary>
+        private bool DoesScriptBlockUseVariable(ScriptBlockAst scriptBlockAst, string variable)
+        {
+            if (scriptblockVariableUsageMap[scriptBlockAst].ContainsKey(variable))
+            {
+                if (!scriptblockVariableUsageMap[scriptBlockAst][variable])
+                {
+                    if (scriptBlockAstParentMap[scriptBlockAst] == null)
+                    {
+                        return false;
+                    }
+
+                    return DoesScriptBlockUseVariable(scriptBlockAstParentMap[scriptBlockAst], variable);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }
