@@ -1776,6 +1776,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Determines if analyzing a script module.
+        /// </summary>
+        /// <returns>True is file name ends with ".psm1"</returns>
+        public static bool IsModuleScript(string filepath)
+        {
+            if (filepath == null)
+            {
+                throw new ArgumentNullException("filepath");
+            }
+            return filepath.EndsWith(".psm1");
+        }
+
+        /// <summary>
         /// Checks if a given file is a valid PowerShell module manifest
         /// </summary>
         /// <param name="filepath">Path to module manifest</param>
