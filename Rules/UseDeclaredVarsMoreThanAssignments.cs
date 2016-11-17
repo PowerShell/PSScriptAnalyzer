@@ -27,7 +27,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseDeclaredVarsMoreThanAssignments : IScriptRule
     {
-// TODO Code formatting
         private Dictionary<ScriptBlockAst, Dictionary<string, AssignmentStatementAst>> scriptBlockAssignmentMap;
         private Dictionary<ScriptBlockAst, Dictionary<string, bool>> scriptblockVariableUsageMap;
         private Dictionary<ScriptBlockAst, ScriptBlockAst> scriptBlockAstParentMap;

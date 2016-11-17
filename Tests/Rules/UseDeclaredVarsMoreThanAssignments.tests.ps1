@@ -56,6 +56,12 @@ function Get-Directory() {
 '@
             Test-UseDeclaredVarsMoreThanAssignments $target 2
         }
+    }
+
+    Context "When there are no violations" {
+        It "returns no violations" {
+            $noViolations.Count | Should Be 0
+        }
 
         It "does not flag `$InformationPreference variable" {
             Test-UseDeclaredVarsMoreThanAssignments '$InformationPreference=Stop' 0
@@ -84,12 +90,6 @@ function Get-Directory() {
 }
 '@
             Test-UseDeclaredVarsMoreThanAssignments $target 0
-        }
-    }
-
-    Context "When there are no violations" {
-        It "returns no violations" {
-            $noViolations.Count | Should Be 0
         }
     }
 }
