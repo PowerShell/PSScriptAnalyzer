@@ -1,7 +1,7 @@
 ﻿Import-Module PSScriptAnalyzer
 
 $AvoidGlobalAliasesError = "Avoid creating aliases with a Global scope."
-$violationName = "AvoidGlobalAliases"
+$violationName = "PSAvoidGlobalAliases"
 
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidGlobalAliases.psm1 | Where-Object {$_.RuleName -eq $violationName}
