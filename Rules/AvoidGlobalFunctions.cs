@@ -87,7 +87,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalFunctionsName);
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.NameSpaceFormat,
+                GetSourceName(),
+                Strings.AvoidGlobalFunctionsName);
         }
 
         public RuleSeverity GetSeverity()

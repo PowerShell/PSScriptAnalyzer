@@ -1,7 +1,7 @@
 ﻿Import-Module PSScriptAnalyzer
 
 $functionErroMessage = "Avoid creating functions with a Global scope."
-$violationName = "AvoidGlobalFunctions"
+$violationName = "PSAvoidGlobalFunctions"
 
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidGlobalFunctions.psm1 | Where-Object {$_.RuleName -eq $violationName}
