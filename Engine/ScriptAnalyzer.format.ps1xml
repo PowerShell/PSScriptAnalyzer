@@ -18,7 +18,7 @@
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>10</Width>
-          <Label>FileName</Label>
+          <Label>ScriptName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>5</Width>
@@ -63,7 +63,7 @@
       <TableHeaders>
         <TableColumnHeader>
           <Width>35</Width>
-          <Label>Rule Name</Label>
+          <Label>RuleName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>12</Width>
@@ -71,7 +71,7 @@
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>10</Width>
-          <Label>File Name</Label>
+          <Label>ScriptName</Label>
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>5</Width>
@@ -128,7 +128,7 @@
         </TableColumnHeader>
         <TableColumnHeader>
           <Width>10</Width>
-          <Label>Source</Label>
+          <Label>SourceName</Label>
         </TableColumnHeader>
       </TableHeaders>
       <TableRowEntries>
