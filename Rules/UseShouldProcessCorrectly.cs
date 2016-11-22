@@ -108,6 +108,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
+        /// GetSourceName: Retrieves the module/assembly name the rule is from.
+        /// </summary>
+        public string GetSourceName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
+        }
+
+        /// <summary>
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
@@ -116,12 +124,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return RuleSeverity.Warning;
         }
 
-        /// <summary>
-        /// GetSourceName: Retrieves the module/assembly name the rule is from.
-        /// </summary>
-        public string GetSourceName()
+        private DiagnosticSeverity GetDianosticSeverity()
         {
-            return string.Format(CultureInfo.CurrentCulture,Strings.SourceName);
+            return DiagnosticSeverity.Warning;
         }
 
         /// <summary>
@@ -164,9 +169,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             CultureInfo.CurrentCulture,
                             Strings.ShouldProcessErrorHasAttribute,
                             fast.Name),
-                        ast.Extent,
+                        Helper.Instance.GetShouldProcessAttributeAst(fast.Body.ParamBlock.Attributes).Extent,
                         GetName(),
-                        DiagnosticSeverity.Warning,
+                        GetDianosticSeverity(),
                         ast.Extent.File);
                 }
             }
@@ -187,14 +192,53 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                              CultureInfo.CurrentCulture,
                              Strings.ShouldProcessErrorHasCmdlet,
                              fast.Name),
-                            v.Ast.Extent,
+                            GetShouldProcessCallExtent(fast),
                             GetName(),
-                            DiagnosticSeverity.Warning,
+                            GetDianosticSeverity(),
                             fileName);
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the extent of ShouldProcess call
+        /// </summary>
+        private static IScriptExtent GetShouldProcessCallExtent(FunctionDefinitionAst functionDefinitionAst)
+        {
+            var invokeMemberExpressionAstFound = functionDefinitionAst.Find(IsShouldProcessCall, true);
+            if (invokeMemberExpressionAstFound == null)
+            {
+                return functionDefinitionAst.Extent;
+            }
+
+            return (invokeMemberExpressionAstFound as InvokeMemberExpressionAst).Member.Extent;
+        }
+
+        /// <summary>
+        /// Returns true if ast if of the form $PSCmdlet.PSShouldProcess()
+        /// </summary>
+        private static bool IsShouldProcessCall(Ast ast)
+        {
+            var invokeMemberExpressionAst = ast as InvokeMemberExpressionAst;
+            if (invokeMemberExpressionAst == null)
+            {
+                return false;
+            }
+
+            var memberExprAst = invokeMemberExpressionAst.Member as StringConstantExpressionAst;
+            if (memberExprAst == null)
+            {
+                return false;
+            }
+
+            if ("ShouldProcess".Equals(memberExprAst.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private bool callsShouldProcessDirectly(Vertex vertex)
