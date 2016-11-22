@@ -1,4 +1,8 @@
-﻿## [unreleased](https://github.com/PowerShell/PSScriptAnalyzer/tree/development)
+﻿## [1.9.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.9.0) - 2016-11-23
+### Added
+- SuggestedCorrections for ScriptDefinition input (#665)
+- [PSAvoidGlobalAliases](https://github.com/PowerShell/PSScriptAnalyzer/blob/278d4fdc56f2c630661b39d242d958f204b69a06/RuleDocumentation/AvoidGlobalAliases.md) and [PSAvoidGlobalFunction](https://github.com/PowerShell/PSScriptAnalyzer/blob/278d4fdc56f2c630661b39d242d958f204b69a06/RuleDocumentation/AvoidGlobalFunctions.md) rules (#658)
+
 ### Fixed
 - Regular expression in `target` parameter in SuppressMessageAttribute (#638)
 - Filtering on severity level for DSC rules (#642)
@@ -9,6 +13,11 @@
 - PSUseDeclaredVarsMoreThanAssignments rule to ignore the following special variables (#653)
     + `$PSModuleAutoLoadingPreference`
     + `$InformationPreference`
+- PSShouldProcess rule to not enforce `SupportsShouldProcess` if a function calls built-in cmdlet or function that calls `ShouldProcess` (#652).
+- PSShouldProcess rule violation extent (#668)
+- PSAvoidUsingCmdletAliases rule violation extent (667)
+- Column header of `Invoke-ScriptAnalyzer` to be consistent with corresponding property names (#664)
+- `ScriptPath` property of external rule violation (#649)
 
 ## [1.8.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.8.1) - 2016-10-13
 ### Added
