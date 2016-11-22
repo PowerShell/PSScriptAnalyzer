@@ -116,12 +116,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
+
                 string cmdletName = Helper.Instance.GetCmdletNameFromAlias(aliasName);
                 if (!String.IsNullOrEmpty(cmdletName))
                 {
                     yield return new DiagnosticRecord(
                         string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, aliasName, cmdletName),
-                        cmdAst.Extent,
+                        GetCommandExtent(cmdAst),
                         GetName(),
                         DiagnosticSeverity.Warning,
                         fileName,
@@ -129,6 +130,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletName));
                 }
             }
+        }
+
+        /// <summary>
+        /// For a command like "gci -path c:", returns the extent of "gci" in the command
+        /// </summary>
+        private IScriptExtent GetCommandExtent(CommandAst commandAst)
+        {
+            var cmdName = commandAst.GetCommandName();
+            foreach (var cmdElement in commandAst.CommandElements)
+            {
+                var stringConstExpressinAst = cmdElement as StringConstantExpressionAst;
+                if (stringConstExpressinAst != null)
+                {
+                    if (stringConstExpressinAst.Value.Equals(cmdName))
+                    {
+                        return stringConstExpressinAst.Extent;
+                    }
+                }
+            }
+            return commandAst.Extent;
         }
 
         /// <summary>
