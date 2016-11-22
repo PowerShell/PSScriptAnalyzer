@@ -38,6 +38,11 @@ Function Test-PSEditionCoreCLRLinux
     (Test-PSEditionCoreCLR) -and $IsLinux
 }
 
+Function Test-PSVersionV3
+{
+	$PSVersionTable.PSVersion.Major -eq 3
+}
+
 Function Get-Count
 {
 	Begin {$count = 0}
@@ -49,4 +54,5 @@ Export-ModuleMember -Function Get-ExtentText
 Export-ModuleMember -Function Test-CorrectionExtent
 Export-ModuleMember -Function Test-PSEditionCoreCLR
 Export-ModuleMember -Function Test-PSEditionCoreCLRLinux
+Export-ModuleMember -Function Test-PSVersionV3
 Export-ModuleMember -Function Get-Count

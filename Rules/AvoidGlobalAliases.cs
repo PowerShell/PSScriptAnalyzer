@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !PSV3
+using System;
 using System.Collections.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -130,3 +131,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
+
+#endif // !PSV3
