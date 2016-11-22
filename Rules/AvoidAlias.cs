@@ -140,10 +140,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private List<CorrectionExtent> GetCorrectionExtent(CommandAst cmdAst, string cmdletName)
         {
             var ext = cmdAst.Extent;
-            if (ext.File == null)
-            {
-                return null;
-            }
             var corrections = new List<CorrectionExtent>();
             var alias = cmdAst.GetCommandName();
             string description = string.Format(

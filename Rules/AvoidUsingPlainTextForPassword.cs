@@ -50,7 +50,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 Type paramType = paramAst.StaticType;
                 bool hasPwd = false;
                 String paramName = paramAst.Name.VariablePath.ToString();
-                                
+
                 foreach (String password in passwords)
                 {
                     if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
@@ -65,12 +65,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     yield return new DiagnosticRecord(
                         String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPlainTextForPasswordError, paramAst.Name),
-                        paramAst.Extent, 
-                        GetName(), 
-                        DiagnosticSeverity.Warning, 
+                        paramAst.Extent,
+                        GetName(),
+                        DiagnosticSeverity.Warning,
                         fileName,
                         paramName,
-                        suggestedCorrections: fileName == null ? null : GetCorrectionExtent(paramAst));
+                        suggestedCorrections: GetCorrectionExtent(paramAst));
                 }
             }
         }
