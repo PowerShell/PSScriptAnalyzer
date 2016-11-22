@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !PSV3
+using System;
 using System.Collections.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -12,7 +13,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class AvoidGlobalAliases : AstVisitor, IScriptRule
+    public class AvoidGlobalAliases : AstVisitor, IScriptRule
     {
         private List<DiagnosticRecord> records;
         private string fileName;
@@ -130,3 +131,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
+
+#endif // !PSV3
