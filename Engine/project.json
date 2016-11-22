@@ -2,7 +2,7 @@
   "name": "Microsoft.Windows.PowerShell.ScriptAnalyzer",
   "version": "1.8.1",
   "dependencies": {
-"System.Management.Automation": "1.0.0-alpha10"
+"System.Management.Automation": "1.0.0-alpha12"
     },
 
   "configurations": {
