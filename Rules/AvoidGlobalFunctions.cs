@@ -33,7 +33,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             records = new List<DiagnosticRecord>();
             this.fileName = fileName;
 
-            if (IsScriptModule())
+            if (fileName != null && Helper.IsModuleScript(fileName))
             {
                 ast.Visit(this);
             }
@@ -66,15 +66,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
         #endregion
 
-        /// <summary>
-        /// Determines if analyzing a script module.
-        /// </summary>
-        /// <returns>True is file name ends with ".psm1"</returns>
-        private bool IsScriptModule()
-        {
-            return fileName.EndsWith(".psm1");
-        }
-
         public string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalFunctionsCommonName);
@@ -87,7 +78,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalFunctionsName);
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.NameSpaceFormat,
+                GetSourceName(),
+                Strings.AvoidGlobalFunctionsName);
         }
 
         public RuleSeverity GetSeverity()
