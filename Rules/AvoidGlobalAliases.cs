@@ -12,7 +12,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class AvoidGlobalAliases : AstVisitor, IScriptRule
+    public class AvoidGlobalAliases : AstVisitor, IScriptRule
     {
         private List<DiagnosticRecord> records;
         private string fileName;
