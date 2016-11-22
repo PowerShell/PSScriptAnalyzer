@@ -246,6 +246,31 @@ function Install-ModuleWithDeps {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
             $violations.Count | Should Be 0
         }
+    }
 
+    Context "Violation Extent" {
+        It "should mark only the SupportsShouldProcess attribute" {
+            $scriptDef = @'
+function Foo
+{
+   [CmdletBinding(SupportsShouldProcess)]
+   param()
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+            $violations[0].Extent.Text | Should Be 'SupportsShouldProcess'
+        }
+
+        It "should mark only the ShouldProcess call" {
+             $scriptDef = @'
+function Foo
+{
+   param()
+   if ($PSCmdlet.ShouldProcess('','')) { Write-Output "Should Process" }
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+            $violations[0].Extent.Text | Should Be 'ShouldProcess'
+        }
     }
 }
