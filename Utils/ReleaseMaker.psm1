@@ -144,7 +144,7 @@ function Update-ReleaseNotesInModuleManifest
 function Remove-MarkdownHyperlink
 {
     param($markdownContent)
-    $markdownContent -replace "\[(.*)\]\(.*\)",'$1'
+    $markdownContent -replace "\[(.*?)\]\(.*?\)",'$1'
 }
 
 function Combine-Path
