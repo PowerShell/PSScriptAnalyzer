@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.8.1'
+ModuleVersion = '1.9.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -88,11 +88,24 @@ PrivateData = @{
         IconUri = ''
         ReleaseNotes = @'
 ### Added
-- Catalog file to play nicely with PowerShellGet, version `1.1.0.0`
+- SuggestedCorrections for ScriptDefinition input (#665)
+- PSAvoidGlobalAliases and PSAvoidGlobalFunction rules (#658)
 
 ### Fixed
-- [PSUsePSCredentialType](RuleDocumentation/UsePSCredentialType.md) rule to check for attributes on same line without an whitespace between them.
-- [PSUseShouldProcessForStateChangingFunctions](RuleDocumentation/UseShouldProcessForStateChangingFunctions.md) rule to check for `start` verb (#634)
+- Regular expression in `target` parameter in SuppressMessageAttribute (#638)
+- Filtering on severity level for DSC rules (#642)
+- PSUseCompatibleCmdlets rule
+    + to check for commands in Microsoft.PowerShell.Core snapin
+    + to ignore aliases
+    + to ignore custom defind commands
+- PSUseDeclaredVarsMoreThanAssignments rule to ignore the following special variables (#653)
+    + `$PSModuleAutoLoadingPreference`
+    + `$InformationPreference`
+- PSShouldProcess rule to not enforce `SupportsShouldProcess` if a function calls built-in cmdlet or function that calls `ShouldProcess` (#652).
+- PSShouldProcess rule violation extent (#668)
+- PSAvoidUsingCmdletAliases rule violation extent (667)
+- Column header of `Invoke-ScriptAnalyzer` to be consistent with corresponding property names (#664)
+- `ScriptPath` property of external rule violation (#649)
 '@
     }
 }
@@ -104,5 +117,6 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
 
