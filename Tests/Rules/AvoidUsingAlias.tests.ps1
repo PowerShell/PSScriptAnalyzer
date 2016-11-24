@@ -40,6 +40,22 @@ gci -Path C:\
         It "returns no violations" {
             $noViolations.Count | Should Be 0
         }
+
+        It "should return no violation for assignment statement-like command in dsc configuration" {
+            $target = @'
+Configuration MyDscConfiguration {
+    Node "NodeA" {
+        SomeResource MyResourceInstance {
+            Type = "Present"
+            Name =    "RSAT"
+        }
+    }
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName | `
+                Get-Count | `
+                Should Be 0
+        }
     }
 
     Context "Settings file provides whitelist" {
