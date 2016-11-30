@@ -70,7 +70,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     DiagnosticRecords.Add(
                         new DiagnosticRecord(
                             string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpError, funcAst.Name),
-                            funcAst.Extent, GetName(), DiagnosticSeverity.Information, fileName));
+                            Helper.Instance.GetScriptExtentForFunctionName(funcAst),
+                            GetName(),
+                            DiagnosticSeverity.Information,
+                            fileName));
                 }
             }
 

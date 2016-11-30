@@ -22,6 +22,10 @@ Describe "ProvideCommentHelp" {
             $violations[1].Message | Should Match $violationMessage
         }
 
+        It "has extent that includes only the function name" {
+            $violations[1].Extent.Text | Should Be "Comment"
+        }
+
         if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
         {
             It "Does not count violation in DSC class" {
