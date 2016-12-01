@@ -56,6 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> scriptBlockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);
 
             string funcName;
+            IEnumerable<DiagnosticRecord> diagnosticRecords = Enumerable.Empty<DiagnosticRecord>();
 
             foreach (FunctionDefinitionAst funcDefAst in funcDefAsts)
             {
@@ -63,24 +64,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (funcDefAst.Parameters != null)
                 {
-                    foreach (ParameterAst parameter in funcDefAst.Parameters)
-                    {
-                        if (WrongCredentialUsage(parameter))
-                        {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName), funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                        }
-                    }
+                    diagnosticRecords.Concat(GetViolations(
+                        funcDefAst.Parameters,
+                        funcDefAst,
+                        string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName),
+                        fileName));
                 }
 
                 if (funcDefAst.Body.ParamBlock != null)
                 {
-                    foreach (ParameterAst parameter in funcDefAst.Body.ParamBlock.Parameters)
-                    {
-                        if (WrongCredentialUsage(parameter))
-                        {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName), funcDefAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                        }
-                    }
+                    diagnosticRecords.Concat(GetViolations(
+                        funcDefAst.Body.ParamBlock.Parameters,
+                        funcDefAst,
+                        string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName),
+                        fileName));
                 }
             }
 
@@ -94,15 +91,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (scriptBlockAst.ParamBlock != null && scriptBlockAst.ParamBlock.Parameters != null)
                 {
-                    foreach (ParameterAst parameter in scriptBlockAst.ParamBlock.Parameters)
-                    {
-                        if (WrongCredentialUsage(parameter))
-                        {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeErrorSB), scriptBlockAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                        }
-                    }
+                    diagnosticRecords.Concat(GetViolations(
+                        scriptBlockAst.ParamBlock.Parameters,
+                        scriptBlockAst,
+                        string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeErrorSB),
+                        fileName));
                 }
             }
+
+            foreach (var dr in diagnosticRecords)
+            {
+                yield return dr;
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> GetViolations(
+            IEnumerable<ParameterAst> parameterAsts,
+            Ast parentAst,
+            string errorMessage,
+            string fileName)
+        {
+                foreach (ParameterAst parameter in parameterAsts)
+                {
+                    if (WrongCredentialUsage(parameter))
+                    {
+                        yield return new DiagnosticRecord(
+                            errorMessage,
+                            parentAst.Extent,
+                            GetName(),
+                            DiagnosticSeverity.Warning,
+                            fileName);
+                    }
+                }
         }
 
         private bool WrongCredentialUsage(ParameterAst parameter)
