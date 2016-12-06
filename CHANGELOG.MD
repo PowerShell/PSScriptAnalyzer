@@ -1,4 +1,4 @@
-﻿## [1.9.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.9.0) - 2016-11-23
+﻿## [1.9.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.9.0) - 2016-12-06
 ### Added
 - SuggestedCorrections for ScriptDefinition input (#665)
 - [PSAvoidGlobalAliases](https://github.com/PowerShell/PSScriptAnalyzer/blob/278d4fdc56f2c630661b39d242d958f204b69a06/RuleDocumentation/AvoidGlobalAliases.md) and [PSAvoidGlobalFunction](https://github.com/PowerShell/PSScriptAnalyzer/blob/278d4fdc56f2c630661b39d242d958f204b69a06/RuleDocumentation/AvoidGlobalFunctions.md) rules (#658)
