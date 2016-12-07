@@ -106,6 +106,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (Ast foundAst in foundAsts)
             {
                 CommandAst cmdAst = (CommandAst)foundAst;
+
+                // Check if the command ast should be ignored
+                if (IgnoreCommandast(cmdAst))
+                {
+                    continue;
+                }
+
                 string aliasName = cmdAst.GetCommandName();
 
                 // Handles the exception caused by commands like, {& $PLINK $args 2> $TempErrorFile}.
@@ -130,6 +137,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletName));
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks commandast of the form "[commandElement0] = [CommandElement2]". This typically occurs in a DSC configuration.
+        /// </summary>
+        private bool IgnoreCommandast(CommandAst cmdAst)
+        {
+            if (cmdAst.CommandElements.Count == 3)
+            {
+                var element = cmdAst.CommandElements[1] as StringConstantExpressionAst;
+                if (element != null && element.Value.Equals("="))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
