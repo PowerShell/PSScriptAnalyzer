@@ -20,6 +20,7 @@ using System.Management.Automation.Language;
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Management.Automation.Runspaces;
+using System.Collections;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -36,6 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private Object getCommandLock = new object();
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
+        private PSVersionTable psVersionTable;
 
         #endregion
 
@@ -1860,6 +1862,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // check if the keys given in module manifest are a proper subset of Keys
             return map.Keys.All(x => allKeys.Concat(deprecatedKeys).Contains(x, StringComparer.OrdinalIgnoreCase));
         }
+
+        public void SetPSVersionTable(Hashtable psVersionTable)
+        {
+            if (psVersionTable == null)
+            {
+                throw new ArgumentNullException("psVersionTable");
+            }
+
+            this.psVersionTable = new PSVersionTable(psVersionTable);
+        }
+
+#if CORECLR
+        public SemanticVersion GetPSVersion()
+#else
+        public Version GetPSVersion()
+#endif
+        {
+            return psVersionTable == null ? null : psVersionTable.PSVersion;
+        }
+
 #endregion Methods
     }
 
@@ -3802,6 +3824,49 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             int idx;
             return vertexIndexMap.TryGetValue(vertex, out idx) ? idx : -1;
         }
+    }
 
+    internal class PSVersionTable
+    {
+        private readonly string psVersionKey = "PSVersion";
+        private readonly string psEditionKey = "PSEdition";
+#if CORECLR
+        public SemanticVersion PSVersion { get; private set; }
+#else
+        public Version PSVersion { get; private set; }
+#endif
+        public string PSEdition { get; private set; }
+
+        public PSVersionTable(Hashtable psVersionTable)
+        {
+            if (psVersionTable == null)
+            {
+                throw new ArgumentNullException("psVersionTable");
+            }
+
+            if (!psVersionTable.ContainsKey(psVersionKey))
+            {
+                throw new ArgumentException("Input PSVersionTable does not contain PSVersion key"); // TODO localize
+            }
+
+#if CORECLR
+            PSVersion = psVersionTable[psVersionKey] as SemanticVersion;
+#else
+            PSVersion = psVersionTable[psVersionKey] as Version;
+#endif
+            if (PSVersion == null)
+            {
+                throw new ArgumentException("Input PSVersionTable has invalid PSVersion value type"); // TODO localize
+            }
+
+            if (psVersionTable.ContainsKey(psEditionKey))
+            {
+                PSEdition = psVersionTable[psEditionKey] as string;
+                if (PSEdition == null)
+                {
+                    throw new ArgumentException("Input PSVersionTable has invalid PSEdition value type"); // TODO localize
+                }
+            }
+        }
     }
 }

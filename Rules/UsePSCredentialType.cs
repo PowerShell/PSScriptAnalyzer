@@ -44,40 +44,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             var sbAst = ast as ScriptBlockAst;
+
+            var requiresTransformationAttribute = false;
+            var psVersion = Helper.Instance.GetPSVersion();
+            if (psVersion != null && psVersion.Major < 5)
+            {
+                requiresTransformationAttribute = true;
+            }
+
             if (sbAst != null
                     && sbAst.ScriptRequirements != null
                     && sbAst.ScriptRequirements.RequiredPSVersion != null
                     && sbAst.ScriptRequirements.RequiredPSVersion.Major == 5)
             {
-                    yield break;
+                    if (requiresTransformationAttribute)
+                    {
+                        yield break;
+                    }
             }
 
             IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
             IEnumerable<Ast> scriptBlockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);
 
-            string funcName;
-            IEnumerable<DiagnosticRecord> diagnosticRecords = Enumerable.Empty<DiagnosticRecord>();
+            List<DiagnosticRecord> diagnosticRecords = new List<DiagnosticRecord>();
 
             foreach (FunctionDefinitionAst funcDefAst in funcDefAsts)
             {
-                funcName = funcDefAst.Name;
-
+                IEnumerable<ParameterAst> parameterAsts = null;
                 if (funcDefAst.Parameters != null)
                 {
-                    diagnosticRecords.Concat(GetViolations(
-                        funcDefAst.Parameters,
-                        funcDefAst,
-                        string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName),
-                        fileName));
+                    parameterAsts = funcDefAst.Parameters;
                 }
 
-                if (funcDefAst.Body.ParamBlock != null)
+                if (funcDefAst.Body.ParamBlock != null
+                    && funcDefAst.Body.ParamBlock.Parameters != null)
                 {
-                    diagnosticRecords.Concat(GetViolations(
-                        funcDefAst.Body.ParamBlock.Parameters,
-                        funcDefAst,
-                        string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcName),
-                        fileName));
+                    parameterAsts = funcDefAst.Body.ParamBlock.Parameters;
+                }
+
+                if (parameterAsts != null)
+                {
+                    diagnosticRecords.AddRange(GetViolations(
+                        parameterAsts,
+                        string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeError, funcDefAst.Name),
+                        fileName,
+                        requiresTransformationAttribute));
                 }
             }
 
@@ -91,11 +102,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (scriptBlockAst.ParamBlock != null && scriptBlockAst.ParamBlock.Parameters != null)
                 {
-                    diagnosticRecords.Concat(GetViolations(
+                    diagnosticRecords.AddRange(GetViolations(
                         scriptBlockAst.ParamBlock.Parameters,
-                        scriptBlockAst,
                         string.Format(CultureInfo.CurrentCulture, Strings.UsePSCredentialTypeErrorSB),
-                        fileName));
+                        fileName,
+                        requiresTransformationAttribute));
                 }
             }
 
@@ -107,17 +118,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> GetViolations(
             IEnumerable<ParameterAst> parameterAsts,
-            Ast parentAst,
             string errorMessage,
-            string fileName)
+            string fileName,
+            bool requiresTransformationAttribute)
         {
                 foreach (ParameterAst parameter in parameterAsts)
                 {
-                    if (WrongCredentialUsage(parameter))
+                    if (WrongCredentialUsage(parameter, requiresTransformationAttribute))
                     {
                         yield return new DiagnosticRecord(
                             errorMessage,
-                            parentAst.Extent,
+                            parameter.Extent,
                             GetName(),
                             DiagnosticSeverity.Warning,
                             fileName);
@@ -125,17 +136,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
         }
 
-        private bool WrongCredentialUsage(ParameterAst parameter)
+        private bool WrongCredentialUsage(ParameterAst parameter, bool requiresTransformationAttribute)
         {
             if (parameter.Name.VariablePath.UserPath.Equals("Credential", StringComparison.OrdinalIgnoreCase))
             {
                 var psCredentialType = parameter.Attributes.FirstOrDefault(paramAttribute => (paramAttribute.TypeName.IsArray && (paramAttribute.TypeName as ArrayTypeName).ElementType.GetReflectionType() == typeof(PSCredential))
                     || paramAttribute.TypeName.GetReflectionType() == typeof(PSCredential));
 
+                if (psCredentialType == null)
+                {
+                    return true;
+                }
+
+                if (!requiresTransformationAttribute && psCredentialType != null)
+                {
+                    return false;
+                }
+
                 var credentialAttribute = parameter.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
 
                 // check that both exists and pscredentialtype comes before credential attribute
-                if (psCredentialType != null && credentialAttribute != null && psCredentialType.Extent.EndOffset <= credentialAttribute.Extent.StartOffset)
+                if (psCredentialType != null
+                        && credentialAttribute != null
+                        && psCredentialType.Extent.EndOffset <= credentialAttribute.Extent.StartOffset)
                 {
                     return false;
                 }
