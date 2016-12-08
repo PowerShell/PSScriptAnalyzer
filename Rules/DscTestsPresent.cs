@@ -59,7 +59,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (Directory.Exists(expectedTestsPath))
             {
                 DirectoryInfo testsFolder = new DirectoryInfo(expectedTestsPath);
-                FileInfo[] testFiles = testsFolder.GetFiles(testsQuery);
+                FileInfo[] testFiles = testsFolder.GetFiles(testsQuery, SearchOption.AllDirectories);
                 if (testFiles.Length != 0)
                 {
                     testsPresent = true;
