@@ -31,11 +31,6 @@ function Get-Credential
 
     }
 
-    $expectedViolationCount = 0
-    if ($PSVersionTable.PSVersion -lt [Version]'5.0.0')
-    {
-        $expectedViolationCount = 1
-    }
     Context ("When there are {0} violations" -f $expectedViolationCount) {
         It ("returns {0} violations" -f $expectedViolationCount) {
             $noViolations.Count | Should Be $expectedViolationCount

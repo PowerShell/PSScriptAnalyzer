@@ -52,15 +52,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 requiresTransformationAttribute = true;
             }
 
+            // do not run the rule if the script requires PS version 5
+            // but PSSA in invoked through PS version < 5
             if (sbAst != null
-                    && sbAst.ScriptRequirements != null
-                    && sbAst.ScriptRequirements.RequiredPSVersion != null
-                    && sbAst.ScriptRequirements.RequiredPSVersion.Major == 5)
+                && sbAst.ScriptRequirements != null
+                && sbAst.ScriptRequirements.RequiredPSVersion != null
+                && sbAst.ScriptRequirements.RequiredPSVersion.Major == 5
+                && requiresTransformationAttribute)
             {
-                    if (requiresTransformationAttribute)
-                    {
                         yield break;
-                    }
             }
 
             IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
@@ -153,7 +153,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return false;
                 }
 
-                var credentialAttribute = parameter.Attributes.FirstOrDefault(paramAttribute => paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute));
+                var credentialAttribute = parameter.Attributes.FirstOrDefault(
+                    paramAttribute =>
+                        paramAttribute.TypeName.GetReflectionType() == typeof(CredentialAttribute)
+                        || paramAttribute.TypeName.FullName.Equals(
+                            "System.Management.Automation.Credential",
+                            StringComparison.OrdinalIgnoreCase));
 
                 // check that both exists and pscredentialtype comes before credential attribute
                 if (psCredentialType != null
