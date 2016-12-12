@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Management.Automation.Runspaces;
+using System.Collections;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
@@ -219,6 +220,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 SessionState.InvokeCommand,
                 this);
             Helper.Instance.Initialize();
+
+            var psVersionTable = this.SessionState.PSVariable.GetValue("PSVersionTable") as Hashtable;
+            if (psVersionTable != null)
+            {
+                Helper.Instance.SetPSVersionTable(psVersionTable);
+            }
 
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
                 this.SessionState, recurseCustomRulePath);

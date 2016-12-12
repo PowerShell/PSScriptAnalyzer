@@ -43,6 +43,11 @@ Function Test-PSVersionV3
 	$PSVersionTable.PSVersion.Major -eq 3
 }
 
+Function Test-PSVersionV4
+{
+	$PSVersionTable.PSVersion.Major -eq 4
+}
+
 Function Get-Count
 {
 	Begin {$count = 0}
@@ -55,4 +60,5 @@ Export-ModuleMember -Function Test-CorrectionExtent
 Export-ModuleMember -Function Test-PSEditionCoreCLR
 Export-ModuleMember -Function Test-PSEditionCoreCLRLinux
 Export-ModuleMember -Function Test-PSVersionV3
+Export-ModuleMember -Function Test-PSVersionV4
 Export-ModuleMember -Function Get-Count

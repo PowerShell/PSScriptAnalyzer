@@ -1,5 +1,11 @@
-os:
-    - "Visual Studio 2015"
+environment:
+  matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 5
+    PowerShellEdition: Desktop
+    BuildConfiguration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
+    PowerShellEdition: Desktop
+    BuildConfiguration: PSv3Release
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
@@ -15,9 +21,10 @@ install:
 
 build_script:
     - ps: |
+        $PSVersionTable
         Push-Location C:\projects\psscriptanalyzer
         dotnet restore
-        C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
+        C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
         Pop-Location
 
