@@ -11,7 +11,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\PSCredentialTypeNoViolations.ps
 Describe "PSCredentialType" {
     Context "When there are violations" {
         $expectedViolations = 1
-        if (Test-PSVersionV3 -or Test-PSVersionV4) {
+        if ((Test-PSVersionV3) -or (Test-PSVersionV4)) {
             $expectedViolations = 2
         }
         It ("has {0} PSCredential type violation" -f $expectedViolations) {

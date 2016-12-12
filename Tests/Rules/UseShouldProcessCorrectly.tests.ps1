@@ -1,9 +1,14 @@
-﻿Import-Module PSScriptAnalyzer
-$violationMessage = "'Verb-Files' has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue."
+﻿$violationMessage = "'Verb-Files' has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue."
 $violationName = "PSShouldProcess"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+
+Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+Import-Module PSScriptAnalyzer
+
 $violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$IsV3OrV4 = (Test-PSVersionV3) -or (Test-PSVersionV4)
 
 Describe "UseShouldProcessCorrectly" {
     Context "When there are violations" {
@@ -172,7 +177,8 @@ function Remove-Foo {
             $violations.Count | Should Be 0
         }
 
-        It "finds no violation when caller declares SupportsShouldProcess and callee is a function with ShouldProcess" {
+        # Install-Module is present by default only on PSv5 and above
+        It "finds no violation when caller declares SupportsShouldProcess and callee is a function with ShouldProcess" -Skip:$IsV3OrV4 {
             $scriptDef = @'
 function Install-Foo {
 [CmdletBinding(SupportsShouldProcess)]
@@ -223,7 +229,8 @@ function Install-ModuleWithDeps {
             $violations.Count | Should Be 0
         }
 
-       It "finds no violation for a function with self reference and implicit call to ShouldProcess" {
+       # Install-Module is present by default only on PSv5 and above
+       It "finds no violation for a function with self reference and implicit call to ShouldProcess" -Skip:$IsV3OrV4 {
             $scriptDef = @'
 function Install-ModuleWithDeps {
 [CmdletBinding(SupportsShouldProcess)]
