@@ -280,13 +280,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
             else if (IsBuiltinSettingPreset(settings))
             {
+                var settingsFilePath = Helper.GetSettingPresetFilePath(settings as string);
+                this.WriteVerbose(String.Format("Using settings file at {0}", settingsFilePath));
                 settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(
-                    Helper.GetSettingPresetFilePath(settings as string),
+                    settingsFilePath,
                     this.SessionState.Path,
                     this);
             }
             else
             {
+                this.WriteVerbose(String.Format("Using settings file at {0}", this.settings));
                 settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this);
             }
 
