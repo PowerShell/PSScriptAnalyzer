@@ -362,7 +362,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             var preset = settingPreset as string;
             if (preset != null)
             {
-                return Helper.GetBuiltinSettingPresets().Contains(preset, StringComparer.OrdinalIgnoreCase);
+                return Helper.GetSettingPresets().Contains(preset, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;

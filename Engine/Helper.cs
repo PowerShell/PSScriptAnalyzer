@@ -207,7 +207,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Looks for powershell data files (*.psd1) in the PSScriptAnalyzer module settings directory
         /// and returns the names of the files without extension
         /// </summary>
-        internal static IEnumerable<string> GetBuiltinSettingPresets()
+        public static IEnumerable<string> GetSettingPresets()
         {
             var settingsPath = GetShippedSettingsDirectory();
             if (settingsPath != null)
@@ -224,12 +224,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         ///
         /// If the corresponding preset file is not found, the method returns null.
         /// </summary>
-        internal static string GetSettingPresetFilePath(string settingPreset)
+        public static string GetSettingPresetFilePath(string settingPreset)
         {
             var settingsPath = GetShippedSettingsDirectory();
             if (settingsPath != null)
             {
-                if (GetBuiltinSettingPresets().Contains(settingPreset, StringComparer.OrdinalIgnoreCase))
+                if (GetSettingPresets().Contains(settingPreset, StringComparer.OrdinalIgnoreCase))
                 {
                     return System.IO.Path.Combine(settingsPath, settingPreset + ".psd1");
                 }
