@@ -57,7 +57,7 @@ Installation
 Install-Module -Name PSScriptAnalyzer
 ```
 
-**Note** For PowerShell version `5.1.14393.206` or newer, before installing PSScriptAnayzer, please install the latest Nuget provider by running the following in an elevated PowerShell session.
+**Note**: For PowerShell version `5.1.14393.206` or newer, before installing PSScriptAnalyzer, please install the latest Nuget provider by running the following in an elevated PowerShell session.
 ```powershell
 Install-PackageProvider Nuget –force –verbose
 Exit
