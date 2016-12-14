@@ -21,6 +21,7 @@ using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Management.Automation.Runspaces;
 using System.Collections;
+using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -171,6 +172,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 AliasToCmdletDictionary.Add(aliasInfo.Name, aliasInfo.Definition);
             }
         }
+
+        /// <summary>
+        /// Retrieves the Settings directory from the Module directory structure
+        /// </summary>
+        public static string GetShippedSettingsDirectory()
+        {
+            // Find the compatibility files in Settings folder
+            var path = typeof(Helper).GetTypeInfo().Assembly.Location;
+            if (String.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            var settingsPath = Path.Combine(Path.GetDirectoryName(path), "Settings");
+            if (!Directory.Exists(settingsPath))
+            {
+                // try one level down as the PSScriptAnalyzer module structure is not consistent
+                // CORECLR binaries are in PSScriptAnalyzer/coreclr/, PowerShell v3 binaries are in PSScriptAnalyzer/PSv3/
+                // and PowerShell v5 binaries are in PSScriptAnalyzer/
+                settingsPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(path)), "Settings");
+                if (!Directory.Exists(settingsPath))
+                {
+                    return null;
+                }
+            }
+
+            return settingsPath;
+        }
+
 
         /// <summary>
         /// Returns all the rule arguments

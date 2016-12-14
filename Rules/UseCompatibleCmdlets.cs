@@ -306,8 +306,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            string settingsPath;
-            settingsPath = GetShippedSettingsDirectory();
+            string settingsPath = Helper.GetShippedSettingsDirectory();
 #if DEBUG
             object modeObject;
             if (ruleArgs.TryGetValue("mode", out modeObject))
@@ -379,34 +378,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 curCmdletCompatibilityMap[key] = true;
             }
-        }
-
-        /// <summary>
-        /// Retrieves the Settings directory from the Module directory structure
-        /// </summary>
-        private string GetShippedSettingsDirectory()
-        {
-            // Find the compatibility files in Settings folder
-            var path = this.GetType().GetTypeInfo().Assembly.Location;
-            if (String.IsNullOrWhiteSpace(path))
-            {
-                return null;
-            }
-
-            var settingsPath = Path.Combine(Path.GetDirectoryName(path), "Settings");
-            if (!Directory.Exists(settingsPath))
-            {
-                // try one level down as the PSScriptAnalyzer module structure is not consistent
-                // CORECLR binaries are in PSScriptAnalyzer/coreclr/, PowerShell v3 binaries are in PSScriptAnalyzer/PSv3/
-                // and PowerShell v5 binaries are in PSScriptAnalyzer/
-                settingsPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(path)), "Settings");
-                if (!Directory.Exists(settingsPath))
-                {
-                    return null;
-                }
-            }
-
-            return settingsPath;
         }
 
         private bool IsValidPlatformString(string fileNameWithoutExt)
