@@ -278,6 +278,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                             path));
                 }
             }
+            else if (IsBuiltinSettingPreset(settings))
+            {
+                settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(
+                    Helper.GetSettingPresetFilePath(settings as string),
+                    this.SessionState.Path,
+                    this);
+            }
             else
             {
                 settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this);
@@ -348,7 +355,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
 #endregion
 
-#region Methods
+#region Private Methods
+
+        private static bool IsBuiltinSettingPreset(object settingPreset)
+        {
+            var preset = settingPreset as string;
+            if (preset != null)
+            {
+                return Helper.GetBuiltinSettingPresets().Contains(preset, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
         private void ProcessInput()
         {
             IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
@@ -392,6 +411,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
         }
-#endregion
+#endregion // Private Methods
     }
 }
