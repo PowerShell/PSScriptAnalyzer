@@ -35,7 +35,7 @@ if (Get-Command Register-ArgumentCompleter -ErrorAction Ignore)
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParmeter)
 
         [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSettingPresets() | `
-            Where-Object {$_ -like "$wordToComplete"} | `
+            Where-Object {$_ -like "$wordToComplete*"} | `
             ForEach-Object { New-Object System.Management.Automation.CompletionResult $_ }
     }
 
