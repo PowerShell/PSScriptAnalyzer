@@ -33,8 +33,21 @@ if (Get-Command Register-ArgumentCompleter -ErrorAction Ignore)
 {
     Register-ArgumentCompleter -CommandName 'Invoke-ScriptAnalyzer' -ParameterName 'Settings' -ScriptBlock {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParmeter)
-        [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetBuiltinSettingPresets() | `
-            Where-Object {$_ -like "$wordToComplete*"} | `
+
+        [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSettingPresets() | `
+            Where-Object {$_ -like "$wordToComplete"} | `
             ForEach-Object { New-Object System.Management.Automation.CompletionResult $_ }
     }
+
+    Function RuleNameCompleter
+    {
+        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParmeter)
+
+        Get-ScriptAnalyzerRule *$wordToComplete* | `
+            ForEach-Object { New-Object System.Management.Automation.CompletionResult $_.RuleName }
+    }
+
+    Register-ArgumentCompleter -CommandName 'Invoke-ScriptAnalyzer' -ParameterName 'IncludeRule' -ScriptBlock $Function:RuleNameCompleter
+    Register-ArgumentCompleter -CommandName 'Invoke-ScriptAnalyzer' -ParameterName 'ExcludeRule' -ScriptBlock $Function:RuleNameCompleter
+    Register-ArgumentCompleter -CommandName 'Get-ScriptAnalyzerRule' -ParameterName 'Name' -ScriptBlock $Function:RuleNameCompleter
 }
