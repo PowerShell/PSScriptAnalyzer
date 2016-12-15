@@ -74,6 +74,7 @@
     <Compile Include="Generic\ConfigurableRule.cs" />
     <Compile Include="Generic\ModuleDependencyHandler.cs" />
     <Compile Include="Generic\CorrectionExtent.cs" />
+    <Compile Include="Generic\Settings.cs" />
     <Compile Include="Generic\SuppressedRecord.cs" />
     <Compile Include="Generic\DiagnosticRecord.cs" />
     <Compile Include="Generic\ExternalRule.cs" />
