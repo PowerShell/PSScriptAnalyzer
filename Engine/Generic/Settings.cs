@@ -21,15 +21,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     public class Settings
     {
+        private string filePath;
         private List<string> includeRules;
         private List<string> excludeRules;
         private List<string> severities;
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
 
-        public IEnumerable<string> IncludeRules { get { return includeRules; }}
-        public IEnumerable<string> ExcludeRules { get { return excludeRules; }}
-        public IEnumerable<string> Severity { get { return severities; }}
-        public Dictionary<string, Dictionary<string, object>> RuleArguments { get { return ruleArguments; }}
+        public string FilePath { get { return filePath; } }
+        public IEnumerable<string> IncludeRules { get { return includeRules; } }
+        public IEnumerable<string> ExcludeRules { get { return excludeRules; } }
+        public IEnumerable<string> Severity { get { return severities; } }
+        public Dictionary<string, Dictionary<string, object>> RuleArguments { get { return ruleArguments; } }
 
         public Settings(object settings, Func<string, string> presetResolver)
         {
@@ -38,6 +40,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 throw new ArgumentNullException("settings");
             }
 
+            includeRules = new List<string>();
+            excludeRules = new List<string>();
+            severities = new List<string>();
+            ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
             var settingsFilePath = settings as string;
 
             //it can either be a preset or path to a file or a hashtable
@@ -54,6 +60,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
                 if (File.Exists(settingsFilePath))
                 {
+                    filePath = settingsFilePath;
                     parseSettingsFile(settingsFilePath);
                 }
                 else
@@ -92,6 +99,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 string key = obj as string;
                 if (key == null)
                 {
+                    // TODO localize
                     throw new InvalidDataException("key not string");
                     // writer.WriteError(
                     //     new ErrorRecord(
