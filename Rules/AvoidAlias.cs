@@ -184,21 +184,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>Retruns a list of suggested corrections</returns>
         private List<CorrectionExtent> GetCorrectionExtent(CommandAst cmdAst, string cmdletName)
         {
-            var ext = cmdAst.Extent;
             var corrections = new List<CorrectionExtent>();
             var alias = cmdAst.GetCommandName();
-            string description = string.Format(
+            var description = string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.AvoidUsingCmdletAliasesCorrectionDescription,
                 alias,
                 cmdletName);
+            var cmdExtent = GetCommandExtent(cmdAst);
             corrections.Add(new CorrectionExtent(
-                ext.StartLineNumber,
-                ext.EndLineNumber,
-                cmdAst.CommandElements[0].Extent.StartColumnNumber,
-                cmdAst.CommandElements[0].Extent.EndColumnNumber,
+                cmdExtent.StartLineNumber,
+                cmdExtent.EndLineNumber,
+                cmdExtent.StartColumnNumber,
+                cmdExtent.EndColumnNumber,
                 cmdletName,
-                ext.File,
+                cmdAst.Extent.File,
                 description));
             return corrections;
         }
