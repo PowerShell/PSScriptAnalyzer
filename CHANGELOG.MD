@@ -1,4 +1,15 @@
-﻿## [1.9.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.9.0) - 2016-12-06
+﻿## [unreleased]
+### Fixed
+- `PSProvideCommentHelp` violation extent (#679)
+- `PSAvoidUsingCmdletAliases` rule
+    + false positives in DSC configurations (#678)
+    + violation extent (#685)
+- `PSDSCDSCTestsPresent` rule to check for tests in subdirectories
+- `PSUsePSCredentialType` rule (#683)
+    + trigger only if invoked from PS version 4 and below
+    + violation extent
+
+## [1.9.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.9.0) - 2016-12-06
 ### Added
 - SuggestedCorrections for ScriptDefinition input (#665)
 - [PSAvoidGlobalAliases](https://github.com/PowerShell/PSScriptAnalyzer/blob/278d4fdc56f2c630661b39d242d958f204b69a06/RuleDocumentation/AvoidGlobalAliases.md) and [PSAvoidGlobalFunction](https://github.com/PowerShell/PSScriptAnalyzer/blob/278d4fdc56f2c630661b39d242d958f204b69a06/RuleDocumentation/AvoidGlobalFunctions.md) rules (#658)
