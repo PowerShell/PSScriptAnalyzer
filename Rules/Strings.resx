@@ -870,4 +870,16 @@
   <data name="AvoidGlobalAliasesName" xml:space="preserve">
     <value>AvoidGlobalAliases</value>
   </data>
+  <data name="PlaceOpenBraceName" xml:space="preserve">
+    <value>PlaceOpenBrace</value>
+  </data>
+  <data name="PlaceOpenBraceCommonName" xml:space="preserve">
+    <value>Place open braces consistently</value>
+  </data>
+  <data name="PlaceOpenBraceDescription" xml:space="preserve">
+    <value>Place open braces either on the same line as the preceding expression or on a new line.</value>
+  </data>
+  <data name="PlaceOpenBraceError" xml:space="preserve">
+    <value>Open brace not on {0} line</value>
+  </data>
 </root>
