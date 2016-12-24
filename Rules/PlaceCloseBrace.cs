@@ -105,23 +105,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IList<Token> tokens,
             string fileName)
         {
-            var closeBracePos = tokens.Count - 1;
-
-            if (closeBracePos >= 2
-                && !violationTokens.Contains(tokens[closeBracePos])
-                && tokens[closeBracePos].Kind == TokenKind.RCurly
-                && tokens[closeBracePos - 1].Kind == TokenKind.NewLine
-                && tokens[closeBracePos - 2].Kind == TokenKind.NewLine)
+            if (tokens.Count >= 3)
             {
-                violationTokens.Add(tokens[closeBracePos]);
-                yield return new DiagnosticRecord(
-                    "Extra new line before close brace",
-                    tokens[closeBracePos].Extent,
-                    GetName(),
-                    GetDiagnosticSeverity(),
-                    fileName,
-                    null,
-                    null);
+                var closeBraceToken = tokens.Last();
+                if (!violationTokens.Contains(closeBraceToken)
+                    && closeBraceToken.Kind == TokenKind.RCurly
+                    && tokens[tokens.Count - 2].Kind == TokenKind.NewLine
+                    && tokens[tokens.Count - 3].Kind == TokenKind.NewLine)
+                {
+                    violationTokens.Add(closeBraceToken);
+                    yield return new DiagnosticRecord(
+                        "Extra new line before close brace",
+                        closeBraceToken.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        null);
+                }
             }
         }
 
@@ -130,25 +131,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IList<Token> tokens,
             string fileName)
         {
-            var closeBracePos = tokens.Count - 1;
-            if (closeBracePos >= 1
-                && !violationTokens.Contains(tokens[closeBracePos])
-                && tokens[closeBracePos].Kind == TokenKind.RCurly
-                && tokens[closeBracePos - 1].Kind != TokenKind.NewLine)
+            if (tokens.Count >= 2)
             {
-                violationTokens.Add(tokens[closeBracePos]);
-                yield return new DiagnosticRecord(
-                    GetError(),
-                    tokens[closeBracePos].Extent,
-                    GetName(),
-                    GetDiagnosticSeverity(),
-                    fileName,
-                    null,
-                    null);
+                var closeBraceToken = tokens.Last();
+                if (!violationTokens.Contains(closeBraceToken)
+                    && closeBraceToken.Kind == TokenKind.RCurly
+                    && tokens[tokens.Count - 2].Kind != TokenKind.NewLine)
+                {
+                    violationTokens.Add(closeBraceToken);
+                    yield return new DiagnosticRecord(
+                        GetError(),
+                        closeBraceToken.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetSuggestedCorrectionsForBraceOnSameLine(ast, closeBraceToken, fileName));
+                }
             }
         }
 
         private List<CorrectionExtent> GetSuggestedCorrectionsForBraceOnSameLine(
+            Ast ast,
             Token closeBraceToken,
             string fileName)
         {
@@ -159,9 +163,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     closeBraceToken.Extent.EndLineNumber,
                     closeBraceToken.Extent.StartColumnNumber,
                     closeBraceToken.Extent.EndColumnNumber,
-                    Environment.NewLine + closeBraceToken.Text,
+                    Environment.NewLine + GetIndentation(ast) + closeBraceToken.Text,
                     fileName));
             return corrections;
+        }
+
+        private string GetIndentation(Ast ast)
+        {
+            return new String(' ', (ast.Parent ?? ast).Extent.StartColumnNumber - 1);
         }
 
         /// <summary>
