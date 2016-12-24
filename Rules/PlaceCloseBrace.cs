@@ -26,8 +26,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class PlaceCloseBrace : IScriptRule
+    public class PlaceCloseBrace : IScriptRule
     {
+        private List<Token> tokens;
+        private HashSet<Token> violationTokens;
+        private Dictionary<Ast, List<Token>> astTokenMap;
+
+        public PlaceCloseBrace()
+        {
+            tokens = new List<Token>();
+            astTokenMap = new Dictionary<Ast, List<Token>>();
+            violationTokens = new HashSet<Token>();
+        }
+
         /// <summary>
         /// Analyzes the given ast to find the [violation]
         /// </summary>
@@ -41,59 +52,116 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            var tokens = Helper.Instance.Tokens;
-            foreach (var dr in GetViolationsForBraceOnSameLine(tokens, fileName))
-            {
-                yield return dr;
-            }
+            tokens = Helper.Instance.Tokens.ToList();
+            astTokenMap.Clear();
+            violationTokens.Clear();
+            var astItems = ast.FindAll(x => x is ScriptBlockAst || x is StatementBlockAst, true);
 
-            foreach (var dr in GetViolationsForEmptyLineBeforeBrace(tokens, fileName))
+            foreach (var astItem in astItems)
             {
-                yield return dr;
-            }
-        }
-
-        private IEnumerable<DiagnosticRecord> GetViolationsForEmptyLineBeforeBrace(
-            Token[] tokens,
-            string fileName)
-        {
-            for (int k = 2; k < tokens.Length; k++)
-            {
-                if (tokens[k].Kind == TokenKind.RCurly
-                    && tokens[k - 1].Kind == TokenKind.NewLine
-                    && tokens[k - 2].Kind == TokenKind.NewLine)
+                var astTokens = GetTokens(astItem);
+                foreach (var dr in GetViolationForBraceOnSameLine(astItem, astTokens, fileName))
                 {
-                    yield return new DiagnosticRecord(
-                        "Extra new line before close brace",
-                        tokens[k].Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        fileName,
-                        null,
-                        null);
+                    yield return dr;
+                }
+
+                foreach (var dr in GetViolationForEmptyLineBeforeBrace(astItem, astTokens, fileName))
+                {
+                    yield return dr;
                 }
             }
         }
 
-        private IEnumerable<DiagnosticRecord> GetViolationsForBraceOnSameLine(
-            Token[] tokens,
-            string fileName)
+        private List<Token> GetTokens(Ast ast)
         {
-            for (int k = 1; k < tokens.Length; k++)
+            if (astTokenMap.Keys.Contains(ast))
             {
-                if (tokens[k].Kind == TokenKind.RCurly
-                    && tokens[k - 1].Kind != TokenKind.NewLine)
+                return astTokenMap[ast];
+            }
+
+            List<Token> tokenSuperSet;
+            if (ast.Parent != null && astTokenMap.Keys.Contains(ast.Parent))
+            {
+                tokenSuperSet = astTokenMap[ast.Parent];
+            }
+            {
+                tokenSuperSet = this.tokens;
+            }
+
+            var tokenSet = new List<Token>();
+            foreach (var token in tokenSuperSet)
+            {
+                if (Helper.ContainsExtent(ast.Extent, token.Extent))
                 {
-                    yield return new DiagnosticRecord(
-                        GetError(),
-                        tokens[k].Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        fileName,
-                        null,
-                        null);
+                    tokenSet.Add(token);
                 }
             }
+
+            astTokenMap[ast] = tokenSet;
+            return tokenSet;
+        }
+        private IEnumerable<DiagnosticRecord> GetViolationForEmptyLineBeforeBrace(
+            Ast ast,
+            IList<Token> tokens,
+            string fileName)
+        {
+            var closeBracePos = tokens.Count - 1;
+
+            if (closeBracePos >= 2
+                && !violationTokens.Contains(tokens[closeBracePos])
+                && tokens[closeBracePos].Kind == TokenKind.RCurly
+                && tokens[closeBracePos - 1].Kind == TokenKind.NewLine
+                && tokens[closeBracePos - 2].Kind == TokenKind.NewLine)
+            {
+                violationTokens.Add(tokens[closeBracePos]);
+                yield return new DiagnosticRecord(
+                    "Extra new line before close brace",
+                    tokens[closeBracePos].Extent,
+                    GetName(),
+                    GetDiagnosticSeverity(),
+                    fileName,
+                    null,
+                    null);
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> GetViolationForBraceOnSameLine(
+            Ast ast,
+            IList<Token> tokens,
+            string fileName)
+        {
+            var closeBracePos = tokens.Count - 1;
+            if (closeBracePos >= 1
+                && !violationTokens.Contains(tokens[closeBracePos])
+                && tokens[closeBracePos].Kind == TokenKind.RCurly
+                && tokens[closeBracePos - 1].Kind != TokenKind.NewLine)
+            {
+                violationTokens.Add(tokens[closeBracePos]);
+                yield return new DiagnosticRecord(
+                    GetError(),
+                    tokens[closeBracePos].Extent,
+                    GetName(),
+                    GetDiagnosticSeverity(),
+                    fileName,
+                    null,
+                    null);
+            }
+        }
+
+        private List<CorrectionExtent> GetSuggestedCorrectionsForBraceOnSameLine(
+            Token closeBraceToken,
+            string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            corrections.Add(
+                new CorrectionExtent(
+                    closeBraceToken.Extent.StartLineNumber,
+                    closeBraceToken.Extent.EndLineNumber,
+                    closeBraceToken.Extent.StartColumnNumber,
+                    closeBraceToken.Extent.EndColumnNumber,
+                    Environment.NewLine + closeBraceToken.Text,
+                    fileName));
+            return corrections;
         }
 
         /// <summary>
