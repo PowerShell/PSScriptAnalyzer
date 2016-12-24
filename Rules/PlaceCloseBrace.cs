@@ -79,15 +79,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return astTokenMap[ast];
             }
 
-            List<Token> tokenSuperSet;
-            if (ast.Parent != null && astTokenMap.Keys.Contains(ast.Parent))
+            // check if any parent upstream is in the cache
+            var parentAst = ast.Parent;
+            while (parentAst != null
+                    && !astTokenMap.Keys.Contains(parentAst))
             {
-                tokenSuperSet = astTokenMap[ast.Parent];
-            }
-            {
-                tokenSuperSet = this.tokens;
+                parentAst = parentAst.Parent;
             }
 
+            List<Token> tokenSuperSet = parentAst == null ? tokens : astTokenMap[parentAst];
             var tokenSet = new List<Token>();
             foreach (var token in tokenSuperSet)
             {
