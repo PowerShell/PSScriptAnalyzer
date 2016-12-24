@@ -41,11 +41,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
+            // TODO Given that we need to make exceptions for
+            // ScriptBlockExpressionAst and NamedBlockAst, a
+            // simpler approach using only tokens seems more
+            // robust - for every close brace, check the position
+            // of its corresponding open brace. If the open brace
+            // is on a line by itself, use its identation to decide
+            // close brace's indentation. If the open brace is
+            // preceded by any non new line token then find the
+            // fist keyword on the line and use its indentation for
+            // the close brace
+
             var tokens = Helper.Instance.Tokens.ToList();
             var astTokenMap = new Dictionary<Ast, List<Token>>();
             var violationTokens = new HashSet<Token>();
             var diagnosticRecords = new List<DiagnosticRecord>();
-            var astItems = ast.FindAll(x => x is ScriptBlockAst || x is StatementBlockAst, true);
+            var astItems = ast.FindAll(x => x is ScriptBlockAst
+                                            || x is StatementBlockAst
+                                            || x is NamedBlockAst,
+                                        true);
             foreach (var astItem in astItems)
             {
                 var astTokens = GetTokens(astItem, tokens, ref astTokenMap);
@@ -53,7 +67,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     GetViolationForBraceOnSameLine(astItem, astTokens, fileName, ref violationTokens),
                     ref diagnosticRecords);
 
-                // FIXME cannot detect the end brace of begin block
                 AddToDiagnosticRecords(
                     GetViolationForEmptyLineBeforeBrace(astItem, astTokens, fileName, ref violationTokens),
                     ref diagnosticRecords);
@@ -179,7 +192,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private string GetIndentation(Ast ast)
         {
             var targetAst = ast;
-            if (targetAst.Parent != null)
+            if (!(targetAst is NamedBlockAst)
+                && targetAst.Parent != null)
             {
                 targetAst = targetAst.Parent;
                 if (targetAst is ScriptBlockExpressionAst)
