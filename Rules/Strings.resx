@@ -882,4 +882,16 @@
   <data name="PlaceOpenBraceError" xml:space="preserve">
     <value>Open brace not on {0} line</value>
   </data>
+  <data name="PlaceCloseBraceName" xml:space="preserve">
+    <value>PlaceCloseBrace</value>
+  </data>
+  <data name="PlaceCloseBraceCommonName" xml:space="preserve">
+    <value>Place close braces</value>
+  </data>
+  <data name="PlaceCloseBraceDescription" xml:space="preserve">
+    <value>Place close brace show be on a new line by itself.</value>
+  </data>
+  <data name="PlaceCloseBraceError" xml:space="preserve">
+    <value>Close brace not on a new line</value>
+  </data>
 </root>

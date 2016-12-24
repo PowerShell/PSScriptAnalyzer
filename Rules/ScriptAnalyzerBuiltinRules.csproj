@@ -118,6 +118,7 @@
     <Compile Include="UseUTF8EncodingForHelpFile.cs" />
     <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
     <Compile Include="PlaceOpenBrace.cs" />
+    <Compile Include="PlaceCloseBrace.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\ScriptAnalyzerEngine.csproj">
