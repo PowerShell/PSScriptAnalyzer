@@ -51,9 +51,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var tokens = Helper.Instance.Tokens;
             for (int k = 2; k < tokens.Length; k++)
             {
-                if (tokens[k].Kind == TokenKind.LCurly)
+                
+                if (tokens[k].Kind == TokenKind.LCurly
+                    && tokens[k-1].Kind == TokenKind.NewLine)
                 {
-                    lCurlyTokenPositions.Add(k);
+                    yield return new DiagnosticRecord(
+                        GetError(),
+                        tokens[k].Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetSuggestedCorrections(tokens[k - 2], tokens[k], fileName));
                 }
             }
 
