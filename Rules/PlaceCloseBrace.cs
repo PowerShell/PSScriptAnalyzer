@@ -54,7 +54,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     ref diagnosticRecords);
 
                 // FIXME cannot detect the end brace of begin block
-                // FIXME for dsc configuration the indentation does not work while auto fixing
                 AddToDiagnosticRecords(
                     GetViolationForEmptyLineBeforeBrace(astItem, astTokens, fileName, ref violationTokens),
                     ref diagnosticRecords);
@@ -179,7 +178,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private string GetIndentation(Ast ast)
         {
-            return new String(' ', (ast.Parent ?? ast).Extent.StartColumnNumber - 1);
+            var targetAst = ast;
+            if (targetAst.Parent != null)
+            {
+                targetAst = targetAst.Parent;
+                if (targetAst is ScriptBlockExpressionAst)
+                {
+                    targetAst = targetAst.Parent ?? targetAst;
+                }
+            }
+
+            return new String(' ', targetAst.Extent.StartColumnNumber - 1);
         }
 
         private List<CorrectionExtent> GetSuggestedCorrectionsForEmptyLineBeforeBrace(
