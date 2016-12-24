@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// A class to walk an AST to check for [violation]
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
     class PlaceCloseBrace : IScriptRule
@@ -41,8 +41,67 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            // your code goes here
-            yield return new DiagnosticRecord();
+            var tokens = Helper.Instance.Tokens;
+            foreach (var dr in GetViolationsForBraceOnSameLine(tokens, fileName))
+            {
+                yield return dr;
+            }
+
+            foreach (var dr in GetViolationsForEmptyLineBeforeBrace(tokens, fileName))
+            {
+                yield return dr;
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> GetViolationsForEmptyLineBeforeBrace(
+            Token[] tokens,
+            string fileName)
+        {
+            for (int k = 2; k < tokens.Length; k++)
+            {
+                if (tokens[k].Kind == TokenKind.RCurly
+                    && tokens[k - 1].Kind == TokenKind.NewLine
+                    && tokens[k - 2].Kind == TokenKind.NewLine)
+                {
+                    yield return new DiagnosticRecord(
+                        "Extra new line before close brace",
+                        tokens[k].Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        null);
+                }
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> GetViolationsForBraceOnSameLine(
+            Token[] tokens,
+            string fileName)
+        {
+            for (int k = 1; k < tokens.Length; k++)
+            {
+                if (tokens[k].Kind == TokenKind.RCurly
+                    && tokens[k - 1].Kind != TokenKind.NewLine)
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(),
+                        tokens[k].Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        null);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the error message of this rule
+        /// </summary>
+        private string GetError()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.PlaceCloseBraceError);
         }
 
         /// <summary>
