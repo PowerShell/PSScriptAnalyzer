@@ -28,17 +28,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class PlaceCloseBrace : IScriptRule
     {
-        private List<Token> tokens;
-        private HashSet<Token> violationTokens;
-        private Dictionary<Ast, List<Token>> astTokenMap;
-
-        public PlaceCloseBrace()
-        {
-            tokens = new List<Token>();
-            astTokenMap = new Dictionary<Ast, List<Token>>();
-            violationTokens = new HashSet<Token>();
-        }
-
         /// <summary>
         /// Analyzes the given ast to find the [violation]
         /// </summary>
@@ -52,27 +41,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            tokens = Helper.Instance.Tokens.ToList();
-            astTokenMap.Clear();
-            violationTokens.Clear();
+            var tokens = Helper.Instance.Tokens.ToList();
+            var astTokenMap = new Dictionary<Ast, List<Token>>();
+            var violationTokens = new HashSet<Token>();
+            var diagnosticRecords = new List<DiagnosticRecord>();
             var astItems = ast.FindAll(x => x is ScriptBlockAst || x is StatementBlockAst, true);
-
             foreach (var astItem in astItems)
             {
-                var astTokens = GetTokens(astItem);
-                foreach (var dr in GetViolationForBraceOnSameLine(astItem, astTokens, fileName))
-                {
-                    yield return dr;
-                }
+                var astTokens = GetTokens(astItem, tokens, ref astTokenMap);
+                AddToDiagnosticRecords(
+                    GetViolationForBraceOnSameLine(astItem, astTokens, fileName, ref violationTokens),
+                    ref diagnosticRecords);
 
-                foreach (var dr in GetViolationForEmptyLineBeforeBrace(astItem, astTokens, fileName))
-                {
-                    yield return dr;
-                }
+                // FIXME cannot detect the end brace of begin block
+                // FIXME for dsc configuration the indentation does not work while auto fixing
+                AddToDiagnosticRecords(
+                    GetViolationForEmptyLineBeforeBrace(astItem, astTokens, fileName, ref violationTokens),
+                    ref diagnosticRecords);
+            }
+
+            return diagnosticRecords;
+        }
+
+        private void AddToDiagnosticRecords(
+            DiagnosticRecord diagnosticRecord,
+            ref List<DiagnosticRecord> diagnosticRecords)
+        {
+            if (diagnosticRecord != null)
+            {
+                diagnosticRecords.Add(diagnosticRecord);
             }
         }
 
-        private List<Token> GetTokens(Ast ast)
+        private List<Token> GetTokens(Ast ast, List<Token> tokens, ref Dictionary<Ast, List<Token>> astTokenMap)
         {
             if (astTokenMap.Keys.Contains(ast))
             {
@@ -100,10 +101,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             astTokenMap[ast] = tokenSet;
             return tokenSet;
         }
-        private IEnumerable<DiagnosticRecord> GetViolationForEmptyLineBeforeBrace(
+        private DiagnosticRecord GetViolationForEmptyLineBeforeBrace(
             Ast ast,
-            IList<Token> tokens,
-            string fileName)
+            List<Token> tokens,
+            string fileName,
+            ref HashSet<Token> violationTokens)
         {
             if (tokens.Count >= 3)
             {
@@ -116,7 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && newLineToken.Kind == TokenKind.NewLine)
                 {
                     violationTokens.Add(closeBraceToken);
-                    yield return new DiagnosticRecord(
+                    return new DiagnosticRecord(
                         "Extra new line before close brace",
                         closeBraceToken.Extent,
                         GetName(),
@@ -126,12 +128,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetSuggestedCorrectionsForEmptyLineBeforeBrace(ast, closeBraceToken, newLineToken, fileName));
                 }
             }
+
+            return null;
         }
 
-        private IEnumerable<DiagnosticRecord> GetViolationForBraceOnSameLine(
+        private DiagnosticRecord GetViolationForBraceOnSameLine(
             Ast ast,
-            IList<Token> tokens,
-            string fileName)
+            List<Token> tokens,
+            string fileName,
+            ref HashSet<Token> violationTokens)
         {
             if (tokens.Count >= 2)
             {
@@ -141,7 +146,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && tokens[tokens.Count - 2].Kind != TokenKind.NewLine)
                 {
                     violationTokens.Add(closeBraceToken);
-                    yield return new DiagnosticRecord(
+                    return new DiagnosticRecord(
                         GetError(),
                         closeBraceToken.Extent,
                         GetName(),
@@ -151,6 +156,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetSuggestedCorrectionsForBraceOnSameLine(ast, closeBraceToken, fileName));
                 }
             }
+
+            return null;
         }
 
         private List<CorrectionExtent> GetSuggestedCorrectionsForBraceOnSameLine(
