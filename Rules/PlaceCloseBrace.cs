@@ -108,10 +108,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (tokens.Count >= 3)
             {
                 var closeBraceToken = tokens.Last();
+                var extraNewLineToken = tokens[tokens.Count - 2];
+                var newLineToken = tokens[tokens.Count - 3];
                 if (!violationTokens.Contains(closeBraceToken)
                     && closeBraceToken.Kind == TokenKind.RCurly
-                    && tokens[tokens.Count - 2].Kind == TokenKind.NewLine
-                    && tokens[tokens.Count - 3].Kind == TokenKind.NewLine)
+                    && extraNewLineToken.Kind == TokenKind.NewLine
+                    && newLineToken.Kind == TokenKind.NewLine)
                 {
                     violationTokens.Add(closeBraceToken);
                     yield return new DiagnosticRecord(
@@ -121,7 +123,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         fileName,
                         null,
-                        null);
+                        GetSuggestedCorrectionsForEmptyLineBeforeBrace(ast, closeBraceToken, newLineToken, fileName));
                 }
             }
         }
@@ -171,6 +173,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private string GetIndentation(Ast ast)
         {
             return new String(' ', (ast.Parent ?? ast).Extent.StartColumnNumber - 1);
+        }
+
+        private List<CorrectionExtent> GetSuggestedCorrectionsForEmptyLineBeforeBrace(
+            Ast ast,
+            Token closeBraceToken,
+            Token newLineToken,
+            string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            corrections.Add(
+                new CorrectionExtent(
+                    newLineToken.Extent.StartLineNumber,
+                    closeBraceToken.Extent.EndLineNumber,
+                    newLineToken.Extent.StartColumnNumber,
+                    closeBraceToken.Extent.EndColumnNumber,
+                    Environment.NewLine + GetIndentation(ast) + closeBraceToken.Text,
+                    fileName));
+            return corrections;
         }
 
         /// <summary>
