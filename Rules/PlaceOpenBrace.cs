@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// A class to walk an AST to check for [violation]
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
     class PlaceOpenBrace : IScriptRule
@@ -46,14 +46,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
+            // TODO Should have the following options
+            // * on-same-line
+            // * on-new-line
+            // * no-empty-line-after
 
             var lCurlyTokenPositions = new List<int>();
             var tokens = Helper.Instance.Tokens;
             for (int k = 2; k < tokens.Length; k++)
             {
-                
+
                 if (tokens[k].Kind == TokenKind.LCurly
-                    && tokens[k-1].Kind == TokenKind.NewLine)
+                    && tokens[k - 1].Kind == TokenKind.NewLine)
                 {
                     yield return new DiagnosticRecord(
                         GetError(),

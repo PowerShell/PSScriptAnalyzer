@@ -41,38 +41,149 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            // TODO Given that we need to make exceptions for
-            // ScriptBlockExpressionAst and NamedBlockAst, a
-            // simpler approach using only tokens seems more
-            // robust - for every close brace, check the position
-            // of its corresponding open brace. If the open brace
-            // is on a line by itself, use its identation to decide
-            // close brace's indentation. If the open brace is
-            // preceded by any non new line token then find the
-            // fist keyword on the line and use its indentation for
-            // the close brace
+            // TODO Should have the following options
+            // * no-empty-line-before
+            // * on-new-line
+            // * align
 
-            var tokens = Helper.Instance.Tokens.ToList();
-            var astTokenMap = new Dictionary<Ast, List<Token>>();
-            var violationTokens = new HashSet<Token>();
+            var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
-            var astItems = ast.FindAll(x => x is ScriptBlockAst
-                                            || x is StatementBlockAst
-                                            || x is NamedBlockAst,
-                                        true);
-            foreach (var astItem in astItems)
-            {
-                var astTokens = GetTokens(astItem, tokens, ref astTokenMap);
-                AddToDiagnosticRecords(
-                    GetViolationForBraceOnSameLine(astItem, astTokens, fileName, ref violationTokens),
-                    ref diagnosticRecords);
+            var openBracePosStack = new Stack<int>();
 
-                AddToDiagnosticRecords(
-                    GetViolationForEmptyLineBeforeBrace(astItem, astTokens, fileName, ref violationTokens),
-                    ref diagnosticRecords);
+            for (int k = 0; k < tokens.Length; k++)
+            {
+                var token = tokens[k];
+                if (token.Kind == TokenKind.LCurly)
+                {
+                    openBracePosStack.Push(k);
+                    continue;
+                }
+
+                if (token.Kind == TokenKind.RCurly)
+                {
+                    if (openBracePosStack.Count > 0)
+                    {
+                        var openBracePos = openBracePosStack.Pop();
+                        AddToDiagnosticRecords(
+                            GetViolationForBraceOnSameLine(tokens, k, openBracePos, fileName),
+                            ref diagnosticRecords);
+                        AddToDiagnosticRecords(
+                            GetViolationForEmptyLineBeforeBrace(tokens, k, openBracePos, fileName),
+                            ref diagnosticRecords);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
 
             return diagnosticRecords;
+        }
+
+        private DiagnosticRecord GetViolationForEmptyLineBeforeBrace(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        {
+            if (tokens.Length > 2 && tokens.Length > closeBracePos)
+            {
+                var closeBraceToken = tokens[closeBracePos];
+                var newLineToken = tokens[closeBracePos - 1];
+                var extraNewLineToken = tokens[closeBracePos - 2];
+                if (newLineToken.Kind == TokenKind.NewLine
+                    && extraNewLineToken.Kind == TokenKind.NewLine)
+                {
+                    return new DiagnosticRecord(
+                        "Extra new line before close brace",
+                        closeBraceToken.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetSuggestedCorrectionsForEmptyLineBeforeBrace(tokens, closeBracePos, openBracePos, fileName));
+                }
+            }
+
+            return null;
+        }
+
+        private List<CorrectionExtent> GetSuggestedCorrectionsForEmptyLineBeforeBrace(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            var newLineToken = tokens[closeBracePos - 2];
+            var closeBraceToken = tokens[closeBracePos];
+            corrections.Add(new CorrectionExtent(
+                newLineToken.Extent.StartLineNumber,
+                closeBraceToken.Extent.EndLineNumber,
+                newLineToken.Extent.StartColumnNumber,
+                closeBraceToken.Extent.EndColumnNumber,
+                newLineToken.Text + GetIndentation(tokens, closeBracePos, openBracePos) + closeBraceToken.Text,
+                fileName));
+            return corrections;
+        }
+
+        private string GetIndentation(Token[] tokens, int closeBracePos, int openBracePos)
+        {
+            // if open brace on a new line by itself, use its indentation
+            var openBraceToken = tokens[openBracePos];
+            if (tokens[openBracePos - 1].Kind == TokenKind.NewLine)
+            {
+                return new String(' ', openBraceToken.Extent.StartColumnNumber - 1);
+            }
+
+            // if open brace follows any keywords use the identation of the first keyword
+            // on the line containing the open brace
+            Token firstTokenOnOpenBraceLine = openBraceToken;
+            for (int k = openBracePos; k > 0; --k)
+            {
+                if (tokens[k].Extent.StartLineNumber == firstTokenOnOpenBraceLine.Extent.StartLineNumber)
+                {
+                    firstTokenOnOpenBraceLine = tokens[k];
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return new String(' ', firstTokenOnOpenBraceLine.Extent.StartColumnNumber - 1);
+        }
+
+        private DiagnosticRecord GetViolationForBraceOnSameLine(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        {
+            if (tokens.Length > 1 && tokens.Length > closeBracePos)
+            {
+                var closeBraceToken = tokens[closeBracePos];
+                if (tokens[closeBracePos - 1].Kind != TokenKind.NewLine)
+                {
+                    return new DiagnosticRecord(
+                        GetError(),
+                        closeBraceToken.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetSuggestedCorrectionsForBraceOnSameLine(tokens, closeBracePos, openBracePos, fileName));
+                }
+            }
+
+            return null;
+        }
+
+        private List<CorrectionExtent> GetSuggestedCorrectionsForBraceOnSameLine(
+            Token[] tokens,
+            int closeBracePos,
+            int openBracePos,
+            string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            var closeBraceToken = tokens[closeBracePos];
+            corrections.Add(new CorrectionExtent(
+                closeBraceToken.Extent.StartLineNumber,
+                closeBraceToken.Extent.EndLineNumber,
+                closeBraceToken.Extent.StartColumnNumber,
+                closeBraceToken.Extent.EndColumnNumber,
+                Environment.NewLine + GetIndentation(tokens, closeBracePos, openBracePos) + closeBraceToken.Extent.Text,
+                fileName));
+            return corrections;
         }
 
         private void AddToDiagnosticRecords(
@@ -112,115 +223,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             astTokenMap[ast] = tokenSet;
             return tokenSet;
-        }
-        private DiagnosticRecord GetViolationForEmptyLineBeforeBrace(
-            Ast ast,
-            List<Token> tokens,
-            string fileName,
-            ref HashSet<Token> violationTokens)
-        {
-            if (tokens.Count >= 3)
-            {
-                var closeBraceToken = tokens.Last();
-                var extraNewLineToken = tokens[tokens.Count - 2];
-                var newLineToken = tokens[tokens.Count - 3];
-                if (!violationTokens.Contains(closeBraceToken)
-                    && closeBraceToken.Kind == TokenKind.RCurly
-                    && extraNewLineToken.Kind == TokenKind.NewLine
-                    && newLineToken.Kind == TokenKind.NewLine)
-                {
-                    violationTokens.Add(closeBraceToken);
-                    return new DiagnosticRecord(
-                        "Extra new line before close brace",
-                        closeBraceToken.Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        fileName,
-                        null,
-                        GetSuggestedCorrectionsForEmptyLineBeforeBrace(ast, closeBraceToken, newLineToken, fileName));
-                }
-            }
-
-            return null;
-        }
-
-        private DiagnosticRecord GetViolationForBraceOnSameLine(
-            Ast ast,
-            List<Token> tokens,
-            string fileName,
-            ref HashSet<Token> violationTokens)
-        {
-            if (tokens.Count >= 2)
-            {
-                var closeBraceToken = tokens.Last();
-                if (!violationTokens.Contains(closeBraceToken)
-                    && closeBraceToken.Kind == TokenKind.RCurly
-                    && tokens[tokens.Count - 2].Kind != TokenKind.NewLine)
-                {
-                    violationTokens.Add(closeBraceToken);
-                    return new DiagnosticRecord(
-                        GetError(),
-                        closeBraceToken.Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        fileName,
-                        null,
-                        GetSuggestedCorrectionsForBraceOnSameLine(ast, closeBraceToken, fileName));
-                }
-            }
-
-            return null;
-        }
-
-        private List<CorrectionExtent> GetSuggestedCorrectionsForBraceOnSameLine(
-            Ast ast,
-            Token closeBraceToken,
-            string fileName)
-        {
-            var corrections = new List<CorrectionExtent>();
-            corrections.Add(
-                new CorrectionExtent(
-                    closeBraceToken.Extent.StartLineNumber,
-                    closeBraceToken.Extent.EndLineNumber,
-                    closeBraceToken.Extent.StartColumnNumber,
-                    closeBraceToken.Extent.EndColumnNumber,
-                    Environment.NewLine + GetIndentation(ast) + closeBraceToken.Text,
-                    fileName));
-            return corrections;
-        }
-
-        private string GetIndentation(Ast ast)
-        {
-            var targetAst = ast;
-            if (!(targetAst is NamedBlockAst)
-                && targetAst.Parent != null)
-            {
-                targetAst = targetAst.Parent;
-                if (targetAst is ScriptBlockExpressionAst)
-                {
-                    targetAst = targetAst.Parent ?? targetAst;
-                }
-            }
-
-            return new String(' ', targetAst.Extent.StartColumnNumber - 1);
-        }
-
-        private List<CorrectionExtent> GetSuggestedCorrectionsForEmptyLineBeforeBrace(
-            Ast ast,
-            Token closeBraceToken,
-            Token newLineToken,
-            string fileName)
-        {
-            var corrections = new List<CorrectionExtent>();
-            corrections.Add(
-                new CorrectionExtent(
-                    newLineToken.Extent.StartLineNumber,
-                    closeBraceToken.Extent.EndLineNumber,
-                    newLineToken.Extent.StartColumnNumber,
-                    closeBraceToken.Extent.EndColumnNumber,
-                    Environment.NewLine + GetIndentation(ast) + closeBraceToken.Text,
-                    fileName));
-            return corrections;
         }
 
         /// <summary>
