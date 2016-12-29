@@ -50,12 +50,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // * on-same-line
             // * on-new-line
             // * no-empty-line-after
+            // * stick-a-space-before
 
             var lCurlyTokenPositions = new List<int>();
             var tokens = Helper.Instance.Tokens;
             for (int k = 2; k < tokens.Length; k++)
             {
-
                 if (tokens[k].Kind == TokenKind.LCurly
                     && tokens[k - 1].Kind == TokenKind.NewLine)
                 {

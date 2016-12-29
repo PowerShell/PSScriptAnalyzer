@@ -43,8 +43,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // TODO Should have the following options
             // * no-empty-line-before
-            // * on-new-line
-            // * align
+            // * align (if close brance and open brace on new lines align with open brace,
+            //   if close brace is on new line but open brace is not align with the first keyword on open brace line)
 
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
