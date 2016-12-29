@@ -894,4 +894,16 @@
   <data name="PlaceCloseBraceError" xml:space="preserve">
     <value>Close brace not on a new line</value>
   </data>
+  <data name="UseConsistentIndentationName" xml:space="preserve">
+    <value>UseConsistentIndentation</value>
+  </data>
+  <data name="UseConsistentIndentationCommonName" xml:space="preserve">
+    <value>Use consistent indentation</value>
+  </data>
+  <data name="UseConsistentIndentationDescription" xml:space="preserve">
+    <value>Each statement block should have a consistent indenation.</value>
+  </data>
+  <data name="UseConsistentIndentationError" xml:space="preserve">
+    <value>Indentation not consistent</value>
+  </data>
 </root>

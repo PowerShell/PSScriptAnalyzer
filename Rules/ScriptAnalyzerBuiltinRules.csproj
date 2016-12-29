@@ -119,6 +119,7 @@
     <Compile Include="ReturnCorrectTypesForDSCFunctions.cs" />
     <Compile Include="PlaceOpenBrace.cs" />
     <Compile Include="PlaceCloseBrace.cs" />
+    <Compile Include="UseConsistentIndentation.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\ScriptAnalyzerEngine.csproj">
