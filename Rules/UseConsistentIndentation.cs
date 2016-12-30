@@ -23,11 +23,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// A class to walk an AST to check for [violation]
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
     class UseConsistentIndentation : IScriptRule
     {
+        private readonly int unitsPerIndentationLevel;
+
+        UseConsistentIndentation()
+        {
+            // TODO Add a parameter for indentation kind {Tab, Space}
+            // TODO make this configurable
+            unitsPerIndentationLevel = 4;
+        }
+
         /// <summary>
         /// Analyzes the given ast to find the [violation]
         /// </summary>
@@ -41,8 +50,103 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            // your code goes here
-            yield return new DiagnosticRecord();
+            var tokens = Helper.Instance.Tokens;
+            var diagnosticRecords = new List<DiagnosticRecord>();
+            var openBracePosStack = new Stack<int>();
+            bool onNewLine = true;
+            for (int k = 0; k < tokens.Length; k++)
+            {
+                var token = tokens[k];
+                var curIndentationLevel = GetIndentationLevel(openBracePosStack);
+                var curIndentation = GetIndentation(curIndentationLevel);
+                switch (token.Kind)
+                {
+                    case TokenKind.LCurly:
+                        AddViolation(token, curIndentationLevel, diagnosticRecords, ref onNewLine);
+                        openBracePosStack.Push(k);
+                        break;
+
+                    case TokenKind.RCurly:
+                        if (openBracePosStack.Count > 0)
+                        {
+                            openBracePosStack.Pop();
+                        }
+                        AddViolation(token, GetIndentationLevel(openBracePosStack), diagnosticRecords, ref onNewLine);
+                        break;
+
+                    case TokenKind.NewLine:
+                        onNewLine = true;
+                        break;
+
+                    default:
+                        // we do not want to make a call for every token, hence
+                        // we add this redundant check
+                        if (onNewLine)
+                        {
+                            AddViolation(token, curIndentationLevel, diagnosticRecords, ref onNewLine);
+                        }
+                        break;
+                }
+            }
+
+            return diagnosticRecords;
+        }
+
+        private void AddViolation(
+            Token token,
+            int curIndentationLevel,
+            List<DiagnosticRecord> diagnosticRecords,
+            ref bool onNewLine)
+        {
+            if (onNewLine)
+            {
+                onNewLine = false;
+                if (token.Extent.StartColumnNumber - 1 != GetIndentation(curIndentationLevel))
+                {
+                    var fileName = token.Extent.File;
+                    var extent = token.Extent;
+                    var violationExtent = extent = new ScriptExtent(
+                        new ScriptPosition(
+                            fileName,
+                            extent.StartLineNumber,
+                            1, // first column in the line
+                            extent.StartScriptPosition.Line),
+                        new ScriptPosition(
+                            fileName,
+                            extent.StartLineNumber,
+                            extent.StartColumnNumber,
+                            extent.StartScriptPosition.Line));
+                    diagnosticRecords.Add(
+                        new DiagnosticRecord(
+                            "not correct indenation", // TODO replace with localized string
+                            violationExtent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName,
+                            null,
+                            null));
+                }
+            }
+        }
+
+        private static int ClipNegative(int x)
+        {
+            return x > 0 ? x : 0;
+        }
+
+        private int GetIndentationColumnNumber(int indentationLevel)
+        {
+            return GetIndentation(indentationLevel) + 1;
+        }
+
+        private int GetIndentation(int indentationLevel)
+        {
+            return indentationLevel * this.unitsPerIndentationLevel;
+        }
+
+        private int GetIndentationLevel(Stack<int> openBracePosStack)
+        {
+            return openBracePosStack.Count;
         }
 
         /// <summary>
