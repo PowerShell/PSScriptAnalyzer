@@ -29,12 +29,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     class UseConsistentIndentation : IScriptRule
     {
         private readonly int unitsPerIndentationLevel;
+        private enum IndentationKind { Space, Tab };
+        private IndentationKind indentationKind;
 
         UseConsistentIndentation()
         {
-            // TODO Add a parameter for indentation kind {Tab, Space}
             // TODO make this configurable
-            unitsPerIndentationLevel = 4;
+            indentationKind = IndentationKind.Space;
+            unitsPerIndentationLevel = indentationKind == IndentationKind.Space ? 4 : 1;
         }
 
         /// <summary>
@@ -52,26 +54,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
-            var openBracePosStack = new Stack<int>();
+            var indentationLevel = 0;
             bool onNewLine = true;
             for (int k = 0; k < tokens.Length; k++)
             {
                 var token = tokens[k];
-                var curIndentationLevel = GetIndentationLevel(openBracePosStack);
-                var curIndentation = GetIndentation(curIndentationLevel);
                 switch (token.Kind)
                 {
                     case TokenKind.LCurly:
-                        AddViolation(token, curIndentationLevel, diagnosticRecords, ref onNewLine);
-                        openBracePosStack.Push(k);
+                        AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
                         break;
 
                     case TokenKind.RCurly:
-                        if (openBracePosStack.Count > 0)
-                        {
-                            openBracePosStack.Pop();
-                        }
-                        AddViolation(token, GetIndentationLevel(openBracePosStack), diagnosticRecords, ref onNewLine);
+                        indentationLevel = ClipNegative(indentationLevel - 1);
+                        AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
                         break;
 
                     case TokenKind.NewLine:
@@ -83,7 +79,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         // we add this redundant check
                         if (onNewLine)
                         {
-                            AddViolation(token, curIndentationLevel, diagnosticRecords, ref onNewLine);
+                            AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
                         }
                         break;
                 }
@@ -94,14 +90,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private void AddViolation(
             Token token,
-            int curIndentationLevel,
+            int expectedIndentationLevel,
             List<DiagnosticRecord> diagnosticRecords,
             ref bool onNewLine)
         {
             if (onNewLine)
             {
                 onNewLine = false;
-                if (token.Extent.StartColumnNumber - 1 != GetIndentation(curIndentationLevel))
+                if (token.Extent.StartColumnNumber - 1 != GetIndentation(expectedIndentationLevel))
                 {
                     var fileName = token.Extent.File;
                     var extent = token.Extent;
@@ -124,9 +120,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetDiagnosticSeverity(),
                             fileName,
                             null,
-                            null));
+                            GetSuggestedCorrections(token, expectedIndentationLevel)));
                 }
             }
+        }
+
+        private List<CorrectionExtent> GetSuggestedCorrections(
+            Token token,
+            int indentationLevel)
+        {
+            // TODO Add another constructor for correction extent that takes extent
+            // TODO handle param block
+            // TODO handle multiline commands
+
+            var corrections = new List<CorrectionExtent>();
+            corrections.Add(new CorrectionExtent(
+                token.Extent.StartLineNumber,
+                token.Extent.EndLineNumber,
+                1,
+                token.Extent.EndColumnNumber,
+                GetIndentationString(indentationLevel) + token.Extent.Text,
+                token.Extent.File));
+            return corrections;
         }
 
         private static int ClipNegative(int x)
@@ -144,9 +159,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return indentationLevel * this.unitsPerIndentationLevel;
         }
 
-        private int GetIndentationLevel(Stack<int> openBracePosStack)
+        private char GetIndentationChar()
         {
-            return openBracePosStack.Count;
+            return indentationKind == IndentationKind.Space ? ' ' : '\t';
+        }
+
+        private string GetIndentationString(int indentationLevel)
+        {
+            return new string(GetIndentationChar(), GetIndentation(indentationLevel));
         }
 
         /// <summary>
