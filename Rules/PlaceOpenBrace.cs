@@ -41,18 +41,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            if (ast == null)
-            {
-                throw new ArgumentNullException("ast");
-            }
-
             // TODO Should have the following options
             // * on-same-line
             // * on-new-line
+            // * new-line-after
             // * no-empty-line-after
             // * stick-a-space-before
 
-            var lCurlyTokenPositions = new List<int>();
             var tokens = Helper.Instance.Tokens;
             for (int k = 2; k < tokens.Length; k++)
             {
@@ -67,21 +62,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         fileName,
                         null,
                         GetSuggestedCorrections(tokens[k - 2], tokens[k], fileName));
-                }
-            }
-
-            foreach (var lCurlyTokenPos in lCurlyTokenPositions)
-            {
-                if (tokens[lCurlyTokenPos - 1].Kind == TokenKind.NewLine)
-                {
-                    yield return new DiagnosticRecord(
-                        GetError(),
-                        tokens[lCurlyTokenPos].Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        fileName,
-                        null,
-                        GetSuggestedCorrections(tokens[lCurlyTokenPos - 2], tokens[lCurlyTokenPos], fileName));
                 }
             }
         }
