@@ -60,10 +60,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         private RuleArguments ruleArgs;
+        private Func<Token[], string, IEnumerable<DiagnosticRecord>> findViolations;
 
         public PlaceOpenBrace()
         {
             ruleArgs = RuleArguments.Create(Helper.Instance.GetRuleArguments(this.GetName()));
+            if (ruleArgs.OnSameLine)
+            {
+                findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
+            }
+            else
+            {
+                findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
+            }
         }
 
         /// <summary>
@@ -80,14 +89,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // TODO Should have the following options
-            // * on-same-line
-            // * on-new-line
             // * new-line-after
             // * no-empty-line-after
 
-            var tokens = Helper.Instance.Tokens;
-            if (ruleArgs.OnSameLine)
-            {
+            return findViolations(Helper.Instance.Tokens, fileName);
+        }
+
+        private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldBeOnSameLine(
+            Token[] tokens,
+            string fileName)
+        {
                 for (int k = 2; k < tokens.Length; k++)
                 {
                     if (tokens[k].Kind == TokenKind.LCurly
@@ -100,31 +111,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetDiagnosticSeverity(),
                             fileName,
                             null,
-                            GetSuggestedCorrections(tokens[k - 2], tokens[k], fileName));
+                            GetCorrectionsForBraceShouldBeOnSameLine(tokens[k - 2], tokens[k], fileName));
                     }
                 }
-            }
-            else
+        }
+
+        private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldNotBeOnSameLine(
+            Token[] tokens,
+            string fileName)
+        {
+            for (int k = 1; k < tokens.Length; k++)
             {
-                for (int k = 1; k < tokens.Length; k++)
+                if (tokens[k].Kind == TokenKind.LCurly
+                    && tokens[k - 1].Kind != TokenKind.NewLine)
                 {
-                    if (tokens[k].Kind == TokenKind.LCurly
-                        && tokens[k - 1].Kind != TokenKind.NewLine)
-                    {
-                        yield return new DiagnosticRecord(
-                            GetError(),
-                            tokens[k].Extent,
-                            GetName(),
-                            GetDiagnosticSeverity(),
-                            fileName,
-                            null,
-                            GetSuggestedCorrectionsForNotOneSameLine(tokens, k - 1, k, fileName));
-                    }
+                    yield return new DiagnosticRecord(
+                        GetError(),
+                        tokens[k].Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetCorrectionsForBraceShouldNotBeOnSameLine(tokens, k - 1, k, fileName));
                 }
             }
         }
 
-        private List<CorrectionExtent> GetSuggestedCorrectionsForNotOneSameLine(
+        private List<CorrectionExtent> GetCorrectionsForBraceShouldNotBeOnSameLine(
             Token[] tokens,
             int prevTokenPos,
             int closeBraceTokenPos,
@@ -168,7 +181,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return refToken.Extent.StartColumnNumber;
         }
 
-        private List<CorrectionExtent> GetSuggestedCorrections(Token precedingExpression, Token lCurly, string fileName)
+        private List<CorrectionExtent> GetCorrectionsForBraceShouldBeOnSameLine(
+            Token precedingExpression,
+            Token lCurly,
+            string fileName)
         {
             var corrections = new List<CorrectionExtent>();
             corrections.Add(
