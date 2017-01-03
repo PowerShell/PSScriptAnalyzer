@@ -16,7 +16,9 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Text;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -28,6 +30,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     class PlaceOpenBrace : IScriptRule
     {
+        private class RuleArguments
+        {
+            public bool OnSameLine { get; set; } = true;
+
+            public static RuleArguments Create(Dictionary<string, object> arguments)
+            {
+                try
+                {
+                    var ruleArguments = new RuleArguments();
+                    var properties = ruleArguments.GetType().GetProperties();
+                    foreach (var property in properties)
+                    {
+                        if (arguments.ContainsKey(property.Name))
+                        {
+                            var type = property.PropertyType;
+                            var obj = arguments[property.Name];
+                            property.SetValue(ruleArguments, System.Convert.ChangeType(obj, Type.GetTypeCode(type)));
+                        }
+                    }
+
+                    return ruleArguments;
+                }
+                catch
+                {
+                    return new RuleArguments(); // return arguments with defaults
+                }
+            }
+        }
+
+        private RuleArguments ruleArgs;
+
+        public PlaceOpenBrace()
+        {
+            ruleArgs = RuleArguments.Create(Helper.Instance.GetRuleArguments(this.GetName()));
+        }
+
         /// <summary>
         /// Analyzes the given ast to find the [violation]
         /// </summary>
@@ -46,24 +84,88 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // * on-new-line
             // * new-line-after
             // * no-empty-line-after
-            // * stick-a-space-before
 
             var tokens = Helper.Instance.Tokens;
-            for (int k = 2; k < tokens.Length; k++)
+            if (ruleArgs.OnSameLine)
             {
-                if (tokens[k].Kind == TokenKind.LCurly
-                    && tokens[k - 1].Kind == TokenKind.NewLine)
+                for (int k = 2; k < tokens.Length; k++)
                 {
-                    yield return new DiagnosticRecord(
-                        GetError(),
-                        tokens[k].Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        fileName,
-                        null,
-                        GetSuggestedCorrections(tokens[k - 2], tokens[k], fileName));
+                    if (tokens[k].Kind == TokenKind.LCurly
+                        && tokens[k - 1].Kind == TokenKind.NewLine)
+                    {
+                        yield return new DiagnosticRecord(
+                            GetError(),
+                            tokens[k].Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName,
+                            null,
+                            GetSuggestedCorrections(tokens[k - 2], tokens[k], fileName));
+                    }
                 }
             }
+            else
+            {
+                for (int k = 1; k < tokens.Length; k++)
+                {
+                    if (tokens[k].Kind == TokenKind.LCurly
+                        && tokens[k - 1].Kind != TokenKind.NewLine)
+                    {
+                        yield return new DiagnosticRecord(
+                            GetError(),
+                            tokens[k].Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            fileName,
+                            null,
+                            GetSuggestedCorrectionsForNotOneSameLine(tokens, k - 1, k, fileName));
+                    }
+                }
+            }
+        }
+
+        private List<CorrectionExtent> GetSuggestedCorrectionsForNotOneSameLine(
+            Token[] tokens,
+            int prevTokenPos,
+            int closeBraceTokenPos,
+            string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            var prevToken = tokens[prevTokenPos];
+            var closeBraceToken = tokens[closeBraceTokenPos];
+            corrections.Add(
+                new CorrectionExtent(
+                    prevToken.Extent.StartLineNumber,
+                    closeBraceToken.Extent.EndLineNumber,
+                    prevToken.Extent.StartColumnNumber,
+                    closeBraceToken.Extent.EndColumnNumber,
+                    (new StringBuilder())
+                        .Append(prevToken.Text)
+                        .AppendLine()
+                        .Append(GetIndentation(tokens, closeBraceTokenPos))
+                        .Append(closeBraceToken.Text)
+                        .ToString(),
+                    fileName));
+            return corrections;
+        }
+
+        private string GetIndentation(Token[] tokens, int refTokenPos)
+        {
+            return new String(' ', GetStartColumnNumberOfTokenLine(tokens, refTokenPos) - 1);
+        }
+
+        private int GetStartColumnNumberOfTokenLine(Token[] tokens, int refTokenPos)
+        {
+            var refToken = tokens[refTokenPos];
+            for (int k = refTokenPos - 1; k >= 0; k--)
+            {
+                if (tokens[k].Extent.StartLineNumber != refToken.Extent.StartLineNumber)
+                {
+                    return tokens[k].Extent.StartColumnNumber;
+                }
+            }
+
+            return refToken.Extent.StartColumnNumber;
         }
 
         private List<CorrectionExtent> GetSuggestedCorrections(Token precedingExpression, Token lCurly, string fileName)
