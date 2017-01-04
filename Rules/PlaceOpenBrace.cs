@@ -22,6 +22,7 @@ using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
+    // TODO place public in front of all new rules to be discoverable in PS Core
     /// <summary>
     /// A class to walk an AST to check for [violation]
     /// </summary>
@@ -59,21 +60,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+        private bool isRuleConfigured;
+
         private RuleArguments ruleArgs;
         private Func<Token[], string, IEnumerable<DiagnosticRecord>> findViolations;
-
-        public PlaceOpenBrace()
-        {
-            ruleArgs = RuleArguments.Create(Helper.Instance.GetRuleArguments(this.GetName()));
-            if (ruleArgs.OnSameLine)
-            {
-                findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
-            }
-            else
-            {
-                findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
-            }
-        }
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -88,6 +78,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
+            // We cannot set the rule arguments in the rule  constructor
+            // because it needs Helper.Instance. Helper doesn't get
+            // initialized in Get-ScriptAnalyzerRule cmdlet so configuring
+            // the rule in the constructor causes Get-ScriptAnalyzerRule to
+            // crash.
+            if (!isRuleConfigured)
+            {
+                ConfigureRule();
+            }
+
             // TODO Should have the following options
             // * new-line-after
             // * no-empty-line-after
@@ -95,25 +95,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return findViolations(Helper.Instance.Tokens, fileName);
         }
 
+        private void ConfigureRule()
+        {
+            ruleArgs = RuleArguments.Create(Helper.Instance.GetRuleArguments(this.GetName()));
+            if (ruleArgs.OnSameLine)
+            {
+                findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
+            }
+            else
+            {
+                findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
+            }
+            isRuleConfigured = true;
+        }
+
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldBeOnSameLine(
             Token[] tokens,
             string fileName)
         {
-                for (int k = 2; k < tokens.Length; k++)
+            for (int k = 2; k < tokens.Length; k++)
+            {
+                if (tokens[k].Kind == TokenKind.LCurly
+                    && tokens[k - 1].Kind == TokenKind.NewLine)
                 {
-                    if (tokens[k].Kind == TokenKind.LCurly
-                        && tokens[k - 1].Kind == TokenKind.NewLine)
-                    {
-                        yield return new DiagnosticRecord(
-                            GetError(),
-                            tokens[k].Extent,
-                            GetName(),
-                            GetDiagnosticSeverity(),
-                            fileName,
-                            null,
-                            GetCorrectionsForBraceShouldBeOnSameLine(tokens[k - 2], tokens[k], fileName));
-                    }
+                    yield return new DiagnosticRecord(
+                        GetError(),
+                        tokens[k].Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetCorrectionsForBraceShouldBeOnSameLine(tokens[k - 2], tokens[k], fileName));
                 }
+            }
         }
 
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldNotBeOnSameLine(
