@@ -55,18 +55,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (String.Equals(cmdParamAst.ParameterName, "computername", StringComparison.OrdinalIgnoreCase))
                 {
                     List<string> localhostRepresentations = new List<string> { "localhost", ".", "::1", "127.0.0.1" };
-                    Ast computerNameArgument = GetComputerNameArg(CmdAst, cmdParamAst.Extent.StartOffset);                                        
+                    Ast computerNameArgument = GetComputerNameArg(CmdAst, cmdParamAst.Extent.StartOffset);
 
                     if (null != computerNameArgument)
                     {
-                        if (!localhostRepresentations.Contains(computerNameArgument.Extent.Text.ToLower()))
+                        var constExprAst = computerNameArgument as ConstantExpressionAst;
+                        if (null != constExprAst)
                         {
-                            return computerNameArgument is ConstantExpressionAst;
+                            var constExprVal = constExprAst.Value as string;
+                            if (null != constExprVal)
+                            {
+                                return !localhostRepresentations.Contains<string>(
+                                    constExprVal,
+                                    StringComparer.OrdinalIgnoreCase);
+                            }
+
                         }
 
                         return false;
                     }
-                    
+
                     if (null != cmdParamAst.Argument && !localhostRepresentations.Contains(cmdParamAst.Argument.ToString().Replace("\"", "").Replace("'", "").ToLower()))
                     {
                         return cmdParamAst.Argument is ConstantExpressionAst;
