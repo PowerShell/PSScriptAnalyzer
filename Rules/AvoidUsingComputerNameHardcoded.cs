@@ -30,6 +30,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class AvoidUsingComputerNameHardcoded : AvoidParameterGeneric
     {
+        private readonly string[] localhostRepresentations = new string[]
+        {
+            "localhost",
+            ".",
+            "::1",
+            "127.0.0.1"
+        };
+
         /// <summary>
         /// Condition on the cmdlet that must be satisfied for the error to be raised
         /// </summary>
@@ -54,24 +62,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (String.Equals(cmdParamAst.ParameterName, "computername", StringComparison.OrdinalIgnoreCase))
                 {
-                    List<string> localhostRepresentations = new List<string> { "localhost", ".", "::1", "127.0.0.1" };
-                    Ast computerNameArgument = GetComputerNameArg(CmdAst, cmdParamAst.Extent.StartOffset);                                        
-
-                    if (null != computerNameArgument)
+                    Ast computerNameArgument = cmdParamAst.Argument;
+                    if (computerNameArgument == null)
                     {
-                        if (!localhostRepresentations.Contains(computerNameArgument.Extent.Text.ToLower()))
+                        computerNameArgument = GetComputerNameArg(CmdAst, cmdParamAst.Extent.StartOffset);
+                        if (computerNameArgument == null)
                         {
-                            return computerNameArgument is ConstantExpressionAst;
+                            return false;
                         }
-
-                        return false;
                     }
-                    
-                    if (null != cmdParamAst.Argument && !localhostRepresentations.Contains(cmdParamAst.Argument.ToString().Replace("\"", "").Replace("'", "").ToLower()))
+
+                    var constExprAst = computerNameArgument as ConstantExpressionAst;
+                    if (constExprAst != null)
                     {
-                        return cmdParamAst.Argument is ConstantExpressionAst;
+                        return !IsLocalhost(constExprAst);
                     }
                 }
+            }
+
+            return false;
+        }
+
+        private bool IsLocalhost(ConstantExpressionAst constExprAst)
+        {
+            var constExprVal = constExprAst.Value as string;
+            if (constExprVal != null)
+            {
+                return localhostRepresentations.Contains<string>(
+                    constExprVal,
+                    StringComparer.OrdinalIgnoreCase);
             }
 
             return false;
