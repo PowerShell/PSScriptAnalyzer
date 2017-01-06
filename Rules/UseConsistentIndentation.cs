@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     class UseConsistentIndentation : IScriptRule
     {
-        private readonly int unitsPerIndentationLevel;
+        private readonly int indentationSize;
         private enum IndentationKind { Space, Tab };
         private IndentationKind indentationKind;
 
@@ -36,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             // TODO make this configurable
             indentationKind = IndentationKind.Space;
-            unitsPerIndentationLevel = indentationKind == IndentationKind.Space ? 4 : 1;
+            indentationSize = indentationKind == IndentationKind.Space ? 4 : 1;
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private int GetIndentation(int indentationLevel)
         {
-            return indentationLevel * this.unitsPerIndentationLevel;
+            return indentationLevel * this.indentationSize;
         }
 
         private char GetIndentationChar()
