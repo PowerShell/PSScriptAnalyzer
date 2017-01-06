@@ -22,23 +22,4 @@ Describe "AvoidUsingComputerNameHardcoded" {
             $noViolations.Count | Should Be 0
         }
     }
-
-    Context "When the argument refers to localhost" {
-        $testCases = @(
-            @{ localhostName = 'localhost' },
-            @{ localhostName = '127.0.0.1' },
-            @{ localhostName = '::1' }
-        )
-
-        It "returns no violation for <localhostName>" -TestCases $testCases {
-            param($localhostName)
-            $params = @{
-                ScriptDefinition = "Invoke-Command -ComputerName $localhostName"
-                IncludeRule = $violationName
-            }
-
-            $violations = Invoke-ScriptAnalyzer @params
-            $violations.Count | Should Be 0
-        }
-    }
 }
