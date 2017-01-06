@@ -28,15 +28,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     class UseConsistentIndentation : IScriptRule
     {
-        private readonly int indentationSize;
-        private enum IndentationKind { Space, Tab };
-        private IndentationKind indentationKind;
 
-        UseConsistentIndentation()
+        private class RuleArguments
         {
-            // TODO make this configurable
-            indentationKind = IndentationKind.Space;
-            indentationSize = indentationKind == IndentationKind.Space ? 4 : 1;
+            public int indentationSize { get; set; } = 4;
+
+            public static RuleArguments Create(Dictionary<string, object> arguments)
+            {
+                try
+                {
+                    var ruleArguments = new RuleArguments();
+                    var properties = ruleArguments.GetType().GetProperties();
+                    foreach (var property in properties)
+                    {
+                        if (arguments.ContainsKey(property.Name))
+                        {
+                            var type = property.PropertyType;
+                            var obj = arguments[property.Name];
+                            property.SetValue(ruleArguments, System.Convert.ChangeType(obj, Type.GetTypeCode(type)));
+                        }
+                    }
+
+                    return ruleArguments;
+                }
+                catch
+                {
+                    return new RuleArguments(); // return arguments with defaults
+                }
+            }
+        }
+
+        private bool isRuleConfigured;
+
+        private RuleArguments ruleArguments;
+
+        private int indentationSize;
+        private enum IndentationKind { Space, Tab };
+
+        // TODO make this configurable
+        private readonly IndentationKind indentationKind = IndentationKind.Space;
+
+        private void ConfigureRule()
+        {
+            ruleArguments = RuleArguments.Create(Helper.Instance.GetRuleArguments(this.GetName()));
+            indentationSize = ruleArguments.indentationSize;
+            isRuleConfigured = true;
         }
 
         /// <summary>
@@ -50,6 +86,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null)
             {
                 throw new ArgumentNullException("ast");
+            }
+
+            if (!isRuleConfigured)
+            {
+                ConfigureRule();
             }
 
             var tokens = Helper.Instance.Tokens;
