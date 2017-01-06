@@ -490,7 +490,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return hasError;
             }
-            foreach (var settingKey in settings.Keys)
+
+            var settingsKeys = new string[settings.Keys.Count];
+            settings.Keys.CopyTo(settingsKeys, 0);
+            foreach (var settingKey in settingsKeys)
             {
                 var key = settingKey.ToLower();
                 object value = settings[key];
