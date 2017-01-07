@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class UseConsistentIndentation : ConfigurableScriptRule
+    public class UseConsistentIndentation : ConfigurableScriptRule
     {
         private enum IndentationKind { Space, Tab };
 
@@ -35,6 +35,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         [ConfigurableRuleProperty()]
         public int IndentationSize { get; protected set; } = 4;
+
+        [ConfigurableRuleProperty()]
+        public bool Enable {get; protected set;} = false;
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -52,6 +55,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (!IsRuleConfigured)
             {
                 ConfigureRule();
+            }
+
+            // we add this switch because there is no clean way
+            // to disable the rule by default
+            if (!Enable)
+            {
+                return Enumerable.Empty<DiagnosticRecord>();
             }
 
             var tokens = Helper.Instance.Tokens;

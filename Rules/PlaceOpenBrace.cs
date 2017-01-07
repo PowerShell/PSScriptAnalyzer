@@ -29,12 +29,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class PlaceOpenBrace : ConfigurableScriptRule
+    public class PlaceOpenBrace : ConfigurableScriptRule
     {
         private Func<Token[], string, IEnumerable<DiagnosticRecord>> findViolations;
 
         [ConfigurableRuleProperty()]
         public bool OnSameLine { get; protected set; } = true;
+
+        [ConfigurableRuleProperty()]
+        public bool Enable {get; protected set;} = false;
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -60,6 +63,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
                 }
+            }
+
+            if (!Enable)
+            {
+                return Enumerable.Empty<DiagnosticRecord>();
             }
 
             // TODO Should have the following options

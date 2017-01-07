@@ -11,7 +11,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     // This is still an experimental class and we do not want to expose it
     // as a public API as of yet. So we place it in builtinrules project
     // and keep it internal as it consumed only by a handful of rules.
-    internal abstract class ConfigurableScriptRule : IScriptRule
+    public abstract class ConfigurableScriptRule : IScriptRule
     {
         public bool IsRuleConfigured { get; protected set; } = false;
 
