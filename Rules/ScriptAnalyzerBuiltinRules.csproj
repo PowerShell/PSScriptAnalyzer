@@ -88,6 +88,7 @@
     <Compile Include="AvoidUsingPlainTextForPassword.cs" />
     <Compile Include="AvoidUsingWMICmdlet.cs" />
     <Compile Include="AvoidUsingWriteHost.cs" />
+    <Compile Include="ConfigurableScriptRule.cs" />
     <Compile Include="DscTestsPresent.cs" />
     <Compile Include="DscExamplesPresent.cs" />
     <Compile Include="MisleadingBacktick.cs" />

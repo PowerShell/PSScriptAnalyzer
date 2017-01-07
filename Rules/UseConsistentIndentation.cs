@@ -26,54 +26,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class UseConsistentIndentation : IScriptRule
+    class UseConsistentIndentation : ConfigurableScriptRule
     {
-
-        private class RuleArguments
-        {
-            public int indentationSize { get; set; } = 4;
-
-            public static RuleArguments Create(Dictionary<string, object> arguments)
-            {
-                try
-                {
-                    var ruleArguments = new RuleArguments();
-                    var properties = ruleArguments.GetType().GetProperties();
-                    foreach (var property in properties)
-                    {
-                        if (arguments.ContainsKey(property.Name))
-                        {
-                            var type = property.PropertyType;
-                            var obj = arguments[property.Name];
-                            property.SetValue(ruleArguments, System.Convert.ChangeType(obj, Type.GetTypeCode(type)));
-                        }
-                    }
-
-                    return ruleArguments;
-                }
-                catch
-                {
-                    return new RuleArguments(); // return arguments with defaults
-                }
-            }
-        }
-
-        private bool isRuleConfigured;
-
-        private RuleArguments ruleArguments;
-
-        private int indentationSize;
         private enum IndentationKind { Space, Tab };
 
         // TODO make this configurable
         private readonly IndentationKind indentationKind = IndentationKind.Space;
-
-        private void ConfigureRule()
-        {
-            ruleArguments = RuleArguments.Create(Helper.Instance.GetRuleArguments(this.GetName()));
-            indentationSize = ruleArguments.indentationSize;
-            isRuleConfigured = true;
-        }
+        public int IndentationSize { get; protected set; } = 4;
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -81,14 +40,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast">AST to be analyzed. This should be non-null</param>
         /// <param name="fileName">Name of file that corresponds to the input AST.</param>
         /// <returns>A an enumerable type containing the violations</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null)
             {
                 throw new ArgumentNullException("ast");
             }
 
-            if (!isRuleConfigured)
+            if (!IsRuleConfigured)
             {
                 ConfigureRule();
             }
@@ -197,7 +156,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private int GetIndentation(int indentationLevel)
         {
-            return indentationLevel * this.indentationSize;
+            return indentationLevel * this.IndentationSize;
         }
 
         private char GetIndentationChar()
@@ -213,7 +172,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public string GetCommonName()
+        public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationCommonName);
         }
@@ -221,7 +180,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public string GetDescription()
+        public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationDescription);
         }
@@ -229,7 +188,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public string GetName()
+        public override string GetName()
         {
             return string.Format(
                 CultureInfo.CurrentCulture,
@@ -241,7 +200,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public RuleSeverity GetSeverity()
+        public override RuleSeverity GetSeverity()
         {
             return RuleSeverity.Information;
         }
@@ -258,7 +217,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public string GetSourceName()
+        public override string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
@@ -266,7 +225,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public SourceType GetSourceType()
+        public override SourceType GetSourceType()
         {
             return SourceType.Builtin;
         }
