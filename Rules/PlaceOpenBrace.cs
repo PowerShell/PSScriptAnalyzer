@@ -29,41 +29,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class PlaceOpenBrace : IScriptRule
+    class PlaceOpenBrace : ConfigurableScriptRule
     {
-        private class RuleArguments
-        {
-            public bool OnSameLine { get; set; } = true;
-
-            public static RuleArguments Create(Dictionary<string, object> arguments)
-            {
-                try
-                {
-                    var ruleArguments = new RuleArguments();
-                    var properties = ruleArguments.GetType().GetProperties();
-                    foreach (var property in properties)
-                    {
-                        if (arguments.ContainsKey(property.Name))
-                        {
-                            var type = property.PropertyType;
-                            var obj = arguments[property.Name];
-                            property.SetValue(ruleArguments, System.Convert.ChangeType(obj, Type.GetTypeCode(type)));
-                        }
-                    }
-
-                    return ruleArguments;
-                }
-                catch
-                {
-                    return new RuleArguments(); // return arguments with defaults
-                }
-            }
-        }
-
-        private bool isRuleConfigured;
-
-        private RuleArguments ruleArgs;
         private Func<Token[], string, IEnumerable<DiagnosticRecord>> findViolations;
+
+        public bool OnSameLine { get; protected set; } = true;
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -71,21 +41,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast">AST to be analyzed. This should be non-null</param>
         /// <param name="fileName">Name of file that corresponds to the input AST.</param>
         /// <returns>A an enumerable type containing the violations</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null)
             {
                 throw new ArgumentNullException("ast");
             }
 
-            // We cannot set the rule arguments in the rule  constructor
-            // because it needs Helper.Instance. Helper doesn't get
-            // initialized in Get-ScriptAnalyzerRule cmdlet so configuring
-            // the rule in the constructor causes Get-ScriptAnalyzerRule to
-            // crash.
-            if (!isRuleConfigured)
+            if (!IsRuleConfigured)
             {
                 ConfigureRule();
+                if (OnSameLine)
+                {
+                    findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
+                }
+                else
+                {
+                    findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
+                }
             }
 
             // TODO Should have the following options
@@ -93,20 +66,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // * no-empty-line-after
 
             return findViolations(Helper.Instance.Tokens, fileName);
-        }
-
-        private void ConfigureRule()
-        {
-            ruleArgs = RuleArguments.Create(Helper.Instance.GetRuleArguments(this.GetName()));
-            if (ruleArgs.OnSameLine)
-            {
-                findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
-            }
-            else
-            {
-                findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
-            }
-            isRuleConfigured = true;
         }
 
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldBeOnSameLine(
@@ -215,7 +174,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public string GetCommonName()
+        public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.PlaceOpenBraceCommonName);
         }
@@ -231,7 +190,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public string GetDescription()
+        public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.PlaceOpenBraceDescription);
         }
@@ -239,7 +198,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public string GetName()
+        public override string GetName()
         {
             return string.Format(
                 CultureInfo.CurrentCulture,
@@ -251,7 +210,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public RuleSeverity GetSeverity()
+        public override RuleSeverity GetSeverity()
         {
             return RuleSeverity.Information;
         }
@@ -268,7 +227,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public string GetSourceName()
+        public override string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
@@ -276,7 +235,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public SourceType GetSourceType()
+        public override SourceType GetSourceType()
         {
             return SourceType.Builtin;
         }
