@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,10 +18,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public void ConfigureRule()
         {
             var arguments = Helper.Instance.GetRuleArguments(this.GetName());
-            //var configurableProps = GetConfigurableProperties();
             try
             {
-                var properties = this.GetType().GetProperties();
+                var properties = GetConfigurableProperties();
                 foreach (var property in properties)
                 {
                     if (arguments.ContainsKey(property.Name))
@@ -35,16 +35,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
             catch
             {
-                // return arguments with defaults
+                // we do not know how to handle an exception yet in this case yet!
+                // but we know that this should not crash the program hence we
+                // have this empty catch block
             }
 
             IsRuleConfigured = true;
         }
 
-        // private GetConfigurableProperties()
-        // {
-
-        // }
+        private IEnumerable<PropertyInfo> GetConfigurableProperties()
+        {
+            foreach (var property in this.GetType().GetProperties())
+            {
+                if (property.GetCustomAttribute(typeof(ConfigurableRulePropertyAttribute)) != null)
+                {
+                    yield return property;
+                }
+            }
+        }
 
         public abstract IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName);
         public abstract string GetCommonName();
@@ -56,7 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class ConfigurablePropertyAttribute : Attribute
+    internal class ConfigurableRulePropertyAttribute : Attribute
     {
 
     }

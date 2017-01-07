@@ -33,6 +33,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     {
         private Func<Token[], string, IEnumerable<DiagnosticRecord>> findViolations;
 
+        [ConfigurableRuleProperty()]
         public bool OnSameLine { get; protected set; } = true;
 
         /// <summary>

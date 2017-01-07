@@ -32,6 +32,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         // TODO make this configurable
         private readonly IndentationKind indentationKind = IndentationKind.Space;
+
+        [ConfigurableRuleProperty()]
         public int IndentationSize { get; protected set; } = 4;
 
         /// <summary>
