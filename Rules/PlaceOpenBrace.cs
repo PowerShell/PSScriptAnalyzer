@@ -22,7 +22,6 @@ using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
-    // TODO place public in front of all new rules to be discoverable in PS Core
     /// <summary>
     /// A class to walk an AST to check for [violation]
     /// </summary>
@@ -32,12 +31,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class PlaceOpenBrace : ConfigurableScriptRule
     {
         private Func<Token[], string, IEnumerable<DiagnosticRecord>> findViolations;
+        private List<Func<Token[], string, IEnumerable<DiagnosticRecord>>> violationFinders = new List<Func<Token[], string, IEnumerable<DiagnosticRecord>>>();
 
         [ConfigurableRuleProperty()]
         public bool OnSameLine { get; protected set; } = true;
 
         [ConfigurableRuleProperty()]
-        public bool Enable {get; protected set;} = false;
+        public bool NewLineAfter { get; protected set; } = true;
+
+        [ConfigurableRuleProperty()]
+        public bool Enable { get; protected set; } = false;
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -57,24 +60,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 ConfigureRule();
                 if (OnSameLine)
                 {
-                    findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
+                    // findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
+                    violationFinders.Add(FindViolationsForBraceShouldBeOnSameLine);
                 }
                 else
                 {
-                    findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
+                    // findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
+                    violationFinders.Add(FindViolationsForBraceShouldNotBeOnSameLine);
+                }
+
+                if (NewLineAfter)
+                {
+                    violationFinders.Add(FindViolationsForNoNewLineAfterBrace);
                 }
             }
 
-            if (!Enable)
+            var diagnosticRecords = new List<DiagnosticRecord>();
+
+            if (Enable)
             {
-                return Enumerable.Empty<DiagnosticRecord>();
+                foreach (var violationFinder in violationFinders)
+                {
+                    diagnosticRecords.AddRange(violationFinder(Helper.Instance.Tokens, fileName));
+                }
             }
 
             // TODO Should have the following options
             // * new-line-after
             // * no-empty-line-after
-
-            return findViolations(Helper.Instance.Tokens, fileName);
+            return diagnosticRecords;
         }
 
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldBeOnSameLine(
@@ -96,6 +110,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetCorrectionsForBraceShouldBeOnSameLine(tokens[k - 2], tokens[k], fileName));
                 }
             }
+        }
+
+        private IEnumerable<DiagnosticRecord> FindViolationsForNoNewLineAfterBrace(
+            Token[] tokens,
+            string fileName)
+        {
+            for (int k = 0; k < tokens.Length - 1; k++)
+            {
+                if (tokens[k].Kind == TokenKind.LCurly
+                    && tokens[k + 1].Kind != TokenKind.NewLine)
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(),
+                        tokens[k].Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetCorrectionsForNoNewLineAfterBrace(tokens, k, fileName));
+                }
+            }
+        }
+
+        private List<CorrectionExtent> GetCorrectionsForNoNewLineAfterBrace(
+            Token[] tokens,
+            int openBracePos,
+            string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            var extent = tokens[openBracePos].Extent;
+
+            corrections.Add(
+                new CorrectionExtent(
+                    extent.StartLineNumber,
+                    extent.EndLineNumber,
+                    extent.StartColumnNumber,
+                    extent.EndColumnNumber,
+                    new StringBuilder().Append(extent.Text).Append(Environment.NewLine).ToString(),
+                    fileName));
+            return corrections;
         }
 
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldNotBeOnSameLine(
