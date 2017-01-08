@@ -1,5 +1,14 @@
 ﻿Import-Module PSScriptAnalyzer
-$ruleName = "PSUseConsistentIndentation"
+$settings = @{
+    IncludeRules = @("PSUseConsistentIndentation")
+    Rules = @{
+        PSUseConsistentIndentation = @{
+            Enable = $true
+            IndentationSize = 4
+        }
+    }
+}
+
 
 Describe "UseConsistentIndentation" {
     Context "When top level indentation is not consistent" {
@@ -10,7 +19,8 @@ Describe "UseConsistentIndentation" {
 
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -IncludeRule $ruleName
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
         It "Should detect a violation" {
@@ -26,7 +36,7 @@ function foo ($param1)
 "abc"
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
         It "Should detect a violation" {
