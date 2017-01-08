@@ -30,7 +30,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class PlaceOpenBrace : ConfigurableScriptRule
     {
-        private Func<Token[], string, IEnumerable<DiagnosticRecord>> findViolations;
         private List<Func<Token[], string, IEnumerable<DiagnosticRecord>>> violationFinders = new List<Func<Token[], string, IEnumerable<DiagnosticRecord>>>();
 
         [ConfigurableRuleProperty()]
