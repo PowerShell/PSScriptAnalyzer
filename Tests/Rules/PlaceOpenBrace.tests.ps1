@@ -1,5 +1,14 @@
 ﻿Import-Module PSScriptAnalyzer
-$ruleName = "PSPlaceOpenBrace"
+$settings = @{
+    IncludeRules = @("PSPlaceOpenBrace")
+    Rules = @{
+        PSPlaceOpenBrace = @{
+            Enable = $true
+            OnSameLine = $true
+        }
+    }
+}
+
 
 Describe "PlaceOpenBrace on same line" {
     Context "When an open brace must be on the same line" {
@@ -10,7 +19,7 @@ function foo ($param1)
 
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
         It "Should find a violation" {
@@ -29,18 +38,10 @@ function foo ($param1) {
 
 }
 '@
-            $params = @{
-                ScriptDefinition = $def
-                IncludeRule = $ruleName
-                Settings = @{
-                    rules = @{
-                        PSPlaceOpenBrace = @{
-                            OnSameLine = $false
-                        }
-                    }
-                }
-            }
-            $violations = Invoke-ScriptAnalyzer @params
+
+            $settingsNewLine = $settings.Clone()
+            $settingsNewLine["Rules"]["PSPlaceOpenBrace"]["OnSameLine"] = $false
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settingsNewLine
         }
 
         It "Should find a violation" {
