@@ -29,7 +29,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class PlaceCloseBrace : ConfigurableScriptRule
     {
         [ConfigurableRuleProperty()]
-        public bool Enable {get; protected set;} = false;
+        public bool Enable { get; protected set; } = false;
+
+        [ConfigurableRuleProperty()]
+        public bool NoEmptyLineBefore { get; protected set; } = false;
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -80,9 +83,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         AddToDiagnosticRecords(
                             GetViolationForBraceOnSameLine(tokens, k, openBracePos, fileName),
                             ref diagnosticRecords);
-                        AddToDiagnosticRecords(
-                            GetViolationForEmptyLineBeforeBrace(tokens, k, openBracePos, fileName),
-                            ref diagnosticRecords);
+
+                        if (NoEmptyLineBefore)
+                        {
+                            AddToDiagnosticRecords(
+                                GetViolationForEmptyLineBeforeBrace(tokens, k, openBracePos, fileName),
+                                ref diagnosticRecords);
+                        }
                     }
                     else
                     {

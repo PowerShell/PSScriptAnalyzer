@@ -1,5 +1,15 @@
 ﻿Import-Module PSScriptAnalyzer
 $ruleName = "PSPlaceCloseBrace"
+$settings = @{
+    IncludeRules = @("PSPlaceCloseBrace")
+    Rules = @{
+        PSPlaceCloseBrace = @{
+            Enable = $true
+            NoEmptyLineBefore = $true
+        }
+    }
+}
+
 
 Describe "PlaceCloseBrace" {
     Context "When a close brace is not on a new line" {
@@ -8,7 +18,7 @@ Describe "PlaceCloseBrace" {
 function foo {
     Write-Output "close brace not on a new line"}
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
         It "Should find a violation" {
@@ -28,7 +38,7 @@ function foo {
 
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -IncludeRule $ruleName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
         It "Should find a violation" {
