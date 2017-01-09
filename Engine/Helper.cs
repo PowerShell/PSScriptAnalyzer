@@ -64,10 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 lock (syncRoot)
                 {
-                    if (instance == null)
-                    {
-                        instance = value;
-                    }
+                    instance = value;
                 }
             }
         }
