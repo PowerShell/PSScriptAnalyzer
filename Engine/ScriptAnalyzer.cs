@@ -1704,7 +1704,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return (includeRule == null || includeRegexMatch)
                     && (excludeRule == null || !excludeRegexMatch)
-                    && IsSeverityAllowed(allowedSeverities, rule);
+                    && IsSeverityAllowed(allowedSeverities, rule)
+                    && IsRuleEnabled(rule);
         }
 
         /// <summary>
