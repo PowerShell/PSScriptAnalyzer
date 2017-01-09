@@ -57,21 +57,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (!IsRuleConfigured)
             {
                 ConfigureRule();
-                if (OnSameLine)
-                {
-                    // findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
-                    violationFinders.Add(FindViolationsForBraceShouldBeOnSameLine);
-                }
-                else
-                {
-                    // findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
-                    violationFinders.Add(FindViolationsForBraceShouldNotBeOnSameLine);
-                }
-
-                if (NewLineAfter)
-                {
-                    violationFinders.Add(FindViolationsForNoNewLineAfterBrace);
-                }
             }
 
             var diagnosticRecords = new List<DiagnosticRecord>();
@@ -88,6 +73,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // * new-line-after
             // * no-empty-line-after
             return diagnosticRecords;
+        }
+
+        public override void ConfigureRule()
+        {
+            base.ConfigureRule();
+            if (OnSameLine)
+            {
+                // findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
+                violationFinders.Add(FindViolationsForBraceShouldBeOnSameLine);
+            }
+            else
+            {
+                // findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
+                violationFinders.Add(FindViolationsForBraceShouldNotBeOnSameLine);
+            }
+
+            if (NewLineAfter)
+            {
+                violationFinders.Add(FindViolationsForNoNewLineAfterBrace);
+            }
         }
 
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldBeOnSameLine(
