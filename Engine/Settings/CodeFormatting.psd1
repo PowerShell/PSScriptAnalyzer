@@ -1,7 +1,7 @@
 @{
     IncludeRules = @(
         'PSPlaceOpenBrace',
-        'PSPlaceOpenBrace',
+        'PSPlaceCloseBrace',
         'PSUseConsistentIndentation'
     )
 
