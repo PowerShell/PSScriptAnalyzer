@@ -64,7 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    internal class ConfigurableRulePropertyAttribute : Attribute
+    public class ConfigurableRulePropertyAttribute : Attribute
     {
 
     }
