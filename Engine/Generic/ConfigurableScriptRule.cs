@@ -15,7 +15,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     {
         public bool IsRuleConfigured { get; protected set; } = false;
 
-        public void ConfigureRule()
+        public virtual void ConfigureRule()
         {
             var arguments = Helper.Instance.GetRuleArguments(this.GetName());
             try
@@ -29,7 +29,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         var obj = arguments[property.Name];
                         property.SetValue(
                             this,
-                            System.Convert.ChangeType(obj, Type.GetTypeCode(type)));
+                            System.Convert.ChangeType(obj, type));
                     }
                 }
             }
