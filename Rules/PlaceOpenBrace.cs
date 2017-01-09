@@ -122,6 +122,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             for (int k = 0; k < tokens.Length - 1; k++)
             {
+                // typically the last element is of kind endofinput,
+                // but this checks adds additional safeguard
+                if (tokens[k].Kind == TokenKind.EndOfInput)
+                {
+                    break;
+                }
+
                 if (tokens[k].Kind == TokenKind.LCurly
                     && tokens[k + 1].Kind != TokenKind.NewLine)
                 {
@@ -162,6 +169,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             for (int k = 1; k < tokens.Length; k++)
             {
+                if (tokens[k].Kind == TokenKind.EndOfInput)
+                {
+                    break;
+                }
+
                 if (tokens[k].Kind == TokenKind.LCurly
                     && tokens[k - 1].Kind != TokenKind.NewLine)
                 {

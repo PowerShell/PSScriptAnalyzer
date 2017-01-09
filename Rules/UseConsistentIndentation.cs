@@ -67,10 +67,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var indentationLevel = 0;
-            bool onNewLine = true;
+            var onNewLine = true;
             for (int k = 0; k < tokens.Length; k++)
             {
                 var token = tokens[k];
+
+                if (token.Kind == TokenKind.EndOfInput)
+                {
+                    break;
+                }
+
                 switch (token.Kind)
                 {
                     case TokenKind.LCurly:
