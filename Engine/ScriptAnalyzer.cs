@@ -602,6 +602,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 else
                 {
                     HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
+#if PSV3
                     settings = GetDictionaryFromHashTableAst(
                         hashTableAst,
                         writer,
@@ -630,6 +631,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             hasError = true;
                         }
                     }
+#else
+
+                    try
+                    {
+                        var hashtable = hashTableAst.SafeGetValue() as Hashtable;
+                        hasError = ParseProfileHashtable(hashtable, path, writer, severityList, includeRuleList, excludeRuleList);
+                    }
+                    catch
+                    {
+                        writer.WriteError(
+                            new ErrorRecord(
+                                new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile)),
+                                Strings.ConfigurationFileHasInvalidHashtable,
+                                ErrorCategory.ResourceUnavailable,
+                                profile));
+                        hasError = true;
+                    }
+#endif // PSV3
                 }
             }
 

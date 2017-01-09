@@ -216,6 +216,9 @@
   <data name="VerboseScriptDefinitionMessage" xml:space="preserve">
     <value>Analyzing Script Definition.</value>
   </data>
+  <data name="ConfigurationFileHasInvalidHashtable" xml:space="preserve">
+    <value>SettingsFileHasInvalidHashtable</value>
+  </data>
   <data name="ConfigurationFileHasNoHashTable" xml:space="preserve">
     <value>SettingsFileHasNoHashTable</value>
   </data>
