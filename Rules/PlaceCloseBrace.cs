@@ -29,9 +29,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class PlaceCloseBrace : ConfigurableScriptRule
     {
         [ConfigurableRuleProperty()]
-        public bool Enable { get; protected set; } = false;
-
-        [ConfigurableRuleProperty()]
         public bool NoEmptyLineBefore { get; protected set; } = false;
 
         /// <summary>

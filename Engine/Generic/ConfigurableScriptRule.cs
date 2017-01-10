@@ -13,6 +13,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     // and keep it internal as it consumed only by a handful of rules.
     public abstract class ConfigurableScriptRule : IScriptRule
     {
+        [ConfigurableRuleProperty()]
+        public bool Enable { get; protected set; } = false;
+
         public bool IsRuleConfigured { get; protected set; } = false;
 
         public virtual void ConfigureRule()

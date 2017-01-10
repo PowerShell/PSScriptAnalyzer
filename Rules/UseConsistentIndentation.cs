@@ -36,9 +36,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty()]
         public int IndentationSize { get; protected set; } = 4;
 
-        [ConfigurableRuleProperty()]
-        public bool Enable {get; protected set;} = false;
-
         /// <summary>
         /// Analyzes the given ast to find the [violation]
         /// </summary>
