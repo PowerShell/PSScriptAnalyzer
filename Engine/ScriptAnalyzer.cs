@@ -776,6 +776,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             try
             {
                 this.LoadRules(this.validationResults, invokeCommand, includeDefaultRules);
+                this.ConfigureScriptRules();
             }
             catch (Exception ex)
             {
@@ -961,6 +962,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (result.ContainsKey("ValidModPaths") && result["ValidModPaths"].Count > 0)
             {
                 ExternalRules = GetExternalRule(result["ValidModPaths"].ToArray());
+            }
+        }
+
+        // Configure rules derived from ConfigurableScriptRule class
+        private void ConfigureScriptRules()
+        {
+            if (ScriptRules != null)
+            {
+                foreach (var scriptRule in ScriptRules)
+                {
+                    (scriptRule as ConfigurableScriptRule)?.ConfigureRule();
+                }
             }
         }
 
