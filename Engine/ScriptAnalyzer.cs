@@ -968,12 +968,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         // Configure rules derived from ConfigurableScriptRule class
         private void ConfigureScriptRules()
         {
-            if (ScriptRules != null)
+            if (ScriptRules == null)
             {
-                foreach (var scriptRule in ScriptRules)
+                return;
+            }
+
+            foreach (var scriptRule in ScriptRules)
+            {
+                var configurableScriptRule = scriptRule as ConfigurableScriptRule;
+                if (configurableScriptRule == null)
                 {
-                    (scriptRule as ConfigurableScriptRule)?.ConfigureRule();
+                    continue;
                 }
+
+                var paramValueMap = Helper.Instance.GetRuleArguments(scriptRule.GetName());
+                if (paramValueMap == null)
+                {
+                    continue;
+                }
+
+                configurableScriptRule.ConfigureRule(paramValueMap);
             }
         }
 

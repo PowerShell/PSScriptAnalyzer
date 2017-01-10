@@ -51,6 +51,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
+            // TODO Should have the following option
+            // * no-empty-lines-after
+            // TODO handle open brace for a command parameter.
+            // * E.g. get-process | % { "blah }
+            // In the above case even if OnSameLine == false, we should not
+            // flag the open brace as it would move the brace to the next line
+            // and it will invalidate the command
             var diagnosticRecords = new List<DiagnosticRecord>();
             if (Enable)
             {
@@ -60,23 +67,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            // TODO Should have the following options
-            // * new-line-after
-            // * no-empty-line-after
             return diagnosticRecords;
         }
 
-        public override void ConfigureRule()
+        public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
-            base.ConfigureRule();
+            base.ConfigureRule(paramValueMap);
             if (OnSameLine)
             {
-                // findViolations = this.FindViolationsForBraceShouldBeOnSameLine;
                 violationFinders.Add(FindViolationsForBraceShouldBeOnSameLine);
             }
             else
             {
-                // findViolations = this.FindViolationsForBraceShouldNotBeOnSameLine;
                 violationFinders.Add(FindViolationsForBraceShouldNotBeOnSameLine);
             }
 

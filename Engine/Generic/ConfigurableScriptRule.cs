@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
-    // This is still an experimental class and we do not want to expose it
-    // as a public API as of yet. So we place it in builtinrules project
-    // and keep it internal as it consumed only by a handful of rules.
+    // This is still an experimental class. Use at your own risk!
     public abstract class ConfigurableScriptRule : IScriptRule
     {
         // Configurable rules should define a default value
@@ -19,19 +17,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         [ConfigurableRuleProperty()]
         public bool Enable { get; protected set; } = false;
 
-        public virtual void ConfigureRule()
+        public virtual void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
-            // TODO Do not use Helper. Pass this method a dictionary instead
-            var arguments = Helper.Instance.GetRuleArguments(this.GetName());
+            if (paramValueMap == null)
+            {
+                throw new ArgumentNullException(nameof(paramValueMap));
+            }
+
             try
             {
                 var properties = GetConfigurableProperties();
                 foreach (var property in properties)
                 {
-                    if (arguments.ContainsKey(property.Name))
+                    if (paramValueMap.ContainsKey(property.Name))
                     {
                         var type = property.PropertyType;
-                        var obj = arguments[property.Name];
+                        var obj = paramValueMap[property.Name];
+
+                        // TODO Check if type is convertible
                         property.SetValue(
                             this,
                             System.Convert.ChangeType(obj, type));
@@ -40,7 +43,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
             catch
             {
-                // we do not know how to handle an exception yet in this case yet!
+                // we do not know how to handle an exception in this case yet!
                 // but we know that this should not crash the program hence we
                 // have this empty catch block
             }
