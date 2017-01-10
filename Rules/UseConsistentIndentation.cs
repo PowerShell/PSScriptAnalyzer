@@ -49,11 +49,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            if (!IsRuleConfigured)
-            {
-                ConfigureRule();
-            }
-
             // we add this switch because there is no clean way
             // to disable the rule by default
             if (!Enable)

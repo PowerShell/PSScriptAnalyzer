@@ -44,11 +44,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            if (!IsRuleConfigured)
-            {
-                ConfigureRule();
-            }
-
             if (!Enable)
             {
                 return Enumerable.Empty<DiagnosticRecord>();

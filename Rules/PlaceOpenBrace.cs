@@ -51,13 +51,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException("ast");
             }
 
-            if (!IsRuleConfigured)
-            {
-                ConfigureRule();
-            }
-
             var diagnosticRecords = new List<DiagnosticRecord>();
-
             if (Enable)
             {
                 foreach (var violationFinder in violationFinders)
