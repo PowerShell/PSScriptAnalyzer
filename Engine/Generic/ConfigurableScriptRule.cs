@@ -13,13 +13,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     // and keep it internal as it consumed only by a handful of rules.
     public abstract class ConfigurableScriptRule : IScriptRule
     {
+        // Configurable rules should define a default value
+        // because if reading the configuration fails
+        // we use the property's default value
         [ConfigurableRuleProperty()]
         public bool Enable { get; protected set; } = false;
 
-        public bool IsRuleConfigured { get; protected set; } = false;
-
         public virtual void ConfigureRule()
         {
+            // TODO Do not use Helper. Pass this method a dictionary instead
             var arguments = Helper.Instance.GetRuleArguments(this.GetName());
             try
             {
@@ -42,8 +44,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 // but we know that this should not crash the program hence we
                 // have this empty catch block
             }
-
-            IsRuleConfigured = true;
         }
 
         private IEnumerable<PropertyInfo> GetConfigurableProperties()
