@@ -30,7 +30,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class PlaceOpenBrace : ConfigurableScriptRule
     {
-        private List<Func<Token[], string, IEnumerable<DiagnosticRecord>>> violationFinders = new List<Func<Token[], string, IEnumerable<DiagnosticRecord>>>();
+        private List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>> violationFinders
+            = new List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>>();
 
         [ConfigurableRuleProperty()]
         public bool OnSameLine { get; protected set; } = true;
@@ -53,21 +54,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // TODO Should have the following option
             // * no-empty-lines-after
-            // TODO handle open brace for a command parameter.
-            // * E.g. get-process | % { "blah }
-            // In the above case even if OnSameLine == false, we should not
-            // flag the open brace as it would move the brace to the next line
-            // and it will invalidate the command
             var diagnosticRecords = new List<DiagnosticRecord>();
-            if (Enable)
+            if (!Enable)
             {
-                foreach (var violationFinder in violationFinders)
-                {
-                    diagnosticRecords.AddRange(violationFinder(Helper.Instance.Tokens, fileName));
-                }
+                return diagnosticRecords;
+            }
+
+            var tokens = Helper.Instance.Tokens;
+            foreach (var violationFinder in violationFinders)
+            {
+                diagnosticRecords.AddRange(violationFinder(tokens, ast, fileName));
             }
 
             return diagnosticRecords;
+        }
+
+        private static HashSet<Token> FindTokensToIgnore(Token[] tokens, Ast ast)
+        {
+            // Ignore open braces that are part of arguments to a command
+            // * E.g. get-process | % { "blah }
+            // In the above case even if OnSameLine == false, we should not
+            // flag the open brace as it would move the brace to the next line
+            // and will invalidate the command
+
+            var cmdElemAsts = ast.FindAll(x => x is CommandElementAst && x is ScriptBlockExpressionAst, true);
+            var tokensToIgnore = new HashSet<Token> ();
+            if (cmdElemAsts == null)
+            {
+                return tokensToIgnore;
+            }
+
+            foreach (var cmdElemAst in cmdElemAsts)
+            {
+                var tokenToIgnore = tokens.FirstOrDefault(
+                    token => token.Kind == TokenKind.LCurly
+                    && cmdElemAst.Extent.StartOffset == token.Extent.StartOffset);
+                if (tokenToIgnore != null)
+                {
+                    tokensToIgnore.Add(tokenToIgnore);
+                }
+            }
+
+            return tokensToIgnore;
         }
 
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
@@ -90,6 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldBeOnSameLine(
             Token[] tokens,
+            Ast ast,
             string fileName)
         {
             for (int k = 2; k < tokens.Length; k++)
@@ -111,6 +140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindViolationsForNoNewLineAfterBrace(
             Token[] tokens,
+            Ast ast,
             string fileName)
         {
             for (int k = 0; k < tokens.Length - 1; k++)
@@ -158,8 +188,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldNotBeOnSameLine(
             Token[] tokens,
+            Ast ast,
             string fileName)
         {
+
+            var tokensToIgnore = FindTokensToIgnore(tokens, ast);
             for (int k = 1; k < tokens.Length; k++)
             {
                 if (tokens[k].Kind == TokenKind.EndOfInput)
@@ -168,7 +201,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 if (tokens[k].Kind == TokenKind.LCurly
-                    && tokens[k - 1].Kind != TokenKind.NewLine)
+                    && tokens[k - 1].Kind != TokenKind.NewLine
+                    && !tokensToIgnore.Contains(tokens[k]))
                 {
                     yield return new DiagnosticRecord(
                         GetError(),

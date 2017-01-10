@@ -42,7 +42,12 @@ function foo ($param1) {
 }
 '@
             $ruleConfiguration.'OnSameLine' = $false
+	    $ruleConfiguration.'NewLineAfter' = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $defShouldIgnore = @'
+Get-Process | % { "blah" }
+'@
+            $violationsShouldIgnore = Invoke-ScriptAnalyzer -ScriptDefinition $defShouldIgnore -Settings $settings
         }
 
         It "Should find a violation" {
@@ -51,6 +56,10 @@ function foo ($param1) {
 
         It "Should mark only the open brace" {
             $violations[0].Extent.Text | Should Be '{'
+        }
+
+        It "Should ignore violations for a command element" {
+            $violationsShouldIgnore.Count | Should Be 0
         }
     }
 
