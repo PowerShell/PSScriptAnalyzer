@@ -50,28 +50,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // TODO Should have the following options
-            // * no-empty-line-before
+            // * no-empty-lines-before
             // * align (if close brance and open brace on new lines align with open brace,
             //   if close brace is on new line but open brace is not align with the first keyword on open brace line)
 
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
-            var openBracePosStack = new Stack<int>();
+            var curlyStack = new Stack<Tuple<Token, int>> ();
 
             for (int k = 0; k < tokens.Length; k++)
             {
                 var token = tokens[k];
-                if (token.Kind == TokenKind.LCurly)
+                if (token.Kind == TokenKind.LCurly || token.Kind == TokenKind.AtCurly)
                 {
-                    openBracePosStack.Push(k);
+                    curlyStack.Push(new Tuple<Token, int>(token, k));
                     continue;
                 }
 
                 if (token.Kind == TokenKind.RCurly)
                 {
-                    if (openBracePosStack.Count > 0)
+                    if (curlyStack.Count > 0)
                     {
-                        var openBracePos = openBracePosStack.Pop();
+                        var openBraceToken = curlyStack.Peek().Item1;
+                        var openBracePos = curlyStack.Pop().Item2;
+
+                        // Ignore if a one line hashtable
+                        if (openBraceToken.Kind == TokenKind.AtCurly
+                            && openBraceToken.Extent.StartLineNumber == token.Extent.StartLineNumber)
+                        {
+                            continue;
+                        }
+
                         AddToDiagnosticRecords(
                             GetViolationForBraceOnSameLine(tokens, k, openBracePos, fileName),
                             ref diagnosticRecords);
