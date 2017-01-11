@@ -12,7 +12,6 @@
 //
 
 using System.Text.RegularExpressions;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;

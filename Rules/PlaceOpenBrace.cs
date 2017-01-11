@@ -18,7 +18,6 @@ using System.Linq;
 using System.Management.Automation.Language;
 using System.Text;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
