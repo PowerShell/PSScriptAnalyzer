@@ -1670,19 +1670,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     && allowedSeverities.Contains((uint)rule.GetSeverity()));
         }
 
-        private bool IsRuleEnabled(IRule rule)
+        private static bool IsRuleEnabled(IRule rule)
         {
             var configurableRule = rule as ConfigurableScriptRule;
-            if (configurableRule != null)
-            {
-                var propertyInfo = configurableRule.GetType().GetProperty("Enable");
-                if (propertyInfo != null)
-                {
-                    return propertyInfo.GetValue(configurableRule) as bool? ?? true;
-                }
-            }
-
-            return true;
+            return configurableRule == null || configurableRule.Enable;
         }
 
         IEnumerable<uint> GetAllowedSeveritiesInInt()
