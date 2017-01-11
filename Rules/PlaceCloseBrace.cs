@@ -82,13 +82,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
 
                         AddToDiagnosticRecords(
-                            GetViolationForBraceOnSameLine(tokens, k, openBracePos, fileName),
+                            GetViolationForBraceShouldBeOnNewLine(tokens, k, openBracePos, fileName),
                             ref diagnosticRecords);
 
                         if (NoEmptyLineBefore)
                         {
                             AddToDiagnosticRecords(
-                                GetViolationForEmptyLineBeforeBrace(tokens, k, openBracePos, fileName),
+                                GetViolationForBraceShouldNotFollowEmptyLine(tokens, k, openBracePos, fileName),
                                 ref diagnosticRecords);
                         }
                     }
@@ -102,7 +102,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return diagnosticRecords;
         }
 
-        private DiagnosticRecord GetViolationForEmptyLineBeforeBrace(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        private DiagnosticRecord GetViolationForBraceShouldNotFollowEmptyLine(
+            Token[] tokens,
+            int closeBracePos,
+            int openBracePos,
+            string fileName)
         {
             if (tokens.Length > 2 && tokens.Length > closeBracePos)
             {
@@ -113,20 +117,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && extraNewLineToken.Kind == TokenKind.NewLine)
                 {
                     return new DiagnosticRecord(
-                        "Extra new line before close brace",
+                        GetError(Strings.PlaceCloseBraceErrorShouldNotFollowEmptyLine),
                         closeBraceToken.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
                         fileName,
                         null,
-                        GetSuggestedCorrectionsForEmptyLineBeforeBrace(tokens, closeBracePos, openBracePos, fileName));
+                        GetCorrectionsForBraceShouldNotFollowEmptyLine(
+                            tokens,
+                            closeBracePos,
+                            openBracePos,
+                            fileName));
                 }
             }
 
             return null;
         }
 
-        private List<CorrectionExtent> GetSuggestedCorrectionsForEmptyLineBeforeBrace(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        private List<CorrectionExtent> GetCorrectionsForBraceShouldNotFollowEmptyLine(
+            Token[] tokens,
+            int closeBracePos,
+            int openBracePos,
+            string fileName)
         {
             var corrections = new List<CorrectionExtent>();
             var newLineToken = tokens[closeBracePos - 2];
@@ -168,7 +180,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return new String(' ', firstTokenOnOpenBraceLine.Extent.StartColumnNumber - 1);
         }
 
-        private DiagnosticRecord GetViolationForBraceOnSameLine(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        private DiagnosticRecord GetViolationForBraceShouldBeOnNewLine(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
         {
             if (tokens.Length > 1 && tokens.Length > closeBracePos)
             {
@@ -176,20 +188,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (tokens[closeBracePos - 1].Kind != TokenKind.NewLine)
                 {
                     return new DiagnosticRecord(
-                        GetError(),
+                        GetError(Strings.PlaceCloseBraceErrorShouldBeOnNewLine),
                         closeBraceToken.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
                         fileName,
                         null,
-                        GetSuggestedCorrectionsForBraceOnSameLine(tokens, closeBracePos, openBracePos, fileName));
+                        GetCorrectionsForBraceShouldBeOnNewLine(tokens, closeBracePos, openBracePos, fileName));
                 }
             }
 
             return null;
         }
 
-        private List<CorrectionExtent> GetSuggestedCorrectionsForBraceOnSameLine(
+        private List<CorrectionExtent> GetCorrectionsForBraceShouldBeOnNewLine(
             Token[] tokens,
             int closeBracePos,
             int openBracePos,
@@ -249,9 +261,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the error message of this rule
         /// </summary>
-        private string GetError()
+        private string GetError(string errorString)
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.PlaceCloseBraceError);
+            return string.Format(CultureInfo.CurrentCulture, errorString);
         }
 
         /// <summary>

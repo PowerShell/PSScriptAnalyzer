@@ -883,10 +883,10 @@
     <value>Open brace not on same line as preceding keyword. It should be on the same line.</value>
   </data>
   <data name="PlaceOpenBraceErrorShouldNotBeOnSameLine" xml:space="preserve">
-    <value>Open brace is on same line as preceding keyword. It should be on a new line.</value>
+    <value>Open brace is not on a new line.</value>
   </data>
   <data name="PlaceOpenBraceErrorNoNewLineAfterBrace" xml:space="preserve">
-    <value>No new line after open brace. A new line should follown an open brace.</value>
+    <value>There is no new line after open brace.</value>
   </data>
   <data name="PlaceCloseBraceName" xml:space="preserve">
     <value>PlaceCloseBrace</value>
@@ -897,8 +897,11 @@
   <data name="PlaceCloseBraceDescription" xml:space="preserve">
     <value>Place close brace show be on a new line by itself.</value>
   </data>
-  <data name="PlaceCloseBraceError" xml:space="preserve">
-    <value>Close brace not on a new line</value>
+  <data name="PlaceCloseBraceErrorShouldBeOnNewLine" xml:space="preserve">
+    <value>Close brace is not on a new line.</value>
+  </data>
+  <data name="PlaceCloseBraceErrorShouldNotFollowEmptyLine" xml:space="preserve">
+    <value>Close brace does not follow a non-empty line.</value>
   </data>
   <data name="UseConsistentIndentationName" xml:space="preserve">
     <value>UseConsistentIndentation</value>
