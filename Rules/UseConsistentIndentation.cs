@@ -71,10 +71,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 switch (token.Kind)
                 {
+                    case TokenKind.AtCurly:
+                    case TokenKind.AtParen:
+                    case TokenKind.LParen:
                     case TokenKind.LCurly:
                         AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
                         break;
 
+                    case TokenKind.RParen:
                     case TokenKind.RCurly:
                         indentationLevel = ClipNegative(indentationLevel - 1);
                         AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
