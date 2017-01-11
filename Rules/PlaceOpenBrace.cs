@@ -126,7 +126,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && tokens[k - 1].Kind == TokenKind.NewLine)
                 {
                     yield return new DiagnosticRecord(
-                        GetError(),
+                        GetError(Strings.PlaceOpenBraceErrorShouldBeOnSameLine),
                         tokens[k].Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
@@ -155,7 +155,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && tokens[k + 1].Kind != TokenKind.NewLine)
                 {
                     yield return new DiagnosticRecord(
-                        GetError(),
+                        GetError(Strings.PlaceOpenBraceErrorNoNewLineAfterBrace),
                         tokens[k].Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
@@ -204,7 +204,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && !tokensToIgnore.Contains(tokens[k]))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(),
+                        GetError(Strings.PlaceOpenBraceErrorShouldNotBeOnSameLine),
                         tokens[k].Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
@@ -284,12 +284,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.PlaceOpenBraceCommonName);
         }
 
-        public string GetError()
+        public string GetError(string errorString)
         {
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.PlaceOpenBraceError,
-                "same");
+            return string.Format(CultureInfo.CurrentCulture, errorString);
         }
 
         /// <summary>
