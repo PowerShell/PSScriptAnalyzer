@@ -128,7 +128,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             extent.StartScriptPosition.Line));
                     diagnosticRecords.Add(
                         new DiagnosticRecord(
-                            "not correct indenation", // TODO replace with localized string
+                            String.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationError),
                             violationExtent,
                             GetName(),
                             GetDiagnosticSeverity(),
