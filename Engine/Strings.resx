@@ -255,4 +255,10 @@
   <data name="DigraphVertexDoesNotExists" xml:space="preserve">
     <value>Vertex {0} does not exist in the digraph.</value>
   </data>
+  <data name="ConfigurableScriptRulePropertyHasNotAttribute" xml:space="preserve">
+    <value>"Cannot find a ConfigurableRuleProperty attribute on property {0}".</value>
+  </data>
+  <data name="ConfigurableScriptRuleNRE" xml:space="preserve">
+    <value>"Argument should not be null.".</value>
+  </data>
 </root>

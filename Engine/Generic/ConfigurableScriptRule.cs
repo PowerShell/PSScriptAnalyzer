@@ -8,11 +8,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     // This is still an experimental class. Use at your own risk!
     public abstract class ConfigurableScriptRule : IScriptRule
     {
-        // Configurable rules should define a default value
+        // Configurable rule properties should define a default value
         // because if reading the configuration fails
         // we use the property's default value
-        [ConfigurableRuleProperty()]
-        public bool Enable { get; protected set; } = false;
+        [ConfigurableRuleProperty(defaultValue: false)]
+        public bool Enable { get; protected set; }
+
+        protected ConfigurableScriptRule()
+        {
+            SetDefaultValues();
+        }
 
         public virtual void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
@@ -23,27 +28,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
             try
             {
-                var properties = GetConfigurableProperties();
-                foreach (var property in properties)
+                foreach (var property in GetConfigurableProperties())
                 {
                     if (paramValueMap.ContainsKey(property.Name))
                     {
-                        var type = property.PropertyType;
-                        var obj = paramValueMap[property.Name];
-
-                        // TODO Check if type is convertible
-                        property.SetValue(
-                            this,
-                            System.Convert.ChangeType(obj, type));
+                        SetValue(property, paramValueMap[property.Name]);
                     }
                 }
             }
             catch
             {
                 // we do not know how to handle an exception in this case yet!
-                // but we know that this should not crash the program hence we
-                // have this empty catch block
+                // but we know that this should not crash the program
+                // hence we revert the property values to their default
+                SetDefaultValues();
             }
+        }
+
+        private void SetDefaultValues()
+        {
+            foreach (var property in GetConfigurableProperties())
+            {
+                SetValue(property, GetDefaultValue(property));
+            }
+        }
+
+        private void SetValue(PropertyInfo property, object value)
+        {
+            // TODO Check if type is convertible
+            property.SetValue(this, Convert.ChangeType(value, property.PropertyType));
         }
 
         private IEnumerable<PropertyInfo> GetConfigurableProperties()
@@ -55,6 +68,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     yield return property;
                 }
             }
+        }
+
+        private Object GetDefaultValue(PropertyInfo property)
+        {
+            var attr = property.GetCustomAttribute(typeof(ConfigurableRulePropertyAttribute));
+            if (attr == null)
+            {
+                throw new ArgumentException(
+                    String.Format(Strings.ConfigurableScriptRulePropertyHasNotAttribute, property.Name),
+                    nameof(property));
+            }
+
+            return ((ConfigurableRulePropertyAttribute)attr).DefaultValue;
         }
 
         public abstract IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName);
@@ -69,6 +95,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class ConfigurableRulePropertyAttribute : Attribute
     {
+        public object DefaultValue { get; private set; }
 
+        public ConfigurableRulePropertyAttribute(object defaultValue)
+        {
+            if (defaultValue == null)
+            {
+                throw new ArgumentNullException(nameof(defaultValue), Strings.ConfigurableScriptRuleNRE);
+            }
+
+            DefaultValue = defaultValue;
+        }
     }
 }

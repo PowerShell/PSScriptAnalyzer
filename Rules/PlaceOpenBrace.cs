@@ -32,11 +32,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>> violationFinders
             = new List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>>();
 
-        [ConfigurableRuleProperty()]
-        public bool OnSameLine { get; protected set; } = true;
+        [ConfigurableRuleProperty(defaultValue:true)]
+        public bool OnSameLine { get; protected set; }
 
-        [ConfigurableRuleProperty()]
-        public bool NewLineAfter { get; protected set; } = true;
+        [ConfigurableRuleProperty(defaultValue:true)]
+        public bool NewLineAfter { get; protected set; }
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
