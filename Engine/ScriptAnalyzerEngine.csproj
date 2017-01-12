@@ -70,6 +70,7 @@
     <Compile Include="Commands\InvokeScriptAnalyzerCommand.cs" />
     <Compile Include="Generic\AvoidCmdletGeneric.cs" />
     <Compile Include="Generic\AvoidParameterGeneric.cs" />
+    <Compile Include="Generic\ConfigurableRuleProperty.cs" />
     <Compile Include="Generic\ConfigurableScriptRule.cs" />
     <Compile Include="Generic\ModuleDependencyHandler.cs" />
     <Compile Include="Generic\CorrectionExtent.cs" />
