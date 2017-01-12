@@ -140,7 +140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public override RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Information;
+            return RuleSeverity.Warning;
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public DiagnosticSeverity GetDiagnosticSeverity()
         {
-            return DiagnosticSeverity.Information;
+            return DiagnosticSeverity.Warning;
         }
 
         /// <summary>
