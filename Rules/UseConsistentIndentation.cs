@@ -28,16 +28,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseConsistentIndentation : ConfigurableScriptRule
     {
+        /// <summary>
+        /// The indentation size in number of space characters.
+        ///
+        /// Default value if 4.
+        /// </summary>
+        [ConfigurableRuleProperty(defaultValue: 4)]
+        public int IndentationSize { get; protected set; }
+
         private enum IndentationKind { Space, Tab };
 
         // TODO make this configurable
         private readonly IndentationKind indentationKind = IndentationKind.Space;
 
-        [ConfigurableRuleProperty(defaultValue:4)]
-        public int IndentationSize { get; protected set; }
-
         /// <summary>
-        /// Analyzes the given ast to find the [violation]
+        /// Analyzes the given ast to find violations.
         /// </summary>
         /// <param name="ast">AST to be analyzed. This should be non-null</param>
         /// <param name="fileName">Name of file that corresponds to the input AST.</param>
@@ -100,6 +105,67 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
+        }
+
+        /// <summary>
+        /// Retrieves the common name of this rule.
+        /// </summary>
+        public override string GetCommonName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationCommonName);
+        }
+
+        /// <summary>
+        /// Retrieves the description of this rule.
+        /// </summary>
+        public override string GetDescription()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationDescription);
+        }
+
+        /// <summary>
+        /// Retrieves the name of this rule.
+        /// </summary>
+        public override string GetName()
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.NameSpaceFormat,
+                GetSourceName(),
+                Strings.UseConsistentIndentationName);
+        }
+
+        /// <summary>
+        /// Retrieves the severity of the rule: error, warning or information.
+        /// </summary>
+        public override RuleSeverity GetSeverity()
+        {
+            return RuleSeverity.Information;
+        }
+
+        /// <summary>
+        /// Gets the severity of the returned diagnostic record: error, warning, or information.
+        /// </summary>
+        /// <returns></returns>
+        public DiagnosticSeverity GetDiagnosticSeverity()
+        {
+            return DiagnosticSeverity.Information;
+        }
+
+        /// <summary>
+        /// Retrieves the name of the module/assembly the rule is from.
+        /// </summary>
+        public override string GetSourceName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
+        }
+
+        /// <summary>
+        /// Retrieves the type of the rule, Builtin, Managed or Module.
+        /// </summary>
+        public override SourceType GetSourceType()
+        {
+            return SourceType.Builtin;
         }
 
         private void AddViolation(
@@ -181,67 +247,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private string GetIndentationString(int indentationLevel)
         {
             return new string(GetIndentationChar(), GetIndentation(indentationLevel));
-        }
-
-        /// <summary>
-        /// Retrieves the common name of this rule.
-        /// </summary>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationCommonName);
-        }
-
-        /// <summary>
-        /// Retrieves the description of this rule.
-        /// </summary>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentIndentationDescription);
-        }
-
-        /// <summary>
-        /// Retrieves the name of this rule.
-        /// </summary>
-        public override string GetName()
-        {
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.NameSpaceFormat,
-                GetSourceName(),
-                Strings.UseConsistentIndentationName);
-        }
-
-        /// <summary>
-        /// Retrieves the severity of the rule: error, warning or information.
-        /// </summary>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Information;
-        }
-
-        /// <summary>
-        /// Gets the severity of the returned diagnostic record: error, warning, or information.
-        /// </summary>
-        /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Information;
-        }
-
-        /// <summary>
-        /// Retrieves the name of the module/assembly the rule is from.
-        /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
-
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
         }
     }
 }

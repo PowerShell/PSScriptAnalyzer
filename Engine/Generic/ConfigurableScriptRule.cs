@@ -8,17 +8,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     // This is still an experimental class. Use at your own risk!
     public abstract class ConfigurableScriptRule : IScriptRule
     {
-        // Configurable rule properties should define a default value
-        // because if reading the configuration fails
-        // we use the property's default value
+        /// <summary>
+        /// Indicates if the rule is enabled or not.
+        ///
+        /// If the rule is enabled ScriptAnalyzer engine will run it
+        /// otherwise it will not.
+        ///
+        /// Configurable rule properties should define a default value
+        /// because if reading the configuration fails we use the
+        /// property's default value
+        /// </summary>
         [ConfigurableRuleProperty(defaultValue: false)]
         public bool Enable { get; protected set; }
 
+        /// <summary>
+        /// Initialize the configurable properties of a configurable rule.
+        /// </summary>
         protected ConfigurableScriptRule()
         {
             SetDefaultValues();
         }
 
+        /// <summary>
+        /// Sets the configurable properties of the rule.
+        ///
+        /// Properties having ConfigurableRuleProperty attribute are called configurable properties.
+        /// </summary>
+        /// <param name="paramValueMap">A dictionary that maps parameter name to it value. Must be non-null</param>
         public virtual void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
             if (paramValueMap == null)
@@ -44,6 +60,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 SetDefaultValues();
             }
         }
+
+        /// <summary>
+        /// Analyzes the given abstract syntax tree (AST) and returns diagnostic records based on the analysis.
+        /// </summary>
+        /// <param name="ast">AST representing the file content</param>
+        /// <param name="fileName">Path of the file corresponding to the AST</param>
+        /// <returns>The results of the analysis</returns>
+        public abstract IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName);
+
+        /// <summary>
+        /// Retrieves the Common name of the rule.
+        /// </summary>
+        /// <returns>The name of the rule.</returns>
+        public abstract string GetCommonName();
+
+        /// <summary>
+        /// Retrieves the description of the rule.
+        /// </summary>
+        /// <returns>The description of the rule.</returns>
+        public abstract string GetDescription();
+
+        /// <summary>
+        /// Retrieves the name of the rule.
+        /// </summary>
+        /// <returns>The name of the rule.</returns>
+        public abstract string GetName();
+
+        /// <summary>
+        /// Retrieves severity of the rule.
+        /// </summary>
+        /// <returns>The severity of the rule.</returns>
+        public abstract RuleSeverity GetSeverity();
+
+        /// <summary>
+        /// Retrieves the source name of the rule.
+        /// </summary>
+        /// <returns>The source name of the rule.</returns>
+        public abstract string GetSourceName();
+
+        /// <summary>
+        /// Retrieves the source type of the rule.
+        /// </summary>
+        /// <returns>The source type of the rule.</returns>
+        public abstract SourceType GetSourceType();
 
         private void SetDefaultValues()
         {
@@ -82,21 +142,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
             return ((ConfigurableRulePropertyAttribute)attr).DefaultValue;
         }
-
-        public abstract IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName);
-        public abstract string GetCommonName();
-        public abstract string GetDescription();
-        public abstract string GetName();
-        public abstract RuleSeverity GetSeverity();
-        public abstract string GetSourceName();
-        public abstract SourceType GetSourceType();
     }
 
+    /// <summary>
+    /// The attribute class to designate if a property is configurable or not.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class ConfigurableRulePropertyAttribute : Attribute
     {
+        /// <summary>
+        /// Default value of the property that the attribute decorates.
+        /// </summary>
         public object DefaultValue { get; private set; }
 
+        /// <summary>
+        /// Initialize the attribute with the decorated property's default value.
+        /// </summary>
+        /// <param name="defaultValue"></param>
         public ConfigurableRulePropertyAttribute(object defaultValue)
         {
             if (defaultValue == null)
