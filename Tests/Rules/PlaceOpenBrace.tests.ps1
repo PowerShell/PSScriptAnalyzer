@@ -42,7 +42,7 @@ function foo ($param1) {
 }
 '@
             $ruleConfiguration.'OnSameLine' = $false
-	    $ruleConfiguration.'NewLineAfter' = $false
+	    $ruleConfiguration.'NewLineAfter' = $true
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $defShouldIgnore = @'
 Get-Process | % { "blah" }

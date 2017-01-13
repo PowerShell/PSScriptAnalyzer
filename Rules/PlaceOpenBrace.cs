@@ -48,6 +48,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>> violationFinders
             = new List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>>();
 
+        private HashSet<Token> tokensToIgnore;
+
         /// <summary>
         /// Sets the configurable properties of this rule.
         /// </summary>
@@ -92,6 +94,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var tokens = Helper.Instance.Tokens;
+
+            // Ignore open braces that are part of arguments to a command
+            // * E.g. get-process | % { "blah }
+            // In the above case even if OnSameLine == false, we should not
+            // flag the open brace as it would move the brace to the next line
+            // and will invalidate the command
+            tokensToIgnore = new HashSet<Token>(
+                new TokenOperations(tokens, ast).GetOpenBracesInCommandElements());
             foreach (var violationFinder in violationFinders)
             {
                 diagnosticRecords.AddRange(violationFinder(tokens, ast, fileName));
@@ -166,35 +176,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, errorString);
         }
 
-        private static HashSet<Token> FindTokensToIgnore(Token[] tokens, Ast ast)
-        {
-            // Ignore open braces that are part of arguments to a command
-            // * E.g. get-process | % { "blah }
-            // In the above case even if OnSameLine == false, we should not
-            // flag the open brace as it would move the brace to the next line
-            // and will invalidate the command
-
-            var cmdElemAsts = ast.FindAll(x => x is CommandElementAst && x is ScriptBlockExpressionAst, true);
-            var tokensToIgnore = new HashSet<Token> ();
-            if (cmdElemAsts == null)
-            {
-                return tokensToIgnore;
-            }
-
-            foreach (var cmdElemAst in cmdElemAsts)
-            {
-                var tokenToIgnore = tokens.FirstOrDefault(
-                    token => token.Kind == TokenKind.LCurly
-                    && cmdElemAst.Extent.StartOffset == token.Extent.StartOffset);
-                if (tokenToIgnore != null)
-                {
-                    tokensToIgnore.Add(tokenToIgnore);
-                }
-            }
-
-            return tokensToIgnore;
-        }
-
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldBeOnSameLine(
             Token[] tokens,
             Ast ast,
@@ -232,7 +213,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 if (tokens[k].Kind == TokenKind.LCurly
-                    && tokens[k + 1].Kind != TokenKind.NewLine)
+                    && tokens[k + 1].Kind != TokenKind.NewLine
+                    && !tokensToIgnore.Contains(tokens[k]))
                 {
                     yield return new DiagnosticRecord(
                         GetError(Strings.PlaceOpenBraceErrorNoNewLineAfterBrace),
@@ -246,32 +228,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        private List<CorrectionExtent> GetCorrectionsForNoNewLineAfterBrace(
-            Token[] tokens,
-            int openBracePos,
-            string fileName)
-        {
-            var corrections = new List<CorrectionExtent>();
-            var extent = tokens[openBracePos].Extent;
-
-            corrections.Add(
-                new CorrectionExtent(
-                    extent.StartLineNumber,
-                    extent.EndLineNumber,
-                    extent.StartColumnNumber,
-                    extent.EndColumnNumber,
-                    new StringBuilder().Append(extent.Text).Append(Environment.NewLine).ToString(),
-                    fileName));
-            return corrections;
-        }
-
         private IEnumerable<DiagnosticRecord> FindViolationsForBraceShouldNotBeOnSameLine(
             Token[] tokens,
             Ast ast,
             string fileName)
         {
-
-            var tokensToIgnore = FindTokensToIgnore(tokens, ast);
             for (int k = 1; k < tokens.Length; k++)
             {
                 if (tokens[k].Kind == TokenKind.EndOfInput)
@@ -293,6 +254,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetCorrectionsForBraceShouldNotBeOnSameLine(tokens, k - 1, k, fileName));
                 }
             }
+        }
+
+        private List<CorrectionExtent> GetCorrectionsForNoNewLineAfterBrace(
+            Token[] tokens,
+            int openBracePos,
+            string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            var extent = tokens[openBracePos].Extent;
+
+            corrections.Add(
+                new CorrectionExtent(
+                    extent.StartLineNumber,
+                    extent.EndLineNumber,
+                    extent.StartColumnNumber,
+                    extent.EndColumnNumber,
+                    new StringBuilder().Append(extent.Text).Append(Environment.NewLine).ToString(),
+                    fileName));
+            return corrections;
         }
 
         private List<CorrectionExtent> GetCorrectionsForBraceShouldNotBeOnSameLine(
