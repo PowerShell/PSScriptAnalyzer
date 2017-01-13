@@ -27,7 +27,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class PlaceOpenBrace : ConfigurableScriptRule
+    public class PlaceOpenBrace : ConfigurableRule
     {
         /// <summary>
         /// Indicates if an open brace should be on the same line or on the next line of its preceding keyword.

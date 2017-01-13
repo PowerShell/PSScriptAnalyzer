@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class PlaceCloseBrace : ConfigurableScriptRule
+    public class PlaceCloseBrace : ConfigurableRule
     {
         /// <summary>
         /// Indicates if there should or should not be an empty line before a close brace.

@@ -974,7 +974,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             foreach (var scriptRule in ScriptRules)
             {
-                var configurableScriptRule = scriptRule as ConfigurableScriptRule;
+                var configurableScriptRule = scriptRule as ConfigurableRule;
                 if (configurableScriptRule == null)
                 {
                     continue;
@@ -1671,7 +1671,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private static bool IsRuleEnabled(IRule rule)
         {
-            var configurableRule = rule as ConfigurableScriptRule;
+            var configurableRule = rule as ConfigurableRule;
             return configurableRule == null || configurableRule.Enable;
         }
 

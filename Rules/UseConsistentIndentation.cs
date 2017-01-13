@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class UseConsistentIndentation : ConfigurableScriptRule
+    public class UseConsistentIndentation : ConfigurableRule
     {
         /// <summary>
         /// The indentation size in number of space characters.

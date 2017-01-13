@@ -16,7 +16,7 @@ using System.Reflection;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     // This is still an experimental class. Use at your own risk!
-    public abstract class ConfigurableScriptRule : IScriptRule
+    public abstract class ConfigurableRule : IScriptRule
     {
         /// <summary>
         /// Indicates if the rule is enabled or not.
@@ -34,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <summary>
         /// Initialize the configurable properties of a configurable rule.
         /// </summary>
-        protected ConfigurableScriptRule()
+        protected ConfigurableRule()
         {
             SetDefaultValues();
         }

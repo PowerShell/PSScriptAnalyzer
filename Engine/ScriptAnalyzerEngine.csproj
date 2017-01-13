@@ -71,7 +71,7 @@
     <Compile Include="Generic\AvoidCmdletGeneric.cs" />
     <Compile Include="Generic\AvoidParameterGeneric.cs" />
     <Compile Include="Generic\ConfigurableRulePropertyAttribute.cs" />
-    <Compile Include="Generic\ConfigurableScriptRule.cs" />
+    <Compile Include="Generic\ConfigurableRule.cs" />
     <Compile Include="Generic\ModuleDependencyHandler.cs" />
     <Compile Include="Generic\CorrectionExtent.cs" />
     <Compile Include="Generic\SuppressedRecord.cs" />
