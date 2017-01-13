@@ -36,6 +36,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue:false)]
         public bool NoEmptyLineBefore { get; protected set; }
 
+        private HashSet<Token> tokensToIgnore;
+
         /// <summary>
         /// Analyzes the given ast to find violations.
         /// </summary>
@@ -62,6 +64,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var curlyStack = new Stack<Tuple<Token, int>> ();
+            tokensToIgnore = new HashSet<Token> (
+                new TokenOperations(tokens, ast).GetCloseBracesInCommandElements());
 
             for (int k = 0; k < tokens.Length; k++)
             {
@@ -251,7 +255,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (tokens.Length > 1 && tokens.Length > closeBracePos)
             {
                 var closeBraceToken = tokens[closeBracePos];
-                if (tokens[closeBracePos - 1].Kind != TokenKind.NewLine)
+                if (tokens[closeBracePos - 1].Kind != TokenKind.NewLine
+                    && !tokensToIgnore.Contains(closeBraceToken))
                 {
                     return new DiagnosticRecord(
                         GetError(Strings.PlaceCloseBraceErrorShouldBeOnNewLine),

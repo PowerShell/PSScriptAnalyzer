@@ -55,7 +55,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// In the above example it will return the close brace following "powershell".
         /// </summary>
         /// <returns>An enumerable of type Token</returns>
-        public IEnumerable<Token> GetCloseBraceInCommandElement()
+        public IEnumerable<Token> GetCloseBracesInCommandElements()
         {
             return GetBraceInCommandElement(TokenKind.RCurly);
         }

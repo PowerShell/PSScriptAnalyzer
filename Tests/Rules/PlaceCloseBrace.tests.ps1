@@ -77,4 +77,17 @@ $hashtable = @{
             $violations.Count | Should Be 1
         }
     }
+
+    Context "When a close brace is on the same line as its open brace" {
+        BeforeAll {
+            $def = @'
+Get-Process * | % { "blah" }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+        }
+
+        It "Should not find a violation" {
+            $violations.Count | Should Be 0
+        }
+    }
 }
