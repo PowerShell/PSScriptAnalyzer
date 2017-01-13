@@ -101,6 +101,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="TokenOperations.cs" />
     <Compile Include="VariableAnalysis.cs" />
     <Compile Include="VariableAnalysisBase.cs" />
   </ItemGroup>
