@@ -895,7 +895,7 @@
     <value>Place close braces</value>
   </data>
   <data name="PlaceCloseBraceDescription" xml:space="preserve">
-    <value>Place close brace show be on a new line by itself.</value>
+    <value>Close brace should be on a new line by itself.</value>
   </data>
   <data name="PlaceCloseBraceErrorShouldBeOnNewLine" xml:space="preserve">
     <value>Close brace is not on a new line.</value>
