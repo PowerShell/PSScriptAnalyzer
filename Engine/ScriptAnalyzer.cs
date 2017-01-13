@@ -12,7 +12,6 @@
 //
 
 using System.Text.RegularExpressions;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
@@ -490,7 +489,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return hasError;
             }
-            foreach (var settingKey in settings.Keys)
+
+            var settingsKeys = new string[settings.Keys.Count];
+            settings.Keys.CopyTo(settingsKeys, 0);
+            foreach (var settingKey in settingsKeys)
             {
                 var key = settingKey.ToLower();
                 object value = settings[key];
@@ -599,6 +601,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 else
                 {
                     HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
+#if PSV3
                     settings = GetDictionaryFromHashTableAst(
                         hashTableAst,
                         writer,
@@ -627,6 +630,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             hasError = true;
                         }
                     }
+#else
+
+                    try
+                    {
+                        var hashtable = hashTableAst.SafeGetValue() as Hashtable;
+                        hasError = ParseProfileHashtable(hashtable, path, writer, severityList, includeRuleList, excludeRuleList);
+                    }
+                    catch
+                    {
+                        writer.WriteError(
+                            new ErrorRecord(
+                                new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile)),
+                                Strings.ConfigurationFileHasInvalidHashtable,
+                                ErrorCategory.ResourceUnavailable,
+                                profile));
+                        hasError = true;
+                    }
+#endif // PSV3
                 }
             }
 
@@ -754,6 +775,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             try
             {
                 this.LoadRules(this.validationResults, invokeCommand, includeDefaultRules);
+                this.ConfigureScriptRules();
             }
             catch (Exception ex)
             {
@@ -939,6 +961,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (result.ContainsKey("ValidModPaths") && result["ValidModPaths"].Count > 0)
             {
                 ExternalRules = GetExternalRule(result["ValidModPaths"].ToArray());
+            }
+        }
+
+        // Configure rules derived from ConfigurableScriptRule class
+        private void ConfigureScriptRules()
+        {
+            if (ScriptRules == null)
+            {
+                return;
+            }
+
+            foreach (var scriptRule in ScriptRules)
+            {
+                var configurableScriptRule = scriptRule as ConfigurableRule;
+                if (configurableScriptRule == null)
+                {
+                    continue;
+                }
+
+                var paramValueMap = Helper.Instance.GetRuleArguments(scriptRule.GetName());
+                if (paramValueMap == null)
+                {
+                    continue;
+                }
+
+                configurableScriptRule.ConfigureRule(paramValueMap);
             }
         }
 
@@ -1621,6 +1669,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     && allowedSeverities.Contains((uint)rule.GetSeverity()));
         }
 
+        private static bool IsRuleEnabled(IRule rule)
+        {
+            var configurableRule = rule as ConfigurableRule;
+            return configurableRule == null || configurableRule.Enable;
+        }
+
         IEnumerable<uint> GetAllowedSeveritiesInInt()
         {
             return severity != null
@@ -1667,7 +1721,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return (includeRule == null || includeRegexMatch)
                     && (excludeRule == null || !excludeRegexMatch)
-                    && IsSeverityAllowed(allowedSeverities, rule);
+                    && IsSeverityAllowed(allowedSeverities, rule)
+                    && IsRuleEnabled(rule);
         }
 
         /// <summary>
