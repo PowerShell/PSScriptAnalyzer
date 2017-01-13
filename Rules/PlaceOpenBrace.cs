@@ -22,7 +22,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check for [violation]
+    /// A class to walk an AST to check for violation.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
