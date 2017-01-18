@@ -298,29 +298,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Get a CommandInfo object of the given command name
-        /// </summary>
-        /// <returns>Returns null if command does not exists</returns>
-        private CommandInfo GetCommandInfo(string cmdName)
-        {
-            try
-            {
-                using (var ps = System.Management.Automation.PowerShell.Create())
-                {
-                    var cmdInfo = ps.AddCommand("Get-Command")
-                                    .AddArgument(cmdName)
-                                    .Invoke<CommandInfo>()
-                                    .FirstOrDefault();
-                    return cmdInfo;
-                }
-            }
-            catch (System.Management.Automation.CommandNotFoundException)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Checks if the given command supports ShouldProcess
         /// </summary>
         /// <returns>False if input is null. If the input command has declares SupportsShouldProcess attribute, returns true</returns>
@@ -331,7 +308,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
-            var cmdInfo = GetCommandInfo(cmdName);
+            var cmdInfo = Helper.Instance.GetCommandInfo(cmdName);
             if (cmdInfo == null)
             {
                 return false;
