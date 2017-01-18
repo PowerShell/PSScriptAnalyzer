@@ -38,6 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
+        private Dictionary<string, CommandInfo> commandInfoCache;
 
         #endregion
 
@@ -146,6 +147,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+            commandInfoCache = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -610,12 +612,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanThreePositional = false)
         {
-            if (cmdAst == null || cmdAst.GetCommandName() == null)
+            if (cmdAst == null)
             {
                 return false;
             }
 
-            CommandInfo commandInfo = GetCommandInfo(GetCmdletNameFromAlias(cmdAst.GetCommandName())) ?? GetCommandInfo(cmdAst.GetCommandName());
+            var commandInfo = GetCommandInfo(cmdAst.GetCommandName());
+            if (commandInfo == null || (commandInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
+            {
+                return false;
+            }
 
             IEnumerable<ParameterMetadata> switchParams = null;
 
@@ -686,6 +692,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
 
         /// <summary>
+        /// Get a CommandInfo object of the given command name
+        /// </summary>
+        /// <returns>Returns null if command does not exists</returns>
+        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType = null)
+        {
+            using (var ps = System.Management.Automation.PowerShell.Create())
+            {
+                var cmdInfo = ps.AddCommand("Get-Command")
+                                .AddArgument(cmdName)
+                                .AddParameter("ErrorAction", "SilentlyContinue")
+                                .Invoke<CommandInfo>()
+                                .FirstOrDefault();
+                return cmdInfo;
+            }
+        }
+
+        /// <summary>
         /// Given a command's name, checks whether it exists
         /// </summary>
         /// <param name="name"></param>
@@ -693,19 +716,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null)
         {
-            CommandTypes defaultCmdType = CommandTypes.Alias
-                | CommandTypes.Cmdlet
-                | CommandTypes.ExternalScript
-                | CommandTypes.Filter
-                | CommandTypes.Function
-                | CommandTypes.Script
-                | CommandTypes.Workflow;
-#if !PSV3
-            defaultCmdType |= CommandTypes.Configuration;
-#endif
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            // check if it is an alias
+            string cmdletName = Helper.Instance.GetCmdletNameFromAlias(name);
+            if (string.IsNullOrWhiteSpace(cmdletName))
+            {
+                cmdletName = name;
+            }
+
             lock (getCommandLock)
             {
-                return this.invokeCommand.GetCommand(name, commandType ?? defaultCmdType);
+                if (commandInfoCache.ContainsKey(cmdletName))
+                {
+                    return commandInfoCache[cmdletName];
+                }
+
+                var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
+                commandInfoCache.Add(cmdletName, commandInfo);
+                return commandInfo;
             }
         }
 
