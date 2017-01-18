@@ -21,6 +21,7 @@ using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Management.Automation.Runspaces;
 using System.Collections;
+using System.Collections.Concurrent;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
-        private Dictionary<string, CommandInfo> commandInfoCache;
+        private ConcurrentDictionary<string, CommandInfo> commandInfoCache;
         private RunspacePool runspacePool;
 
         #endregion
@@ -148,7 +149,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-            commandInfoCache = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
+            commandInfoCache = new ConcurrentDictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
             runspacePool = RunspaceFactory.CreateRunspacePool(InitialSessionState.CreateDefault2());
             runspacePool.Open();
 
@@ -740,17 +741,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 cmdletName = name;
             }
 
-            lock (getCommandLock)
+            if (commandInfoCache.ContainsKey(cmdletName))
             {
-                if (commandInfoCache.ContainsKey(cmdletName))
-                {
-                    return commandInfoCache[cmdletName];
-                }
-
-                var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
-                commandInfoCache.Add(cmdletName, commandInfo);
-                return commandInfo;
+                return commandInfoCache[cmdletName];
             }
+
+            var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
+            commandInfoCache.AddOrUpdate(cmdletName, (key) => commandInfo, (key, value) => commandInfo);
+            return commandInfo;
         }
 
         /// <summary>
