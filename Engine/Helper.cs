@@ -611,12 +611,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public bool HasSplattedVariable(CommandAst cmdAst)
         {
-            if (cmdAst == null || cmdAst.CommandElements == null)
-            {
-                return false;
-            }
-
-            return cmdAst.CommandElements.Any(cmdElem => cmdElem is VariableExpressionAst && (cmdElem as VariableExpressionAst).Splatted);
+            return cmdAst != null
+                && cmdAst.CommandElements != null
+                && cmdAst.CommandElements.Any(cmdElem =>
+                {
+                    var varExprAst = cmdElem as VariableExpressionAst;
+                    return varExprAst != null && varExprAst.Splatted;
+                });
         }
 
         /// <summary>
@@ -663,29 +664,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             foreach (CommandElementAst ceAst in cmdAst.CommandElements)
             {
-                    if (ceAst is CommandParameterAst)
+                var cmdParamAst = ceAst as CommandParameterAst;
+                if (cmdParamAst != null)
+                {
+                    // Skip if it's a switch parameter
+                    if (switchParams != null &&
+                        switchParams.Any(
+                            pm => String.Equals(
+                                pm.Name,
+                                cmdParamAst.ParameterName, StringComparison.OrdinalIgnoreCase)))
                     {
-                        // Skip if it's a switch parameter
-                        if (switchParams != null &&
-                            switchParams.Any(pm => String.Equals(pm.Name, (ceAst as CommandParameterAst).ParameterName, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            continue;
-                        }
-
-
-                        parameters += 1;
-
-                        if ((ceAst as CommandParameterAst).Argument != null)
-                        {
-                            arguments += 1;
-                        }
-
+                        continue;
                     }
-                    else
+
+                    parameters += 1;
+
+                    if (cmdParamAst.Argument != null)
                     {
                         arguments += 1;
                     }
 
+                }
+                else
+                {
+                    arguments += 1;
+                }
             }
 
             // if not the first element in a pipeline, increase the number of arguments by 1
