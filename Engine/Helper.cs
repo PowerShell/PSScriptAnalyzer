@@ -39,6 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
         private Dictionary<string, CommandInfo> commandInfoCache;
+        private RunspacePool runspacePool;
 
         #endregion
 
@@ -148,6 +149,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
             commandInfoCache = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
+            runspacePool = RunspaceFactory.CreateRunspacePool(InitialSessionState.CreateDefault2());
+            runspacePool.Open();
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -164,6 +167,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 AliasToCmdletDictionary.Add(aliasInfo.Name, aliasInfo.Definition);
             }
+        }
+
+        /// <summary>
+        /// We are forced to use this to improve performace
+        /// </summary>
+        public void CleanUp()
+        {
+            runspacePool.Dispose();
         }
 
         /// <summary>
@@ -699,6 +710,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
+                ps.RunspacePool = runspacePool;
                 var cmdInfo = ps.AddCommand("Get-Command")
                                 .AddArgument(cmdName)
                                 .AddParameter("ErrorAction", "SilentlyContinue")

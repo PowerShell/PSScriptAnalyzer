@@ -129,6 +129,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
         }
 
+        protected override void EndProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            Helper.Instance.CleanUp();
+            base.EndProcessing();
+        }
+
+        protected override void StopProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            Helper.Instance.CleanUp();
+            base.StopProcessing();
+        }
+
         #endregion
     }
 }
