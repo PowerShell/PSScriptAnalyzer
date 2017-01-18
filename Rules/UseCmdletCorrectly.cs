@@ -55,7 +55,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (cmdAst.GetCommandName() == null) continue;
 
                 // Checks mandatory parameters.
-                if (!IsMandatoryParameterExisted(cmdAst))
+                if (!MandatoryParameterExists(cmdAst))
                 {
                     yield return new DiagnosticRecord(String.Format(CultureInfo.CurrentCulture, Strings.UseCmdletCorrectlyError, cmdAst.GetCommandName()),
                         cmdAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
@@ -68,7 +68,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         /// <param name="cmdAst"></param>
         /// <returns></returns>
-        private bool IsMandatoryParameterExisted(CommandAst cmdAst)
+        private bool MandatoryParameterExists(CommandAst cmdAst)
         {
             CommandInfo cmdInfo = null;
             List<ParameterMetadata> mandParams = new List<ParameterMetadata>();
@@ -88,9 +88,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             #region Compares parameter list and mandatory parameter list.
 
-            cmdInfo = Helper.Instance.GetCommandInfo(Helper.Instance.GetCmdletNameFromAlias(cmdAst.GetCommandName()))
-                ?? Helper.Instance.GetCommandInfo(cmdAst.GetCommandName());
-
+            cmdInfo = Helper.Instance.GetCommandInfo(cmdAst.GetCommandName());
             if (cmdInfo == null || (cmdInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
             {
                 return true;
@@ -109,7 +107,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // If cannot find any mandatory parameter, it's not necessary to do a further check for current cmdlet.
             try
             {
-                int noOfParamSets = cmdInfo.ParameterSets.Count; 
+                int noOfParamSets = cmdInfo.ParameterSets.Count;
                 foreach (ParameterMetadata pm in cmdInfo.Parameters.Values)
                 {
                     int count = 0;
@@ -163,7 +161,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             return returnValue;
         }
-        
+
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
