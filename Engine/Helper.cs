@@ -151,6 +151,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
             commandInfoCache = new ConcurrentDictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
             runspacePool = RunspaceFactory.CreateRunspacePool(InitialSessionState.CreateDefault2());
+
+            // After some experimentation, I found out that setting max runspaces more than 3 has marginal returns.
+            runspacePool.SetMaxRunspaces(3);
             runspacePool.Open();
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
