@@ -21,7 +21,6 @@ using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Management.Automation.Runspaces;
 using System.Collections;
-using System.Collections.Concurrent;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -39,8 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
-        private ConcurrentDictionary<string, CommandInfo> commandInfoCache;
-        private RunspacePool runspacePool;
+        private Dictionary<string, CommandInfo> commandInfoCache;
 
         #endregion
 
@@ -149,12 +147,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-            commandInfoCache = new ConcurrentDictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
-            runspacePool = RunspaceFactory.CreateRunspacePool(InitialSessionState.CreateDefault2());
-
-            // After some experimentation, I found out that setting max runspaces more than 3 has marginal returns.
-            runspacePool.SetMaxRunspaces(3);
-            runspacePool.Open();
+            commandInfoCache = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -171,14 +164,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 AliasToCmdletDictionary.Add(aliasInfo.Name, aliasInfo.Definition);
             }
-        }
-
-        /// <summary>
-        /// We are forced to use this to improve performace
-        /// </summary>
-        public void CleanUp()
-        {
-            runspacePool.Dispose();
         }
 
         /// <summary>
@@ -717,7 +702,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
-                ps.RunspacePool = runspacePool;
                 var cmdInfo = ps.AddCommand("Get-Command")
                                 .AddArgument(cmdName)
                                 .AddParameter("ErrorAction", "SilentlyContinue")
@@ -747,14 +731,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 cmdletName = name;
             }
 
-            if (commandInfoCache.ContainsKey(cmdletName))
+            lock (getCommandLock)
             {
-                return commandInfoCache[cmdletName];
-            }
+                if (commandInfoCache.ContainsKey(cmdletName))
+                {
+                    return commandInfoCache[cmdletName];
+                }
 
-            var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
-            commandInfoCache.AddOrUpdate(cmdletName, (key) => commandInfo, (key, value) => commandInfo);
-            return commandInfo;
+                var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
+                commandInfoCache.Add(cmdletName, commandInfo);
+                return commandInfo;
+            }
         }
 
         /// <summary>
