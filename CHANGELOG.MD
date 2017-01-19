@@ -1,4 +1,10 @@
-﻿## [unreleased]
+﻿## [1.10.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.10.0) - 2017-01-19
+### Added
+- Three rules to enable code formatting feature in vscode (#690)
+    - [PSPlaceOpenBrace](https://github.com/PowerShell/PSScriptAnalyzer/blob/03a6e2b4ee24894bf574a8a8ce911d03680da607/RuleDocumentation/PlaceOpenBrace.md)
+    - [PSPlaceCloseBrace](https://github.com/PowerShell/PSScriptAnalyzer/blob/03a6e2b4ee24894bf574a8a8ce911d03680da607/RuleDocumentation/PlaceCloseBrace.md)
+    - [PSUseConsistentIdentation](https://github.com/PowerShell/PSScriptAnalyzer/blob/03a6e2b4ee24894bf574a8a8ce911d03680da607/RuleDocumentation/UseConsistentIndentation.md)
+
 ### Fixed
 - `PSProvideCommentHelp` violation extent (#679)
 - `PSAvoidUsingCmdletAliases` rule
@@ -8,6 +14,8 @@
 - `PSUsePSCredentialType` rule (#683)
     + trigger only if invoked from PS version 4 and below
     + violation extent
+- `PSAvoidUsingComputerNameHardcoded` rule to ignore `localhost` (#687)
+- Performance issues caused by invoking `get-command` method (#692)
 
 ## [1.9.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.9.0) - 2016-12-06
 ### Added
