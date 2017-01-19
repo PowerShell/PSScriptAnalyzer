@@ -47,3 +47,6 @@
 |[UseStandardDSCFunctionsInResource](./UseStandardDSCFunctionsInResource.md) | Error |
 |[UseToExportFieldsInManifest](./UseToExportFieldsInManifest.md) | Warning|
 |[UseCompatibleCmdlets](./UseCompatibleCmdlets.md) | Warning|
+|[PlaceOpenBrace](./PlaceOpenBrace.md) | Warning|
+|[PlaceCloseBrace](./PlaceCloseBrace.md) | Warning|
+|[UseConsistentIndentation](./UseConsistentIndentation.md) | Warning|
