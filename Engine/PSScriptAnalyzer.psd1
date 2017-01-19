@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.9.0'
+ModuleVersion = '1.10.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -88,24 +88,22 @@ PrivateData = @{
         IconUri = ''
         ReleaseNotes = @'
 ### Added
-- SuggestedCorrections for ScriptDefinition input (#665)
-- PSAvoidGlobalAliases and PSAvoidGlobalFunction rules (#658)
+- Three rules to enable code formatting feature in vscode (#690)
+    - PSPlaceOpenBrace
+    - PSPlaceCloseBrace
+    - PSUseConsistentIdentation
 
 ### Fixed
-- Regular expression in `target` parameter in SuppressMessageAttribute (#638)
-- Filtering on severity level for DSC rules (#642)
-- PSUseCompatibleCmdlets rule
-    + to check for commands in Microsoft.PowerShell.Core snapin
-    + to ignore aliases
-    + to ignore custom defind commands
-- PSUseDeclaredVarsMoreThanAssignments rule to ignore the following special variables (#653)
-    + `$PSModuleAutoLoadingPreference`
-    + `$InformationPreference`
-- PSShouldProcess rule to not enforce `SupportsShouldProcess` if a function calls built-in cmdlet or function that calls `ShouldProcess` (#652).
-- PSShouldProcess rule violation extent (#668)
-- PSAvoidUsingCmdletAliases rule violation extent (667)
-- Column header of `Invoke-ScriptAnalyzer` to be consistent with corresponding property names (#664)
-- `ScriptPath` property of external rule violation (#649)
+- `PSProvideCommentHelp` violation extent (#679)
+- `PSAvoidUsingCmdletAliases` rule
+    + false positives in DSC configurations (#678)
+    + violation extent (#685)
+- `PSDSCDSCTestsPresent` rule to check for tests in subdirectories
+- `PSUsePSCredentialType` rule (#683)
+    + trigger only if invoked from PS version 4 and below
+    + violation extent
+- `PSAvoidUsingComputerNameHardcoded` rule to ignore `localhost` (#687)
+- Performance issues caused by invoking `get-command` method (#692)
 '@
     }
 }
@@ -117,6 +115,7 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 

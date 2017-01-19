@@ -1,9 +1,9 @@
 {
   "name": "Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "dependencies": {
     "System.Management.Automation": "1.0.0-alpha12",
-    "Engine": "1.9.0",
+    "Engine": "1.10.0",
     "Newtonsoft.Json": "9.0.1"
   },
 
