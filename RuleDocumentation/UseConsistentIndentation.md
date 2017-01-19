@@ -1,4 +1,4 @@
-﻿# PlaceOpenBrace
+﻿# UseConsistentIndentation
 **Severity Level: Warning**
 
 ## Description

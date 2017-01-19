@@ -1,4 +1,4 @@
-﻿# PlaceOpenBrace
+﻿# PlaceCloseBrace
 **Severity Level: Warning**
 
 ## Description
