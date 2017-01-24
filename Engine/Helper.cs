@@ -65,7 +65,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 lock (syncRoot)
                 {
-                    instance = value;
+                    if (instance == null)
+                    {
+                        instance = value;
+                    }
                 }
             }
         }
@@ -147,7 +150,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-            commandInfoCache = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
+            if (commandInfoCache == null)
+            {
+                commandInfoCache = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
+            }
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
