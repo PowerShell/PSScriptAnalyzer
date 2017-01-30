@@ -22,6 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     public class TokenOperations
     {
         private readonly Token[] tokens;
+        private LinkedList<Token> tokensLL;
         private readonly Ast ast;
 
         /// <summary>
@@ -43,6 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             this.tokens = tokens;
             this.ast = ast;
+            this.tokensLL = new LinkedList<Token>();
         }
 
         /// <summary>
@@ -104,6 +106,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     yield return tokenFound;
                 }
             }
+        }
+
+        private IEnumerable<LinkedListNode<Token>> GetTokens(TokenKind kind)
+        {
+            var token = tokensLL.First;
+            do
+            {
+                if (token.Value.Kind == kind) {
+                    yield return token;
+                }
+            } while (token.Next != null);
+        }
+
+        private IEnumerable<Tuple<Token, int>> GetTokenAndPrecedingWhitespace(TokenKind kind)
+        {
+            var lCurlyTokens = GetTokens(TokenKind.LCurly);
+            foreach (var item in lCurlyTokens)
+            {
+                if (item.Previous == null
+                    || !OnSameLine(item.Previous.Value, item.Value))
+                {
+                    continue;
+                }
+
+                yield return new Tuple<Token, int>(
+                    item.Value,
+                    item.Value.Extent.StartColumnNumber - item.Previous.Value.Extent.EndColumnNumber);
+            }
+        }
+
+        public IEnumerable<Tuple<Token, int>> GetOpenBracesWithWhiteSpacesBefore()
+        {
+            return GetTokenAndPrecedingWhitespace(TokenKind.LCurly);
+        }
+
+        private bool OnSameLine(Token token1, Token token2)
+        {
+            return token1.Extent.StartLineNumber == token2.Extent.EndLineNumber;
         }
     }
 }
