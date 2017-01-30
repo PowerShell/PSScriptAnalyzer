@@ -23,32 +23,57 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// A class to walk an AST to check for [violation]
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class UseWhitespace : IScriptRule
+    class UseWhitespace : ConfigurableRule
     {
+        private readonly int whiteSpaceSize = 1;
+
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckOpenBrace { get; protected set; }
+
         /// <summary>
         /// Analyzes the given ast to find the [violation]
         /// </summary>
         /// <param name="ast">AST to be analyzed. This should be non-null</param>
         /// <param name="fileName">Name of file that corresponds to the input AST.</param>
         /// <returns>A an enumerable type containing the violations</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null)
             {
                 throw new ArgumentNullException("ast");
             }
 
-            // your code goes here
-            yield return new DiagnosticRecord();
+            var tokenOperations = new TokenOperations(Helper.Instance.Tokens, ast);
+
+            var tokensAndWhitespaces = tokenOperations.GetOpenBracesWithWhiteSpacesBefore();
+            foreach (var item in tokensAndWhitespaces)
+            {
+                if (item.Item2 != whiteSpaceSize)
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(),
+                        item.Item1.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        null);
+                }
+            }
+        }
+
+        private string GetError()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceError);
         }
 
         /// <summary>
         /// Retrieves the common name of this rule.
         /// </summary>
-        public string GetCommonName()
+        public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceCommonName);
         }
@@ -56,7 +81,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the description of this rule.
         /// </summary>
-        public string GetDescription()
+        public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceDescription);
         }
@@ -64,7 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the name of this rule.
         /// </summary>
-        public string GetName()
+        public override string GetName()
         {
             return string.Format(
                 CultureInfo.CurrentCulture,
@@ -76,7 +101,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the severity of the rule: error, warning or information.
         /// </summary>
-        public RuleSeverity GetSeverity()
+        public override RuleSeverity GetSeverity()
         {
             return RuleSeverity.Warning;
         }
@@ -93,7 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the name of the module/assembly the rule is from.
         /// </summary>
-        public string GetSourceName()
+        public override string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
@@ -101,7 +126,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Retrieves the type of the rule, Builtin, Managed or Module.
         /// </summary>
-        public SourceType GetSourceType()
+        public override SourceType GetSourceType()
         {
             return SourceType.Builtin;
         }
