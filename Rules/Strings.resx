@@ -915,4 +915,16 @@
   <data name="UseConsistentIndentationError" xml:space="preserve">
     <value>Indentation not consistent</value>
   </data>
+  <data name="UseWhitespaceName" xml:space="preserve">
+    <value>UseWhitespace</value>
+  </data>
+  <data name="UseWhitespaceCommonName" xml:space="preserve">
+    <value>Use whitespaces</value>
+  </data>
+  <data name="UseWhitespaceDescription" xml:space="preserve">
+    <value>Check for whitespace between keyword and open paren/curly, around assigment operator ('='), around arithmetic operators and after separators (',' and ';')</value>
+  </data>
+  <data name="UseWhitespaceError" xml:space="preserve">
+    <value>Use space</value>
+  </data>
 </root>
