@@ -91,14 +91,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindOpenBraceViolations(TokenOperations tokenOperations)
         {
-            var tokensAndWhitespaces = tokenOperations.GetOpenBracesWithWhiteSpacesBefore();
-            foreach (var item in tokensAndWhitespaces)
+            foreach (var lcurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
             {
-                if (item.Item2 != whiteSpaceSize)
+                if (lcurly.Previous == null
+                    || !IsPreviousTokenOnSameLine(lcurly)
+                    || lcurly.Previous.Value.Kind == TokenKind.LCurly)
+                {
+                    continue;
+                }
+
+                if (!IsPreviousTokenApartByWhitespace(lcurly))
                 {
                     yield return new DiagnosticRecord(
                         GetError(ErrorKind.Brace),
-                        item.Item1.Extent,
+                        lcurly.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
@@ -123,8 +129,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (whiteSpaceSize !=
-                    lparen.Value.Extent.StartColumnNumber - lparen.Previous.Value.Extent.EndColumnNumber)
+                if (!IsPreviousTokenApartByWhitespace(lparen))
                 {
                     yield return new DiagnosticRecord(
                         GetError(ErrorKind.Paren),
@@ -136,6 +141,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         null);
                 }
             }
+        }
+
+        private bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
+        {
+            return whiteSpaceSize ==
+                (tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber);
         }
 
         private bool IsPreviousTokenOnSameLine(LinkedListNode<Token> lparen)
