@@ -3,6 +3,7 @@ $ruleName = "PSUseWhitespace"
 $ruleConfiguration = @{
     Enable = $true
     CheckOpenBrace = $true
+    CheckOpenParen = $true
 }
 
 $settings = @{
@@ -18,6 +19,8 @@ Describe "UseWhitespace" {
             $def = @'
 if ($true){}
 '@
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOpenBrace = $true
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
@@ -31,6 +34,8 @@ if ($true){}
             $def = @'
 if($true) {}
 '@
+            $ruleConfiguration.CheckOpenParen = $true
+            $ruleConfiguration.CheckOpenBrace = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
@@ -46,6 +51,8 @@ function foo($param1) {
 
 }
 '@
+            $ruleConfiguration.CheckOpenParen = $true
+            $ruleConfiguration.CheckOpenBrace = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
@@ -61,6 +68,8 @@ function foo() {
     param( )
 }
 '@
+            $ruleConfiguration.CheckOpenParen = $true
+            $ruleConfiguration.CheckOpenBrace = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
@@ -76,6 +85,8 @@ function foo($param) {
     ((Get-Process))
 }
 '@
+            $ruleConfiguration.CheckOpenParen = $true
+            $ruleConfiguration.CheckOpenBrace = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
