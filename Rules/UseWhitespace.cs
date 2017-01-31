@@ -26,12 +26,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class UseWhitespace : ConfigurableRule
+    public class UseWhitespace : ConfigurableRule
     {
+        private enum ErrorKind { Brace, Paren };
         private readonly int whiteSpaceSize = 1;
+
+        private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
+                = new List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>>();
 
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckOpenBrace { get; protected set; }
+
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckOpenParen { get; protected set; }
+
+
+        public override void ConfigureRule(IDictionary<string, object> paramValueMap)
+        {
+            base.ConfigureRule(paramValueMap);
+            if (CheckOpenBrace)
+            {
+                violationFinders.Add(FindOpenBraceViolations);
+            }
+
+            if (CheckOpenParen)
+            {
+                violationFinders.Add(FindOpenParenViolations);
+            }
+        }
 
         /// <summary>
         /// Analyzes the given ast to find the [violation]
@@ -47,27 +69,78 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var tokenOperations = new TokenOperations(Helper.Instance.Tokens, ast);
+            var diagnosticRecords = Enumerable.Empty<DiagnosticRecord>();
+            foreach (var violationFinder in violationFinders)
+            {
+                diagnosticRecords = diagnosticRecords.Concat(violationFinder(tokenOperations));
+            }
 
+            return diagnosticRecords.ToArray(); // force evaluation here
+        }
+
+        private string GetError(ErrorKind kind)
+        {
+            switch (kind)
+            {
+                case ErrorKind.Brace:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorBeforeBrace);
+                default:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorBeforeParen);
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> FindOpenBraceViolations(TokenOperations tokenOperations)
+        {
             var tokensAndWhitespaces = tokenOperations.GetOpenBracesWithWhiteSpacesBefore();
             foreach (var item in tokensAndWhitespaces)
             {
                 if (item.Item2 != whiteSpaceSize)
                 {
                     yield return new DiagnosticRecord(
-                        GetError(),
+                        GetError(ErrorKind.Brace),
                         item.Item1.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
-                        fileName,
+                        tokenOperations.Ast.Extent.File,
                         null,
                         null);
                 }
             }
         }
 
-        private string GetError()
+        private IEnumerable<DiagnosticRecord> FindOpenParenViolations(TokenOperations tokenOperations)
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceError);
+            foreach (var lparen in tokenOperations.GetTokenNodes(TokenKind.LParen))
+            {
+                if (lparen.Previous == null
+                    || !IsPreviousTokenOnSameLine(lparen)
+                    || lparen.Previous.Value.Kind == TokenKind.LParen // if nested paren
+                    || lparen.Previous.Value.Kind == TokenKind.Param  // if param block
+                    || (lparen.Previous.Previous != null
+                        && lparen.Previous.Previous.Value.Kind == TokenKind.Function)) //if function block
+
+                {
+                    continue;
+                }
+
+                if (whiteSpaceSize !=
+                    lparen.Value.Extent.StartColumnNumber - lparen.Previous.Value.Extent.EndColumnNumber)
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.Paren),
+                        lparen.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        null);
+                }
+            }
+        }
+
+        private bool IsPreviousTokenOnSameLine(LinkedListNode<Token> lparen)
+        {
+            return lparen.Previous.Value.Extent.StartLineNumber == lparen.Value.Extent.EndLineNumber;
         }
 
         /// <summary>
