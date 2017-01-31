@@ -46,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             this.tokens = tokens;
             this.ast = ast;
-            this.tokensLL = new LinkedList<Token>();
+            this.tokensLL = new LinkedList<Token>(this.tokens);
         }
 
         /// <summary>
@@ -110,20 +110,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private IEnumerable<LinkedListNode<Token>> GetTokens(TokenKind kind)
+        public IEnumerable<LinkedListNode<Token>> GetTokenNodes(TokenKind kind)
         {
             var token = tokensLL.First;
-            do
+            while (token != null)
             {
                 if (token.Value.Kind == kind) {
                     yield return token;
                 }
-            } while (token.Next != null);
+                token = token.Next;
+            }
         }
 
         private IEnumerable<Tuple<Token, int>> GetTokenAndPrecedingWhitespace(TokenKind kind)
         {
-            var lCurlyTokens = GetTokens(TokenKind.LCurly);
+            var lCurlyTokens = GetTokenNodes(TokenKind.LCurly);
             foreach (var item in lCurlyTokens)
             {
                 if (item.Previous == null
@@ -141,6 +142,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<Tuple<Token, int>> GetOpenBracesWithWhiteSpacesBefore()
         {
             return GetTokenAndPrecedingWhitespace(TokenKind.LCurly);
+        }
+
+        public IEnumerable<Tuple<Token, int>> GetOpenParensWithWhiteSpacesBefore()
+        {
+            return GetTokenAndPrecedingWhitespace(TokenKind.LParen);
         }
 
         private bool OnSameLine(Token token1, Token token2)
