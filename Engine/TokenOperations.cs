@@ -25,6 +25,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private LinkedList<Token> tokensLL;
         private readonly Ast ast;
 
+        public Ast Ast { get { return ast; } }
+
         /// <summary>
         /// Initializes the fields of the TokenOperations class.
         /// </summary>
