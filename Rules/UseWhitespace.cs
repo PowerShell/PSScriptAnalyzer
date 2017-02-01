@@ -160,20 +160,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindOperatorViolations(TokenOperations tokenOperations)
         {
+            Func<LinkedListNode<Token>, bool> predicate = tokenNode => {
+                return tokenNode.Previous != null
+                    && IsPreviousTokenOnSameLine(tokenNode)
+                    && IsPreviousTokenApartByWhitespace(tokenNode);
+            };
+
             foreach (var tokenNode in tokenOperations.GetTokenNodes(IsOperator))
             {
                 var hasWhitespaceBefore = false;
                 var hasWhitespaceAfter = false;
-                if (tokenNode.Previous != null
-                    && IsPreviousTokenOnSameLine(tokenNode)
-                    && IsPreviousTokenApartByWhitespace(tokenNode))
+                if (predicate(tokenNode))
                 {
                     hasWhitespaceBefore = true;
                 }
 
-                if (tokenNode.Next != null
-                    && IsPreviousTokenOnSameLine(tokenNode.Next)
-                    && IsPreviousTokenApartByWhitespace(tokenNode.Next))
+                if (predicate(tokenNode.Next))
                 {
                     hasWhitespaceAfter = true;
                 }
