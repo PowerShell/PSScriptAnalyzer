@@ -112,10 +112,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         public IEnumerable<LinkedListNode<Token>> GetTokenNodes(TokenKind kind)
         {
+            return GetTokenNodes((token) => token.Kind == kind);
+        }
+
+        public IEnumerable<LinkedListNode<Token>> GetTokenNodes(Func<Token, bool> predicate)
+        {
             var token = tokensLL.First;
             while (token != null)
             {
-                if (token.Value.Kind == kind) {
+                if (predicate(token.Value))
+                {
                     yield return token;
                 }
                 token = token.Next;
