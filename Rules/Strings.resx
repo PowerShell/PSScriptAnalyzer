@@ -927,7 +927,10 @@
   <data name="UseWhitespaceErrorBeforeBrace" xml:space="preserve">
     <value>Use space before open brace.</value>
   </data>
-    <data name="UseWhitespaceErrorBeforeParen" xml:space="preserve">
+  <data name="UseWhitespaceErrorBeforeParen" xml:space="preserve">
     <value>Use space before open parenthesis.</value>
+  </data>
+  <data name="UseWhitespaceErrorOperator" xml:space="preserve">
+    <value>Use space before and after binary and assignment operators.</value>
   </data>
 </root>
