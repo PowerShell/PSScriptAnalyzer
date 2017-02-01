@@ -16,6 +16,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Text;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
@@ -156,10 +157,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private IEnumerable<CorrectionExtent> GetOpenBracketCorrections(Token token)
         {
             yield return new CorrectionExtent(
-                token.Extent.StartLineNumber,
-                token.Extent.EndLineNumber,
-                token.Extent.StartColumnNumber,
-                token.Extent.EndColumnNumber,
+                token.Extent,
                 whiteSpace + token.Text,
                 token.Extent.File,
                 GetError(ErrorKind.Brace));
@@ -173,7 +171,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindOperatorViolations(TokenOperations tokenOperations)
         {
-            Func<LinkedListNode<Token>, bool> predicate = tokenNode => {
+            Func<LinkedListNode<Token>, bool> predicate = tokenNode =>
+            {
                 return tokenNode.Previous != null
                     && IsPreviousTokenOnSameLine(tokenNode)
                     && IsPreviousTokenApartByWhitespace(tokenNode);
@@ -202,9 +201,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        null);
+                        GetOperatorCorrections(tokenNode.Value, hasWhitespaceBefore, hasWhitespaceAfter).ToList());
                 }
             }
+        }
+
+        private IEnumerable<CorrectionExtent> GetOperatorCorrections(
+            Token token,
+            bool hasWhitespaceBefore,
+            bool hasWhitespaceAfter)
+        {
+            var sb = new StringBuilder();
+            if (!hasWhitespaceBefore)
+            {
+                sb.Append(whiteSpace);
+            }
+
+            sb.Append(token.Text);
+            if (!hasWhitespaceAfter)
+            {
+                sb.Append(whiteSpace);
+            }
+
+            yield return new CorrectionExtent(
+                token.Extent,
+                sb.ToString(),
+                token.Extent.File,
+                GetError(ErrorKind.Operator));
         }
 
         private bool IsOperator(Token token)
