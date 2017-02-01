@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseWhitespace : ConfigurableRule
     {
-        private enum ErrorKind { Brace, Paren };
+        private enum ErrorKind { Brace, Paren, Operator };
         private readonly int whiteSpaceSize = 1;
 
         private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
@@ -40,6 +40,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckOpenParen { get; protected set; }
 
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckOperator { get; protected set; }
 
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
@@ -52,6 +54,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (CheckOpenParen)
             {
                 violationFinders.Add(FindOpenParenViolations);
+            }
+
+            if (CheckOperator)
+            {
+                violationFinders.Add(FindOperatorViolations);
             }
         }
 
@@ -84,6 +91,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 case ErrorKind.Brace:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorBeforeBrace);
+                case ErrorKind.Operator:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorOperator);
                 default:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorBeforeParen);
             }
@@ -147,6 +156,49 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return whiteSpaceSize ==
                 (tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber);
+        }
+
+        private IEnumerable<DiagnosticRecord> FindOperatorViolations(TokenOperations tokenOperations)
+        {
+            foreach (var tokenNode in tokenOperations.GetTokenNodes(IsOperator))
+            {
+                var hasWhitespaceBefore = false;
+                var hasWhitespaceAfter = false;
+                if (tokenNode.Previous != null
+                    && IsPreviousTokenOnSameLine(tokenNode)
+                    && IsPreviousTokenApartByWhitespace(tokenNode))
+                {
+                    hasWhitespaceBefore = true;
+                }
+
+                if (tokenNode.Next != null
+                    && IsPreviousTokenOnSameLine(tokenNode.Next)
+                    && IsPreviousTokenApartByWhitespace(tokenNode.Next))
+                {
+                    hasWhitespaceAfter = true;
+                }
+
+                if (!hasWhitespaceAfter || !hasWhitespaceBefore)
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.Operator),
+                        tokenNode.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        null);
+                }
+            }
+        }
+
+        private bool IsOperator(Token token)
+        {
+            return TokenTraits.HasTrait(token.Kind, TokenFlags.AssignmentOperator)
+                    || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceAdd)
+                    || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceMultiply)
+                    || token.Kind == TokenKind.AndAnd
+                    || token.Kind == TokenKind.OrOr;
         }
 
         private bool IsPreviousTokenOnSameLine(LinkedListNode<Token> lparen)
