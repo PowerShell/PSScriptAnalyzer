@@ -29,7 +29,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class UseWhitespace : ConfigurableRule
     {
         private enum ErrorKind { Brace, Paren, Operator };
-        private readonly int whiteSpaceSize = 1;
+        private const int whiteSpaceSize = 1;
+        private const string whiteSpace = " ";
 
         private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
                 = new List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>>();
@@ -118,7 +119,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        null);
+                        GetOpenBracketCorrections(lcurly.Value).ToList());
                 }
             }
         }
@@ -147,9 +148,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        null);
+                        GetOpenBracketCorrections(lparen.Value).ToList());
                 }
             }
+        }
+
+        private IEnumerable<CorrectionExtent> GetOpenBracketCorrections(Token token)
+        {
+            yield return new CorrectionExtent(
+                token.Extent.StartLineNumber,
+                token.Extent.EndLineNumber,
+                token.Extent.StartColumnNumber,
+                token.Extent.EndColumnNumber,
+                whiteSpace + token.Text,
+                token.Extent.File,
+                GetError(ErrorKind.Brace));
         }
 
         private bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
