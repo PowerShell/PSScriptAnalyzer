@@ -97,4 +97,20 @@ $param3
             $violations.Count | Should Be 4
         }
     }
+
+    Context "When a sub-expression is provided" {
+        BeforeAll {
+            $def = @'
+function foo {
+    $x = $("abc")
+    $x
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+        }
+
+        It "Should not find a violations" {
+            $violations.Count | Should Be 0
+        }
+    }
 }
