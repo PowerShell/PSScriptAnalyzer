@@ -24,15 +24,15 @@ Describe "UseWhitespace" {
         }
 
         It "Should find a violation if an open brace does not follow whitespace" {
-            $def = @'
+            $def =  @'
 if ($true){}
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
         }
 
-        It "Should find no violation if an open brace follows a whitespace" {
-            $def = @'
+        It "Should not find violation if an open brace follows a whitespace" {
+            $def =  @'
 if($true) {}
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -49,16 +49,16 @@ if($true) {}
             $ruleConfiguration.CheckOperator = $false
         }
 
-        It "Should find no violation if an open brace follows a whitespace" {
-            $def = @'
+        It "Should find violation in an if statement" {
+            $def =  @'
 if($true) {}
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
         }
 
-        It "Should not find a violation if no whitespace is present before open paren of a function definition" {
-            $def = @'
+        It "Should not find a violation in a function definition" {
+            $def =  @'
 function foo($param1) {
 
 }
@@ -67,8 +67,8 @@ function foo($param1) {
             $violations.Count | Should Be 0
         }
 
-        It "Should not find a violation if no whitespace is present before open paren of a param block" {
-            $def = @'
+        It "Should not find a violation in a param block" {
+            $def =  @'
 function foo() {
     param( )
 }
@@ -77,11 +77,19 @@ function foo() {
             $violations.Count | Should Be 0
         }
 
-        It "Should not find a violation if no whitespace is present in a nested open paren" {
-            $def = @'
+        It "Should not find a violation in a nested open paren" {
+            $def =  @'
 function foo($param) {
     ((Get-Process))
 }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+
+        It "Should not find a violation on a method call" {
+            $def =  @'
+$x.foo("bar")
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 0
@@ -96,7 +104,7 @@ function foo($param) {
         }
 
         It "Should find a violation if no whitespace around an assignment operator" {
-            $def = @'
+            $def =  @'
 $x=1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -104,7 +112,7 @@ $x=1
         }
 
         It "Should find a violation if no whitespace before an assignment operator" {
-            $def = @'
+            $def =  @'
 $x= 1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -112,7 +120,7 @@ $x= 1
         }
 
         It "Should find a violation if no whitespace after an assignment operator" {
-            $def = @'
+            $def =  @'
 $x =1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -120,15 +128,15 @@ $x =1
         }
 
         It "Should find a violation if there is a whitespaces not of size 1 around an assignment operator" {
-            $def = @'
+            $def =  @'
 $x  =  1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
         }
 
-        It "Should find no violation if there are whitespaces of size 1 around an assignment operator" {
-            $def = @'
+        It "Should not find violation if there are whitespaces of size 1 around an assignment operator" {
+            $def =  @'
 $x = 1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
