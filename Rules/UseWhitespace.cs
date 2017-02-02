@@ -129,18 +129,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             foreach (var lparen in tokenOperations.GetTokenNodes(TokenKind.LParen))
             {
-                if (lparen.Previous == null
-                    || !IsPreviousTokenOnSameLine(lparen)
-                    || lparen.Previous.Value.Kind == TokenKind.LParen // if nested paren
-                    || lparen.Previous.Value.Kind == TokenKind.Param  // if param block
-                    || (lparen.Previous.Previous != null
-                        && lparen.Previous.Previous.Value.Kind == TokenKind.Function)) //if function block
-
-                {
-                    continue;
-                }
-
-                if (!IsPreviousTokenApartByWhitespace(lparen))
+                if (lparen.Previous != null
+                    && IsPreviousTokenOnSameLine(lparen)
+                    && TokenTraits.HasTrait(lparen.Previous.Value.Kind, TokenFlags.Keyword)
+                    && IsKeyword(lparen.Previous.Value)
+                    && !IsPreviousTokenApartByWhitespace(lparen))
                 {
                     yield return new DiagnosticRecord(
                         GetError(ErrorKind.Paren),
@@ -151,6 +144,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         null,
                         GetOpenBracketCorrections(lparen.Value).ToList());
                 }
+            }
+        }
+
+        private bool IsKeyword(Token token)
+        {
+            switch (token.Kind)
+            {
+                case TokenKind.If:
+                case TokenKind.ElseIf:
+                case TokenKind.Switch:
+                case TokenKind.For:
+                case TokenKind.Foreach:
+                case TokenKind.While:
+                    return true;
+
+                default:
+                    return false;
             }
         }
 
