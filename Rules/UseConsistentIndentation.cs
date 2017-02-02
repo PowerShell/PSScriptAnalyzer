@@ -80,6 +80,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     case TokenKind.AtParen:
                     case TokenKind.LParen:
                     case TokenKind.LCurly:
+                    case TokenKind.DollarParen:
                         AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
                         break;
 
