@@ -262,17 +262,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (var tokenNode in tokenOperations.GetTokenNodes(IsOperator))
             {
-                var hasWhitespaceBefore = false;
-                var hasWhitespaceAfter = false;
-                if (predicate(tokenNode))
-                {
-                    hasWhitespaceBefore = true;
-                }
-
-                if (predicate(tokenNode.Next))
-                {
-                    hasWhitespaceAfter = true;
-                }
+                var hasWhitespaceBefore = predicate(tokenNode);
+                var hasWhitespaceAfter = predicate(tokenNode.Next);
 
                 if (!hasWhitespaceAfter || !hasWhitespaceBefore)
                 {
