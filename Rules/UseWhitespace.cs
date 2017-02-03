@@ -302,7 +302,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsPreviousTokenOnSameLine(LinkedListNode<Token> lparen)
         {
-            return lparen.Previous.Value.Extent.StartLineNumber == lparen.Value.Extent.EndLineNumber;
+            return lparen.Previous.Value.Extent.EndLineNumber == lparen.Value.Extent.StartLineNumber;
         }
 
         /// <summary>
