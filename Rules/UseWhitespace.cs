@@ -154,7 +154,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetOpenBracketCorrections(lparen.Value).ToList());
+                        GetCorrections(lparen.Previous.Value, lparen.Value, lparen.Next.Value, false, true).ToList());
                 }
             }
         }
@@ -163,6 +163,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return token.Kind == TokenKind.Comma || token.Kind == TokenKind.Semi;
         }
+
         private IEnumerable<DiagnosticRecord> FindSeparatorViolations(TokenOperations tokenOperations)
         {
             Func<LinkedListNode<Token>, bool> predicate = node =>
@@ -173,8 +174,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && !IsPreviousTokenApartByWhitespace(node.Next);
             };
 
-            // TODO replace semi-colon with semicolon
-            // TODO update separator error string
             foreach (var tokenNode in tokenOperations.GetTokenNodes(IsSeparator).Where(predicate))
             {
                 var errorKind = tokenNode.Value.Kind == TokenKind.Comma
@@ -222,15 +221,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 default:
                     return false;
             }
-        }
-
-        private IEnumerable<CorrectionExtent> GetOpenBracketCorrections(Token token)
-        {
-            yield return new CorrectionExtent(
-                token.Extent,
-                whiteSpace + token.Text,
-                token.Extent.File,
-                GetError(ErrorKind.Brace));
         }
 
         private bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
@@ -285,19 +275,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 sb.Append(whiteSpace);
                 e1 = prevToken.Extent;
-                sb.Append(token.Text);
             }
 
+            var e2 = token.Extent;
             if (!hasWhitespaceAfter)
             {
+                if (!hasWhitespaceBefore)
+                {
+                    sb.Append(token.Text);
+                }
+
+                e2 = nextToken.Extent;
                 sb.Append(whiteSpace);
             }
 
-            var e2 = nextToken.Extent;
             var extent = new ScriptExtent(
                 new ScriptPosition(e1.File, e1.EndLineNumber, e1.EndColumnNumber, null),
                 new ScriptPosition(e2.File, e2.StartLineNumber, e2.StartColumnNumber, null));
-
             return new List<CorrectionExtent>()
             {
                 new CorrectionExtent(
