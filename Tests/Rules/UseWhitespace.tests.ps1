@@ -1,4 +1,9 @@
-﻿Import-Module PSScriptAnalyzer
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+
+Import-Module PSScriptAnalyzer
+Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+
 $ruleName = "PSUseWhitespace"
 $ruleConfiguration = @{
     Enable = $true
@@ -18,7 +23,6 @@ $settings = @{
 Describe "UseWhitespace" {
     Context "When an open brace follows a keyword" {
         BeforeAll {
-
             $ruleConfiguration.CheckOpenBrace = $true
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
@@ -26,20 +30,19 @@ Describe "UseWhitespace" {
         }
 
         It "Should find a violation if an open brace does not follow whitespace" {
-            $def =  @'
+            $def = @'
 if ($true){}
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should not find violation if an open brace follows a whitespace" {
-            $def =  @'
+            $def = @'
 if($true) {}
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 0
-
         }
 
     }
@@ -53,15 +56,15 @@ if($true) {}
         }
 
         It "Should find violation in an if statement" {
-            $def =  @'
+            $def = @'
 if($true) {}
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should not find a violation in a function definition" {
-            $def =  @'
+            $def = @'
 function foo($param1) {
 
 }
@@ -71,7 +74,7 @@ function foo($param1) {
         }
 
         It "Should not find a violation in a param block" {
-            $def =  @'
+            $def = @'
 function foo() {
     param( )
 }
@@ -81,7 +84,7 @@ function foo() {
         }
 
         It "Should not find a violation in a nested open paren" {
-            $def =  @'
+            $def = @'
 function foo($param) {
     ((Get-Process))
 }
@@ -91,7 +94,7 @@ function foo($param) {
         }
 
         It "Should not find a violation on a method call" {
-            $def =  @'
+            $def = @'
 $x.foo("bar")
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -108,39 +111,39 @@ $x.foo("bar")
         }
 
         It "Should find a violation if no whitespace around an assignment operator" {
-            $def =  @'
+            $def = @'
 $x=1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '=' ' = '
         }
 
         It "Should find a violation if no whitespace before an assignment operator" {
-            $def =  @'
+            $def = @'
 $x= 1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should find a violation if no whitespace after an assignment operator" {
-            $def =  @'
+            $def = @'
 $x =1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should find a violation if there is a whitespaces not of size 1 around an assignment operator" {
-            $def =  @'
+            $def = @'
 $x  =  1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '  =  ' ' = '
         }
 
         It "Should not find violation if there are whitespaces of size 1 around an assignment operator" {
-            $def =  @'
+            $def = @'
 $x = @"
 "abc"
 "@
@@ -150,7 +153,7 @@ $x = @"
         }
 
         It "Should not find violation if there are whitespaces of size 1 around an assignment operator for here string" {
-            $def =  @'
+            $def = @'
 $x = 1
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -171,7 +174,7 @@ $x = 1
 $x = @(1,2)
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should not find a violation if a space follows a comma" {
@@ -196,7 +199,7 @@ $x = @(1, 2)
 $x = @{a=1;b=2}
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should not find a violation if a space follows a semi-colon" {
