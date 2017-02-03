@@ -183,25 +183,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 yield return getDiagnosticRecord(
                     tokenNode.Value,
                     errorKind,
-                    GetSeparatorCorrections(errorKind, tokenNode.Value, tokenNode.Next.Value).ToList());
+                    GetOperatorCorrections(tokenNode.Previous.Value, tokenNode.Value, tokenNode.Next.Value, true, false).ToList());
             }
-        }
-
-        private IEnumerable<CorrectionExtent> GetSeparatorCorrections(
-            ErrorKind errorKind,
-            Token separatorToken,
-            Token nextToken)
-        {
-            var e1 = separatorToken.Extent;
-            var e2 = nextToken.Extent;
-            var extent = new ScriptExtent(
-                new ScriptPosition(e1.File, e1.StartLineNumber, e1.StartColumnNumber, null),
-                new ScriptPosition(e2.File, e2.StartLineNumber, e2.StartColumnNumber, null));
-            yield return new CorrectionExtent(
-                separatorToken.Extent,
-                separatorToken.Text + whiteSpace,
-                separatorToken.Extent.File,
-                GetError(errorKind)); // TODO replace with better string
         }
 
         private DiagnosticRecord getDiagnosticRecord(
