@@ -177,13 +177,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // TODO update separator error string
             foreach (var tokenNode in tokenOperations.GetTokenNodes(IsSeparator).Where(predicate))
             {
+                var errorKind = tokenNode.Value.Kind == TokenKind.Comma
+                    ? ErrorKind.SeparatorComma
+                    : ErrorKind.SeparatorSemi;
                 yield return getDiagnosticRecord(
                     tokenNode.Value,
-                    tokenNode.Value.Kind == TokenKind.Comma ? ErrorKind.SeparatorComma : ErrorKind.SeparatorSemi);
+                    errorKind,
+                    GetSeparatorCorrections(errorKind, tokenNode.Value, tokenNode.Next.Value).ToList());
             }
         }
 
-        private DiagnosticRecord getDiagnosticRecord(Token token, ErrorKind errKind)
+        private IEnumerable<CorrectionExtent> GetSeparatorCorrections(
+            ErrorKind errorKind,
+            Token separatorToken,
+            Token nextToken)
+        {
+            var e1 = separatorToken.Extent;
+            var e2 = nextToken.Extent;
+            var extent = new ScriptExtent(
+                new ScriptPosition(e1.File, e1.StartLineNumber, e1.StartColumnNumber, null),
+                new ScriptPosition(e2.File, e2.StartLineNumber, e2.StartColumnNumber, null));
+            yield return new CorrectionExtent(
+                separatorToken.Extent,
+                separatorToken.Text + whiteSpace,
+                separatorToken.Extent.File,
+                GetError(errorKind)); // TODO replace with better string
+        }
+
+        private DiagnosticRecord getDiagnosticRecord(
+            Token token,
+            ErrorKind errKind,
+            List<CorrectionExtent> corrections)
         {
             return new DiagnosticRecord(
                 GetError(errKind),
@@ -192,7 +216,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 GetDiagnosticSeverity(),
                 token.Extent.File,
                 null,
-                null);
+                corrections);
         }
 
         private bool IsKeyword(Token token)
