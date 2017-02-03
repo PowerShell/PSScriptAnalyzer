@@ -143,4 +143,75 @@ $x = 1
             $violations.Count | Should Be 0
         }
     }
+
+    Context "When a comma is not followed by a space" {
+        BeforeAll {
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckSeparator = $true
+        }
+
+        It "Should find a violation" {
+            $def = @'
+$x = @(1,2)
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+        }
+
+        It "Should not find a violation if a space follows a comma" {
+            $def = @'
+$x = @(1, 2)
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+    }
+
+    Context "When a semi-colon is not followed by a space" {
+        BeforeAll {
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckSeparator = $true
+        }
+
+        It "Should find a violation" {
+            $def = @'
+$x = @{a=1;b=2}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+        }
+
+        It "Should not find a violation if a space follows a semi-colon" {
+            $def = @'
+$x = @{a=1; b=2}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+
+        It "Should not find a violation if a new-line follows a semi-colon" {
+            $def = @'
+$x = @{
+    a=1;
+    b=2
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+
+        It "Should not find a violation if a end of input follows a semi-colon" {
+            $def = @'
+$x = "abc";
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+
+
+    }
 }
