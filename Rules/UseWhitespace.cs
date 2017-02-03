@@ -283,30 +283,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetOperatorCorrections(tokenNode.Value, hasWhitespaceBefore, hasWhitespaceAfter).ToList());
+                        GetOperatorCorrections(
+                            tokenNode.Previous.Value,
+                            tokenNode.Value,
+                            tokenNode.Next.Value,
+                            hasWhitespaceBefore,
+                            hasWhitespaceAfter).ToList());
                 }
             }
         }
 
         private IEnumerable<CorrectionExtent> GetOperatorCorrections(
+            Token prevToken,
             Token token,
+            Token nextToken,
             bool hasWhitespaceBefore,
             bool hasWhitespaceAfter)
         {
             var sb = new StringBuilder();
+            IScriptExtent e1 = token.Extent;
             if (!hasWhitespaceBefore)
             {
                 sb.Append(whiteSpace);
+                e1 = prevToken.Extent;
+                sb.Append(token.Text);
             }
 
-            sb.Append(token.Text);
             if (!hasWhitespaceAfter)
             {
                 sb.Append(whiteSpace);
             }
 
+            var e2 = nextToken.Extent;
+            var extent = new ScriptExtent(
+                new ScriptPosition(e1.File, e1.EndLineNumber, e1.EndColumnNumber, null),
+                new ScriptPosition(e2.File, e2.StartLineNumber, e2.StartColumnNumber, null));
+
             yield return new CorrectionExtent(
-                token.Extent,
+                extent,
                 sb.ToString(),
                 token.Extent.File,
                 GetError(ErrorKind.Operator));
