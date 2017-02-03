@@ -159,44 +159,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+        private bool IsSeparator(Token token)
+        {
+            return token.Kind == TokenKind.Comma || token.Kind == TokenKind.Semi;
+        }
         private IEnumerable<DiagnosticRecord> FindSeparatorViolations(TokenOperations tokenOperations)
         {
             Func<LinkedListNode<Token>, bool> predicate = node =>
             {
                 return node.Next != null
+                    && node.Next.Value.Kind != TokenKind.NewLine
+                    && node.Next.Value.Kind != TokenKind.EndOfInput // semicolon can be followed by end of input
                     && !IsPreviousTokenApartByWhitespace(node.Next);
             };
 
-            Func<Token, ErrorKind, DiagnosticRecord> getDiagnosticRecord = (token, errKind) =>
+            // TODO replace semi-colon with semicolon
+            // TODO update separator error string
+            foreach (var tokenNode in tokenOperations.GetTokenNodes(IsSeparator).Where(predicate))
             {
-                return new DiagnosticRecord(
-                    GetError(errKind),
-                    token.Extent,
-                    GetName(),
-                    GetDiagnosticSeverity(),
-                    token.Extent.File,
-                    null,
-                    null);
-            };
-
-            foreach (var tokenNode in tokenOperations.GetTokenNodes(TokenKind.Comma).Where(predicate))
-            {
-                yield return getDiagnosticRecord(tokenNode.Value, ErrorKind.SeparatorComma);
-            }
-
-            foreach (var tokenNode in tokenOperations.GetTokenNodes(TokenKind.Semi).Where(predicate))
-            {
-                // semi-colon can be followed by newline or end of input
-                if (tokenNode.Next.Value.Kind == TokenKind.EndOfInput
-                    || tokenNode.Next.Value.Kind == TokenKind.NewLine)
-                {
-                    continue;
-                }
-
-                yield return getDiagnosticRecord(tokenNode.Value, ErrorKind.SeparatorSemi);
+                yield return getDiagnosticRecord(
+                    tokenNode.Value,
+                    tokenNode.Value.Kind == TokenKind.Comma ? ErrorKind.SeparatorComma : ErrorKind.SeparatorSemi);
             }
         }
 
+        private DiagnosticRecord getDiagnosticRecord(Token token, ErrorKind errKind)
+        {
+            return new DiagnosticRecord(
+                GetError(errKind),
+                token.Extent,
+                GetName(),
+                GetDiagnosticSeverity(),
+                token.Extent.File,
+                null,
+                null);
+        }
 
         private bool IsKeyword(Token token)
         {
