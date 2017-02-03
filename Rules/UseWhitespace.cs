@@ -29,7 +29,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseWhitespace : ConfigurableRule
     {
-        private enum ErrorKind { Brace, Paren, Operator };
+        private enum ErrorKind { Brace, Paren, Operator, SeparatorComma, SeparatorSemi };
         private const int whiteSpaceSize = 1;
         private const string whiteSpace = " ";
 
@@ -44,6 +44,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckOperator { get; protected set; }
+
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckSeparator { get; protected set; }
 
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
@@ -61,6 +64,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (CheckOperator)
             {
                 violationFinders.Add(FindOperatorViolations);
+            }
+
+            if (CheckSeparator)
+            {
+                violationFinders.Add(FindSeparatorViolations);
             }
         }
 
@@ -95,6 +103,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorBeforeBrace);
                 case ErrorKind.Operator:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorOperator);
+                case ErrorKind.SeparatorComma:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorSeparatorComma);
+                case ErrorKind.SeparatorSemi:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorSeparatorSemi);
                 default:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorBeforeParen);
             }
@@ -146,6 +158,45 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
         }
+
+        private IEnumerable<DiagnosticRecord> FindSeparatorViolations(TokenOperations tokenOperations)
+        {
+            Func<LinkedListNode<Token>, bool> predicate = node =>
+            {
+                return node.Next != null
+                    && !IsPreviousTokenApartByWhitespace(node.Next);
+            };
+
+            Func<Token, ErrorKind, DiagnosticRecord> getDiagnosticRecord = (token, errKind) =>
+            {
+                return new DiagnosticRecord(
+                    GetError(errKind),
+                    token.Extent,
+                    GetName(),
+                    GetDiagnosticSeverity(),
+                    token.Extent.File,
+                    null,
+                    null);
+            };
+
+            foreach (var tokenNode in tokenOperations.GetTokenNodes(TokenKind.Comma).Where(predicate))
+            {
+                yield return getDiagnosticRecord(tokenNode.Value, ErrorKind.SeparatorComma);
+            }
+
+            foreach (var tokenNode in tokenOperations.GetTokenNodes(TokenKind.Semi).Where(predicate))
+            {
+                // semi-colon can be followed by newline or end of input
+                if (tokenNode.Next.Value.Kind == TokenKind.EndOfInput
+                    || tokenNode.Next.Value.Kind == TokenKind.NewLine)
+                {
+                    continue;
+                }
+
+                yield return getDiagnosticRecord(tokenNode.Value, ErrorKind.SeparatorSemi);
+            }
+        }
+
 
         private bool IsKeyword(Token token)
         {

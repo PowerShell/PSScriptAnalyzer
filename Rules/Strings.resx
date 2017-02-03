@@ -933,4 +933,10 @@
   <data name="UseWhitespaceErrorOperator" xml:space="preserve">
     <value>Use space before and after binary and assignment operators.</value>
   </data>
+  <data name="UseWhitespaceErrorSeparatorComma" xml:space="preserve">
+    <value>Use space before a comma.</value>
+  </data>
+  <data name="UseWhitespaceErrorSeparatorSemi" xml:space="preserve">
+    <value>Use space before a semi-colon.</value>
+  </data>
 </root>
