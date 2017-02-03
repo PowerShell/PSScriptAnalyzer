@@ -132,7 +132,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetOpenBracketCorrections(lcurly.Value).ToList());
+                        GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, false, true).ToList());
                 }
             }
         }
@@ -183,7 +183,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 yield return getDiagnosticRecord(
                     tokenNode.Value,
                     errorKind,
-                    GetOperatorCorrections(tokenNode.Previous.Value, tokenNode.Value, tokenNode.Next.Value, true, false).ToList());
+                    GetCorrections(
+                        tokenNode.Previous.Value,
+                        tokenNode.Value,
+                        tokenNode.Next.Value,
+                        true,
+                        false));
             }
         }
 
@@ -257,17 +262,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetOperatorCorrections(
+                        GetCorrections(
                             tokenNode.Previous.Value,
                             tokenNode.Value,
                             tokenNode.Next.Value,
                             hasWhitespaceBefore,
-                            hasWhitespaceAfter).ToList());
+                            hasWhitespaceAfter));
                 }
             }
         }
 
-        private IEnumerable<CorrectionExtent> GetOperatorCorrections(
+        private List<CorrectionExtent> GetCorrections(
             Token prevToken,
             Token token,
             Token nextToken,
@@ -293,11 +298,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 new ScriptPosition(e1.File, e1.EndLineNumber, e1.EndColumnNumber, null),
                 new ScriptPosition(e2.File, e2.StartLineNumber, e2.StartColumnNumber, null));
 
-            yield return new CorrectionExtent(
+            return new List<CorrectionExtent>()
+            {
+                new CorrectionExtent(
                 extent,
                 sb.ToString(),
                 token.Extent.File,
-                GetError(ErrorKind.Operator));
+                GetError(ErrorKind.Operator))
+            };
         }
 
         private bool IsOperator(Token token)
