@@ -5,6 +5,7 @@ $ruleConfiguration = @{
     CheckOpenBrace = $false
     CheckOpenParen = $false
     CheckOperator = $false
+    CheckSeparator = $false
 }
 
 $settings = @{
@@ -21,6 +22,7 @@ Describe "UseWhitespace" {
             $ruleConfiguration.CheckOpenBrace = $true
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckSeparator = $false
         }
 
         It "Should find a violation if an open brace does not follow whitespace" {
@@ -47,6 +49,7 @@ if($true) {}
             $ruleConfiguration.CheckOpenBrace = $false
             $ruleConfiguration.CheckOpenParen = $true
             $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckSeparator = $false
         }
 
         It "Should find violation in an if statement" {
@@ -101,6 +104,7 @@ $x.foo("bar")
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOpenBrace = $false
             $ruleConfiguration.CheckOperator = $true
+            $ruleConfiguration.CheckSeparator = $false
         }
 
         It "Should find a violation if no whitespace around an assignment operator" {
@@ -136,6 +140,16 @@ $x  =  1
         }
 
         It "Should not find violation if there are whitespaces of size 1 around an assignment operator" {
+            $def =  @'
+$x = @"
+"abc"
+"@
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+
+        It "Should not find violation if there are whitespaces of size 1 around an assignment operator for here string" {
             $def =  @'
 $x = 1
 '@
