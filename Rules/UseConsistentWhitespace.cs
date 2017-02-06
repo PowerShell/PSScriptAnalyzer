@@ -32,6 +32,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private enum ErrorKind { Brace, Paren, Operator, SeparatorComma, SeparatorSemi };
         private const int whiteSpaceSize = 1;
         private const string whiteSpace = " ";
+        private readonly SortedSet<TokenKind> openParenKeywordWhitelist = new SortedSet<TokenKind>()
+        {
+            TokenKind.If,
+            TokenKind.ElseIf,
+            TokenKind.Switch,
+            TokenKind.For,
+            TokenKind.Foreach,
+            TokenKind.While
+        };
 
         private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
                 = new List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>>();
@@ -278,19 +287,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsKeyword(Token token)
         {
-            switch (token.Kind)
-            {
-                case TokenKind.If:
-                case TokenKind.ElseIf:
-                case TokenKind.Switch:
-                case TokenKind.For:
-                case TokenKind.Foreach:
-                case TokenKind.While:
-                    return true;
-
-                default:
-                    return false;
-            }
+            return openParenKeywordWhitelist.Contains(token.Kind);
         }
 
         private bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
