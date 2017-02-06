@@ -22,7 +22,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     public class TokenOperations
     {
         private readonly Token[] tokens;
+        private LinkedList<Token> tokensLL;
         private readonly Ast ast;
+
+        public Ast Ast { get { return ast; } }
 
         /// <summary>
         /// Initializes the fields of the TokenOperations class.
@@ -43,6 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             this.tokens = tokens;
             this.ast = ast;
+            this.tokensLL = new LinkedList<Token>(this.tokens);
         }
 
         /// <summary>
@@ -104,6 +108,56 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     yield return tokenFound;
                 }
             }
+        }
+
+        public IEnumerable<LinkedListNode<Token>> GetTokenNodes(TokenKind kind)
+        {
+            return GetTokenNodes((token) => token.Kind == kind);
+        }
+
+        public IEnumerable<LinkedListNode<Token>> GetTokenNodes(Func<Token, bool> predicate)
+        {
+            var token = tokensLL.First;
+            while (token != null)
+            {
+                if (predicate(token.Value))
+                {
+                    yield return token;
+                }
+                token = token.Next;
+            }
+        }
+
+        private IEnumerable<Tuple<Token, int>> GetTokenAndPrecedingWhitespace(TokenKind kind)
+        {
+            var lCurlyTokens = GetTokenNodes(TokenKind.LCurly);
+            foreach (var item in lCurlyTokens)
+            {
+                if (item.Previous == null
+                    || !OnSameLine(item.Previous.Value, item.Value))
+                {
+                    continue;
+                }
+
+                yield return new Tuple<Token, int>(
+                    item.Value,
+                    item.Value.Extent.StartColumnNumber - item.Previous.Value.Extent.EndColumnNumber);
+            }
+        }
+
+        public IEnumerable<Tuple<Token, int>> GetOpenBracesWithWhiteSpacesBefore()
+        {
+            return GetTokenAndPrecedingWhitespace(TokenKind.LCurly);
+        }
+
+        public IEnumerable<Tuple<Token, int>> GetOpenParensWithWhiteSpacesBefore()
+        {
+            return GetTokenAndPrecedingWhitespace(TokenKind.LParen);
+        }
+
+        private bool OnSameLine(Token token1, Token token2)
+        {
+            return token1.Extent.StartLineNumber == token2.Extent.EndLineNumber;
         }
     }
 }

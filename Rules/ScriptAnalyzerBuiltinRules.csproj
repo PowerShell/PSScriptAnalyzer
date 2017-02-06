@@ -120,6 +120,7 @@
     <Compile Include="PlaceOpenBrace.cs" />
     <Compile Include="PlaceCloseBrace.cs" />
     <Compile Include="UseConsistentIndentation.cs" />
+    <Compile Include="UseConsistentWhitespace.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\ScriptAnalyzerEngine.csproj">

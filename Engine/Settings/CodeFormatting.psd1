@@ -2,7 +2,8 @@
     IncludeRules = @(
         'PSPlaceOpenBrace',
         'PSPlaceCloseBrace',
-        'PSUseConsistentIndentation'
+        'PSUseConsistentIndentation',
+        'PSUseWhitespace'
     )
 
     Rules = @{
@@ -20,5 +21,14 @@
             Enable = $true
             IndentationSize = 4
         }
+
+        PSUseWhitespace = @{
+            Enable = $true
+            CheckOpenBrace = $true
+            CheckOpenParen = $true
+            CheckOperator = $true
+            CheckSeparator = $true
+        }
+
     }
 }
