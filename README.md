@@ -75,7 +75,7 @@ Exit
 ### From Source
 
 #### Requirements
-* .Net Core
+* [.NET Core 1.0 SDK Preview 2](https://github.com/dotnet/core/blob/master/release-notes/download-archives/1.0-preview2-download.md)
 * [PlatyPS 0.5.0 or greater](https://github.com/PowerShell/platyPS)
 
 #### Steps
@@ -88,6 +88,10 @@ Exit
 * Navigate to the source directory
     ```powershell
     cd path/to/PSScriptAnalyzer
+    ```
+* Restore packages
+    ```powershell
+    dotnet restore
     ```
 * Build for your platform
     * Windows PowerShell version 5.0 and greater
