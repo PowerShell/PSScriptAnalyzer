@@ -14,6 +14,7 @@ Open brace placement should follow a consistent style. It can either follow KR s
             OnSameLine = $true
             NewLineAfter = $true
         }
+    }
 ```
 
 ### Parameters

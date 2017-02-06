@@ -13,6 +13,7 @@ Close brace placement should follow a consistent style. It should be on a new li
             Enable = $true
             NoEmptyLineBefore = $false
         }
+    }
 ```
 
 ### Parameters
