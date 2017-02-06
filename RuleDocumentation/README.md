@@ -50,3 +50,4 @@
 |[PlaceOpenBrace](./PlaceOpenBrace.md) | Warning|
 |[PlaceCloseBrace](./PlaceCloseBrace.md) | Warning|
 |[UseConsistentIndentation](./UseConsistentIndentation.md) | Warning|
+|[UseConsistentWhitespace](./UseConsistentWhitespace.md) | Warning|
