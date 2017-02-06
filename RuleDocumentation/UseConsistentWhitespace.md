@@ -1,4 +1,4 @@
-﻿# UseWhitespace
+﻿# UseConsistentWhitespace
 **Severity Level: Warning**
 
 ## Description
@@ -9,13 +9,14 @@ This rule enforces consistent brace, parenthesis, binary operator, assignment op
 ## Configuration
 ```powershell
     Rules = @{
-        PSUseWhitespace = @{
+        PSUseConsistentWhitespace = @{
             Enable = $true
             CheckOpenBrace = $true
             CheckOpenParen = $true
             CheckOperator = $true
             CheckSeparator = $true
         }
+    }
 ```
 
 ### Parameters

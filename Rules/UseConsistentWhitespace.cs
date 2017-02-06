@@ -27,7 +27,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class UseWhitespace : ConfigurableRule
+    public class UseConsistentWhitespace : ConfigurableRule
     {
         private enum ErrorKind { Brace, Paren, Operator, SeparatorComma, SeparatorSemi };
         private const int whiteSpaceSize = 1;
@@ -100,15 +100,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             switch (kind)
             {
                 case ErrorKind.Brace:
-                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorBeforeBrace);
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeBrace);
                 case ErrorKind.Operator:
-                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorOperator);
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorOperator);
                 case ErrorKind.SeparatorComma:
-                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorSeparatorComma);
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSeparatorComma);
                 case ErrorKind.SeparatorSemi:
-                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorSeparatorSemi);
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSeparatorSemi);
                 default:
-                    return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceErrorBeforeParen);
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeParen);
             }
         }
 
@@ -321,7 +321,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public override string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceCommonName);
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public override string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseWhitespaceDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceDescription);
         }
 
         /// <summary>
@@ -341,7 +341,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
-                Strings.UseWhitespaceName);
+                Strings.UseConsistentWhitespaceName);
         }
 
         /// <summary>

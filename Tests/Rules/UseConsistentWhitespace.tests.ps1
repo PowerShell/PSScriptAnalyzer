@@ -4,7 +4,7 @@ $testRootDirectory = Split-Path -Parent $directory
 Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-$ruleName = "PSUseWhitespace"
+$ruleName = "PSUseConsistentWhitespace"
 $ruleConfiguration = @{
     Enable = $true
     CheckOpenBrace = $false
@@ -16,7 +16,7 @@ $ruleConfiguration = @{
 $settings = @{
     IncludeRules = @($ruleName)
     Rules = @{
-        PSUseWhitespace = $ruleConfiguration
+        PSUseConsistentWhitespace = $ruleConfiguration
     }
 }
 
