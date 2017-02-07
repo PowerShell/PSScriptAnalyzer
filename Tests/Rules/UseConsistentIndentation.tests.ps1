@@ -124,6 +124,15 @@ where-object {$_.Name -match 'powershell'}
           $violations.Count | Should Be 1
         }
 
+        It "Should not find a violation if a pipleline element is indented correctly" {
+            $def = @'
+get-process |
+    where-object {$_.Name -match 'powershell'}
+'@
+          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+          $violations.Count | Should Be 0
+        }
+
         It "Should ignore comment in the pipleline" {
             $def = @'
   get-process |
@@ -133,15 +142,6 @@ select Name,Id |
 '@
           $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
           $violations.Count | Should Be 3
-        }
-
-        It "Should not find a violation on a new line that follows a pipe" {
-            $def = @'
-get-process |
-    where-object {$_.Name -match 'powershell'}
-'@
-          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-          $violations.Count | Should Be 0
         }
     }
 }
