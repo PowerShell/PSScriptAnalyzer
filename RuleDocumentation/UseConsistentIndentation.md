@@ -13,6 +13,7 @@ Indentation should be consistent throughout the source file.
             Enable = $true
             NoEmptyLineBefore = $false
         }
+    }
 ```
 
 ### Parameters
