@@ -99,7 +99,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         // we add this redundant check
                         if (onNewLine)
                         {
-                            AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
+                            var tempIndentationLevel = indentationLevel;
+
+                            // Ignore comments
+                            // Since the previous token is a newline token we start
+                            // looking for comments at the token before the newline token.
+                            int j = k - 2;
+                            while (j > 0 && tokens[j].Kind == TokenKind.Comment)
+                            {
+                                --j;
+                            }
+
+                            if (j >= 0 && tokens[j].Kind == TokenKind.Pipe)
+                            {
+                                ++tempIndentationLevel;
+                            }
+
+                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine);
                         }
                         break;
                 }

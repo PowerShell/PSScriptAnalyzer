@@ -113,4 +113,35 @@ function foo {
             $violations.Count | Should Be 0
         }
     }
+
+    Context "When a multi-line command is given" {
+        It "Should find a violation if a pipleline element is not indented correctly" {
+            $def = @'
+get-process |
+where-object {$_.Name -match 'powershell'}
+'@
+          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+          $violations.Count | Should Be 1
+        }
+
+        It "Should not find a violation if a pipleline element is indented correctly" {
+            $def = @'
+get-process |
+    where-object {$_.Name -match 'powershell'}
+'@
+          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+          $violations.Count | Should Be 0
+        }
+
+        It "Should ignore comment in the pipleline" {
+            $def = @'
+  get-process |
+    where-object Name -match 'powershell' | # only this is indented correctly
+select Name,Id |
+       format-list
+'@
+          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+          $violations.Count | Should Be 3
+        }
+    }
 }
