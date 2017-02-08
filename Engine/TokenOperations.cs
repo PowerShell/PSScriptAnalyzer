@@ -61,7 +61,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return GetBraceInCommandElement(TokenKind.LCurly);
         }
 
-
         /// <summary>
         /// Return tokens of kind RCurly that end a scriptblock expression in an command element.
         ///
@@ -72,6 +71,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<Token> GetCloseBracesInCommandElements()
         {
             return GetBraceInCommandElement(TokenKind.RCurly);
+        }
+
+        /// <summary>
+        /// Returns pairs of associatd braces.
+        /// </summary>
+        /// <returns>Tuples of tokens such that item1 is LCurly token and item2 is RCurly token.</returns>
+        public IEnumerable<Tuple<Token, Token>> GetBracePairs()
+        {
+            var openBraceStack = new Stack<Token>();
+            foreach (var token in tokens)
+            {
+                if (token.Kind == TokenKind.LCurly)
+                {
+                    openBraceStack.Push(token);
+                    continue;
+                }
+
+                if (token.Kind == TokenKind.RCurly
+                    && openBraceStack.Count > 0)
+                {
+                    yield return new Tuple<Token, Token>(openBraceStack.Pop(), token);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns brace pairs that are on the same line.
+        /// </summary>
+        /// <returns>Tuples of tokens such that item1 is LCurly token and item2 is RCurly token.</returns>
+        public IEnumerable<Tuple<Token, Token>> GetBracePairsOnSameLine()
+        {
+            foreach (var bracePair in GetBracePairs())
+            {
+                if (bracePair.Item1.Extent.StartLineNumber == bracePair.Item2.Extent.StartLineNumber)
+                {
+                    yield return bracePair;
+                }
+            }
         }
 
         private IEnumerable<Token> GetBraceInCommandElement(TokenKind tokenKind)
