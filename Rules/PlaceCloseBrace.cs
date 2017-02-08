@@ -36,6 +36,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue:false)]
         public bool NoEmptyLineBefore { get; protected set; }
 
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool IgnoreOneLineIf { get; protected set; }
+
         private HashSet<Token> tokensToIgnore;
 
         /// <summary>
@@ -64,8 +67,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var curlyStack = new Stack<Tuple<Token, int>> ();
-            tokensToIgnore = new HashSet<Token> (
-                new TokenOperations(tokens, ast).GetCloseBracesInCommandElements());
+
+            // TODO move part common with PlaceOpenBrace to one place
+            // TODO use a general switch to ignore blocks on one line
+            var tokenOps = new TokenOperations(tokens, ast);
+            tokensToIgnore = new HashSet<Token> (tokenOps.GetCloseBracesInCommandElements());
+            if (IgnoreOneLineIf)
+            {
+                foreach (var closeBraceToken in tokenOps.GetCloseBraceInOneLineIfStatement())
+                {
+                    tokensToIgnore.Add(closeBraceToken);
+                }
+            }
 
             for (int k = 0; k < tokens.Length; k++)
             {
