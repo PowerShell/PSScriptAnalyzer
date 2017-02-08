@@ -6,6 +6,7 @@ $settings = @{
         PSPlaceCloseBrace = @{
             Enable = $true
             NoEmptyLineBefore = $true
+            IgnoreOneLineIf = $true
         }
     }
 }
@@ -87,6 +88,14 @@ Get-Process * | % { "blah" }
         }
 
         It "Should not find a violation" {
+            $violations.Count | Should Be 0
+        }
+
+        It "Should ignore violations for one line if statement" {
+            $def = @'
+$x = if ($true) { "blah" } else { "blah blah" }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 0
         }
     }
