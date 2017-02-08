@@ -3,6 +3,7 @@ $ruleConfiguration = @{
     Enable = $true
     OnSameLine = $true
     NewLineAfter = $true
+    IgnoreOneLineIf = $true
 }
 
 $settings = @{
@@ -42,7 +43,7 @@ function foo ($param1) {
 }
 '@
             $ruleConfiguration.'OnSameLine' = $false
-	    $ruleConfiguration.'NewLineAfter' = $true
+	        $ruleConfiguration.'NewLineAfter' = $true
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $defShouldIgnore = @'
 Get-Process | % { "blah" }
@@ -60,6 +61,15 @@ Get-Process | % { "blah" }
 
         It "Should ignore violations for a command element" {
             $violationsShouldIgnore.Count | Should Be 0
+        }
+
+        It "Should ignore violations for one line if statement" {
+            $def = @'
+$x = if ($true) { "blah" } else { "blah blah" }
+'@
+            $ruleConfiguration.'IgnoreOneLineIf' = $true
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
         }
     }
 
