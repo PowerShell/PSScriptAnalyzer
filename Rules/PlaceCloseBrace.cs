@@ -37,7 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public bool NoEmptyLineBefore { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
-        public bool IgnoreOneLineIf { get; protected set; }
+        public bool IgnoreOneLineBlock { get; protected set; }
 
         private HashSet<Token> tokensToIgnore;
 
@@ -61,22 +61,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // TODO Should have the following options
             // * no-empty-lines-before
-            // * align (if close brance and open brace on new lines align with open brace,
-            //   if close brace is on new line but open brace is not align with the first keyword on open brace line)
 
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var curlyStack = new Stack<Tuple<Token, int>> ();
 
             // TODO move part common with PlaceOpenBrace to one place
-            // TODO use a general switch to ignore blocks on one line
             var tokenOps = new TokenOperations(tokens, ast);
             tokensToIgnore = new HashSet<Token> (tokenOps.GetCloseBracesInCommandElements());
-            if (IgnoreOneLineIf)
+
+            // Ignore open braces that are part of a one line if-else statement
+            // E.g. $x = if ($true) { "blah" } else { "blah blah" }
+            if (IgnoreOneLineBlock)
             {
-                foreach (var closeBraceToken in tokenOps.GetCloseBraceInOneLineIfStatement())
+                foreach (var pair in tokenOps.GetBracePairsOnSameLine())
                 {
-                    tokensToIgnore.Add(closeBraceToken);
+                    tokensToIgnore.Add(pair.Item2);
                 }
             }
 
