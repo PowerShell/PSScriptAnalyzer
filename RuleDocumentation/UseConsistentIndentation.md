@@ -11,7 +11,7 @@ Indentation should be consistent throughout the source file.
     Rules = @{
         PSUseConsistentIndentation = @{
             Enable = $true
-            NoEmptyLineBefore = $false
+            IndentationSize = 4
         }
     }
 ```
