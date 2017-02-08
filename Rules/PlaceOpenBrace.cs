@@ -45,6 +45,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool NewLineAfter { get; protected set; }
 
+        /// <summary>
+        /// Indicates if open braces in a one line block should be ignored or not.
+        /// E.g. $x = if ($true) { "blah" } else { "blah blah" }
+        /// In the above example, if the property is set to true then the rule will
+        /// not fire a violation.
+        ///
+        /// Default value if true.
+        /// </summary>
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool IgnoreOneLineBlock { get; protected set; }
 
