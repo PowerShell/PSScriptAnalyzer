@@ -46,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public bool NewLineAfter { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
-        public bool IgnoreOneLineIf { get; protected set; }
+        public bool IgnoreOneLineBlock { get; protected set; }
 
         private List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>> violationFinders
             = new List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>>();
@@ -99,18 +99,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var tokens = Helper.Instance.Tokens;
 
             // Ignore open braces that are part of arguments to a command
-            // * E.g. get-process | % { "blah }f
+            // * E.g. get-process | % { "blah }
             // In the above case even if OnSameLine == false, we should not
             // flag the open brace as it would move the brace to the next line
             // and will invalidate the command
             var tokenOps = new TokenOperations(tokens, ast);
             tokensToIgnore = new HashSet<Token>(tokenOps.GetOpenBracesInCommandElements());
 
-            if (IgnoreOneLineIf)
+            // Ignore open braces that are part of a one line if-else statement
+            // E.g. $x = if ($true) { "blah" } else { "blah blah" }
+            if (IgnoreOneLineBlock)
             {
-                foreach (var openBraceToken in tokenOps.GetOpenBraceInOneLineIfStatement())
+                foreach (var pair in tokenOps.GetBracePairsOnSameLine())
                 {
-                    tokensToIgnore.Add(openBraceToken);
+                    tokensToIgnore.Add(pair.Item1);
                 }
             }
 
