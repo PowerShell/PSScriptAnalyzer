@@ -61,7 +61,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return GetBraceInCommandElement(TokenKind.LCurly);
         }
 
-
         /// <summary>
         /// Return tokens of kind RCurly that end a scriptblock expression in an command element.
         ///
@@ -72,6 +71,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<Token> GetCloseBracesInCommandElements()
         {
             return GetBraceInCommandElement(TokenKind.RCurly);
+        }
+
+        /// <summary>
+        /// Returns pairs of associatd braces.
+        /// </summary>
+        /// <returns>Tuples of tokens such that item1 is LCurly token and item2 is RCurly token.</returns>
+        public IEnumerable<Tuple<Token, Token>> GetBracePairs()
+        {
+            var openBraceStack = new Stack<Token>();
+            foreach (var token in tokens)
+            {
+                if (token.Kind == TokenKind.LCurly)
+                {
+                    openBraceStack.Push(token);
+                    continue;
+                }
+
+                if (token.Kind == TokenKind.RCurly
+                    && openBraceStack.Count > 0)
+                {
+                    yield return new Tuple<Token, Token>(openBraceStack.Pop(), token);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns brace pairs that are on the same line.
+        /// </summary>
+        /// <returns>Tuples of tokens such that item1 is LCurly token and item2 is RCurly token.</returns>
+        public IEnumerable<Tuple<Token, Token>> GetBracePairsOnSameLine()
+        {
+            foreach (var bracePair in GetBracePairs())
+            {
+                if (bracePair.Item1.Extent.StartLineNumber == bracePair.Item2.Extent.StartLineNumber)
+                {
+                    yield return bracePair;
+                }
+            }
         }
 
         private IEnumerable<Token> GetBraceInCommandElement(TokenKind tokenKind)
@@ -106,6 +143,86 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (tokenFound != null)
                 {
                     yield return tokenFound;
+                }
+            }
+        }
+
+        public IEnumerable<Token> GetCloseBraceInOneLineIfStatement()
+        {
+            return GetBraceInOneLineIfStatment(TokenKind.RCurly);
+        }
+
+        public IEnumerable<Token> GetOpenBraceInOneLineIfStatement()
+        {
+            return GetBraceInOneLineIfStatment(TokenKind.LCurly);
+        }
+
+        // TODO Fix code duplication in the following method and GetBraceInCommandElement
+        private IEnumerable<Token> GetBraceInOneLineIfStatment(TokenKind tokenKind)
+        {
+            var ifStatementAsts = ast.FindAll(ast =>
+            {
+                var ifAst = ast as IfStatementAst;
+                if (ifAst == null)
+                {
+                    return false;
+                }
+
+                return ifAst.Extent.StartLineNumber == ifAst.Extent.EndLineNumber;
+            },
+            true);
+
+            if (ifStatementAsts == null)
+            {
+                yield break;
+            }
+
+            var braceTokens = new List<Token>();
+            foreach (var ast in ifStatementAsts)
+            {
+                var ifStatementAst = ast as IfStatementAst;
+                foreach (var clause in ifStatementAst.Clauses)
+                {
+                    var tokenIf
+                        = tokenKind == TokenKind.LCurly
+                            ? GetTokens(clause.Item2).FirstOrDefault()
+                            : GetTokens(clause.Item2).LastOrDefault();
+                    if (tokenIf != null)
+                    {
+                        yield return tokenIf;
+                    }
+                }
+
+                if (ifStatementAst.ElseClause == null)
+                {
+                    continue;
+                }
+
+                var tokenElse
+                    = tokenKind == TokenKind.LCurly
+                            ? GetTokens(ifStatementAst.ElseClause).FirstOrDefault()
+                            : GetTokens(ifStatementAst.ElseClause).LastOrDefault();
+                if (tokenElse != null)
+                {
+                    yield return tokenElse;
+                }
+            }
+        }
+
+        private IEnumerable<Token> GetTokens(Ast ast)
+        {
+            int k = 0;
+            while (k < tokens.Length && tokens[k].Extent.EndOffset <= ast.Extent.StartOffset)
+            {
+                k++;
+            }
+
+            while (k < tokens.Length && tokens[k].Extent.EndOffset <= ast.Extent.EndOffset)
+            {
+                var token = tokens[k++];
+                if (token.Extent.StartOffset >= ast.Extent.StartOffset)
+                {
+                    yield return token;
                 }
             }
         }

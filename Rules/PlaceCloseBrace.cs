@@ -36,6 +36,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue:false)]
         public bool NoEmptyLineBefore { get; protected set; }
 
+        /// <summary>
+        /// Indicates if close braces in a one line block should be ignored or not.
+        /// E.g. $x = if ($true) { "blah" } else { "blah blah" }
+        /// In the above example, if the property is set to true then the rule will
+        /// not fire a violation.
+        ///
+        /// Default value if true.
+        /// </summary>
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool IgnoreOneLineBlock { get; protected set; }
+
         private HashSet<Token> tokensToIgnore;
 
         /// <summary>
@@ -58,14 +69,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // TODO Should have the following options
             // * no-empty-lines-before
-            // * align (if close brance and open brace on new lines align with open brace,
-            //   if close brace is on new line but open brace is not align with the first keyword on open brace line)
 
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var curlyStack = new Stack<Tuple<Token, int>> ();
-            tokensToIgnore = new HashSet<Token> (
-                new TokenOperations(tokens, ast).GetCloseBracesInCommandElements());
+
+            // TODO move part common with PlaceOpenBrace to one place
+            var tokenOps = new TokenOperations(tokens, ast);
+            tokensToIgnore = new HashSet<Token> (tokenOps.GetCloseBracesInCommandElements());
+
+            // Ignore close braces that are part of a one line if-else statement
+            // E.g. $x = if ($true) { "blah" } else { "blah blah" }
+            if (IgnoreOneLineBlock)
+            {
+                foreach (var pair in tokenOps.GetBracePairsOnSameLine())
+                {
+                    tokensToIgnore.Add(pair.Item2);
+                }
+            }
 
             for (int k = 0; k < tokens.Length; k++)
             {

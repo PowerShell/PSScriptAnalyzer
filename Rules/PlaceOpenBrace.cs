@@ -45,6 +45,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool NewLineAfter { get; protected set; }
 
+        /// <summary>
+        /// Indicates if open braces in a one line block should be ignored or not.
+        /// E.g. $x = if ($true) { "blah" } else { "blah blah" }
+        /// In the above example, if the property is set to true then the rule will
+        /// not fire a violation.
+        ///
+        /// Default value if true.
+        /// </summary>
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool IgnoreOneLineBlock { get; protected set; }
+
         private List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>> violationFinders
             = new List<Func<Token[], Ast, string, IEnumerable<DiagnosticRecord>>>();
 
@@ -100,8 +111,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // In the above case even if OnSameLine == false, we should not
             // flag the open brace as it would move the brace to the next line
             // and will invalidate the command
-            tokensToIgnore = new HashSet<Token>(
-                new TokenOperations(tokens, ast).GetOpenBracesInCommandElements());
+            var tokenOps = new TokenOperations(tokens, ast);
+            tokensToIgnore = new HashSet<Token>(tokenOps.GetOpenBracesInCommandElements());
+
+            // Ignore open braces that are part of a one line if-else statement
+            // E.g. $x = if ($true) { "blah" } else { "blah blah" }
+            if (IgnoreOneLineBlock)
+            {
+                foreach (var pair in tokenOps.GetBracePairsOnSameLine())
+                {
+                    tokensToIgnore.Add(pair.Item1);
+                }
+            }
+
             foreach (var violationFinder in violationFinders)
             {
                 diagnosticRecords.AddRange(violationFinder(tokens, ast, fileName));

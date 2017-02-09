@@ -3,6 +3,7 @@ $ruleConfiguration = @{
     Enable = $true
     OnSameLine = $true
     NewLineAfter = $true
+    IgnoreOneLineIf = $true
 }
 
 $settings = @{
@@ -14,7 +15,7 @@ $settings = @{
 
 Describe "PlaceOpenBrace" {
     Context "When an open brace must be on the same line" {
-        BeforeAll{
+        BeforeAll {
             $def = @'
 function foo ($param1)
 {
@@ -35,14 +36,15 @@ function foo ($param1)
     }
 
     Context "When an open brace must be on a new line" {
-        BeforeAll{
+        BeforeAll {
             $def = @'
 function foo ($param1) {
 
 }
 '@
             $ruleConfiguration.'OnSameLine' = $false
-	    $ruleConfiguration.'NewLineAfter' = $true
+            $ruleConfiguration.'NewLineAfter' = $true
+            $ruleConfiguration.'IgnoreOneLineBlock' = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $defShouldIgnore = @'
 Get-Process | % { "blah" }
@@ -61,15 +63,25 @@ Get-Process | % { "blah" }
         It "Should ignore violations for a command element" {
             $violationsShouldIgnore.Count | Should Be 0
         }
+
+        It "Should ignore violations for one line if statement" {
+            $def = @'
+$x = if ($true) { "blah" } else { "blah blah" }
+'@
+            $ruleConfiguration.'IgnoreOneLineBlock' = $true
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
     }
 
     Context "When a new line should follow an open brace" {
-        BeforeAll{
+        BeforeAll {
             $def = @'
 function foo { }
 '@
             $ruleConfiguration.'OnSameLine' = $true
             $ruleConfiguration.'NewLineAfter' = $true
+            $ruleConfiguration.'IgnoreOneLineBlock' = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
