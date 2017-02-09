@@ -206,7 +206,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             for (int k = 2; k < tokens.Length; k++)
             {
                 if (tokens[k].Kind == TokenKind.LCurly
-                    && tokens[k - 1].Kind == TokenKind.NewLine)
+                    && tokens[k - 1].Kind == TokenKind.NewLine
+                    && !tokensToIgnore.Contains(tokens[k]))
                 {
                     yield return new DiagnosticRecord(
                         GetError(Strings.PlaceOpenBraceErrorShouldBeOnSameLine),

@@ -35,6 +35,24 @@ function foo ($param1)
         }
     }
 
+    Context "When an open brace must be on the same line in a switch statement" {
+        BeforeAll {
+            $def = @'
+switch ($x) {
+    {"b"} {"b"; break;}
+    {"a"} {"a"; break;}
+}
+'@
+            $ruleConfiguration.'OnSameLine' = $true
+            $ruleConfiguration.'IgnoreOneLineBlock' = $true
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+        }
+
+        It "Should not find a violation" {
+            $violations.Count | Should Be 0
+        }
+    }
+
     Context "When an open brace must be on a new line" {
         BeforeAll {
             $def = @'
