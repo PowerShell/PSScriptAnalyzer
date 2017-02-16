@@ -13,6 +13,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
@@ -37,7 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             if (settings == null)
             {
-                throw new ArgumentNullException("settings");
+                throw new ArgumentNullException(nameof(settings));
             }
 
             includeRules = new List<string>();
@@ -316,6 +317,136 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
 
             parseSettingsHashtable(hashtable);
+        }
+
+        private Hashtable GetValue(HashtableAst hashtableAst)
+        {
+#if !PSV3
+            return hashtableAst.SafeGetValue() as Hashtable;
+#else
+            return GetHashtableFromHashTableAst(hashTableAst);
+#endif
+        }
+
+        private Hashtable GetHashtableFromHashTableAst(HashtableAst hashTableAst)
+        {
+            var output = new Hashtable();
+            foreach (var kvp in hashTableAst.KeyValuePairs)
+            {
+                var keyAst = kvp.Item1 as StringConstantExpressionAst;
+                if (keyAst == null)
+                {
+                    // first item (the key) should be a string
+                    ThrowInvalidDataException(kvp.Item1);
+                }
+                var key = keyAst.Value;
+
+                // parse the item2 as array
+                PipelineAst pipeAst = kvp.Item2 as PipelineAst;
+                List<string> rhsList = new List<string>();
+                if (pipeAst != null)
+                {
+                    ExpressionAst pureExp = pipeAst.GetPureExpression();
+                    if (pureExp is StringConstantExpressionAst)
+                    {
+                        rhsList.Add(((StringConstantExpressionAst)pureExp).Value);
+                    }
+                    else if (pureExp is HashtableAst)
+                    {
+                        output[key] = GetHashtableFromHashTableAst((HashtableAst)pureExp);
+                        continue;
+                    }
+                    else
+                    {
+                        rhsList = GetArrayFromAst(pureExp);
+                    }
+                }
+
+                if (rhsList.Count == 0)
+                {
+                    ThrowInvalidDataException(kvp.Item2);
+                }
+
+                output[key] = rhsList;
+            }
+
+            return output;
+        }
+
+        private List<string> GetArrayFromAst(ExpressionAst exprAst)
+        {
+            ArrayLiteralAst arrayLitAst = exprAst as ArrayLiteralAst;
+            var result = new List<string>();
+
+            if (arrayLitAst == null && exprAst is ArrayExpressionAst)
+            {
+                ArrayExpressionAst arrayExp = (ArrayExpressionAst)exprAst;
+                return arrayExp == null ? null : GetArrayFromArrayExpressionAst(arrayExp);
+            }
+
+            if (arrayLitAst == null)
+            {
+                ThrowInvalidDataException(arrayLitAst);
+            }
+
+            foreach (var element in arrayLitAst.Elements)
+            {
+                var elementValue = element as StringConstantExpressionAst;
+                if (elementValue == null)
+                {
+                    ThrowInvalidDataException(element);
+                }
+
+                result.Add(elementValue.Value);
+            }
+
+            return result;
+        }
+
+        private List<string> GetArrayFromArrayExpressionAst(ArrayExpressionAst arrayExp)
+        {
+            var result = new List<string>();
+            if (arrayExp.SubExpression != null)
+            {
+                StatementAst stateAst = arrayExp.SubExpression.Statements.FirstOrDefault();
+                if (stateAst != null && stateAst is PipelineAst)
+                {
+                    CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.FirstOrDefault();
+                    if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
+                    {
+                        CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
+                        if (cmdExpAst.Expression is StringConstantExpressionAst)
+                        {
+                            return new List<string>()
+                            {
+                                (cmdExpAst.Expression as StringConstantExpressionAst).Value
+                            };
+                        }
+                        else
+                        {
+                            // It should be an ArrayLiteralAst at this point
+                            return GetArrayFromAst(cmdExpAst.Expression);
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private void ThrowInvalidDataException(Ast ast)
+        {
+            ThrowInvalidDataException(ast.Extent);
+        }
+
+        private void ThrowInvalidDataException(IScriptExtent extent)
+        {
+            throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.WrongValueFormat,
+                                    extent.StartLineNumber,
+                                    extent.StartColumnNumber,
+                                    extent.File ?? ""));
         }
     }
 }
