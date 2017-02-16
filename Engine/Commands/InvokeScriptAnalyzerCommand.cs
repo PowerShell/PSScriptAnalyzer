@@ -358,9 +358,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             base.StopProcessing();
         }
 
-#endregion
+        #endregion
 
-#region Private Methods
+        #region Private Methods
 
         private static bool IsBuiltinSettingPreset(object settingPreset)
         {
@@ -416,6 +416,65 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
         }
-#endregion // Private Methods
+
+        private SettingsMode FindSettingsMode(out object settingsFound)
+        {
+            var settingsMode = SettingsMode.None;
+            settingsFound = this.settings;
+            if (settingsFound == null)
+            {
+                if (processedPaths != null && processedPaths.Count == 1)
+                {
+                    // add a directory separator character because if there is no trailing separator character, it will return the parent
+                    var directory = processedPaths[0].TrimEnd(System.IO.Path.DirectorySeparatorChar);
+                    if (File.Exists(directory))
+                    {
+                        // if given path is a file, get its directory
+                        directory = System.IO.Path.GetDirectoryName(directory);
+                    }
+
+                    if (Directory.Exists(directory))
+                    {
+                        // if settings are not provided explicitly, look for it in the given path
+                        // check if pssasettings.psd1 exists
+                        var settingsFilename = "PSScriptAnalyzerSettings.psd1";
+                        var settingsFilePath = System.IO.Path.Combine(directory, settingsFilename);
+                        settingsFound = settingsFilePath;
+                        if (File.Exists(settingsFilePath))
+                        {
+                            settingsMode = SettingsMode.Auto;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var settingsFilePath = settingsFound as String;
+                if (settingsFilePath != null)
+                {
+                    if (IsBuiltinSettingPreset(settingsFilePath))
+                    {
+                        settingsMode = SettingsMode.Preset;
+                        settingsFound = Helper.GetSettingPresetFilePath(settingsFilePath);
+                    }
+                    else
+                    {
+                        settingsMode = SettingsMode.File;
+                        settingsFound = settingsFilePath;
+                    }
+                }
+                else
+                {
+                    if (settingsFound is Hashtable)
+                    {
+                        settingsMode = SettingsMode.Hashtable;
+                    }
+                }
+            }
+
+            return settingsMode;
+        }
+
+        #endregion // Private Methods
     }
 }
