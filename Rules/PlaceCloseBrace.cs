@@ -135,7 +135,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (NewLineAfter)
                         {
                             AddToDiagnosticRecords(
-                                GetViolationForNewLineShouldFollowBrace(tokens, k, openBracePos, fileName),
+                                GetViolationForBraceShouldHaveNewLineAfter(tokens, k, openBracePos, fileName),
                                 ref diagnosticRecords);
                         }
                     }
@@ -261,7 +261,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return corrections;
         }
 
-        private List<CorrectionExtent> GetCorrectionsForNewLineShouldFollowBrace(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        private List<CorrectionExtent> GetCorrectionsForBraceShouldHaveNewLineAfter(
+            Token[] tokens,
+            int closeBracePos,
+            int openBracePos,
+            string fileName)
         {
             var corrections = new List<CorrectionExtent>();
             var nextToken = tokens[closeBracePos + 1];
@@ -300,7 +304,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return new String(' ', firstTokenOnOpenBraceLine.Extent.StartColumnNumber - 1);
         }
 
-        private DiagnosticRecord GetViolationForNewLineShouldFollowBrace(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        private DiagnosticRecord GetViolationForBraceShouldHaveNewLineAfter(
+            Token[] tokens,
+            int closeBracePos,
+            int openBracePos,
+            string fileName)
         {
             var expectedNewLinePos = closeBracePos + 1;
             if (tokens.Length > 1 && tokens.Length > expectedNewLinePos)
@@ -318,14 +326,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         fileName,
                         null,
-                        GetCorrectionsForNewLineShouldFollowBrace(tokens, closeBracePos, openBracePos, fileName));
+                        GetCorrectionsForBraceShouldHaveNewLineAfter(tokens, closeBracePos, openBracePos, fileName));
                     }
             }
 
             return null;
         }
 
-        private DiagnosticRecord GetViolationForBraceShouldBeOnNewLine(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        private DiagnosticRecord GetViolationForBraceShouldBeOnNewLine(
+            Token[] tokens,
+            int closeBracePos,
+            int openBracePos,
+            string fileName)
         {
             if (tokens.Length > 1 && tokens.Length > closeBracePos)
             {
