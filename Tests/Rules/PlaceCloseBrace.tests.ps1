@@ -1,4 +1,9 @@
-﻿Import-Module PSScriptAnalyzer
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+
+Import-Module PSScriptAnalyzer
+Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+
 $ruleConfiguration = @{
     Enable = $true
     NoEmptyLineBefore = $true
@@ -132,6 +137,23 @@ if (Test-Path "blah") {
 
         It "Should find two violations" {
             $violations.Count | Should Be 2
+            $params = @{
+                RawContent = $def
+                DiagnosticRecord = $violations[0]
+                CorrectionsCount = 1
+                ViolationText = '}'
+                CorrectionText = '}' + [System.Environment]::NewLine
+            }
+            Test-CorrectionExtentFromContent @params
+
+            $params = @{
+                RawContent = $def
+                DiagnosticRecord = $violations[1]
+                CorrectionsCount = 1
+                ViolationText = '}'
+                CorrectionText = '}' + [System.Environment]::NewLine
+            }
+            Test-CorrectionExtentFromContent @params
         }
     }
 }
