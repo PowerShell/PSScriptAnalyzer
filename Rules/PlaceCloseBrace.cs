@@ -131,6 +131,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 GetViolationForBraceShouldNotFollowEmptyLine(tokens, k, openBracePos, fileName),
                                 ref diagnosticRecords);
                         }
+
+                        if (NewLineAfter)
+                        {
+                            AddToDiagnosticRecords(
+                                GetViolationForNewLineShouldFollowBrace(tokens, k, openBracePos, fileName),
+                                ref diagnosticRecords);
+                        }
                     }
                     else
                     {
@@ -254,6 +261,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return corrections;
         }
 
+        private List<CorrectionExtent> GetCorrectionsForNewLineShouldFollowBrace(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            var nextToken = tokens[closeBracePos + 1];
+            var closeBraceToken = tokens[closeBracePos];
+            corrections.Add(new CorrectionExtent(
+                closeBraceToken.Extent,
+                closeBraceToken.Text + TokenKind.NewLine.Text(),
+                fileName));
+            return corrections;
+        }
+
         private string GetIndentation(Token[] tokens, int closeBracePos, int openBracePos)
         {
             // if open brace on a new line by itself, use its indentation
@@ -279,6 +298,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return new String(' ', firstTokenOnOpenBraceLine.Extent.StartColumnNumber - 1);
+        }
+
+        private DiagnosticRecord GetViolationForNewLineShouldFollowBrace(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
+        {
+            var expectedNewLinePos = closeBracePos + 1;
+            if (tokens.Length > 1 && tokens.Length > expectedNewLinePos)
+            {
+                var closeBraceToken = tokens[closeBracePos];
+                if (tokens[expectedNewLinePos].Kind != TokenKind.NewLine
+                    && tokens[expectedNewLinePos].Kind != TokenKind.Comment
+                    && !tokensToIgnore.Contains(tokens[closeBracePos]))
+                    {
+
+                    return new DiagnosticRecord(
+                        GetError(Strings.PlaceCloseBraceErrorShouldFollowNewLine),
+                        closeBraceToken.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetCorrectionsForNewLineShouldFollowBrace(tokens, closeBracePos, openBracePos, fileName));
+                    }
+            }
+
+            return null;
         }
 
         private DiagnosticRecord GetViolationForBraceShouldBeOnNewLine(Token[] tokens, int closeBracePos, int openBracePos, string fileName)
