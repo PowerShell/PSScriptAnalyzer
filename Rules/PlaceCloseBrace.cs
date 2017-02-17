@@ -47,6 +47,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool IgnoreOneLineBlock { get; protected set; }
 
+        /// <summary>
+        /// Indicates if a new line should follow a close brace.
+        ///
+        /// If set to true a close brace should not be followed by any keyword.
+        ///
+        /// Default value if true.
+        /// </summary>
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool NewLineAfter { get; protected set; }
+
         private HashSet<Token> tokensToIgnore;
 
         /// <summary>
