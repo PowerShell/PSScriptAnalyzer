@@ -31,7 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Indicates if there should or should not be an empty line before a close brace.
         ///
-        /// Default value if false.
+        /// Default value is false.
         /// </summary>
         [ConfigurableRuleProperty(defaultValue:false)]
         public bool NoEmptyLineBefore { get; protected set; }
@@ -42,7 +42,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// In the above example, if the property is set to true then the rule will
         /// not fire a violation.
         ///
-        /// Default value if true.
+        /// Default value is true.
         /// </summary>
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool IgnoreOneLineBlock { get; protected set; }
@@ -50,9 +50,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Indicates if a new line should follow a close brace.
         ///
-        /// If set to true a close brace should not be followed by any keyword.
+        /// If set to true a close brace should be followed by a new line.
         ///
-        /// Default value if true.
+        /// Default value is true.
         /// </summary>
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool NewLineAfter { get; protected set; }
