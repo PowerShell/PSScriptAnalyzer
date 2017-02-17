@@ -268,7 +268,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var closeBraceToken = tokens[closeBracePos];
             corrections.Add(new CorrectionExtent(
                 closeBraceToken.Extent,
-                closeBraceToken.Text + TokenKind.NewLine.Text(),
+                closeBraceToken.Text + Environment.NewLine,
                 fileName));
             return corrections;
         }
