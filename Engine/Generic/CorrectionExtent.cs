@@ -128,6 +128,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
         }
 
+        public CorrectionExtent(
+            IScriptExtent violationExtent,
+            string replacementText,
+            string filePath)
+            : this(
+                violationExtent.StartLineNumber,
+                violationExtent.EndLineNumber,
+                violationExtent.StartColumnNumber,
+                violationExtent.EndColumnNumber,
+                replacementText,
+                filePath)
+        {
+
+        }
+
         private void ThrowIfInvalidArguments()
         {
             ThrowIfNull<string>(text, "text");

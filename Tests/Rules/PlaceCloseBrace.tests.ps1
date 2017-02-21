@@ -1,8 +1,14 @@
-﻿Import-Module PSScriptAnalyzer
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+
+Import-Module PSScriptAnalyzer
+Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+
 $ruleConfiguration = @{
     Enable = $true
     NoEmptyLineBefore = $true
     IgnoreOneLineBlock = $true
+    NewLineAfter = $true
 }
 
 $settings = @{
@@ -19,6 +25,9 @@ Describe "PlaceCloseBrace" {
 function foo {
     Write-Output "close brace not on a new line"}
 '@
+            $ruleConfiguration.'NoEmptyLineBefore' = $false
+            $ruleConfiguration.'IgnoreOneLineBlock' = $false
+            $ruleConfiguration.'NewLineAfter' = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
@@ -39,6 +48,9 @@ function foo {
 
 }
 '@
+            $ruleConfiguration.'NoEmptyLineBefore' = $true
+            $ruleConfiguration.'IgnoreOneLineBlock' = $false
+            $ruleConfiguration.'NewLineAfter' = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
@@ -56,6 +68,9 @@ function foo {
             $def = @'
 $hashtable = @{a = 1; b = 2}
 '@
+            $ruleConfiguration.'NoEmptyLineBefore' = $false
+            $ruleConfiguration.'IgnoreOneLineBlock' = $true
+            $ruleConfiguration.'NewLineAfter' = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
@@ -71,6 +86,9 @@ $hashtable = @{
     a = 1
     b = 2}
 '@
+            $ruleConfiguration.'NoEmptyLineBefore' = $false
+            $ruleConfiguration.'IgnoreOneLineBlock' = $true
+            $ruleConfiguration.'NewLineAfter' = $false
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
@@ -99,6 +117,43 @@ $x = if ($true) { "blah" } else { "blah blah" }
             $ruleConfiguration.'IgnoreOneLineBlock' = $true
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 0
+        }
+    }
+
+    Context "When a close brace should be follow a new line" {
+        BeforeAll {
+            $def = @'
+if (Test-Path "blah") {
+    "blah"
+} else {
+    "blah blah"
+}
+'@
+            $ruleConfiguration.'NoEmptyLineBefore' = $false
+            $ruleConfiguration.'IgnoreOneLineBlock' = $false
+            $ruleConfiguration.'NewLineAfter' = $true
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+        }
+
+        It "Should find two violations" {
+            $violations.Count | Should Be 2
+            $params = @{
+                RawContent = $def
+                DiagnosticRecord = $violations[0]
+                CorrectionsCount = 1
+                ViolationText = '}'
+                CorrectionText = '}' + [System.Environment]::NewLine
+            }
+            Test-CorrectionExtentFromContent @params
+
+            $params = @{
+                RawContent = $def
+                DiagnosticRecord = $violations[1]
+                CorrectionsCount = 1
+                ViolationText = '}'
+                CorrectionText = '}' + [System.Environment]::NewLine
+            }
+            Test-CorrectionExtentFromContent @params
         }
     }
 }
