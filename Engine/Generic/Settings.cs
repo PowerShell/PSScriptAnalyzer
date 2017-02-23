@@ -17,6 +17,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
@@ -87,6 +88,71 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
         public Settings(object settings) : this(settings, null)
         {
+        }
+
+        /// <summary>
+        /// Retrieves the Settings directory from the Module directory structure
+        /// </summary>
+        public static string GetShippedSettingsDirectory()
+        {
+            // Find the compatibility files in Settings folder
+            var path = typeof(Helper).GetTypeInfo().Assembly.Location;
+            if (String.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            var settingsPath = Path.Combine(Path.GetDirectoryName(path), "Settings");
+            if (!Directory.Exists(settingsPath))
+            {
+                // try one level down as the PSScriptAnalyzer module structure is not consistent
+                // CORECLR binaries are in PSScriptAnalyzer/coreclr/, PowerShell v3 binaries are in PSScriptAnalyzer/PSv3/
+                // and PowerShell v5 binaries are in PSScriptAnalyzer/
+                settingsPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(path)), "Settings");
+                if (!Directory.Exists(settingsPath))
+                {
+                    return null;
+                }
+            }
+
+            return settingsPath;
+        }
+
+        /// <summary>
+        /// Returns the builtin setting presets
+        ///
+        /// Looks for powershell data files (*.psd1) in the PSScriptAnalyzer module settings directory
+        /// and returns the names of the files without extension
+        /// </summary>
+        public static IEnumerable<string> GetSettingPresets()
+        {
+            var settingsPath = GetShippedSettingsDirectory();
+            if (settingsPath != null)
+            {
+                foreach (var filepath in System.IO.Directory.EnumerateFiles(settingsPath, "*.psd1"))
+                {
+                    yield return System.IO.Path.GetFileNameWithoutExtension(filepath);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the path to the settings file corresponding to the given preset.
+        ///
+        /// If the corresponding preset file is not found, the method returns null.
+        /// </summary>
+        public static string GetSettingPresetFilePath(string settingPreset)
+        {
+            var settingsPath = GetShippedSettingsDirectory();
+            if (settingsPath != null)
+            {
+                if (GetSettingPresets().Contains(settingPreset, StringComparer.OrdinalIgnoreCase))
+                {
+                    return System.IO.Path.Combine(settingsPath, settingPreset + ".psd1");
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

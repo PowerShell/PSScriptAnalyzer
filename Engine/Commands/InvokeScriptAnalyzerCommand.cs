@@ -253,7 +253,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     break;
 
                 case SettingsMode.Preset:
-                    settingsFound = Helper.GetSettingPresetFilePath(this.settings as string);
+                    settingsFound = Generic.Settings.GetSettingPresetFilePath(this.settings as string);
                     goto case SettingsMode.File;
 
                 case SettingsMode.File:
@@ -349,7 +349,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             var preset = settingPreset as string;
             if (preset != null)
             {
-                return Helper.GetSettingPresets().Contains(preset, StringComparer.OrdinalIgnoreCase);
+                return Generic.Settings.GetSettingPresets().Contains(preset, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;
@@ -437,7 +437,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     if (IsBuiltinSettingPreset(settingsFilePath))
                     {
                         settingsMode = SettingsMode.Preset;
-                        settingsFound = Helper.GetSettingPresetFilePath(settingsFilePath);
+                        settingsFound = Generic.Settings.GetSettingPresetFilePath(settingsFilePath);
                     }
                     else
                     {

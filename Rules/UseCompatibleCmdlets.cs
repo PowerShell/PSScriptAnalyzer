@@ -306,7 +306,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            string settingsPath = Helper.GetShippedSettingsDirectory();
+            string settingsPath = Settings.GetShippedSettingsDirectory();
 #if DEBUG
             object modeObject;
             if (ruleArgs.TryGetValue("mode", out modeObject))
