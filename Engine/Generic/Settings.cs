@@ -310,7 +310,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             Hashtable hashtable;
             try
             {
-                hashtable = hashTableAst.SafeGetValue() as Hashtable;
+                // ideally we should use HashtableAst.SafeGetValue() but since
+                // it is not available on PSv3, we resort to our own narrow implementation.
+                hashtable = GetHashtableFromHashTableAst(hashTableAst);
             }
             catch (InvalidOperationException e)
             {
@@ -323,15 +325,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
 
             parseSettingsHashtable(hashtable);
-        }
-
-        private Hashtable GetValue(HashtableAst hashtableAst)
-        {
-#if !PSV3
-            return hashtableAst.SafeGetValue() as Hashtable;
-#else
-            return GetHashtableFromHashTableAst(hashTableAst);
-#endif
         }
 
         private Hashtable GetHashtableFromHashTableAst(HashtableAst hashTableAst)
