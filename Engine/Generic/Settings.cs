@@ -175,6 +175,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             else
             {
                 var valueArr = val as object[];
+                if (valueArr == null)
+                {
+                    // check if it is an array of strings
+                    valueArr = val as string[];
+                }
+
                 if (valueArr != null)
                 {
                     foreach (var item in valueArr)
@@ -347,13 +353,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 if (pipeAst != null)
                 {
                     ExpressionAst pureExp = pipeAst.GetPureExpression();
-                    if (pureExp is StringConstantExpressionAst)
+                    var constExprAst = pureExp as ConstantExpressionAst;
+                    if (constExprAst != null)
                     {
-                        rhsList.Add(((StringConstantExpressionAst)pureExp).Value);
+                        var strConstExprAst = constExprAst as StringConstantExpressionAst;
+                        if (strConstExprAst != null)
+                        {
+                            rhsList.Add(strConstExprAst.Value);
+                        }
+                        else
+                        {
+                            // it is either an integer or a float
+                            output[key] = constExprAst.Value;
+                            continue;
+                        }
                     }
                     else if (pureExp is HashtableAst)
                     {
                         output[key] = GetHashtableFromHashTableAst((HashtableAst)pureExp);
+                        continue;
+                    }
+                    else if (pureExp is VariableExpressionAst)
+                    {
+                        var varExprAst = (VariableExpressionAst)pureExp;
+                        switch (varExprAst.VariablePath.UserPath.ToLower())
+                        {
+                            case "true":
+                                output[key] = true;
+                                break;
+
+                            case "false":
+                                output[key] = false;
+                                break;
+
+                            default:
+                                ThrowInvalidDataException(varExprAst.Extent);
+                                break;
+                        }
+
                         continue;
                     }
                     else
@@ -367,7 +404,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     ThrowInvalidDataException(kvp.Item2);
                 }
 
-                output[key] = rhsList;
+                output[key] = rhsList.ToArray();
             }
 
             return output;
