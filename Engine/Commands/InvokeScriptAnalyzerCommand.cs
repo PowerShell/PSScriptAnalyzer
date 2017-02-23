@@ -206,8 +206,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         }
         private bool saveDscDependency;
 #endif // !PSV3
-
-        private enum SettingsMode { None = 0, Auto, File, Hashtable, Preset };
         #endregion Parameters
 
         #region Overrides

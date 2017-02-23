@@ -20,7 +20,7 @@ using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
-
+    internal enum SettingsMode { None = 0, Auto, File, Hashtable, Preset };
 
     public class Settings
     {
