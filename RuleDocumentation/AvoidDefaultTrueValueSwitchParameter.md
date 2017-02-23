@@ -1,14 +1,19 @@
-﻿#AvoidDefaultTrueValueSwitchParameter
+# AvoidDefaultTrueValueSwitchParameter
+
 **Severity Level: Warning**
 
-##Description
+## Description
+
 Switch parameters for commands should default to false.
 
-##How to Fix
+## How
+
 Change the default value of the switch parameter to be false.
 
-##Example
-###Wrong：
+## Example
+
+### Wrong
+
 ``` PowerShell
 function Test-Script
 {
@@ -25,7 +30,8 @@ function Test-Script
 }
 ```
 
-###Correct:
+### Correct
+
 ``` PowerShell
 function Test-Script
 {

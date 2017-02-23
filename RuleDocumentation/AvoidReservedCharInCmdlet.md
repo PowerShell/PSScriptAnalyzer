@@ -1,22 +1,28 @@
-﻿#AvoidReservedCharInCmdlet
+# AvoidReservedCharInCmdlet
+
 **Severity Level: Error**
 
-##Description
+## Description
+
 You cannot use following reserved characters in a function or cmdlet name as these can cause parsing or runtime errors.
 
 Reserved Characters include: `#,(){}[]&/\\$^;:\"'<>|?@`*%+=~`
 
-##How to Fix
+## How
+
 Remove reserved characters from names.
 
-##Example
-###Wrong：
+## Example
+
+### Wrong
+
 ``` PowerShell
 function MyFunction[1]
 {...}
 ```
 
-###Correct:
+### Correct
+
 ``` PowerShell
 function MyFunction
 {...}

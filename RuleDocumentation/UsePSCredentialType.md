@@ -1,14 +1,19 @@
-﻿#UsePSCredentialType
+# UsePSCredentialType
+
 **Severity Level: Warning**
 
-##Description
+## Description
+
 If the cmdlet or function has a `Credential` parameter, the parameter must accept the `PSCredential` type.
 
-##How to Fix
+## How
+
 Change the `Credential` parameter's type to be `PSCredential`.
 
-##Example
-###Wrong:
+## Example
+
+### Wrong
+
 ``` PowerShell
 function Credential([String]$Credential)
 {
@@ -16,7 +21,8 @@ function Credential([String]$Credential)
 }
 ```
 
-###Correct:
+### Correct
+
 ``` PowerShell
 function Credential([PSCredential]$Credential)
 {

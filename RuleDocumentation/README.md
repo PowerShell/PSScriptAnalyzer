@@ -1,4 +1,5 @@
 # PowerShell Script Analyzer Rules
+
 ## Table of Contents
 
 | Rule | Severity |

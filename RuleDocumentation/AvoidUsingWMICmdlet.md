@@ -1,7 +1,9 @@
-﻿#AvoidUsingWMICmdlet
+# AvoidUsingWMICmdlet
+
 **Severity Level: Warning**
 
-##Description
+## Description
+
 As of PowerShell 3.0, the CIM cmdlets should be used over the WMI cmdlets.
 
 The following cmdlets should not be used:
@@ -20,7 +22,8 @@ Use the following cmdlets instead:
 
 The CIM cmdlets comply with WS-Management (WSMan) standards and with the Common Information Model (CIM) standard, allowing for the management of Windows and non-Windows operating systems.
 
-##How to Fix
+## How
+
 Change to the equivalent CIM based cmdlet.
 * `Get-WmiObject` -> `Get-CimInstance`
 * `Remove-WmiObject` -> `Remove-CimInstance`
@@ -28,15 +31,18 @@ Change to the equivalent CIM based cmdlet.
 * `Register-WmiEvent` -> `Register-CimIndicationEvent`
 * `Set-WmiInstance` -> `Set-CimInstance`
 
-##Example
-###Wrong:
+## Example
+
+### Wrong
+
 ``` PowerShell
 Get-WmiObject -Query 'Select * from Win32_Process where name LIKE "myprocess%"' | Remove-WmiObject
-Invoke-WmiMethod –Class Win32_Process –Name "Create" –ArgumentList @{ CommandLine = "notepad.exe" }
+Invoke-WmiMethod ?Class Win32_Process ?Name "Create" ?ArgumentList @{ CommandLine = "notepad.exe" }
 ```
 
-###Correct:
+### Correct
+
 ``` PowerShell
 Get-CimInstance -Query 'Select * from Win32_Process where name LIKE "myprocess%"' | Remove-CIMInstance
-Invoke-CimMethod –ClassName Win32_Process –MethodName "Create" –Arguments @{ CommandLine = "notepad.exe" }
+Invoke-CimMethod ?ClassName Win32_Process ?MethodName "Create" ?Arguments @{ CommandLine = "notepad.exe" }
 ```

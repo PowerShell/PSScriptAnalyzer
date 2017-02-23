@@ -1,20 +1,26 @@
-﻿#AvoidInvokingEmptyMembers
+# AvoidInvokingEmptyMembers
+
 **Severity Level: Warning**
 
-##Description
+## Description
+
 Invoking non-constant members can cause potential bugs. Please double check the syntax to make sure that invoked members are constants.
 
-##How to Fix
+## How
+
 Provide the requested members for a given type or class.
 
-##Example
-###Wrong：
+## Example
+
+### Wrong
+
 ``` PowerShell
 $MyString = "abc"
 $MyString.('len'+'gth')
 ```
 
-###Correct:
+### Correct
+
 ``` PowerShell
 $MyString = "abc"
 $MyString.('length')
