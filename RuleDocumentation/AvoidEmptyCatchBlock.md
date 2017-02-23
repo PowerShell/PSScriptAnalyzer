@@ -1,16 +1,16 @@
-﻿#AvoidEmptyCatchBlock
+# AvoidEmptyCatchBlock
 **Severity Level: Warning**
 
-##Description
+## Description
 Empty catch blocks are considered a poor design choice as they result in the errors occurring in a `try` block not being acted upon.
 
 While this does not inherently lead to issues, they should be avoided wherever possible.
 
-##How to Fix
+## How
 Use ```Write-Error``` or ```throw``` statements within the catch block.
 
-##Example
-###Wrong:
+## Example
+### Wrong
 ``` PowerShell
 try
 {
@@ -21,7 +21,7 @@ catch [DivideByZeroException]
 }
 ```
 
-###Correct:
+### Correct
 ``` PowerShell
 try
 {

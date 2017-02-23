@@ -1,22 +1,22 @@
-﻿#AvoidGlobalFunctions
+# AvoidGlobalFunctions
 **Severity Level: Warning**
 
-##Description
+## Description
 Globally scoped functions override existing functions within the sessions with matching names. This name collision can cause difficult to debug issues for consumers of modules.  
 
 
 To understand more about scoping, see ```Get-Help about_Scopes```.
 
-##How to Fix
+## How
 Use other scope modifiers for functions.
 
-##Example
-###Wrong:
+## Example
+### Wrong
 ``` PowerShell
 function global:functionName {}
 ```
 
-###Correct:
+### Correct
 ``` PowerShell
 function functionName {} 
 ```

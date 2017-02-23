@@ -1,8 +1,8 @@
-﻿# UseConsistentWhitespace
+# UseConsistentWhitespace
 **Severity Level: Warning**
 
 ## Description
-This rule enforces consistent brace, parenthesis, binary operator, assignment operator and separator styles. For more information please see the [Parameters](#parameters) section.
+# parameters
 
 **Note**: This rule is not enabled by default. The user needs to enable it through settings.
 

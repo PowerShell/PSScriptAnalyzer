@@ -1,17 +1,17 @@
-﻿#DscTestsPresent
+# DscTestsPresent
 **Severity Level: Information**
 
-##Description
+## Description
 Checks that DSC tests for given resource are present.
 
-##How to Fix
+## How
 To fix a violation of this rule, please make sure Tests directory is present:
 * For non-class based resources it should exist at the same folder level as DSCResources folder.
 * For class based resources it should be present at the same folder level as resource psm1 file.
 
 Tests folder should contain test script for given resource - file name should contain resource's name.
 
-##Example
+## Example
 ### Non-class based resource
 Let's assume we have non-class based resource with a following file structure:
 * xAzure

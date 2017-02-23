@@ -1,7 +1,7 @@
-﻿#AvoidTrapStatement
+# AvoidTrapStatement
 **Severity Level: Warning**
 
-##Description
+## Description
 The `Trap` keyword specifies a list of statements to run when a terminating error occurs.
 
 Trap statements handle the terminating errors and allow execution of the script or function to continue instead of stopping.
@@ -9,11 +9,11 @@ Trap statements handle the terminating errors and allow execution of the script 
 Traps are intended for the use of administrators and not for script and cmdlet developers. PowerShell scripts and cmdlets should make use
 of `try{} catch{} finally{}` statements.
 
-##How to Fix
+## How
 Replace `Trap` statements with `try{} catch{} finally{}` statements.
 
-##Example
-###Wrong：
+## Example
+### Wrong
 ``` PowerShell
 function Test-Trap
 {
@@ -21,7 +21,7 @@ function Test-Trap
 }
 ```
 
-###Correct:
+### Correct
 ``` PowerShell
 function Test-Trap
 {

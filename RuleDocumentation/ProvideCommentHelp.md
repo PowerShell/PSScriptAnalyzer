@@ -1,16 +1,16 @@
-﻿#ProvideCommentHelp
+# ProvideCommentHelp
 **Severity Level: Info**
 
-##Description
+## Description
 Comment based help should be provided for all PowerShell commands. This test only checks for the presence of comment based help and not on the validity or format.
 
 For assistance on comment based help, use the command ```Get-Help about_comment_based_help``` or the article, "How to Write Cmdlet Help" (http://go.microsoft.com/fwlink/?LinkID=123415).
 
-##How to Fix
+## How
 Include comment based help for each command identified.
 
-##Example
-###Wrong:
+## Example
+### Wrong
 ``` PowerShell
 function Get-File
 {
@@ -23,7 +23,7 @@ function Get-File
 }
 ```
 
-###Correct:
+### Correct
 ``` PowerShell
 <#
 .Synopsis

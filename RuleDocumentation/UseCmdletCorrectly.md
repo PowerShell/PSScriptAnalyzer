@@ -1,14 +1,14 @@
-﻿#UseCmdletCorrectly
+# UseCmdletCorrectly
 **Severity Level: Warning**
 
-##Description
+## Description
 Whenever we call a command, care should be taken that it is invoked with the correct syntax and parameters.
 
-##How to Fix
+## How
 Specify all mandatory parameters when calling commands.
 
-##Example
-###Wrong：
+## Example
+### Wrong
 ``` PowerShell
 Function Set-TodaysDate ()
 {
@@ -17,7 +17,7 @@ Function Set-TodaysDate ()
 }
 ```
 
-###Correct:
+### Correct
 ``` PowerShell
 Function Set-TodaysDate ()
 {

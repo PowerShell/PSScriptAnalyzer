@@ -1,16 +1,16 @@
-﻿#UseShouldProcessCorrectly
+# UseShouldProcessCorrectly
 **Severity Level: Warning**
 
-##Description
+## Description
 If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also call `ShouldProcess`. A violation is any function which either declares `SupportsShouldProcess` attribute but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not does not declare `SupportsShouldProcess`
 
 For more information, please refer to `about_Functions_Advanced_Methods` and `about_Functions_CmdletBindingAttribute`
 
-##How to Fix
+## How
 To fix a violation of this rule, please call `ShouldProcess` method when a cmdlet declares `SupportsShouldProcess` attribute. Or please add `SupportsShouldProcess` attribute argument when calling `ShouldProcess`
 
-##Example
-###Wrong：
+## Example
+### Wrong
 ``` PowerShell
 	function Set-File
 	{
@@ -25,7 +25,7 @@ To fix a violation of this rule, please call `ShouldProcess` method when a cmdle
 	}
 ```
 
-###Correct:
+### Correct
 ``` PowerShell
 	function Set-File
 	{

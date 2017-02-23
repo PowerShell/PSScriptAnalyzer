@@ -1,14 +1,14 @@
-﻿#AvoidReservedParams
+# AvoidReservedParams
 **Severity Level: Error**
 
-##Description
+## Description
 You cannot use reserved common parameters in an advanced function.
 
-##How to Fix
+## How
 Change the name of the parameter.
 
-##Example
-###Wrong：
+## Example
+### Wrong
 ``` PowerShell
 function Test
 {
@@ -21,7 +21,7 @@ function Test
 }
 ```
 
-###Correct:
+### Correct
 ``` PowerShell
 function Test
 {
