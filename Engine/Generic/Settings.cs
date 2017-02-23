@@ -20,6 +20,8 @@ using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
+
+
     public class Settings
     {
         private string filePath;
@@ -31,7 +33,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public string FilePath { get { return filePath; } }
         public IEnumerable<string> IncludeRules { get { return includeRules; } }
         public IEnumerable<string> ExcludeRules { get { return excludeRules; } }
-        public IEnumerable<string> Severity { get { return severities; } }
+        public IEnumerable<string> Severities { get { return severities; } }
         public Dictionary<string, Dictionary<string, object>> RuleArguments { get { return ruleArguments; } }
 
         public Settings(object settings, Func<string, string> presetResolver)

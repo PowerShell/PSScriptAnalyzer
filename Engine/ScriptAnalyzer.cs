@@ -209,7 +209,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            this.severity = (!settings.Severity.Any()) ? null : settings.Severity.ToArray();
+            this.severity = (!settings.Severities.Any()) ? null : settings.Severities.ToArray();
             this.includeRule = (!settings.IncludeRules.Any()) ? null : settings.IncludeRules.ToArray();
             this.excludeRule = (!settings.ExcludeRules.Any()) ? null : settings.ExcludeRules.ToArray();
             if (settings.RuleArguments != null)
