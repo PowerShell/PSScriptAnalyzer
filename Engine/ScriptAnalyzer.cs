@@ -198,6 +198,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             suppressedOnly = false;
         }
 
+        /// <summary>
+        /// Update includerules, excluderules, severity and rule arguments.
+        /// </summary>
+        /// <param name="settings">An object of type Settings</param>
+        public void UpdateSettings(Settings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            this.severity = (!settings.Severity.Any()) ? null : settings.Severity.ToArray();
+            this.includeRule = (!settings.IncludeRules.Any()) ? null : settings.IncludeRules.ToArray();
+            this.excludeRule = (!settings.ExcludeRules.Any()) ? null : settings.ExcludeRules.ToArray();
+            if (settings.RuleArguments != null)
+            {
+                Helper.Instance.SetRuleArguments(
+                    settings.RuleArguments.ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value as object,
+                        StringComparer.OrdinalIgnoreCase));
+            }
+        }
+
         internal bool ParseProfile(object profileObject, PathIntrinsics path, IOutputWriter writer)
         {
             // profile was not given
