@@ -273,12 +273,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             if (settingsMode != SettingsMode.None)
             {
-                var settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(settingsFound, this.SessionState.Path, this);
-                if (settingFileHasErrors)
+                try
                 {
-                    this.WriteWarning("Cannot parse settings. Will abort the invocation.");
-                    stopProcessing = true;
-                    return;
+                    var settingsObj = new Settings(settingsFound);
+                    ScriptAnalyzer.Instance.UpdateSettings(settingsObj);
+                }
+                catch
+                {
+                        this.WriteWarning("Cannot parse settings. Will abort the invocation.");
+                        stopProcessing = true;
+                        return;
                 }
             }
 
