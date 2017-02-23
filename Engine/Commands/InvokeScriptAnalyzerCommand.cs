@@ -238,7 +238,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 
             object settingsFound;
-            var settingsMode = FindSettingsMode(out settingsFound);
+            var settingsMode = Generic.Settings.FindSettingsMode(
+                this.settings,
+                processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
+                out settingsFound);
+
             switch (settingsMode)
             {
                 case SettingsMode.Auto:
@@ -253,9 +257,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     break;
 
                 case SettingsMode.Preset:
-                    settingsFound = Generic.Settings.GetSettingPresetFilePath(this.settings as string);
-                    goto case SettingsMode.File;
-
                 case SettingsMode.File:
                     this.WriteVerbose(String.Format("Using settings file at {0}", (string)settingsFound));
                     break;
@@ -344,17 +345,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         #region Private Methods
 
-        private static bool IsBuiltinSettingPreset(object settingPreset)
-        {
-            var preset = settingPreset as string;
-            if (preset != null)
-            {
-                return Generic.Settings.GetSettingPresets().Contains(preset, StringComparer.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
-
         private void ProcessInput()
         {
             IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
@@ -397,64 +387,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool IsFileParameterSet()
         {
             return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private SettingsMode FindSettingsMode(out object settingsFound)
-        {
-            var settingsMode = SettingsMode.None;
-            settingsFound = this.settings;
-            if (settingsFound == null)
-            {
-                if (processedPaths != null && processedPaths.Count == 1)
-                {
-                    // add a directory separator character because if there is no trailing separator character, it will return the parent
-                    var directory = processedPaths[0].TrimEnd(System.IO.Path.DirectorySeparatorChar);
-                    if (File.Exists(directory))
-                    {
-                        // if given path is a file, get its directory
-                        directory = System.IO.Path.GetDirectoryName(directory);
-                    }
-
-                    if (Directory.Exists(directory))
-                    {
-                        // if settings are not provided explicitly, look for it in the given path
-                        // check if pssasettings.psd1 exists
-                        var settingsFilename = "PSScriptAnalyzerSettings.psd1";
-                        var settingsFilePath = System.IO.Path.Combine(directory, settingsFilename);
-                        settingsFound = settingsFilePath;
-                        if (File.Exists(settingsFilePath))
-                        {
-                            settingsMode = SettingsMode.Auto;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                var settingsFilePath = settingsFound as String;
-                if (settingsFilePath != null)
-                {
-                    if (IsBuiltinSettingPreset(settingsFilePath))
-                    {
-                        settingsMode = SettingsMode.Preset;
-                        settingsFound = Generic.Settings.GetSettingPresetFilePath(settingsFilePath);
-                    }
-                    else
-                    {
-                        settingsMode = SettingsMode.File;
-                        settingsFound = settingsFilePath;
-                    }
-                }
-                else
-                {
-                    if (settingsFound is Hashtable)
-                    {
-                        settingsMode = SettingsMode.Hashtable;
-                    }
-                }
-            }
-
-            return settingsMode;
         }
 
         #endregion // Private Methods
