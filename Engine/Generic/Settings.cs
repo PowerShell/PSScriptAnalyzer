@@ -217,7 +217,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// Sets the arguments for consumption by rules
         /// </summary>
         /// <param name="ruleArgs">A hashtable with rule names as keys</param>
-        public Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(object ruleArguments)
+        private  Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(object ruleArguments)
         {
             var ruleArgs = ruleArguments as Dictionary<string, object>;
             if (ruleArgs == null)
