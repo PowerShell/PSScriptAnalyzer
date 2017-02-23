@@ -1,14 +1,19 @@
 # UseSingularNouns
+
 **Severity Level: Warning**
 
 ## Description
+
 PowerShell team best practices state cmdlets should use singular nouns and not plurals.
 
 ## How
+
 Change plurals to singular.
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 function Get-Files
 {
@@ -17,6 +22,7 @@ function Get-Files
 ```
 
 ### Correct
+
 ``` PowerShell
 function Get-File
 {

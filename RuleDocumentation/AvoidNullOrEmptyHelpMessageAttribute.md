@@ -1,15 +1,20 @@
 # AvoidNullOrEmtpyHelpMessageAttribute
+
 **Severity Level: Warning**
 
 ## Description
+
 The value of the `HelpMessage` attribute should not be an empty string or a null value as this causes PowerShell's interpreter to throw an mirror when executing the
 function or cmdlet.
 
 ## How
+
 Specify a value for the `HelpMessage` attribute.
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 Function BadFuncEmptyHelpMessageEmpty
 {
@@ -46,6 +51,7 @@ Function BadFuncEmptyHelpMessageNoAssignment
 ```
 
 ### Correct
+
 ``` PowerShell
 Function GoodFuncHelpMessage
 {

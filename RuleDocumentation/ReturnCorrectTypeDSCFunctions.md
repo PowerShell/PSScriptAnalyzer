@@ -1,7 +1,9 @@
 # ReturnCorrectTypeDSCFunctions
+
 **Severity Level: Information**
 
 ## Description
+
 The functions in DSC resources have specific return objects.
 
 For non-class based resources:
@@ -15,10 +17,13 @@ For class based resources:
 * `Get` must return an instance of the DSC class.
 
 ## How
+
 Ensure that each function returns the correct type.
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 function Get-TargetResource
 {
@@ -55,6 +60,7 @@ function Test-TargetResource
 ```
 
 ### Correct
+
 ``` PowerShell
 function Get-TargetResource
 {
@@ -93,7 +99,9 @@ function Test-TargetResource
 ```
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 [DscResource()]
 class MyDSCResource
@@ -119,6 +127,7 @@ class MyDSCResource
 ```
 
 ### Correct
+
 ``` PowerShell
 [DscResource()]
 class MyDSCResource

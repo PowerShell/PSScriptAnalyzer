@@ -1,7 +1,9 @@
 # UseStandardDSCFunctionsInResource
+
 **Severity Level: Error**
 
 ## Description
+
 All DSC resources are required to implement the correct functions.
 
 For non-class based resources:
@@ -15,10 +17,13 @@ For class based resources:
 * `Get`
 
 ## How
+
 Add the missing functions to the resource.
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 function Get-TargetResource
 {
@@ -44,6 +49,7 @@ function Set-TargetResource
 }
 ```
 ### Correct
+
 ``` PowerShell
 function Get-TargetResource
 {
@@ -82,7 +88,9 @@ function Test-TargetResource
 ```
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 [DscResource()]
 class MyDSCResource
@@ -102,6 +110,7 @@ class MyDSCResource
 }
 
 ### Correct
+
 ``` PowerShell
 [DscResource()]
 class MyDSCResource

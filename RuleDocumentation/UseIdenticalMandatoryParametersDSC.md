@@ -1,14 +1,19 @@
 # UseIdenticalMandatoryParametersDSC
+
 **Severity Level: Error**
 
 ## Description
+
 The `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions of DSC Resource must have the same mandatory parameters.
 
 ## How
+
 Correct the mandatory parameters for the functions in DSC resource.
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 function Get-TargetResource
 {
@@ -47,6 +52,7 @@ function Test-TargetResource
 ```
 
 ### Correct
+
 ``` PowerShell
 function Get-TargetResource
 {

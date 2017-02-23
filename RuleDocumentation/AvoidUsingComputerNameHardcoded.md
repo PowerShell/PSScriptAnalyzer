@@ -1,14 +1,19 @@
 # AvoidUsingComputerNameHardcoded
+
 **Severity Level: Error**
 
 ## Description
+
 The names of computers should never be hard coded as this will expose sensitive information. The `ComputerName` parameter should never have a hard coded value.
 
 ## How
+
 Remove hard coded computer names.
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 Function Invoke-MyRemoteCommand ()
 {
@@ -17,6 +22,7 @@ Function Invoke-MyRemoteCommand ()
 ```
 
 ### Correct
+
 ``` PowerShell
 Function Invoke-MyCommand ($ComputerName)
 {
@@ -25,7 +31,9 @@ Function Invoke-MyCommand ($ComputerName)
 ```
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 Function Invoke-MyLocalCommand ()
 {
@@ -34,6 +42,7 @@ Function Invoke-MyLocalCommand ()
 ```
 
 ### Correct
+
 ``` PowerShell
 Function Invoke-MyLocalCommand ()
 {

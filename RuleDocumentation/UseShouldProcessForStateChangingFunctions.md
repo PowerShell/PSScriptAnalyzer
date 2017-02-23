@@ -1,7 +1,9 @@
 # UseShouldProcessForStateChangingFunctions
+
 **Severity Level: Warning**
 
 ## Description
+
 Functions whose verbs change system state should support `ShouldProcess`.
 
 Verbs that should support `ShouldProcess`:
@@ -15,10 +17,13 @@ Verbs that should support `ShouldProcess`:
 * `Update`
 
 ## How
+
 Include the attribute `SupportsShouldProcess`, in the `CmdletBindingBinding`.
 
 ## Example
+
 ### Wrong
+
 ``` PowerShell
 	function Set-ServiceObject
 	{
@@ -33,6 +38,7 @@ Include the attribute `SupportsShouldProcess`, in the `CmdletBindingBinding`.
 ```
 
 ### Correct
+
 ``` PowerShell
 	function Set-ServiceObject
 	{
