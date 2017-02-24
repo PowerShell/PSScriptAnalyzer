@@ -79,7 +79,7 @@ Describe "Settings Class" {
             $settings.RuleArguments["PSAvoidUsingCmdletAliases"]["WhiteList"][1] | Should Be "cp"
         }
 
-        It "Should be case insesitive" {
+        It "Should be case insensitive" {
             $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"].Count | Should Be 2
             $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"][0] | Should Be "cd"
             $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"][1] | Should Be "cp"
@@ -93,7 +93,7 @@ Describe "Settings Class" {
         }
 
         It "Should return 2 IncludeRules" {
-            $settings.IncludeRules.Count | Should Be 2
+            $settings.IncludeRules.Count | Should Be 3
         }
 
         It "Should return 2 ExcludeRules" {
@@ -101,7 +101,15 @@ Describe "Settings Class" {
         }
 
         It "Should return 1 rule argument" {
-            $settings.RuleArguments.Count | Should Be 1
+            $settings.RuleArguments.Count | Should Be 2
+        }
+
+        It "Should parse boolean type argument" {
+            $settings.RuleArguments["PSUseConsistentIndentation"]["Enable"] | Should Be $true
+        }
+
+        It "Should parse int type argument" {
+            $settings.RuleArguments["PSUseConsistentIndentation"]["IndentationSize"] | Should Be 4
         }
     }
 }

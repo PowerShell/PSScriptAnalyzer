@@ -1,9 +1,14 @@
 @{
-    "IncludeRules" = @("PSAvoidUsingCmdletAliases", "PSAvoidUsingWriteHost")
+    "IncludeRules" = @("PSAvoidUsingCmdletAliases", "PSAvoidUsingWriteHost", "PSUseConsistentIndentation")
     "ExcludeRules" = @("PSShouldProcess", "PSAvoidUsingWMICmdlet", "PSUseCmdletCorrectly")
     "rules" = @{
         PSAvoidUsingCmdletAliases = @{
             WhiteList = @("cd", "cp")
+        }
+
+        PSUseConsistentIndentation = @{
+            Enable = $true
+            IndentationSize = 4
         }
     }
 }
