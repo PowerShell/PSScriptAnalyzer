@@ -22,6 +22,7 @@ Table of Contents
       - [Tests](#tests)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
+  * [Preset](#preset)
   * [Explicit](#explicit)
   * [Implicit](#implicit)
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
@@ -232,6 +233,15 @@ Settings Support in ScriptAnalyzer
 ==================================
 Settings that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to
 `Invoke-ScriptAnalyzer` using the `Setting` parameter. This enables a user to create a custom configuration for a specific environment. We support the following modes for specifying the settings file.
+
+## Built-in Presets
+ScriptAnalyzer ships a set of built-in presets that can be used to analyze scripts. For example, if the user wants to run *PowerShell Gallery* rules on their module, then they use the following command.
+
+```powershell
+PS> Invoke-ScriptAnalyzer -Path /path/to/module/ -Settings PSGallery -Recurse
+```
+
+Along with `PSGallery` there are a few other built-in presets, including, `DSC` and `CodeFormatting`, that can be used. These presets can be tab completed for the `Settings` parameter.
 
 ## Explicit
 
