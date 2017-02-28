@@ -19,7 +19,7 @@ using System.Linq;
 using System.Management.Automation.Language;
 using System.Reflection;
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     internal enum SettingsMode { None = 0, Auto, File, Hashtable, Preset };
 
@@ -548,7 +548,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             var preset = settingPreset as string;
             if (preset != null)
             {
-                return Generic.Settings.GetSettingPresets().Contains(preset, StringComparer.OrdinalIgnoreCase);
+                return GetSettingPresets().Contains(preset, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;

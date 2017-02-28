@@ -238,7 +238,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 
             object settingsFound;
-            var settingsMode = Generic.Settings.FindSettingsMode(
+            var settingsMode = PowerShell.ScriptAnalyzer.Settings.FindSettingsMode(
                 this.settings,
                 processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
                 out settingsFound);

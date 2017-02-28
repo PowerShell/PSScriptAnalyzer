@@ -6,6 +6,7 @@ $directory = Split-Path $MyInvocation.MyCommand.Path
 $settingsTestDirectory = [System.IO.Path]::Combine($directory, "SettingsTest")
 $project1Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project1")
 $project2Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project2")
+$settingsTypeName = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings'
 
 Describe "Settings Precedence" {
     Context "settings object is explicit" {
@@ -33,8 +34,7 @@ Describe "Settings Precedence" {
 Describe "Settings Class" {
     Context "When an empty hashtable is provided" {
         BeforeAll {
-            $settings = New-Object -TypeName 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.Settings' `
-                              -ArgumentList @{}
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{}
         }
 
         'IncludeRules', 'ExcludeRules', 'Severity', 'RuleArguments' | ForEach-Object {
@@ -47,8 +47,7 @@ Describe "Settings Class" {
     Context "When a string is provided for IncludeRules in a hashtable" {
         BeforeAll {
             $ruleName = "PSAvoidCmdletAliases"
-            $settings = New-Object -TypeName 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.Settings' `
-                              -ArgumentList @{ IncludeRules = $ruleName }
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{ IncludeRules = $ruleName }
         }
 
         It "Should return an IncludeRules array with 1 element" {
@@ -69,8 +68,7 @@ Describe "Settings Class" {
                     }
                 }
             }
-            $settings = New-Object -TypeName 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.Settings' `
-                              -ArgumentList $settingsHashtable
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
         }
 
         It "Should return the rule arguments" {
@@ -88,7 +86,7 @@ Describe "Settings Class" {
 
     Context "When a settings file path is provided" {
         BeforeAll {
-            $settings = New-Object -TypeName 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.Settings' `
+            $settings = New-Object -TypeName $settingsTypeName `
                               -ArgumentList ([System.IO.Path]::Combine($project1Root, "ExplicitSettings.psd1"))
         }
 
