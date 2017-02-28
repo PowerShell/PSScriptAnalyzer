@@ -69,7 +69,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 }
                 else
                 {
-                    throw new ArgumentException(String.Format("File does not exist: {0}", settingsFilePath));
+                    throw new ArgumentException(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidPath,
+                            settingsFilePath));
                 }
             }
             else
@@ -81,7 +85,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 }
                 else
                 {
-                    throw new ArgumentException("Input object should either be a string or a hashtable");
+                    throw new ArgumentException(Strings.SettingsInvalidType);
                 }
             }
         }
@@ -168,29 +172,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 string key = obj as string;
                 if (key == null)
                 {
-                    // TODO localize
-                    throw new InvalidDataException("key not string");
-                    // writer.WriteError(
-                    //     new ErrorRecord(
-                    //         new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.KeyNotString, key)),
-                    //         Strings.ConfigurationKeyNotAString,
-                    //         ErrorCategory.InvalidData,
-                    //         hashtable));
-                    // hasError = true;
+                    throw new InvalidDataException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.KeyNotString,
+                            key));
                 }
+
                 var valueHashtableObj = hashtable[obj];
                 if (valueHashtableObj == null)
                 {
-                    throw new InvalidDataException("wrong hash table value");
-                    // writer.WriteError(
-                    //     new ErrorRecord(
-                    //         new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, valueHashtableObj, key)),
-                    //         Strings.WrongConfigurationKey,
-                    //         ErrorCategory.InvalidData,
-                    //         hashtable));
-                    // hasError = true;
-                    // return null;
+                    throw new InvalidDataException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.WrongValueHashTable,
+                            "",
+                            key));
                 }
+
                 var valueHashtable = valueHashtableObj as Hashtable;
                 if (valueHashtable == null)
                 {
@@ -221,17 +220,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             if (val == null)
             {
                 throw new InvalidDataException(
-                    String.Format(
-                        "value should be a string or string array for {0} key",
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.WrongValueHashTable,
+                        "",
                         key));
-                // writer.WriteError(
-                //     new ErrorRecord(
-                //         new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
-                //         Strings.WrongConfigurationKey,
-                //         ErrorCategory.InvalidData,
-                //         profile));
-                // hasError = true;
-                // break;
             }
 
             List<string> values = new List<string>();
@@ -260,21 +253,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         }
                         else
                         {
-                            throw new InvalidDataException("array items should be of string type");
-                            // writer.WriteError(
-                            //     new ErrorRecord(
-                            //         new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, key)),
-                            //         Strings.WrongConfigurationKey,
-                            //         ErrorCategory.InvalidData,
-                            //         profile));
-                            // hasError = true;
-                            // break;
+                            throw new InvalidDataException(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.WrongValueHashTable,
+                                    val,
+                                    key));
                         }
                     }
                 }
                 else
                 {
-                    throw new InvalidDataException("array items should be of string type");
+                    throw new InvalidDataException(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.WrongValueHashTable,
+                                val,
+                                key));
                 }
             }
 
@@ -285,21 +280,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// Sets the arguments for consumption by rules
         /// </summary>
         /// <param name="ruleArgs">A hashtable with rule names as keys</param>
-        private  Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(object ruleArguments)
+        private Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(object ruleArguments)
         {
             var ruleArgs = ruleArguments as Dictionary<string, object>;
             if (ruleArgs == null)
             {
-                throw new ArgumentException(
-                    "input should be a dictionary",
-                    "ruleArguments");
+                throw new ArgumentException(Strings.SettingsInputShouldBeDictionary, nameof(ruleArguments));
             }
 
             if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
             {
-                throw new ArgumentException(
-                    "Input dictionary should have OrdinalIgnoreCase comparer.",
-                    "ruleArguments");
+                throw new ArgumentException(Strings.SettingsDictionaryShouldBeCaseInsesitive, nameof(ruleArguments));
             }
 
             var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
@@ -308,9 +299,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 var argsDict = ruleArgs[rule] as Dictionary<string, object>;
                 if (argsDict == null)
                 {
-                    throw new ArgumentException(
-                        "input should be a dictionary",
-                        "ruleArguments");
+                    throw new InvalidDataException(Strings.SettingsInputShouldBeDictionary);
                 }
                 ruleArgsDict[rule] = argsDict;
             }
@@ -341,19 +330,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         break;
 
                     case "rules":
-                        ruleArguments = ConvertToRuleArgumentType(val);
+                        try
+                        {
+                            ruleArguments = ConvertToRuleArgumentType(val);
+                        }
+                        catch (ArgumentException argumentException)
+                        {
+                            throw new InvalidDataException(
+                                string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, "", key),
+                                argumentException);
+                        }
+
                         break;
 
                     default:
-                        throw new InvalidDataException(String.Format("Invalid key: {0}", key));
-                        // writer.WriteError(
-                        //     new ErrorRecord(
-                        //         new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, key)),
-                        //         Strings.WrongConfigurationKey,
-                        //         ErrorCategory.InvalidData,
-                        //         profile));
-                        // hasError = true;
-                        // break;
+                        throw new InvalidDataException(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.WrongKeyHashTable,
+                                key));
                 }
             }
         }
@@ -368,10 +363,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             // no hashtable, raise warning
             if (hashTableAsts.Count() == 0)
             {
-                throw new ArgumentException("Given file does not contain a hashtable");
-                // writer.WriteError(new ErrorRecord(new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, profile)),
-                //     Strings.ConfigurationFileHasNoHashTable, ErrorCategory.ResourceUnavailable, profile));
-                // hasError = true;
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, settingsFilePath));
             }
 
             HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
@@ -384,12 +376,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
             catch (InvalidOperationException e)
             {
-                throw new ArgumentException("input file has invalid hashtable", e);
+                throw new ArgumentException(Strings.InvalidProfile, e);
             }
 
             if (hashtable == null)
             {
-                throw new ArgumentException("input file has invalid hashtable");
+                throw new ArgumentException(
+                    String.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidProfile,
+                        settingsFilePath));
             }
 
             parseSettingsHashtable(hashtable);

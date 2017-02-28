@@ -248,25 +248,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 case SettingsMode.Auto:
                     this.WriteVerbose(
                         String.Format(
-                            "Settings not provided. Will look for settings file in the given path {0}.",
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsNotProvided,
                             path));
                     this.WriteVerbose(
                         String.Format(
-                            "Found {0}. Will use it to provide settings for this invocation.",
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsAutoDiscovered,
                             (string)settingsFound));
                     break;
 
                 case SettingsMode.Preset:
                 case SettingsMode.File:
-                    this.WriteVerbose(String.Format("Using settings file at {0}", (string)settingsFound));
+                    this.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingFile,
+                            (string)settingsFound));
                     break;
 
                 case SettingsMode.Hashtable:
-                    this.WriteVerbose(String.Format("Using settings hashtable."));
+                    this.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingHashtable));
                     break;
 
                 default: // case SettingsMode.None
-                    this.WriteVerbose(String.Format("Cannot find a settings file."));
+                    this.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsCannotFindFile));
                     break;
             }
 
@@ -279,7 +291,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 }
                 catch
                 {
-                        this.WriteWarning("Cannot parse settings. Will abort the invocation.");
+                        this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
                         stopProcessing = true;
                         return;
                 }
@@ -318,7 +330,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         ScriptAnalyzer.Instance.ModuleHandler = moduleHandler;
                         this.WriteVerbose(
                             String.Format(
-                                "Temporary module location: {0}",
+                                CultureInfo.CurrentCulture,
+                                Strings.ModuleDepHandlerTempLocation,
                                 moduleHandler.TempModulePath));
                         ProcessInput();
                     }
