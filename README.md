@@ -22,7 +22,7 @@ Table of Contents
       - [Tests](#tests)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
-  * [Preset](#preset)
+  * [Built-in Presets](#built-in-presets)
   * [Explicit](#explicit)
   * [Implicit](#implicit)
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
