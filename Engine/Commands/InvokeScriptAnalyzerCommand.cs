@@ -206,9 +206,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         }
         private bool saveDscDependency;
 #endif // !PSV3
-#endregion Parameters
+        #endregion Parameters
 
-#region Overrides
+        #region Overrides
 
         /// <summary>
         /// Imports all known rules and loggers.
@@ -227,67 +227,74 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 Helper.Instance.SetPSVersionTable(psVersionTable);
             }
 
-            string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,
-                this.SessionState, recurseCustomRulePath);
+            string[] rulePaths = Helper.ProcessCustomRulePaths(
+                customRulePath,
+                this.SessionState,
+                recurseCustomRulePath);
+
             if (IsFileParameterSet())
             {
                 ProcessPath();
             }
 
-            var settingFileHasErrors = false;
-            if (settings == null
-                && processedPaths != null
-                && processedPaths.Count == 1)
+            object settingsFound;
+            var settingsMode = PowerShell.ScriptAnalyzer.Settings.FindSettingsMode(
+                this.settings,
+                processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
+                out settingsFound);
+
+            switch (settingsMode)
             {
-                // add a directory separator character because if there is no trailing separator character, it will return the parent
-                var directory = processedPaths[0].TrimEnd(System.IO.Path.DirectorySeparatorChar);
-                if (File.Exists(directory))
-                {
-                    // if given path is a file, get its directory
-                    directory = System.IO.Path.GetDirectoryName(directory);
-                }
-
-                this.WriteVerbose(
-                    String.Format(
-                        "Settings not provided. Will look for settings file in the given path {0}.",
-                        path));
-                var settingsFileAutoDiscovered = false;
-                if (Directory.Exists(directory))
-                {
-                    // if settings are not provided explicitly, look for it in the given path
-                    // check if pssasettings.psd1 exists
-                    var settingsFilename = "PSScriptAnalyzerSettings.psd1";
-                    var settingsFilepath = System.IO.Path.Combine(directory, settingsFilename);
-                    if (File.Exists(settingsFilepath))
-                    {
-                        settingsFileAutoDiscovered = true;
-                        this.WriteVerbose(
-                            String.Format(
-                                "Found {0} in {1}. Will use it to provide settings for this invocation.",
-                                settingsFilename,
-                                directory));
-                        settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(settingsFilepath, this.SessionState.Path, this);
-                    }
-                }
-
-                if (!settingsFileAutoDiscovered)
-                {
+                case SettingsMode.Auto:
                     this.WriteVerbose(
                         String.Format(
-                            "Cannot find a settings file in the given path {0}.",
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsNotProvided,
                             path));
-                }
-            }
-            else
-            {
-                settingFileHasErrors = !ScriptAnalyzer.Instance.ParseProfile(this.settings, this.SessionState.Path, this);
+                    this.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsAutoDiscovered,
+                            (string)settingsFound));
+                    break;
+
+                case SettingsMode.Preset:
+                case SettingsMode.File:
+                    this.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingFile,
+                            (string)settingsFound));
+                    break;
+
+                case SettingsMode.Hashtable:
+                    this.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingHashtable));
+                    break;
+
+                default: // case SettingsMode.None
+                    this.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsCannotFindFile));
+                    break;
             }
 
-            if (settingFileHasErrors)
+            if (settingsMode != SettingsMode.None)
             {
-                this.WriteWarning("Cannot parse settings. Will abort the invocation.");
-                stopProcessing = true;
-                return;
+                try
+                {
+                    var settingsObj = new Settings(settingsFound);
+                    ScriptAnalyzer.Instance.UpdateSettings(settingsObj);
+                }
+                catch
+                {
+                        this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
+                        stopProcessing = true;
+                        return;
+                }
             }
 
             ScriptAnalyzer.Instance.Initialize(
@@ -323,7 +330,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         ScriptAnalyzer.Instance.ModuleHandler = moduleHandler;
                         this.WriteVerbose(
                             String.Format(
-                                "Temporary module location: {0}",
+                                CultureInfo.CurrentCulture,
+                                Strings.ModuleDepHandlerTempLocation,
                                 moduleHandler.TempModulePath));
                         ProcessInput();
                     }
@@ -346,9 +354,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             base.StopProcessing();
         }
 
-#endregion
+        #endregion
 
-#region Methods
+        #region Private Methods
+
         private void ProcessInput()
         {
             IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
@@ -392,6 +401,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
         }
-#endregion
+
+        #endregion // Private Methods
     }
 }

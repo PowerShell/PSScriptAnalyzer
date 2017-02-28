@@ -1,4 +1,19 @@
-﻿## [1.10.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.10.0) - 2017-01-19
+﻿## unreleased
+
+### Added
+- Built-in settings presets to specify settings from command line. Currently, PSSA ships with `PSGallery`, `CodeFormatting`, `DSC`, and other setting presets. All of them can be found in the `Settings/` directory in the module. To use them just pass them as an argument to the `Settings` parameters. For example, if you want to run rules that *powershellgallery* runs, then use the following command.
+```powershell
+PS> Invoke-ScriptAnalyzer -Path /path/to/your/module -Settings PSGallery
+```
+- Argument completion for built-in settings presets.
+- Argument completion for `IncludeRule` and `ExcludeRule` parameters.
+
+### Fixed
+
+### Changed
+    - Settings implementation to decouple it from engine.
+
+## [1.10.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.10.0) - 2017-01-19
 ### Added
 - Three rules to enable code formatting feature in vscode (#690)
     - [PSPlaceOpenBrace](https://github.com/PowerShell/PSScriptAnalyzer/blob/03a6e2b4ee24894bf574a8a8ce911d03680da607/RuleDocumentation/PlaceOpenBrace.md)

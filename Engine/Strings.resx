@@ -244,7 +244,37 @@
     <value>{0} is not a valid key in the settings hashtable. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
   </data>
   <data name="WrongValueHashTable" xml:space="preserve">
-    <value>Value {0} for key {1} has the wrong data type. Value in the settings hashtable should be a string or an array of strings.</value>
+    <value>Value {0} for key {1} has the wrong data type.</value>
+  </data>
+  <data name="SettingsInputShouldBeDictionary" xml:space="preserve">
+    <value>Input should be a dictionary type.</value>
+  </data>
+  <data name="SettingsDictionaryShouldBeCaseInsesitive" xml:space="preserve">
+    <value>Dictionary should be indexable in a case-insensitive manner.</value>
+  </data>
+  <data name="SettingsInvalidType" xml:space="preserve">
+    <value>Settings should be either a file path, built-in preset or a hashtable.</value>
+  </data>
+  <data name="SettingsNotProvided" xml:space="preserve">
+    <value>Settings not provided. Will look for settings file in the given path {0}.</value>
+  </data>
+  <data name="SettingsAutoDiscovered" xml:space="preserve">
+    <value>Found {0}. Will use it to provide settings for this invocation.</value>
+  </data>
+  <data name="SettingsUsingFile" xml:space="preserve">
+    <value>Using settings file at {0}.</value>
+  </data>
+  <data name="SettingsUsingHashtable" xml:space="preserve">
+    <value>Using settings hashtable.</value>
+  </data>
+  <data name="SettingsCannotFindFile" xml:space="preserve">
+    <value>Cannot find a settings file.</value>
+  </data>
+  <data name="SettingsNotParsable" xml:space="preserve">
+    <value>Cannot parse settings. Will abort the invocation.</value>
+  </data>
+  <data name="ModuleDepHandlerTempLocation" xml:space="preserve">
+    <value>Temporary module location: {0}.</value>
   </data>
   <data name="DigraphVertexAlreadyExists" xml:space="preserve">
     <value>Vertex {0} already exists! Cannot add it to the digraph.</value>

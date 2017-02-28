@@ -21,6 +21,7 @@ using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Management.Automation.Runspaces;
 using System.Collections;
+using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
