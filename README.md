@@ -22,6 +22,7 @@ Table of Contents
       - [Tests](#tests)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
+  * [Built-in Presets](#built-in-presets)
   * [Explicit](#explicit)
   * [Implicit](#implicit)
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
@@ -32,7 +33,7 @@ Table of Contents
 
 <!-- tocstop -->
 
-Introduction [&uarr;](#table-of-contents)
+Introduction
 ============
 PSScriptAnalyzer is a static code checker for Windows PowerShell modules and scripts. PSScriptAnalyzer checks the quality of Windows PowerShell code by running a set of rules.
 The rules are based on PowerShell best practices identified by PowerShell Team and the community. It generates DiagnosticResults (errors and warnings) to inform users about potential
@@ -41,16 +42,20 @@ code defects and suggests possible solutions for improvements.
 PSScriptAnalyzer is shipped with a collection of built-in rules that checks various aspects of PowerShell code such as presence of uninitialized variables, usage of PSCredential Type,
 usage of Invoke-Expression etc. Additional functionalities such as exclude/include specific rules are also supported.
 
+[Back to ToC](#table-of-contents)
 
-Usage [&uarr;](#table-of-contents)
+Usage
 ======================
+
 ``` PowerShell
 Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>] [-Severity <string[]>]
 
 Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [<CommonParameters>]
 ```
 
-Installation [&uarr;](#table-of-contents)
+[Back to ToC](#table-of-contents)
+
+Installation
 ============
 
 ### From PowerShell Gallery
@@ -135,7 +140,9 @@ cd /path/to/PSScriptAnalyzer/Tests/Rules
 Invoke-Pester
 ```
 
-Suppressing Rules [&uarr;](#table-of-contents)
+[Back to ToC](#table-of-contents)
+
+Suppressing Rules
 =================
 
 You can suppress a rule by decorating a script/function or script/function parameter with .NET's [SuppressMessageAttribute](https://msdn.microsoft.com/en-us/library/system.diagnostics.codeanalysis.suppressmessageattribute.aspx).
@@ -220,10 +227,21 @@ Param()
 
 **Note**: Rule suppression is currently supported only for built-in rules.
 
-Settings Support in ScriptAnalyzer [&uarr;](#table-of-contents)
-========================================
+[Back to ToC](#table-of-contents)
+
+Settings Support in ScriptAnalyzer
+==================================
 Settings that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to
 `Invoke-ScriptAnalyzer` using the `Setting` parameter. This enables a user to create a custom configuration for a specific environment. We support the following modes for specifying the settings file.
+
+## Built-in Presets
+ScriptAnalyzer ships a set of built-in presets that can be used to analyze scripts. For example, if the user wants to run *PowerShell Gallery* rules on their module, then they use the following command.
+
+```powershell
+PS> Invoke-ScriptAnalyzer -Path /path/to/module/ -Settings PSGallery -Recurse
+```
+
+Along with `PSGallery` there are a few other built-in presets, including, `DSC` and `CodeFormatting`, that can be used. These presets can be tab completed for the `Settings` parameter.
 
 ## Explicit
 
@@ -269,7 +287,9 @@ Invoke-ScriptAnalyzer -Path "C:\path\to\project" -Recurse
 
 Note that providing settings explicitly takes higher precedence over this implicit mode. Sample settings files are provided [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/Engine/Settings).
 
-ScriptAnalyzer as a .NET library [&uarr;](#table-of-contents)
+[Back to ToC](#table-of-contents)
+
+ScriptAnalyzer as a .NET library
 ================================
 
 ScriptAnalyzer engine and functionality can now be directly consumed as a library.
@@ -293,7 +313,9 @@ public System.Collections.Generic.IEnumerable<DiagnosticRecord> AnalyzePath(stri
 public System.Collections.Generic.IEnumerable<IRule> GetRule(string[] moduleNames, string[] ruleNames)
 ```
 
-Violation Correction [&uarr;](#table-of-contents)
+[Back to ToC](#table-of-contents)
+
+Violation Correction
 ====================
 Most violations can be fixed by replacing the violation causing content with the correct alternative.
 
@@ -339,8 +361,10 @@ The main motivation behind having `SuggestedCorrections` is to enable quick-fix 
 * MissingModuleManifestField.cs
 * UseToExportFieldsInManifest.cs
 
-Project Management Dashboard [&uarr;](#table-of-contents)
-==============================
+[Back to ToC](#table-of-contents)
+
+Project Management Dashboard
+============================
 You can track issues, pull requests, backlog items here:
 
 [![Stories in progress](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=In%20Progress&title=In%20Progress)](https://waffle.io/PowerShell/PSScriptAnalyzer)
@@ -353,7 +377,9 @@ Throughput Graph
 
 [![Throughput Graph](https://graphs.waffle.io/powershell/psscriptanalyzer/throughput.svg)](https://waffle.io/powershell/psscriptanalyzer/metrics)
 
-Contributing to ScriptAnalyzer [&uarr;](#table-of-contents)
+[Back to ToC](#table-of-contents)
+
+Contributing to ScriptAnalyzer
 ==============================
 You are welcome to contribute to this project. There are many ways to contribute:
 
@@ -374,6 +400,10 @@ You might also read these two blog posts about contributing code: [Open Source C
 
 Before submitting a feature or substantial code contribution, please discuss it with the Windows PowerShell team via [Issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed by the Windows PowerShell Team. Only those that meet a high bar for both quality and roadmap fit will be merged into the source.
 
-Code of Conduct [&uarr;](#table-of-contents)
+[Back to ToC](#table-of-contents)
+
+Code of Conduct
 ===============
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+[Back to ToC](#table-of-contents)
