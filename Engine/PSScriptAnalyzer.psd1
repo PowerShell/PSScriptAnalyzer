@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.10.0'
+ModuleVersion = '1.11.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -116,6 +116,7 @@ PS> Invoke-ScriptAnalyzer -Path /path/to/your/module -Settings PSGallery
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 
