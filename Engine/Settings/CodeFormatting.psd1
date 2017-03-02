@@ -21,8 +21,8 @@
             Enable = $true
             IndentationSize = 4
         }
-
-        PSUseWhitespace = @{
+		
+		PSUseConsistentWhitespace = @{
             Enable = $true
             CheckOpenBrace = $true
             CheckOpenParen = $true
