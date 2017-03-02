@@ -3,7 +3,7 @@
         'PSPlaceOpenBrace',
         'PSPlaceCloseBrace',
         'PSUseConsistentIndentation',
-        'PSUseWhitespace'
+        'PSUseConsistentWhitespace'
     )
 
     Rules = @{
@@ -21,8 +21,8 @@
             Enable = $true
             IndentationSize = 4
         }
-		
-		PSUseConsistentWhitespace = @{
+
+        PSUseConsistentWhitespace = @{
             Enable = $true
             CheckOpenBrace = $true
             CheckOpenParen = $true
