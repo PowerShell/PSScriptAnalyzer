@@ -61,7 +61,16 @@ Configuration MyDscConfiguration {
     }
 
     Context "Settings file provides whitelist" {
-        $whiteListTestScriptDef = 'gci; cd;'
+        BeforeAll {
+            $whiteListTestScriptDef = 'gci; cd;'
+            $settings = @{
+                'Rules' = @{
+                    'PSAvoidUsingCmdletAliases' = @{
+                        'Whitelist' = @('cd')
+                    }
+                }
+            }
+        }
 
         It "honors the whitelist provided as hashtable" {
             $settings = @{
@@ -80,6 +89,11 @@ Configuration MyDscConfiguration {
             $settingsFilePath = (Join-Path $directory (Join-Path 'TestSettings' 'AvoidAliasSettings.psd1')).ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $whiteListTestScriptDef -Settings $settingsFilePath -IncludeRule $violationName
             $violations.Count | Should be 1
+        }
+
+        It "honors the whitelist in a case-insensitive manner" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition "CD" -Settings $settings -IncludeRule $violationName
+            $violations.Count | Should Be 0
         }
     }
 }
