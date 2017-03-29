@@ -18,6 +18,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -119,7 +120,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // You can also review the remark section in following document,
                 // MSDN: CommandAst.GetCommandName Method
                 if (aliasName == null
-                    || whiteList.Contains(aliasName))
+                    || whiteList.Contains<string>(aliasName, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
