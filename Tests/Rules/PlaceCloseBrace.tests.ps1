@@ -122,6 +122,12 @@ $x = if ($true) { "blah" } else { "blah blah" }
 
     Context "When a close brace should be follow a new line" {
         BeforeAll {
+            $ruleConfiguration.'NoEmptyLineBefore' = $false
+            $ruleConfiguration.'IgnoreOneLineBlock' = $false
+            $ruleConfiguration.'NewLineAfter' = $true
+        }
+
+        It "Should find a violation for a close brace followed by else" {
             $def = @'
 if (Test-Path "blah") {
     "blah"
@@ -129,14 +135,8 @@ if (Test-Path "blah") {
     "blah blah"
 }
 '@
-            $ruleConfiguration.'NoEmptyLineBefore' = $false
-            $ruleConfiguration.'IgnoreOneLineBlock' = $false
-            $ruleConfiguration.'NewLineAfter' = $true
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-        }
-
-        It "Should find two violations" {
-            $violations.Count | Should Be 2
+            $violations.Count | Should Be 1
             $params = @{
                 RawContent = $def
                 DiagnosticRecord = $violations[0]
@@ -145,15 +145,48 @@ if (Test-Path "blah") {
                 CorrectionText = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
+        }
 
+        It "Should find a violation for a close brace followed by elseif" {
+            $def = @'
+if (Test-Path "blah") {
+    "blah"
+} elseif (Test-Path "blah blah") {
+    "blah blah"
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
             $params = @{
                 RawContent = $def
-                DiagnosticRecord = $violations[1]
+                DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
                 ViolationText = '}'
                 CorrectionText = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
+        }
+
+        It "Should not find a violation for a close brace followed by a comma in an array expression" {
+            $def = @'
+Some-Command -Param1 @{
+     key1="value1"
+    },@{
+     key2="value2"
+    }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+
+        It "Should not find a violation for a close brace followed by parameter in a command expression" {
+            $def = @'
+Some-Command -Param1 @{
+    key="value"
+} -Param2
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
         }
     }
 }

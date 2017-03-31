@@ -314,11 +314,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (tokens.Length > 1 && tokens.Length > expectedNewLinePos)
             {
                 var closeBraceToken = tokens[closeBracePos];
-                if (tokens[expectedNewLinePos].Kind != TokenKind.NewLine
-                    && tokens[expectedNewLinePos].Kind != TokenKind.Comment
-                    && !tokensToIgnore.Contains(tokens[closeBracePos]))
+                if ((tokens[expectedNewLinePos].Kind == TokenKind.Else
+                    || tokens[expectedNewLinePos].Kind == TokenKind.ElseIf))
                     {
-
                     return new DiagnosticRecord(
                         GetError(Strings.PlaceCloseBraceErrorShouldFollowNewLine),
                         closeBraceToken.Extent,
