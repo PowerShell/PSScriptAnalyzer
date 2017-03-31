@@ -1,4 +1,4 @@
-# ReturnCorrectTypeDSCFunctions
+# ReturnCorrectTypesForDSCFunctions
 
 **Severity Level: Information**
 

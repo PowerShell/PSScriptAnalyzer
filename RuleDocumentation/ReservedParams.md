@@ -1,4 +1,4 @@
-# AvoidReservedParams
+# ReservedParams
 
 **Severity Level: Error**
 

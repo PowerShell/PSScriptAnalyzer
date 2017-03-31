@@ -1,4 +1,4 @@
-# UseStandardDSCFunctionsInResource
+# StandardDSCFunctionsInResource
 
 **Severity Level: Error**
 

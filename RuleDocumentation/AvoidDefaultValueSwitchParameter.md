@@ -1,4 +1,4 @@
-# AvoidDefaultTrueValueSwitchParameter
+# AvoidDefaultValueSwitchParameter
 
 **Severity Level: Warning**
 

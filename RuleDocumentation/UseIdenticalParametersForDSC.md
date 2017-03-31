@@ -1,4 +1,4 @@
-# UseIdenticalParametersDSC
+# UseIdenticalParametersForDSC
 
 **Severity Level: Error**
 
