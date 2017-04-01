@@ -1,4 +1,4 @@
-# ProvideVerboseMessage
+# UseVerboseMessageInDSCResource
 
 **Severity Level: Information**
 

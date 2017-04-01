@@ -1,4 +1,4 @@
-# AvoidAlias
+# AvoidUsingCmdletAliases
 
 **Severity Level: Warning**
 

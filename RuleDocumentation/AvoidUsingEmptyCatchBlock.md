@@ -1,4 +1,4 @@
-# AvoidEmptyCatchBlock
+# AvoidUsingEmptyCatchBlock
 
 **Severity Level: Warning**
 
