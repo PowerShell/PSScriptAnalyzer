@@ -195,9 +195,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             foreach (var lcurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
             {
+
                 if (lcurly.Previous == null
                     || !IsPreviousTokenOnSameLine(lcurly)
-                    || lcurly.Previous.Value.Kind == TokenKind.LCurly)
+                    || lcurly.Previous.Value.Kind == TokenKind.LCurly
+                    || ((lcurly.Previous.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
                 {
                     continue;
                 }

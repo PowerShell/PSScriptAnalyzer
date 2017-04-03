@@ -45,6 +45,20 @@ if($true) {}
             $violations.Count | Should Be 0
         }
 
+        It "Should not find violation if an open brace follows a foreach member invocation" {
+            $def = @'
+(1..5).foreach{$_}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+        }
+
+        It "Should not find violation if an open brace follows a where member invocation" {
+            $def = @'
+(1..5).where{$_}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+        }
+
     }
 
     Context "When a parenthesis follows a keyword" {
