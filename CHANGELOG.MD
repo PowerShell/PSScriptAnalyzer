@@ -1,4 +1,11 @@
-﻿## [1.11.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.0) - 2017-03-01
+﻿## [1.11.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-04-04
+### Fixed
+- CodeFormatting settings file (#727, #728).
+- Whitelisted aliases comparison in AvoidUsingCmdletAliases rule (#739).
+- PlaceCloseBrace rule behavior for NewLineAfter option (#741).
+- UseConsistentIndentation rule to ignore open brace in magic methods (#744).
+
+## [1.11.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.0) - 2017-03-01
 ### Added
 - Built-in settings presets to specify settings from command line (#717). Currently, PSSA ships with `PSGallery`, `CodeFormatting`, `DSC`, and other settings presets. All of them can be found in the `Settings/` directory in the module. To use them just pass them as an argument to the `Settings` parameter. For example, if you want to run rules that *powershellgallery* runs, then use the following command.
 ```powershell
