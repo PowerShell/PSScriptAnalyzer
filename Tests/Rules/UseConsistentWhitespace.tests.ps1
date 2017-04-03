@@ -173,6 +173,13 @@ $x = 1
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 0
         }
+
+        It "Should not find violation if there are no whitespaces around DotDot operator" {
+            $def = @'
+1..5
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+        }
     }
 
     Context "When a comma is not followed by a space" {
