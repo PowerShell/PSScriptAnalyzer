@@ -195,9 +195,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             foreach (var lcurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
             {
+
                 if (lcurly.Previous == null
                     || !IsPreviousTokenOnSameLine(lcurly)
-                    || lcurly.Previous.Value.Kind == TokenKind.LCurly)
+                    || lcurly.Previous.Value.Kind == TokenKind.LCurly
+                    || ((lcurly.Previous.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
                 {
                     continue;
                 }
@@ -296,19 +298,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 (tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber);
         }
 
+        private bool IsPreviousTokenOnSameLineAndApartByWhitespace(LinkedListNode<Token> tokenNode)
+        {
+            return IsPreviousTokenOnSameLine(tokenNode) && IsPreviousTokenApartByWhitespace(tokenNode);
+        }
+
         private IEnumerable<DiagnosticRecord> FindOperatorViolations(TokenOperations tokenOperations)
         {
-            Func<LinkedListNode<Token>, bool> predicate = tokenNode =>
-            {
-                return tokenNode.Previous != null
-                    && IsPreviousTokenOnSameLine(tokenNode)
-                    && IsPreviousTokenApartByWhitespace(tokenNode);
-            };
-
             foreach (var tokenNode in tokenOperations.GetTokenNodes(IsOperator))
             {
-                var hasWhitespaceBefore = predicate(tokenNode);
-                var hasWhitespaceAfter = predicate(tokenNode.Next);
+                if (tokenNode.Previous == null
+                    || tokenNode.Next == null
+                    || tokenNode.Value.Kind == TokenKind.DotDot)
+                {
+                    continue;
+                }
+
+                var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
+                var hasWhitespaceAfter = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
 
                 if (!hasWhitespaceAfter || !hasWhitespaceBefore)
                 {
