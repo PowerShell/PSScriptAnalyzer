@@ -949,9 +949,9 @@
     <value>Use SupportsShouldProcess</value>
   </data>
   <data name="UseSupportsShouldProcessDescription" xml:space="preserve">
-    <value>Typically, commands provide Confirm and Whatif parameters to give more control on its execution in an interactive environment. In PowerShell, a command can use a SupportsShouldProcess attribute to provide this capability. Hence, manual addition of these parameters to a command is discouraged. If a commands need Confirm and Whatif parameters, then it should support ShouldProcess.</value>
+    <value>Commands typically provide Confirm and Whatif parameters to give more control on its execution in an interactive environment. In PowerShell, a command can use a SupportsShouldProcess attribute to provide this capability. Hence, manual addition of these parameters to a command is discouraged. If a commands need Confirm and Whatif parameters, then it should support ShouldProcess.</value>
   </data>
   <data name="UseSupportsShouldProcessError" xml:space="preserve">
-    <value>{0} {1} manually defined. Instead, please use SupportsShouldProcess attribute.</value>
+    <value>Whatif and/or Confirm manually defined in function {0}. Instead, please use SupportsShouldProcess attribute.</value>
   </data>
 </root>
