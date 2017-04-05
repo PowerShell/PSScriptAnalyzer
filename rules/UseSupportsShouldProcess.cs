@@ -22,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// A class to that implements the UseSupportsShouldProcess rule.
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
     class UseSupportsShouldProcess : ConfigurableRule
@@ -52,50 +52,115 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var foundAst in foundAsts)
             {
                 var functionDefinitionAst = foundAst as FunctionDefinitionAst;
-                if (AddsWhatIf(functionDefinitionAst) || AddsConfirm(functionDefinitionAst))
+                ParameterAst whatIfParamAst, confirmParamAst;
+                var addsWhatIf = TryGetParameterAst(functionDefinitionAst, "whatif", out whatIfParamAst);
+                var addsConfirm = TryGetParameterAst(functionDefinitionAst, "confirm", out confirmParamAst);
+                if (addsWhatIf || addsConfirm)
                 {
-                    diagnosticRecords.Add(new DiagnosticRecord());
+                    IScriptExtent scriptExtent;
+                    if (addsWhatIf && addsConfirm)
+                    {
+                        // mark everthing between the parameters including them
+                        scriptExtent = CombineExtents(whatIfParamAst.Extent, confirmParamAst.Extent);
+                    }
+                    else if (addsWhatIf)
+                    {
+                        // mark the whatif parameter
+                        scriptExtent = whatIfParamAst.Extent;
+                    }
+                    else
+                    {
+                        // mark the confirm parameter
+                        scriptExtent = confirmParamAst.Extent;
+                    }
+
+                    diagnosticRecords.Add(new DiagnosticRecord(
+                        GetError(functionDefinitionAst.Name),
+                        scriptExtent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        scriptExtent.File,
+                        null,
+                        null));
                 }
             }
 
             return diagnosticRecords;
         }
 
-        private bool AddsConfirm(FunctionDefinitionAst functionDefinitionAst)
+        private IScriptExtent CombineExtents(IScriptExtent extent1, IScriptExtent extent2)
         {
-            return AddsParameter(functionDefinitionAst, "confirm");
+            IScriptExtent sExt, eExt;
+
+            // There are many conditions that we need to consider but for now we are considering
+            // this special case only.
+            if (extent1.StartOffset < extent2.StartOffset)
+            {
+                sExt = extent1;
+                eExt = extent2;
+            }
+            else
+            {
+                sExt = extent2;
+                eExt = extent1;
+            }
+
+            return new ScriptExtent(
+                new ScriptPosition(sExt.File, sExt.StartLineNumber, sExt.StartColumnNumber, null),
+                new ScriptPosition(eExt.File, eExt.EndLineNumber, eExt.EndColumnNumber, null));
         }
 
-        private bool AddsWhatIf(FunctionDefinitionAst functionDefinitionAst)
-        {
-            return AddsParameter(functionDefinitionAst, "whatif");
-        }
-
-        private bool AddsParameter(FunctionDefinitionAst functionDefinitionAst, string parameter)
+        private bool TryGetParameterAst(
+            FunctionDefinitionAst functionDefinitionAst,
+            string parameter,
+            out ParameterAst parameterAst)
         {
             if (functionDefinitionAst.Parameters != null)
             {
-                return ParametersContain(functionDefinitionAst.Parameters, parameter);
+                if (TryGetParameterAst(functionDefinitionAst.Parameters, parameter, out parameterAst))
+                {
+                    return true;
+                }
             }
             else if (functionDefinitionAst.Body.ParamBlock?.Parameters != null)
             {
-                return ParametersContain(functionDefinitionAst.Body.ParamBlock.Parameters, parameter);
-            }
-
-            return false;
-        }
-
-        private bool ParametersContain(ICollection<ParameterAst> parameterAsts, string parameter)
-        {
-            foreach (var paramAst in parameterAsts)
-            {
-                if(paramAst.Name.VariablePath.UserPath.Equals(parameter, StringComparison.OrdinalIgnoreCase))
+                if (TryGetParameterAst(
+                    functionDefinitionAst.Body.ParamBlock.Parameters,
+                    parameter,
+                    out parameterAst))
                 {
                     return true;
                 }
             }
 
+            parameterAst = null;
             return false;
+        }
+
+        private bool TryGetParameterAst(
+            ICollection<ParameterAst> parameterAsts,
+            string parameter,
+            out ParameterAst parameterAst)
+        {
+            foreach (var paramAst in parameterAsts)
+            {
+                if (paramAst.Name.VariablePath.UserPath.Equals(parameter, StringComparison.OrdinalIgnoreCase))
+                {
+                    parameterAst = paramAst;
+                    return true;
+                }
+            }
+
+            parameterAst = null;
+            return false;
+        }
+
+        private string GetError(string functionName)
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.UseSupportsShouldProcessError,
+                functionName);
         }
 
         /// <summary>
