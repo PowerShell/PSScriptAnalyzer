@@ -53,8 +53,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 var functionDefinitionAst = foundAst as FunctionDefinitionAst;
                 ParameterAst whatIfParamAst, confirmParamAst;
-                var addsWhatIf = TryGetParameterAst(functionDefinitionAst, "whatif", out whatIfParamAst);
-                var addsConfirm = TryGetParameterAst(functionDefinitionAst, "confirm", out confirmParamAst);
+                ParamBlockAst paramBlockAst;
+                var addsWhatIf = TryGetParameterAst(
+                    functionDefinitionAst,
+                    "whatif",
+                    out whatIfParamAst,
+                    out paramBlockAst);
+                var addsConfirm = TryGetParameterAst(
+                    functionDefinitionAst,
+                    "confirm",
+                    out confirmParamAst,
+                    out paramBlockAst);
+
                 if (addsWhatIf || addsConfirm)
                 {
                     IScriptExtent scriptExtent;
@@ -113,12 +123,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool TryGetParameterAst(
             FunctionDefinitionAst functionDefinitionAst,
             string parameter,
-            out ParameterAst parameterAst)
+            out ParameterAst parameterAst,
+            out ParamBlockAst paramBlockAst)
         {
             if (functionDefinitionAst.Parameters != null)
             {
                 if (TryGetParameterAst(functionDefinitionAst.Parameters, parameter, out parameterAst))
                 {
+                    paramBlockAst = null;
                     return true;
                 }
             }
@@ -129,10 +141,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     parameter,
                     out parameterAst))
                 {
+                    paramBlockAst = functionDefinitionAst.Body.ParamBlock;
                     return true;
                 }
             }
 
+            paramBlockAst = null;
             parameterAst = null;
             return false;
         }
