@@ -29,11 +29,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     class AlignAssignmentStatement : ConfigurableRule
     {
 
-        [ConfigurableRuleProperty(defaultValue:true)]
-        public bool AlignInHashtable { get; set; }
+        private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
+            = new List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>>();
 
         [ConfigurableRuleProperty(defaultValue:true)]
-        public bool AlignInDSCConfiguration { get; set; }
+        public bool CheckHashtable { get; set; }
+
+        [ConfigurableRuleProperty(defaultValue:true)]
+        public bool CheckDSCConfiguration { get; set; }
+
+        public override void ConfigureRule(IDictionary<string, object> paramValueMap)
+        {
+            base.ConfigureRule(paramValueMap);
+            if (CheckHashtable)
+            {
+                violationFinders.Add(FindHashtableViolations);
+            }
+
+            if (CheckDSCConfiguration)
+            {
+                violationFinders.Add(FindDSCConfigurationViolations);
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> FindDSCConfigurationViolations(TokenOperations arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private IEnumerable<DiagnosticRecord> FindHashtableViolations(TokenOperations tokenOps)
+        {
+            var hashtableAsts = tokenOps.Ast.FindAll(ast => ast is HashtableAst, true);
+            if (hashtableAsts == null)
+            {
+                yield break;
+            }
+        }
 
         /// <summary>
         /// Analyzes the given ast to find if consecutive assignment statements are aligned.
@@ -47,6 +78,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 throw new ArgumentNullException("ast");
             }
+            // only handles one line assignments
+            // if the rule encounters assignment statements that are multi-line, the rule will ignore that block
+
+
 
             // your code goes here
             yield break;
