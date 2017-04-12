@@ -28,6 +28,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     class AlignAssignmentStatement : ConfigurableRule
     {
+
+        [ConfigurableRuleProperty(defaultValue:true)]
+        public bool AlignInHashtable { get; set; }
+
+        [ConfigurableRuleProperty(defaultValue:true)]
+        public bool AlignInDSCConfiguration { get; set; }
+
         /// <summary>
         /// Analyzes the given ast to find if consecutive assignment statements are aligned.
         /// </summary>
