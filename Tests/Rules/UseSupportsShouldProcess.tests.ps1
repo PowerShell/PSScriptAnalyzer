@@ -1,5 +1,9 @@
-﻿Import-Module PSScriptAnalyzer
-$ruleName = "PSUseSupportsShouldProcess"
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+
+Import-Module PSScriptAnalyzer
+Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+
 $settings = @{
     IncludeRules = @("PSUseSupportsShouldProcess")
     Rules = @{
@@ -19,8 +23,9 @@ function foo {
     )
 }
 '@
-            $violation = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violation.Count | Should Be 1
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '[bool] $whatif' ''
         }
 
         It "Should find violation if only Confirm is added" {
@@ -31,8 +36,9 @@ function foo {
     )
 }
 '@
-            $violation = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violation.Count | Should Be 1
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '[bool] $confirm' ''
         }
 
         It "Should find violation if both Whatif and Confirm are added" {
@@ -44,8 +50,16 @@ function foo {
     )
 }
 '@
+            $expectedViolationText = @'
+        [bool] $confirm,
+        [bool] $whatif
+'@
             $violation = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violation.Count | Should Be 1
+            $violation[0].SuggestedCorrections.Count | Should Be 2
+            # TODO Make test-correction extent take more than 1 corrections
+            # or modify the rule such that it outputs only 1 correction.
+            # Test-CorrectionExtentFromContent $def $violation 2 $expectedViolationText ''
         }
 
         It "Suggests adding SupportsShouldProcess attribute" {
