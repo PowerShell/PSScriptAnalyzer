@@ -52,18 +52,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var foundAst in foundAsts)
             {
                 var functionDefinitionAst = foundAst as FunctionDefinitionAst;
+                int whatIfIndex, confirmIndex;
                 ParameterAst whatIfParamAst, confirmParamAst;
                 ParamBlockAst paramBlockAst;
-                var addsWhatIf = TryGetParameterAst(
-                    functionDefinitionAst,
-                    "whatif",
-                    out whatIfParamAst,
-                    out paramBlockAst);
-                var addsConfirm = TryGetParameterAst(
-                    functionDefinitionAst,
-                    "confirm",
-                    out confirmParamAst,
-                    out paramBlockAst);
+                ParameterAst[] parameterAsts = GetParameters(functionDefinitionAst, out paramBlockAst);
+                if (parameterAsts == null)
+                {
+                    continue;
+                }
+
+
+                // get paramterAsts and parameter block
+                // then use get parameter on the parameterAsts
+                var addsWhatIf = TryGetParameterAst(parameterAsts, "whatif", out whatIfIndex);
+                whatIfParamAst = addsWhatIf ? parameterAsts[whatIfIndex] : null;
+                var addsConfirm = TryGetParameterAst(parameterAsts, "confirm", out confirmIndex);
+                confirmParamAst = addsConfirm ? parameterAsts[confirmIndex] : null;
 
                 if (addsWhatIf || addsConfirm)
                 {
@@ -91,11 +95,102 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         scriptExtent.File,
                         null,
-                        null));
+                        GetCorrections(whatIfIndex, confirmIndex, parameterAsts, paramBlockAst, functionDefinitionAst)));
                 }
             }
 
             return diagnosticRecords;
+        }
+
+        private static ParameterAst[] GetParameters(
+            FunctionDefinitionAst functionDefinitionAst,
+            out ParamBlockAst paramBlockAst)
+        {
+            paramBlockAst = null;
+            if (functionDefinitionAst.Parameters != null)
+            {
+                return new List<ParameterAst>(functionDefinitionAst.Parameters).ToArray();
+            }
+            else if (functionDefinitionAst.Body.ParamBlock?.Parameters != null)
+            {
+                paramBlockAst = functionDefinitionAst.Body.ParamBlock;
+                return new List<ParameterAst>(functionDefinitionAst.Body.ParamBlock.Parameters).ToArray();
+            }
+
+            return null;
+        }
+
+        private List<CorrectionExtent> GetCorrections(
+            int whatIfIndex,
+            int confirmIndex,
+            ParameterAst[] parameterAsts,
+            ParamBlockAst paramBlockAst,
+            FunctionDefinitionAst funcDefnAst)
+        {
+            // we need to handle the following cases
+            // - If a function has paramBlockAst
+            //  - if it has cmdletbinding
+            //    - if it has supportsshouldprocess
+            //    - else it doesn't have supportsshouldprocess
+            //  - else it does not have cmdlet binding
+            // - else a function doesn't have paramBlockAst
+            IScriptExtent whatIfExtent, confirmExtent;
+            var filePath = funcDefnAst.Extent.File;
+            var correctionExtents = new List<CorrectionExtent>();
+
+            // replace whatif/confirm extent starting with the first character ending with the first character of
+            // the next parameter
+            if (whatIfIndex != -1)
+            {
+                correctionExtents.Add(GetCorrectionExtent(whatIfIndex, parameterAsts));
+            }
+
+            if (confirmIndex != -1)
+            {
+                correctionExtents.Add(GetCorrectionExtent(confirmIndex, parameterAsts));
+            }
+
+            if (paramBlockAst != null)
+            {
+
+            }
+            else
+            {
+                // function doesn't have param block
+                // replace
+            }
+
+            // This is how we handle multiple edits.
+            // create separate edits
+            // apply those edits to the original script extent1
+            // and then give the corrected extent as suggested correction.
+            return correctionExtents;
+        }
+
+        private static CorrectionExtent GetCorrectionExtent(
+            int paramIndex,
+            ParameterAst[] parameterAsts)
+        {
+            IScriptExtent paramExtent = parameterAsts[paramIndex].Extent;
+            int endLineNumber, endColumnNumber;
+            if (paramIndex < parameterAsts.Length - 1)
+            {
+                endLineNumber = parameterAsts[paramIndex + 1].Extent.StartLineNumber;
+                endColumnNumber = parameterAsts[paramIndex + 1].Extent.StartColumnNumber;
+            }
+            else
+            {
+                endLineNumber = paramExtent.EndLineNumber;
+                endColumnNumber = paramExtent.EndColumnNumber;
+            }
+
+            return new CorrectionExtent(
+                paramExtent.StartLineNumber,
+                endLineNumber,
+                paramExtent.StartColumnNumber,
+                endColumnNumber,
+                "",
+                paramExtent.File);
         }
 
         private IScriptExtent CombineExtents(IScriptExtent extent1, IScriptExtent extent2)
@@ -123,14 +218,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool TryGetParameterAst(
             FunctionDefinitionAst functionDefinitionAst,
             string parameter,
-            out ParameterAst parameterAst,
+            out int parameterIndex,
+            out ParameterAst[] parameters,
             out ParamBlockAst paramBlockAst)
         {
             if (functionDefinitionAst.Parameters != null)
             {
-                if (TryGetParameterAst(functionDefinitionAst.Parameters, parameter, out parameterAst))
+                if (TryGetParameterAst(functionDefinitionAst.Parameters, parameter, out parameterIndex))
                 {
+                    parameters = new List<ParameterAst>(functionDefinitionAst.Parameters).ToArray();
                     paramBlockAst = null;
+                    functionDefinitionAst.Parameters.CopyTo(parameters, 0);
                     return true;
                 }
             }
@@ -139,33 +237,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (TryGetParameterAst(
                     functionDefinitionAst.Body.ParamBlock.Parameters,
                     parameter,
-                    out parameterAst))
+                    out parameterIndex))
                 {
+                    parameters = new List<ParameterAst>(functionDefinitionAst.Body.ParamBlock.Parameters).ToArray();
                     paramBlockAst = functionDefinitionAst.Body.ParamBlock;
                     return true;
                 }
             }
 
+            parameterIndex = -1;
             paramBlockAst = null;
-            parameterAst = null;
+            parameters = null;
             return false;
         }
 
         private bool TryGetParameterAst(
             ICollection<ParameterAst> parameterAsts,
             string parameter,
-            out ParameterAst parameterAst)
+            out int paramIndex)
         {
+            paramIndex = 0;
             foreach (var paramAst in parameterAsts)
             {
                 if (paramAst.Name.VariablePath.UserPath.Equals(parameter, StringComparison.OrdinalIgnoreCase))
                 {
-                    parameterAst = paramAst;
                     return true;
                 }
+
+                ++paramIndex;
             }
 
-            parameterAst = null;
+            paramIndex = -1;
             return false;
         }
 
