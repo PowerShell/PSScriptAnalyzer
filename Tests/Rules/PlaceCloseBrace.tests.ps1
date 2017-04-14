@@ -118,6 +118,16 @@ $x = if ($true) { "blah" } else { "blah blah" }
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 0
         }
+
+        It "Should ignore violations for one line if statement even if NewLineAfter is true" {
+            $def = @'
+$x = if ($true) { "blah" } else { "blah blah" }
+'@
+            $ruleConfiguration.'IgnoreOneLineBlock' = $true
+            $ruleConfiguration.'NewLineAfter' = $true
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
     }
 
     Context "When a close brace should be follow a new line" {
