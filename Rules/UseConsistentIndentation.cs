@@ -91,6 +91,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.NewLine:
+                    case TokenKind.LineContinuation:
                         onNewLine = true;
                         break;
 
@@ -101,18 +102,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         {
                             var tempIndentationLevel = indentationLevel;
 
-                            // Ignore comments
-                            // Since the previous token is a newline token we start
-                            // looking for comments at the token before the newline token.
-                            int j = k - 2;
-                            while (j > 0 && tokens[j].Kind == TokenKind.Comment)
-                            {
-                                --j;
-                            }
-
-                            if (j >= 0 && tokens[j].Kind == TokenKind.Pipe)
+                            // Check if the preceding character is an escape character
+                            if (k > 0 && tokens[k - 1].Kind == TokenKind.LineContinuation)
                             {
                                 ++tempIndentationLevel;
+                            }
+                            else
+                            {
+                                // Ignore comments
+                                // Since the previous token is a newline token we start
+                                // looking for comments at the token before the newline token.
+                                int j = k - 2;
+                                while (j > 0 && tokens[j].Kind == TokenKind.Comment)
+                                {
+                                    --j;
+                                }
+
+                                if (j >= 0 && tokens[j].Kind == TokenKind.Pipe)
+                                {
+                                    ++tempIndentationLevel;
+                                }
                             }
 
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine);
