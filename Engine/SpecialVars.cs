@@ -164,6 +164,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal const string Null = "null";
         internal const string True = "true";
         internal const string False = "false";
+        internal const string LastExitCode = "LastExitCode";
 
         internal static readonly string[] OtherInitializedVariables = new string[]
                                                                 {
@@ -184,7 +185,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                     pwd,
                                                                     Null,
                                                                     True,
-                                                                    False
+                                                                    False,
+                                                                    LastExitCode
                                                                 };
 
     }

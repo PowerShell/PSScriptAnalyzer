@@ -28,7 +28,7 @@ Describe "AvoidGlobalVars" {
         It "has 1 avoid using global variable violation" {
             $globalViolations.Count | Should Be 1
         }
-                
+
         <#
         # PSAvoidUninitializedVariable rule has been deprecated
         It "has 4 violations for dsc resources (not counting the variables in parameters)" {
@@ -45,6 +45,19 @@ Describe "AvoidGlobalVars" {
     Context "When there are no violations" {
         It "returns no violations" {
             $noGlobalViolations.Count | Should Be 0
+        }
+    }
+
+    Context "When a script contains global:lastexitcode" {
+        It "returns no violation" {
+            $def = @'
+if ($global:lastexitcode -ne 0)
+{
+    exit
+}
+'@
+            $local:violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -IncludeRule $globalName
+            $local:violations.Count | Should Be 0
         }
     }
 }
@@ -66,6 +79,6 @@ Describe "AvoidUnitializedVars" {
         It "returns no violations" {
             $noUninitializedViolations.Count | Should Be 0
         }
-    }    
+    }
 }
 #>
