@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="Commands\GetScriptAnalyzerRuleCommand.cs" />
     <Compile Include="Commands\InvokeScriptAnalyzerCommand.cs" />
+    <Compile Include="EditableText.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Generic\AvoidCmdletGeneric.cs" />
     <Compile Include="Generic\AvoidParameterGeneric.cs" />
