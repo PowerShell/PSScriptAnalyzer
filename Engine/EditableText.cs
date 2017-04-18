@@ -7,7 +7,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     // TODO add documentation
-    class EditableText
+    public class EditableText
     {
         public string Text { get; private set; }
         public string[] Lines { get; private set; }
