@@ -64,6 +64,98 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 yield break;
             }
+
+            // it is probably much easier have a hashtable writer that formats the hashtable and writes it
+            // but it my make handling comments hard. So we need to use this approach.
+
+            // check if each key is on a separate line
+            // align only if each key=val pair is on a separate line
+            // if each pair on a separate line
+            //   find all the assignment operators
+            //   if all the assignment operators are aligned (check the column number of each alignment operator)
+            //      skip
+            //   else
+            //      find the distance between the assignment operaters its left expression
+            //      find the longest left expression
+            //      make sure all the assignment operators are in the same column as that of the longest left hand.
+            //   else
+
+            var alignments = new List<int>();
+            foreach (var astItem in hashtableAsts)
+            {
+                var hashtableAst = (HashtableAst)astItem;
+                if (!HasKeysOnSeparateLines(hashtableAst))
+                {
+                    continue;
+                }
+
+                var nodeTuples = GetExtents(tokenOps, hashtableAst);
+                if (nodeTuples == null)
+                {
+                    continue;
+                }
+            }
+        }
+
+        private static IList<Tuple<IScriptExtent, IScriptExtent>> GetExtents(
+            TokenOperations tokenOps,
+            HashtableAst hashtableAst)
+        {
+            var nodeTuples = new List<Tuple<IScriptExtent, IScriptExtent>>();
+            foreach (var kvp in hashtableAst.KeyValuePairs)
+            {
+                var keyStartPos = kvp.Item1.Extent.StartScriptPosition;
+                var tokenNode = tokenOps.GetTokenNodes(
+                    token => token.Extent.StartScriptPosition == keyStartPos).FirstOrDefault();
+                if (tokenNode == null)
+                {
+                    return null;
+                }
+
+                var leftToken = tokenNode.Value;
+                var tempNode = tokenNode.Next;
+                while (tempNode != null
+                    && tempNode.Value.Kind != TokenKind.EndOfInput
+                    && tempNode.Value.Kind != TokenKind.Equals)
+                {
+                    tempNode = tempNode.Next;
+                }
+
+                if (tempNode == null || tempNode.Value.Kind == TokenKind.EndOfInput)
+                {
+                    return null;
+                }
+
+                var equalToken = tempNode.Value;
+                if (kvp.Item1.Extent.EndLineNumber != equalToken.Extent.StartLineNumber)
+                {
+                    return null;
+                }
+
+                nodeTuples.Add(new Tuple<IScriptExtent, IScriptExtent>(
+                    equalToken.Extent,
+                    kvp.Item1.Extent));
+            }
+
+            return nodeTuples;
+        }
+
+        private bool HasKeysOnSeparateLines(HashtableAst hashtableAst)
+        {
+            var lines = new HashSet<int>();
+            foreach (var kvp in hashtableAst.KeyValuePairs)
+            {
+                if (lines.Contains(kvp.Item1.Extent.StartLineNumber))
+                {
+                    return false;
+                }
+                else
+                {
+                    lines.Add(kvp.Item1.Extent.StartLineNumber);
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
