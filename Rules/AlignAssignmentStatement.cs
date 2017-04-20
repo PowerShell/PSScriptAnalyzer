@@ -105,35 +105,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var kvp in hashtableAst.KeyValuePairs)
             {
                 var keyStartPos = kvp.Item1.Extent.StartScriptPosition;
-                var tokenNode = tokenOps.GetTokenNodes(
+                var keyTokenNode = tokenOps.GetTokenNodes(
                     token => token.Extent.StartScriptPosition == keyStartPos).FirstOrDefault();
-                if (tokenNode == null)
-                {
-                    return null;
-                }
-
-                var leftToken = tokenNode.Value;
-                var tempNode = tokenNode.Next;
-                while (tempNode != null
-                    && tempNode.Value.Kind != TokenKind.EndOfInput
-                    && tempNode.Value.Kind != TokenKind.Equals)
-                {
-                    tempNode = tempNode.Next;
-                }
-
-                if (tempNode == null || tempNode.Value.Kind == TokenKind.EndOfInput)
-                {
-                    return null;
-                }
-
-                var equalToken = tempNode.Value;
-                if (kvp.Item1.Extent.EndLineNumber != equalToken.Extent.StartLineNumber)
+                if (keyTokenNode == null
+                    || keyTokenNode.Next == null
+                    || keyTokenNode.Next.Value.Kind != TokenKind.Equals)
                 {
                     return null;
                 }
 
                 nodeTuples.Add(new Tuple<IScriptExtent, IScriptExtent>(
-                    equalToken.Extent,
+                    keyTokenNode.Next.Value.Extent,
                     kvp.Item1.Extent));
             }
 
