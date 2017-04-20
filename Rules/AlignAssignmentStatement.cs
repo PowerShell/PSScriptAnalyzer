@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// A class to walk an AST to check if consecutive assignment statements are aligned.
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
     class AlignAssignmentStatement : ConfigurableRule
@@ -32,10 +32,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
             = new List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>>();
 
-        [ConfigurableRuleProperty(defaultValue:true)]
+        [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckHashtable { get; set; }
 
-        [ConfigurableRuleProperty(defaultValue:true)]
+        [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckDSCConfiguration { get; set; }
 
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
@@ -54,7 +54,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindDSCConfigurationViolations(TokenOperations arg)
         {
-            throw new NotImplementedException();
+            yield break;
         }
 
         private IEnumerable<DiagnosticRecord> FindHashtableViolations(TokenOperations tokenOps)
@@ -90,11 +90,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 var nodeTuples = GetExtents(tokenOps, hashtableAst);
-                if (nodeTuples == null)
+                if (nodeTuples == null
+                    || !nodeTuples.All(t => t.Item1.StartLineNumber == t.Item2.EndLineNumber))
                 {
                     continue;
                 }
+
+                var widestKeyExtent = nodeTuples
+                    .Select(t => t.Item1)
+                    .Aggregate((t1, tAggregate) => {
+                    return TokenOperations.GetExtentWidth(tAggregate) > TokenOperations.GetExtentWidth(t1)
+                        ? tAggregate
+                        : t1;
+                });
+                var expectedStartColumn = widestKeyExtent.EndColumnNumber + 1;
+                foreach (var extentTuple in nodeTuples)
+                {
+                    if (extentTuple.Item2.StartColumnNumber != expectedStartColumn)
+                    {
+                        yield return new DiagnosticRecord(
+                            GetError(),
+                            extentTuple.Item2,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            extentTuple.Item1.File,
+                            null,
+                            null);
+                    }
+                }
             }
+        }
+
+        private string GetError()
+        {
+            return String.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementError);
         }
 
         private static IList<Tuple<IScriptExtent, IScriptExtent>> GetExtents(
@@ -104,9 +133,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var nodeTuples = new List<Tuple<IScriptExtent, IScriptExtent>>();
             foreach (var kvp in hashtableAst.KeyValuePairs)
             {
-                var keyStartPos = kvp.Item1.Extent.StartScriptPosition;
+                var keyStartOffset = kvp.Item1.Extent.StartOffset;
                 var keyTokenNode = tokenOps.GetTokenNodes(
-                    token => token.Extent.StartScriptPosition == keyStartPos).FirstOrDefault();
+                    token => token.Extent.StartOffset == keyStartOffset).FirstOrDefault();
                 if (keyTokenNode == null
                     || keyTokenNode.Next == null
                     || keyTokenNode.Next.Value.Kind != TokenKind.Equals)
@@ -115,8 +144,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 nodeTuples.Add(new Tuple<IScriptExtent, IScriptExtent>(
-                    keyTokenNode.Next.Value.Extent,
-                    kvp.Item1.Extent));
+                    kvp.Item1.Extent,
+                    keyTokenNode.Next.Value.Extent));
             }
 
             return nodeTuples;
@@ -155,10 +184,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // only handles one line assignments
             // if the rule encounters assignment statements that are multi-line, the rule will ignore that block
 
-
-
-            // your code goes here
-            yield break;
+            var tokenOps = new TokenOperations(Helper.Instance.Tokens, ast);
+            foreach (var violationFinder in violationFinders)
+            {
+                foreach (var diagnosticRecord in violationFinder(tokenOps))
+                {
+                    yield return diagnosticRecord;
+                }
+            }
         }
 
         /// <summary>
