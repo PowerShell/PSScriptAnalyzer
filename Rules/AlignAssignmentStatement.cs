@@ -16,7 +16,6 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -28,6 +27,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     class AlignAssignmentStatement : ConfigurableRule
     {
+        private readonly char whitespaceChar = ' ';
 
         private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
             = new List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>>();
@@ -91,6 +91,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 var nodeTuples = GetExtents(tokenOps, hashtableAst);
                 if (nodeTuples == null
+                    || nodeTuples.Count == 0
                     || !nodeTuples.All(t => t.Item1.StartLineNumber == t.Item2.EndLineNumber))
                 {
                     continue;
@@ -103,10 +104,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         ? tAggregate
                         : t1;
                 });
-                var expectedStartColumn = widestKeyExtent.EndColumnNumber + 1;
+                var expectedStartColumnNumber = widestKeyExtent.EndColumnNumber + 1;
                 foreach (var extentTuple in nodeTuples)
                 {
-                    if (extentTuple.Item2.StartColumnNumber != expectedStartColumn)
+                    if (extentTuple.Item2.StartColumnNumber != expectedStartColumnNumber)
                     {
                         yield return new DiagnosticRecord(
                             GetError(),
@@ -115,10 +116,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetDiagnosticSeverity(),
                             extentTuple.Item1.File,
                             null,
-                            null);
+                            GetHashtableCorrections(extentTuple, expectedStartColumnNumber).ToList());
                     }
                 }
             }
+        }
+
+        private IEnumerable<CorrectionExtent> GetHashtableCorrections(
+            Tuple<IScriptExtent, IScriptExtent> extentTuple,
+            int expectedStartColumnNumber)
+        {
+            var equalExtent = extentTuple.Item2;
+            var lhsExtent = extentTuple.Item1;
+            var columnDiff = expectedStartColumnNumber - equalExtent.StartColumnNumber;
+            yield return new CorrectionExtent(
+                lhsExtent.EndLineNumber,
+                equalExtent.StartLineNumber,
+                lhsExtent.EndColumnNumber,
+                equalExtent.StartColumnNumber,
+                new String(whitespaceChar, Math.Max(0, columnDiff) + 1),
+                GetError());
         }
 
         private string GetError()
