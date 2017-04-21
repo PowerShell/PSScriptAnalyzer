@@ -16,6 +16,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -134,7 +135,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 equalExtent.StartLineNumber,
                 lhsExtent.EndColumnNumber,
                 equalExtent.StartColumnNumber,
-                new String(whitespaceChar, Math.Max(0, columnDiff) + 1),
+                new String(whitespaceChar, expectedStartColumnNumber - lhsExtent.EndColumnNumber),
                 GetError());
         }
 
