@@ -2,8 +2,9 @@
     IncludeRules = @(
         'PSPlaceOpenBrace',
         'PSPlaceCloseBrace',
+        'PSUseConsistentWhitespace',
         'PSUseConsistentIndentation',
-        'PSUseConsistentWhitespace'
+        'PSAlignAssignmentStatement'
     )
 
     Rules = @{
@@ -30,5 +31,10 @@
             CheckSeparator = $true
         }
 
+        PSAlignAssignmentStatement = @{
+            Enable = $true
+            CheckHashtable = $true
+            CheckDSCConfiguration = $true
+        }
     }
 }
