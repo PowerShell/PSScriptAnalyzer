@@ -6,8 +6,8 @@ Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $ruleConfiguration = @{
     Enable = $true
-    AlignInHashtable = $true
-    AlignInDSCConfiguration = $true
+    CheckHashtable = $true
+    CheckDSCConfiguration = $true
 }
 
 $settings = @{
@@ -35,7 +35,7 @@ $hashtable = @{
 
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
-            Test-CorrectionExtentFromContent $def $violations 1 '' '      '
+            Test-CorrectionExtentFromContent $def $violations 1 ' ' '       '
         }
     }
 }
