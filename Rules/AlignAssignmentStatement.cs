@@ -28,14 +28,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     class AlignAssignmentStatement : ConfigurableRule
     {
+        // We keep this switch even though the rule has only one switch (this) as of now, because we want
+        // to let the rule be expandable in the future to allow formatting assignments even
+        // in variable assignments. But for now we will stick to only one option.
+        /// <summary>
+        /// Check if key value pairs in a hashtable are aligned or not.
+        /// </summary>
+        /// <returns></returns>
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckHashtable { get; set; }
+
         private readonly char whitespaceChar = ' ';
 
         private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
             = new List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>>();
 
-        [ConfigurableRuleProperty(defaultValue: true)]
-        public bool CheckHashtable { get; set; }
-
+        /// <summary>
+        /// Sets the configurable properties of this rule.
+        /// </summary>
+        /// <param name="paramValueMap">A dictionary that maps parameter name to it value. Must be non-null</param>
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
             base.ConfigureRule(paramValueMap);
@@ -45,6 +56,92 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+
+        /// <summary>
+        /// Analyzes the given ast to find if consecutive assignment statements are aligned.
+        /// </summary>
+        /// <param name="ast">AST to be analyzed. This should be non-null</param>
+        /// <param name="fileName">Name of file that corresponds to the input AST.</param>
+        /// <returns>A an enumerable type containing the violations</returns>
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        {
+            if (ast == null)
+            {
+                throw new ArgumentNullException("ast");
+            }
+            // only handles one line assignments
+            // if the rule encounters assignment statements that are multi-line, the rule will ignore that block
+
+            var tokenOps = new TokenOperations(Helper.Instance.Tokens, ast);
+            foreach (var violationFinder in violationFinders)
+            {
+                foreach (var diagnosticRecord in violationFinder(tokenOps))
+                {
+                    yield return diagnosticRecord;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the common name of this rule.
+        /// </summary>
+        public override string GetCommonName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementCommonName);
+        }
+
+        /// <summary>
+        /// Retrieves the description of this rule.
+        /// </summary>
+        public override string GetDescription()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementDescription);
+        }
+
+        /// <summary>
+        /// Retrieves the name of this rule.
+        /// </summary>
+        public override string GetName()
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.NameSpaceFormat,
+                GetSourceName(),
+                Strings.AlignAssignmentStatementName);
+        }
+
+        /// <summary>
+        /// Retrieves the severity of the rule: error, warning or information.
+        /// </summary>
+        public override RuleSeverity GetSeverity()
+        {
+            return RuleSeverity.Warning;
+        }
+
+        /// <summary>
+        /// Gets the severity of the returned diagnostic record: error, warning, or information.
+        /// </summary>
+        /// <returns></returns>
+        public DiagnosticSeverity GetDiagnosticSeverity()
+        {
+            return DiagnosticSeverity.Warning;
+        }
+
+        /// <summary>
+        /// Retrieves the name of the module/assembly the rule is from.
+        /// </summary>
+        public override string GetSourceName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
+        }
+
+        /// <summary>
+        /// Retrieves the type of the rule, Builtin, Managed or Module.
+        /// </summary>
+        public override SourceType GetSourceType()
+        {
+            return SourceType.Builtin;
+        }
         private IEnumerable<DiagnosticRecord> FindHashtableViolations(TokenOperations tokenOps)
         {
             var hashtableAsts = tokenOps.Ast.FindAll(ast => ast is HashtableAst, true);
@@ -54,19 +151,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // it is probably much easier have a hashtable writer that formats the hashtable and writes it
-            // but it my make handling comments hard. So we need to use this approach.
+            // but it makes handling comments hard. So we need to use this approach.
 
-            // check if each key is on a separate line
-            // align only if each key=val pair is on a separate line
-            // if each pair on a separate line
+            // This is how the algorithm actually works:
+            // if each key value pair are on a separate line
             //   find all the assignment operators
             //   if all the assignment operators are aligned (check the column number of each alignment operator)
             //      skip
             //   else
-            //      find the distance between the assignment operaters its left expression
+            //      find the distance between the assignment operators and their corresponding LHS
             //      find the longest left expression
             //      make sure all the assignment operators are in the same column as that of the longest left hand.
-            //   else
 
             var alignments = new List<int>();
             foreach (var astItem in hashtableAsts)
@@ -172,92 +267,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Analyzes the given ast to find if consecutive assignment statements are aligned.
-        /// </summary>
-        /// <param name="ast">AST to be analyzed. This should be non-null</param>
-        /// <param name="fileName">Name of file that corresponds to the input AST.</param>
-        /// <returns>A an enumerable type containing the violations</returns>
-        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
-        {
-            if (ast == null)
-            {
-                throw new ArgumentNullException("ast");
-            }
-            // only handles one line assignments
-            // if the rule encounters assignment statements that are multi-line, the rule will ignore that block
-
-            var tokenOps = new TokenOperations(Helper.Instance.Tokens, ast);
-            foreach (var violationFinder in violationFinders)
-            {
-                foreach (var diagnosticRecord in violationFinder(tokenOps))
-                {
-                    yield return diagnosticRecord;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the common name of this rule.
-        /// </summary>
-        public override string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementCommonName);
-        }
-
-        /// <summary>
-        /// Retrieves the description of this rule.
-        /// </summary>
-        public override string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementDescription);
-        }
-
-        /// <summary>
-        /// Retrieves the name of this rule.
-        /// </summary>
-        public override string GetName()
-        {
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.NameSpaceFormat,
-                GetSourceName(),
-                Strings.AlignAssignmentStatementName);
-        }
-
-        /// <summary>
-        /// Retrieves the severity of the rule: error, warning or information.
-        /// </summary>
-        public override RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Warning;
-        }
-
-        /// <summary>
-        /// Gets the severity of the returned diagnostic record: error, warning, or information.
-        /// </summary>
-        /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
-        {
-            return DiagnosticSeverity.Warning;
-        }
-
-        /// <summary>
-        /// Retrieves the name of the module/assembly the rule is from.
-        /// </summary>
-        public override string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
-        }
-
-        /// <summary>
-        /// Retrieves the type of the rule, Builtin, Managed or Module.
-        /// </summary>
-        public override SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
         }
     }
 }
