@@ -36,9 +36,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckHashtable { get; set; }
 
-        [ConfigurableRuleProperty(defaultValue: true)]
-        public bool CheckDSCConfiguration { get; set; }
-
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
             base.ConfigureRule(paramValueMap);
@@ -46,16 +43,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 violationFinders.Add(FindHashtableViolations);
             }
-
-            if (CheckDSCConfiguration)
-            {
-                violationFinders.Add(FindDSCConfigurationViolations);
-            }
-        }
-
-        private IEnumerable<DiagnosticRecord> FindDSCConfigurationViolations(TokenOperations arg)
-        {
-            yield break;
         }
 
         private IEnumerable<DiagnosticRecord> FindHashtableViolations(TokenOperations tokenOps)
