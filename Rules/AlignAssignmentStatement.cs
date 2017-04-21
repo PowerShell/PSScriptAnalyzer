@@ -172,15 +172,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                var nodeTuples = GetExtents(tokenOps, hashtableAst);
-                if (nodeTuples == null
-                    || nodeTuples.Count == 0
-                    || !nodeTuples.All(t => t.Item1.StartLineNumber == t.Item2.EndLineNumber))
+                var extentTuples = GetExtents(tokenOps, hashtableAst);
+                if (extentTuples == null
+                    || extentTuples.Count == 0
+                    || !extentTuples.All(t => t.Item1.StartLineNumber == t.Item2.EndLineNumber))
                 {
                     continue;
                 }
 
-                var widestKeyExtent = nodeTuples
+                var widestKeyExtent = extentTuples
                     .Select(t => t.Item1)
                     .Aggregate((t1, tAggregate) => {
                     return TokenOperations.GetExtentWidth(tAggregate) > TokenOperations.GetExtentWidth(t1)
@@ -188,7 +188,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         : t1;
                 });
                 var expectedStartColumnNumber = widestKeyExtent.EndColumnNumber + 1;
-                foreach (var extentTuple in nodeTuples)
+                foreach (var extentTuple in extentTuples)
                 {
                     if (extentTuple.Item2.StartColumnNumber != expectedStartColumnNumber)
                     {
