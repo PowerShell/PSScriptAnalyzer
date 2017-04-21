@@ -7,7 +7,6 @@ Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 $ruleConfiguration = @{
     Enable = $true
     CheckHashtable = $true
-    CheckDSCConfiguration = $true
 }
 
 $settings = @{
@@ -18,8 +17,8 @@ $settings = @{
 }
 
 Describe "AlignAssignmentStatement" {
-    Context "Hashtable" {
-        It "Should align assignment statements in a hashtable when need to add whitespace" {
+    Context "When assignment statements are in hashtable" {
+        It "Should find violation when assignment statements are not aligned (whitespace needs to be added)" {
             $def = @'
 $hashtable = @{
     property1 = "value"
@@ -38,7 +37,7 @@ $hashtable = @{
             Test-CorrectionExtentFromContent $def $violations 1 ' ' '       '
         }
 
-            It "Should align assignment statements in a hashtable when need to remove whitespace" {
+            It "Should find violation when assignment statements are not aligned (whitespace needs to be removed)" {
             $def = @'
 $hashtable = @{
     property1              = "value"
@@ -55,6 +54,38 @@ $hashtable = @{
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
             Test-CorrectionExtentFromContent $def $violations 1 '              ' '       '
+        }
+
+        It "Should ignore if a hashtable is empty" {
+            $def = @'
+$x = @{ }
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 0
+
+        }
+    }
+
+    Context "When assignment statements are in DSC Configuration" {
+        It "Should find violations when assignment statements are not aligned" {
+            $def = @'
+Configuration MyDscConfiguration {
+
+    param(
+        [string[]]$ComputerName="localhost"
+    )
+    Node $ComputerName {
+        WindowsFeature MyFeatureInstance {
+            Ensure = "Present"
+            Name =  "RSAT"
+        }
+        WindowsFeature My2ndFeatureInstance {
+            Ensure = "Present"
+            Name = "Bitlocker"
+        }
+    }
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 2
         }
 }
 }
