@@ -156,14 +156,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // This is how the algorithm actually works:
             // if each key value pair are on a separate line
             //   find all the assignment operators
-            //   if all the assignment operators are aligned (check the column number of each alignment operator)
+            //   if all the assignment operators are aligned (check the column number of each assignment operator)
             //      skip
             //   else
             //      find the distance between the assignment operators and their corresponding LHS
             //      find the longest left expression
             //      make sure all the assignment operators are in the same column as that of the longest left hand.
 
-            var alignments = new List<int>();
             foreach (var astItem in hashtableAsts)
             {
                 var hashtableAst = (HashtableAst)astItem;
