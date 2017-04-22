@@ -1,0 +1,91 @@
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+
+Import-Module PSScriptAnalyzer
+Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+
+$ruleConfiguration = @{
+    Enable = $true
+    CheckHashtable = $true
+}
+
+$settings = @{
+    IncludeRules = @("PSAlignAssignmentStatement")
+    Rules = @{
+        PSAlignAssignmentStatement = $ruleConfiguration
+    }
+}
+
+Describe "AlignAssignmentStatement" {
+    Context "When assignment statements are in hashtable" {
+        It "Should find violation when assignment statements are not aligned (whitespace needs to be added)" {
+            $def = @'
+$hashtable = @{
+    property1 = "value"
+    anotherProperty = "another value"
+}
+'@
+
+# Expected output after correction should be the following
+# $hashtable = @{
+#     property1       = "value"
+#     anotherProperty = "another value"
+# }
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 ' ' '       '
+        }
+
+            It "Should find violation when assignment statements are not aligned (whitespace needs to be removed)" {
+            $def = @'
+$hashtable = @{
+    property1              = "value"
+    anotherProperty = "another value"
+}
+'@
+
+# Expected output should be the following
+# $hashtable = @{
+#     property1       = "value"
+#     anotherProperty = "another value"
+# }
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            Test-CorrectionExtentFromContent $def $violations 1 '              ' '       '
+        }
+
+        It "Should ignore if a hashtable is empty" {
+            $def = @'
+$x = @{ }
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 0
+
+        }
+    }
+
+    Context "When assignment statements are in DSC Configuration" {
+        It "Should find violations when assignment statements are not aligned" {
+            $def = @'
+Configuration MyDscConfiguration {
+
+    param(
+        [string[]]$ComputerName="localhost"
+    )
+    Node $ComputerName {
+        WindowsFeature MyFeatureInstance {
+            Ensure = "Present"
+            Name =  "RSAT"
+        }
+        WindowsFeature My2ndFeatureInstance {
+            Ensure = "Present"
+            Name = "Bitlocker"
+        }
+    }
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 2
+        }
+}
+}

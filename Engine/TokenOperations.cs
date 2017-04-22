@@ -272,6 +272,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return GetTokenAndPrecedingWhitespace(TokenKind.LParen);
         }
 
+        public static int GetExtentWidth(IScriptExtent extent)
+        {
+            return extent.EndOffset - extent.StartOffset;
+        }
+
         private bool OnSameLine(Token token1, Token token2)
         {
             return token1.Extent.StartLineNumber == token2.Extent.EndLineNumber;
