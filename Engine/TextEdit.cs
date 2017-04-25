@@ -8,7 +8,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class TextEdit
     {
-        public IScriptExtent ScriptExtent {  get; private set; }
+        public IScriptExtent ScriptExtent { get; private set; }
+        public int StartLineNumber { get { return ScriptExtent.StartLineNumber; } }
+        public int StartColumnNumber { get { return ScriptExtent.StartColumnNumber; } }
+        public int EndLineNumber { get { return ScriptExtent.EndLineNumber; } }
+        public int EndColumnNumber { get { return ScriptExtent.EndColumnNumber; } }
         public string NewText { get; private set; }
 
         /// <summary>
@@ -30,6 +34,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             ScriptExtent = scriptExtent;
             NewText = newText;
+        }
+
+        public TextEdit(
+            int startLineNumber,
+            int startColumnNumber,
+            int endLineNumber,
+            int endColumnNumber,
+            string newText)
+            : this(new ScriptExtent(
+                new ScriptPosition(null, startLineNumber, startColumnNumber, null),
+                new ScriptPosition(null, endLineNumber, endColumnNumber, null)),
+                newText)
+        {
+
         }
     }
 }
