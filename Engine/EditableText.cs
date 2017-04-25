@@ -27,18 +27,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             NewLine = GetNewLineCharacters();
         }
 
+        // TODO Use EditorServices implementation as it is very well tested.
         public EditableText ApplyEdit(TextEdit textEdit)
         {
-            if (textEdit == null)
-            {
-                throw new NullReferenceException(nameof(textEdit));
-            }
-
-            if (!Extent.Contains(textEdit.ScriptExtent))
-            {
-                throw new ArgumentException("TextEdit is not strictly contained in text.");
-            }
-
+            ValidateTextEdit(textEdit);
             var stringBuilder = new StringBuilder(Text.Substring(
                 0,
                 GetOffset(textEdit.ScriptExtent.StartScriptPosition)));
@@ -52,6 +44,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public override string ToString()
         {
             return Text;
+        }
+
+        private void ValidateTextEdit(TextEdit textEdit)
+        {
+            if (textEdit == null)
+            {
+                throw new NullReferenceException(nameof(textEdit));
+            }
+
+            ValidateTextEditExtent(textEdit);
+        }
+
+        private void ValidateTextEditExtent(TextEdit textEdit)
+        {
+            if (textEdit.StartLineNumber > Lines.Length
+                || textEdit.EndLineNumber > Lines.Length
+                || textEdit.StartColumnNumber > Lines[textEdit.StartLineNumber - 1].Length
+                || textEdit.EndColumnNumber > Lines[textEdit.EndLineNumber - 1].Length + 1)
+            {
+                // TODO Localize
+                throw new ArgumentException("TextEdit extent not completely contained in EditableText.");
+            }
         }
 
         private int GetOffset(IScriptPosition scriptPosition)
@@ -92,6 +106,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return Text.Substring(Lines[0].Length, GetNumNewLineCharacters());
         }
 
+        // TODO No need to do all this. Just look at the first character at the end of first line.
         private int GetNumNewLineCharacters()
         {
             if (Lines.Length == 1)
