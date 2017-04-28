@@ -1,53 +1,57 @@
-﻿using System;
-using System.Management.Automation.Language;
-
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
+﻿namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     /// <summary>
     /// Class to provide information about an edit
     /// </summary>
     public class TextEdit
     {
-        public IScriptExtent ScriptExtent { get; private set; }
-        public int StartLineNumber { get { return ScriptExtent.StartLineNumber; } }
-        public int StartColumnNumber { get { return ScriptExtent.StartColumnNumber; } }
-        public int EndLineNumber { get { return ScriptExtent.EndLineNumber; } }
-        public int EndColumnNumber { get { return ScriptExtent.EndColumnNumber; } }
-        public string NewText { get; private set; }
+        /// <summary>
+        /// 1-based line number on which the text, which needs to be replaced, starts.
+        /// </summary>
+        public int StartLineNumber { get; }
 
         /// <summary>
-        /// Creates an object of TextEdit.
+        /// 1-based offset on start line at which the text, which needs to be replaced, starts.
+        /// This includes the first character of the text.
         /// </summary>
-        /// <param name="scriptExtent">Extent of script that needs to be replaced.</param>
-        /// <param name="newText">Text that will replace the region covered by scriptExtent.</param>
-        public TextEdit(IScriptExtent scriptExtent, string newText)
-        {
-            if (scriptExtent == null)
-            {
-                throw new ArgumentNullException(nameof(scriptExtent));
-            }
+        public int StartColumnNumber { get ; }
 
-            if (newText == null)
-            {
-                throw new ArgumentNullException(nameof(newText));
-            }
+        /// <summary>
+        /// 1-based line number on which the text, which needs to be replace, ends.
+        /// </summary>
+        public int EndLineNumber { get ; }
 
-            ScriptExtent = scriptExtent;
-            NewText = newText;
-        }
+        /// <summary>
+        /// 1-based offset on end line at which the text, which needs to be replaced, ends.
+        /// This offset value is 1 more than the offset of the last character of the text.
+        /// </summary>
+        public int EndColumnNumber { get ; }
 
+        /// <summary>
+        /// The text that will replace the text bounded by the Line/Column number properties.
+        /// </summary>
+        public string Text { get; }
+
+        /// <summary>
+        /// Constructs a TextEdit object.
+        /// </summary>
+        /// <param name="startLineNumber">1-based line number on which the text, which needs to be replaced, starts. </param>
+        /// <param name="startColumnNumber">1-based offset on start line at which the text, which needs to be replaced, starts. This includes the first character of the text. </param>
+        /// <param name="endLineNumber">1-based line number on which the text, which needs to be replace, ends. </param>
+        /// <param name="endColumnNumber">1-based offset on end line at which the text, which needs to be replaced, ends. This offset value is 1 more than the offset of the last character of the text. </param>
+        /// <param name="newText">The text that will replace the text bounded by the Line/Column number properties. </param>
         public TextEdit(
             int startLineNumber,
             int startColumnNumber,
             int endLineNumber,
             int endColumnNumber,
             string newText)
-            : this(new ScriptExtent(
-                new ScriptPosition(null, startLineNumber, startColumnNumber, null),
-                new ScriptPosition(null, endLineNumber, endColumnNumber, null)),
-                newText)
         {
-
+            StartLineNumber = startLineNumber;
+            StartColumnNumber = startColumnNumber;
+            EndLineNumber = endLineNumber;
+            EndColumnNumber = endColumnNumber;
+            Text = newText;
         }
     }
 }
