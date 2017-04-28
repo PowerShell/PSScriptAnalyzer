@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
+﻿using System;
+
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     /// <summary>
     /// Class to provide information about an edit
@@ -14,18 +16,18 @@
         /// 1-based offset on start line at which the text, which needs to be replaced, starts.
         /// This includes the first character of the text.
         /// </summary>
-        public int StartColumnNumber { get ; }
+        public int StartColumnNumber { get; }
 
         /// <summary>
         /// 1-based line number on which the text, which needs to be replace, ends.
         /// </summary>
-        public int EndLineNumber { get ; }
+        public int EndLineNumber { get; }
 
         /// <summary>
         /// 1-based offset on end line at which the text, which needs to be replaced, ends.
         /// This offset value is 1 more than the offset of the last character of the text.
         /// </summary>
-        public int EndColumnNumber { get ; }
+        public int EndColumnNumber { get; }
 
         /// <summary>
         /// The text that will replace the text bounded by the Line/Column number properties.
@@ -52,6 +54,41 @@
             EndLineNumber = endLineNumber;
             EndColumnNumber = endColumnNumber;
             Text = newText;
+            ThrowIfInvalidArguments();
+        }
+
+        private void ThrowIfInvalidArguments()
+        {
+            ThrowIfNull<string>(Text, "text");
+
+            // TODO Localize
+            ThrowIfDecreasing(
+                StartLineNumber,
+                EndLineNumber,
+                "start line number cannot be less than end line number");
+            if (StartLineNumber == EndLineNumber)
+            {
+                ThrowIfDecreasing(
+                    StartColumnNumber,
+                    EndColumnNumber,
+                    "start column number cannot be less than end column number for a one line extent");
+            }
+        }
+
+        private void ThrowIfDecreasing(int start, int end, string message)
+        {
+            if (start > end)
+            {
+                throw new ArgumentException(message);
+            }
+        }
+
+        private void ThrowIfNull<T>(T arg, string argName)
+        {
+            if (arg == null)
+            {
+                throw new ArgumentNullException(argName);
+            }
         }
     }
 }
