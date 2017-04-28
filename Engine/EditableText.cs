@@ -11,7 +11,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     {
         public string Text { get; private set; }
         public string[] Lines { get; private set; }
-        public IScriptExtent Extent { get; private set; }
         public string NewLine { get; private set; }
         public int NumNewLineChars { get { return NewLine.Length; } }
 
@@ -23,7 +22,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             this.Text = text;
             Lines = this.Text.GetLines().ToArray();
-            Extent = GetExtent();
             NewLine = GetNewLineCharacters();
         }
 
@@ -33,9 +31,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ValidateTextEdit(textEdit);
             var stringBuilder = new StringBuilder(Text.Substring(
                 0,
-                GetOffset(textEdit.ScriptExtent.StartScriptPosition)));
-            stringBuilder.Append(textEdit.NewText);
-            stringBuilder.Append(Text.Substring(GetOffset(textEdit.ScriptExtent.EndScriptPosition)));
+                GetOffset(textEdit.StartLineNumber, textEdit.StartColumnNumber)));
+            stringBuilder.Append(textEdit.Text);
+            stringBuilder.Append(Text.Substring(GetOffset(textEdit.EndLineNumber, textEdit.EndColumnNumber)));
             return new EditableText(stringBuilder.ToString());
         }
 
@@ -68,12 +66,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private int GetOffset(IScriptPosition scriptPosition)
-        {
-            return GetOffset(scriptPosition.LineNumber, scriptPosition.ColumnNumber);
-        }
-
-        private int GetOffset(int lineNumber, int columnNumber)
+       private int GetOffset(int lineNumber, int columnNumber)
         {
             if (lineNumber < 1)
             {
