@@ -9,6 +9,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -138,26 +139,55 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var filePath = funcDefnAst.Extent.File;
             var correctionExtents = new List<CorrectionExtent>();
 
-            // replace whatif/confirm extent starting with the first character ending with the first character of
+            // TODO Handle case where only one param is left after correction and there is a
+            // comma left after the param.
+
+            var editableText = new EditableText(funcDefnAst.Extent.Text);
+            // replace whatif/confirm extent starting with the last character of the previous parameter and ending with the last character of the whatif/confirm/parameter. This will take care of the trailing comma.
             // the next parameter
+            // TODO Do not incrementally correct the text as it may lead to a situation in which a following
+            // edits might try to modify edits that have already taken place.
+            // A better approach is to gather all the edits and give them to the text edit class to handle.
             if (whatIfIndex != -1)
             {
                 correctionExtents.Add(GetCorrectionExtent(whatIfIndex, parameterAsts));
+                var shiftedCorrectionExtent = Normalize(funcDefnAst.Extent, correctionExtents.Last());
+                editableText = editableText.ApplyEdit(shiftedCorrectionExtent);
             }
 
             if (confirmIndex != -1)
             {
                 correctionExtents.Add(GetCorrectionExtent(confirmIndex, parameterAsts));
+                var shiftedCorrectionExtent = Normalize(funcDefnAst.Extent, correctionExtents.Last());
+                editableText = editableText.ApplyEdit(shiftedCorrectionExtent);
             }
 
             if (paramBlockAst != null)
             {
-
+                AttributeAst attributeAst;
+                // check if it has cmdletbinding attribute
+                if (TryGetCmdletBindingAttribute(paramBlockAst, out attributeAst))
+                {
+                    if (!attributeAst.NamedArguments.Any(
+                        x => x.ArgumentName.Equals("supportsshouldprocess",
+                            StringComparison.OrdinalIgnoreCase)))
+                    {
+                        // add supportsshouldprocess to the attribute
+                        correctionExtents.Add(GetCorrectionExtent(attributeAst));
+                    }
+                }
+                else
+                {
+                    // has no cmdletbinding attribute
+                    // add the attribute and supportsshouldprocess argument
+                }
             }
             else
             {
                 // function doesn't have param block
-                // replace
+                // remove the parameter list
+                // and create an equivalent param block
+                // add cmdletbinding attribute and add supportsshouldprocess to it.
             }
 
             // This is how we handle multiple edits.
@@ -165,6 +195,66 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // apply those edits to the original script extent1
             // and then give the corrected extent as suggested correction.
             return correctionExtents;
+        }
+
+        // doesn't seem right. The arguments should be of same type.
+        private CorrectionExtent Normalize(IScriptExtent referenceExtent, CorrectionExtent cextent)
+        {
+            // TODO Add ToRange extension methods for this conversion
+            var refRange = new Range(
+                referenceExtent.StartLineNumber,
+                referenceExtent.StartColumnNumber,
+                referenceExtent.EndLineNumber,
+                referenceExtent.EndColumnNumber);
+
+            var range = new Range(
+                cextent.StartLineNumber,
+                cextent.StartColumnNumber,
+                cextent.EndLineNumber,
+                cextent.EndColumnNumber);
+
+            var shiftedRange = Range.Normalize(refRange, range);
+
+            // TODO Add a method to TextEdit class that takes in range and text
+            // TODO Add a method to CorrectionExtent that takes in range and all other stuff
+            return new CorrectionExtent(
+                 shiftedRange.Start.Line,
+                 shiftedRange.End.Line,
+                 shiftedRange.Start.Column,
+                 shiftedRange.End.Column,
+                 cextent.Text,
+                 cextent.File,
+                 cextent.Description);
+        }
+        private static bool TryGetCmdletBindingAttribute(
+            ParamBlockAst paramBlockAst,
+            out AttributeAst attributeAst)
+        {
+            attributeAst = paramBlockAst.Attributes.FirstOrDefault(attr =>
+            {
+                return attr.TypeName.Name.Equals("cmdletbinding", StringComparison.OrdinalIgnoreCase);
+            });
+
+            return attributeAst != null;
+        }
+
+
+        private static CorrectionExtent GetCorrectionExtent(AttributeAst cmdletBindingAttributeAst)
+        {
+            // 1 for 1 based offset and 1 for the next position.
+            var startColumnNumber = cmdletBindingAttributeAst.Extent.Text.IndexOf("(") + 2;
+            var extent = cmdletBindingAttributeAst.Extent;
+            var suffix = cmdletBindingAttributeAst.NamedArguments.Count > 0
+                || cmdletBindingAttributeAst.PositionalArguments.Count > 0
+                    ? ", "
+                    : "";
+            return new CorrectionExtent(
+                extent.StartLineNumber,
+                extent.StartLineNumber,
+                startColumnNumber,
+                startColumnNumber,
+                "SupportsShouldProcess" + suffix,
+                extent.File);
         }
 
         private static CorrectionExtent GetCorrectionExtent(
