@@ -261,12 +261,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
 
             string correctionText = new String(' ', paramBlockAst.Extent.StartColumnNumber - 1)
-                + "CmdletBinding(SupportsShouldProcess)"
+                + "[CmdletBinding(SupportsShouldProcess)]"
                 + Environment.NewLine;
 
             return new CorrectionExtent(
                 paramBlockAst.Extent.StartLineNumber,
-                paramBlockAst.Extent.EndLineNumber,
+                paramBlockAst.Extent.StartLineNumber,
                 1,
                 1,
                 correctionText,
@@ -274,8 +274,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
         private static CorrectionExtent GetCorrectionExtent(AttributeAst cmdletBindingAttributeAst)
         {
-            // 1 for 1 based offset and 1 for the next position.
-            var startColumnNumber = cmdletBindingAttributeAst.Extent.Text.IndexOf("(") + 2;
+            // 1 for the next position.
+            var startColumnNumber = cmdletBindingAttributeAst.Extent.Text.IndexOf("(")
+                + cmdletBindingAttributeAst.Extent.StartColumnNumber
+                + 1;
             var extent = cmdletBindingAttributeAst.Extent;
             var suffix = cmdletBindingAttributeAst.NamedArguments.Count > 0
                 || cmdletBindingAttributeAst.PositionalArguments.Count > 0
