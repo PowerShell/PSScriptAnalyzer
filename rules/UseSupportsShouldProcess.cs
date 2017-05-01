@@ -142,7 +142,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // TODO Handle case where only one param is left after correction and there is a
             // comma left after the param.
 
-            var editableText = new EditableText(funcDefnAst.Extent.Text);
             // replace whatif/confirm extent starting with the last character of the previous parameter and ending with the last character of the whatif/confirm/parameter. This will take care of the trailing comma.
             // the next parameter
             // TODO Do not incrementally correct the text as it may lead to a situation in which a following
@@ -151,15 +150,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (whatIfIndex != -1)
             {
                 correctionExtents.Add(GetCorrectionExtent(whatIfIndex, parameterAsts));
-                var shiftedCorrectionExtent = Normalize(funcDefnAst.Extent, correctionExtents.Last());
-                editableText = editableText.ApplyEdit(shiftedCorrectionExtent);
             }
 
             if (confirmIndex != -1)
             {
                 correctionExtents.Add(GetCorrectionExtent(confirmIndex, parameterAsts));
-                var shiftedCorrectionExtent = Normalize(funcDefnAst.Extent, correctionExtents.Last());
-                editableText = editableText.ApplyEdit(shiftedCorrectionExtent);
             }
 
             if (paramBlockAst != null)
@@ -191,11 +186,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // add cmdletbinding attribute and add supportsshouldprocess to it.
             }
 
+            // sort in descending order of start position
+            correctionExtents.Sort((x, y) => {
+                var xRange = (Range)x;
+                var yRange = (Range)y;
+                return xRange.Start < yRange.Start ? 1 : (xRange.Start == yRange.Start ? 0 : -1);
+            });
+
+            var editableText = new EditableText(funcDefnAst.Extent.Text);
+            foreach (var correctionExtent in correctionExtents)
+            {
+                var shiftedCorrectionExtent = Normalize(funcDefnAst.Extent, correctionExtent);
+                editableText = editableText.ApplyEdit(shiftedCorrectionExtent);
+            }
+
+            var result = new List<CorrectionExtent>();
+            result.Add(
+                new CorrectionExtent(
+                funcDefnAst.Extent.StartLineNumber,
+                funcDefnAst.Extent.EndLineNumber,
+                funcDefnAst.Extent.StartColumnNumber,
+                funcDefnAst.Extent.EndColumnNumber,
+                editableText.ToString(),
+                funcDefnAst.Extent.File));
+            return result;
             // This is how we handle multiple edits.
             // create separate edits
             // apply those edits to the original script extent1
             // and then give the corrected extent as suggested correction.
-            return correctionExtents;
         }
 
         // doesn't seem right. The arguments should be of same type.
