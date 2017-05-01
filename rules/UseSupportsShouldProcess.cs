@@ -179,7 +179,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 else
                 {
                     // has no cmdletbinding attribute
-                    // add the attribute and supportsshouldprocess argument
+                    // hence, add the attribute and supportsshouldprocess argument
+                    correctionExtents.Add(GetCorrectionExtent(paramBlockAst));
                 }
             }
             else
@@ -238,7 +239,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return attributeAst != null;
         }
 
+        private static CorrectionExtent GetCorrectionExtent(ParamBlockAst paramBlockAst)
+        {
 
+            string correctionText = new String(' ', paramBlockAst.Extent.StartColumnNumber - 1)
+                + "CmdletBinding(SupportsShouldProcess)"
+                + Environment.NewLine;
+
+            return new CorrectionExtent(
+                paramBlockAst.Extent.StartLineNumber,
+                paramBlockAst.Extent.EndLineNumber,
+                1,
+                1,
+                correctionText,
+                null);
+        }
         private static CorrectionExtent GetCorrectionExtent(AttributeAst cmdletBindingAttributeAst)
         {
             // 1 for 1 based offset and 1 for the next position.
