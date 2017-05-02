@@ -188,10 +188,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // remove the parameter list
                 // and create an equivalent param block
                 // add cmdletbinding attribute and add supportsshouldprocess to it.
+                correctionExtents.Add(GetCorrectionsExtentRemoveParams(funcDefnAst, ast, tokens));
             }
 
             // sort in descending order of start position
-            correctionExtents.Sort((x, y) => {
+            correctionExtents.Sort((x, y) =>
+            {
                 var xRange = (Range)x;
                 var yRange = (Range)y;
                 return xRange.Start < yRange.Start ? 1 : (xRange.Start == yRange.Start ? 0 : -1);
@@ -218,6 +220,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // create separate edits
             // apply those edits to the original script extent1
             // and then give the corrected extent as suggested correction.
+        }
+
+        private static CorrectionExtent GetCorrectionsExtentRemoveParams(
+            FunctionDefinitionAst funcDefnAst,
+            Ast ast,
+            Token[] tokens)
+        {
+            var funcDefnTokens = TokenOperations.GetTokens(ast, funcDefnAst, tokens).ToArray();
+            var lParenTokenIdx = Array.FindIndex(funcDefnTokens, tok => tok.Kind == TokenKind.LParen);
+            var rParenTokenIdx = Array.FindIndex(funcDefnTokens, tok => tok.Kind == TokenKind.RParen);
+
+            return new CorrectionExtent(
+                tokens[lParenTokenIdx - 1].Extent.EndLineNumber,
+                tokens[rParenTokenIdx].Extent.EndLineNumber,
+                tokens[lParenTokenIdx - 1].Extent.EndColumnNumber,
+                tokens[rParenTokenIdx].Extent.EndColumnNumber,
+                "",
+                ast.Extent.File);
         }
 
         // doesn't seem right. The arguments should be of same type.
