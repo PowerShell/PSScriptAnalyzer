@@ -28,6 +28,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     class UseSupportsShouldProcess : ConfigurableRule
     {
+        private Ast ast;
+        private Token[] tokens;
         /// <summary>
         /// Analyzes the given ast to find if a function defines Confirm and/or WhatIf parameters manually
         /// instead of using SupportShouldProcess attribute.
@@ -43,10 +45,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // your code goes here
-            return FindViolations(ast);
+            this.ast = ast;
+            this.tokens = Helper.Instance.Tokens;
+            return FindViolations();
         }
 
-        private List<DiagnosticRecord> FindViolations(Ast ast)
+        private List<DiagnosticRecord> FindViolations()
         {
             var foundAsts = ast.FindAll(x => x is FunctionDefinitionAst, true);
             var diagnosticRecords = new List<DiagnosticRecord>();
