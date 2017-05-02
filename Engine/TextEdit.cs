@@ -51,10 +51,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string newText)
             : base(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber)
         {
+            // Instead of outputting a text object TextEdit should output an array of strings
+            // such that each string represents a line. Also for each each line, there should
+            // be some information to encode the indentation level. Let the client decide the
+            // new line characters to insert between each line and the indentation type (space or tab)
             Text = newText;
         }
-
-
-
     }
 }

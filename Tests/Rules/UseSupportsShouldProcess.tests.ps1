@@ -207,5 +207,27 @@ $s$s$s$s$s$s$s$s
             $violations.Count | Should Be 1
             $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
         }
+
+        It "Suggests replacing function parameter declaration with a param block" {
+            $def = @'
+function foo ($param1, $whatif, $param2) {
+}
+'@
+            $s = " "
+            $expectedCorrection = @'
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        $param1,
+        $param2
+    )
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+        }
+
     }
+
 }

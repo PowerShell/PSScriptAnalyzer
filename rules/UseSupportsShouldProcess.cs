@@ -10,6 +10,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Collections.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -17,6 +18,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -188,7 +190,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // remove the parameter list
                 // and create an equivalent param block
                 // add cmdletbinding attribute and add supportsshouldprocess to it.
-                correctionExtents.Add(GetCorrectionsExtentRemoveParams(funcDefnAst, ast, tokens));
+                correctionExtents.Add(GetCorrectionExtentRemoveParams(funcDefnAst, ast, tokens));
+                correctionExtents.Add(GetCorrectionExtentAddParamBlock(funcDefnAst, parameterAsts));
             }
 
             // sort in descending order of start position
@@ -222,7 +225,65 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // and then give the corrected extent as suggested correction.
         }
 
-        private static CorrectionExtent GetCorrectionsExtentRemoveParams(
+        private CorrectionExtent GetCorrectionExtentAddParamBlock(
+            FunctionDefinitionAst funcDefnAst,
+            ParameterAst[] parameterAsts)
+        {
+            var funcStartScriptPos = funcDefnAst.Extent.StartScriptPosition;
+            var paramBlockText = WriteParamBlock(parameterAsts);
+            // TODO replace this hard coding
+            var indentation = new string(' ', funcStartScriptPos.ColumnNumber + 3);
+            var sb = new StringBuilder();
+            sb.Append("{");
+            sb.AppendLine();
+            sb.Append(String.Join(
+                Environment.NewLine,
+                paramBlockText.GetLines().Select(line => indentation + line)));
+
+            return new CorrectionExtent(
+                funcDefnAst.Body.Extent.StartLineNumber,
+                funcDefnAst.Body.Extent.StartLineNumber,
+                funcDefnAst.Body.Extent.StartColumnNumber,
+                funcDefnAst.Body.Extent.StartColumnNumber + 1,
+                sb.ToString(),
+                funcDefnAst.Extent.File);
+        }
+
+        private string WriteParamBlock(ParameterAst[] parameterAsts)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("[CmdletBinding(SupportsShouldProcess)]");
+            sb.AppendLine("param(");
+            // TODO replace this hard coding
+            string indentation = new string(' ', 4);
+            int count = 0;
+            foreach (var paramAst in parameterAsts)
+            {
+                count++;
+                if (IsWhatIf(paramAst) || IsConfirm(paramAst))
+                {
+                    continue;
+                }
+
+                foreach (var line in paramAst.Extent.Text.GetLines())
+                {
+                    sb.Append(indentation);
+                    sb.Append(line);
+                }
+
+                if (count != parameterAsts.Length)
+                {
+                    sb.AppendLine(",");
+                }
+            }
+
+            sb.AppendLine();
+            sb.AppendLine(")");
+            return sb.ToString();
+        }
+
+
+        private static CorrectionExtent GetCorrectionExtentRemoveParams(
             FunctionDefinitionAst funcDefnAst,
             Ast ast,
             Token[] tokens)
