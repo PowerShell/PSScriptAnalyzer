@@ -23,9 +23,91 @@ function foo {
     )
 }
 '@
+            $s = " "
+            $expectedCorrection = @"
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+$s$s$s$s$s$s$s$s
+    )
+}
+"@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
-            Test-CorrectionExtentFromContent $def $violations 1 '[bool] $whatif' ''
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+        }
+
+        It "Should return valid correction text if whatif the first parameter" {
+            $def = @'
+function foo {
+    param(
+        [bool] $whatif,
+        $param1
+    )
+}
+'@
+            $s = " "
+            $expectedCorrection = @'
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        $param1
+    )
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+        }
+
+        It "Should return valid correction text if whatif is in the middle" {
+            $def = @'
+function foo {
+    param(
+        $param1,
+        [bool] $whatif,
+        $param2
+    )
+}
+'@
+            $s = " "
+            $expectedCorrection = @'
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        $param1,
+        $param2
+    )
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+        }
+
+
+         It "Should return valid correction text if whatif the last parameter" {
+            $def = @'
+function foo {
+    param(
+        $param1,
+        [bool] $whatif
+    )
+}
+'@
+            $s = " "
+            $expectedCorrection = @'
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        $param1
+    )
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+
         }
 
         It "Should find violation if only Confirm is added" {
@@ -36,9 +118,20 @@ function foo {
     )
 }
 '@
+
+            #  We use this odd construct because the editor auto-removes the trailing whitespaces.
+            $s = " "
+            $expectedCorrection = @"
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+$s$s$s$s$s$s$s$s
+    )
+}
+"@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
-            Test-CorrectionExtentFromContent $def $violations 1 '[bool] $confirm' ''
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
         }
 
         It "Should find violation if both Whatif and Confirm are added" {
@@ -50,13 +143,18 @@ function foo {
     )
 }
 '@
-            $expectedViolationText = @'
-        [bool] $confirm,
-        [bool] $whatif
-'@
-            $violation = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violation.Count | Should Be 1
-            $violation[0].SuggestedCorrections.Count | Should Be 2
+            $s = " "
+            $expectedCorrection = @"
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+$s$s$s$s$s$s$s$s
+    )
+}
+"@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
             # TODO Make test-correction extent take more than 1 corrections
             # or modify the rule such that it outputs only 1 correction.
             # Test-CorrectionExtentFromContent $def $violation 2 $expectedViolationText ''
