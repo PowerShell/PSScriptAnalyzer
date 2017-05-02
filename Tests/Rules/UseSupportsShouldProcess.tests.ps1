@@ -37,7 +37,7 @@ $s$s$s$s$s$s$s$s
             $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
         }
 
-        It "Should return valid correction text if whatif the first parameter" {
+        It "Should return valid correction text if whatif is the first parameter" {
             $def = @'
 function foo {
     param(
@@ -86,7 +86,7 @@ function foo {
         }
 
 
-         It "Should return valid correction text if whatif the last parameter" {
+        It "Should return valid correction text if whatif the last parameter" {
             $def = @'
 function foo {
     param(
@@ -160,12 +160,52 @@ $s$s$s$s$s$s$s$s
             # Test-CorrectionExtentFromContent $def $violation 2 $expectedViolationText ''
         }
 
-        It "Suggests adding SupportsShouldProcess attribute" {
-
+        It "Suggests adding SupportsShouldProcess attribute, when no argument is present" {
+            $def = @'
+function foo {
+    [CmdletBinding()]
+    param(
+        [bool] $confirm,
+        [bool] $whatif
+    )
+}
+'@
+            $s = " "
+            $expectedCorrection = @"
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+$s$s$s$s$s$s$s$s
+    )
+}
+"@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
         }
 
-        It "Suggests removing the manually added parameters" {
-
+        It "Suggests adding SupportsShouldProcess attribute, when arguments are present" {
+            $def = @'
+function foo {
+    [CmdletBinding(ConfirmImpact="High")]
+    param(
+        [bool] $confirm,
+        [bool] $whatif
+    )
+}
+'@
+            $s = " "
+            $expectedCorrection = @"
+function foo {
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact="High")]
+    param(
+$s$s$s$s$s$s$s$s
+    )
+}
+"@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
         }
     }
 }
