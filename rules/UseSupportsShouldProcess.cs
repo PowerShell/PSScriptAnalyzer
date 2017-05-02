@@ -297,22 +297,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             ParameterAst[] parameterAsts)
         {
             IScriptExtent paramExtent = parameterAsts[paramIndex].Extent;
-            int endLineNumber, endColumnNumber;
+            int startLineNumber, startColumnNumber, endLineNumber, endColumnNumber;
+
+            startLineNumber = paramExtent.StartLineNumber;
+            startColumnNumber = paramExtent.StartColumnNumber;
             if (paramIndex < parameterAsts.Length - 1)
             {
+
                 endLineNumber = parameterAsts[paramIndex + 1].Extent.StartLineNumber;
                 endColumnNumber = parameterAsts[paramIndex + 1].Extent.StartColumnNumber;
             }
             else
             {
+                // if last item in the parameter list then need to remove the
+                // trailing comma after the previous parameter.
+                if (paramIndex > 0)
+                {
+                    var lp = parameterAsts[paramIndex - 1];
+                    if (!lp.Name.VariablePath.UserPath.Equals(
+                        "whatif",
+                        StringComparison.OrdinalIgnoreCase)
+                       && !lp.Name.VariablePath.UserPath.Equals(
+                           "confirm",
+                           StringComparison.OrdinalIgnoreCase))
+                    {
+                        startLineNumber = lp.Extent.EndLineNumber;
+                        startColumnNumber = lp.Extent.EndColumnNumber;
+                    }
+                }
                 endLineNumber = paramExtent.EndLineNumber;
                 endColumnNumber = paramExtent.EndColumnNumber;
             }
 
             return new CorrectionExtent(
-                paramExtent.StartLineNumber,
+                startLineNumber,
                 endLineNumber,
-                paramExtent.StartColumnNumber,
+                startColumnNumber,
                 endColumnNumber,
                 "",
                 paramExtent.File);
