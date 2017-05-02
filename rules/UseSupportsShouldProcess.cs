@@ -338,12 +338,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (paramIndex > 0)
                 {
                     var lp = parameterAsts[paramIndex - 1];
-                    if (!lp.Name.VariablePath.UserPath.Equals(
-                        "whatif",
-                        StringComparison.OrdinalIgnoreCase)
-                       && !lp.Name.VariablePath.UserPath.Equals(
-                           "confirm",
-                           StringComparison.OrdinalIgnoreCase))
+                    if (!IsWhatIf(lp) && !IsConfirm(lp))
                     {
                         startLineNumber = lp.Extent.EndLineNumber;
                         startColumnNumber = lp.Extent.EndColumnNumber;
@@ -428,7 +423,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             paramIndex = 0;
             foreach (var paramAst in parameterAsts)
             {
-                if (paramAst.Name.VariablePath.UserPath.Equals(parameter, StringComparison.OrdinalIgnoreCase))
+                if (IsParameter(paramAst, parameter))
                 {
                     return true;
                 }
@@ -438,6 +433,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             paramIndex = -1;
             return false;
+        }
+
+        private static bool IsParameter(ParameterAst parameterAst, string parameterName)
+        {
+            return parameterAst.Name.VariablePath.UserPath.Equals(
+                parameterName,
+                StringComparison.OrdinalIgnoreCase);
+        }
+        private static bool IsWhatIf(ParameterAst parameterAst)
+        {
+            return IsParameter(parameterAst, "whatif");
+        }
+
+        private static bool IsConfirm(ParameterAst parameterAst)
+        {
+            return IsParameter(parameterAst, "confirm");
         }
 
         private string GetError(string functionName)
