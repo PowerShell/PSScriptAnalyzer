@@ -151,18 +151,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // TODO Do not incrementally correct the text as it may lead to a situation in which a following
             // edits might try to modify edits that have already taken place.
             // A better approach is to gather all the edits and give them to the text edit class to handle.
-            if (whatIfIndex != -1)
-            {
-                correctionExtents.Add(GetCorrectionExtent(whatIfIndex, parameterAsts));
-            }
-
-            if (confirmIndex != -1)
-            {
-                correctionExtents.Add(GetCorrectionExtent(confirmIndex, parameterAsts));
-            }
 
             if (paramBlockAst != null)
             {
+                if (whatIfIndex != -1)
+                {
+                    correctionExtents.Add(GetCorrectionExtent(whatIfIndex, parameterAsts));
+                }
+
+                if (confirmIndex != -1)
+                {
+                    correctionExtents.Add(GetCorrectionExtent(confirmIndex, parameterAsts));
+                }
                 AttributeAst attributeAst;
                 // check if it has cmdletbinding attribute
                 if (TryGetCmdletBindingAttribute(paramBlockAst, out attributeAst))
