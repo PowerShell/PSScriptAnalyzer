@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Text;
@@ -37,6 +38,59 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return new EditableText(stringBuilder.ToString());
         }
 
+        // TODO replace apply edit with an optimized version of this.
+        public EditableText ApplyEdit1(TextEdit textEdit)
+        {
+            ValidateTextEdit(textEdit);
+
+            // Break up the change lines
+            var changeLines = textEdit.Lines;
+            var Lines = new List<String>(this.Lines);
+
+            // Get the first fragment of the first line
+            string firstLineFragment =
+                Lines[textEdit.StartLineNumber - 1]
+                    .Substring(0, textEdit.StartColumnNumber - 1);
+
+            // Get the last fragment of the last line
+            string endLine = Lines[textEdit.EndLineNumber - 1];
+            string lastLineFragment =
+                endLine.Substring(
+                    textEdit.EndColumnNumber - 1,
+                    Lines[textEdit.EndLineNumber - 1].Length - textEdit.EndColumnNumber + 1);
+
+            // Remove the old lines
+            for (int i = 0; i <= textEdit.EndLineNumber - textEdit.StartLineNumber; i++)
+            {
+                Lines.RemoveAt(textEdit.StartLineNumber - 1);
+            }
+
+            // Build and insert the new lines
+            int currentLineNumber = textEdit.StartLineNumber;
+            for (int changeIndex = 0; changeIndex < changeLines.Length; changeIndex++)
+            {
+                // Since we split the lines above using \n, make sure to
+                // trim the ending \r's off as well.
+                string finalLine = changeLines[changeIndex].TrimEnd('\r');
+
+                // Should we add first or last line fragments?
+                if (changeIndex == 0)
+                {
+                    // Append the first line fragment
+                    finalLine = firstLineFragment + finalLine;
+                }
+                if (changeIndex == changeLines.Length - 1)
+                {
+                    // Append the last line fragment
+                    finalLine = finalLine + lastLineFragment;
+                }
+
+                Lines.Insert(currentLineNumber - 1, finalLine);
+                currentLineNumber++;
+            }
+
+            return new EditableText(String.Join(NewLine, Lines));
+        }
         // TODO Add a method that takes multiple edits, checks if they are unique and applies them.
 
         public override string ToString()
