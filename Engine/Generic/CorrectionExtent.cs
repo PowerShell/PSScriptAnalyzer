@@ -64,6 +64,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             int endLineNumber,
             int startColumnNumber,
             int endColumnNumber,
+            IEnumerable<string> lines,
+            string file,
+            string description)
+            : base(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber, lines)
+        {
+            this.file = file;
+            this.description = description;
+        }
+
+        public CorrectionExtent(
+            int startLineNumber,
+            int endLineNumber,
+            int startColumnNumber,
+            int endColumnNumber,
             string text,
             string file,
             string description)
