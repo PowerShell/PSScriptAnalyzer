@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
@@ -10,17 +10,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
     {
         public static IEnumerable<string> GetLines(this string text)
         {
-            var lines = new List<string>();
-            using (var stringReader = new StringReader(text))
-            {
-                string line;
-                line = stringReader.ReadLine();
-                while (line != null)
-                {
-                    yield return line;
-                    line = stringReader.ReadLine();
-                }
-            }
+            return text.Split('\n').Select(line => line.TrimEnd('\r'));
         }
 
         public static IScriptExtent Translate(this IScriptExtent extent, int lineDelta, int columnDelta)
