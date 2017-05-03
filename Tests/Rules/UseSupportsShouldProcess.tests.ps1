@@ -228,6 +228,47 @@ function foo {
             $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
         }
 
+        It "Suggests replacing function parameter declaration with whatif and confirm with a param block" {
+            $def = @'
+function foo ($param1, $whatif, $confirm, $param2) {
+}
+'@
+            $s = " "
+            $expectedCorrection = @'
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        $param1,
+        $param2
+    )
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+        }
+
+        It "Suggests replacing function parameter declaration with non-contiguous whatif and confirm with a param block" {
+            $def = @'
+function foo ($param1, $whatif, $param2, $confirm) {
+}
+'@
+            $s = " "
+            $expectedCorrection = @'
+function foo {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        $param1,
+        $param2
+    )
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+        }
+
+
     }
 
 }
