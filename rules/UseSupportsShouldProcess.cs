@@ -194,6 +194,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 correctionExtents.Add(GetCorrectionExtentAddParamBlock(funcDefnAst, parameterAsts));
             }
 
+            // This is how we handle multiple edits.
+            // create separate edits
+            // apply those edits to the original script extent1
+            // and then give the corrected extent as suggested correction.
+
             // sort in descending order of start position
             correctionExtents.Sort((x, y) =>
             {
@@ -206,7 +211,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var correctionExtent in correctionExtents)
             {
                 var shiftedCorrectionExtent = Normalize(funcDefnAst.Extent, correctionExtent);
-                editableText = editableText.ApplyEdit(shiftedCorrectionExtent);
+                editableText = editableText.ApplyEdit1(shiftedCorrectionExtent);
             }
 
             var result = new List<CorrectionExtent>();
@@ -219,10 +224,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 editableText.ToString(),
                 funcDefnAst.Extent.File));
             return result;
-            // This is how we handle multiple edits.
-            // create separate edits
-            // apply those edits to the original script extent1
-            // and then give the corrected extent as suggested correction.
         }
 
         private CorrectionExtent GetCorrectionExtentAddParamBlock(
@@ -233,53 +234,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var paramBlockText = WriteParamBlock(parameterAsts);
             // TODO replace this hard coding
             var indentation = new string(' ', funcStartScriptPos.ColumnNumber + 3);
-            var sb = new StringBuilder();
-            sb.Append("{");
-            sb.AppendLine();
-            sb.Append(String.Join(
-                Environment.NewLine,
-                paramBlockText.GetLines().Select(line => indentation + line)));
-
+            var lines = new List<String>();
+            lines.Add("{");
+            lines.AddRange(paramBlockText.Select(line => indentation + line));
             return new CorrectionExtent(
                 funcDefnAst.Body.Extent.StartLineNumber,
                 funcDefnAst.Body.Extent.StartLineNumber,
                 funcDefnAst.Body.Extent.StartColumnNumber,
                 funcDefnAst.Body.Extent.StartColumnNumber + 1,
-                sb.ToString(),
-                funcDefnAst.Extent.File);
+                lines,
+                funcDefnAst.Extent.File,
+                null);
         }
 
-        private string WriteParamBlock(ParameterAst[] parameterAsts)
+        private IList<String> WriteParamBlock(ParameterAst[] parameterAsts)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("[CmdletBinding(SupportsShouldProcess)]");
-            sb.AppendLine("param(");
+            var lines = new List<String>();
+            lines.Add("[CmdletBinding(SupportsShouldProcess)]");
+            lines.Add("param(");
+
             // TODO replace this hard coding
             string indentation = new string(' ', 4);
             int count = 0;
-            foreach (var paramAst in parameterAsts)
+            var usableParamAsts = parameterAsts.Where(p => !IsWhatIf(p) && !IsConfirm(p));
+            var usableCount = usableParamAsts.Count();
+            foreach (var paramAst in usableParamAsts)
             {
                 count++;
-                if (IsWhatIf(paramAst) || IsConfirm(paramAst))
+                var suffix = ",";
+                if (count == usableCount)
                 {
-                    continue;
+                    suffix = "";
                 }
 
                 foreach (var line in paramAst.Extent.Text.GetLines())
                 {
-                    sb.Append(indentation);
-                    sb.Append(line);
-                }
-
-                if (count != parameterAsts.Length)
-                {
-                    sb.AppendLine(",");
+                    lines.Add(indentation + line + suffix);
                 }
             }
 
-            sb.AppendLine();
-            sb.AppendLine(")");
-            return sb.ToString();
+            lines.Add(")");
+            return lines;
         }
 
 
@@ -293,10 +288,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var rParenTokenIdx = Array.FindIndex(funcDefnTokens, tok => tok.Kind == TokenKind.RParen);
 
             return new CorrectionExtent(
-                tokens[lParenTokenIdx - 1].Extent.EndLineNumber,
-                tokens[rParenTokenIdx].Extent.EndLineNumber,
-                tokens[lParenTokenIdx - 1].Extent.EndColumnNumber,
-                tokens[rParenTokenIdx].Extent.EndColumnNumber,
+                funcDefnTokens[lParenTokenIdx - 1].Extent.EndLineNumber,
+                funcDefnTokens[rParenTokenIdx].Extent.EndLineNumber,
+                funcDefnTokens[lParenTokenIdx - 1].Extent.EndColumnNumber,
+                funcDefnTokens[rParenTokenIdx].Extent.EndColumnNumber,
                 "",
                 ast.Extent.File);
         }
@@ -311,13 +306,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 referenceExtent.EndLineNumber,
                 referenceExtent.EndColumnNumber);
 
-            var range = new Range(
-                cextent.StartLineNumber,
-                cextent.StartColumnNumber,
-                cextent.EndLineNumber,
-                cextent.EndColumnNumber);
-
-            var shiftedRange = Range.Normalize(refRange, range);
+            var shiftedRange = Range.Normalize(refRange, cextent);
 
             // TODO Add a method to TextEdit class that takes in range and text
             // TODO Add a method to CorrectionExtent that takes in range and all other stuff
@@ -344,17 +333,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static CorrectionExtent GetCorrectionExtent(ParamBlockAst paramBlockAst)
         {
-
-            string correctionText = new String(' ', paramBlockAst.Extent.StartColumnNumber - 1)
-                + "[CmdletBinding(SupportsShouldProcess)]"
-                + Environment.NewLine;
-
             return new CorrectionExtent(
                 paramBlockAst.Extent.StartLineNumber,
                 paramBlockAst.Extent.StartLineNumber,
                 1,
                 1,
-                correctionText,
+                new String[] {
+                    new String(' ', paramBlockAst.Extent.StartColumnNumber - 1)
+                        + "[CmdletBinding(SupportsShouldProcess)]",
+                    String.Empty
+                },
+                null,
                 null);
         }
         private static CorrectionExtent GetCorrectionExtent(AttributeAst cmdletBindingAttributeAst)
