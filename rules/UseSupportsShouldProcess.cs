@@ -79,12 +79,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (addsWhatIf || addsConfirm)
                 {
                     IScriptExtent scriptExtent;
-                    if (addsWhatIf && addsConfirm)
-                    {
-                        // mark everthing between the parameters including them
-                        scriptExtent = CombineExtents(whatIfParamAst.Extent, confirmParamAst.Extent);
-                    }
-                    else if (addsWhatIf)
+
+                    // if both whatif and confirm are present,
+                    // the extent will only contain whatif.
+                    // we do this because editorservices relies on the text
+                    // property of IScriptExtent and if we create a new extent
+                    // with null Text value, it crashes editorservices.
+                    if (addsWhatIf)
                     {
                         // mark the whatif parameter
                         scriptExtent = whatIfParamAst.Extent;
@@ -141,12 +142,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             //    - else it doesn't have supportsshouldprocess
             //  - else it does not have cmdlet binding
             // - else a function doesn't have paramBlockAst
-            IScriptExtent whatIfExtent, confirmExtent;
             var filePath = funcDefnAst.Extent.File;
             var correctionExtents = new List<CorrectionExtent>();
-
-            // TODO Handle case where only one param is left after correction and there is a
-            // comma left after the param.
 
             // replace whatif/confirm extent starting with the last character of the previous parameter and ending with the last character of the whatif/confirm/parameter. This will take care of the trailing comma.
             // the next parameter
@@ -158,6 +155,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (whatIfIndex != -1)
                 {
+                    // TODO update method name to reflect its purpose.
                     correctionExtents.Add(GetCorrectionExtent(whatIfIndex, parameterAsts));
                 }
 
@@ -166,6 +164,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     correctionExtents.Add(GetCorrectionExtent(confirmIndex, parameterAsts));
                 }
                 AttributeAst attributeAst;
+
                 // check if it has cmdletbinding attribute
                 if (TryGetCmdletBindingAttribute(paramBlockAst, out attributeAst))
                 {
@@ -405,28 +404,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 endColumnNumber,
                 "",
                 paramExtent.File);
-        }
-
-        private IScriptExtent CombineExtents(IScriptExtent extent1, IScriptExtent extent2)
-        {
-            IScriptExtent sExt, eExt;
-
-            // There are many conditions that we need to consider but for now we are considering
-            // this special case only.
-            if (extent1.StartOffset < extent2.StartOffset)
-            {
-                sExt = extent1;
-                eExt = extent2;
-            }
-            else
-            {
-                sExt = extent2;
-                eExt = extent1;
-            }
-
-            return new ScriptExtent(
-                new ScriptPosition(sExt.File, sExt.StartLineNumber, sExt.StartColumnNumber, null),
-                new ScriptPosition(eExt.File, eExt.EndLineNumber, eExt.EndColumnNumber, null));
         }
 
         private bool TryGetParameterAst(
