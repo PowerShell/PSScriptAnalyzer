@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -35,6 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public string Text { get; }
 
+        public string[] Lines { get; }
         /// <summary>
         /// Constructs a TextEdit object.
         /// </summary>
@@ -56,6 +60,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // be some information to encode the indentation level. Let the client decide the
             // new line characters to insert between each line and the indentation type (space or tab)
             Text = newText;
+            Lines = Text.GetLines().ToArray();
         }
+
+        public TextEdit(
+            int startLineNumber,
+            int startColumnNumber,
+            int endLineNumber,
+            int endColumnNumber,
+            IEnumerable<String> lines)
+            : base(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber)
+        {
+            // TODO check arguments
+            Lines = lines.ToArray();
+            Text = String.Join(Environment.NewLine, Lines);
+        }
+
+
     }
 }
