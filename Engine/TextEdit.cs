@@ -5,7 +5,6 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
-    // TODO instead of deriving from Range, make Range a member type.
     /// <summary>
     /// Class to provide information about an edit
     /// </summary>
@@ -55,14 +54,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string newText)
             : base(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber)
         {
-            // Instead of outputting a text object TextEdit should output an array of strings
-            // such that each string represents a line. Also for each each line, there should
-            // be some information to encode the indentation level. Let the client decide the
-            // new line characters to insert between each line and the indentation type (space or tab)
+            if (newText == null)
+            {
+                throw new ArgumentNullException(nameof(newText));
+            }
+
             Text = newText;
             Lines = Text.GetLines().ToArray();
         }
 
+        /// <summary>
+        /// Constructs a TextEdit object.
+        /// </summary>
+        /// <param name="startLineNumber">1-based line number on which the text, which needs to be replaced, starts. </param>
+        /// <param name="startColumnNumber">1-based offset on start line at which the text, which needs to be replaced, starts. This includes the first character of the text. </param>
+        /// <param name="endLineNumber">1-based line number on which the text, which needs to be replace, ends. </param>
+        /// <param name="endColumnNumber">1-based offset on end line at which the text, which needs to be replaced, ends. This offset value is 1 more than the offset of the last character of the text. </param>
+        /// <param name="lines">The contiguous lines that will replace the text bounded by the Line/Column number properties. </param>
         public TextEdit(
             int startLineNumber,
             int startColumnNumber,
@@ -71,11 +79,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<String> lines)
             : base(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber)
         {
-            // TODO check arguments
+            if (lines == null)
+            {
+                throw new ArgumentNullException(nameof(lines));
+            }
+
+            if (lines.Any(line => line == null))
+            {
+                // TODO localize
+                throw new ArgumentException("Lines cannot contain a null element.", nameof(lines));
+            }
+
             Lines = lines.ToArray();
             Text = String.Join(Environment.NewLine, Lines);
         }
-
-
     }
 }
