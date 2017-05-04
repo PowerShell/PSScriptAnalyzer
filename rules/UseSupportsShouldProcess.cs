@@ -34,6 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private const int indentationSize = 4;
         private Ast ast;
         private Token[] tokens;
+
         /// <summary>
         /// Analyzes the given ast to find if a function defines Confirm and/or WhatIf parameters manually
         /// instead of using SupportShouldProcess attribute.
@@ -166,7 +167,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     // has no cmdletbinding attribute
                     // hence, add the attribute and supportsshouldprocess argument
-                    correctionExtents.Add(GetCorrectionToAddParamBlock(paramBlockAst));
+                    correctionExtents.Add(GetCorrectionToAddAttribute(paramBlockAst));
                 }
             }
             else
@@ -280,7 +281,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 ast.Extent.File);
         }
 
-        // doesn't seem right. The arguments should be of same type.
         private CorrectionExtent Normalize(
             Position refPosition,
             CorrectionExtent correctionExtent)
@@ -307,7 +307,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return attributeAst != null;
         }
 
-        private static CorrectionExtent GetCorrectionToAddParamBlock(ParamBlockAst paramBlockAst)
+        private static CorrectionExtent GetCorrectionToAddAttribute(ParamBlockAst paramBlockAst)
         {
             return new CorrectionExtent(
                 paramBlockAst.Extent.StartLineNumber,
