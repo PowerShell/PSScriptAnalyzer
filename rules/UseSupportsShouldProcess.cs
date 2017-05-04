@@ -68,7 +68,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-
                 // get paramterAsts and parameter block
                 // then use get parameter on the parameterAsts
                 var addsWhatIf = TryGetParameterAst(parameterAsts, "whatif", out whatIfIndex);
@@ -87,12 +86,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     // with null Text value, it crashes editorservices.
                     if (addsWhatIf)
                     {
-                        // mark the whatif parameter
                         scriptExtent = whatIfParamAst.Extent;
                     }
                     else
                     {
-                        // mark the confirm parameter
                         scriptExtent = confirmParamAst.Extent;
                     }
 
@@ -135,34 +132,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             ParamBlockAst paramBlockAst,
             FunctionDefinitionAst funcDefnAst)
         {
-            // we need to handle the following cases
-            // - If a function has paramBlockAst
-            //  - if it has cmdletbinding
-            //    - if it has supportsshouldprocess
-            //    - else it doesn't have supportsshouldprocess
-            //  - else it does not have cmdlet binding
-            // - else a function doesn't have paramBlockAst
             var filePath = funcDefnAst.Extent.File;
             var correctionExtents = new List<CorrectionExtent>();
-
-            // replace whatif/confirm extent starting with the last character of the previous parameter and ending with the last character of the whatif/confirm/parameter. This will take care of the trailing comma.
-            // the next parameter
-            // TODO Do not incrementally correct the text as it may lead to a situation in which a following
-            // edits might try to modify edits that have already taken place.
-            // A better approach is to gather all the edits and give them to the text edit class to handle.
 
             if (paramBlockAst != null)
             {
                 if (whatIfIndex != -1)
                 {
                     // TODO update method name to reflect its purpose.
-                    correctionExtents.Add(GetCorrectionExtent(whatIfIndex, parameterAsts));
+                    correctionExtents.Add(GetCorrectionToRemoveParam(whatIfIndex, parameterAsts));
                 }
 
                 if (confirmIndex != -1)
                 {
-                    correctionExtents.Add(GetCorrectionExtent(confirmIndex, parameterAsts));
+                    correctionExtents.Add(GetCorrectionToRemoveParam(confirmIndex, parameterAsts));
                 }
+
                 AttributeAst attributeAst;
 
                 // check if it has cmdletbinding attribute
@@ -173,14 +158,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             StringComparison.OrdinalIgnoreCase)))
                     {
                         // add supportsshouldprocess to the attribute
-                        correctionExtents.Add(GetCorrectionExtent(attributeAst));
+                        correctionExtents.Add(GetCorrectionToAddShouldProcess(attributeAst));
                     }
                 }
                 else
                 {
                     // has no cmdletbinding attribute
                     // hence, add the attribute and supportsshouldprocess argument
-                    correctionExtents.Add(GetCorrectionExtent(paramBlockAst));
+                    correctionExtents.Add(GetCorrectionToAddParamBlock(paramBlockAst));
                 }
             }
             else
@@ -189,11 +174,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // remove the parameter list
                 // and create an equivalent param block
                 // add cmdletbinding attribute and add supportsshouldprocess to it.
-                correctionExtents.Add(GetCorrectionExtentRemoveParams(funcDefnAst, ast, tokens));
-                correctionExtents.Add(GetCorrectionExtentAddParamBlock(funcDefnAst, parameterAsts));
+                correctionExtents.Add(GetCorrectionToRemoveFuncParamDecl(funcDefnAst, ast, tokens));
+                correctionExtents.Add(GetCorrectionToAddParamBlock(funcDefnAst, parameterAsts));
             }
 
-            // This is how we handle multiple edits.
+            // This is how we handle multiple edits-
             // create separate edits
             // apply those edits to the original script extent1
             // and then give the corrected extent as suggested correction.
@@ -225,7 +210,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return result;
         }
 
-        private CorrectionExtent GetCorrectionExtentAddParamBlock(
+        private CorrectionExtent GetCorrectionToAddParamBlock(
             FunctionDefinitionAst funcDefnAst,
             ParameterAst[] parameterAsts)
         {
@@ -277,7 +262,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
 
-        private static CorrectionExtent GetCorrectionExtentRemoveParams(
+        private static CorrectionExtent GetCorrectionToRemoveFuncParamDecl(
             FunctionDefinitionAst funcDefnAst,
             Ast ast,
             Token[] tokens)
@@ -330,7 +315,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return attributeAst != null;
         }
 
-        private static CorrectionExtent GetCorrectionExtent(ParamBlockAst paramBlockAst)
+        private static CorrectionExtent GetCorrectionToAddParamBlock(ParamBlockAst paramBlockAst)
         {
             return new CorrectionExtent(
                 paramBlockAst.Extent.StartLineNumber,
@@ -345,7 +330,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 null,
                 null);
         }
-        private static CorrectionExtent GetCorrectionExtent(AttributeAst cmdletBindingAttributeAst)
+        private static CorrectionExtent GetCorrectionToAddShouldProcess(AttributeAst cmdletBindingAttributeAst)
         {
             // 1 for the next position.
             var startColumnNumber = cmdletBindingAttributeAst.Extent.Text.IndexOf("(")
@@ -365,7 +350,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 extent.File);
         }
 
-        private static CorrectionExtent GetCorrectionExtent(
+        private static CorrectionExtent GetCorrectionToRemoveParam(
             int paramIndex,
             ParameterAst[] parameterAsts)
         {
