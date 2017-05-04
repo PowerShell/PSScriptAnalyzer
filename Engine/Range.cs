@@ -43,11 +43,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return new Range(newStart, newEnd);
         }
 
-        public static Range Normalize(Range refRange, Range range)
+        public static Range Normalize(Position refPosition, Range range)
         {
-            if (refRange == null)
+            if (refPosition == null)
             {
-                throw new ArgumentNullException(nameof(refRange));
+                throw new ArgumentNullException(nameof(refPosition));
             }
 
             if (range == null)
@@ -55,14 +55,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(range));
             }
 
-            if (refRange.Start > range.Start)
+            if (refPosition > range.Start)
             {
                 throw new ArgumentException("reference range should start before range");
             }
 
             return range.Shift(
-                1 - refRange.Start.Line,
-                range.Start.Line == refRange.Start.Line ? 1 - refRange.Start.Column : 0);
+                1 - refPosition.Line,
+                range.Start.Line == refPosition.Line ? 1 - refPosition.Column : 0);
         }
     }
 }

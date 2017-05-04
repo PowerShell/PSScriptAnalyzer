@@ -193,9 +193,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             });
 
             var editableText = new EditableText(funcDefnAst.Extent.Text);
+            var funcDefAstStartPos = funcDefnAst.Extent.ToRange().Start;
             foreach (var correctionExtent in correctionExtents)
             {
-                var shiftedCorrectionExtent = Normalize(funcDefnAst.Extent, correctionExtent);
+                var shiftedCorrectionExtent = Normalize(funcDefAstStartPos, correctionExtent);
                 editableText = editableText.ApplyEdit1(shiftedCorrectionExtent);
             }
 
@@ -281,13 +282,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         // doesn't seem right. The arguments should be of same type.
         private CorrectionExtent Normalize(
-            IScriptExtent referenceExtent,
+            Position refPosition,
             CorrectionExtent correctionExtent)
         {
-            var shiftedRange = Range.Normalize(referenceExtent.ToRange(), correctionExtent);
-
-            // TODO Add a method to TextEdit class that takes in range and text
-            // TODO Add a method to CorrectionExtent that takes in range and all other stuff
+            var shiftedRange = Range.Normalize(refPosition, (Range)correctionExtent);
             return new CorrectionExtent(
                  shiftedRange.Start.Line,
                  shiftedRange.End.Line,
