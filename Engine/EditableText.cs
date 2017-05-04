@@ -7,38 +7,48 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
-    // TODO add documentation
+    /// <summary>
+    /// A class to represent text to which `TextEdit`s can be applied.
+    /// </summary>
     public class EditableText
     {
+        /// <summary>
+        /// The text that is available for editing.
+        /// </summary>
         public string Text { get; private set; }
-        public string[] Lines { get; private set; }
-        public string NewLine { get; private set; }
-        public int NumNewLineChars { get { return NewLine.Length; } }
 
+        /// <summary>
+        /// The lines in the Text.
+        /// </summary>
+        public string[] Lines { get; private set; }
+
+        /// <summary>
+        /// The new line character in the Text.
+        /// </summary>
+        public string NewLine { get; private set; }
+
+        /// <summary>
+        /// Construct an EditableText type object.
+        /// </summary>
+        /// <param name="text"></param>
         public EditableText(string text)
         {
             if (text == null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
+
             this.Text = text;
             Lines = this.Text.GetLines().ToArray();
             NewLine = GetNewLineCharacters();
         }
 
-        // TODO Use EditorServices implementation as it is very well tested.
-        public EditableText ApplyEdit(TextEdit textEdit)
-        {
-            ValidateTextEdit(textEdit);
-            var stringBuilder = new StringBuilder(Text.Substring(
-                0,
-                GetOffset(textEdit.StartLineNumber, textEdit.StartColumnNumber)));
-            stringBuilder.Append(textEdit.Text);
-            stringBuilder.Append(Text.Substring(GetOffset(textEdit.EndLineNumber, textEdit.EndColumnNumber)));
-            return new EditableText(stringBuilder.ToString());
-        }
-
         // TODO replace apply edit with an optimized version of this.
+        /// <summary>
+        /// Apply edits defined by a TextEdit object to Text.
+        /// </summary>
+        /// <param name="textEdit">A TextEdit object that encapsulates the text and the range that need to be replaced.</param>
+        /// <returns>An editable object which contains the supplied edit.</returns>
         public EditableText ApplyEdit1(TextEdit textEdit)
         {
             ValidateTextEdit(textEdit);
@@ -91,6 +101,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return new EditableText(String.Join(NewLine, Lines));
         }
+
         // TODO Add a method that takes multiple edits, checks if they are unique and applies them.
 
         public override string ToString()
@@ -120,7 +131,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-       private int GetOffset(int lineNumber, int columnNumber)
+        private int GetOffset(int lineNumber, int columnNumber)
         {
             if (lineNumber < 1)
             {
@@ -137,7 +148,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var offset = 0;
             for (var k = 0; k < zeroBasedLineNumber; k++)
             {
-                offset += Lines[k].Length + NumNewLineChars;
+                offset += Lines[k].Length + NewLine.Length;
             }
 
             return offset + zeroBasedColumnNumber;
@@ -153,7 +164,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return Text.Substring(Lines[0].Length, GetNumNewLineCharacters());
         }
 
-        // TODO No need to do all this. Just look at the first character at the end of first line.
         private int GetNumNewLineCharacters()
         {
             if (Lines.Length == 1)
@@ -171,12 +181,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return numCharDiff / (Lines.Length - 1);
-        }
-
-        private IScriptExtent GetExtent()
-        {
-            return new ScriptExtent(new ScriptPosition(null, 1, 1, Lines[0]),
-                new ScriptPosition(null, Lines.Length, Lines[Lines.Length - 1].Length + 1, Lines[Lines.Length - 1]));
         }
     }
 }
