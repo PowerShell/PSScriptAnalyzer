@@ -30,6 +30,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     class UseSupportsShouldProcess : ConfigurableRule
     {
+        private const char whitespace = ' ';
+        private const int indentationSize = 4;
         private Ast ast;
         private Token[] tokens;
         /// <summary>
@@ -180,7 +182,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // This is how we handle multiple edits-
             // create separate edits
-            // apply those edits to the original script extent1
+            // apply those edits to the original script extent
             // and then give the corrected extent as suggested correction.
 
             // sort in descending order of start position
@@ -216,8 +218,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             var funcStartScriptPos = funcDefnAst.Extent.StartScriptPosition;
             var paramBlockText = WriteParamBlock(parameterAsts);
-            // TODO replace this hard coding
-            var indentation = new string(' ', funcStartScriptPos.ColumnNumber + 3);
+            var indentation = new string(whitespace, funcStartScriptPos.ColumnNumber + 3);
             var lines = new List<String>();
             lines.Add("{");
             lines.AddRange(paramBlockText.Select(line => indentation + line));
@@ -237,8 +238,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             lines.Add("[CmdletBinding(SupportsShouldProcess)]");
             lines.Add("param(");
 
-            // TODO replace this hard coding
-            string indentation = new string(' ', 4);
+            string indentation = new string(whitespace, indentationSize);
             int count = 0;
             var usableParamAsts = parameterAsts.Where(p => !IsWhatIf(p) && !IsConfirm(p));
             var usableCount = usableParamAsts.Count();
@@ -323,7 +323,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 1,
                 1,
                 new String[] {
-                    new String(' ', paramBlockAst.Extent.StartColumnNumber - 1)
+                    new String(whitespace, paramBlockAst.Extent.StartColumnNumber - 1)
                         + "[CmdletBinding(SupportsShouldProcess)]",
                     String.Empty
                 },
