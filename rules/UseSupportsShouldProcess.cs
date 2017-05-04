@@ -141,7 +141,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (whatIfIndex != -1)
                 {
-                    // TODO update method name to reflect its purpose.
                     correctionExtents.Add(GetCorrectionToRemoveParam(whatIfIndex, parameterAsts));
                 }
 
@@ -281,16 +280,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         // doesn't seem right. The arguments should be of same type.
-        private CorrectionExtent Normalize(IScriptExtent referenceExtent, CorrectionExtent cextent)
+        private CorrectionExtent Normalize(
+            IScriptExtent referenceExtent,
+            CorrectionExtent correctionExtent)
         {
-            // TODO Add ToRange extension methods for this conversion
-            var refRange = new Range(
-                referenceExtent.StartLineNumber,
-                referenceExtent.StartColumnNumber,
-                referenceExtent.EndLineNumber,
-                referenceExtent.EndColumnNumber);
-
-            var shiftedRange = Range.Normalize(refRange, cextent);
+            var shiftedRange = Range.Normalize(referenceExtent.ToRange(), correctionExtent);
 
             // TODO Add a method to TextEdit class that takes in range and text
             // TODO Add a method to CorrectionExtent that takes in range and all other stuff
@@ -299,9 +293,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                  shiftedRange.End.Line,
                  shiftedRange.Start.Column,
                  shiftedRange.End.Column,
-                 cextent.Text,
-                 cextent.File,
-                 cextent.Description);
+                 correctionExtent.Text,
+                 correctionExtent.File,
+                 correctionExtent.Description);
         }
         private static bool TryGetCmdletBindingAttribute(
             ParamBlockAst paramBlockAst,

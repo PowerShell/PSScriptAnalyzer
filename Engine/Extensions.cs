@@ -42,5 +42,17 @@ Resulting start column and end column number must be greather than 1.");
                     newEndColumnNumber,
                     extent.EndScriptPosition.Line));
         }
+
+        /// <summary>
+        /// Converts IScriptExtent to Range
+        /// </summary>
+        public static Range ToRange(this IScriptExtent extent)
+        {
+           return new Range(
+                extent.StartLineNumber,
+                extent.StartColumnNumber,
+                extent.EndLineNumber,
+                extent.EndColumnNumber);
+        }
     }
 }
