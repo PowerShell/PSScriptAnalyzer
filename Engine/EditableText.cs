@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
@@ -53,9 +54,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             ValidateTextEdit(textEdit);
 
-            // Break up the change lines
-            var changeLines = textEdit.Lines;
-            var Lines = new List<String>(this.Lines);
+            var editLines = textEdit.Lines;
+            var Lines = new TextLines(this.Lines);
 
             // Get the first fragment of the first line
             string firstLineFragment =
@@ -77,11 +77,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // Build and insert the new lines
             int currentLineNumber = textEdit.StartLineNumber;
-            for (int changeIndex = 0; changeIndex < changeLines.Length; changeIndex++)
+            for (int changeIndex = 0; changeIndex < editLines.Length; changeIndex++)
             {
                 // Since we split the lines above using \n, make sure to
                 // trim the ending \r's off as well.
-                string finalLine = changeLines[changeIndex].TrimEnd('\r');
+                string finalLine = editLines[changeIndex].TrimEnd('\r');
 
                 // Should we add first or last line fragments?
                 if (changeIndex == 0)
@@ -89,7 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // Append the first line fragment
                     finalLine = firstLineFragment + finalLine;
                 }
-                if (changeIndex == changeLines.Length - 1)
+                if (changeIndex == editLines.Length - 1)
                 {
                     // Append the last line fragment
                     finalLine = finalLine + lastLineFragment;
@@ -181,6 +181,172 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return numCharDiff / (Lines.Length - 1);
+        }
+
+        private class TextLines : IList<String>
+        {
+            private LinkedList<String> lines;
+
+            private void ValidateIndex(int index)
+            {
+                if (index >= Count || index < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+            }
+
+            private LinkedListNode<String> GetNodeAt(int index)
+            {
+                var node = lines.First;
+                int count = 0;
+                while (node != null)
+                {
+                    if (count++ == index)
+                    {
+                        return node;
+                    }
+
+                    node = node.Next;
+                }
+
+                throw new InvalidOperationException();
+            }
+
+            public string this[int index]
+            {
+                get
+                {
+                    ValidateIndex(index);
+                    return GetNodeAt(index).Value;
+                }
+                set
+                {
+                    ValidateIndex(index);
+                    Insert(index, value);
+                    RemoveAt(index);
+                }
+            }
+
+            public int Count { get; private set; }
+
+            public bool IsReadOnly => false;
+
+            public TextLines()
+            {
+                lines = new LinkedList<String>();
+                Count = 0;
+            }
+
+            public TextLines(IEnumerable<String> inputLines)
+            {
+                if (inputLines == null)
+                {
+                    throw new ArgumentNullException(nameof(inputLines));
+                }
+
+                if (inputLines.Any(line => line == null))
+                {
+                    // todo localize
+                    throw new ArgumentException("Line element cannot be null.");
+                }
+
+                lines = new LinkedList<String>(inputLines);
+                Count = lines.Count;
+            }
+
+            public void Add(string item)
+            {
+                if (item == null)
+                {
+                    throw new ArgumentNullException(nameof(item));
+                }
+
+                Insert(Count - 1, item);
+            }
+
+            public void Clear()
+            {
+                lines.Clear();
+            }
+
+            public bool Contains(string item)
+            {
+                return lines.Contains(item);
+            }
+
+            public void CopyTo(string[] array, int arrayIndex)
+            {
+                lines.CopyTo(array, arrayIndex);
+            }
+
+            public IEnumerator<string> GetEnumerator()
+            {
+                return lines.GetEnumerator();
+            }
+
+            public int IndexOf(string item)
+            {
+                var llNode = lines.First;
+                int count = 0;
+                while (llNode != null)
+                {
+                    if (llNode.Value.Equals(item))
+                    {
+                        return count;
+                    }
+
+                    llNode = llNode.Next;
+                    count++;
+                }
+
+                return -1;
+            }
+
+            public void Insert(int index, string item)
+            {
+                ValidateIndex(index);
+                if (index == 0)
+                {
+                    lines.AddFirst(item);
+                }
+                else if (index == Count - 1)
+                {
+                    lines.AddBefore(lines.Last, item);
+                }
+                else
+                {
+                    lines.AddBefore(GetNodeAt(index), item);
+                }
+
+                Count++;
+            }
+
+            public bool Remove(string item)
+            {
+                if (lines.Remove(item))
+                {
+                    Count--;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void RemoveAt(int index)
+            {
+                lines.Remove(GetNodeAt(index));
+                Count--;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return lines.GetEnumerator();
+            }
+
+            public override string ToString()
+            {
+                return String.Join(Environment.NewLine, lines);
+            }
         }
     }
 }
