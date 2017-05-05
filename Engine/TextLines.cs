@@ -38,11 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="inputLines">An IEnumerable type that represent lines in a text.</param>
         public TextLines(IEnumerable<string> inputLines) : this()
         {
-            if (inputLines == null)
-            {
-                throw new ArgumentNullException(nameof(inputLines));
-            }
-
+            ThrowIfNull(inputLines, nameof(inputLines));
             if (inputLines.Any(line => line == null))
             {
                 // todo localize
@@ -161,6 +157,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public void Insert(int index, string item)
         {
             ValidateIndex(index);
+            ThrowIfNull(item, nameof(item));
             SetLastAccessed(index, lines.AddBefore(GetNodeAt(index), item));
             Count++;
         }
@@ -321,6 +318,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 refNode = lines.First;
                 refIndex = 0;
                 searchDirection = 1;
+            }
+        }
+
+        private static void ThrowIfNull<T>(T param, string paramName)
+        {
+            if (param == null)
+            {
+                throw new ArgumentNullException(paramName);
             }
         }
     }
