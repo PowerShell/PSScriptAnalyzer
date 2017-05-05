@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Text;
@@ -126,32 +127,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 || textEdit.StartColumnNumber > Lines[textEdit.StartLineNumber - 1].Length
                 || textEdit.EndColumnNumber > Lines[textEdit.EndLineNumber - 1].Length + 1)
             {
-                // TODO Localize
-                throw new ArgumentException("TextEdit extent not completely contained in EditableText.");
+                throw new ArgumentException(String.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.EditableTextRangeIsNotContained));
             }
-        }
-
-        private int GetOffset(int lineNumber, int columnNumber)
-        {
-            if (lineNumber < 1)
-            {
-                throw new ArgumentException("Line number must be greater than 0.", nameof(lineNumber));
-            }
-
-            if (columnNumber < 1)
-            {
-                throw new ArgumentException("Column number must be greater than 0.", nameof(lineNumber));
-            }
-
-            var zeroBasedLineNumber = lineNumber - 1;
-            var zeroBasedColumnNumber = columnNumber - 1;
-            var offset = 0;
-            for (var k = 0; k < zeroBasedLineNumber; k++)
-            {
-                offset += Lines[k].Length + NewLine.Length;
-            }
-
-            return offset + zeroBasedColumnNumber;
         }
 
         private static string GetNewLineCharacters(string text, out string[] lines)
@@ -178,8 +157,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             int remainder = numCharDiff % (lines.Length - 1);
             if (remainder != 0)
             {
-                // TODO localize
-                throw new ArgumentException("Cannot determine line endings as the text probably contain mixed line endings.", nameof(text));
+                throw new ArgumentException(
+                    String.Format(CultureInfo.CurrentCulture, Strings.EditableTextInvalidLineEnding),
+                    nameof(text));
             }
 
             return numCharDiff / (lines.Length - 1);

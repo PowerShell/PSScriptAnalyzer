@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
@@ -41,8 +42,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ThrowIfNull(inputLines, nameof(inputLines));
             if (inputLines.Any(line => line == null))
             {
-                // todo localize
-                throw new ArgumentException("Line element cannot be null.");
+                throw new ArgumentException(String.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.TextLinesNoNullItem));
+
             }
 
             lines = new LinkedList<string>(inputLines);

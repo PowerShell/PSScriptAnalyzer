@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
@@ -86,8 +87,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (lines.Any(line => line == null))
             {
-                // TODO localize
-                throw new ArgumentException("Lines cannot contain a null element.", nameof(lines));
+                throw new ArgumentException(
+                    String.Format(CultureInfo.CurrentCulture,
+                    Strings.TextEditNoNullItem), nameof(lines));
             }
 
             Lines = lines.ToArray();
