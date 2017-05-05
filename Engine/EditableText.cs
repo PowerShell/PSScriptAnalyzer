@@ -186,6 +186,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private class TextLines : IList<String>
         {
             private LinkedList<String> lines;
+            private int lastAccessedIndex;
+            private LinkedListNode<String> lastAccessedNode;
 
             private void ValidateIndex(int index)
             {
@@ -195,21 +197,92 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
+            private void SetLastAccessed(int index, LinkedListNode<String> node)
+            {
+                lastAccessedIndex = index;
+                lastAccessedNode = node;
+            }
+
+            private void InvalidateLastAccessed()
+            {
+                lastAccessedIndex = -1;
+                lastAccessedNode = null;
+            }
+
+            private bool IsLastAccessedValid()
+            {
+                return lastAccessedIndex != -1;
+            }
+
             private LinkedListNode<String> GetNodeAt(int index)
             {
-                var node = lines.First;
-                int count = 0;
+                if (index == 0)
+                {
+                    return lines.First;
+                }
+
+                if (index == Count - 1)
+                {
+                    return lines.Last;
+                }
+
+                LinkedListNode<string> node;
+                int searchDirection;
+                int count;
+                GetClosestReference(index, out node, out count, out searchDirection);
                 while (node != null)
                 {
-                    if (count++ == index)
+                    if (count == index)
                     {
                         return node;
                     }
 
-                    node = node.Next;
+                    count += searchDirection;
+                    if (searchDirection > 0)
+                    {
+                        node = node.Next;
+                    }
+                    else
+                    {
+                        node = node.Previous;
+                    }
                 }
 
                 throw new InvalidOperationException();
+            }
+
+            private void GetClosestReference(
+                int index,
+                out LinkedListNode<string> refNode,
+                out int refIndex,
+                out int searchDirection)
+            {
+                var delta = index - lastAccessedIndex;
+                var deltaAbs = Math.Abs(delta);
+
+                // lastAccessedIndex is closer to index than 0
+                if (IsLastAccessedValid() && deltaAbs < index)
+                {
+                    // lastAccessedIndex is closer to index than Count - 1
+                    if (deltaAbs < (Count - 1 - index))
+                    {
+                        refNode = lastAccessedNode;
+                        refIndex = lastAccessedIndex;
+                        searchDirection = Math.Sign(delta);
+                    }
+                    else
+                    {
+                        refNode = lines.Last;
+                        refIndex = Count - 1;
+                        searchDirection = -1;
+                    }
+                }
+                else
+                {
+                    refNode = lines.First;
+                    refIndex = 0;
+                    searchDirection = 1;
+                }
             }
 
             public string this[int index]
@@ -235,9 +308,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 lines = new LinkedList<String>();
                 Count = 0;
+                InvalidateLastAccessed();
             }
 
-            public TextLines(IEnumerable<String> inputLines)
+            public TextLines(IEnumerable<String> inputLines) : this()
             {
                 if (inputLines == null)
                 {
@@ -305,19 +379,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             public void Insert(int index, string item)
             {
                 ValidateIndex(index);
-                if (index == 0)
-                {
-                    lines.AddFirst(item);
-                }
-                else if (index == Count - 1)
-                {
-                    lines.AddBefore(lines.Last, item);
-                }
-                else
-                {
-                    lines.AddBefore(GetNodeAt(index), item);
-                }
-
+                SetLastAccessed(index, lines.AddBefore(GetNodeAt(index), item));
                 Count++;
             }
 
@@ -334,7 +396,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             public void RemoveAt(int index)
             {
-                lines.Remove(GetNodeAt(index));
+                var node = GetNodeAt(index);
+                if (node.Next != null)
+                {
+                    SetLastAccessed(index, node.Next);
+                }
+                else if (node.Previous != null)
+                {
+                    SetLastAccessed(index - 1, node.Previous);
+                }
+                else
+                {
+                    InvalidateLastAccessed();
+                }
+
+                lines.Remove(node);
                 Count--;
             }
 
