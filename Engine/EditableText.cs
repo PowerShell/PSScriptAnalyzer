@@ -13,15 +13,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class EditableText
     {
+        private TextLines lines { get; set; }
+
         /// <summary>
         /// The text that is available for editing.
         /// </summary>
-        public string Text { get; private set; }
+        public string Text { get { return String.Join(NewLine, lines); } }
 
         /// <summary>
         /// The lines in the Text.
         /// </summary>
-        public string[] Lines { get; private set; }
+        public string[] Lines { get { return lines.ToArray(); } }
 
         /// <summary>
         /// The new line character in the Text.
@@ -39,12 +41,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(text));
             }
 
-            this.Text = text;
-            Lines = this.Text.GetLines().ToArray();
-            NewLine = GetNewLineCharacters();
+            string[] lines;
+            NewLine = GetNewLineCharacters(text, out lines);
+            this.lines = new TextLines(lines);
         }
 
-        // TODO replace apply edit with an optimized version of this.
         /// <summary>
         /// Apply edits defined by a TextEdit object to Text.
         /// </summary>
@@ -55,24 +56,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ValidateTextEdit(textEdit);
 
             var editLines = textEdit.Lines;
-            var Lines = new TextLines(this.Lines);
 
             // Get the first fragment of the first line
             string firstLineFragment =
-                Lines[textEdit.StartLineNumber - 1]
+                lines[textEdit.StartLineNumber - 1]
                     .Substring(0, textEdit.StartColumnNumber - 1);
 
             // Get the last fragment of the last line
-            string endLine = Lines[textEdit.EndLineNumber - 1];
+            string endLine = lines[textEdit.EndLineNumber - 1];
             string lastLineFragment =
                 endLine.Substring(
                     textEdit.EndColumnNumber - 1,
-                    Lines[textEdit.EndLineNumber - 1].Length - textEdit.EndColumnNumber + 1);
+                    lines[textEdit.EndLineNumber - 1].Length - textEdit.EndColumnNumber + 1);
 
             // Remove the old lines
             for (int i = 0; i <= textEdit.EndLineNumber - textEdit.StartLineNumber; i++)
             {
-                Lines.RemoveAt(textEdit.StartLineNumber - 1);
+                lines.RemoveAt(textEdit.StartLineNumber - 1);
             }
 
             // Build and insert the new lines
@@ -95,11 +95,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     finalLine = finalLine + lastLineFragment;
                 }
 
-                Lines.Insert(currentLineNumber - 1, finalLine);
+                lines.Insert(currentLineNumber - 1, finalLine);
                 currentLineNumber++;
             }
 
-            return new EditableText(String.Join(NewLine, Lines));
+            return new EditableText(String.Join(NewLine, lines));
         }
 
         // TODO Add a method that takes multiple edits, checks if they are unique and applies them.
@@ -154,33 +154,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return offset + zeroBasedColumnNumber;
         }
 
-        private string GetNewLineCharacters()
+        private static string GetNewLineCharacters(string text, out string[] lines)
         {
-            if (Lines.Length == 1)
+            int numNewLineChars = GetNumNewLineCharacters(text, out lines);
+            if (lines.Length == 1)
             {
                 return Environment.NewLine;
             }
 
-            return Text.Substring(Lines[0].Length, GetNumNewLineCharacters());
+            return text.Substring(lines[0].Length, numNewLineChars);
         }
 
-        private int GetNumNewLineCharacters()
+        private static int GetNumNewLineCharacters(string text, out string[] lines)
         {
-            if (Lines.Length == 1)
+            lines = text.GetLines().ToArray();
+            if (lines.Length == 1)
             {
                 return Environment.NewLine.Length;
             }
 
-            var charsInLines = Lines.Sum(line => line.Length);
-            var numCharDiff = Text.Length - charsInLines;
-            int remainder = numCharDiff % (Lines.Length - 1);
+            var charsInLines = lines.Sum(line => line.Length);
+            var numCharDiff = text.Length - charsInLines;
+            int remainder = numCharDiff % (lines.Length - 1);
             if (remainder != 0)
             {
                 // TODO localize
-                throw new ArgumentException("Cannot determine line endings as the text probably contain mixed line endings.", nameof(Text));
+                throw new ArgumentException("Cannot determine line endings as the text probably contain mixed line endings.", nameof(text));
             }
 
-            return numCharDiff / (Lines.Length - 1);
+            return numCharDiff / (lines.Length - 1);
         }
 
         private class TextLines : IList<String>
@@ -234,6 +236,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     if (count == index)
                     {
+                        SetLastAccessed(index, node);
                         return node;
                     }
 
@@ -260,10 +263,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 var delta = index - lastAccessedIndex;
                 var deltaAbs = Math.Abs(delta);
 
-                // lastAccessedIndex is closer to index than 0
+                // lastAccessedIndex is closer to index than that to 0
                 if (IsLastAccessedValid() && deltaAbs < index)
                 {
-                    // lastAccessedIndex is closer to index than Count - 1
+                    // lastAccessedIndex is closer to index than to (Count - 1)
                     if (deltaAbs < (Count - 1 - index))
                     {
                         refNode = lastAccessedNode;
