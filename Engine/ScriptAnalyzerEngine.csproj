@@ -105,6 +105,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="TextEdit.cs" />
+    <Compile Include="TextLines.cs" />
     <Compile Include="TokenOperations.cs" />
     <Compile Include="VariableAnalysis.cs" />
     <Compile Include="VariableAnalysisBase.cs" />
