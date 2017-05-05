@@ -38,40 +38,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private LinkedListNode<string> GetNodeAt(int index)
         {
+            LinkedListNode<string> nodeAtIndex;
             if (index == 0)
             {
-                return lines.First;
+                nodeAtIndex = lines.First;
             }
-
-            if (index == Count - 1)
+            else if (index == Count - 1)
             {
-                return lines.Last;
+                nodeAtIndex = lines.Last;
             }
-
-            LinkedListNode<string> node;
-            int searchDirection;
-            int count;
-            GetClosestReference(index, out node, out count, out searchDirection);
-            while (node != null)
+            else
             {
-                if (count == index)
+                int searchDirection;
+                int count;
+                GetClosestReference(index, out nodeAtIndex, out count, out searchDirection);
+                while (nodeAtIndex != null)
                 {
-                    SetLastAccessed(index, node);
-                    return node;
+                    if (count == index)
+                    {
+                        break;
+                    }
+
+                    count += searchDirection;
+                    if (searchDirection > 0)
+                    {
+                        nodeAtIndex = nodeAtIndex.Next;
+                    }
+                    else
+                    {
+                        nodeAtIndex = nodeAtIndex.Previous;
+                    }
                 }
 
-                count += searchDirection;
-                if (searchDirection > 0)
+                if (nodeAtIndex == null)
                 {
-                    node = node.Next;
-                }
-                else
-                {
-                    node = node.Previous;
+                    throw new InvalidOperationException();
                 }
             }
 
-            throw new InvalidOperationException();
+            SetLastAccessed(index, nodeAtIndex);
+            return nodeAtIndex;
         }
 
         private void GetClosestReference(
