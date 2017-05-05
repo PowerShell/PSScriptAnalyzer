@@ -300,9 +300,6 @@
   <data name="EditableTextRangeIsNotContained" xml:space="preserve">
     <value>TextEdit extent not completely contained in EditableText.</value>
   </data>
-  <data name="EditableTextRangeIsNotContained" xml:space="preserve">
-    <value>TextEdit extent not completely contained in EditableText.</value>
-  </data>
   <data name="EditableTextInvalidLineEnding" xml:space="preserve">
     <value>Cannot determine line endings as the text probably contain mixed line endings.</value>
   </data>
