@@ -198,7 +198,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var correctionExtent in correctionExtents)
             {
                 var shiftedCorrectionExtent = Normalize(funcDefAstStartPos, correctionExtent);
-                editableText = editableText.ApplyEdit1(shiftedCorrectionExtent);
+                editableText.ApplyEdit(shiftedCorrectionExtent);
             }
 
             var result = new List<CorrectionExtent>();

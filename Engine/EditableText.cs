@@ -50,7 +50,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="textEdit">A TextEdit object that encapsulates the text and the range that need to be replaced.</param>
         /// <returns>An editable object which contains the supplied edit.</returns>
-        public EditableText ApplyEdit1(TextEdit textEdit)
+        public EditableText ApplyEdit(TextEdit textEdit)
         {
             ValidateTextEdit(textEdit);
 
