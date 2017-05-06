@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -10,12 +11,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             if (line < 1)
             {
-                throw new ArgumentException("line cannot be less than 1.", nameof(line));
+                throw new ArgumentException(
+                    String.Format(CultureInfo.CurrentCulture, Strings.PositionLineLessThanOne),
+                    nameof(line));
             }
 
             if (column < 1)
             {
-                throw new ArgumentException("line cannot be less than 1.", nameof(line));
+                throw new ArgumentException(
+                    String.Format(CultureInfo.CurrentCulture, Strings.PositionColumnLessThanOne),
+                    nameof(column));
             }
 
             Line = line;
@@ -38,24 +43,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             int newLine = Line;
             int newColumn = Column;
 
-            if (lineDelta != 0)
+            newLine += lineDelta;
+            if (newLine < 1)
             {
-                newLine += lineDelta;
-                if (newLine < 1)
-                {
-                    throw new ArgumentException("Invalid line delta. Resulting start line number must be greather than 1.");
-
-                }
+                throw new ArgumentException(
+                    String.Format(CultureInfo.CurrentCulture, Strings.PositionLineLessThanOne),
+                    nameof(lineDelta));
             }
 
-            if (columnDelta != 0)
+            newColumn += columnDelta;
+            if (newColumn < 1)
             {
-                newColumn += columnDelta;
-                if (newColumn < 1)
-                {
-                    throw new ArgumentException("Invalid column delta. Resulting start column number must be greather than 1.");
-
-                }
+                throw new ArgumentException(
+                    String.Format(CultureInfo.CurrentCulture, Strings.PositionColumnLessThanOne),
+                    nameof(columnDelta));
             }
 
             return new Position(newLine, newColumn);
@@ -75,7 +76,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (pos < refPos)
             {
-                throw new ArgumentException("input should be less than that of the invoking object.");
+                throw new ArgumentException(String.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.PositionRefPosLessThanInputPos));
             }
 
             if (pos.Line == refPos.Line)

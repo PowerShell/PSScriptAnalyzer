@@ -309,4 +309,13 @@
   <data name="RangeRefPosShouldStartBeforeRangeStartPos" xml:space="preserve">
     <value>Reference Position should begin before start Position of Range.</value>
   </data>
+  <data name="PositionLineLessThanOne" xml:space="preserve">
+    <value>Line number cannot be less than 1.</value>
+  </data>
+  <data name="PositionColumnLessThanOne" xml:space="preserve">
+    <value>Column number cannot be less than 1.</value>
+  </data>
+  <data name="PositionRefPosLessThanInputPos" xml:space="preserve">
+    <value>Input position should be less than that of the invoking object.</value>
+  </data>
 </root>
