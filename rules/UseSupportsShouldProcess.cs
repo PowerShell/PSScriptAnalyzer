@@ -65,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 int whatIfIndex, confirmIndex;
                 ParameterAst whatIfParamAst, confirmParamAst;
                 ParamBlockAst paramBlockAst;
-                ParameterAst[] parameterAsts = GetParameters(functionDefinitionAst, out paramBlockAst);
+                ParameterAst[] parameterAsts = functionDefinitionAst.GetParameterAsts(out paramBlockAst);
                 if (parameterAsts == null)
                 {
                     continue;
@@ -108,24 +108,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
-        }
-
-        private static ParameterAst[] GetParameters(
-            FunctionDefinitionAst functionDefinitionAst,
-            out ParamBlockAst paramBlockAst)
-        {
-            paramBlockAst = null;
-            if (functionDefinitionAst.Parameters != null)
-            {
-                return new List<ParameterAst>(functionDefinitionAst.Parameters).ToArray();
-            }
-            else if (functionDefinitionAst.Body.ParamBlock?.Parameters != null)
-            {
-                paramBlockAst = functionDefinitionAst.Body.ParamBlock;
-                return new List<ParameterAst>(functionDefinitionAst.Body.ParamBlock.Parameters).ToArray();
-            }
-
-            return null;
         }
 
         private List<CorrectionExtent> GetCorrections(

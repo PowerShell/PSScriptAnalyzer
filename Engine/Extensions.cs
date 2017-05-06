@@ -24,5 +24,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
                 extent.EndLineNumber,
                 extent.EndColumnNumber);
         }
+
+        public static ParameterAst[] GetParameterAsts(
+            this FunctionDefinitionAst functionDefinitionAst,
+            out ParamBlockAst paramBlockAst)
+        {
+            paramBlockAst = null;
+            if (functionDefinitionAst.Parameters != null)
+            {
+                return new List<ParameterAst>(functionDefinitionAst.Parameters).ToArray();
+            }
+            else if (functionDefinitionAst.Body.ParamBlock?.Parameters != null)
+            {
+                paramBlockAst = functionDefinitionAst.Body.ParamBlock;
+                return new List<ParameterAst>(functionDefinitionAst.Body.ParamBlock.Parameters).ToArray();
+            }
+
+            return null;
+        }
     }
 }
