@@ -1,7 +1,9 @@
 using System;
+using System.Globalization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
+    // TODO doc
     public class Range
     {
         public Position Start { get; }
@@ -10,7 +12,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             if (start > end)
             {
-                throw new ArgumentException("start position cannot be before end position.");
+                throw new ArgumentException(String.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.RangeStartPosGreaterThanEndPos));
             }
 
             Start = new Position(start);
@@ -57,7 +61,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (refPosition > range.Start)
             {
-                throw new ArgumentException("reference range should start before range");
+                throw new ArgumentException(String.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.RangeRefPosShouldStartBeforeRangeStartPos));
             }
 
             return range.Shift(

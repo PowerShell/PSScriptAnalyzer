@@ -303,4 +303,10 @@
   <data name="EditableTextInvalidLineEnding" xml:space="preserve">
     <value>Cannot determine line endings as the text probably contain mixed line endings.</value>
   </data>
+  <data name="RangeStartPosGreaterThanEndPos" xml:space="preserve">
+    <value>Start position cannot be before End position.</value>
+  </data>
+  <data name="RangeRefPosShouldStartBeforeRangeStartPos" xml:space="preserve">
+    <value>Reference Position should begin before start Position of Range.</value>
+  </data>
 </root>
