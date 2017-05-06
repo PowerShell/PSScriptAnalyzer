@@ -159,9 +159,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public void Insert(int index, string item)
         {
-            ValidateIndex(index);
             ThrowIfNull(item, nameof(item));
-            SetLastAccessed(index, lines.AddBefore(GetNodeAt(index), item));
+            LinkedListNode<string> itemInserted;
+            if (Count == 0 && index == 0)
+            {
+                itemInserted = lines.AddFirst(item);
+            }
+            else
+            {
+                ValidateIndex(index);
+                itemInserted = lines.AddBefore(GetNodeAt(index), item);
+            }
+
+            SetLastAccessed(index, itemInserted);
             Count++;
         }
 
