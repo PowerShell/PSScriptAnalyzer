@@ -86,12 +86,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="item">A non null object of type String.</param>
         public void Add(string item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            Insert(Count - 1, item);
+            Insert(Count, item);
         }
 
         /// <summary>
@@ -164,6 +159,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (Count == 0 && index == 0)
             {
                 itemInserted = lines.AddFirst(item);
+            }
+            else if (Count == index)
+            {
+                itemInserted = lines.AddLast(item);
             }
             else
             {
