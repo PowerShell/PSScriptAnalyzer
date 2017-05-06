@@ -277,15 +277,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                  correctionExtent.File,
                  correctionExtent.Description);
         }
+
         private static bool TryGetCmdletBindingAttribute(
             ParamBlockAst paramBlockAst,
             out AttributeAst attributeAst)
         {
-            attributeAst = paramBlockAst.Attributes.FirstOrDefault(attr =>
-            {
-                return attr.TypeName.Name.Equals("cmdletbinding", StringComparison.OrdinalIgnoreCase);
-            });
-
+            attributeAst = paramBlockAst.GetCmdletBindingAttributeAst();
             return attributeAst != null;
         }
 

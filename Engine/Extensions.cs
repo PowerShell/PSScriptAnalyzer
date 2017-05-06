@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
@@ -40,6 +41,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
                 return new List<ParameterAst>(functionDefinitionAst.Body.ParamBlock.Parameters).ToArray();
             }
 
+            return null;
+        }
+
+        /// <summary>
+        /// Get the CmdletBinding attribute ast
+        /// </summary>
+        /// <param name="attributeAsts"></param>
+        /// <returns>Returns CmdletBinding attribute ast if it exists, otherwise returns null</returns>
+        public static AttributeAst GetCmdletBindingAttributeAst(this ParamBlockAst paramBlockAst)
+        {
+            var attributeAsts = paramBlockAst.Attributes;
+            if (attributeAsts == null)
+            {
+                throw new ArgumentNullException("attributeAsts");
+            }
+            foreach (var attributeAst in attributeAsts)
+            {
+                if (attributeAst == null || attributeAst.NamedArguments == null)
+                {
+                    continue;
+                }
+                if (attributeAst.TypeName.GetReflectionAttributeType()
+                    == typeof(CmdletBindingAttribute))
+                {
+                    return attributeAst;
+                }
+            }
             return null;
         }
     }
