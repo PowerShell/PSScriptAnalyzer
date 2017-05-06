@@ -3,10 +3,16 @@ using System.Globalization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
+    /// <summary>
+    /// Class to represent position in text.
+    /// </summary>
     public class Position
     {
-        public int Line { get; }
-        public int Column { get; }
+        /// <summary>
+        /// Constructs a Position object.
+        /// </summary>
+        /// <param name="line">1-based line number.</param>
+        /// <param name="column">1-based column number.</param>
         public Position(int line, int column)
         {
             if (line < 1)
@@ -27,6 +33,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Column = column;
         }
 
+        /// <summary>
+        /// Copy constructor.
+        /// </summary>
+        /// <param name="position">Object to be copied.</param>
         public Position(Position position)
         {
             if (position == null)
@@ -38,6 +48,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Column = position.Column;
         }
 
+        /// <summary>
+        /// Line number of the position.
+        /// </summary>
+        public int Line { get; }
+
+        /// <summary>
+        /// Column number of the position.
+        /// </summary>
+        public int Column { get; }
+
+        /// <summary>
+        /// Shift the position by given line and column deltas.
+        /// </summary>
+        /// <param name="lineDelta">Number of lines to shift the position.</param>
+        /// <param name="columnDelta">Number of columns to shift the position.</param>
+        /// <returns>A new Position object with the shifted position.</returns>
         public Position Shift(int lineDelta, int columnDelta)
         {
             int newLine = Line;
@@ -62,6 +88,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return new Position(newLine, newColumn);
         }
 
+        /// <summary>
+        /// Normalize position with respect to a reference position.
+        /// </summary>
+        /// <param name="refPos">Reference position.</param>
+        /// <param name="pos">Position to be normalized.</param>
+        /// <returns>A Position object with normalized position.</returns>
         public static Position Normalize(Position refPos, Position pos)
         {
             if (refPos == null)
@@ -91,6 +123,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        /// <summary>
+        /// Checks if two position objects are equal.
+        /// </summary>
         public static bool operator ==(Position lhs, Position rhs)
         {
             if ((object)lhs == null)
@@ -111,11 +146,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return lhs.Equals(rhs);
         }
 
+        /// <summary>
+        /// Checks if the position objects are not equal.
+        /// </summary>
         public static bool operator !=(Position lhs, Position rhs)
         {
             return !(lhs == rhs);
         }
 
+        /// <summary>
+        /// Checks if the left hand position comes before the right hand position.
+        /// </summary>
         public static bool operator <(Position lhs, Position rhs)
         {
             if (lhs == null)
@@ -131,21 +172,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return lhs.Line < rhs.Line || (lhs.Line == rhs.Line && lhs.Column < rhs.Column);
         }
 
+        /// <summary>
+        /// Checks if the left hand position comes before or is at the same position as that of the right hand position.
+        /// </summary>
         public static bool operator <=(Position lhs, Position rhs)
         {
             return lhs == rhs || lhs < rhs;
         }
 
+        /// <summary>
+        /// Checks if the left hand position comes after the right hand position.
+        /// </summary>
         public static bool operator >(Position lhs, Position rhs)
         {
             return !(lhs <= rhs);
         }
 
+        /// <summary>
+        /// Checks if the left hand position comes after or is at the same position as that of the right hand position.
+        /// </summary>
         public static bool operator >=(Position lhs, Position rhs)
         {
             return !(lhs < rhs);
         }
 
+        /// <summary>
+        /// Checks of this object is equal the input object.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -162,6 +215,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return Line == p.Line && Column == p.Column;
         }
 
+        /// <summary>
+        /// Returns the hash code of this object
+        /// </summary>
         public override int GetHashCode()
         {
             return Line * Column;
