@@ -268,6 +268,27 @@ function foo {
             $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
         }
 
+        It "Suggests setting SupportsShouldProcess to `$true" {
+            $def = @'
+function foo {
+    [CmdletBinding(SupportsShouldProcess=$false)]
+    param($whatif)
+}
+'@
+            $s = " "
+            $expectedCorrection = @'
+function foo {
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param()
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+        }
+
+
+
 
     }
 

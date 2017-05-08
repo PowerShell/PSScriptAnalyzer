@@ -132,15 +132,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     correctionExtents.Add(GetCorrectionToRemoveParam(confirmIndex, parameterAsts));
                 }
 
-                AttributeAst attributeAst;
+                AttributeAst attributeAst = paramBlockAst.GetCmdletBindingAttributeAst();
 
                 // check if it has cmdletbinding attribute
-                if (TryGetCmdletBindingAttribute(paramBlockAst, out attributeAst))
+                if (attributeAst != null)
                 {
                     NamedAttributeArgumentAst shouldProcessAst = attributeAst.GetSupportsShouldProcessAst();
                     if (shouldProcessAst != null)
                     {
-
+                        ExpressionAst argAst;
+                        if (!shouldProcessAst.IsTrue(out argAst)
+                            && argAst != null)
+                        {
+                            // SupportsShouldProcess is set to something other than $true.
+                            // Set it to $true
+                            correctionExtents.Add(GetCorrectionsToSetShouldProcessToTrue(argAst));
+                        }
                     }
                     else
                     {
@@ -196,6 +203,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 editableText.ToString(),
                 funcDefnAst.Extent.File));
             return result;
+        }
+
+        private CorrectionExtent GetCorrectionsToSetShouldProcessToTrue(ExpressionAst argAst)
+        {
+            return new CorrectionExtent(
+                argAst.Extent.StartLineNumber,
+                argAst.Extent.EndLineNumber,
+                argAst.Extent.StartColumnNumber,
+                argAst.Extent.EndColumnNumber,
+                "$true",
+                argAst.Extent.File);
         }
 
         private CorrectionExtent GetCorrectionToAddParamBlock(
@@ -279,14 +297,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                  correctionExtent.Text,
                  correctionExtent.File,
                  correctionExtent.Description);
-        }
-
-        private static bool TryGetCmdletBindingAttribute(
-            ParamBlockAst paramBlockAst,
-            out AttributeAst attributeAst)
-        {
-            attributeAst = paramBlockAst.GetCmdletBindingAttributeAst();
-            return attributeAst != null;
         }
 
         private static CorrectionExtent GetCorrectionToAddAttribute(ParamBlockAst paramBlockAst)
