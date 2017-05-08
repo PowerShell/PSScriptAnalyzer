@@ -56,19 +56,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
             {
                 throw new ArgumentNullException("attributeAsts");
             }
+
             foreach (var attributeAst in attributeAsts)
             {
-                if (attributeAst == null || attributeAst.NamedArguments == null)
-                {
-                    continue;
-                }
-                if (attributeAst.TypeName.GetReflectionAttributeType()
-                    == typeof(CmdletBindingAttribute))
+               if (attributeAst != null && attributeAst.IsCmdletBindingAttributeAst())
                 {
                     return attributeAst;
                 }
             }
+
             return null;
+        }
+
+        public static bool IsCmdletBindingAttributeAst(this AttributeAst attributeAst)
+        {
+            return attributeAst.TypeName.GetReflectionAttributeType() == typeof(CmdletBindingAttribute);
         }
     }
 }
