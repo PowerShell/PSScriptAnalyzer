@@ -6,9 +6,13 @@ using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
 {
-    // TODO Add documentation
     public static class Extensions
     {
+        /// <summary>
+        /// Return the lines in a text string.
+        /// </summary>
+        /// <param name="text">Text string to be split around new lines.</param>
+        /// <returns></returns>
         public static IEnumerable<string> GetLines(this string text)
         {
             return text.Split('\n').Select(line => line.TrimEnd('\r'));
@@ -26,6 +30,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
                  extent.EndColumnNumber);
         }
 
+        /// <summary>
+        /// Get the parameter Asts from a function definition Ast.
+        ///
+        /// If not parameters are found, return null.
+        /// </summary>
+        /// <param name="paramBlockAst">If a parameter block is present, set this argument's value to the parameter block.</param>
+        /// <returns></returns>
         public static IEnumerable<ParameterAst> GetParameterAsts(
             this FunctionDefinitionAst functionDefinitionAst,
             out ParamBlockAst paramBlockAst)
@@ -68,11 +79,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
             return null;
         }
 
+        /// <summary>
+        /// Check if an attribute Ast is of CmdletBindingAttribute type.
+        /// </summary>
         public static bool IsCmdletBindingAttributeAst(this AttributeAst attributeAst)
         {
             return attributeAst.TypeName.GetReflectionAttributeType() == typeof(CmdletBindingAttribute);
         }
 
+        /// <summary>
+        /// Given a CmdletBinding attribute ast, return the SupportsShouldProcess argument Ast.
+        ///
+        /// If no SupportsShouldProcess argument is found, return null.
+        /// </summary>
         public static NamedAttributeArgumentAst GetSupportsShouldProcessAst(this AttributeAst attributeAst)
         {
             if (!attributeAst.IsCmdletBindingAttributeAst()
@@ -95,6 +114,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
             return null;
         }
 
+        /// <summary>
+        /// Return the boolean value of a named attribute argument.
+        /// </summary>
+        /// <param name="argumentAst">The ast of the argument's value</param>
         public static bool IsTrue(this NamedAttributeArgumentAst attrAst, out ExpressionAst argumentAst)
         {
             argumentAst = null;
