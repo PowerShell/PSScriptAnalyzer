@@ -94,5 +94,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
 
             return null;
         }
+
+        public static bool IsTrue(this NamedAttributeArgumentAst attrAst, out ExpressionAst argumentAst)
+        {
+            argumentAst = null;
+            if (attrAst.ExpressionOmitted)
+            {
+                return true;
+            }
+
+            var varExpAst = attrAst.Argument as VariableExpressionAst;
+            argumentAst = attrAst.Argument;
+            if (varExpAst == null)
+            {
+                var constExpAst = attrAst.Argument as ConstantExpressionAst;
+                if (constExpAst == null)
+                {
+                    return false;
+                }
+
+                bool constExpVal;
+                if (LanguagePrimitives.TryConvertTo(constExpAst.Value, out constExpVal))
+                {
+                    return constExpVal;
+                }
+            }
+            else
+            {
+                return varExpAst.VariablePath.UserPath.Equals(
+                    bool.TrueString,
+                    StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
     }
 }
