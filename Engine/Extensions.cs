@@ -19,11 +19,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
         /// </summary>
         public static Range ToRange(this IScriptExtent extent)
         {
-           return new Range(
-                extent.StartLineNumber,
-                extent.StartColumnNumber,
-                extent.EndLineNumber,
-                extent.EndColumnNumber);
+            return new Range(
+                 extent.StartLineNumber,
+                 extent.StartColumnNumber,
+                 extent.EndLineNumber,
+                 extent.EndColumnNumber);
         }
 
         public static ParameterAst[] GetParameterAsts(
@@ -59,7 +59,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
 
             foreach (var attributeAst in attributeAsts)
             {
-               if (attributeAst != null && attributeAst.IsCmdletBindingAttributeAst())
+                if (attributeAst != null && attributeAst.IsCmdletBindingAttributeAst())
                 {
                     return attributeAst;
                 }
@@ -71,6 +71,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
         public static bool IsCmdletBindingAttributeAst(this AttributeAst attributeAst)
         {
             return attributeAst.TypeName.GetReflectionAttributeType() == typeof(CmdletBindingAttribute);
+        }
+
+        public static NamedAttributeArgumentAst GetSupportsShouldProcessAst(this AttributeAst attributeAst)
+        {
+            if (!attributeAst.IsCmdletBindingAttributeAst()
+                || attributeAst.NamedArguments == null)
+            {
+                return null;
+            }
+
+            foreach (var namedAttrAst in attributeAst.NamedArguments)
+            {
+                if (namedAttrAst != null
+                    && namedAttrAst.ArgumentName.Equals(
+                        "SupportsShouldProcess",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return namedAttrAst;
+                }
+            }
+
+            return null;
         }
     }
 }

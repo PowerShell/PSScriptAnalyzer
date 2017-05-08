@@ -137,9 +137,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // check if it has cmdletbinding attribute
                 if (TryGetCmdletBindingAttribute(paramBlockAst, out attributeAst))
                 {
-                    if (!attributeAst.NamedArguments.Any(
-                        x => x.ArgumentName.Equals("supportsshouldprocess",
-                            StringComparison.OrdinalIgnoreCase)))
+                    NamedAttributeArgumentAst shouldProcessAst = attributeAst.GetSupportsShouldProcessAst();
+                    if (shouldProcessAst != null)
+                    {
+
+                    }
+                    else
                     {
                         // add supportsshouldprocess to the attribute
                         correctionExtents.Add(GetCorrectionToAddShouldProcess(attributeAst));
