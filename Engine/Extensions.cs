@@ -26,19 +26,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
                  extent.EndColumnNumber);
         }
 
-        public static ParameterAst[] GetParameterAsts(
+        public static IEnumerable<ParameterAst> GetParameterAsts(
             this FunctionDefinitionAst functionDefinitionAst,
             out ParamBlockAst paramBlockAst)
         {
             paramBlockAst = null;
             if (functionDefinitionAst.Parameters != null)
             {
-                return new List<ParameterAst>(functionDefinitionAst.Parameters).ToArray();
+                return functionDefinitionAst.Parameters;
             }
             else if (functionDefinitionAst.Body.ParamBlock?.Parameters != null)
             {
                 paramBlockAst = functionDefinitionAst.Body.ParamBlock;
-                return new List<ParameterAst>(functionDefinitionAst.Body.ParamBlock.Parameters).ToArray();
+                return functionDefinitionAst.Body.ParamBlock.Parameters;
             }
 
             return null;
@@ -54,7 +54,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
             var attributeAsts = paramBlockAst.Attributes;
             if (attributeAsts == null)
             {
-                throw new ArgumentNullException("attributeAsts");
+                return null;
             }
 
             foreach (var attributeAst in attributeAsts)
