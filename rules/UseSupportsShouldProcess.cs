@@ -141,7 +141,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (shouldProcessAst != null)
                     {
                         ExpressionAst argAst;
-                        if (!shouldProcessAst.IsTrue(out argAst)
+                        if (!shouldProcessAst.GetValue(out argAst)
                             && argAst != null)
                         {
                             // SupportsShouldProcess is set to something other than $true.

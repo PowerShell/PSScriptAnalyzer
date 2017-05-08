@@ -118,7 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
         /// Return the boolean value of a named attribute argument.
         /// </summary>
         /// <param name="argumentAst">The ast of the argument's value</param>
-        public static bool IsTrue(this NamedAttributeArgumentAst attrAst, out ExpressionAst argumentAst)
+        public static bool GetValue(this NamedAttributeArgumentAst attrAst, out ExpressionAst argumentAst)
         {
             argumentAst = null;
             if (attrAst.ExpressionOmitted)
