@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.11.1'
+ModuleVersion = '1.12.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -87,11 +87,13 @@ PrivateData = @{
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
         IconUri = ''
         ReleaseNotes = @'
+### Added
+- PSAlignAssignmentRuleStatement rule to align assignment statements in property value pairs (#753).
+
 ### Fixed
-- CodeFormatting settings file (#727, #728).
-- Whitelisted aliases comparison in AvoidUsingCmdletAliases rule (#739).
-- PlaceCloseBrace rule behavior for NewLineAfter option (#741).
-- UseConsistentIndentation rule to ignore open brace in magic methods (#744).
+- `PSAvoidGlobalVars` rule to ignore `$global:lastexitcode` (#752).
+- `PSUseConsistentIndentation` to account for backtick on preceding line (#749).
+- `PSPlaceCloseBrace` to ignore one-line blocks when `NewLineAfter` switch is on (#748).
 '@
     }
 }
@@ -103,6 +105,7 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 
