@@ -1,4 +1,14 @@
-﻿## [1.11.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-04-04
+﻿## [1.12.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-05-09
+
+### Added
+- [PSAlignAssignmentRuleStatement](https://github.com/PowerShell/PSScriptAnalyzer/blob/cca9a2d7ee35be7322f8c5a09b6c500a0a8bd101/RuleDocumentation/AlignAssignmentStatement.md) rule to align assignment statements in property value pairs (#753).
+
+### Fixed
+- `PSAvoidGlobalVars` rule to ignore `$global:lastexitcode` (#752).
+- `PSUseConsistentIndentation` to account for backtick on preceding line (#749).
+- `PSPlaceCloseBrace` to ignore one-line blocks when `NewLineAfter` switch is on (#748).
+
+## [1.11.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-04-04
 ### Fixed
 - CodeFormatting settings file (#727, #728).
 - Whitelisted aliases comparison in AvoidUsingCmdletAliases rule (#739).
