@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class AlignAssignmentStatement : ConfigurableRule
+    public class AlignAssignmentStatement : ConfigurableRule
     {
         // We keep this switch even though the rule has only one switch (this) as of now, because we want
         // to let the rule be expandable in the future to allow formatting assignments even
