@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class UseSupportsShouldProcess : IScriptRule
+    public class UseSupportsShouldProcess : IScriptRule
     {
         private const char whitespace = ' ';
         private const int indentationSize = 4;
