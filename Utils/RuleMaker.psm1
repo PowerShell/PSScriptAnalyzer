@@ -87,7 +87,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    class {0} : IScriptRule
+    public class {0} : IScriptRule
     {{
         /// <summary>
         /// Analyzes the given ast to find the [violation]
