@@ -335,23 +335,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             return true;
         }
-
-        private bool HasKeysOnSeparateLines(HashtableAst hashtableAst)
-        {
-            var lines = new HashSet<int>();
-            foreach (var kvp in hashtableAst.KeyValuePairs)
-            {
-                if (lines.Contains(kvp.Item1.Extent.StartLineNumber))
-                {
-                    return false;
-                }
-                else
-                {
-                    lines.Add(kvp.Item1.Extent.StartLineNumber);
-                }
-            }
-
-            return true;
-        }
     }
 }
