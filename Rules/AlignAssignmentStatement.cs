@@ -184,12 +184,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var astItem in hashtableAsts)
             {
                 var hashtableAst = (HashtableAst)astItem;
-                if (!HasKeysOnSeparateLines(hashtableAst))
+                var extentTuples = GetExtents(tokenOps, hashtableAst);
+
+                if (!HasPropertiesOnSeparateLines(extentTuples))
                 {
                     continue;
                 }
 
-                var extentTuples = GetExtents(tokenOps, hashtableAst);
                 if (extentTuples == null
                     || extentTuples.Count == 0
                     || !extentTuples.All(t => t.Item1.StartLineNumber == t.Item2.EndLineNumber))
@@ -294,6 +295,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return nodeTuples;
+        }
+
+        private bool HasPropertiesOnSeparateLines(IEnumerable<Tuple<IScriptExtent, IScriptExtent>> tuples)
+        {
+            var lines = new HashSet<int>();
+            foreach (var kvp in tuples)
+            {
+                if (lines.Contains(kvp.Item1.StartLineNumber))
+                {
+                    return false;
+                }
+                else
+                {
+                    lines.Add(kvp.Item1.StartLineNumber);
+                }
+            }
+
+            return true;
         }
 
         private bool HasKeysOnSeparateLines(HashtableAst hashtableAst)
