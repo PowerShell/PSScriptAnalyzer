@@ -5,13 +5,13 @@ Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $ruleConfiguration = @{
-    Enable = $true
+    Enable         = $true
     CheckHashtable = $true
 }
 
 $settings = @{
     IncludeRules = @("PSAlignAssignmentStatement")
-    Rules = @{
+    Rules        = @{
         PSAlignAssignmentStatement = $ruleConfiguration
     }
 }
@@ -26,18 +26,18 @@ $hashtable = @{
 }
 '@
 
-# Expected output after correction should be the following
-# $hashtable = @{
-#     property1       = "value"
-#     anotherProperty = "another value"
-# }
+            # Expected output after correction should be the following
+            # $hashtable = @{
+            #     property1       = "value"
+            #     anotherProperty = "another value"
+            # }
 
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
             Test-CorrectionExtentFromContent $def $violations 1 ' ' '       '
         }
 
-            It "Should find violation when assignment statements are not aligned (whitespace needs to be removed)" {
+        It "Should find violation when assignment statements are not aligned (whitespace needs to be removed)" {
             $def = @'
 $hashtable = @{
     property1              = "value"
@@ -45,11 +45,11 @@ $hashtable = @{
 }
 '@
 
-# Expected output should be the following
-# $hashtable = @{
-#     property1       = "value"
-#     anotherProperty = "another value"
-# }
+            # Expected output should be the following
+            # $hashtable = @{
+            #     property1       = "value"
+            #     anotherProperty = "another value"
+            # }
 
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
@@ -87,5 +87,37 @@ Configuration MyDscConfiguration {
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 2
         }
+    }
+
+    Context "When assignment statements are in DSC Configuration that has parse errors" {
+        It "Sdhould find violations when assignment statements are not aligned" {
+            $def = @'
+Configuration Sample_ChangeDescriptionAndPermissions
+{
+    Import-DscResource -Module NonExistentModule
+    # A Configuration block can have zero or more Node blocks
+    Node $NodeName
+    {
+        # Next, specify one or more resource blocks
+
+        NonExistentModule MySMBShare
+        {
+            Ensure  = "Present"
+            Name   = "MyShare"
+            Path    = "C:\Demo\Temp"
+            ReadAccess  = "author"
+            FullAccess        = "some other author"
+            Description = "This is an updated description for this share"
+        }
+    }
 }
+'@
+            # This invocation will throw parse error caused by "Undefined DSC resource" because
+            # NonExistentModule is not really avaiable to load. Therefore we set erroraction to
+            # SilentlyContinue
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
+                Get-Count |
+                Should Be 4
+        }
+    }
 }
