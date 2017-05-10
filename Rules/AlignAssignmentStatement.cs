@@ -225,29 +225,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private List<List<CommandAst>> GetCommandElementGroups(Ast configAst)
         {
             var result = new List<List<CommandAst>>();
-            var parents = new HashSet<Ast>();
-            var parentChildrenGroup = configAst.FindAll(ast => IsPropertyValueCommandAst(ast), true)?
-                                        .Select(ast => ast as CommandAst)
-                                        .GroupBy(ast => ast.Parent.Parent); // parent is pipeline and pipeline's parent is namedblockast
-            if (parentChildrenGroup == null)
+            var astsFound = configAst.FindAll(ast => IsPropertyValueCommandAst(ast), true);
+            if (astsFound == null)
             {
                 return result;
             }
 
-            // var parentChildrenMap = new Dictionary<Ast, List<Ast>>();
-            // foreach (var commandAst in commandAsts)
-            // {
-            //     var parent = commandAst.Parent;
-            //     if (parentChildrenMap.ContainsKey(parent))
-            //     {
-            //         parentChildrenMap[parent].Add(commandAst);
-            //     }
-            //     else
-            //     {
-            //         parentChildrenMap.Add(parent, new List<Ast>())
-            //     }
-            // }
-
+            var parentChildrenGroup = from ast in astsFound
+                                      select (CommandAst)ast into commandAst
+                                      group commandAst by commandAst.Parent.Parent; // parent is pipeline and pipeline's parent is namedblockast
             foreach (var group in parentChildrenGroup)
             {
                 result.Add(group.ToList());
