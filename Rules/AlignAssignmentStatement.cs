@@ -145,8 +145,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private IEnumerable<DiagnosticRecord> FindHashtableViolations(TokenOperations tokenOps)
         {
             var hashtableAsts = tokenOps.Ast.FindAll(ast => ast is HashtableAst, true);
-            if (hashtableAsts == null)
+            if (hashtableAsts == null || !hashtableAsts.Any())
             {
+                var configAsts = tokenOps.Ast.FindAll(ast => ast is ConfigurationDefinitionAst, true);
+                if (configAsts != null)
+                {
+                    // There are probably parse errors caused by an "Undefined DSC resource"
+                    // which prevents the parser from detecting the property value pairs as
+                    // hashtable. Hence, this is a workaround to format configurations which
+                    // have "Undefined DSC resource" parse errors.
+
+                    // TODO break down the function and reuse the alignment logic.
+
+                    // find all commandAsts of the form "prop" "=" "val" that have the same parent
+                    // and format those pairs.
+                    foreach (var configAst in configAsts)
+                    {
+                        var groups = GetCommandElementGroups(configAst);
+                    }
+                }
+
                 yield break;
             }
 
@@ -202,6 +220,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
+        }
+
+        private List<List<CommandAst>> GetCommandElementGroups(Ast configAst)
+        {
+            var result = new List<List<CommandAst>>();
+            var parents = new HashSet<Ast>();
+            var parentChildrenGroup = configAst.FindAll(ast => IsPropertyValueCommandAst(ast), true)?
+                                        .Select(ast => ast as CommandAst)
+                                        .GroupBy(ast => ast.Parent.Parent); // parent is pipeline and pipeline's parent is namedblockast
+            if (parentChildrenGroup == null)
+            {
+                return result;
+            }
+
+            // var parentChildrenMap = new Dictionary<Ast, List<Ast>>();
+            // foreach (var commandAst in commandAsts)
+            // {
+            //     var parent = commandAst.Parent;
+            //     if (parentChildrenMap.ContainsKey(parent))
+            //     {
+            //         parentChildrenMap[parent].Add(commandAst);
+            //     }
+            //     else
+            //     {
+            //         parentChildrenMap.Add(parent, new List<Ast>())
+            //     }
+            // }
+
+            foreach (var group in parentChildrenGroup)
+            {
+                result.Add(group.ToList());
+            }
+
+            return result;
+        }
+
+        private bool IsPropertyValueCommandAst(Ast ast)
+        {
+            var commandAst = ast as CommandAst;
+            return commandAst != null
+                && commandAst.CommandElements.Count() == 3
+                && commandAst.CommandElements[1].Extent.Text.Equals("=");
         }
 
         private IEnumerable<CorrectionExtent> GetHashtableCorrections(
