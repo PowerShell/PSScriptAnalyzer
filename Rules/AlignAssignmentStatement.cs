@@ -146,28 +146,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             var hashtableAsts = tokenOps.Ast.FindAll(ast => ast is HashtableAst, true);
             var groups = new List<List<Tuple<IScriptExtent, IScriptExtent>>>();
-            if (hashtableAsts == null || !hashtableAsts.Any())
+            if (hashtableAsts != null)
             {
-                var configAsts = tokenOps.Ast.FindAll(ast => ast is ConfigurationDefinitionAst, true);
-                if (configAsts != null)
+                foreach (var astItem in hashtableAsts)
                 {
-                    // There are probably parse errors caused by an "Undefined DSC resource"
-                    // which prevents the parser from detecting the property value pairs as
-                    // hashtable. Hence, this is a workaround to format configurations which
-                    // have "Undefined DSC resource" parse errors.
-
-                    // TODO break down the function and reuse the alignment logic.
-
-                    // find all commandAsts of the form "prop" "=" "val" that have the same parent
-                    // and format those pairs.
-                    foreach (var configAst in configAsts)
-                    {
-                        groups.AddRange(GetCommandElementExtentGroups(configAst));
-                    }
+                    groups.Add(GetExtents(tokenOps, (HashtableAst)astItem));
                 }
-
-                yield break;
             }
+
+            var configAsts = tokenOps.Ast.FindAll(ast => ast is ConfigurationDefinitionAst, true);
+            if (configAsts != null)
+            {
+                // There are probably parse errors caused by an "Undefined DSC resource"
+                // which prevents the parser from detecting the property value pairs as
+                // hashtable. Hence, this is a workaround to format configurations which
+                // have "Undefined DSC resource" parse errors.
+
+                // find all commandAsts of the form "prop" "=" "val" that have the same parent
+                // and format those pairs.
+                foreach (var configAst in configAsts)
+                {
+                    groups.AddRange(GetCommandElementExtentGroups(configAst));
+                }
+            }
+
 
             // it is probably much easier have a hashtable writer that formats the hashtable and writes it
             // but it makes handling comments hard. So we need to use this approach.
@@ -183,11 +185,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             //      make sure all the assignment operators are in the same column as that of the longest left hand.
 
 
-            foreach (var astItem in hashtableAsts)
+            foreach (var extentTuples in groups)
             {
-                var hashtableAst = (HashtableAst)astItem;
-                var extentTuples = GetExtents(tokenOps, hashtableAst);
-
                 if (!HasPropertiesOnSeparateLines(extentTuples))
                 {
                     continue;
@@ -294,7 +293,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return String.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementError);
         }
 
-        private static IList<Tuple<IScriptExtent, IScriptExtent>> GetExtents(
+        private static List<Tuple<IScriptExtent, IScriptExtent>> GetExtents(
             TokenOperations tokenOps,
             HashtableAst hashtableAst)
         {
