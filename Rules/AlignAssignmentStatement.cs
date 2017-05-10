@@ -145,6 +145,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private IEnumerable<DiagnosticRecord> FindHashtableViolations(TokenOperations tokenOps)
         {
             var hashtableAsts = tokenOps.Ast.FindAll(ast => ast is HashtableAst, true);
+            var groups = new List<List<Tuple<IScriptExtent, IScriptExtent>>>();
             if (hashtableAsts == null || !hashtableAsts.Any())
             {
                 var configAsts = tokenOps.Ast.FindAll(ast => ast is ConfigurationDefinitionAst, true);
@@ -161,7 +162,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     // and format those pairs.
                     foreach (var configAst in configAsts)
                     {
-                        var groups = GetCommandElementGroups(configAst);
+                        groups.AddRange(GetCommandElementExtentGroups(configAst));
                     }
                 }
 
@@ -180,6 +181,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             //      find the distance between the assignment operators and their corresponding LHS
             //      find the longest left expression
             //      make sure all the assignment operators are in the same column as that of the longest left hand.
+
 
             foreach (var astItem in hashtableAsts)
             {
@@ -200,11 +202,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 var widestKeyExtent = extentTuples
                     .Select(t => t.Item1)
-                    .Aggregate((t1, tAggregate) => {
-                    return TokenOperations.GetExtentWidth(tAggregate) > TokenOperations.GetExtentWidth(t1)
-                        ? tAggregate
-                        : t1;
-                });
+                    .Aggregate((t1, tAggregate) =>
+                    {
+                        return TokenOperations.GetExtentWidth(tAggregate) > TokenOperations.GetExtentWidth(t1)
+                            ? tAggregate
+                            : t1;
+                    });
                 var expectedStartColumnNumber = widestKeyExtent.EndColumnNumber + 1;
                 foreach (var extentTuple in extentTuples)
                 {
@@ -221,6 +224,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
+        }
+
+        private List<List<Tuple<IScriptExtent, IScriptExtent>>> GetCommandElementExtentGroups(Ast configAst)
+        {
+            var result = new List<List<Tuple<IScriptExtent, IScriptExtent>>>();
+            var commandAstGroups = GetCommandElementGroups(configAst);
+            foreach (var commandAstGroup in commandAstGroups)
+            {
+                var list = new List<Tuple<IScriptExtent, IScriptExtent>>();
+                foreach (var commandAst in commandAstGroup)
+                {
+                    var elems = commandAst.CommandElements;
+                    list.Add(new Tuple<IScriptExtent, IScriptExtent>(elems[0].Extent, elems[1].Extent));
+                }
+
+                result.Add(list);
+            }
+
+            return result;
         }
 
         private List<List<CommandAst>> GetCommandElementGroups(Ast configAst)
