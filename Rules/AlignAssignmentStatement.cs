@@ -154,6 +154,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
+#if !PSV3
             var configAsts = tokenOps.Ast.FindAll(ast => ast is ConfigurationDefinitionAst, true);
             if (configAsts != null)
             {
@@ -169,7 +170,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     groups.AddRange(GetCommandElementExtentGroups(configAst));
                 }
             }
-
+#endif
 
             // it is probably much easier have a hashtable writer that formats the hashtable and writes it
             // but it makes handling comments hard. So we need to use this approach.
@@ -183,8 +184,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             //      find the distance between the assignment operators and their corresponding LHS
             //      find the longest left expression
             //      make sure all the assignment operators are in the same column as that of the longest left hand.
-
-
             foreach (var extentTuples in groups)
             {
                 if (!HasPropertiesOnSeparateLines(extentTuples))

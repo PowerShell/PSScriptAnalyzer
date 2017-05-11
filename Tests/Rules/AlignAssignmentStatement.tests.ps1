@@ -89,9 +89,10 @@ Configuration MyDscConfiguration {
         }
     }
 
-    Context "When assignment statements are in DSC Configuration that has parse errors" {
-        It "Sdhould find violations when assignment statements are not aligned" {
-            $def = @'
+    if ($PSVersionTable.PSVersion.Major -ge 5) {
+        Context "When assignment statements are in DSC Configuration that has parse errors" {
+            It "Should find violations when assignment statements are not aligned" {
+                $def = @'
 Configuration Sample_ChangeDescriptionAndPermissions
 {
     Import-DscResource -Module NonExistentModule
@@ -112,12 +113,13 @@ Configuration Sample_ChangeDescriptionAndPermissions
     }
 }
 '@
-            # This invocation will throw parse error caused by "Undefined DSC resource" because
-            # NonExistentModule is not really avaiable to load. Therefore we set erroraction to
-            # SilentlyContinue
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
-                Get-Count |
-                Should Be 4
+                # This invocation will throw parse error caused by "Undefined DSC resource" because
+                # NonExistentModule is not really avaiable to load. Therefore we set erroraction to
+                # SilentlyContinue
+                Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
+                    Get-Count |
+                    Should Be 4
+            }
         }
     }
 }
