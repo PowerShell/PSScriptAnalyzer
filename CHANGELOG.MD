@@ -1,4 +1,9 @@
-﻿## [1.12.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-05-09
+﻿## [unreleased]
+
+## Fixed
+- `PSAlignAssignmentStatement` to align assignment statements in DSC configurations that have *Undefined DSC Resource* parse errors.
+
+## [1.12.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-05-09
 
 ### Added
 - [PSAlignAssignmentRuleStatement](https://github.com/PowerShell/PSScriptAnalyzer/blob/cca9a2d7ee35be7322f8c5a09b6c500a0a8bd101/RuleDocumentation/AlignAssignmentStatement.md) rule to align assignment statements in property value pairs (#753).

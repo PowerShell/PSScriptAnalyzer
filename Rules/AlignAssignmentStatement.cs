@@ -145,10 +145,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private IEnumerable<DiagnosticRecord> FindHashtableViolations(TokenOperations tokenOps)
         {
             var hashtableAsts = tokenOps.Ast.FindAll(ast => ast is HashtableAst, true);
-            if (hashtableAsts == null)
+            var groups = new List<List<Tuple<IScriptExtent, IScriptExtent>>>();
+            if (hashtableAsts != null)
             {
-                yield break;
+                foreach (var astItem in hashtableAsts)
+                {
+                    groups.Add(GetExtents(tokenOps, (HashtableAst)astItem));
+                }
             }
+
+#if !PSV3
+            var configAsts = tokenOps.Ast.FindAll(ast => ast is ConfigurationDefinitionAst, true);
+            if (configAsts != null)
+            {
+                // There are probably parse errors caused by an "Undefined DSC resource"
+                // which prevents the parser from detecting the property value pairs as
+                // hashtable. Hence, this is a workaround to format configurations which
+                // have "Undefined DSC resource" parse errors.
+
+                // find all commandAsts of the form "prop" "=" "val" that have the same parent
+                // and format those pairs.
+                foreach (var configAst in configAsts)
+                {
+                    groups.AddRange(GetCommandElementExtentGroups(configAst));
+                }
+            }
+#endif
 
             // it is probably much easier have a hashtable writer that formats the hashtable and writes it
             // but it makes handling comments hard. So we need to use this approach.
@@ -162,16 +184,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             //      find the distance between the assignment operators and their corresponding LHS
             //      find the longest left expression
             //      make sure all the assignment operators are in the same column as that of the longest left hand.
-
-            foreach (var astItem in hashtableAsts)
+            foreach (var extentTuples in groups)
             {
-                var hashtableAst = (HashtableAst)astItem;
-                if (!HasKeysOnSeparateLines(hashtableAst))
+                if (!HasPropertiesOnSeparateLines(extentTuples))
                 {
                     continue;
                 }
 
-                var extentTuples = GetExtents(tokenOps, hashtableAst);
                 if (extentTuples == null
                     || extentTuples.Count == 0
                     || !extentTuples.All(t => t.Item1.StartLineNumber == t.Item2.EndLineNumber))
@@ -181,11 +200,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 var widestKeyExtent = extentTuples
                     .Select(t => t.Item1)
-                    .Aggregate((t1, tAggregate) => {
-                    return TokenOperations.GetExtentWidth(tAggregate) > TokenOperations.GetExtentWidth(t1)
-                        ? tAggregate
-                        : t1;
-                });
+                    .Aggregate((t1, tAggregate) =>
+                    {
+                        return TokenOperations.GetExtentWidth(tAggregate) > TokenOperations.GetExtentWidth(t1)
+                            ? tAggregate
+                            : t1;
+                    });
                 var expectedStartColumnNumber = widestKeyExtent.EndColumnNumber + 1;
                 foreach (var extentTuple in extentTuples)
                 {
@@ -202,6 +222,53 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
+        }
+
+        private List<List<Tuple<IScriptExtent, IScriptExtent>>> GetCommandElementExtentGroups(Ast configAst)
+        {
+            var result = new List<List<Tuple<IScriptExtent, IScriptExtent>>>();
+            var commandAstGroups = GetCommandElementGroups(configAst);
+            foreach (var commandAstGroup in commandAstGroups)
+            {
+                var list = new List<Tuple<IScriptExtent, IScriptExtent>>();
+                foreach (var commandAst in commandAstGroup)
+                {
+                    var elems = commandAst.CommandElements;
+                    list.Add(new Tuple<IScriptExtent, IScriptExtent>(elems[0].Extent, elems[1].Extent));
+                }
+
+                result.Add(list);
+            }
+
+            return result;
+        }
+
+        private List<List<CommandAst>> GetCommandElementGroups(Ast configAst)
+        {
+            var result = new List<List<CommandAst>>();
+            var astsFound = configAst.FindAll(ast => IsPropertyValueCommandAst(ast), true);
+            if (astsFound == null)
+            {
+                return result;
+            }
+
+            var parentChildrenGroup = from ast in astsFound
+                                      select (CommandAst)ast into commandAst
+                                      group commandAst by commandAst.Parent.Parent; // parent is pipeline and pipeline's parent is namedblockast
+            foreach (var group in parentChildrenGroup)
+            {
+                result.Add(group.ToList());
+            }
+
+            return result;
+        }
+
+        private bool IsPropertyValueCommandAst(Ast ast)
+        {
+            var commandAst = ast as CommandAst;
+            return commandAst != null
+                && commandAst.CommandElements.Count() == 3
+                && commandAst.CommandElements[1].Extent.Text.Equals("=");
         }
 
         private IEnumerable<CorrectionExtent> GetHashtableCorrections(
@@ -225,7 +292,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return String.Format(CultureInfo.CurrentCulture, Strings.AlignAssignmentStatementError);
         }
 
-        private static IList<Tuple<IScriptExtent, IScriptExtent>> GetExtents(
+        private static List<Tuple<IScriptExtent, IScriptExtent>> GetExtents(
             TokenOperations tokenOps,
             HashtableAst hashtableAst)
         {
@@ -250,18 +317,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return nodeTuples;
         }
 
-        private bool HasKeysOnSeparateLines(HashtableAst hashtableAst)
+        private bool HasPropertiesOnSeparateLines(IEnumerable<Tuple<IScriptExtent, IScriptExtent>> tuples)
         {
             var lines = new HashSet<int>();
-            foreach (var kvp in hashtableAst.KeyValuePairs)
+            foreach (var kvp in tuples)
             {
-                if (lines.Contains(kvp.Item1.Extent.StartLineNumber))
+                if (lines.Contains(kvp.Item1.StartLineNumber))
                 {
                     return false;
                 }
                 else
                 {
-                    lines.Add(kvp.Item1.Extent.StartLineNumber);
+                    lines.Add(kvp.Item1.StartLineNumber);
                 }
             }
 

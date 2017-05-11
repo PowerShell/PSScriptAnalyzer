@@ -206,6 +206,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         }
         private bool saveDscDependency;
 #endif // !PSV3
+
+#if DEBUG
+        [Parameter(Mandatory = false)]
+        public SwitchParameter AttachAndDebug
+        {
+            get { return attachAndDebug; }
+            set { attachAndDebug = value; }
+        }
+        private bool attachAndDebug = false;
+#endif
         #endregion Parameters
 
         #region Overrides
@@ -216,6 +226,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         protected override void BeginProcessing()
         {
             // Initialize helper
+#if DEBUG
+            if (attachAndDebug)
+            {
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
+                else
+                {
+                    System.Diagnostics.Debugger.Launch();
+                }
+            }
+#endif
             Helper.Instance = new Helper(
                 SessionState.InvokeCommand,
                 this);
