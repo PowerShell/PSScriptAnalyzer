@@ -30,9 +30,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class ProvideCommentHelp : SkipTypeDefinition, IScriptRule
+    public class ProvideCommentHelp : IScriptRule
     {
-        private HashSet<string> exportedFunctions;
 
         /// <summary>
         /// AnalyzeScript: Analyzes the ast to check that cmdlets have help.
@@ -44,47 +43,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            DiagnosticRecords.Clear();
-            this.fileName = fileName;
-            exportedFunctions = Helper.Instance.GetExportedFunction(ast);
-
-            ast.Visit(this);
-
-            return DiagnosticRecords;
-        }
-
-        /// <summary>
-        /// Visit function and checks that it has comment help
-        /// </summary>
-        /// <param name="funcAst"></param>
-        /// <returns></returns>
-        public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst funcAst)
-        {
-            if (funcAst == null)
+            var exportedFunctions = Helper.Instance.GetExportedFunction(ast);
+            var violationFinder = new ViolationFinder(exportedFunctions);
+            ast.Visit(violationFinder);
+            foreach (var functionDefinitionAst in violationFinder.FunctionDefinitionAsts)
             {
-                return AstVisitAction.SkipChildren;
+                yield return new DiagnosticRecord(
+                        String.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpError, functionDefinitionAst.Name),
+                        Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst),
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        fileName,
+                        null,
+                        GetCorrection(functionDefinitionAst).ToList());
             }
-
-            if (exportedFunctions.Contains(funcAst.Name))
-            {
-                if (funcAst.GetHelpContent() == null)
-                {
-                    // todo create auto correction
-                    // todo add option to add help for non exported members
-                    // todo add option to set help location
-                    DiagnosticRecords.Add(
-                        new DiagnosticRecord(
-                            string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpError, funcAst.Name),
-                            Helper.Instance.GetScriptExtentForFunctionName(funcAst),
-                            GetName(),
-                            DiagnosticSeverity.Information,
-                            fileName,
-                            null,
-                            GetCorrection(funcAst).ToList()));
-                }
-            }
-
-            return AstVisitAction.Continue;
         }
 
         /// <summary>
@@ -137,6 +109,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
+        }
+
+        private DiagnosticSeverity GetDiagnosticSeverity()
+        {
+            return DiagnosticSeverity.Information;
         }
 
         private IEnumerable<CorrectionExtent> GetCorrection(FunctionDefinitionAst funcDefnAst)
@@ -247,6 +224,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 sb.Append(notes.ToString());
                 return sb.ToString();
             }
+
             private class CommentHelpNode
             {
                 public CommentHelpNode(string nodeName, string description)
