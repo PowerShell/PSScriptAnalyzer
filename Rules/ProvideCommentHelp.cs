@@ -33,6 +33,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class ProvideCommentHelp : ConfigurableRule
     {
 
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool ExportedOnly { get; protected set; }
+
         public ProvideCommentHelp() : base()
         {
             // Enable the rule by default
@@ -50,7 +53,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             var exportedFunctions = Helper.Instance.GetExportedFunction(ast);
-            var violationFinder = new ViolationFinder(exportedFunctions);
+            var violationFinder = new ViolationFinder(exportedFunctions, ExportedOnly);
             ast.Visit(violationFinder);
             foreach (var functionDefinitionAst in violationFinder.FunctionDefinitionAsts)
             {
@@ -146,12 +149,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private class ViolationFinder : AstVisitor
         {
-            private HashSet<string> exportedFunctions;
+            private HashSet<string> functionWhitelist;
             private List<FunctionDefinitionAst> functionDefinitionAsts;
+            private bool useFunctionWhitelist;
 
             public ViolationFinder()
             {
-                exportedFunctions = new HashSet<string>();
+                functionWhitelist = new HashSet<string>();
                 functionDefinitionAsts = new List<FunctionDefinitionAst>();
             }
 
@@ -162,7 +166,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     throw new ArgumentNullException(nameof(exportedFunctions));
                 }
 
-                this.exportedFunctions = exportedFunctions;
+                this.functionWhitelist = exportedFunctions;
+            }
+
+            public ViolationFinder(HashSet<string> exportedFunctions, bool exportedOnly) : this(exportedFunctions)
+            {
+                this.useFunctionWhitelist = exportedOnly;
             }
 
             public IEnumerable<FunctionDefinitionAst> FunctionDefinitionAsts { get { return functionDefinitionAsts; } }
@@ -174,7 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <returns></returns>
             public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst funcAst)
             {
-                if (exportedFunctions.Contains(funcAst.Name)
+                if ((!useFunctionWhitelist || functionWhitelist.Contains(funcAst.Name))
                     && funcAst.GetHelpContent() == null)
                 {
                     functionDefinitionAsts.Add(funcAst);
