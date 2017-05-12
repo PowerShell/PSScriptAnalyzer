@@ -33,6 +33,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class ProvideCommentHelp : ConfigurableRule
     {
 
+        public ProvideCommentHelp() : base()
+        {
+            // Enable the rule by default
+            Enable = true;
+        }
+
         /// <summary>
         /// AnalyzeScript: Analyzes the ast to check that cmdlets have help.
         /// </summary>
