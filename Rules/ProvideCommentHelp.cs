@@ -161,6 +161,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 funcDefnAst.Extent.File);
         }
 
+        private class ViolationFinder : AstVisitor
+        {
+            private HashSet<string> exportedFunctions;
+            private List<FunctionDefinitionAst> functionDefinitionAsts;
+
+            public ViolationFinder()
+            {
+                exportedFunctions = new HashSet<string>();
+                functionDefinitionAsts = new List<FunctionDefinitionAst>();
+            }
+
+            public ViolationFinder(HashSet<string> exportedFunctions) : this()
+            {
+                if (exportedFunctions == null)
+                {
+                    throw new ArgumentNullException(nameof(exportedFunctions));
+                }
+
+                this.exportedFunctions = exportedFunctions;
+            }
+
+            public IEnumerable<FunctionDefinitionAst> FunctionDefinitionAsts { get { return functionDefinitionAsts; } }
+
+            /// <summary>
+            /// Visit function and checks that it has comment help
+            /// </summary>
+            /// <param name="funcAst"></param>
+            /// <returns></returns>
+            public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst funcAst)
+            {
+                if (exportedFunctions.Contains(funcAst.Name)
+                    && funcAst.GetHelpContent() == null)
+                {
+                    functionDefinitionAsts.Add(funcAst);
+                }
+
+                return AstVisitAction.Continue;
+            }
+        }
+
         private class CommentHelpBuilder
         {
             private CommentHelpNode synopsis;
