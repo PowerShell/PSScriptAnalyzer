@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using System.Management.Automation;
+using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -27,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// ProvideCommentHelp: Analyzes ast to check that cmdlets have help.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class ProvideCommentHelp : SkipTypeDefinition, IScriptRule
     {
@@ -39,7 +40,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The name of the script</param>
         /// <returns>A List of diagnostic results of this rule</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             DiagnosticRecords.Clear();
@@ -67,13 +69,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (funcAst.GetHelpContent() == null)
                 {
+                    // todo create auto correction
+                    // todo add option to add help for non exported members
+                    // todo add option to set help location
                     DiagnosticRecords.Add(
                         new DiagnosticRecord(
                             string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpError, funcAst.Name),
                             Helper.Instance.GetScriptExtentForFunctionName(funcAst),
                             GetName(),
                             DiagnosticSeverity.Information,
-                            fileName));
+                            fileName,
+                            null,
+                            GetCorrection(funcAst).ToList()));
                 }
             }
 
@@ -102,7 +109,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() {
+        public string GetDescription()
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.ProvideCommentHelpDescription);
         }
 
@@ -129,6 +137,122 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
+        }
+
+        private IEnumerable<CorrectionExtent> GetCorrection(FunctionDefinitionAst funcDefnAst)
+        {
+            var helpBuilder = new CommentHelpBuilder();
+
+            // todo replace with an extension version
+            var paramAsts = (funcDefnAst.Parameters ?? funcDefnAst.Body.ParamBlock?.Parameters)
+                                ?? Enumerable.Empty<ParameterAst>();
+            foreach (var paramAst in paramAsts)
+            {
+                helpBuilder.AddParameter(paramAst.Name.VariablePath.UserPath);
+            }
+
+            var correctionExtents = new List<CorrectionExtent>();
+            yield return new CorrectionExtent(
+                funcDefnAst.Extent.StartLineNumber,
+                funcDefnAst.Extent.StartLineNumber,
+                funcDefnAst.Extent.StartColumnNumber,
+                funcDefnAst.Extent.StartColumnNumber,
+                helpBuilder.GetCommentHelp(),
+                funcDefnAst.Extent.File);
+        }
+
+        private class CommentHelpBuilder
+        {
+            private CommentHelpNode synopsis;
+            private CommentHelpNode description;
+            private List<CommentHelpNode> parameters;
+            private CommentHelpNode example;
+            private CommentHelpNode notes;
+
+            public CommentHelpBuilder()
+            {
+                synopsis = new CommentHelpNode("Synopsis", "Short description");
+                description = new CommentHelpNode("Description", "Long description");
+                example = new CommentHelpNode("Example", "An example");
+                parameters = new List<CommentHelpNode>();
+                notes = new CommentHelpNode("Notes", "General notes");
+            }
+
+            public void AddParameter(string paramName)
+            {
+                parameters.Add(new ParameterHelpNode(paramName, "Parameter description"));
+            }
+
+            // todo add option for comment type
+            public string GetCommentHelp()
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("<#");
+                sb.AppendLine(this.ToString());
+                sb.Append("#>");
+                return sb.ToString();
+            }
+
+            public override string ToString()
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine(synopsis.ToString()).AppendLine();
+                sb.AppendLine(description.ToString()).AppendLine();
+                foreach (var parameter in parameters)
+                {
+                    sb.AppendLine(parameter.ToString()).AppendLine();
+                }
+
+                sb.AppendLine(example.ToString()).AppendLine();
+                sb.Append(notes.ToString());
+                return sb.ToString();
+            }
+            private class CommentHelpNode
+            {
+                public CommentHelpNode(string nodeName, string description)
+                {
+                    Name = nodeName;
+                    Description = description;
+                }
+
+                public string Name { get; }
+                public string Description { get; set; }
+
+                public override string ToString()
+                {
+                    var sb = new StringBuilder();
+                    sb.Append(".").AppendLine(Name.ToUpper());
+                    if (!String.IsNullOrWhiteSpace(Description))
+                    {
+                        sb.Append(Description);
+                    }
+
+                    return sb.ToString();
+                }
+            }
+
+            private class ParameterHelpNode : CommentHelpNode
+            {
+                public ParameterHelpNode(string parameterName, string parameterDescription)
+                    : base("Parameter", parameterDescription)
+                {
+                    ParameterName = parameterName;
+                }
+
+                public string ParameterName { get; }
+
+                public override string ToString()
+                {
+                    var sb = new StringBuilder();
+                    sb.Append(".").Append(Name.ToUpper()).Append(" ").AppendLine(ParameterName);
+                    if (!String.IsNullOrWhiteSpace(Description))
+                    {
+                        sb.Append(Description);
+                    }
+
+                    return sb.ToString();
+                }
+            }
         }
     }
 }
