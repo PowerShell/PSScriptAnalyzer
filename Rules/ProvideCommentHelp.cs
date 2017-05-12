@@ -157,7 +157,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 funcDefnAst.Extent.StartLineNumber,
                 funcDefnAst.Extent.StartColumnNumber,
                 funcDefnAst.Extent.StartColumnNumber,
-                helpBuilder.GetCommentHelp(),
+                helpBuilder.GetCommentHelp() + Environment.NewLine,
                 funcDefnAst.Extent.File);
         }
 

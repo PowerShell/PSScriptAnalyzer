@@ -57,6 +57,7 @@ An example
 .NOTES
 General notes
 #>
+
 '@
             Test-Correction $def $expectedCorrection
         }
@@ -86,6 +87,7 @@ An example
 .NOTES
 General notes
 #>
+
 '@
             Test-Correction $def $expectedCorrection
         }
@@ -118,6 +120,7 @@ An example
 .NOTES
 General notes
 #>
+
 '@
             Test-Correction $def $expectedCorrection
         }
