@@ -36,6 +36,22 @@ Describe "ProvideCommentHelp" {
             $violations[1].Extent.Text | Should Be "Comment"
         }
 
+        It "should find violations in functions that are not exported" {
+            $def = @'
+function foo {
+}
+'@
+            $settings = @{
+                IncludeRules = @("PSProvideCommentHelp")
+                Rules = @{
+                    PSProvideCommentHelp = @{
+                        Enable = $true
+                        ExportedOnly = $false
+                    }
+                }
+            }
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 1
+        }
         It "should return a help snippet correction with 0 parameters" {
             $def = @'
 function foo {
