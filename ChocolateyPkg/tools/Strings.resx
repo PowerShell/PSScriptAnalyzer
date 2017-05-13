@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CheckAssemblyFile" xml:space="preserve">
+    <value>Checking assembly file '{0}' ...</value>
+  </data>
+  <data name="CheckModuleName" xml:space="preserve">
+    <value>Checking module '{0}' ...</value>
+  </data>
+  <data name="CommandInfoNotFound" xml:space="preserve">
+    <value>CommandInfo not found for function: {0}</value>
+  </data>
+  <data name="DefaultLoggerDescription" xml:space="preserve">
+    <value>Writes all diagnostics to WriteObject.</value>
+  </data>
+  <data name="DefaultLoggerName" xml:space="preserve">
+    <value>WriteObjects</value>
+  </data>
+  <data name="FileNotFound" xml:space="preserve">
+    <value>Cannot find file '{0}'.</value>
+  </data>
+  <data name="InvalidPath" xml:space="preserve">
+    <value>Cannot find the path '{0}'.</value>
+  </data>
+  <data name="LoggersNotFound" xml:space="preserve">
+    <value>No loggers found.</value>
+  </data>
+  <data name="MissingRuleExtension" xml:space="preserve">
+    <value>Cannot find rule extension '{0}'.</value>
+  </data>
+  <data name="NamedAndPositionalArgumentsConflictError" xml:space="preserve">
+    <value>{0} cannot be set by both positional and named arguments.</value>
+  </data>
+  <data name="NamedArgumentsBeforePositionalError" xml:space="preserve">
+    <value>Named arguments must always come after positional arguments.</value>
+  </data>
+  <data name="ParserErrorFormat" xml:space="preserve">
+    <value>Parse error in file {0}:  {1} at line {2} column {3}.</value>
+  </data>
+  <data name="ParserErrorMessage" xml:space="preserve">
+    <value>There are too many parser errors in {0}. Please correct them before running ScriptAnalyzer.</value>
+  </data>
+  <data name="RuleErrorMessage" xml:space="preserve">
+    <value>RULE_ERROR</value>
+  </data>
+  <data name="RulesNotFound" xml:space="preserve">
+    <value>Cannot find ScriptAnalyzer rules in the specified path</value>
+  </data>
+  <data name="RuleSuppressionErrorFormat" xml:space="preserve">
+    <value>Suppression Message Attribute error at line {0} in {1} : {2}</value>
+  </data>
+  <data name="RuleSuppressionRuleNameNotFound" xml:space="preserve">
+    <value>Rule {0} cannot be found.</value>
+  </data>
+  <data name="StringConstantArgumentsSuppressionAttributeError" xml:space="preserve">
+    <value>All the arguments of the Suppress Message Attribute should be string constants.</value>
+  </data>
+  <data name="TargetWithoutScopeSuppressionAttributeError" xml:space="preserve">
+    <value>If Target is specified, Scope must be specified.</value>
+  </data>
+  <data name="VerboseFileMessage" xml:space="preserve">
+    <value>Analyzing file: {0}</value>
+  </data>
+  <data name="VerboseRunningMessage" xml:space="preserve">
+    <value>Running {0} rule.</value>
+  </data>
+  <data name="WrongScopeArgumentSuppressionAttributeError" xml:space="preserve">
+    <value>Scope can only be either function or class.</value>
+  </data>
+  <data name="NullRuleNameError" xml:space="preserve">
+    <value>RuleName must not be null.</value>
+  </data>
+  <data name="TargetCannotBeFoundError" xml:space="preserve">
+    <value>Cannot find any Targets {0} that match the Scope {1} to apply the SuppressMessageAttribute.</value>
+  </data>
+  <data name="RuleSuppressionIDError" xml:space="preserve">
+    <value>Cannot find any DiagnosticRecord with the Rule Suppression ID {0}.</value>
+  </data>
+  <data name="WrongKey" xml:space="preserve">
+    <value>{0} is not a valid key in the settings hashtable: line {1} column {2} in file {3}. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
+  </data>
+  <data name="WrongKeyFormat" xml:space="preserve">
+    <value>Key in the settings hashtable should be a string: line {0} column {1} in file {2}</value>
+  </data>
+  <data name="WrongValueFormat" xml:space="preserve">
+    <value>Value in the settings hashtable should be a string or an array of strings: line {0} column {1} in file {2}</value>
+  </data>
+  <data name="InvalidProfile" xml:space="preserve">
+    <value>Settings file '{0}' is invalid because it does not contain a hashtable.</value>
+  </data>
+  <data name="ParseErrorFormatForScriptDefinition" xml:space="preserve">
+    <value>Parse error in script definition:  {0} at line {1} column {2}.</value>
+  </data>
+  <data name="ParserErrorMessageForScriptDefinition" xml:space="preserve">
+    <value>There are too many parser errors in the script definition. Please correct them before running ScriptAnalyzer.</value>
+  </data>
+  <data name="RuleSuppressionErrorFormatScriptDefinition" xml:space="preserve">
+    <value>Suppression Message Attribute error at line {0} in script definition : {1}</value>
+  </data>
+  <data name="VerboseScriptDefinitionMessage" xml:space="preserve">
+    <value>Analyzing Script Definition.</value>
+  </data>
+  <data name="ConfigurationFileHasNoHashTable" xml:space="preserve">
+    <value>SettingsFileHasNoHashTable</value>
+  </data>
+  <data name="ConfigurationFileNotFound" xml:space="preserve">
+    <value>SettingsFileNotFound</value>
+  </data>
+  <data name="ConfigurationKeyNotAString" xml:space="preserve">
+    <value>SettingsKeyNotAString</value>
+  </data>
+  <data name="ConfigurationValueNotAString" xml:space="preserve">
+    <value>SettingsValueNotAString</value>
+  </data>
+  <data name="ConfigurationValueWrongFormat" xml:space="preserve">
+    <value>SettingsValueWrongFormat</value>
+  </data>
+  <data name="WrongConfigurationKey" xml:space="preserve">
+    <value>WrongSettingsKey</value>
+  </data>
+  <data name="KeyNotString" xml:space="preserve">
+    <value>Key {0} in the settings is not a string.</value>
+  </data>
+  <data name="WrongKeyHashTable" xml:space="preserve">
+    <value>{0} is not a valid key in the settings hashtable. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
+  </data>
+  <data name="WrongValueHashTable" xml:space="preserve">
+    <value>Value {0} for key {1} has the wrong data type. Value in the settings hashtable should be a string or an array of strings.</value>
+  </data>
+</root>

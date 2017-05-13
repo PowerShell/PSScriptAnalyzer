@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>PSScriptAnalyzer</id>
+    <version>1.6.0</version>
+    <title>PSScriptAnalyzer</title>
+    <authors>PowerShell Team</authors>
+    <owners>PowerShell Team</owners>
+    <licenseUrl>https://github.com/PowerShell/PSScriptAnalyzer/blob/development/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/PowerShell/PSScriptAnalyzer</projectUrl>
+    <iconUrl>https://www.powershellgallery.com/Content/Images/PackageDefaultIcon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of built-in or customized rules on the scripts being analyzed.</description>
+    <summary>A script analysis code linting tool for Powershell</summary>
+    <tags>powershell admin</tags>
+  </metadata>
+</package>

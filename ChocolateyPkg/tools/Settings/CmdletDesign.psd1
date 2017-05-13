@@ -1,0 +1,10 @@
+﻿@{
+    IncludeRules=@('PSUseApprovedVerbs',
+                   'PSReservedCmdletChar',
+                   'PSReservedParams',
+                   'PSShouldProcess',
+                   'PSUseShouldProcessForStateChangingFunctions',
+                   'PSUseSingularNouns',
+                   'PSMissingModuleManifestField',
+                   'PSAvoidDefaultValueSwitchParameter')
+}
