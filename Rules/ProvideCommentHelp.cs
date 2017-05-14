@@ -239,7 +239,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         sb.Append("#");
                         sb.AppendLine(line);
                     }
-                    sb.AppendLine(boundaryString);
+
+                    sb.Append(boundaryString);
                 }
 
                 return sb.ToString();
