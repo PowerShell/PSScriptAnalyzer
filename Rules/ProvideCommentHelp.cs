@@ -33,8 +33,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class ProvideCommentHelp : ConfigurableRule
     {
 
+        // todo add option for comment type
+        // todo add option for help placement (beforeFuntion, BodyStart, BodyEnd:)
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool ExportedOnly { get; protected set; }
+
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool BlockComment { get; protected set; }
 
         public ProvideCommentHelp() : base()
         {
@@ -143,7 +148,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 funcDefnAst.Extent.StartLineNumber,
                 funcDefnAst.Extent.StartColumnNumber,
                 funcDefnAst.Extent.StartColumnNumber,
-                helpBuilder.GetCommentHelp() + Environment.NewLine,
+                helpBuilder.GetCommentHelp(BlockComment) + Environment.NewLine,
                 funcDefnAst.Extent.File);
         }
 
@@ -215,13 +220,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 parameters.Add(new ParameterHelpNode(paramName, "Parameter description"));
             }
 
-            // todo add option for comment type
-            public string GetCommentHelp()
+            public string GetCommentHelp(bool blockComment)
             {
                 var sb = new StringBuilder();
-                sb.AppendLine("<#");
-                sb.AppendLine(this.ToString());
-                sb.Append("#>");
+                if (blockComment)
+                {
+                    sb.AppendLine("<#");
+                    sb.AppendLine(this.ToString());
+                    sb.Append("#>");
+                }
+                else
+                {
+                    var boundaryString = new String('#', 30);
+                    sb.AppendLine(boundaryString);
+                    var lines = this.ToString().Split('\n').Select(l => l.Trim('\r'));
+                    foreach (var line in lines)
+                    {
+                        sb.Append("#");
+                        sb.AppendLine(line);
+                    }
+                    sb.AppendLine(boundaryString);
+                }
+
                 return sb.ToString();
             }
 
