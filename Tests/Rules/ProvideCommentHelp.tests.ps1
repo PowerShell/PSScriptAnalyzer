@@ -6,6 +6,17 @@ Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $violationMessage = "The cmdlet 'Comment' does not have a help comment."
 $violationName = "PSProvideCommentHelp"
+$ruleSettings = @{
+    Enable = $true
+    ExportedOnly = $false
+    BlockComment = $true
+}
+
+$settings = @{
+    IncludeRules = @("PSProvideCommentHelp")
+    Rules = @{ PSProvideCommentHelp = $ruleSettings }
+}
+
 $violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
@@ -15,9 +26,9 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
 $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 function Test-Correction {
-    param($scriptDef, $expectedCorrection)
+    param($scriptDef, $expectedCorrection, $settings)
 
-    $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule $violationName
+    $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -Settings $settings
     $violations.Count | Should Be 1
     $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
 }
@@ -41,15 +52,7 @@ Describe "ProvideCommentHelp" {
 function foo {
 }
 '@
-            $settings = @{
-                IncludeRules = @("PSProvideCommentHelp")
-                Rules = @{
-                    PSProvideCommentHelp = @{
-                        Enable = $true
-                        ExportedOnly = $false
-                    }
-                }
-            }
+
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 1
         }
         It "should return a help snippet correction with 0 parameters" {
@@ -75,7 +78,7 @@ General notes
 #>
 
 '@
-            Test-Correction $def $expectedCorrection
+            Test-Correction $def $expectedCorrection $settings
         }
 
         It "should return a help snippet correction with 1 parameters" {
@@ -105,7 +108,7 @@ General notes
 #>
 
 '@
-            Test-Correction $def $expectedCorrection
+            Test-Correction $def $expectedCorrection $settings
         }
 
         It "should return a help snippet correction with 2 parameters" {
@@ -138,7 +141,41 @@ General notes
 #>
 
 '@
-            Test-Correction $def $expectedCorrection
+            Test-Correction $def $expectedCorrection $settings
+        }
+
+        It "should return a help snippet correction with line comment style" {
+            $def = @'
+function foo {
+    param($param1, $param2)
+}
+
+Export-ModuleMember -Function foo
+'@
+            $expectedCorrection = @'
+##############################
+#.SYNOPSIS
+#Short description
+#
+#.DESCRIPTION
+#Long description
+#
+#.PARAMETER param1
+#Parameter description
+#
+#.PARAMETER param2
+#Parameter description
+#
+#.EXAMPLE
+#An example
+#
+#.NOTES
+#General notes
+##############################
+
+'@
+            $ruleSettings.'BlockComment' = $false
+            Test-Correction $def $expectedCorrection $settings
         }
 
         if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
