@@ -291,4 +291,31 @@
   <data name="ConfigurableScriptRuleNRE" xml:space="preserve">
     <value>"Argument should not be null.".</value>
   </data>
+  <data name="TextLinesNoNullItem" xml:space="preserve">
+    <value>Line element cannot be null.</value>
+  </data>
+  <data name="TextEditNoNullItem" xml:space="preserve">
+    <value>Line element cannot be null.</value>
+  </data>
+  <data name="EditableTextRangeIsNotContained" xml:space="preserve">
+    <value>TextEdit extent not completely contained in EditableText.</value>
+  </data>
+  <data name="EditableTextInvalidLineEnding" xml:space="preserve">
+    <value>Cannot determine line endings as the text probably contain mixed line endings.</value>
+  </data>
+  <data name="RangeStartPosGreaterThanEndPos" xml:space="preserve">
+    <value>Start position cannot be before End position.</value>
+  </data>
+  <data name="RangeRefPosShouldStartBeforeRangeStartPos" xml:space="preserve">
+    <value>Reference Position should begin before start Position of Range.</value>
+  </data>
+  <data name="PositionLineLessThanOne" xml:space="preserve">
+    <value>Line number cannot be less than 1.</value>
+  </data>
+  <data name="PositionColumnLessThanOne" xml:space="preserve">
+    <value>Column number cannot be less than 1.</value>
+  </data>
+  <data name="PositionRefPosLessThanInputPos" xml:space="preserve">
+    <value>Input position should be less than that of the invoking object.</value>
+  </data>
 </root>

@@ -209,6 +209,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        public static IEnumerable<Token> GetTokens(Ast outerAst, Ast innerAst, Token[] outerTokens)
+        {
+            ThrowIfNull(outerAst, nameof(outerAst));
+            ThrowIfNull(innerAst, nameof(innerAst));
+            ThrowIfNull(outerTokens, nameof(outerTokens));
+
+            // check if inner ast belongs in outerAst
+            var foundAst = outerAst.Find(x => x.Equals(innerAst), true);
+            if (foundAst == null)
+            {
+                // todo localize
+                throw new ArgumentException(String.Format("innerAst cannot be found within outerAst"));
+            }
+
+            var tokenOps = new TokenOperations(outerTokens, outerAst);
+            return tokenOps.GetTokens(innerAst);
+        }
+
+        private static void ThrowIfNull<T>(T param, string paramName)
+        {
+            if (param == null)
+            {
+                throw new ArgumentNullException(paramName);
+            }
+        }
         private IEnumerable<Token> GetTokens(Ast ast)
         {
             int k = 0;

@@ -44,6 +44,7 @@
 |[UsePSCredentialType](./UsePSCredentialType.md) | Warning|
 |[UseShouldProcessCorrectly](./UseShouldProcessCorrectly.md) | Warning|
 |[UseShouldProcessForStateChangingFunctions](./UseShouldProcessForStateChangingFunctions.md) | Warning|
+|[UseSupportsShouldProcess](./UseSupportsShouldProcess.md) | Warning|
 |[UseSingularNouns](./UseSingularNouns.md) | Warning|
 |[UseStandardDSCFunctionsInResource](./UseStandardDSCFunctionsInResource.md) | Error |
 |[UseToExportFieldsInManifest](./UseToExportFieldsInManifest.md) | Warning|
