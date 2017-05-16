@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Management.Automation;
 using System.Text;
+using System.IO;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -182,7 +183,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 this.useFunctionWhitelist = exportedOnly;
             }
 
-            public IEnumerable<FunctionDefinitionAst> FunctionDefinitionAsts { get { return functionDefinitionAsts; } }
+            public IEnumerable<FunctionDefinitionAst> FunctionDefinitionAsts
+            {
+                get
+                {
+                    return functionDefinitionAsts;
+                }
+            }
 
             /// <summary>
             /// Visit function and checks that it has comment help
@@ -256,7 +263,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // todo remove code duplication
-            public string ToSnippetString() {
+            public string ToSnippetString()
+            {
                 return ToString(true);
             }
 
@@ -276,7 +284,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return sb.ToString();
             }
 
-            private class Counter {
+            private class Counter
+            {
                 int? count;
 
                 public Counter(int? start)
@@ -284,7 +293,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     count = start;
                 }
 
-                public int? Next() {
+                public int? Next()
+                {
                     return count.HasValue ? count++ : null;
                 }
             }
@@ -340,20 +350,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 public override string ToString(int? tabStop)
                 {
-                    var sb = new StringBuilder();
-                    sb.Append(".").Append(Name.ToUpper()).Append(" ").AppendLine(ParameterName);
-                    if (!String.IsNullOrWhiteSpace(Description))
-                    {
-                        sb.Append(Snippetify(tabStop, Description));
-                    }
-
-                    return sb.ToString();
+                    // todo replace with String.GetLines() extension once it is available
+                    var lines = base.ToString(tabStop).Split('\n').Select(l => l.Trim('\r')).ToArray();
+                    lines[0] = $"{lines[0]} {ParameterName}";
+                    return String.Join(Environment.NewLine, lines);
                 }
             }
         }
     }
 }
-
-
-
-
