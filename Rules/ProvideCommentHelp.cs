@@ -252,34 +252,43 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public override string ToString()
             {
-                var sb = new StringBuilder();
-                sb.AppendLine(synopsis.ToString()).AppendLine();
-                sb.AppendLine(description.ToString()).AppendLine();
-                foreach (var parameter in parameters)
-                {
-                    sb.AppendLine(parameter.ToString()).AppendLine();
-                }
-
-                sb.AppendLine(example.ToString()).AppendLine();
-                sb.Append(notes.ToString());
-                return sb.ToString();
+                return ToString(false);
             }
 
             // todo remove code duplication
             public string ToSnippetString() {
+                return ToString(true);
+            }
+
+            private string ToString(bool snippetify)
+            {
                 var sb = new StringBuilder();
-                int tabStop = 1;
-                sb.AppendLine(synopsis.ToString(tabStop++)).AppendLine();
-                sb.AppendLine(description.ToString(tabStop++)).AppendLine();
+                var counter = new Counter(snippetify ? (int?)1 : null);
+                sb.AppendLine(synopsis.ToString(counter.Next())).AppendLine();
+                sb.AppendLine(description.ToString(counter.Next())).AppendLine();
                 foreach (var parameter in parameters)
                 {
-                    sb.AppendLine(parameter.ToString(tabStop++)).AppendLine();
+                    sb.AppendLine(parameter.ToString(counter.Next())).AppendLine();
                 }
 
-                sb.AppendLine(example.ToString(tabStop++)).AppendLine();
-                sb.Append(notes.ToString(tabStop++));
+                sb.AppendLine(example.ToString(counter.Next())).AppendLine();
+                sb.Append(notes.ToString(counter.Next()));
                 return sb.ToString();
             }
+
+            private class Counter {
+                int? count;
+
+                public Counter(int? start)
+                {
+                    count = start;
+                }
+
+                public int? Next() {
+                    return count.HasValue ? count++ : null;
+                }
+            }
+
             private class CommentHelpNode
             {
                 public CommentHelpNode(string nodeName, string description)
@@ -293,26 +302,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 public override string ToString()
                 {
-                    var sb = new StringBuilder();
-                    sb.Append(".").AppendLine(Name.ToUpper());
-                    if (!String.IsNullOrWhiteSpace(Description))
-                    {
-                        sb.Append(Description);
-                    }
-
-                    return sb.ToString();
+                    return ToString(null);
                 }
 
-                public virtual string ToString(int tabStop)
+                public virtual string ToString(int? tabStop)
                 {
                     var sb = new StringBuilder();
                     sb.Append(".").AppendLine(Name.ToUpper());
                     if (!String.IsNullOrWhiteSpace(Description))
                     {
-                        sb.Append($"${{{tabStop}:{Description}}}");
+                        sb.Append(Snippetify(tabStop, Description));
                     }
 
                     return sb.ToString();
+                }
+
+                protected string Snippetify(int? tabStop, string defaultValue)
+                {
+                    return tabStop == null ? defaultValue : $"${{{tabStop}:{defaultValue}}}";
                 }
             }
 
@@ -328,23 +335,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 public override string ToString()
                 {
-                    var sb = new StringBuilder();
-                    sb.Append(".").Append(Name.ToUpper()).Append(" ").AppendLine(ParameterName);
-                    if (!String.IsNullOrWhiteSpace(Description))
-                    {
-                        sb.Append(Description);
-                    }
-
-                    return sb.ToString();
+                    return ToString(null);
                 }
 
-                public override string ToString(int tabStop)
+                public override string ToString(int? tabStop)
                 {
                     var sb = new StringBuilder();
                     sb.Append(".").Append(Name.ToUpper()).Append(" ").AppendLine(ParameterName);
                     if (!String.IsNullOrWhiteSpace(Description))
                     {
-                        sb.Append($"${{{tabStop}:{Description}}}");
+                        sb.Append(Snippetify(tabStop, Description));
                     }
 
                     return sb.ToString();
