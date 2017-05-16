@@ -41,6 +41,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool BlockComment { get; protected set; }
 
+        [ConfigurableRuleProperty(defaultValue: false)]
+        public bool VSCodeSnippetCorrection { get; protected set; }
+
         public ProvideCommentHelp() : base()
         {
             // Enable the rule by default
@@ -148,7 +151,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 funcDefnAst.Extent.StartLineNumber,
                 funcDefnAst.Extent.StartColumnNumber,
                 funcDefnAst.Extent.StartColumnNumber,
-                helpBuilder.GetCommentHelp(BlockComment) + Environment.NewLine,
+                helpBuilder.GetCommentHelp(BlockComment, VSCodeSnippetCorrection) + Environment.NewLine,
                 funcDefnAst.Extent.File);
         }
 
@@ -220,20 +223,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 parameters.Add(new ParameterHelpNode(paramName, "Parameter description"));
             }
 
-            public string GetCommentHelp(bool blockComment)
+            public string GetCommentHelp(bool blockComment, bool snippet)
             {
                 var sb = new StringBuilder();
+                var helpContent = snippet ? this.ToSnippetString() : this.ToString();
                 if (blockComment)
                 {
                     sb.AppendLine("<#");
-                    sb.AppendLine(this.ToString());
+                    sb.AppendLine(helpContent);
                     sb.Append("#>");
                 }
                 else
                 {
                     var boundaryString = new String('#', 30);
                     sb.AppendLine(boundaryString);
-                    var lines = this.ToString().Split('\n').Select(l => l.Trim('\r'));
+                    var lines = helpContent.Split('\n').Select(l => l.Trim('\r'));
                     foreach (var line in lines)
                     {
                         sb.Append("#");
@@ -261,6 +265,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return sb.ToString();
             }
 
+            // todo remove code duplication
+            public string ToSnippetString() {
+                var sb = new StringBuilder();
+                int tabStop = 1;
+                sb.AppendLine(synopsis.ToString(tabStop++)).AppendLine();
+                sb.AppendLine(description.ToString(tabStop++)).AppendLine();
+                foreach (var parameter in parameters)
+                {
+                    sb.AppendLine(parameter.ToString(tabStop++)).AppendLine();
+                }
+
+                sb.AppendLine(example.ToString(tabStop++)).AppendLine();
+                sb.Append(notes.ToString(tabStop++));
+                return sb.ToString();
+            }
             private class CommentHelpNode
             {
                 public CommentHelpNode(string nodeName, string description)
@@ -279,6 +298,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (!String.IsNullOrWhiteSpace(Description))
                     {
                         sb.Append(Description);
+                    }
+
+                    return sb.ToString();
+                }
+
+                public virtual string ToString(int tabStop)
+                {
+                    var sb = new StringBuilder();
+                    sb.Append(".").AppendLine(Name.ToUpper());
+                    if (!String.IsNullOrWhiteSpace(Description))
+                    {
+                        sb.Append($"${{{tabStop}:{Description}}}");
                     }
 
                     return sb.ToString();
@@ -302,6 +333,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (!String.IsNullOrWhiteSpace(Description))
                     {
                         sb.Append(Description);
+                    }
+
+                    return sb.ToString();
+                }
+
+                public override string ToString(int tabStop)
+                {
+                    var sb = new StringBuilder();
+                    sb.Append(".").Append(Name.ToUpper()).Append(" ").AppendLine(ParameterName);
+                    if (!String.IsNullOrWhiteSpace(Description))
+                    {
+                        sb.Append($"${{{tabStop}:{Description}}}");
                     }
 
                     return sb.ToString();

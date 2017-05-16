@@ -10,6 +10,7 @@ $ruleSettings = @{
     Enable = $true
     ExportedOnly = $false
     BlockComment = $true
+    VSCodeSnippetCorrection = $false
 }
 
 $settings = @{
@@ -175,6 +176,41 @@ Export-ModuleMember -Function foo
 
 '@
             $ruleSettings.'BlockComment' = $false
+            Test-Correction $def $expectedCorrection $settings
+        }
+
+        It "should return a vscode snippet with line comment style" {
+            $def = @'
+function foo {
+    param($param1, $param2)
+}
+
+Export-ModuleMember -Function foo
+'@
+            $expectedCorrection = @'
+##############################
+#.SYNOPSIS
+#${1:Short description}
+#
+#.DESCRIPTION
+#${2:Long description}
+#
+#.PARAMETER param1
+#${3:Parameter description}
+#
+#.PARAMETER param2
+#${4:Parameter description}
+#
+#.EXAMPLE
+#${5:An example}
+#
+#.NOTES
+#${6:General notes}
+##############################
+
+'@
+            $ruleSettings.'BlockComment' = $false
+            $ruleSettings.'VSCodeSnippetCorrection' = $true
             Test-Correction $def $expectedCorrection $settings
         }
 
