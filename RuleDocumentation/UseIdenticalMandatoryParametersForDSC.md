@@ -1,24 +1,14 @@
-# UseStandardDSCFunctionsInResource
+# UseIdenticalMandatoryParametersForDSC
 
 **Severity Level: Error**
 
 ## Description
 
-All DSC resources are required to implement the correct functions.
-
-For non-class based resources:
-* `Set-TargetResource`
-* `Test-TargetResource`
-* `Get-TargetResource`
-
-For class based resources:
-* `Set`
-* `Test`
-* `Get`
+The `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions of DSC Resource must have the same mandatory parameters.
 
 ## How
 
-Add the missing functions to the resource.
+Correct the mandatory parameters for the functions in DSC resource.
 
 ## Example
 
@@ -43,11 +33,24 @@ function Set-TargetResource
     (
         [parameter(Mandatory = $true)]
         [String]
+        $TargetName
+    )
+    ...
+}
+
+function Test-TargetResource
+{
+    [OutputType([System.Boolean])]
+    param
+    (
+        [parameter(Mandatory = $true)]
+        [String]
         $Name
     )
     ...
 }
 ```
+
 ### Correct
 
 ``` PowerShell
@@ -84,53 +87,5 @@ function Test-TargetResource
         $Name
     )
     ...
-}
-```
-
-## Example
-
-### Wrong
-
-``` PowerShell
-[DscResource()]
-class MyDSCResource
-{
-    [DscProperty(Key)]
-    [string] $Name
-
-    [void] Set()
-    {
-        ...
-    }
-
-    [bool] Test()
-    {
-        ...
-    }
-}
-
-### Correct
-
-``` PowerShell
-[DscResource()]
-class MyDSCResource
-{
-    [DscProperty(Key)]
-    [string] $Name
-
-    [MyDSCResource] Get()
-    {
-        ...
-    }
-
-    [void] Set()
-    {
-        ...
-    }
-
-    [bool] Test()
-    {
-        ...
-    }
 }
 ```

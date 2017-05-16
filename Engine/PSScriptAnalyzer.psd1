@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.11.0'
+ModuleVersion = '1.12.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -88,23 +88,12 @@ PrivateData = @{
         IconUri = ''
         ReleaseNotes = @'
 ### Added
-- Built-in settings presets to specify settings from command line (#717). Currently, PSSA ships with `PSGallery`, `CodeFormatting`, `DSC`, and other settings presets. All of them can be found in the `Settings/` directory in the module. To use them just pass them as an argument to the `Settings` parameter. For example, if you want to run rules that *powershellgallery* runs, then use the following command.
-```powershell
-PS> Invoke-ScriptAnalyzer -Path /path/to/your/module -Settings PSGallery
-```
-- Argument completion for built-in settings presets (#717).
-- Argument completion for `IncludeRule` and `ExcludeRule` parameters (#717).
-- Option to `PSCloseBrace` rule to add new line after the brace (#713).
-- Option to `PSCloseBrace` rule to ignore expressions that have open and close braces on the same line (#706).
-- New rule, PSUseConsistentWhitespace, to check for whitespace style around operators and separators (#702).
+- PSAlignAssignmentRuleStatement rule to align assignment statements in property value pairs (#753).
 
 ### Fixed
-- Indentation when pipes precede new lines in a multi-line command expression in `PSUseConsistentIdentation` rule (#705).
-- Handling of SubExpressionAsts (`$(...)`) in `PSUseConsistentIdentation` rule (#700).
-- Performance issues caused by `get-command` cmdlet (#695).
-
-### Changed
-- Settings implementation to decouple it from engine (#717).
+- `PSAvoidGlobalVars` rule to ignore `$global:lastexitcode` (#752).
+- `PSUseConsistentIndentation` to account for backtick on preceding line (#749).
+- `PSPlaceCloseBrace` to ignore one-line blocks when `NewLineAfter` switch is on (#748).
 '@
     }
 }
@@ -116,6 +105,8 @@ PS> Invoke-ScriptAnalyzer -Path /path/to/your/module -Settings PSGallery
 # DefaultCommandPrefix = ''
 
 }
+
+
 
 
 

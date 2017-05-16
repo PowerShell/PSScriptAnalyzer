@@ -942,6 +942,7 @@
   <data name="UseConsistentWhitespaceErrorSeparatorSemi" xml:space="preserve">
     <value>Use space after a semicolon.</value>
   </data>
+
   <data name="UseSupportsShouldProcessName" xml:space="preserve">
     <value>UseSupportsShouldProcess</value>
   </data>
@@ -953,5 +954,17 @@
   </data>
   <data name="UseSupportsShouldProcessError" xml:space="preserve">
     <value>Whatif and/or Confirm manually defined in function {0}. Instead, please use SupportsShouldProcess attribute.</value>
+  </data>
+  <data name="AlignAssignmentStatementName" xml:space="preserve">
+    <value>AlignAssignmentStatement</value>
+  </data>
+  <data name="AlignAssignmentStatementCommonName" xml:space="preserve">
+    <value>Align assignment statement</value>
+  </data>
+  <data name="AlignAssignmentStatementDescription" xml:space="preserve">
+    <value>Line up assignment statements such that the assignment operator are aligned.</value>
+  </data>
+  <data name="AlignAssignmentStatementError" xml:space="preserve">
+    <value>Assignment statements are not aligned</value>
   </data>
 </root>

@@ -315,7 +315,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 var closeBraceToken = tokens[closeBracePos];
                 if ((tokens[expectedNewLinePos].Kind == TokenKind.Else
-                    || tokens[expectedNewLinePos].Kind == TokenKind.ElseIf))
+                    || tokens[expectedNewLinePos].Kind == TokenKind.ElseIf)
+                    && !tokensToIgnore.Contains(closeBraceToken))
                     {
                     return new DiagnosticRecord(
                         GetError(Strings.PlaceCloseBraceErrorShouldFollowNewLine),

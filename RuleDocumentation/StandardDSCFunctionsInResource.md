@@ -1,24 +1,24 @@
-# ReturnCorrectTypeDSCFunctions
+# StandardDSCFunctionsInResource
 
-**Severity Level: Information**
+**Severity Level: Error**
 
 ## Description
 
-The functions in DSC resources have specific return objects.
+All DSC resources are required to implement the correct functions.
 
 For non-class based resources:
-* `Set-TargetResource` must not return any value.
-* `Test-TargetResource` must return a boolean.
-* `Get-TargetResource` must return a hash table.
+* `Set-TargetResource`
+* `Test-TargetResource`
+* `Get-TargetResource`
 
 For class based resources:
-* `Set` must not return any value.
-* `Test` must return a boolean.
-* `Get` must return an instance of the DSC class.
+* `Set`
+* `Test`
+* `Get`
 
 ## How
 
-Ensure that each function returns the correct type.
+Add the missing functions to the resource.
 
 ## Example
 
@@ -27,6 +27,7 @@ Ensure that each function returns the correct type.
 ``` PowerShell
 function Get-TargetResource
 {
+    [OutputType([Hashtable])]
     param
     (
         [parameter(Mandatory = $true)]
@@ -46,19 +47,7 @@ function Set-TargetResource
     )
     ...
 }
-
-function Test-TargetResource
-{
-    param
-    (
-        [parameter(Mandatory = $true)]
-        [String]
-        $Name
-    )
-    ...
-}
 ```
-
 ### Correct
 
 ``` PowerShell
@@ -109,12 +98,7 @@ class MyDSCResource
     [DscProperty(Key)]
     [string] $Name
 
-    [String] Get()
-    {
-        ...
-    }
-
-    [String] Set()
+    [void] Set()
     {
         ...
     }
@@ -124,7 +108,6 @@ class MyDSCResource
         ...
     }
 }
-```
 
 ### Correct
 

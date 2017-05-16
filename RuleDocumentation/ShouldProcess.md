@@ -1,4 +1,4 @@
-# UseShouldProcessCorrectly
+# ShouldProcess
 
 **Severity Level: Warning**
 

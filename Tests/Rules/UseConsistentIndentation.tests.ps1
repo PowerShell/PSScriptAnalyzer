@@ -1,4 +1,11 @@
-﻿Import-Module PSScriptAnalyzer
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testRootDirectory = Split-Path -Parent $directory
+
+Import-Module PSScriptAnalyzer
+Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+
+$indentationUnit = ' '
+$indentationSize = 4
 $settings = @{
     IncludeRules = @("PSUseConsistentIndentation")
     Rules = @{
@@ -142,6 +149,23 @@ select Name,Id |
 '@
           $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
           $violations.Count | Should Be 3
+        }
+
+        It "Should indent properly after line continuation (backtick) character" {
+            $def = @'
+$x = "this " + `
+"Should be indented properly"
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $params = @{
+                RawContent = $def
+                DiagnosticRecord = $violations[0]
+                CorrectionsCount = 1
+                ViolationText = "`"Should be indented properly`""
+                CorrectionText = (New-Object -TypeName String -ArgumentList $indentationUnit,$indentationSize) + "`"Should be indented properly`""
+            }
+            Test-CorrectionExtentFromContent @params
         }
     }
 }

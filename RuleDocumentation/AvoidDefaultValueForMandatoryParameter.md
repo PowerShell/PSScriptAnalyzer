@@ -1,4 +1,4 @@
-# ProvideDefaultParameterValue
+# AvoidDefaultValueForMandatoryParameter
 
 **Severity Level: Warning**
 

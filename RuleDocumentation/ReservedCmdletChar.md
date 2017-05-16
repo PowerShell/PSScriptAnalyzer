@@ -1,4 +1,4 @@
-# AvoidReservedCharInCmdlet
+# ReservedCmdletChar
 
 **Severity Level: Error**
 

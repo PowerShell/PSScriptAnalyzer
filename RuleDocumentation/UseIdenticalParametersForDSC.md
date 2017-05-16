@@ -1,14 +1,14 @@
-# UseIdenticalMandatoryParametersDSC
+# UseIdenticalParametersForDSC
 
 **Severity Level: Error**
 
 ## Description
 
-The `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions of DSC Resource must have the same mandatory parameters.
+The `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions of DSC Resource must have the same parameters.
 
 ## How
 
-Correct the mandatory parameters for the functions in DSC resource.
+Correct the parameters for the functions in DSC resource.
 
 ## Example
 
@@ -22,7 +22,10 @@ function Get-TargetResource
     (
         [parameter(Mandatory = $true)]
         [String]
-        $Name
+        $Name,
+
+        [String]
+        $TargetResource
     )
     ...
 }
@@ -33,7 +36,7 @@ function Set-TargetResource
     (
         [parameter(Mandatory = $true)]
         [String]
-        $TargetName
+        $Name
     )
     ...
 }
@@ -61,7 +64,10 @@ function Get-TargetResource
     (
         [parameter(Mandatory = $true)]
         [String]
-        $Name
+        $Name,
+
+        [String]
+        $TargetResource
     )
     ...
 }
@@ -72,7 +78,10 @@ function Set-TargetResource
     (
         [parameter(Mandatory = $true)]
         [String]
-        $Name
+        $Name,
+
+        [String]
+        $TargetResource
     )
     ...
 }
@@ -84,7 +93,10 @@ function Test-TargetResource
     (
         [parameter(Mandatory = $true)]
         [String]
-        $Name
+        $Name,
+
+        [String]
+        $TargetResource
     )
     ...
 }

@@ -122,6 +122,7 @@
     <Compile Include="UseConsistentIndentation.cs" />
     <Compile Include="UseConsistentWhitespace.cs" />
     <Compile Include="UseSupportsShouldProcess.cs" />
+    <Compile Include="AlignAssignmentStatement.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\ScriptAnalyzerEngine.csproj">

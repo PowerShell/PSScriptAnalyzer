@@ -1,4 +1,26 @@
-﻿## [1.11.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.0) - 2017-03-01
+﻿## [unreleased]
+
+## Fixed
+- `PSAlignAssignmentStatement` to align assignment statements in DSC configurations that have *Undefined DSC Resource* parse errors.
+
+## [1.12.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-05-09
+
+### Added
+- [PSAlignAssignmentRuleStatement](https://github.com/PowerShell/PSScriptAnalyzer/blob/cca9a2d7ee35be7322f8c5a09b6c500a0a8bd101/RuleDocumentation/AlignAssignmentStatement.md) rule to align assignment statements in property value pairs (#753).
+
+### Fixed
+- `PSAvoidGlobalVars` rule to ignore `$global:lastexitcode` (#752).
+- `PSUseConsistentIndentation` to account for backtick on preceding line (#749).
+- `PSPlaceCloseBrace` to ignore one-line blocks when `NewLineAfter` switch is on (#748).
+
+## [1.11.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-04-04
+### Fixed
+- CodeFormatting settings file (#727, #728).
+- Whitelisted aliases comparison in AvoidUsingCmdletAliases rule (#739).
+- PlaceCloseBrace rule behavior for NewLineAfter option (#741).
+- UseConsistentIndentation rule to ignore open brace in magic methods (#744).
+
+## [1.11.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.0) - 2017-03-01
 ### Added
 - Built-in settings presets to specify settings from command line (#717). Currently, PSSA ships with `PSGallery`, `CodeFormatting`, `DSC`, and other settings presets. All of them can be found in the `Settings/` directory in the module. To use them just pass them as an argument to the `Settings` parameter. For example, if you want to run rules that *powershellgallery* runs, then use the following command.
 ```powershell
