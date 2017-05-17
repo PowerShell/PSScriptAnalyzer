@@ -10,6 +10,7 @@ $ruleSettings = @{
     Enable = $true
     ExportedOnly = $false
     BlockComment = $true
+    Placement = "before"
     VSCodeSnippetCorrection = $false
 }
 
@@ -211,6 +212,78 @@ Export-ModuleMember -Function foo
 '@
             $ruleSettings.'BlockComment' = $false
             $ruleSettings.'VSCodeSnippetCorrection' = $true
+            Test-Correction $def $expectedCorrection $settings
+        }
+
+        It "should return a help snippet correction with 2 parameters at the begining of function body" {
+            $def = @'
+function foo {
+    param($param1, $param2)
+}
+'@
+            $expectedCorrection = @'
+{
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER param1
+Parameter description
+
+.PARAMETER param2
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+
+'@
+            $ruleSettings.'ExportedOnly' = $false
+            $ruleSettings.'BlockComment' = $true
+            $ruleSettings.'VSCodeSnippetCorrection' = $false
+            $ruleSettings.'Placement' = 'begin'
+            Test-Correction $def $expectedCorrection $settings
+        }
+
+        It "should return a help snippet correction with 2 parameters at the end of function body" {
+            $def = @'
+function foo {
+    param($param1, $param2)
+}
+'@
+            $expectedCorrection = @'
+
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER param1
+Parameter description
+
+.PARAMETER param2
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+
+'@
+            $ruleSettings.'ExportedOnly' = $false
+            $ruleSettings.'BlockComment' = $true
+            $ruleSettings.'VSCodeSnippetCorrection' = $false
+            $ruleSettings.'Placement' = 'end'
             Test-Correction $def $expectedCorrection $settings
         }
 

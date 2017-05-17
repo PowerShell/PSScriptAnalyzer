@@ -33,9 +33,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class ProvideCommentHelp : ConfigurableRule
     {
-
-        // todo add option for comment type
-        // todo add option for help placement (beforeFuntion, BodyStart, BodyEnd:)
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool ExportedOnly { get; protected set; }
 
@@ -44,6 +41,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         [ConfigurableRuleProperty(defaultValue: false)]
         public bool VSCodeSnippetCorrection { get; protected set; }
+
+        // possible options: before, begin, end
+        [ConfigurableRuleProperty(defaultValue: "before")]
+        public string Placement { get; protected set; }
 
         public ProvideCommentHelp() : base()
         {
@@ -146,14 +147,64 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 helpBuilder.AddParameter(paramAst.Name.VariablePath.UserPath);
             }
 
-            var correctionExtents = new List<CorrectionExtent>();
+            int startLine, endLine, startColumn, endColumn;
+            GetCorrectionPosition(funcDefnAst, out startLine, out endLine, out startColumn, out endColumn);
             yield return new CorrectionExtent(
-                funcDefnAst.Extent.StartLineNumber,
-                funcDefnAst.Extent.StartLineNumber,
-                funcDefnAst.Extent.StartColumnNumber,
-                funcDefnAst.Extent.StartColumnNumber,
-                helpBuilder.GetCommentHelp(BlockComment, VSCodeSnippetCorrection) + Environment.NewLine,
+                startLine,
+                endLine,
+                startColumn,
+                endColumn,
+                ProcessCorrectionForPlacement(
+                    helpBuilder.GetCommentHelp(
+                        BlockComment,
+                        VSCodeSnippetCorrection)),
                 funcDefnAst.Extent.File);
+        }
+
+        private string ProcessCorrectionForPlacement(string correction)
+        {
+            switch (Placement.ToLower())
+            {
+                case "begin":
+                    return "{" + Environment.NewLine + correction + Environment.NewLine;
+                case "end":
+                    return Environment.NewLine + correction + Environment.NewLine;
+                default:
+                    return correction + Environment.NewLine;
+            }
+        }
+
+        private void GetCorrectionPosition(
+            FunctionDefinitionAst funcDefnAst,
+            out int startLine,
+            out int endLine,
+            out int startColumn,
+            out int endColumn)
+        {
+            // the better thing to do is get the line/column from corresponding tokens
+            switch (Placement.ToLower())
+            {
+                case "begin":
+                    startLine = funcDefnAst.Body.Extent.StartLineNumber;
+                    endLine = startLine;
+                    startColumn = funcDefnAst.Body.Extent.StartColumnNumber;
+                    endColumn = startColumn + 1;
+                    break;
+
+                case "end":
+                    startLine = funcDefnAst.Body.Extent.EndLineNumber;
+                    endLine = startLine;
+                    startColumn = funcDefnAst.Body.Extent.EndColumnNumber - 1;
+                    endColumn = startColumn;
+                    break;
+
+                default: // before
+                    startLine = funcDefnAst.Extent.StartLineNumber;
+                    endLine = startLine;
+                    startColumn = funcDefnAst.Extent.StartColumnNumber;
+                    endColumn = startColumn;
+                    break;
+            }
         }
 
         private class ViolationFinder : AstVisitor
