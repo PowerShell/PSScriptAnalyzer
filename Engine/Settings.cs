@@ -416,14 +416,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         var strConstExprAst = constExprAst as StringConstantExpressionAst;
                         if (strConstExprAst != null)
                         {
-                            rhsList.Add(strConstExprAst.Value);
+                            // it is a string literal
+                            output[key] = strConstExprAst.Value;
                         }
                         else
                         {
                             // it is either an integer or a float
                             output[key] = constExprAst.Value;
-                            continue;
                         }
+                        continue;
                     }
                     else if (pureExp is HashtableAst)
                     {
