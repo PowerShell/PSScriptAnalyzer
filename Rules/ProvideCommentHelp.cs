@@ -33,6 +33,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class ProvideCommentHelp : ConfigurableRule
     {
+        // todo rearrange members
+        private CommentHelpPlacement placement;
+
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool ExportedOnly { get; protected set; }
 
@@ -44,13 +47,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         // possible options: before, begin, end
         [ConfigurableRuleProperty(defaultValue: "before")]
-        public string Placement { get; protected set; }
+        public string Placement
+        {
+            get
+            {
+                return placement.ToString();
+            }
+            set
+            {
+                if (String.IsNullOrWhiteSpace(value) ||
+                    !Enum.TryParse<CommentHelpPlacement>(value, true, out placement))
+                {
+                    placement = CommentHelpPlacement.Before;
+                }
+            }
+        }
 
         public ProvideCommentHelp() : base()
         {
             // Enable the rule by default
             Enable = true;
         }
+
+        private enum CommentHelpPlacement { Before, Begin, End };
 
         /// <summary>
         /// AnalyzeScript: Analyzes the ast to check that cmdlets have help.
@@ -163,13 +182,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private string ProcessCorrectionForPlacement(string correction)
         {
-            switch (Placement.ToLower())
+            switch (placement)
             {
-                case "begin":
+                case CommentHelpPlacement.Begin:
                     return "{" + Environment.NewLine + correction + Environment.NewLine;
-                case "end":
+                case CommentHelpPlacement.End:
                     return Environment.NewLine + correction + Environment.NewLine;
-                default:
+                default: // CommentHelpPlacement.Before
                     return correction + Environment.NewLine;
             }
         }
@@ -182,23 +201,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             out int endColumn)
         {
             // the better thing to do is get the line/column from corresponding tokens
-            switch (Placement.ToLower())
+            switch (placement)
             {
-                case "begin":
+                case CommentHelpPlacement.Begin:
                     startLine = funcDefnAst.Body.Extent.StartLineNumber;
                     endLine = startLine;
                     startColumn = funcDefnAst.Body.Extent.StartColumnNumber;
                     endColumn = startColumn + 1;
                     break;
 
-                case "end":
+                case CommentHelpPlacement.End:
                     startLine = funcDefnAst.Body.Extent.EndLineNumber;
                     endLine = startLine;
                     startColumn = funcDefnAst.Body.Extent.EndColumnNumber - 1;
                     endColumn = startColumn;
                     break;
 
-                default: // before
+                default: // CommentHelpPlacement.Before
                     startLine = funcDefnAst.Extent.StartLineNumber;
                     endLine = startLine;
                     startColumn = funcDefnAst.Extent.StartColumnNumber;
