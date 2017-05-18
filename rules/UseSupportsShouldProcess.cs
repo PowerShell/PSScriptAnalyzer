@@ -65,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 int whatIfIndex, confirmIndex;
                 ParameterAst whatIfParamAst, confirmParamAst;
                 ParamBlockAst paramBlockAst;
-                var parameterAsts = functionDefinitionAst.GetParameterAsts(out paramBlockAst).ToArray();
+                var parameterAsts = functionDefinitionAst.GetParameterAsts(out paramBlockAst)?.ToArray();
                 if (parameterAsts == null)
                 {
                     continue;
