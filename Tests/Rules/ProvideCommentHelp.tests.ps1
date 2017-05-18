@@ -287,6 +287,40 @@ General notes
             Test-Correction $def $expectedCorrection $settings
         }
 
+        It "should return a help snippet correction with correct indentation" {
+            $def = @'
+    function foo {
+        param($param1)
+    }
+'@
+            $s = ' '
+            $expectedCorrection = @"
+    <#
+    .SYNOPSIS
+    Short description
+$s$s$s$s
+    .DESCRIPTION
+    Long description
+$s$s$s$s
+    .PARAMETER param1
+    Parameter description
+$s$s$s$s
+    .EXAMPLE
+    An example
+$s$s$s$s
+    .NOTES
+    General notes
+    #>
+
+"@
+            $ruleSettings.'ExportedOnly' = $false
+            $ruleSettings.'BlockComment' = $true
+            $ruleSettings.'VSCodeSnippetCorrection' = $false
+            $ruleSettings.'Placement' = 'before'
+            Test-Correction $def $expectedCorrection $settings
+        }
+
+
         if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
             It "Does not count violation in DSC class" {
                 $dscViolations.Count | Should Be 0

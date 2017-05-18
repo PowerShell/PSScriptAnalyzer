@@ -93,7 +93,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         fileName,
                         null,
-                        GetCorrection(functionDefinitionAst).ToList());
+                        GetCorrection(ast, functionDefinitionAst).ToList());
             }
         }
 
@@ -154,7 +154,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return DiagnosticSeverity.Information;
         }
 
-        private IEnumerable<CorrectionExtent> GetCorrection(FunctionDefinitionAst funcDefnAst)
+        private IEnumerable<CorrectionExtent> GetCorrection(Ast ast, FunctionDefinitionAst funcDefnAst)
         {
             var helpBuilder = new CommentHelpBuilder();
 
@@ -173,24 +173,43 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 endLine,
                 startColumn,
                 endColumn,
-                ProcessCorrectionForPlacement(
-                    helpBuilder.GetCommentHelp(
-                        BlockComment,
-                        VSCodeSnippetCorrection)),
+                GetCorrectionText(
+                    helpBuilder.GetCommentHelp(BlockComment, VSCodeSnippetCorrection),
+                    ast,
+                    funcDefnAst),
                 funcDefnAst.Extent.File);
         }
 
-        private string ProcessCorrectionForPlacement(string correction)
+        private string GetCorrectionText(string correction, Ast ast, FunctionDefinitionAst funcDefnAst)
         {
+            var indentationString = String.Empty;
+            if (funcDefnAst.Extent.StartColumnNumber > 1)
+            {
+                indentationString = GetLines(ast.Extent.Text)
+                    .ElementAt(funcDefnAst.Extent.StartLineNumber - 1)
+                    .Substring(0, funcDefnAst.Extent.StartColumnNumber - 1);
+                correction = String.Join(
+                        Environment.NewLine,
+                        GetLines(correction).Select(l => indentationString + l));
+            }
+
             switch (placement)
             {
                 case CommentHelpPlacement.Begin:
-                    return "{" + Environment.NewLine + correction + Environment.NewLine;
+                    return $"{{{Environment.NewLine}{correction}{Environment.NewLine}";
+
                 case CommentHelpPlacement.End:
-                    return Environment.NewLine + correction + Environment.NewLine;
+                    return $"{Environment.NewLine}{correction}{Environment.NewLine}{indentationString}";
+
                 default: // CommentHelpPlacement.Before
-                    return correction + Environment.NewLine;
+                    return $"{correction}{Environment.NewLine}";
             }
+        }
+
+        // TODO replace with extension version
+        private static IEnumerable<string> GetLines(string text)
+        {
+            return text.Split('\n').Select(l => l.Trim('\r'));
         }
 
         private void GetCorrectionPosition(
@@ -220,7 +239,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 default: // CommentHelpPlacement.Before
                     startLine = funcDefnAst.Extent.StartLineNumber;
                     endLine = startLine;
-                    startColumn = funcDefnAst.Extent.StartColumnNumber;
+                    startColumn = 1;
                     endColumn = startColumn;
                     break;
             }
@@ -314,7 +333,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     var boundaryString = new String('#', 30);
                     sb.AppendLine(boundaryString);
-                    var lines = helpContent.Split('\n').Select(l => l.Trim('\r'));
+                    var lines = GetLines(helpContent);
                     foreach (var line in lines)
                     {
                         sb.Append("#");
