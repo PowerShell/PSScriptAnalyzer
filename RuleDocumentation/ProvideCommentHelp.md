@@ -8,9 +8,49 @@ Comment based help should be provided for all PowerShell commands. This test onl
 
 For assistance on comment based help, use the command ```Get-Help about_comment_based_help``` or the article, "How to Write Cmdlet Help" (http://go.microsoft.com/fwlink/?LinkID=123415).
 
-## How
+## Configuration
 
-Include comment based help for each command identified.
+```powershell
+Rules = @{
+    PSProvideCommentHelp = @{
+        Enable = $true
+        ExportedOnly = $false
+        BlockComment = $true
+        VSCodeSnippetCorrection = $false
+        Placement = "before"
+    }
+}
+```
+
+### Parameters
+
+#### Enable: bool (Default valus is `$true`)
+
+Enable or disable the rule during ScriptAnalyzer invocation.
+
+#### ExportedOnly: bool (Default value is `$true`)
+
+If enabled, throw violation only on functions/cmdlets that are exported using the 'Export-ModuleMember' cmdlet.
+
+#### BlockComment: bool (Default value is `$true`)
+
+If enabled, returns comment help in block comment style, i.e., `<#...#>`. Otherwise returns
+comment help in line comment style, i.e., each comment line starts with `#`.
+
+#### VSCodeSnippetCorrection: bool (Default value is `$false`)
+
+If enabled, returns comment help in vscode snippet format.
+
+#### Placement: string (Default value is `before`)
+
+Represents the position of comment help with respect to the function definition.
+
+Possible values are: `before`, `begin` and `end`. If any invalid value is given, the
+property defaults to `before`.
+
+`before` means the help is placed before the function definition.
+`begin` means the help is placed at the begining of the function definition body.
+`end` means the help is places the end of the function definition body.
 
 ## Example
 

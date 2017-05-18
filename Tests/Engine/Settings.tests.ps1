@@ -99,7 +99,7 @@ Describe "Settings Class" {
         }
 
         It "Should return 1 rule argument" {
-            $settings.RuleArguments.Count | Should Be 2
+            $settings.RuleArguments.Count | Should Be 3
         }
 
         It "Should parse boolean type argument" {
@@ -108,6 +108,10 @@ Describe "Settings Class" {
 
         It "Should parse int type argument" {
             $settings.RuleArguments["PSUseConsistentIndentation"]["IndentationSize"] | Should Be 4
+        }
+
+        It "Should parse string literal" {
+            $settings.RuleArguments["PSProvideCommentHelp"]["Placement"] | Should Be 'end'
         }
     }
 }
