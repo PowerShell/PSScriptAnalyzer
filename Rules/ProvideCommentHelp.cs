@@ -33,19 +33,53 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class ProvideCommentHelp : ConfigurableRule
     {
-        // todo rearrange members
         private CommentHelpPlacement placement;
 
+        /// <summary>
+        /// Construct an object of ProvideCommentHelp type.
+        /// </summary>
+        public ProvideCommentHelp() : base()
+        {
+            // Enable the rule by default
+            Enable = true;
+        }
+
+        /// <summary>
+        /// If enabled, throw violation only on functions/cmdlets that are exported using
+        /// the "Export-ModuleMember" cmdlet.
+        ///
+        /// Default value is true.
+        ///</summary>
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool ExportedOnly { get; protected set; }
 
+        /// <summary>
+        /// If enabled, returns comment help in block comment style, i.e., `<#...#>`. Otherwise returns
+        /// comment help in line comment style, i.e., each comment line starts with `#`.
+        ///
+        /// Default value is true.
+        /// </summary>
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool BlockComment { get; protected set; }
 
+        /// <summary>
+        /// If enabled, returns comment help in vscode snippet format.
+        ///
+        /// Default value is false.
+        /// </summary>
         [ConfigurableRuleProperty(defaultValue: false)]
         public bool VSCodeSnippetCorrection { get; protected set; }
 
-        // possible options: before, begin, end
+        /// <summary>
+        /// Represents the position of comment help with respect to the function definition.
+        ///
+        /// Possible values are: `before`, `begin` and `end`. If any invalid value is given, the
+        /// property defaults to `before`.
+        ///
+        /// `before` means the help is placed before the function definition.
+        /// `begin` means the help is placed at the begining of the function definition body.
+        /// `end` means the help is places the end of the function definition body.
+        ///</summary>
         [ConfigurableRuleProperty(defaultValue: "before")]
         public string Placement
         {
@@ -61,12 +95,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     placement = CommentHelpPlacement.Before;
                 }
             }
-        }
-
-        public ProvideCommentHelp() : base()
-        {
-            // Enable the rule by default
-            Enable = true;
         }
 
         private enum CommentHelpPlacement { Before, Begin, End };
@@ -149,6 +177,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
+        // TODO replace with extension version
+        private static IEnumerable<string> GetLines(string text)
+        {
+            return text.Split('\n').Select(l => l.Trim('\r'));
+        }
+
         private DiagnosticSeverity GetDiagnosticSeverity()
         {
             return DiagnosticSeverity.Information;
@@ -204,12 +238,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 default: // CommentHelpPlacement.Before
                     return $"{correction}{Environment.NewLine}";
             }
-        }
-
-        // TODO replace with extension version
-        private static IEnumerable<string> GetLines(string text)
-        {
-            return text.Split('\n').Select(l => l.Trim('\r'));
         }
 
         private void GetCorrectionPosition(
@@ -280,11 +308,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            /// <summary>
-            /// Visit function and checks that it has comment help
-            /// </summary>
-            /// <param name="funcAst"></param>
-            /// <returns></returns>
             public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst funcAst)
             {
                 if ((!useFunctionWhitelist || functionWhitelist.Contains(funcAst.Name))
