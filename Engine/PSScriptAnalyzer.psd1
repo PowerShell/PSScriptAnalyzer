@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.12.0'
+ModuleVersion = '1.13.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -88,12 +88,14 @@ PrivateData = @{
         IconUri = ''
         ReleaseNotes = @'
 ### Added
-- PSAlignAssignmentRuleStatement rule to align assignment statements in property value pairs (#753).
+- `PSUseSupportsShouldProcess` rule to discourage manual `whatif` and `confirm` parameter declarations.
+- Suggested corrections to `PSProvideCommentHelp` rule. The rule can now be configured to:
+    - trigger on non-exported functions. But by default, the rule triggers only on exported functions that do have comment help.
+    - place the suggested corrections either before a function definition, or at the beginning or end of a function's body.
+    - choose between block comment or line comment style of suggested comment help correction.
 
 ### Fixed
-- `PSAvoidGlobalVars` rule to ignore `$global:lastexitcode` (#752).
-- `PSUseConsistentIndentation` to account for backtick on preceding line (#749).
-- `PSPlaceCloseBrace` to ignore one-line blocks when `NewLineAfter` switch is on (#748).
+- `PSAlignAssignmentStatement` to align assignment statements in DSC configurations that have *Undefined DSC Resource* parse errors.
 '@
     }
 }
@@ -105,6 +107,7 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 
