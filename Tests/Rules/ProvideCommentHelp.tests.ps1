@@ -32,7 +32,18 @@ function Test-Correction {
 
     $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -Settings $settings
     $violations.Count | Should Be 1
-    $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+
+    # We split the lines because appveyor checks out files with "\n" endings
+    # on windows, which results in inconsistent line endings between corrections
+    # and result.
+    $resultLines = $violations[0].SuggestedCorrections[0].Text -split "\r?\n"
+    $expectedLines = $expectedCorrection -split "\r?\n"
+    $resultLines.Count | Should Be $expectedLines.Count
+    for ($i = 0; $i -lt $resultLines.Count; $i++) {
+        $resultLine = $resultLines[$i]
+        $expectedLine = $expectedLines[$i]
+        $resultLine | Should Be $expectedLine
+    }
 }
 
 Describe "ProvideCommentHelp" {
