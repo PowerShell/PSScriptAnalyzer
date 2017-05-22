@@ -29,7 +29,7 @@ Enable or disable the rule during ScriptAnalyzer invocation.
 
 #### OnSameLine: bool (Default value is `$true`)
 
-# true
+Enforce open brace to be on the same line as that of its preceding keyword.
 
 #### NewLineAfter: bool (Default value is `$true`)
 
