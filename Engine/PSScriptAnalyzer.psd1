@@ -65,7 +65,7 @@ FormatsToProcess = @('ScriptAnalyzer.format.ps1xml')
 FunctionsToExport = @()
 
 # Cmdlets to export from this module
-CmdletsToExport = @('Get-ScriptAnalyzerRule','Invoke-ScriptAnalyzer')
+CmdletsToExport = @('Get-ScriptAnalyzerRule', 'Invoke-ScriptAnalyzer', 'Invoke-Formatter')
 
 # Variables to export from this module
 VariablesToExport = @()
