@@ -12,12 +12,16 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
+    using PSSASettings = Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings;
+
     [Cmdlet(VerbsLifecycle.Invoke, "Formatter")]
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
@@ -30,12 +34,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
+        // todo make this settings and maybe rename Settings class
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
         public object Settings { get; set; }
 
+#if DEBUG
+        [Parameter(Mandatory = false)]
+        public SwitchParameter AttachAndDebug
+        {
+            get { return attachAndDebug; }
+            set { attachAndDebug = value; }
+        }
+        private bool attachAndDebug = false;
+#endif
+
         protected override void BeginProcessing()
         {
+#if DEBUG
+            if (attachAndDebug)
+            {
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
+                else
+                {
+                    System.Diagnostics.Debugger.Launch();
+                }
+            }
+#endif
+
             // todo move to a common initalize session method
             Helper.Instance = new Helper(SessionState.InvokeCommand, this);
             Helper.Instance.Initialize();
@@ -86,10 +115,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             try
             {
-                defaultSettings = new Settings(defaultSettingsPreset);
+                defaultSettings = new PSSASettings(
+                    defaultSettingsPreset,
+                    PSSASettings.GetSettingPresetFilePath);
                 if (settingsMode != SettingsMode.None)
                 {
-                    inputSettings = new Settings(settingsFound);
+                    inputSettings = new PSSASettings(settingsFound);
                     ValidateInputSettings();
                 }
                 else
@@ -116,6 +147,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 "PSAlignAssignmentStatement"
             };
 
+            var text = new EditableText(ScriptDefinition);
             foreach (var rule in ruleOrder)
             {
                 if (!inputSettings.RuleArguments.ContainsKey(rule))
@@ -131,8 +163,43 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 currentSettingsHashtable.Add("Rules", ruleSettings);
                 var currentSettings = new Settings(currentSettingsHashtable);
                 ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
-                ScriptAnalyzer.Instance.Initialize(this, null, null, null, null, false, false);
+                ScriptAnalyzer.Instance.Initialize(this, null, null, null, null, true, false);
+
+                var corrections = new List<CorrectionExtent>();
+                var records = Enumerable.Empty<DiagnosticRecord>();
+
+                // todo add a check for this while loop so that it doesn't go into a black hole
+                do
+                {
+                    var correctionApplied = new HashSet<int>();
+                    foreach (var correction in corrections)
+                    {
+                        // apply only one edit per line
+                        if (correctionApplied.Contains(correction.StartLineNumber))
+                        {
+                            continue;
+                        }
+
+                        correctionApplied.Add(correction.StartLineNumber);
+                        text.ApplyEdit(correction);
+                    }
+
+                    records = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(text.ToString());
+                    corrections = records.Select(r => r.SuggestedCorrections.ElementAt(0)).ToList();
+
+                    // get unique correction instances
+                    // sort them by line numbers
+                    corrections.Sort((x, y) =>
+                    {
+                        return x.StartLineNumber < x.StartLineNumber ?
+                                    1 :
+                                    (x.StartLineNumber == x.StartLineNumber ? 0 : -1);
+                    });
+
+                } while (records.Any());
             }
+
+            this.WriteObject(text.ToString());
         }
 
         private void ValidateInputSettings()
