@@ -29,17 +29,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private Settings defaultSettings;
         private Settings inputSettings;
 
-
         [ParameterAttribute(Mandatory = true)]
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
-        // todo make this settings and maybe rename Settings class
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
         public object Settings { get; set; }
 
 #if DEBUG
+        /// <summary>
+        /// Attaches to an instance of a .Net debugger
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter AttachAndDebug
         {
@@ -167,8 +168,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
                 var corrections = new List<CorrectionExtent>();
                 var records = Enumerable.Empty<DiagnosticRecord>();
+                var numPreviousCorrections = corrections.Count;
 
-                // todo add a check for this while loop so that it doesn't go into a black hole
                 do
                 {
                     var correctionApplied = new HashSet<int>();
@@ -186,6 +187,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
                     records = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(text.ToString());
                     corrections = records.Select(r => r.SuggestedCorrections.ElementAt(0)).ToList();
+                    if (numPreviousCorrections > 0 && numPreviousCorrections == corrections.Count)
+                    {
+                        this.ThrowTerminatingError(new ErrorRecord(
+                            new InvalidOperationException(),
+                            "FORMATTER_ERROR",
+                            ErrorCategory.InvalidOperation,
+                            corrections));
+                    }
+
+                    numPreviousCorrections = corrections.Count;
 
                     // get unique correction instances
                     // sort them by line numbers
@@ -196,7 +207,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                                     (x.StartLineNumber == x.StartLineNumber ? 0 : -1);
                     });
 
-                } while (records.Any());
+                } while (numPreviousCorrections > 0);
             }
 
             this.WriteObject(text.ToString());
