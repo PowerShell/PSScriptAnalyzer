@@ -100,7 +100,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 currentLineNumber++;
             }
 
-            return new EditableText(String.Join(NewLine, lines));
+            // returning self allows us to chain ApplyEdit calls.
+            return this;
         }
 
         // TODO Add a method that takes multiple edits, checks if they are unique and applies them.
