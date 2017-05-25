@@ -159,6 +159,58 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return null;
         }
 
+        public static Settings Create(object settingsObj, string cwd, IOutputWriter outputWriter)
+        {
+            object settingsFound;
+            var settingsMode = FindSettingsMode(settingsObj, cwd, out settingsFound);
+
+            switch (settingsMode)
+            {
+                case SettingsMode.Auto:
+                    outputWriter?.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsNotProvided,
+                            ""));
+                    outputWriter?.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsAutoDiscovered,
+                            (string)settingsFound));
+                    break;
+
+                case SettingsMode.Preset:
+                case SettingsMode.File:
+                    outputWriter?.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingFile,
+                            (string)settingsFound));
+                    break;
+
+                case SettingsMode.Hashtable:
+                    outputWriter?.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsUsingHashtable));
+                    break;
+
+                default: // case SettingsMode.None
+                    outputWriter?.WriteVerbose(
+                        String.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.SettingsCannotFindFile));
+                    break;
+            }
+
+            if (settingsMode != SettingsMode.None)
+            {
+                return new Settings(settingsFound);
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Recursively convert hashtable to dictionary
         /// </summary>

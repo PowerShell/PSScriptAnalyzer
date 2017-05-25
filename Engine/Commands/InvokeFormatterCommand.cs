@@ -66,67 +66,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
 
+            // var settings = PSSASettings.Create(Settings);
+            // formatter = new Formatter(settings);
+
             // todo move to a common initalize session method
             Helper.Instance = new Helper(SessionState.InvokeCommand, this);
             Helper.Instance.Initialize();
-            object settingsFound;
-            var settingsMode = PowerShell.ScriptAnalyzer.Settings.FindSettingsMode(
-                Settings,
-                null,
-                out settingsFound);
-
-            switch (settingsMode)
-            {
-                case SettingsMode.Auto:
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsNotProvided,
-                            ""));
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsAutoDiscovered,
-                            (string)settingsFound));
-                    break;
-
-                case SettingsMode.Preset:
-                case SettingsMode.File:
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsUsingFile,
-                            (string)settingsFound));
-                    break;
-
-                case SettingsMode.Hashtable:
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsUsingHashtable));
-                    break;
-
-                default: // case SettingsMode.None
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsCannotFindFile));
-                    break;
-            }
 
             try
             {
-                defaultSettings = new PSSASettings(
-                    defaultSettingsPreset,
-                    PSSASettings.GetSettingPresetFilePath);
-                if (settingsMode != SettingsMode.None)
+                inputSettings = PSSASettings.Create(Settings, null, this);
+                if (inputSettings == null)
                 {
-                    inputSettings = new PSSASettings(settingsFound);
-                    ValidateInputSettings();
-                }
-                else
-                {
-                    inputSettings = defaultSettings;
+                    inputSettings = new PSSASettings(
+                        defaultSettingsPreset,
+                        PSSASettings.GetSettingPresetFilePath);
                 }
             }
             catch
@@ -139,6 +93,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         protected override void ProcessRecord()
         {
+            // this.WriteObject(formatter.Format(ScriptDefinition));
+
             var ruleOrder = new string[]
             {
                 "PSPlaceCloseBrace",
