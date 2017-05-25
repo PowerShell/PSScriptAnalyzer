@@ -30,12 +30,14 @@ using System.Collections;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
+    using PSSASettings = Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings;
+
     /// <summary>
     /// InvokeScriptAnalyzerCommand: Cmdlet to statically check PowerShell scripts.
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke,
         "ScriptAnalyzer",
-        DefaultParameterSetName="File",
+        DefaultParameterSetName = "File",
         HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
@@ -208,6 +210,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 #endif // !PSV3
 
 #if DEBUG
+        /// <summary>
+        /// Attaches to an instance of a .Net debugger
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter AttachAndDebug
         {
@@ -260,64 +265,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 ProcessPath();
             }
 
-            object settingsFound;
-            var settingsMode = PowerShell.ScriptAnalyzer.Settings.FindSettingsMode(
-                this.settings,
-                processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
-                out settingsFound);
-
-            switch (settingsMode)
+            try
             {
-                case SettingsMode.Auto:
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsNotProvided,
-                            path));
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsAutoDiscovered,
-                            (string)settingsFound));
-                    break;
-
-                case SettingsMode.Preset:
-                case SettingsMode.File:
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsUsingFile,
-                            (string)settingsFound));
-                    break;
-
-                case SettingsMode.Hashtable:
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsUsingHashtable));
-                    break;
-
-                default: // case SettingsMode.None
-                    this.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsCannotFindFile));
-                    break;
-            }
-
-            if (settingsMode != SettingsMode.None)
-            {
-                try
+                var settingsObj = PSSASettings.Create(
+                    settings,
+                    processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
+                    this);
+                if (settingsObj != null)
                 {
-                    var settingsObj = new Settings(settingsFound);
                     ScriptAnalyzer.Instance.UpdateSettings(settingsObj);
                 }
-                catch
-                {
-                        this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
-                        stopProcessing = true;
-                        return;
-                }
+            }
+            catch
+            {
+                this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
+                stopProcessing = true;
+                return;
             }
 
             ScriptAnalyzer.Instance.Initialize(
