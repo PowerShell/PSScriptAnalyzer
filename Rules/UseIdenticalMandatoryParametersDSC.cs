@@ -44,10 +44,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Expected TargetResource functions in the DSC Resource module
             List<string> expectedTargetResourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Test-TargetResource", "Get-TargetResource" });
 
-            IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
+            var functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast).Cast<FunctionDefinitionAst>();
 
             // Dictionary to keep track of Mandatory parameters and their presence in Get/Test/Set TargetResource cmdlets
-            Dictionary<string, List<string>> mandatoryParameters = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            var mandatoryParameters = new Dictionary<string, List<FunctionDefinitionAst>>(StringComparer.OrdinalIgnoreCase);
 
             // Loop through Set/Test/Get TargetResource DSC cmdlets
             foreach (FunctionDefinitionAst functionDefinitionAst in functionDefinitionAsts)
@@ -73,18 +73,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                     {
                                         // Covers Case - [Parameter(Mandatory)] and [Parameter(Mandatory)=$true]
                                         if (namedArgument.ExpressionOmitted || (!namedArgument.ExpressionOmitted && String.Equals(namedArgument.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase)))
-                                        {                                            
+                                        {
                                             if (mandatoryParameters.ContainsKey(paramAst.Name.VariablePath.UserPath))
                                             {
-                                                mandatoryParameters[paramAst.Name.VariablePath.UserPath].Add(functionDefinitionAst.Name);
+                                                mandatoryParameters[paramAst.Name.VariablePath.UserPath].Add(functionDefinitionAst);
                                             }
                                             else
                                             {
-                                                List<string> functionNames = new List<string>();
-                                                functionNames.Add(functionDefinitionAst.Name);
+                                                var functionNames = new List<FunctionDefinitionAst>();
+                                                functionNames.Add(functionDefinitionAst);
                                                 mandatoryParameters.Add(paramAst.Name.VariablePath.UserPath, functionNames);
-                                            }                                            
-                                        }                                        
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -93,20 +93,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            // Get the mandatory parameter names that do not appear in all the DSC Resource cmdlets 
-            IEnumerable<string> paramNames = mandatoryParameters.Where(x => x.Value.Count < expectedTargetResourceFunctionNames.Count).Select(x => x.Key); 
-           
+            // Get the mandatory parameter names that do not appear in all the DSC Resource cmdlets
+            IEnumerable<string> paramNames = mandatoryParameters.Where(x => x.Value.Count < expectedTargetResourceFunctionNames.Count).Select(x => x.Key);
+
             if (paramNames.Count() > 0)
-            {                
+            {
                 foreach (string paramName in paramNames)
                 {
-                    List<string> functionsNotContainingParam = expectedTargetResourceFunctionNames.Except(mandatoryParameters[paramName]).ToList();
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.InvariantCulture, Strings.UseIdenticalMandatoryParametersDSCError, paramName, string.Join(", ", functionsNotContainingParam.ToArray())),
-                                    ast.Extent, GetName(), DiagnosticSeverity.Error, fileName);
-                }                   
-                
+                    var functionsNotContainingParam = functionDefinitionAsts.Except(mandatoryParameters[paramName]);
+
+                    foreach (var funcDefnAst in functionsNotContainingParam)
+                    {
+                        yield return new DiagnosticRecord(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                Strings.UseIdenticalMandatoryParametersDSCError,
+                                paramName,
+                                funcDefnAst.Name),
+                            funcDefnAst.Extent,
+                            GetName(),
+                            DiagnosticSeverity.Error,
+                            fileName);
+                    }
+                }
             }
-            
         }
 
         /// <summary>
@@ -117,7 +127,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
         {
-            // For DSC Class based resource, this rule is N/A, since the Class Properties 
+            // For DSC Class based resource, this rule is N/A, since the Class Properties
             // are declared only once and available to Get(), Set(), Test() functions
             return Enumerable.Empty<DiagnosticRecord>();
         }
@@ -127,7 +137,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         /// <returns>The name of this rule</returns>
         public string GetName()
-        {            
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalMandatoryParametersDSCName);
         }
 
@@ -173,7 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
         }
-    }    
+    }
 
 }
 
