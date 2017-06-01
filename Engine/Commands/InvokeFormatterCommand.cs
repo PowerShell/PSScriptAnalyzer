@@ -66,10 +66,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
 
-            // var settings = PSSASettings.Create(Settings);
-            // formatter = new Formatter(settings);
-
-            // todo move to a common initalize session method
             Helper.Instance = new Helper(SessionState.InvokeCommand, this);
             Helper.Instance.Initialize();
 
@@ -90,83 +86,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
         }
 
-
         protected override void ProcessRecord()
         {
-            // this.WriteObject(formatter.Format(ScriptDefinition));
-
-            var ruleOrder = new string[]
-            {
-                "PSPlaceCloseBrace",
-                "PSPlaceOpenBrace",
-                "PSUseConsistentWhitespace",
-                "PSUseConsistentIndentation",
-                "PSAlignAssignmentStatement"
-            };
-
-            var text = new EditableText(ScriptDefinition);
-            foreach (var rule in ruleOrder)
-            {
-                if (!inputSettings.RuleArguments.ContainsKey(rule))
-                {
-                    continue;
-                }
-
-                this.WriteVerbose("Running " + rule);
-                var currentSettingsHashtable = new Hashtable();
-                currentSettingsHashtable.Add("IncludeRules", new string[] { rule });
-                var ruleSettings = new Hashtable();
-                ruleSettings.Add(rule, new Hashtable(inputSettings.RuleArguments[rule]));
-                currentSettingsHashtable.Add("Rules", ruleSettings);
-                var currentSettings = new Settings(currentSettingsHashtable);
-                ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
-                ScriptAnalyzer.Instance.Initialize(this, null, null, null, null, true, false);
-
-                var corrections = new List<CorrectionExtent>();
-                var records = Enumerable.Empty<DiagnosticRecord>();
-                var numPreviousCorrections = corrections.Count;
-
-                do
-                {
-                    var correctionApplied = new HashSet<int>();
-                    foreach (var correction in corrections)
-                    {
-                        // apply only one edit per line
-                        if (correctionApplied.Contains(correction.StartLineNumber))
-                        {
-                            continue;
-                        }
-
-                        correctionApplied.Add(correction.StartLineNumber);
-                        text.ApplyEdit(correction);
-                    }
-
-                    records = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(text.ToString());
-                    corrections = records.Select(r => r.SuggestedCorrections.ElementAt(0)).ToList();
-                    if (numPreviousCorrections > 0 && numPreviousCorrections == corrections.Count)
-                    {
-                        this.ThrowTerminatingError(new ErrorRecord(
-                            new InvalidOperationException(),
-                            "FORMATTER_ERROR",
-                            ErrorCategory.InvalidOperation,
-                            corrections));
-                    }
-
-                    numPreviousCorrections = corrections.Count;
-
-                    // get unique correction instances
-                    // sort them by line numbers
-                    corrections.Sort((x, y) =>
-                    {
-                        return x.StartLineNumber < x.StartLineNumber ?
-                                    1 :
-                                    (x.StartLineNumber == x.StartLineNumber ? 0 : -1);
-                    });
-
-                } while (numPreviousCorrections > 0);
-            }
-
-            this.WriteObject(text.ToString());
+            var text = Formatter.Format(ScriptDefinition, inputSettings, this);
+            this.WriteObject(text);
         }
 
         private void ValidateInputSettings()
