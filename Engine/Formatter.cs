@@ -10,24 +10,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     public class Formatter
     {
-        private Settings settings;
-
-        private Formatter(Settings settings)
-        {
-            this.settings = settings;
-        }
-
-        public static string Format(string scriptDefinition, Settings settings)
-        {
-            throw new NotImplementedException();
-        }
-
         public static string Format<TCmdlet>(
             string scriptDefinition,
             Settings inputSettings,
             TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
-            var inputSettings = new Settings(settingsHashtable);
             var ruleOrder = new string[]
             {
                 "PSPlaceCloseBrace",
