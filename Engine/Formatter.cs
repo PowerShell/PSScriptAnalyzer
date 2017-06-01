@@ -10,9 +10,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     public class Formatter
     {
+        // TODO add a method that takes range parameter
         public static string Format<TCmdlet>(
             string scriptDefinition,
-            Settings inputSettings,
+            Settings settings,
             TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
             Helper.Instance = new Helper(cmdlet.SessionState.InvokeCommand, cmdlet);
@@ -30,18 +31,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var text = new EditableText(scriptDefinition);
             foreach (var rule in ruleOrder)
             {
-                if (!inputSettings.RuleArguments.ContainsKey(rule))
+                if (!settings.RuleArguments.ContainsKey(rule))
                 {
                     continue;
                 }
 
                 cmdlet.WriteVerbose("Running " + rule);
-                var currentSettingsHashtable = new Hashtable();
-                currentSettingsHashtable.Add("IncludeRules", new string[] { rule });
-                var ruleSettings = new Hashtable();
-                ruleSettings.Add(rule, new Hashtable(inputSettings.RuleArguments[rule]));
-                currentSettingsHashtable.Add("Rules", ruleSettings);
-                var currentSettings = new Settings(currentSettingsHashtable);
+
+                var currentSettings = GetCurrentSettings(settings, rule);
                 ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
 
@@ -51,6 +48,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 do
                 {
+                    // TODO create better verbose messages
                     var correctionApplied = new HashSet<int>();
                     foreach (var correction in corrections)
                     {
@@ -90,6 +88,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return text.ToString();
+        }
+
+        private static Settings GetCurrentSettings(Settings settings, string rule)
+        {
+            var currentSettingsHashtable = new Hashtable();
+            currentSettingsHashtable.Add("IncludeRules", new string[] { rule });
+
+            var ruleSettings = new Hashtable();
+            ruleSettings.Add(rule, new Hashtable(settings.RuleArguments[rule]));
+            currentSettingsHashtable.Add("Rules", ruleSettings);
+
+            var currentSettings = new Settings(currentSettingsHashtable);
+            return currentSettings;
         }
     }
 }
