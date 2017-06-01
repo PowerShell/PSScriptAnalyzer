@@ -39,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSettings.Add(rule, new Hashtable(inputSettings.RuleArguments[rule]));
                 currentSettingsHashtable.Add("Rules", ruleSettings);
                 var currentSettings = new Settings(currentSettingsHashtable);
-                ScriptAnalyzer.Instance.UpdateSettings(inputSettings);
+                ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
 
                 var corrections = new List<CorrectionExtent>();
