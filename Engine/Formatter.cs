@@ -22,11 +22,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             throw new NotImplementedException();
         }
 
-        public static string Format(
+        public static string Format<TCmdlet>(
             string scriptDefinition,
-            Hashtable settingsHashtable,
-            Runspace runspace,
-            IOutputWriter outputWriter)
+            Settings inputSettings,
+            TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
             var inputSettings = new Settings(settingsHashtable);
             var ruleOrder = new string[]
@@ -46,7 +45,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     continue;
                 }
 
-                outputWriter.WriteVerbose("Running " + rule);
+                cmdlet.WriteVerbose("Running " + rule);
                 var currentSettingsHashtable = new Hashtable();
                 currentSettingsHashtable.Add("IncludeRules", new string[] { rule });
                 var ruleSettings = new Hashtable();
@@ -54,7 +53,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 currentSettingsHashtable.Add("Rules", ruleSettings);
                 var currentSettings = new Settings(currentSettingsHashtable);
                 ScriptAnalyzer.Instance.UpdateSettings(inputSettings);
-                ScriptAnalyzer.Instance.Initialize(runspace, outputWriter);
+                ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
 
                 var corrections = new List<CorrectionExtent>();
                 var records = Enumerable.Empty<DiagnosticRecord>();
@@ -79,7 +78,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     corrections = records.Select(r => r.SuggestedCorrections.ElementAt(0)).ToList();
                     if (numPreviousCorrections > 0 && numPreviousCorrections == corrections.Count)
                     {
-                        outputWriter.ThrowTerminatingError(new ErrorRecord(
+                        cmdlet.ThrowTerminatingError(new ErrorRecord(
                             new InvalidOperationException(),
                             "FORMATTER_ERROR",
                             ErrorCategory.InvalidOperation,
