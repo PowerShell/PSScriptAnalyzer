@@ -15,6 +15,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Settings inputSettings,
             TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
+            Helper.Instance = new Helper(cmdlet.SessionState.InvokeCommand, cmdlet);
+            Helper.Instance.Initialize();
+
             var ruleOrder = new string[]
             {
                 "PSPlaceCloseBrace",

@@ -66,9 +66,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
 
-            Helper.Instance = new Helper(SessionState.InvokeCommand, this);
-            Helper.Instance.Initialize();
-
             try
             {
                 inputSettings = PSSASettings.Create(Settings, null, this);
