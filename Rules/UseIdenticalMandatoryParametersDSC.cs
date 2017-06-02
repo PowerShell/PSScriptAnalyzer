@@ -49,7 +49,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast).Cast<FunctionDefinitionAst>();
 
+            // todo update logic to take keys into consideration
+            // todo write tests for same
+            // todo update documentation
             var keys = GetKeys(fileName);
+
             // Dictionary to keep track of Mandatory parameters and their presence in Get/Test/Set TargetResource cmdlets
             var mandatoryParameters = new Dictionary<string, List<FunctionDefinitionAst>>(StringComparer.OrdinalIgnoreCase);
 
@@ -99,26 +103,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Get the mandatory parameter names that do not appear in all the DSC Resource cmdlets
             IEnumerable<string> paramNames = mandatoryParameters.Where(x => x.Value.Count < expectedTargetResourceFunctionNames.Count).Select(x => x.Key);
-
-            if (paramNames.Count() > 0)
+            foreach (string paramName in paramNames)
             {
-                foreach (string paramName in paramNames)
-                {
-                    var functionsNotContainingParam = functionDefinitionAsts.Except(mandatoryParameters[paramName]);
+                var functionsNotContainingParam = functionDefinitionAsts.Except(mandatoryParameters[paramName]);
 
-                    foreach (var funcDefnAst in functionsNotContainingParam)
-                    {
-                        yield return new DiagnosticRecord(
-                            string.Format(
-                                CultureInfo.InvariantCulture,
-                                Strings.UseIdenticalMandatoryParametersDSCError,
-                                paramName,
-                                funcDefnAst.Name),
-                            Helper.Instance.GetScriptExtentForFunctionName(funcDefnAst),
-                            GetName(),
-                            DiagnosticSeverity.Error,
-                            fileName);
-                    }
+                foreach (var funcDefnAst in functionsNotContainingParam)
+                {
+                    yield return new DiagnosticRecord(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            Strings.UseIdenticalMandatoryParametersDSCError,
+                            paramName,
+                            funcDefnAst.Name),
+                        Helper.Instance.GetScriptExtentForFunctionName(funcDefnAst),
+                        GetName(),
+                        DiagnosticSeverity.Error,
+                        fileName);
                 }
             }
         }
