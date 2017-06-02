@@ -15,6 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using Microsoft.PowerShell.DesiredStateConfiguration.Internal;
+using System.IO;
+using Microsoft.Management.Infrastructure;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -46,6 +49,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast).Cast<FunctionDefinitionAst>();
 
+            var keys = GetKeys(fileName);
             // Dictionary to keep track of Mandatory parameters and their presence in Get/Test/Set TargetResource cmdlets
             var mandatoryParameters = new Dictionary<string, List<FunctionDefinitionAst>>(StringComparer.OrdinalIgnoreCase);
 
@@ -117,6 +121,102 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
+        }
+
+        private string[] GetKeys(string fileName)
+        {
+            var moduleInfo = GetModuleInfo(fileName);
+            if (moduleInfo == null)
+            {
+                return null;
+            }
+
+            var mofFilepath = GetMofFilepath(fileName);
+            if (mofFilepath == null)
+            {
+                return null;
+            }
+
+            var errors = new System.Collections.ObjectModel.Collection<Exception>();
+            var keys = new List<string>();
+            List<CimClass> cimClasses = null;
+            try
+            {
+                DscClassCache.Initialize();
+                cimClasses = DscClassCache.ImportClasses(mofFilepath, moduleInfo, errors);
+            }
+            catch
+            {
+                // todo log the error
+            }
+
+            return cimClasses?
+                    .FirstOrDefault()?
+                    .CimClassProperties?
+                    .Where(p => p.Flags.HasFlag(CimFlags.Key))
+                    .Select(p => p.Name)
+                    .ToArray();
+        }
+
+        private string GetMofFilepath(string filePath)
+        {
+            var mofFilePath = Path.GetFileNameWithoutExtension(filePath) + ".schema.mof";
+            return File.Exists(mofFilePath) ? mofFilePath : null;
+        }
+
+        private Tuple<string, Version> GetModuleInfo(string fileName)
+        {
+            var moduleManifest = GetModuleManifest(fileName);
+            if (moduleManifest == null)
+            {
+                return null;
+            }
+
+            var moduleName = moduleManifest.Name;
+            Token[] tokens;
+            ParseError[] parseErrors;
+            var ast = Parser.ParseFile(moduleManifest.FullName, out tokens, out parseErrors);
+            if ((parseErrors != null && parseErrors.Length > 0) || ast == null)
+            {
+                return null;
+            }
+
+            var foundAst = ast.Find(x => x is HashtableAst, false);
+            if (foundAst == null)
+            {
+                return null;
+            }
+
+            var moduleVersionKvp = ((HashtableAst)foundAst).KeyValuePairs.FirstOrDefault(t =>
+            {
+                var keyAst = t.Item1 as StringConstantExpressionAst;
+                return keyAst != null &&
+                    keyAst.Value.Equals("ModuleVersion", StringComparison.OrdinalIgnoreCase);
+            });
+
+            if (moduleVersionKvp == null)
+            {
+                return null;
+            }
+
+            Version version;
+            Version.TryParse(moduleVersionKvp.Item2.Extent.Text, out version);
+            return version == null ? null : Tuple.Create(moduleName, version);
+        }
+
+        private FileInfo GetModuleManifest(string fileName)
+        {
+            var moduleRoot = Directory.GetParent(fileName)?.Parent?.Parent;
+            if (moduleRoot != null)
+            {
+                var files = moduleRoot.GetFiles("*.psd1");
+                if (files != null && files.Length == 1)
+                {
+                    return files[0];
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
