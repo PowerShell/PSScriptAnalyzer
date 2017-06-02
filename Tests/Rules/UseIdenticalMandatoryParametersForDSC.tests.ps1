@@ -18,6 +18,8 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
             $violations.Count | Should Be 1
         }
 
-        # todo add a test to check violation extent
+        It "Should mark only the function name" {
+            $violations[0].Extent.Text | Should Be 'Get-TargetResource'
+        }
     }
 }

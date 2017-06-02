@@ -110,7 +110,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 Strings.UseIdenticalMandatoryParametersDSCError,
                                 paramName,
                                 funcDefnAst.Name),
-                            funcDefnAst.Extent,
+                            Helper.Instance.GetScriptExtentForFunctionName(funcDefnAst),
                             GetName(),
                             DiagnosticSeverity.Error,
                             fileName);
