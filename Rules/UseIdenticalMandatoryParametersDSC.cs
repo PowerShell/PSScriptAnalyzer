@@ -52,7 +52,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // todo update logic to take keys into consideration
             // todo write tests for same
             // todo update documentation
-            var keys = GetKeys(fileName);
+            var tempKeys = GetKeys(fileName);
+            var keys = tempKeys == null ?
+                        new HashSet<String>() :
+                        new HashSet<string>(tempKeys, StringComparer.OrdinalIgnoreCase);
 
             // Dictionary to keep track of Mandatory parameters and their presence in Get/Test/Set TargetResource cmdlets
             var mandatoryParameters = new Dictionary<string, List<FunctionDefinitionAst>>(StringComparer.OrdinalIgnoreCase);
@@ -60,7 +63,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Loop through Set/Test/Get TargetResource DSC cmdlets
             foreach (FunctionDefinitionAst functionDefinitionAst in functionDefinitionAsts)
             {
-                IEnumerable<Ast> funcParamAsts = functionDefinitionAst.FindAll(item => item is ParameterAst, true);
+                IEnumerable<Ast> funcParamAsts = functionDefinitionAst.FindAll(item =>
+                {
+                    var paramAst = item as ParameterAst;
+                    return paramAst != null &&
+                        keys.Contains(paramAst.Name.VariablePath.UserPath);
+                },
+                true);
 
                 // Loop through the parameters for each cmdlet
                 foreach (ParameterAst paramAst in funcParamAsts)
