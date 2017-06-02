@@ -160,7 +160,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private string GetMofFilepath(string filePath)
         {
-            var mofFilePath = Path.GetFileNameWithoutExtension(filePath) + ".schema.mof";
+            var mofFilePath = Path.Combine(
+                    Path.GetDirectoryName(filePath),
+                    Path.GetFileNameWithoutExtension(filePath)) + ".schema.mof";
+
             return File.Exists(mofFilePath) ? mofFilePath : null;
         }
 
@@ -172,7 +175,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
 
-            var moduleName = moduleManifest.Name;
+            var moduleName = Path.GetFileNameWithoutExtension(moduleManifest.Name);
             Token[] tokens;
             ParseError[] parseErrors;
             var ast = Parser.ParseFile(moduleManifest.FullName, out tokens, out parseErrors);
@@ -199,8 +202,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
 
+            var valueAst = moduleVersionKvp.Item2.Find(a => a is StringConstantExpressionAst, false);
+            var versionText = valueAst == null ? null : ((StringConstantExpressionAst)valueAst).Value;
             Version version;
-            Version.TryParse(moduleVersionKvp.Item2.Extent.Text, out version);
+            Version.TryParse(versionText, out version); // this handles null so no need to check versionText
             return version == null ? null : Tuple.Create(moduleName, version);
         }
 
