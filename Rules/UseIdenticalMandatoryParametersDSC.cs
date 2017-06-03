@@ -35,6 +35,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseIdenticalMandatoryParametersDSC : IDSCResourceRule
     {
+        private bool isDSCClassCacheInitialized = false;
+
         /// <summary>
         /// AnalyzeDSCResource: Analyzes given DSC Resource
         /// </summary>
@@ -121,7 +123,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             List<CimClass> cimClasses = null;
             try
             {
-                DscClassCache.Initialize();
+                if (!isDSCClassCacheInitialized)
+                {
+                    DscClassCache.Initialize();
+                    isDSCClassCacheInitialized = true;
+                }
+
                 cimClasses = DscClassCache.ImportClasses(mofFilepath, moduleInfo, errors);
             }
             catch
