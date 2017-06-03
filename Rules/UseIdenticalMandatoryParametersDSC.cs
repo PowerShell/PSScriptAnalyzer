@@ -18,6 +18,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using Microsoft.PowerShell.DesiredStateConfiguration.Internal;
 using System.IO;
 using Microsoft.Management.Infrastructure;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -29,8 +30,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseIdenticalMandatoryParametersDSC: Check that the Get/Test/Set TargetResource
     /// have identical mandatory parameters.
     /// </summary>
-    #if !CORECLR
-[Export(typeof(IDSCResourceRule))]
+#if !CORECLR
+    [Export(typeof(IDSCResourceRule))]
 #endif
     public class UseIdenticalMandatoryParametersDSC : IDSCResourceRule
     {
@@ -44,106 +45,75 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Expected TargetResource functions in the DSC Resource module
-            List<string> expectedTargetResourceFunctionNames = new List<string>(new string[] { "Set-TargetResource", "Test-TargetResource", "Get-TargetResource" });
-
-            var functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast).Cast<FunctionDefinitionAst>();
-
-            // todo update logic to take keys into consideration
             // todo write tests for same
             // todo update documentation
-            var tempKeys = GetKeys(fileName);
-            var keys = tempKeys == null ?
-                        new HashSet<String>() :
-                        new HashSet<string>(tempKeys, StringComparer.OrdinalIgnoreCase);
-
-            // Dictionary to keep track of Mandatory parameters and their presence in Get/Test/Set TargetResource cmdlets
-            var mandatoryParameters = new Dictionary<string, List<FunctionDefinitionAst>>(StringComparer.OrdinalIgnoreCase);
+            var keys = GetKeys(fileName);
 
             // Loop through Set/Test/Get TargetResource DSC cmdlets
-            foreach (FunctionDefinitionAst functionDefinitionAst in functionDefinitionAsts)
+            foreach (FunctionDefinitionAst functionDefinitionAst in Helper.Instance.DscResourceFunctions(ast))
             {
-                IEnumerable<Ast> funcParamAsts = functionDefinitionAst.FindAll(item =>
-                {
-                    var paramAst = item as ParameterAst;
-                    return paramAst != null &&
-                        keys.Contains(paramAst.Name.VariablePath.UserPath);
-                },
-                true);
+                var manParams = new HashSet<string>(
+                    GetMandatoryParameters(functionDefinitionAst).Select(p => p.Name.VariablePath.UserPath),
+                    StringComparer.OrdinalIgnoreCase);
 
-                // Loop through the parameters for each cmdlet
-                foreach (ParameterAst paramAst in funcParamAsts)
+                foreach (var key in keys)
                 {
-                    // Loop through the attributes for each of those cmdlets
-                    foreach (var paramAstAttributes in paramAst.Attributes)
+                    if (!manParams.Contains(key))
                     {
-                        if (paramAstAttributes is AttributeAst)
-                        {
-                            var namedArguments = (paramAstAttributes as AttributeAst).NamedArguments;
-                            if (namedArguments != null)
-                            {
-                                // Loop through the named attribute arguments for each parameter
-                                foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
-                                {
-                                    // Look for Mandatory parameters
-                                    if (String.Equals(namedArgument.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        // Covers Case - [Parameter(Mandatory)] and [Parameter(Mandatory)=$true]
-                                        if (namedArgument.ExpressionOmitted || (!namedArgument.ExpressionOmitted && String.Equals(namedArgument.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase)))
-                                        {
-                                            if (mandatoryParameters.ContainsKey(paramAst.Name.VariablePath.UserPath))
-                                            {
-                                                mandatoryParameters[paramAst.Name.VariablePath.UserPath].Add(functionDefinitionAst);
-                                            }
-                                            else
-                                            {
-                                                var functionNames = new List<FunctionDefinitionAst>();
-                                                functionNames.Add(functionDefinitionAst);
-                                                mandatoryParameters.Add(paramAst.Name.VariablePath.UserPath, functionNames);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        yield return new DiagnosticRecord(
+                         string.Format(
+                             CultureInfo.InvariantCulture,
+                             Strings.UseIdenticalMandatoryParametersDSCError,
+                             key,
+                             functionDefinitionAst.Name),
+                         Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst),
+                         GetName(),
+                         DiagnosticSeverity.Error,
+                         fileName);
                     }
-                }
-            }
-
-            // Get the mandatory parameter names that do not appear in all the DSC Resource cmdlets
-            IEnumerable<string> paramNames = mandatoryParameters.Where(x => x.Value.Count < expectedTargetResourceFunctionNames.Count).Select(x => x.Key);
-            foreach (string paramName in paramNames)
-            {
-                var functionsNotContainingParam = functionDefinitionAsts.Except(mandatoryParameters[paramName]);
-
-                foreach (var funcDefnAst in functionsNotContainingParam)
-                {
-                    yield return new DiagnosticRecord(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            Strings.UseIdenticalMandatoryParametersDSCError,
-                            paramName,
-                            funcDefnAst.Name),
-                        Helper.Instance.GetScriptExtentForFunctionName(funcDefnAst),
-                        GetName(),
-                        DiagnosticSeverity.Error,
-                        fileName);
                 }
             }
         }
 
-        private string[] GetKeys(string fileName)
+        private IEnumerable<ParameterAst> GetMandatoryParameters(FunctionDefinitionAst functionDefinitionAst)
+        {
+            return functionDefinitionAst.GetParameterAsts()?.Where(IsParameterMandatory) ??
+                        Enumerable.Empty<ParameterAst>();
+        }
+
+        private bool IsParameterMandatory(ParameterAst paramAst)
+        {
+            var attrAsts = from attr in paramAst.Attributes
+                           where IsParameterAttribute(attr) && attr is AttributeAst
+                           select (AttributeAst)attr;
+
+            return attrAsts.Any(a => a.NamedArguments.Any(IsNamedAttributeArgumentMandatory));
+        }
+
+        private bool IsParameterAttribute(AttributeBaseAst attributeBaseAst)
+        {
+            return attributeBaseAst.TypeName.GetReflectionType().Name.Equals("ParameterAttribute");
+        }
+
+        private bool IsNamedAttributeArgumentMandatory(NamedAttributeArgumentAst namedAttrArgAst)
+        {
+            return namedAttrArgAst.ArgumentName.Equals("mandatory", StringComparison.OrdinalIgnoreCase) &&
+                    namedAttrArgAst.GetValue();
+        }
+
+        private IEnumerable<string> GetKeys(string fileName)
         {
             var moduleInfo = GetModuleInfo(fileName);
+            var emptyArray = new string[0];
             if (moduleInfo == null)
             {
-                return null;
+                return emptyArray;
             }
 
             var mofFilepath = GetMofFilepath(fileName);
             if (mofFilepath == null)
             {
-                return null;
+                return emptyArray;
             }
 
             var errors = new System.Collections.ObjectModel.Collection<Exception>();
@@ -164,7 +134,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     .CimClassProperties?
                     .Where(p => p.Flags.HasFlag(CimFlags.Key))
                     .Select(p => p.Name)
-                    .ToArray();
+                    .ToArray() ??
+                    emptyArray;
         }
 
         private string GetMofFilepath(string filePath)
