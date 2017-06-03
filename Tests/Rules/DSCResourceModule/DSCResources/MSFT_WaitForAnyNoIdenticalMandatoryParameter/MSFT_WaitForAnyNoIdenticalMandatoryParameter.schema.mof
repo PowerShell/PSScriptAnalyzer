@@ -1,7 +1,8 @@
 ﻿#pragma namespace("\\\\.\\root\\microsoft\\windows\\DesiredStateConfiguration")
 
 [ClassVersion("1.0.0"), FriendlyName("WaitForAny")]
-class MSFT_WaitForAny : OMI_BaseResource
+
+class MSFT_WaitForAnyNoIdenticalMandatoryParameter : OMI_BaseResource
 {
     [key, Description("Name of Resource on remote machine")]
     string ResourceName;

@@ -10,7 +10,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidGlobalOrUnitializedVars.ps1
 
 # PSAvoidUninitializedVariable rule has been deprecated
-# $dscResourceViolations = Invoke-ScriptAnalyzer $directory\DSCResources\MSFT_WaitForAny\MSFT_WaitForAny.psm1 | Where-Object {$_.RuleName -eq $nonInitializedName}
+# $dscResourceViolations = Invoke-ScriptAnalyzer $directory\DSCResourceModule\DSCResources\MSFT_WaitForAny\MSFT_WaitForAny.psm1 | Where-Object {$_.RuleName -eq $nonInitializedName}
 
 $globalViolations = $violations | Where-Object {$_.RuleName -eq $globalName}
 

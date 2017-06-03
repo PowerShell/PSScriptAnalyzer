@@ -3,6 +3,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ruleName = 'PSDSCUseIdenticalMandatoryParametersForDSC'
 $resourceFilepath = [System.IO.Path]::Combine(
     $directory,
+    'DSCResourceModule',
     'DSCResources',
     'MSFT_WaitForAnyNoIdenticalMandatoryParameter',
     'MSFT_WaitForAnyNoIdenticalMandatoryParameter.psm1');
