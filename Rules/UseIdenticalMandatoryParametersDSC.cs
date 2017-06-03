@@ -45,10 +45,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The results of the analysis</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
-            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            if (ast == null)
+            {
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            }
 
-            // todo write tests for same
-            // todo update documentation
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
+            // Get the keys in the corresponding mof file
             var keys = GetKeys(fileName);
 
             // Loop through Set/Test/Get TargetResource DSC cmdlets
