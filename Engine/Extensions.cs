@@ -35,12 +35,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
         ///
         /// If not parameters are found, return null.
         /// </summary>
+        public static IEnumerable<ParameterAst> GetParameterAsts(
+            this FunctionDefinitionAst functionDefinitionAst)
+        {
+            ParamBlockAst paramBlockAst;
+            return functionDefinitionAst.GetParameterAsts(out paramBlockAst);
+        }
+
+        /// <summary>
+        /// Get the parameter Asts from a function definition Ast.
+        ///
+        /// If not parameters are found, return null.
+        /// </summary>
         /// <param name="paramBlockAst">If a parameter block is present, set this argument's value to the parameter block.</param>
         /// <returns></returns>
         public static IEnumerable<ParameterAst> GetParameterAsts(
             this FunctionDefinitionAst functionDefinitionAst,
             out ParamBlockAst paramBlockAst)
         {
+            // todo instead of returning null return an empty enumerator if no parameter is found
+            // this removes the burden from the user for null checking.
             paramBlockAst = null;
             if (functionDefinitionAst.Parameters != null)
             {
@@ -112,6 +126,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
             }
 
             return null;
+        }
+
+
+        /// <summary>
+        /// Return the boolean value of a named attribute argument.
+        /// </summary>
+        public static bool GetValue(this NamedAttributeArgumentAst attrAst)
+        {
+            ExpressionAst argumentAst;
+            return attrAst.GetValue(out argumentAst);
         }
 
         /// <summary>
