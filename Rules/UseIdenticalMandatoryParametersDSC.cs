@@ -270,17 +270,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private FileInfo GetModuleManifest(string fileName)
         {
-            var moduleRoot = Directory.GetParent(fileName)?.Parent?.Parent;
-            if (moduleRoot != null)
-            {
-                var files = moduleRoot.GetFiles("*.psd1");
-                if (files != null && files.Length == 1)
-                {
-                    return files[0];
-                }
-            }
-
-            return null;
+            return Directory
+                    .GetParent(fileName)?
+                    .Parent?
+                    .Parent?
+                    .GetFiles("*.psd1")
+                    .Where(f => Helper.IsModuleManifest(f.FullName))
+                    .FirstOrDefault();
         }
     }
 }
