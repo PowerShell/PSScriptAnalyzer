@@ -12,17 +12,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Management.Automation.Language;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-using Microsoft.PowerShell.DesiredStateConfiguration.Internal;
-using System.IO;
-using Microsoft.Management.Infrastructure;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Management.Automation.Language;
+using Microsoft.Management.Infrastructure;
+using Microsoft.PowerShell.DesiredStateConfiguration.Internal;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -82,6 +82,71 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// AnalyzeDSCClass: This function returns nothing in the case of dsc class.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
+        {
+            // For DSC Class based resource, this rule is N/A, since the Class Properties
+            // are declared only once and available to Get(), Set(), Test() functions
+            return Enumerable.Empty<DiagnosticRecord>();
+        }
+
+        /// <summary>
+        /// GetName: Retrieves the name of this rule.
+        /// </summary>
+        /// <returns>The name of this rule</returns>
+        public string GetName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalMandatoryParametersDSCName);
+        }
+
+        /// <summary>
+        /// GetCommonName: Retrieves the Common name of this rule.
+        /// </summary>
+        /// <returns>The common name of this rule</returns>
+        public string GetCommonName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalMandatoryParametersDSCCommonName);
+        }
+
+        /// <summary>
+        /// GetDescription: Retrieves the description of this rule.
+        /// </summary>
+        /// <returns>The description of this rule</returns>
+        public string GetDescription()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalMandatoryParametersDSCDescription);
+        }
+
+        /// <summary>
+        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
+        /// </summary>
+        public SourceType GetSourceType()
+        {
+            return SourceType.Builtin;
+        }
+
+        /// <summary>
+        /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
+        /// </summary>
+        /// <returns></returns>
+        public RuleSeverity GetSeverity()
+        {
+            return RuleSeverity.Error;
+        }
+
+        /// <summary>
+        /// GetSourceName: Retrieves the module/assembly name the rule is from.
+        /// </summary>
+        public string GetSourceName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
         }
 
         private IEnumerable<ParameterAst> GetMandatoryParameters(FunctionDefinitionAst functionDefinitionAst)
@@ -217,73 +282,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             return null;
         }
-
-        /// <summary>
-        /// AnalyzeDSCClass: This function returns nothing in the case of dsc class.
-        /// </summary>
-        /// <param name="ast"></param>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeDSCClass(Ast ast, string fileName)
-        {
-            // For DSC Class based resource, this rule is N/A, since the Class Properties
-            // are declared only once and available to Get(), Set(), Test() functions
-            return Enumerable.Empty<DiagnosticRecord>();
-        }
-
-        /// <summary>
-        /// GetName: Retrieves the name of this rule.
-        /// </summary>
-        /// <returns>The name of this rule</returns>
-        public string GetName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalMandatoryParametersDSCName);
-        }
-
-        /// <summary>
-        /// GetCommonName: Retrieves the Common name of this rule.
-        /// </summary>
-        /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalMandatoryParametersDSCCommonName);
-        }
-
-        /// <summary>
-        /// GetDescription: Retrieves the description of this rule.
-        /// </summary>
-        /// <returns>The description of this rule</returns>
-        public string GetDescription()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalMandatoryParametersDSCDescription);
-        }
-
-        /// <summary>
-        /// GetSourceType: Retrieves the type of the rule: builtin, managed or module.
-        /// </summary>
-        public SourceType GetSourceType()
-        {
-            return SourceType.Builtin;
-        }
-
-        /// <summary>
-        /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
-        /// </summary>
-        /// <returns></returns>
-        public RuleSeverity GetSeverity()
-        {
-            return RuleSeverity.Error;
-        }
-
-        /// <summary>
-        /// GetSourceName: Retrieves the module/assembly name the rule is from.
-        /// </summary>
-        public string GetSourceName()
-        {
-            return string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
-        }
     }
-
 }
 
 
