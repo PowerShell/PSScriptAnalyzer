@@ -18,6 +18,9 @@ function Get-TargetResource {
         [ValidateNotNullOrEmpty()]
         [PSCredential] $Credential,
 
+        [parameter(Mandatory)]
+        $ParamOnlyInGet,
+
         [ValidateRange(1, [Uint64]::MaxValue)]
         [Uint64] $RetryIntervalSec = 1,
 
@@ -59,6 +62,9 @@ function Set-TargetResource {
         [parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string[]] $NodeName,
+
+        [parameter(Mandatory)]
+        $ParameterOnlyInSet,
 
         [ValidateRange(1, [Uint64]::MaxValue)]
         [Uint64] $RetryIntervalSec = 1,
@@ -117,6 +123,9 @@ function Test-TargetResource {
         [parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [PSCredential] $Credential,
+
+        [parameter(Mandatory)]
+        $ParameterOnlyInTest,
 
         [ValidateRange(1,[Uint64]::MaxValue)]
         [Uint64] $RetryIntervalSec = 1,

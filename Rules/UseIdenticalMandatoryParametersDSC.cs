@@ -36,6 +36,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class UseIdenticalMandatoryParametersDSC : IDSCResourceRule
     {
         private bool isDSCClassCacheInitialized = false;
+        private Ast ast;
+        private string fileName;
+        private IDictionary<string, string> propAttrDict;
+        private IEnumerable<FunctionDefinitionAst> resourceFunctions;
 
         /// <summary>
         /// AnalyzeDSCResource: Analyzes given DSC Resource
@@ -56,10 +60,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Get the keys in the corresponding mof file
-            var propAttrDict = GetKeys(fileName);
+            this.ast = ast;
+            this.fileName = fileName;
+            this.propAttrDict = GetKeys(fileName);
+            this.resourceFunctions = Helper.Instance.DscResourceFunctions(ast)
+                .Cast<FunctionDefinitionAst>()
+                .ToArray();
 
             // Loop through Set/Test/Get TargetResource DSC cmdlets
-            foreach (FunctionDefinitionAst functionDefinitionAst in Helper.Instance.DscResourceFunctions(ast))
+            foreach (var functionDefinitionAst in resourceFunctions)
             {
                 var manParams = GetMandatoryParameters(functionDefinitionAst)
                                     .Select(p => p.Name.VariablePath.UserPath);
@@ -72,6 +81,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                          Strings.UseIdenticalMandatoryParametersDSCError,
                          propAttrDict[key],
                          key,
+                         functionDefinitionAst.Name),
+                     Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst),
+                     GetName(),
+                     DiagnosticSeverity.Error,
+                     fileName);
+                }
+            }
+
+            var funcManParamMap = resourceFunctions
+                .ToDictionary(
+                    f => f.Name,
+                    f => Tuple.Create(
+                        f,
+                        GetMandatoryParameters(f)
+                            .Select(p => p.Name.VariablePath.UserPath)
+                            .ToArray()));
+            var paramFuncMap = new Dictionary<string, List<string>>();
+            foreach (var kvp in funcManParamMap)
+            {
+                foreach (var param in kvp.Value.Item2)
+                {
+                    if (!paramFuncMap.ContainsKey(param))
+                    {
+                        paramFuncMap.Add(param, new List<string>());
+                    }
+
+                    paramFuncMap[param].Add(kvp.Key);
+                }
+            }
+
+            foreach(var param in paramFuncMap.Keys.Except(propAttrDict.Keys))
+            {
+                foreach(var func in funcManParamMap.Keys.Except(paramFuncMap[param]))
+                {
+                    var functionDefinitionAst = funcManParamMap[func].Item1;
+                    yield return new DiagnosticRecord(
+                     string.Format(
+                         CultureInfo.InvariantCulture,
+                         Strings.UseIdenticalMandatoryParametersDSCError,
+                         "mandatory",
+                         param,
                          functionDefinitionAst.Name),
                      Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst),
                      GetName(),
