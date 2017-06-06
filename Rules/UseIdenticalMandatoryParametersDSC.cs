@@ -67,28 +67,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 .Cast<FunctionDefinitionAst>()
                 .ToArray();
 
-            // Loop through Set/Test/Get TargetResource DSC cmdlets
-            foreach (var functionDefinitionAst in resourceFunctions)
-            {
-                var manParams = GetMandatoryParameters(functionDefinitionAst)
-                                    .Select(p => p.Name.VariablePath.UserPath);
-
-                foreach (var key in propAttrDict.Keys.Except(manParams))
-                {
-                    yield return new DiagnosticRecord(
-                     string.Format(
-                         CultureInfo.InvariantCulture,
-                         Strings.UseIdenticalMandatoryParametersDSCError,
-                         propAttrDict[key],
-                         key,
-                         functionDefinitionAst.Name),
-                     Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst),
-                     GetName(),
-                     DiagnosticSeverity.Error,
-                     fileName);
-                }
-            }
-
             var funcManParamMap = resourceFunctions
                 .ToDictionary(
                     f => f.Name,
@@ -97,31 +75,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetMandatoryParameters(f)
                             .Select(p => p.Name.VariablePath.UserPath)
                             .ToArray()));
-            var paramFuncMap = new Dictionary<string, List<string>>();
+
+            // Loop through Set/Test/Get TargetResource DSC cmdlets
             foreach (var kvp in funcManParamMap)
             {
-                foreach (var param in kvp.Value.Item2)
+                var functionDefinitionAst = kvp.Value.Item1;
+                var manParams = kvp.Value.Item2;
+                foreach (var key in propAttrDict.Keys.Except(manParams))
                 {
-                    if (!paramFuncMap.ContainsKey(param))
-                    {
-                        paramFuncMap.Add(param, new List<string>());
-                    }
-
-                    paramFuncMap[param].Add(kvp.Key);
-                }
-            }
-
-            foreach(var param in paramFuncMap.Keys.Except(propAttrDict.Keys))
-            {
-                foreach(var func in funcManParamMap.Keys.Except(paramFuncMap[param]))
-                {
-                    var functionDefinitionAst = funcManParamMap[func].Item1;
                     yield return new DiagnosticRecord(
                      string.Format(
                          CultureInfo.InvariantCulture,
                          Strings.UseIdenticalMandatoryParametersDSCError,
-                         "mandatory",
-                         param,
+                         propAttrDict[key],
+                         key,
                          functionDefinitionAst.Name),
                      Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst),
                      GetName(),

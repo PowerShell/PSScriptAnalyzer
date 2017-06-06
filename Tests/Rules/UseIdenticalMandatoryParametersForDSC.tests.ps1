@@ -16,7 +16,7 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
         }
 
         It "Should find a violations" {
-            $violations.Count | Should Be 11
+            $violations.Count | Should Be 5
         }
 
         It "Should mark only the function name" {
