@@ -4,14 +4,20 @@
 
 ## Description
 
-For script based DSC resources the `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions must have identical mandatory parameters that are also the keys in the corresponding `mof` file.
+For script based DSC resources the `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions:
+
+1. If a parameter is declared as `mandatory` in any of the `Get/Set/Test` functions, then it should be a mandatory parameter in all the three functions.
+1. If a property is declared with attributes `Key` of `Required` in a mof file, then is should be present as a mandatory parameter in the `Get/Set/Test` functions of the corresponding resource file.
 
 ## How
 
-Make sure all the keys have equivalent mandatory parameters in the `Get/Set/Test` functions.
+1. Make sure `Get/Set/Test` declare identical mandatory parameters.
+1. Make sure all the properties with `Key` and `Required` attributes have equivalent mandatory parameters in the `Get/Set/Test` functions.
 
 ## Example
+
 Consider the following `mof` file.
+
 ```powershell
 class WaitForAny : OMI_BaseResource
 {
@@ -28,37 +34,48 @@ class WaitForAny : OMI_BaseResource
 ``` PowerShell
 function Get-TargetResource
 {
-    [OutputType([Hashtable])]
+    [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String]
-        $Name
+        $Message
     )
-    ...
 }
 
 function Set-TargetResource
 {
+    [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String]
-        $TargetName # this should be Name
+        $Message,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $Name
     )
-    ...
 }
 
 function Test-TargetResource
 {
-    [OutputType([System.Boolean])]
+    [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $Message,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String]
         $Name
     )
-    ...
 }
 ```
 
@@ -67,36 +84,52 @@ function Test-TargetResource
 ``` PowerShell
 function Get-TargetResource
 {
-    [OutputType([Hashtable])]
+    [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $Message,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String]
         $Name
     )
-    ...
 }
 
 function Set-TargetResource
 {
+    [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $Message,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String]
         $Name
     )
-    ...
 }
 
 function Test-TargetResource
 {
-    [OutputType([System.Boolean])]
+    [CmdletBinding()]
     param
     (
-        [parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String]
+        $Message,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String]
         $Name
     )
-    ...
 }
 ```
