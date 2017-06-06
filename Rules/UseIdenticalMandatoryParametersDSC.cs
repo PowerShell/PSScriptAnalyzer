@@ -56,30 +56,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Get the keys in the corresponding mof file
-            var keys = GetKeys(fileName);
+            var propAttrDict = GetKeys(fileName);
 
             // Loop through Set/Test/Get TargetResource DSC cmdlets
             foreach (FunctionDefinitionAst functionDefinitionAst in Helper.Instance.DscResourceFunctions(ast))
             {
-                var manParams = new HashSet<string>(
-                    GetMandatoryParameters(functionDefinitionAst).Select(p => p.Name.VariablePath.UserPath),
-                    StringComparer.OrdinalIgnoreCase);
+                var manParams = GetMandatoryParameters(functionDefinitionAst)
+                                    .Select(p => p.Name.VariablePath.UserPath);
 
-                foreach (var key in keys)
+                foreach (var key in propAttrDict.Keys.Except(manParams))
                 {
-                    if (!manParams.Contains(key))
-                    {
-                        yield return new DiagnosticRecord(
-                         string.Format(
-                             CultureInfo.InvariantCulture,
-                             Strings.UseIdenticalMandatoryParametersDSCError,
-                             key,
-                             functionDefinitionAst.Name),
-                         Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst),
-                         GetName(),
-                         DiagnosticSeverity.Error,
-                         fileName);
-                    }
+                    yield return new DiagnosticRecord(
+                     string.Format(
+                         CultureInfo.InvariantCulture,
+                         Strings.UseIdenticalMandatoryParametersDSCError,
+                         propAttrDict[key],
+                         key,
+                         functionDefinitionAst.Name),
+                     Helper.Instance.GetScriptExtentForFunctionName(functionDefinitionAst),
+                     GetName(),
+                     DiagnosticSeverity.Error,
+                     fileName);
                 }
             }
         }
@@ -175,19 +172,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     namedAttrArgAst.GetValue();
         }
 
-        private IEnumerable<string> GetKeys(string fileName)
+        private IDictionary<string, string> GetKeys(string fileName)
         {
             var moduleInfo = GetModuleInfo(fileName);
-            var emptyArray = new string[0];
+            var emptyDictionary = new Dictionary<string, string>();
             if (moduleInfo == null)
             {
-                return emptyArray;
+                return emptyDictionary;
             }
 
             var mofFilepath = GetMofFilepath(fileName);
             if (mofFilepath == null)
             {
-                return emptyArray;
+                return emptyDictionary;
             }
 
             var errors = new System.Collections.ObjectModel.Collection<Exception>();
@@ -208,13 +205,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // todo log the error
             }
 
-            return cimClasses?
-                    .FirstOrDefault()?
+            var cimClass = cimClasses?.FirstOrDefault();
+            var cimSuperClassProperties = new HashSet<string>(
+                cimClass?.CimSuperClass.CimClassProperties.Select(p => p.Name) ??
+                Enumerable.Empty<string>());
+
+            return cimClass?
                     .CimClassProperties?
-                    .Where(p => p.Flags.HasFlag(CimFlags.Key))
-                    .Select(p => p.Name)
-                    .ToArray() ??
-                    emptyArray;
+                    .Where(p => (p.Flags.HasFlag(CimFlags.Key) ||
+                            p.Flags.HasFlag(CimFlags.Required)) &&
+                            !cimSuperClassProperties.Contains(p.Name))
+                    .ToDictionary(
+                        p => p.Name,
+                        p => p.Flags.HasFlag(CimFlags.Key) ?
+                                CimFlags.Key.ToString() :
+                                CimFlags.Required.ToString()) ??
+                    emptyDictionary;
         }
 
         private string GetMofFilepath(string filePath)

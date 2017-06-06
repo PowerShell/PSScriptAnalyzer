@@ -5,8 +5,9 @@
 #
 # The Get-TargetResource cmdlet.
 #
-function Get-TargetResource
-{
+function Get-TargetResource {
+
+    # This is missing `Key` properties `ResourceName` and `Dummy`
     param
     (
         [parameter(Mandatory)]
@@ -17,7 +18,7 @@ function Get-TargetResource
         [ValidateNotNullOrEmpty()]
         [PSCredential] $Credential,
 
-        [ValidateRange(1,[Uint64]::MaxValue)]
+        [ValidateRange(1, [Uint64]::MaxValue)]
         [Uint64] $RetryIntervalSec = 1,
 
         [Uint32] $RetryCount = 0,
@@ -31,16 +32,13 @@ function Get-TargetResource
 
     $b = @{"hash" = "table"}
 
-    if ($true)
-    {
+    if ($true) {
         return $b;
     }
-    elseif ($c)
-    {
-        return @{"hash2"="table2"}
+    elseif ($c) {
+        return @{"hash2" = "table2"}
     }
-    else
-    {
+    else {
         # can't determine type of c so error should not be raised as we're trying to be conservative
         return $c;
     }
@@ -49,8 +47,9 @@ function Get-TargetResource
 #
 # The Set-TargetResource cmdlet.
 #
-function Set-TargetResource
-{
+function Set-TargetResource {
+
+    # This is missing `required` property `credential` and `key` property `Dummy`
     param
     (
         [parameter(Mandatory)]
@@ -61,11 +60,7 @@ function Set-TargetResource
         [ValidateNotNullOrEmpty()]
         [string[]] $NodeName,
 
-        [parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [PSCredential] $Credential,
-
-        [ValidateRange(1,[Uint64]::MaxValue)]
+        [ValidateRange(1, [Uint64]::MaxValue)]
         [Uint64] $RetryIntervalSec = 1,
 
         [Uint32] $RetryCount = 0,
@@ -77,30 +72,28 @@ function Set-TargetResource
 
     Import-Module $PSScriptRoot\..\..\PSDSCxMachine.psm1
 
-    if ($PSBoundParameters["Verbose"])
-    {
+    if ($PSBoundParameters["Verbose"]) {
         Write-Verbose "Calling xMachine with Verbose parameter"
 
         PSDSCxMachine\Set-_InternalPSDscXMachineTR `
-               -RemoteResourceId $ResourceName `
-               -RemoteMachine $NodeName `
-               -RemoteCredential $Credential `
-               -MinimalNumberOfMachineInState 1 `
-               -RetryIntervalSec $RetryIntervalSec `
-               -RetryCount $RetryCount `
-               -ThrottleLimit $ThrottleLimit `
-               -Verbose
+            -RemoteResourceId $ResourceName `
+            -RemoteMachine $NodeName `
+            -RemoteCredential $Credential `
+            -MinimalNumberOfMachineInState 1 `
+            -RetryIntervalSec $RetryIntervalSec `
+            -RetryCount $RetryCount `
+            -ThrottleLimit $ThrottleLimit `
+            -Verbose
     }
-    else
-    {
+    else {
         PSDSCxMachine\Set-_InternalPSDscXMachineTR `
-               -RemoteResourceId $ResourceName `
-               -RemoteMachine $NodeName `
-               -RemoteCredential $Credential `
-               -MinimalNumberOfMachineInState 1 `
-               -RetryIntervalSec $RetryIntervalSec `
-               -RetryCount $RetryCount `
-               -ThrottleLimit $ThrottleLimit
+            -RemoteResourceId $ResourceName `
+            -RemoteMachine $NodeName `
+            -RemoteCredential $Credential `
+            -MinimalNumberOfMachineInState 1 `
+            -RetryIntervalSec $RetryIntervalSec `
+            -RetryCount $RetryCount `
+            -ThrottleLimit $ThrottleLimit
     }
 }
 
@@ -108,8 +101,9 @@ function Set-TargetResource
 # Test-TargetResource
 #
 #
-function Test-TargetResource
-{
+function Test-TargetResource {
+
+    # This is missing `key` property `Dummy`
     param
     (
         [parameter(Mandatory)]
@@ -139,20 +133,16 @@ function Test-TargetResource
     $a = $true
     $a
 
-    if ($true)
-    {
+    if ($true) {
         $false;
     }
-    elseif ($b)
-    {
+    elseif ($b) {
         return $a -or $true
     }
-    elseif ($c)
-    {
+    elseif ($c) {
         return $false;
     }
-    else
-    {
+    else {
         return $true
     }
 }
