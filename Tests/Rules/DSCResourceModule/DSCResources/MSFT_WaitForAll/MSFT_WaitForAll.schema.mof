@@ -1,0 +1,26 @@
+﻿#pragma namespace("\\\\.\\root\\microsoft\\windows\\DesiredStateConfiguration")
+
+[ClassVersion("1.0.0"), FriendlyName("WaitForAll")]
+class MSFT_WaitForAll : OMI_BaseResource
+{
+    [key, Description("Name of Resource on remote machine")]
+    string ResourceName;
+
+    [required, Description("List of remote machines")]
+    string NodeName[];
+
+    [required, EmbeddedInstance("MSFT_Credential"), Description("Credential to access all remote machines")]
+    String Credential;
+
+    [write, Description("Time between various retries. Lower bound is 1.")]
+    Uint64 RetryIntervalSec;
+
+    [write, Description("Maximum number of retries to check the state of resource.")]
+    Uint32 RetryCount;
+
+    [write, Description("Number of machines to connect simultaneously. Default is new-cimsession default")]
+    Uint32 ThrottleLimit;
+
+    [read, Description("List of remote machines in desired state.")]
+    String NodesInDesiredState;
+};

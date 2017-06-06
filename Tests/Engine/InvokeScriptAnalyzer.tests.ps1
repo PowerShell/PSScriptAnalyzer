@@ -321,6 +321,7 @@ Describe "Test Severity" {
         It "works for dsc rules" {
             $testDataPath = [System.IO.Path]::Combine($(Split-Path $directory -Parent), `
                                                                 'Rules', `
+                                                                'DSCResourceModule', `
                                                                 'DSCResources', `
                                                                 'MSFT_WaitForAll', `
                                                                 'MSFT_WaitForAll.psm1')

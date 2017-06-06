@@ -619,7 +619,7 @@
     <value>The Get/Test/Set TargetResource functions of DSC resource must have the same mandatory parameters.</value>
   </data>
   <data name="UseIdenticalMandatoryParametersDSCError" xml:space="preserve">
-    <value>The mandatory parameter '{0}' is not present in '{1}' DSC resource function(s).</value>
+    <value>The '{0}' parameter '{1}' is not present in '{2}' DSC resource function(s).</value>
   </data>
   <data name="UseIdenticalMandatoryParametersDSCName" xml:space="preserve">
     <value>UseIdenticalMandatoryParametersForDSC</value>

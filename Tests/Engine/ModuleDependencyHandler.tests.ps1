@@ -139,8 +139,9 @@ Describe "Resolve DSC Resource Dependency" {
     Context "Invoke-ScriptAnalyzer without switch but with module in temp path" {
         $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
         $moduleName = "MyDscResource"
-        $modulePath = Join-Path (Join-Path (Join-Path (Split-Path $directory) "Rules") "DSCResources") $moduleName
-                # Save the current environment variables
+        $modulePath = "$(Split-Path $directory)\Rules\DSCResourceModule\DSCResources\$moduleName"
+
+        # Save the current environment variables
         $oldLocalAppDataPath = $env:LOCALAPPDATA
         $oldTempPath = $env:TEMP
         $oldPSModulePath = $env:PSModulePath

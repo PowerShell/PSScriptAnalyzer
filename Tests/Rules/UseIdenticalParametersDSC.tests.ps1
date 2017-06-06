@@ -3,12 +3,12 @@
 $violationMessage = "The Test and Set-TargetResource functions of DSC Resource must have the same parameters."
 $violationName = "PSDSCUseIdenticalParametersForDSC"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer $directory\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $directory\DSCResources\MSFT_WaitForAny\MSFT_WaitForAny.psm1 | Where-Object {$_.RuleName -eq $violationName}
+$violations = Invoke-ScriptAnalyzer $directory\DSCResourceModule\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1 | Where-Object {$_.RuleName -eq $violationName}
+$noViolations = Invoke-ScriptAnalyzer $directory\DSCResourceModule\DSCResources\MSFT_WaitForAny\MSFT_WaitForAny.psm1 | Where-Object {$_.RuleName -eq $violationName}
 
 if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
 {
-    $noClassViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
+    $noClassViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "UseIdenticalParametersDSC" {
@@ -26,7 +26,7 @@ Describe "UseIdenticalParametersDSC" {
         It "returns no violations" {
             $noViolations.Count | Should Be 0
         }
- 
+
         if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
         {
 
