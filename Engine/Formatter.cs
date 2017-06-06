@@ -37,54 +37,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 cmdlet.WriteVerbose("Running " + rule);
-
                 var currentSettings = GetCurrentSettings(settings, rule);
                 ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
-
-                var corrections = new List<CorrectionExtent>();
-                var records = Enumerable.Empty<DiagnosticRecord>();
-                var numPreviousCorrections = corrections.Count;
-
-                do
-                {
-                    // TODO create better verbose messages
-                    var correctionApplied = new HashSet<int>();
-                    foreach (var correction in corrections)
-                    {
-                        // apply only one edit per line
-                        if (correctionApplied.Contains(correction.StartLineNumber))
-                        {
-                            continue;
-                        }
-
-                        correctionApplied.Add(correction.StartLineNumber);
-                        text.ApplyEdit(correction);
-                    }
-
-                    records = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(text.ToString());
-                    corrections = records.Select(r => r.SuggestedCorrections.ElementAt(0)).ToList();
-                    if (numPreviousCorrections > 0 && numPreviousCorrections == corrections.Count)
-                    {
-                        cmdlet.ThrowTerminatingError(new ErrorRecord(
-                            new InvalidOperationException(),
-                            "FORMATTER_ERROR",
-                            ErrorCategory.InvalidOperation,
-                            corrections));
-                    }
-
-                    numPreviousCorrections = corrections.Count;
-
-                    // get unique correction instances
-                    // sort them by line numbers
-                    corrections.Sort((x, y) =>
-                    {
-                        return x.StartLineNumber < x.StartLineNumber ?
-                                    1 :
-                                    (x.StartLineNumber == x.StartLineNumber ? 0 : -1);
-                    });
-
-                } while (numPreviousCorrections > 0);
+                text = ScriptAnalyzer.Instance.Fix(text);
             }
 
             return text.ToString();

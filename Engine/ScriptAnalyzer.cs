@@ -1527,6 +1527,94 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty);
         }
 
+        /// <summary>
+        /// Fix the violations in the given script text.
+        /// </summary>
+        /// <param name="scriptDefinition">The script text to be fixed.</param>
+        /// <returns>The fixed script text.</returns>
+        public string Fix(string scriptDefinition)
+        {
+            if (scriptDefinition == null)
+            {
+                throw new ArgumentNullException(nameof(scriptDefinition));
+            }
+
+            return Fix(new EditableText(scriptDefinition)).ToString();
+        }
+
+        /// <summary>
+        /// Fix the violations in the given script text.
+        /// </summary>
+        /// <param name="text">An object of type `EditableText` that encapsulates the script text to be fixed.</param>
+        /// <returns>The same instance of `EditableText` that was passed to the method, but the instance encapsulates the fixed script text. This helps in chaining the Fix method.</returns>
+        public EditableText Fix(EditableText text)
+        {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            var previousUnusedCorrections = 0;
+            do
+            {
+                var records = AnalyzeScriptDefinition(text.ToString());
+                var corrections = records
+                    .Select(r => r.SuggestedCorrections)
+                    .Where(sc => sc != null && sc.Any())
+                    .Select(sc => sc.First())
+                    .ToList();
+
+                int unusedCorrections;
+                Fix(text, corrections, out unusedCorrections);
+
+                // This is an indication of an infinite loop. There is a small chance of this.
+                // It is better to abort the fixing operation at this point.
+                if (previousUnusedCorrections > 0 && previousUnusedCorrections == unusedCorrections)
+                {
+                    this.outputWriter.ThrowTerminatingError(new ErrorRecord(
+                        new InvalidOperationException(),
+                        "FIX_ERROR",
+                        ErrorCategory.InvalidOperation,
+                        corrections));
+                }
+
+                previousUnusedCorrections = unusedCorrections;
+            } while (previousUnusedCorrections > 0);
+
+            return text;
+        }
+
+        private static IEnumerable<CorrectionExtent> GetCorrectionExtentsForFix(
+            IEnumerable<CorrectionExtent> correctionExtents)
+        {
+            var ceList = correctionExtents.ToList();
+            ceList.Sort((x, y) =>
+            {
+                return x.StartLineNumber < x.StartLineNumber ?
+                            1 :
+                            (x.StartLineNumber == x.StartLineNumber ? 0 : -1);
+            });
+
+            return ceList.GroupBy(ce => ce.StartLineNumber).Select(g => g.First());
+        }
+
+        private static EditableText Fix(
+            EditableText text,
+            IEnumerable<CorrectionExtent> correctionExtents,
+            out int unusedCorrections)
+        {
+            var correctionsToUse = GetCorrectionExtentsForFix(correctionExtents);
+            var count = 0;
+            foreach (var correction in correctionsToUse)
+            {
+                count++;
+                text.ApplyEdit(correction);
+            }
+
+            unusedCorrections = correctionExtents.Count() - count;
+            return text;
+        }
+
         private void BuildScriptPathList(
             string path,
             bool searchRecursively,
