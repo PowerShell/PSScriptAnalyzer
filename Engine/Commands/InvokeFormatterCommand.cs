@@ -37,17 +37,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [ValidateNotNull]
         public object Settings { get; set; }
 
-        // [Parameter(Mandatory = false)]
-        // public Range range { get; set; }
+        [Parameter(Mandatory = false)]
+        public Range Range { get; set; }
 
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
         public int StartLineNumber { get; set; } = -1;
-        [Parameter(Mandatory = false)]
-        public int StartColumnNumber { get; private set; } = -1;
-        [Parameter(Mandatory = false)]
-        public int EndLineNumber { get; private set; } = -1;
-        [Parameter(Mandatory = false)]
-        public int EndColumnNumber { get; private set; } = -1;
+        [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
+        public int StartColumnNumber { get; set; } = -1;
+        [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
+        public int EndLineNumber { get; set; } = -1;
+        [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
+        public int EndColumnNumber { get; set; } = -1;
 
 #if DEBUG
         /// <summary>
@@ -100,9 +100,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             // todo add range parameter
             // todo add tests to check range formatting
-            var range = StartLineNumber == -1 ?
-                null :
-                new Range(StartLineNumber, StartColumnNumber, EndLineNumber, EndColumnNumber);
+            var range = Range;
+            if (this.ParameterSetName.Equals("NoRange"))
+            {
+                range = new Range(StartLineNumber, StartColumnNumber, EndLineNumber, EndColumnNumber);
+            }
+
             var text = Formatter.Format(ScriptDefinition, inputSettings, range, this);
             this.WriteObject(text);
         }
