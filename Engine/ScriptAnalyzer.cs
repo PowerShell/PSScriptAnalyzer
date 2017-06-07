@@ -1539,7 +1539,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(scriptDefinition));
             }
 
-            return Fix(new EditableText(scriptDefinition)).ToString();
+            return Fix(new EditableText(scriptDefinition), null).ToString();
         }
 
         /// <summary>
@@ -1547,13 +1547,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="text">An object of type `EditableText` that encapsulates the script text to be fixed.</param>
         /// <returns>The same instance of `EditableText` that was passed to the method, but the instance encapsulates the fixed script text. This helps in chaining the Fix method.</returns>
-        public EditableText Fix(EditableText text)
+        public EditableText Fix(EditableText text, Range range)
         {
             if (text == null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
 
+            // todo validate range
+            var isRangeNull = range == null;
+            range = isRangeNull ? null : SnapToEdges(text, range);
+            var previousLineCount = text.Lines.Length;
             var previousUnusedCorrections = 0;
             do
             {
@@ -1562,6 +1566,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     .Select(r => r.SuggestedCorrections)
                     .Where(sc => sc != null && sc.Any())
                     .Select(sc => sc.First())
+                    .Where(sc => isRangeNull || (sc.Start >= range.Start && sc.End <= range.End))
                     .ToList();
 
                 int unusedCorrections;
@@ -1579,9 +1584,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 previousUnusedCorrections = unusedCorrections;
+
+                // todo add a TextLines.NumLines property because accessing TextLines.Lines is expensive
+                var lineCount = text.Lines.Length;
+                if (!isRangeNull && lineCount != previousLineCount)
+                {
+                    range = new Range(
+                        range.Start,
+                        range.End.Shift(lineCount - previousLineCount, 0));
+                    range = SnapToEdges(text, range);
+                }
+
+                previousLineCount = lineCount;
             } while (previousUnusedCorrections > 0);
 
             return text;
+        }
+
+        private static Range SnapToEdges(EditableText text, Range range)
+        {
+            // todo add TextLines.Validate(range) and TextLines.Validate(position)
+            // todo TextLines.Lines should return IList instead of array because TextLines.Lines is expensive
+            return new Range(
+                range.Start.Line,
+                Math.Min(range.Start.Column, 1),
+                range.End.Line,
+                Math.Max(range.End.Column, text.Lines[range.End.Line - 1].Length));
         }
 
         private static IEnumerable<CorrectionExtent> GetCorrectionExtentsForFix(

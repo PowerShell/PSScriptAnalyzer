@@ -14,6 +14,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public static string Format<TCmdlet>(
             string scriptDefinition,
             Settings settings,
+            Range range,
             TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
             Helper.Instance = new Helper(cmdlet.SessionState.InvokeCommand, cmdlet);
@@ -40,7 +41,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 var currentSettings = GetCurrentSettings(settings, rule);
                 ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
-                text = ScriptAnalyzer.Instance.Fix(text);
+                text = ScriptAnalyzer.Instance.Fix(text, range);
             }
 
             return text.ToString();
