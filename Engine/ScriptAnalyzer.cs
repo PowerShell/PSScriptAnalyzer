@@ -1590,9 +1590,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var ceList = correctionExtents.ToList();
             ceList.Sort((x, y) =>
             {
-                return x.StartLineNumber < x.StartLineNumber ?
+                return x.StartLineNumber < y.StartLineNumber ?
                             1 :
-                            (x.StartLineNumber == x.StartLineNumber ? 0 : -1);
+                            (x.StartLineNumber == y.StartLineNumber ? 0 : -1);
             });
 
             return ceList.GroupBy(ce => ce.StartLineNumber).Select(g => g.First());
