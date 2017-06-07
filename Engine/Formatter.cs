@@ -41,7 +41,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 var currentSettings = GetCurrentSettings(settings, rule);
                 ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
-                text = ScriptAnalyzer.Instance.Fix(text, range);
+
+                Range updatedRange;
+                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange);
+                range = updatedRange;
             }
 
             return text.ToString();
