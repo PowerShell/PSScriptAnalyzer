@@ -10,13 +10,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     public class Formatter
     {
-        // TODO add a method that takes range parameter
         public static string Format<TCmdlet>(
             string scriptDefinition,
             Settings settings,
             Range range,
             TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
+            // todo add argument check
             Helper.Instance = new Helper(cmdlet.SessionState.InvokeCommand, cmdlet);
             Helper.Instance.Initialize();
 
@@ -52,15 +52,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private static Settings GetCurrentSettings(Settings settings, string rule)
         {
-            var currentSettingsHashtable = new Hashtable();
-            currentSettingsHashtable.Add("IncludeRules", new string[] { rule });
-
-            var ruleSettings = new Hashtable();
-            ruleSettings.Add(rule, new Hashtable(settings.RuleArguments[rule]));
-            currentSettingsHashtable.Add("Rules", ruleSettings);
-
-            var currentSettings = new Settings(currentSettingsHashtable);
-            return currentSettings;
+            return new Settings(new Hashtable()
+            {
+                {"IncludeRules", new string[] {rule}},
+                {"Rules", new Hashtable() { { rule, new Hashtable(settings.RuleArguments[rule]) } } }
+            });
         }
     }
 }
