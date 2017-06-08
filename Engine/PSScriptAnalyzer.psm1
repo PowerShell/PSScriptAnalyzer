@@ -14,8 +14,7 @@ $binaryModuleRoot = $PSModuleRoot
 if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')) {
     $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'coreclr'
 }
-else
-{
+else {
     if ($PSVersionTable.PSVersion -lt [Version]'5.0') {
         $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv3'
     }
@@ -29,9 +28,8 @@ $PSModule.OnRemove = {
     Remove-Module -ModuleInfo $binaryModule
 }
 
-if (Get-Command Register-ArgumentCompleter -ErrorAction Ignore)
-{
-    Register-ArgumentCompleter -CommandName 'Invoke-ScriptAnalyzer' -ParameterName 'Settings' -ScriptBlock {
+if (Get-Command Register-ArgumentCompleter -ErrorAction Ignore) {
+    $settingPresetCompleter = {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParmeter)
 
         [Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings]::GetSettingPresets() | `
@@ -39,8 +37,14 @@ if (Get-Command Register-ArgumentCompleter -ErrorAction Ignore)
             ForEach-Object { New-Object System.Management.Automation.CompletionResult $_ }
     }
 
-    Function RuleNameCompleter
-    {
+    @('Invoke-ScriptAnalyzer', 'Invoke-Formatter') | ForEach-Object {
+        Register-ArgumentCompleter -CommandName $_ `
+            -ParameterName 'Settings' `
+            -ScriptBlock $settingPresetCompleter
+
+    }
+
+    Function RuleNameCompleter {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParmeter)
 
         Get-ScriptAnalyzerRule *$wordToComplete* | `
