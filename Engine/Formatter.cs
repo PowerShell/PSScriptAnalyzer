@@ -43,7 +43,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     continue;
                 }
 
-                cmdlet.WriteVerbose("Running " + rule);
                 var currentSettings = GetCurrentSettings(settings, rule);
                 ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);

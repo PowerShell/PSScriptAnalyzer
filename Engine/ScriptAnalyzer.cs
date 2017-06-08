@@ -1571,8 +1571,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     .Where(sc => isRangeNull || (sc.Start >= range.Start && sc.End <= range.End))
                     .ToList();
 
+                this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
                 int unusedCorrections;
                 Fix(text, corrections, out unusedCorrections);
+                this.outputWriter.WriteVerbose($"Fixed {corrections.Count - unusedCorrections} violations.");
 
                 // This is an indication of an infinite loop. There is a small chance of this.
                 // It is better to abort the fixing operation at this point.
