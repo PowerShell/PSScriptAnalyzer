@@ -33,6 +33,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [ValidateNotNull]
         public object Settings { get; set; }
 
+#if DEBUG
         [Parameter(Mandatory = false)]
         public Range Range { get; set; }
 
@@ -45,7 +46,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
         public int EndColumnNumber { get; set; } = -1;
 
-#if DEBUG
         /// <summary>
         /// Attaches to an instance of a .Net debugger
         /// </summary>
@@ -94,16 +94,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         protected override void ProcessRecord()
         {
-            // todo add range parameter
             // todo add tests to check range formatting
+            string formattedScriptDefinition;
+#if DEBUG
             var range = Range;
             if (this.ParameterSetName.Equals("NoRange"))
             {
                 range = new Range(StartLineNumber, StartColumnNumber, EndLineNumber, EndColumnNumber);
             }
 
-            var text = Formatter.Format(ScriptDefinition, inputSettings, range, this);
-            this.WriteObject(text);
+            formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, range, this);
+#endif // DEBUG
+
+            formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, null, this);
+            this.WriteObject(formattedScriptDefinition);
         }
 
         private void ValidateInputSettings()
