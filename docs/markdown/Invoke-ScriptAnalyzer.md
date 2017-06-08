@@ -1,6 +1,5 @@
 ---
 external help file: Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml
-online version: http://go.microsoft.com/fwlink/?LinkId=525914
 schema: 2.0.0
 ---
 
@@ -35,7 +34,7 @@ Invoke-ScriptAnalyzer evaluates only .ps1 and .psm1 files.
 If you specify a path with multiple file types, the .ps1 and
 .psm1 files are tested; all other file types are ignored.
 
-Invoke-ScriptAnalzyer comes with a set of built-in rules, but you can also use customized rules that you write in
+Invoke-ScriptAnalyzer comes with a set of built-in rules, but you can also use customized rules that you write in
 Windows PowerShell scripts, or compile in assemblies by using C#.
 Just as with the built-in rules, you can add the
 ExcludeRule and IncludeRule parameters to your Invoke-ScriptAnalyzer command to exclude or include custom rules.

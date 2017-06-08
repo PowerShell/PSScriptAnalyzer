@@ -1,6 +1,5 @@
 ---
 external help file: Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml
-online version: http://go.microsoft.com/fwlink/?LinkId=525913
 schema: 2.0.0
 ---
 
