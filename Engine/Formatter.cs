@@ -3,8 +3,19 @@ using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
+    /// <summary>
+    /// A class to provide code formatting capability.
+    /// </summary>
     public class Formatter
     {
+        /// <summary>
+        /// Format a powershell script.
+        /// </summary>
+        /// <param name="scriptDefinition">A string representing a powershell script.</param>
+        /// <param name="settings">Settings to be used for formatting</param>
+        /// <param name="range">The range in which formatting should take place.</param>
+        /// <param name="cmdlet">The cmdlet object that calls this method.</param>
+        /// <returns></returns>
         public static string Format<TCmdlet>(
             string scriptDefinition,
             Settings settings,

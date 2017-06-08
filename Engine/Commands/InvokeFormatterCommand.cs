@@ -18,6 +18,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
     using PSSASettings = Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings;
 
+    /// <summary>
+    /// A cmdlet to format a PowerShell script text.
+    /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "Formatter")]
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
@@ -25,10 +28,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private Settings defaultSettings;
         private Settings inputSettings;
 
+        /// <summary>
+        /// The script text to be formated.
+        ///
+        /// *NOTE*: Unlike ScriptBlock parameter, the ScriptDefinition parameter require a string value.
+        /// </summary>
         [ParameterAttribute(Mandatory = true)]
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
+        /// <summary>
+        /// A settings hashtable or a path to a PowerShell data file (.psd1) file that contains the settings.
+        /// </summary>
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
         public object Settings { get; set; }
