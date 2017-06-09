@@ -1547,6 +1547,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Fix the violations in the given script text.
         /// </summary>
         /// <param name="text">An object of type `EditableText` that encapsulates the script text to be fixed.</param>
+        /// <param name="range">The range in which the fixes are allowed.</param>
         /// <param name="updatedRange">The updated range after the fixes have been applied.</param>
         /// <returns>The same instance of `EditableText` that was passed to the method, but the instance encapsulates the fixed script text. This helps in chaining the Fix method.</returns>
         public EditableText Fix(EditableText text, Range range, out Range updatedRange)

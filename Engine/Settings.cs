@@ -23,6 +23,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
     internal enum SettingsMode { None = 0, Auto, File, Hashtable, Preset };
 
+    /// <summary>
+    /// A class to represent the settings provided to ScriptAnalyzer class.
+    /// </summary>
     public class Settings
     {
         private string filePath;
@@ -37,6 +40,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<string> Severities { get { return severities; } }
         public Dictionary<string, Dictionary<string, object>> RuleArguments { get { return ruleArguments; } }
 
+        /// <summary>
+        /// Create a settings object from the input object.
+        /// </summary>
+        /// <param name="settings">An input object of type Hashtable or string.</param>
+        /// <param name="presetResolver">A function that takes in a preset and resolves it to a path.</param>
         public Settings(object settings, Func<string, string> presetResolver)
         {
             if (settings == null)
@@ -90,6 +98,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        /// <summary>
+        /// Create a Settings object from the input object.
+        /// </summary>
+        /// <param name="settings">An input object of type Hashtable or string.</param>
         public Settings(object settings) : this(settings, null)
         {
         }
@@ -159,6 +171,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return null;
         }
 
+        /// <summary>
+        /// Create a settings object from an input object.
+        /// </summary>
+        /// <param name="settingsObj">An input object of type Hashtable or string.</param>
+        /// <param name="cwd">The path in which to search for a settings file.</param>
+        /// <param name="outputWriter">An output writer.</param>
+        /// <returns>An object of Settings type.</returns>
         public static Settings Create(object settingsObj, string cwd, IOutputWriter outputWriter)
         {
             object settingsFound;
