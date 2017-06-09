@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.13.0'
+ModuleVersion = '1.14.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -88,14 +88,11 @@ PrivateData = @{
         IconUri = ''
         ReleaseNotes = @'
 ### Added
-- `PSUseSupportsShouldProcess` rule to discourage manual `whatif` and `confirm` parameter declarations.
-- Suggested corrections to `PSProvideCommentHelp` rule. The rule can now be configured to:
-    - trigger on non-exported functions. But by default, the rule triggers only on exported functions that do have comment help.
-    - place the suggested corrections either before a function definition, or at the beginning or end of a function's body.
-    - choose between block comment or line comment style of suggested comment help correction.
+- (#772) `Invoke-Formatter` cmdlet to format PowerShell scripts. The cmdlet takes a script string and a settings file and outputs formatted script string based on the provided settings. If no settings are provided, the formatter uses the default `CodeFormatting` settings, which can be found at `Settings/CodeFormatting.psd1`.
 
 ### Fixed
-- `PSAlignAssignmentStatement` to align assignment statements in DSC configurations that have *Undefined DSC Resource* parse errors.
+- (#770) `PSUseIdenticalMandatoryParametersForDSC` rule violation extent. The violation extent covers only the relevant function name, which prior the fix would mark the entire script. This prevented rule suppression from working when the suppression is declared inside `Get/Set/Test` functions.
+- (#770) `PSUseIdenticalMandatoryParametersForDSC` behavior to look for mandatory parameters in `Get/Set/Test` functions in a script based resource only if they are declared with attributes, `Key` or `Required`, in the corresponding `mof` file.
 '@
     }
 }
@@ -107,6 +104,8 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
+
 
 
 
