@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Management.Automation;
 
@@ -22,7 +23,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Range range,
             TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
-            // todo add argument check
+            // todo implement notnull attribute for such a check
+            ValidateNotNull(scriptDefinition, "scriptDefinition");
+            ValidateNotNull(settings, "settings");
+            ValidateNotNull(cmdlet, "cmdlet");
+
             Helper.Instance = new Helper(cmdlet.SessionState.InvokeCommand, cmdlet);
             Helper.Instance.Initialize();
 
@@ -53,6 +58,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return text.ToString();
+        }
+
+        private static void ValidateNotNull<T>(T obj, string name)
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException(name);
+            }
         }
 
         private static Settings GetCurrentSettings(Settings settings, string rule)
