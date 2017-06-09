@@ -45,7 +45,8 @@
               "Strings.Designer.Core.cs",
               "Commands/GetScriptAnalyzerLoggerCommand.cs"
               ]
-          }
+          },
+        "debugType": "portable"
       }
     }
   }

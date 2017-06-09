@@ -46,7 +46,8 @@
                 "Strings.Designer.Core.cs",
                 "UseSingularNouns.cs"
                 ]
-            }
+            },
+        "debugType": "portable"
       },
       "dependencies": {
         "Microsoft.NETCore.App": {
