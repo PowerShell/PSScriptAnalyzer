@@ -62,6 +62,7 @@ This command formats the input script text using the settings defined in the `$s
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
 S> Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings /path/to/settings.psd1
+```
 
 This command formats the input script text using the settings defined in the `settings.psd1` file.
 
