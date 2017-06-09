@@ -1,4 +1,13 @@
-﻿## [1.13.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.13.0) - 2017-05-18
+﻿## [1.14.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.14.0) - 2017-06-09
+
+### Added
+- (#772) [`Invoke-Formatter`](https://github.com/PowerShell/PSScriptAnalyzer/blob/4f47ef95edd045029628ba9a4079b1dda19f080f/docs/markdown/Invoke-Formatter.md) cmdlet to format PowerShell scripts. The cmdlet takes a script string and a settings file and outputs formatted script string based on the provided settings. If no settings are provided, the formatter uses the default `CodeFormatting` settings, which can be found at `Settings/CodeFormatting.psd1`.
+
+### Fixed
+- (#770) `PSUseIdenticalMandatoryParametersForDSC` rule violation extent. The violation extent covers only the relevant function name, which prior the fix would mark the entire script. This prevented rule suppression from working when the suppression is declared inside `Get/Set/Test` functions.
+- (#770) `PSUseIdenticalMandatoryParametersForDSC` behavior to look for mandatory parameters in `Get/Set/Test` functions in a script based resource only if they are declared with attributes, `Key` or `Required`, in the corresponding `mof` file.
+
+## [1.13.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.13.0) - 2017-05-18
 
 ### Added
 - [`PSUseSupportsShouldProcess`](https://github.com/PowerShell/PSScriptAnalyzer/blob/f92dabdef61b87d5f9f9f2140739c9f3f210b2d8/RuleDocumentation/UseSupportsShouldProcess.md) rule to discourage manual `whatif` and `confirm` parameter declarations.
