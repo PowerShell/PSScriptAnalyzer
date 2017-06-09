@@ -1527,6 +1527,128 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty);
         }
 
+        /// <summary>
+        /// Fix the violations in the given script text.
+        /// </summary>
+        /// <param name="scriptDefinition">The script text to be fixed.</param>
+        /// <returns>The fixed script text.</returns>
+        public string Fix(string scriptDefinition)
+        {
+            if (scriptDefinition == null)
+            {
+                throw new ArgumentNullException(nameof(scriptDefinition));
+            }
+
+            Range updatedRange;
+            return Fix(new EditableText(scriptDefinition), null, out updatedRange).ToString();
+        }
+
+        /// <summary>
+        /// Fix the violations in the given script text.
+        /// </summary>
+        /// <param name="text">An object of type `EditableText` that encapsulates the script text to be fixed.</param>
+        /// <param name="range">The range in which the fixes are allowed.</param>
+        /// <param name="updatedRange">The updated range after the fixes have been applied.</param>
+        /// <returns>The same instance of `EditableText` that was passed to the method, but the instance encapsulates the fixed script text. This helps in chaining the Fix method.</returns>
+        public EditableText Fix(EditableText text, Range range, out Range updatedRange)
+        {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            // todo validate range
+            var isRangeNull = range == null;
+            range = isRangeNull ? null : SnapToEdges(text, range);
+            var previousLineCount = text.Lines.Length;
+            var previousUnusedCorrections = 0;
+            do
+            {
+                var records = AnalyzeScriptDefinition(text.ToString());
+                var corrections = records
+                    .Select(r => r.SuggestedCorrections)
+                    .Where(sc => sc != null && sc.Any())
+                    .Select(sc => sc.First())
+                    .Where(sc => isRangeNull || (sc.Start >= range.Start && sc.End <= range.End))
+                    .ToList();
+
+                this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
+                int unusedCorrections;
+                Fix(text, corrections, out unusedCorrections);
+                this.outputWriter.WriteVerbose($"Fixed {corrections.Count - unusedCorrections} violations.");
+
+                // This is an indication of an infinite loop. There is a small chance of this.
+                // It is better to abort the fixing operation at this point.
+                if (previousUnusedCorrections > 0 && previousUnusedCorrections == unusedCorrections)
+                {
+                    this.outputWriter.ThrowTerminatingError(new ErrorRecord(
+                        new InvalidOperationException(),
+                        "FIX_ERROR",
+                        ErrorCategory.InvalidOperation,
+                        corrections));
+                }
+
+                previousUnusedCorrections = unusedCorrections;
+
+                // todo add a TextLines.NumLines property because accessing TextLines.Lines is expensive
+                var lineCount = text.Lines.Length;
+                if (!isRangeNull && lineCount != previousLineCount)
+                {
+                    range = new Range(
+                        range.Start,
+                        range.End.Shift(lineCount - previousLineCount, 0));
+                    range = SnapToEdges(text, range);
+                }
+
+                previousLineCount = lineCount;
+            } while (previousUnusedCorrections > 0);
+
+            updatedRange = range;
+            return text;
+        }
+
+        private static Range SnapToEdges(EditableText text, Range range)
+        {
+            // todo add TextLines.Validate(range) and TextLines.Validate(position)
+            // todo TextLines.Lines should return IList instead of array because TextLines.Lines is expensive
+            return new Range(
+                range.Start.Line,
+                Math.Min(range.Start.Column, 1),
+                range.End.Line,
+                Math.Max(range.End.Column, text.Lines[range.End.Line - 1].Length));
+        }
+
+        private static IEnumerable<CorrectionExtent> GetCorrectionExtentsForFix(
+            IEnumerable<CorrectionExtent> correctionExtents)
+        {
+            var ceList = correctionExtents.ToList();
+            ceList.Sort((x, y) =>
+            {
+                return x.StartLineNumber < y.StartLineNumber ?
+                            1 :
+                            (x.StartLineNumber == y.StartLineNumber ? 0 : -1);
+            });
+
+            return ceList.GroupBy(ce => ce.StartLineNumber).Select(g => g.First());
+        }
+
+        private static EditableText Fix(
+            EditableText text,
+            IEnumerable<CorrectionExtent> correctionExtents,
+            out int unusedCorrections)
+        {
+            var correctionsToUse = GetCorrectionExtentsForFix(correctionExtents);
+            var count = 0;
+            foreach (var correction in correctionsToUse)
+            {
+                count++;
+                text.ApplyEdit(correction);
+            }
+
+            unusedCorrections = correctionExtents.Count() - count;
+            return text;
+        }
+
         private void BuildScriptPathList(
             string path,
             bool searchRecursively,
