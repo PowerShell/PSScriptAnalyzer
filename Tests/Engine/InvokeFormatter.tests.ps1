@@ -5,6 +5,32 @@ Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 Describe "Invoke-Formatter Cmdlet" {
+    Context "When positional parameters are given" {
+        It "Should use the positional parameters" {
+            $def = @"
+function foo {
+"abc"
+}
+"@
+
+            $expected = @"
+function foo {
+    "abc"
+}
+"@
+
+            $settings = @{
+                IncludeRules = @('PSUseConsistentIndentation')
+                Rules        = @{
+                    PSUseConsistentIndentation = @{
+                        Enable = $true
+                    }
+                }
+            }
+
+            Invoke-Formatter $def $settings | Should Be $expected
+        }
+    }
     Context "When no settings are given" {
         It "Should format using default settings" {
             $def = @'

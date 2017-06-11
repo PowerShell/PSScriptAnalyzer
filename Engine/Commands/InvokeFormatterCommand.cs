@@ -33,14 +33,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         ///
         /// *NOTE*: Unlike ScriptBlock parameter, the ScriptDefinition parameter require a string value.
         /// </summary>
-        [ParameterAttribute(Mandatory = true)]
+        [ParameterAttribute(Mandatory = true, Position = 1)]
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
         /// <summary>
         /// A settings hashtable or a path to a PowerShell data file (.psd1) file that contains the settings.
         /// </summary>
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, Position = 2)]
         [ValidateNotNull]
         public object Settings { get; set; }
 
