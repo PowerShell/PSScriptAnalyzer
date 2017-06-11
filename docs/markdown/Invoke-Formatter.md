@@ -79,7 +79,7 @@ Parameter Sets:
 Aliases:
 
 Required: True
-Position: Named
+Position: 1
 Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -93,7 +93,7 @@ Type: Object
 Parameter Sets:
 
 Required: False
-Position: Named
+Position: 2
 Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
