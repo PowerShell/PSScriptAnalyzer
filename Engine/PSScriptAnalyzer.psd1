@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.14.0'
+ModuleVersion = '1.14.1'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -87,12 +87,10 @@ PrivateData = @{
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
         IconUri = ''
         ReleaseNotes = @'
-### Added
-- (#772) `Invoke-Formatter` cmdlet to format PowerShell scripts. The cmdlet takes a script string and a settings file and outputs formatted script string based on the provided settings. If no settings are provided, the formatter uses the default `CodeFormatting` settings, which can be found at `Settings/CodeFormatting.psd1`.
-
 ### Fixed
-- (#770) `PSUseIdenticalMandatoryParametersForDSC` rule violation extent. The violation extent covers only the relevant function name, which prior the fix would mark the entire script. This prevented rule suppression from working when the suppression is declared inside `Get/Set/Test` functions.
-- (#770) `PSUseIdenticalMandatoryParametersForDSC` behavior to look for mandatory parameters in `Get/Set/Test` functions in a script based resource only if they are declared with attributes, `Key` or `Required`, in the corresponding `mof` file.
+- (#777) `Invoke-Formatter`
+    - Make the cmdlet parameters positional.
+    - Updated documentation so that `Get-Help Invoke-Formatter -Syntax` returns a valid syntax.
 '@
     }
 }
@@ -104,6 +102,7 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 

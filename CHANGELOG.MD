@@ -1,4 +1,11 @@
-﻿## [1.14.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.14.0) - 2017-06-09
+﻿## [1.14.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.14.1) - 2017-06-12
+
+### Fixed
+- (#777) `Invoke-Formatter`
+    - Make the cmdlet parameters positional.
+    - Updated documentation so that `Get-Help Invoke-Formatter -Syntax` returns a valid syntax.
+
+## [1.14.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.14.0) - 2017-06-09
 
 ### Added
 - (#772) [`Invoke-Formatter`](https://github.com/PowerShell/PSScriptAnalyzer/blob/4f47ef95edd045029628ba9a4079b1dda19f080f/docs/markdown/Invoke-Formatter.md) cmdlet to format PowerShell scripts. The cmdlet takes a script string and a settings file and outputs formatted script string based on the provided settings. If no settings are provided, the formatter uses the default `CodeFormatting` settings, which can be found at `Settings/CodeFormatting.psd1`.
