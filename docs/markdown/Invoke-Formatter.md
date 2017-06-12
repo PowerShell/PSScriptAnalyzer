@@ -4,7 +4,6 @@ schema: 2.0.0
 ---
 
 # Invoke-Formatter
-
 ## SYNOPSIS
 Formats a script text based on the input settings or default settings.
 
@@ -61,7 +60,7 @@ This command formats the input script text using the settings defined in the `$s
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
-S> Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings /path/to/settings.psd1
+Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings /path/to/settings.psd1
 ```
 
 This command formats the input script text using the settings defined in the `settings.psd1` file.
@@ -75,7 +74,7 @@ The script text to be formated.
 
 ```yaml
 Type: String
-Parameter Sets:
+Parameter Sets: (All)
 Aliases:
 
 Required: True
@@ -90,11 +89,11 @@ A settings hashtable or a path to a PowerShell data file (.psd1) file that conta
 
 ```yaml
 Type: Object
-Parameter Sets:
+Parameter Sets: (All)
 
 Required: False
 Position: 2
-Default value:
+Default value: CodeFormatting
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
