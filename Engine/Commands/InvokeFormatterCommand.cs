@@ -42,7 +42,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// </summary>
         [Parameter(Mandatory = false, Position = 2)]
         [ValidateNotNull]
-        public object Settings { get; set; }
+        public object Settings { get; set; } = defaultSettingsPreset;
 
 #if DEBUG
         [Parameter(Mandatory = false)]
@@ -88,18 +88,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             try
             {
-                inputSettings = PSSASettings.Create(Settings, null, this);
-                if (inputSettings == null)
-                {
-                    inputSettings = new PSSASettings(
-                        defaultSettingsPreset,
-                        PSSASettings.GetSettingPresetFilePath);
-                }
+                inputSettings = PSSASettings.Create(Settings, this.MyInvocation.PSScriptRoot, this);
             }
-            catch
+            catch (Exception e)
             {
-                this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
-                return;
+                this.ThrowTerminatingError(new ErrorRecord(
+                        e,
+                        "SETTNGS_ERROR",
+                        ErrorCategory.InvalidData,
+                        Settings));
+            }
+
+            if (inputSettings == null)
+            {
+                this.ThrowTerminatingError(new ErrorRecord(
+                    new ArgumentException(String.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.SettingsNotParsable)),
+                    "SETTINGS_ERROR",
+                    ErrorCategory.InvalidArgument,
+                    Settings));
             }
         }
 
