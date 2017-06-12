@@ -138,6 +138,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 GetViolationForBraceShouldHaveNewLineAfter(tokens, k, openBracePos, fileName),
                                 ref diagnosticRecords);
                         }
+                        else
+                        {
+                            AddToDiagnosticRecords(
+                                GetViolationsForUncuddledBranches(tokens, k, openBracePos, fileName),
+                                ref diagnosticRecords);
+                        }
                     }
                     else
                     {
@@ -326,11 +332,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         fileName,
                         null,
                         GetCorrectionsForBraceShouldHaveNewLineAfter(tokens, closeBracePos, openBracePos, fileName));
-                    }
+                }
             }
 
             return null;
         }
+
+        private DiagnosticRecord GetViolationsForUncuddledBranches(
+            Token[] tokens,
+            int closeBracePos,
+            int openBracePos,
+            string fileName)
+        {
+            var expectedNewLinePos = closeBracePos + 1;
+
+            if (tokens.Length > 1 && tokens.Length > expectedNewLinePos)
+            {
+                var closeBraceToken = tokens[closeBracePos];
+                if (tokens[closeBracePos + 1].Kind == TokenKind.NewLine &&
+                    IsBranchingStatementToken(tokens[closeBracePos + 2]))
+                {
+                    return new DiagnosticRecord(
+                         GetError(Strings.PlaceCloseBraceErrorShouldCuddleBranchStatement),
+                         closeBraceToken.Extent,
+                         GetName(),
+                         GetDiagnosticSeverity(),
+                         fileName,
+                         null,
+                         GetCorrectionsForBraceShouldHaveNewLineAfter(tokens, closeBracePos, openBracePos, fileName));
+                }
+            }
+
+            return null;
+        }
+
 
         private DiagnosticRecord GetViolationForBraceShouldBeOnNewLine(
             Token[] tokens,
@@ -376,6 +411,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return corrections;
         }
 
+        private bool IsBranchingStatementToken(Token token)
+        {
+            switch (token.Kind)
+            {
+                case TokenKind.Else:
+                case TokenKind.ElseIf:
+                case TokenKind.Catch:
+                case TokenKind.Finally:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
         private void AddToDiagnosticRecords(
             DiagnosticRecord diagnosticRecord,
             ref List<DiagnosticRecord> diagnosticRecords)
