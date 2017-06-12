@@ -25,7 +25,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
         private const string defaultSettingsPreset = "CodeFormatting";
-        private Settings defaultSettings;
         private Settings inputSettings;
 
         /// <summary>
