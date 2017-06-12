@@ -25,7 +25,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
         private const string defaultSettingsPreset = "CodeFormatting";
-        private Settings defaultSettings;
         private Settings inputSettings;
 
         /// <summary>
@@ -33,16 +32,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         ///
         /// *NOTE*: Unlike ScriptBlock parameter, the ScriptDefinition parameter require a string value.
         /// </summary>
-        [ParameterAttribute(Mandatory = true)]
+        [ParameterAttribute(Mandatory = true, Position = 1)]
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
         /// <summary>
         /// A settings hashtable or a path to a PowerShell data file (.psd1) file that contains the settings.
         /// </summary>
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, Position = 2)]
         [ValidateNotNull]
-        public object Settings { get; set; }
+        public object Settings { get; set; } = defaultSettingsPreset;
 
 #if DEBUG
         [Parameter(Mandatory = false)]
@@ -88,18 +87,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             try
             {
-                inputSettings = PSSASettings.Create(Settings, null, this);
-                if (inputSettings == null)
-                {
-                    inputSettings = new PSSASettings(
-                        defaultSettingsPreset,
-                        PSSASettings.GetSettingPresetFilePath);
-                }
+                inputSettings = PSSASettings.Create(Settings, this.MyInvocation.PSScriptRoot, this);
             }
-            catch
+            catch (Exception e)
             {
-                this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
-                return;
+                this.ThrowTerminatingError(new ErrorRecord(
+                        e,
+                        "SETTNGS_ERROR",
+                        ErrorCategory.InvalidData,
+                        Settings));
+            }
+
+            if (inputSettings == null)
+            {
+                this.ThrowTerminatingError(new ErrorRecord(
+                    new ArgumentException(String.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.SettingsNotParsable)),
+                    "SETTINGS_ERROR",
+                    ErrorCategory.InvalidArgument,
+                    Settings));
             }
         }
 
