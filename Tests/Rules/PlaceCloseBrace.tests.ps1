@@ -5,15 +5,15 @@ Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $ruleConfiguration = @{
-    Enable = $true
-    NoEmptyLineBefore = $true
+    Enable             = $true
+    NoEmptyLineBefore  = $true
     IgnoreOneLineBlock = $true
-    NewLineAfter = $true
+    NewLineAfter       = $true
 }
 
 $settings = @{
     IncludeRules = @("PSPlaceCloseBrace")
-    Rules = @{
+    Rules        = @{
         PSPlaceCloseBrace = $ruleConfiguration
     }
 }
@@ -148,11 +148,11 @@ if (Test-Path "blah") {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
             $params = @{
-                RawContent = $def
+                RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText = '}'
-                CorrectionText = '}' + [System.Environment]::NewLine
+                ViolationText    = '}'
+                CorrectionText   = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
         }
@@ -168,11 +168,11 @@ if (Test-Path "blah") {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
             $params = @{
-                RawContent = $def
+                RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText = '}'
-                CorrectionText = '}' + [System.Environment]::NewLine
+                ViolationText    = '}'
+                CorrectionText   = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
         }
