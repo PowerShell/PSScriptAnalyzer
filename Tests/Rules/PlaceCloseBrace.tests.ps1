@@ -199,4 +199,59 @@ Some-Command -Param1 @{
             $violations.Count | Should Be 0
         }
     }
+
+    Context "When a close brace should be followed by a new line" {
+        BeforeAll {
+            $ruleConfiguration.'NoEmptyLineBefore' = $false
+            $ruleConfiguration.'IgnoreOneLineBlock' = $false
+            $ruleConfiguration.'NewLineAfter' = $false
+        }
+
+        It "Should find a violation if a branching statement is on a new line if open brance is on same line" {
+            $def = @'
+if ($true) {
+    $true
+}
+else {
+    $false
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+        }
+
+        It "Should not find a violation if a branching statement is on a new line if open brance is not on same line" {
+            $def = @'
+if ($true)
+{
+    $true
+}
+else
+{
+    $false
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+
+        It "Should correct violation by cuddling the else branch statement" {
+            $def = @'
+if ($true) {
+    $true
+}
+else {
+    $false
+}
+'@
+             $expected = @'
+if ($true) {
+    $true
+} else {
+    $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+    }
 }
