@@ -33,7 +33,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         ///
         /// Default value is false.
         /// </summary>
-        [ConfigurableRuleProperty(defaultValue:false)]
+        [ConfigurableRuleProperty(defaultValue: false)]
         public bool NoEmptyLineBefore { get; protected set; }
 
         /// <summary>
@@ -82,11 +82,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
-            var curlyStack = new Stack<Tuple<Token, int>> ();
+            var curlyStack = new Stack<Tuple<Token, int>>();
 
             // TODO move part common with PlaceOpenBrace to one place
             var tokenOps = new TokenOperations(tokens, ast);
-            tokensToIgnore = new HashSet<Token> (tokenOps.GetCloseBracesInCommandElements());
+            tokensToIgnore = new HashSet<Token>(tokenOps.GetCloseBracesInCommandElements());
 
             // Ignore close braces that are part of a one line if-else statement
             // E.g. $x = if ($true) { "blah" } else { "blah blah" }
@@ -323,7 +323,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if ((tokens[expectedNewLinePos].Kind == TokenKind.Else
                     || tokens[expectedNewLinePos].Kind == TokenKind.ElseIf)
                     && !tokensToIgnore.Contains(closeBraceToken))
-                    {
+                {
                     return new DiagnosticRecord(
                         GetError(Strings.PlaceCloseBraceErrorShouldFollowNewLine),
                         closeBraceToken.Extent,
