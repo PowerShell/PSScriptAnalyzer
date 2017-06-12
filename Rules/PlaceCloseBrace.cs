@@ -346,11 +346,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             var expectedNewLinePos = closeBracePos + 1;
 
+            // this will not work if there is a comment in between any tokens.
+            // find violation only if the open brace is on the same line as the branching statement.
+            // todo handle types in catch statement
             if (tokens.Length > 1 && tokens.Length > expectedNewLinePos)
             {
                 var closeBraceToken = tokens[closeBracePos];
                 if (tokens[closeBracePos + 1].Kind == TokenKind.NewLine &&
-                    IsBranchingStatementToken(tokens[closeBracePos + 2]))
+                    IsBranchingStatementToken(tokens[closeBracePos + 2]) &&
+                    tokens[closeBracePos + 3].Kind == TokenKind.LCurly)
                 {
                     return new DiagnosticRecord(
                          GetError(Strings.PlaceCloseBraceErrorShouldCuddleBranchStatement),
@@ -359,13 +363,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                          GetDiagnosticSeverity(),
                          fileName,
                          null,
-                         GetCorrectionsForBraceShouldHaveNewLineAfter(tokens, closeBracePos, openBracePos, fileName));
+                         GetCorrectionsForUncuddledBranches(tokens, closeBracePos, closeBracePos + 2, fileName));
                 }
             }
 
             return null;
         }
 
+        private List<CorrectionExtent> GetCorrectionsForUncuddledBranches(
+            Token[] tokens,
+            int closeBracePos,
+            int branchStatementPos,
+            string fileName)
+        {
+            var corrections = new List<CorrectionExtent>();
+            var closeBraceToken = tokens[closeBracePos];
+            var branchStatementToken = tokens[branchStatementPos];
+            corrections.Add(new CorrectionExtent(
+                closeBraceToken.Extent.StartLineNumber,
+                branchStatementToken.Extent.EndLineNumber,
+                closeBraceToken.Extent.StartColumnNumber,
+                branchStatementToken.Extent.EndColumnNumber,
+                closeBraceToken.Extent.Text + ' ' + branchStatementToken.Extent.Text,
+                fileName));
+            return corrections;
+
+        }
 
         private DiagnosticRecord GetViolationForBraceShouldBeOnNewLine(
             Token[] tokens,
