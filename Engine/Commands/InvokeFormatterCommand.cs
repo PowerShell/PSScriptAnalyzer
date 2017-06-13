@@ -133,7 +133,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 return;
             }
 
-            var range = Range as Range;
+            // When the range object is constructed with `[range]::new syntax`, `Range as Range` cast works.
+            // However, if the range object is constructed with `new-object "range"` syntax, then
+            // we need to use the ImmediatedBaseObject property to cast.
+            var range = (Range as Range ?? (Range as PSObject)?.ImmediateBaseObject as Range);
             if (range != null)
             {
                 this.range = range;
