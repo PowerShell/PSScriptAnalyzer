@@ -50,25 +50,6 @@ function foo {
 
             Invoke-Formatter -ScriptDefinition $def -Range @(3, 1, 4, 1) | Should Be $expected
         }
-
-        It "Should format only within the range when a range object is given" {
-            $def = @"
-function foo {
-"xyz"
-"abc"
-}
-"@
-
-            $expected = @"
-function foo {
-"xyz"
-    "abc"
-}
-"@
-
-            $range = New-Object -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.Range" -ArgumentList 3, 1, 4, 1
-            Invoke-Formatter -ScriptDefinition $def -Range $range | Should Be $expected
-        }
     }
 
     Context "When no settings are given" {
