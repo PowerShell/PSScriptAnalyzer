@@ -106,6 +106,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         // TODO Add a method that takes multiple edits, checks if they are unique and applies them.
 
+        public bool IsValidRange(Range range)
+        {
+            return range.Start.Line <= Lines.Length
+                && range.End.Line <= Lines.Length
+                && range.Start.Column <= Lines[range.Start.Line - 1].Length
+                && range.End.Column <= Lines[range.End.Line - 1].Length + 1;
+        }
+
         public override string ToString()
         {
             return Text;
@@ -123,10 +131,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void ValidateTextEditExtent(TextEdit textEdit)
         {
-            if (textEdit.StartLineNumber > Lines.Length
-                || textEdit.EndLineNumber > Lines.Length
-                || textEdit.StartColumnNumber > Lines[textEdit.StartLineNumber - 1].Length
-                || textEdit.EndColumnNumber > Lines[textEdit.EndLineNumber - 1].Length + 1)
+            if (IsValidRange(textEdit))
             {
                 throw new ArgumentException(String.Format(
                     CultureInfo.CurrentCulture,
