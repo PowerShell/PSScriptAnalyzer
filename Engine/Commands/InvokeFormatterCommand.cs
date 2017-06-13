@@ -12,6 +12,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
@@ -77,20 +78,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
 
-            if (Range != null)
+            try
             {
-                try
-                {
-                    range = GetRange(Range);
-                }
-                catch (Exception e)
-                {
-                    this.ThrowTerminatingError(new ErrorRecord(
-                            e,
-                            "RANGE_ERROR",
-                            ErrorCategory.InvalidArgument,
-                            Range));
-                }
+                range = GetRange();
+            }
+            catch (Exception e)
+            {
+                this.ThrowTerminatingError(new ErrorRecord(
+                        e,
+                        "RANGE_ERROR",
+                        ErrorCategory.InvalidArgument,
+                        Range));
             }
 
             try
@@ -126,26 +124,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             this.WriteObject(formattedScriptDefinition);
         }
 
-        private static Range GetRange(object rangeObj)
+        private Range GetRange()
         {
-            var range = rangeObj as Range;
-            if (range == null)
+            if (Range == null)
             {
-                var intArr = rangeObj as int[];
-                if (intArr == null)
-                {
-                    throw new ArgumentException("Argument should be of type Range or int[].");
-                }
-
-                if (intArr.Length != 4)
-                {
-                    throw new ArgumentException("Integer array should be of length 4.");
-                }
-
-                range = new Range(intArr[0], intArr[1], intArr[2], intArr[3]);
+                return null;
             }
 
-            return range;
+            var range = Range as Range;
+            if (range != null)
+            {
+                return range;
+            }
+
+            var objArr = Range as object[];
+            int[] intArr;
+            if (objArr == null)
+            {
+                // todo check passing int[] casted parameter
+                intArr = Range as int[];
+                if (intArr == null)
+                {
+                    throw new ArgumentException(
+                        "Argument should be of type Range or object[] or int[].",
+                        nameof(Range));
+                }
+            }
+
+            if (objArr.Length != 4)
+            {
+                throw new ArgumentException(
+                    "Array should be of length 4.",
+                    nameof(Range));
+            }
+
+            if (!objArr.All(x => x is int))
+            {
+                throw new ArgumentException(
+                    "Array should contain integer elements.",
+                    nameof(Range));
+            }
+
+            intArr = new int[objArr.Length];
+            objArr.CopyTo(intArr, 0);
+            return new Range(intArr[0], intArr[1], intArr[2], intArr[3]);
         }
 
         private void ValidateInputSettings()
