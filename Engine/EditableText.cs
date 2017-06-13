@@ -131,7 +131,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void ValidateTextEditExtent(TextEdit textEdit)
         {
-            if (IsValidRange(textEdit))
+            if (!IsValidRange(textEdit))
             {
                 throw new ArgumentException(String.Format(
                     CultureInfo.CurrentCulture,
