@@ -106,14 +106,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         // TODO Add a method that takes multiple edits, checks if they are unique and applies them.
 
+        /// <summary>
+        /// Checks if the range falls within the bounds of the text.
+        /// </summary>
+        /// <param name="range"></param>
+        /// <returns></returns>
         public bool IsValidRange(Range range)
         {
+            if (range == null)
+            {
+                throw new ArgumentNullException(nameof(range));
+            }
+
             return range.Start.Line <= Lines.Length
                 && range.End.Line <= Lines.Length
                 && range.Start.Column <= Lines[range.Start.Line - 1].Length
                 && range.End.Column <= Lines[range.End.Line - 1].Length + 1;
         }
 
+        /// <summary>
+        /// Returns the text representation of the object.
+        /// </summary>
         public override string ToString()
         {
             return Text;
