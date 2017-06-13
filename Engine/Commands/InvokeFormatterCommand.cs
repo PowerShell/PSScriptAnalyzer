@@ -47,7 +47,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
-        public object Range { get; set; }
+        [ValidateCount(4, 4)]
+        public int[] Range { get; set; }
 
 #if DEBUG
         /// <summary>
@@ -79,18 +80,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
 
-            try
-            {
-                SetRange();
-            }
-            catch (Exception e)
-            {
-                this.ThrowTerminatingError(new ErrorRecord(
-                        e,
-                        "RANGE_ERROR",
-                        ErrorCategory.InvalidArgument,
-                        Range));
-            }
+            this.range = new Range(Range[0], Range[1], Range[2], Range[3]);
 
             try
             {
@@ -123,59 +113,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             string formattedScriptDefinition;
             formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, range, this);
             this.WriteObject(formattedScriptDefinition);
-        }
-
-        private void SetRange()
-        {
-            if (Range == null)
-            {
-                this.range = null;
-                return;
-            }
-
-            // When the range object is constructed with `[range]::new syntax`, `Range as Range` cast works.
-            // However, if the range object is constructed with `new-object "range"` syntax, then
-            // we need to use the ImmediatedBaseObject property to cast.
-            var range = (Range as Range ?? (Range as PSObject)?.ImmediateBaseObject as Range);
-            if (range != null)
-            {
-                this.range = range;
-                return;
-            }
-
-            var objArr = Range as object[];
-            int[] intArr;
-            if (objArr != null)
-            {
-                if (!objArr.All(x => x is int))
-                {
-                    throw new ArgumentException(
-                        "Array should contain integer elements.",
-                        nameof(Range));
-                }
-                intArr = new int[objArr.Length];
-                objArr.CopyTo(intArr, 0);
-            }
-            else
-            {
-                // todo check passing int[] casted parameter
-                intArr = Range as int[];
-                if (intArr == null)
-                {
-                    throw new ArgumentException(
-                        "Argument should be of type Range or object[] or int[].",
-                        nameof(Range));
-                }
-            }
-
-            if (intArr.Length != 4)
-            {
-                throw new ArgumentException(
-                    "Array should be of length 4.",
-                    nameof(Range));
-            }
-
-            this.range = new Range(intArr[0], intArr[1], intArr[2], intArr[3]);
         }
 
         private void ValidateInputSettings()
