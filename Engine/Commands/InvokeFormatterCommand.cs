@@ -145,7 +145,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             var objArr = Range as object[];
             int[] intArr;
-            if (objArr == null)
+            if (objArr != null)
+            {
+                if (!objArr.All(x => x is int))
+                {
+                    throw new ArgumentException(
+                        "Array should contain integer elements.",
+                        nameof(Range));
+                }
+                intArr = new int[objArr.Length];
+                objArr.CopyTo(intArr, 0);
+            }
+            else
             {
                 // todo check passing int[] casted parameter
                 intArr = Range as int[];
@@ -157,22 +168,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 }
             }
 
-            if (objArr.Length != 4)
+            if (intArr.Length != 4)
             {
                 throw new ArgumentException(
                     "Array should be of length 4.",
                     nameof(Range));
             }
 
-            if (!objArr.All(x => x is int))
-            {
-                throw new ArgumentException(
-                    "Array should contain integer elements.",
-                    nameof(Range));
-            }
-
-            intArr = new int[objArr.Length];
-            objArr.CopyTo(intArr, 0);
             this.range = new Range(intArr[0], intArr[1], intArr[2], intArr[3]);
         }
 
