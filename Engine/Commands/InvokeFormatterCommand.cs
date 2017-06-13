@@ -45,7 +45,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [ValidateNotNull]
         public object Settings { get; set; } = defaultSettingsPreset;
 
-        [Parameter(Mandatory = false)]
+        /// <summary>
+        /// The range within which formatting should take place.
+        ///
+        /// The parameter is an array of integers of length 4 such that the first, second, third and last
+        /// elements correspond to the start line number, start column number, end line number and
+        /// end column number. These numbers must be greater than 0.
+        /// </summary>
+        /// <returns></returns>
+        [Parameter(Mandatory = false, Position = 3)]
         [ValidateNotNull]
         [ValidateCount(4, 4)]
         public int[] Range { get; set; }
