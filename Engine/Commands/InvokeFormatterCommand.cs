@@ -80,8 +80,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
 
-            this.range = new Range(Range[0], Range[1], Range[2], Range[3]);
-
+            this.range = Range == null ? null : new Range(Range[0], Range[1], Range[2], Range[3]);
             try
             {
                 inputSettings = PSSASettings.Create(Settings, this.MyInvocation.PSScriptRoot, this);
