@@ -48,6 +48,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [Parameter(Mandatory = false)]
         [ValidateNotNull]
         public object Range { get; set; }
+
 #if DEBUG
         /// <summary>
         /// Attaches to an instance of a .Net debugger
@@ -80,7 +81,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             try
             {
-                range = GetRange();
+                SetRange();
             }
             catch (Exception e)
             {
@@ -124,17 +125,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             this.WriteObject(formattedScriptDefinition);
         }
 
-        private Range GetRange()
+        private void SetRange()
         {
             if (Range == null)
             {
-                return null;
+                this.range = null;
+                return;
             }
 
             var range = Range as Range;
             if (range != null)
             {
-                return range;
+                this.range = range;
+                return;
             }
 
             var objArr = Range as object[];
@@ -167,7 +170,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             intArr = new int[objArr.Length];
             objArr.CopyTo(intArr, 0);
-            return new Range(intArr[0], intArr[1], intArr[2], intArr[3]);
+            this.range = new Range(intArr[0], intArr[1], intArr[2], intArr[3]);
         }
 
         private void ValidateInputSettings()
