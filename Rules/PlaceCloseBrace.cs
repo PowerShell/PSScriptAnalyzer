@@ -356,7 +356,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var token2 = tokens[closeBracePos + 2];
             var branchTokenPos = IsBranchingStatementToken(token1) && !ApartByWhitespace(closeBraceToken, token1) ?
                              closeBracePos + 1 :
-                             token1.Kind == TokenKind.NewLine || IsBranchingStatementToken(token2) ?
+                             token1.Kind == TokenKind.NewLine && IsBranchingStatementToken(token2) ?
                                 closeBracePos + 2 :
                                 -1;
 
@@ -377,7 +377,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var e1 = token1.Extent;
             var e2 = token2.Extent;
             return e1.StartLineNumber == e2.StartLineNumber &&
-                e1.EndColumnNumber - e2.StartColumnNumber == 1;
+                e2.StartColumnNumber - e1.EndColumnNumber == 1;
         }
 
         private List<CorrectionExtent> GetCorrectionsForUncuddledBranches(
