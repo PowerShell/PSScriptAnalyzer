@@ -200,7 +200,7 @@ Some-Command -Param1 @{
         }
     }
 
-    Context "When a close brace should be followed by a new line" {
+    Context "When a close brace should not be followed by a new line" {
         BeforeAll {
             $ruleConfiguration.'NoEmptyLineBefore' = $false
             $ruleConfiguration.'IgnoreOneLineBlock' = $false
@@ -220,21 +220,6 @@ else {
             $violations.Count | Should Be 1
         }
 
-        It "Should not find a violation if a branching statement is on a new line if open brance is not on same line" {
-            $def = @'
-if ($true)
-{
-    $true
-}
-else
-{
-    $false
-}
-'@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 0
-        }
-
         It "Should correct violation by cuddling the else branch statement" {
             $def = @'
 if ($true) {
@@ -249,6 +234,92 @@ if ($true) {
     $true
 } else {
     $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should correct violation if the close brace and following keyword are apart by less than a space" {
+$def = @'
+if ($true) {
+    $true
+}else {
+    $false
+}
+'@
+             $expected = @'
+if ($true) {
+    $true
+} else {
+    $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should correct violation if the close brace and following keyword are apart by more than a space" {
+$def = @'
+if ($true) {
+    $true
+}     else {
+    $false
+}
+'@
+             $expected = @'
+if ($true) {
+    $true
+} else {
+    $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should correct violations in an if-else-elseif block" {
+            $def = @'
+$x = 1
+if ($x -eq 1) {
+    "1"
+}
+elseif ($x -eq 2) {
+    "2"
+}
+else {
+    "3"
+}
+'@
+             $expected = @'
+$x = 1
+if ($x -eq 1) {
+    "1"
+} elseif ($x -eq 2) {
+    "2"
+} else {
+    "3"
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should correct violations in a try-catch-finally block" {
+            $def = @'
+try {
+    "try"
+}
+catch {
+    "catch"
+}
+finally {
+    "finally"
+}
+'@
+            $expected = @'
+try {
+    "try"
+} catch {
+    "catch"
+} finally {
+    "finally"
 }
 '@
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
