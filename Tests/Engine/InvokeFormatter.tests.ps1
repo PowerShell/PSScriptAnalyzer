@@ -31,6 +31,27 @@ function foo {
             Invoke-Formatter $def $settings | Should Be $expected
         }
     }
+
+    Context "When a range is given" {
+        It "Should format only within the range when a range list is given" {
+            $def = @"
+function foo {
+"xyz"
+"abc"
+}
+"@
+
+            $expected = @"
+function foo {
+"xyz"
+    "abc"
+}
+"@
+
+            Invoke-Formatter -ScriptDefinition $def -Range @(3, 1, 4, 1) | Should Be $expected
+        }
+    }
+
     Context "When no settings are given" {
         It "Should format using default settings" {
             $def = @'

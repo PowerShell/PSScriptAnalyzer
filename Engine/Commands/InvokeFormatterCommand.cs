@@ -12,6 +12,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
@@ -26,6 +27,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     {
         private const string defaultSettingsPreset = "CodeFormatting";
         private Settings inputSettings;
+        private Range range;
 
         /// <summary>
         /// The script text to be formated.
@@ -43,19 +45,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         [ValidateNotNull]
         public object Settings { get; set; } = defaultSettingsPreset;
 
+        /// <summary>
+        /// The range within which formatting should take place.
+        ///
+        /// The parameter is an array of integers of length 4 such that the first, second, third and last
+        /// elements correspond to the start line number, start column number, end line number and
+        /// end column number. These numbers must be greater than 0.
+        /// </summary>
+        /// <returns></returns>
+        [Parameter(Mandatory = false, Position = 3)]
+        [ValidateNotNull]
+        [ValidateCount(4, 4)]
+        public int[] Range { get; set; }
+
 #if DEBUG
-        [Parameter(Mandatory = false)]
-        public Range Range { get; set; }
-
-        [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
-        public int StartLineNumber { get; set; } = -1;
-        [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
-        public int StartColumnNumber { get; set; } = -1;
-        [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
-        public int EndLineNumber { get; set; } = -1;
-        [Parameter(Mandatory = false, ParameterSetName = "NoRange")]
-        public int EndColumnNumber { get; set; } = -1;
-
         /// <summary>
         /// Attaches to an instance of a .Net debugger
         /// </summary>
@@ -85,6 +88,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
 
+            this.range = Range == null ? null : new Range(Range[0], Range[1], Range[2], Range[3]);
             try
             {
                 inputSettings = PSSASettings.Create(Settings, this.MyInvocation.PSScriptRoot, this);
@@ -93,7 +97,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 this.ThrowTerminatingError(new ErrorRecord(
                         e,
-                        "SETTNGS_ERROR",
+                        "SETTINGS_ERROR",
                         ErrorCategory.InvalidData,
                         Settings));
             }
@@ -114,17 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             // todo add tests to check range formatting
             string formattedScriptDefinition;
-#if DEBUG
-            var range = Range;
-            if (this.ParameterSetName.Equals("NoRange"))
-            {
-                range = new Range(StartLineNumber, StartColumnNumber, EndLineNumber, EndColumnNumber);
-            }
-
             formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, range, this);
-#endif // DEBUG
-
-            formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, null, this);
             this.WriteObject(formattedScriptDefinition);
         }
 

@@ -10,7 +10,7 @@ Formats a script text based on the input settings or default settings.
 ## SYNTAX
 
 ```
-Invoke-Formatter [-ScriptDefinition] <String> [-Settings <object>]
+Invoke-Formatter [-ScriptDefinition] <String> [-Settings <object>] [-Range <int[]>]
 ```
 
 ## DESCRIPTION
@@ -94,6 +94,20 @@ Parameter Sets: (All)
 Required: False
 Position: 2
 Default value: CodeFormatting
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Range
+The range within which formatting should take place. The parameter is an array of integers of length 4 such that the first, second, third and last elements correspond to the start line number, start column number, end line number and end column number. These numbers must be greater than 0.
+
+```yaml
+Type: Int32[]
+Parameter Sets: (All)
+
+Required: False
+Position: 3
+Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

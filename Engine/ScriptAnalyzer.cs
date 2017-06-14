@@ -1559,6 +1559,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // todo validate range
             var isRangeNull = range == null;
+            if (!isRangeNull && !text.IsValidRange(range))
+            {
+                this.outputWriter.ThrowTerminatingError(new ErrorRecord(
+                    new ArgumentException("Invalid Range", nameof(range)),
+                    "FIX_ERROR",
+                    ErrorCategory.InvalidArgument,
+                    range));
+            }
+
             range = isRangeNull ? null : SnapToEdges(text, range);
             var previousLineCount = text.Lines.Length;
             var previousUnusedCorrections = 0;
