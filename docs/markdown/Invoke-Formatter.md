@@ -102,7 +102,7 @@ Accept wildcard characters: False
 The range within which formatting should take place. The parameter is an array of integers of length 4 such that the first, second, third and last elements correspond to the start line number, start column number, end line number and end column number. These numbers must be greater than 0.
 
 ```yaml
-Type: int[]
+Type: Int32[]
 Parameter Sets: (All)
 
 Required: False
