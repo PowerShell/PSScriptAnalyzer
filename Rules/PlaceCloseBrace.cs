@@ -344,30 +344,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             int openBracePos,
             string fileName)
         {
-            var expectedNewLinePos = closeBracePos + 1;
-
             // this will not work if there is a comment in between any tokens.
-            // find violation only if the open brace is on the same line as the branching statement.
-            // todo handle types in catch statement
-            if (tokens.Length > 1 && tokens.Length > expectedNewLinePos)
+            var closeBraceToken = tokens[closeBracePos];
+            if (tokens.Length <= closeBracePos + 2 ||
+                tokensToIgnore.Contains(closeBraceToken))
             {
-                var closeBraceToken = tokens[closeBracePos];
-                if (tokens[closeBracePos + 1].Kind == TokenKind.NewLine &&
-                    IsBranchingStatementToken(tokens[closeBracePos + 2]) &&
-                    tokens[closeBracePos + 3].Kind == TokenKind.LCurly)
-                {
-                    return new DiagnosticRecord(
-                         GetError(Strings.PlaceCloseBraceErrorShouldCuddleBranchStatement),
-                         closeBraceToken.Extent,
-                         GetName(),
-                         GetDiagnosticSeverity(),
-                         fileName,
-                         null,
-                         GetCorrectionsForUncuddledBranches(tokens, closeBracePos, closeBracePos + 2, fileName));
-                }
+                return null;
             }
 
-            return null;
+            var token1 = tokens[closeBracePos + 1];
+            var token2 = tokens[closeBracePos + 2];
+            var branchTokenPos = IsBranchingStatementToken(token1) && !ApartByWhitespace(closeBraceToken, token1) ?
+                             closeBracePos + 1 :
+                             token1.Kind == TokenKind.NewLine || IsBranchingStatementToken(token2) ?
+                                closeBracePos + 2 :
+                                -1;
+
+            return branchTokenPos == -1 ?
+                null :
+                new DiagnosticRecord(
+                 GetError(Strings.PlaceCloseBraceErrorShouldCuddleBranchStatement),
+                 closeBraceToken.Extent,
+                 GetName(),
+                 GetDiagnosticSeverity(),
+                 fileName,
+                 null,
+                 GetCorrectionsForUncuddledBranches(tokens, closeBracePos, branchTokenPos, fileName));
+        }
+
+        private static bool ApartByWhitespace(Token token1, Token token2)
+        {
+            var e1 = token1.Extent;
+            var e2 = token2.Extent;
+            return e1.StartLineNumber == e2.StartLineNumber &&
+                e1.EndColumnNumber - e2.StartColumnNumber == 1;
         }
 
         private List<CorrectionExtent> GetCorrectionsForUncuddledBranches(
