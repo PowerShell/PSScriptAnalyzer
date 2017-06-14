@@ -907,7 +907,7 @@
     <value>Close brace does not follow a new line.</value>
   </data>
   <data name="PlaceCloseBraceErrorShouldCuddleBranchStatement" xml:space="preserve">
-    <value>Close brace follows a new line.</value>
+    <value>Close brace before a branch statement is followed by a new line.</value>
   </data>
   <data name="UseConsistentIndentationName" xml:space="preserve">
     <value>UseConsistentIndentation</value>
