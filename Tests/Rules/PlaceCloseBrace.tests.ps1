@@ -324,5 +324,19 @@ try {
 '@
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
         }
+
+        It "Should not find violations when a script has two close braces in succession" {
+            $def = @'
+function foo {
+if ($true) {
+"true"
+} else {
+"false"
+}
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
     }
 }
