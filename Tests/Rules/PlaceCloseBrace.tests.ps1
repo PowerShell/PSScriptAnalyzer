@@ -5,15 +5,15 @@ Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $ruleConfiguration = @{
-    Enable = $true
-    NoEmptyLineBefore = $true
+    Enable             = $true
+    NoEmptyLineBefore  = $true
     IgnoreOneLineBlock = $true
-    NewLineAfter = $true
+    NewLineAfter       = $true
 }
 
 $settings = @{
     IncludeRules = @("PSPlaceCloseBrace")
-    Rules = @{
+    Rules        = @{
         PSPlaceCloseBrace = $ruleConfiguration
     }
 }
@@ -130,7 +130,7 @@ $x = if ($true) { "blah" } else { "blah blah" }
         }
     }
 
-    Context "When a close brace should be follow a new line" {
+    Context "When a close brace should be followed by a new line" {
         BeforeAll {
             $ruleConfiguration.'NoEmptyLineBefore' = $false
             $ruleConfiguration.'IgnoreOneLineBlock' = $false
@@ -148,11 +148,11 @@ if (Test-Path "blah") {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
             $params = @{
-                RawContent = $def
+                RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText = '}'
-                CorrectionText = '}' + [System.Environment]::NewLine
+                ViolationText    = '}'
+                CorrectionText   = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
         }
@@ -168,11 +168,11 @@ if (Test-Path "blah") {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
             $params = @{
-                RawContent = $def
+                RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText = '}'
-                CorrectionText = '}' + [System.Environment]::NewLine
+                ViolationText    = '}'
+                CorrectionText   = '}' + [System.Environment]::NewLine
             }
             Test-CorrectionExtentFromContent @params
         }
@@ -194,6 +194,146 @@ Some-Command -Param1 @{
 Some-Command -Param1 @{
     key="value"
 } -Param2
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
+        }
+    }
+
+    Context "When a close brace should not be followed by a new line" {
+        BeforeAll {
+            $ruleConfiguration.'NoEmptyLineBefore' = $false
+            $ruleConfiguration.'IgnoreOneLineBlock' = $false
+            $ruleConfiguration.'NewLineAfter' = $false
+        }
+
+        It "Should find a violation if a branching statement is on a new line if open brance is on same line" {
+            $def = @'
+if ($true) {
+    $true
+}
+else {
+    $false
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+        }
+
+        It "Should correct violation by cuddling the else branch statement" {
+            $def = @'
+if ($true) {
+    $true
+}
+else {
+    $false
+}
+'@
+             $expected = @'
+if ($true) {
+    $true
+} else {
+    $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should correct violation if the close brace and following keyword are apart by less than a space" {
+$def = @'
+if ($true) {
+    $true
+}else {
+    $false
+}
+'@
+             $expected = @'
+if ($true) {
+    $true
+} else {
+    $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should correct violation if the close brace and following keyword are apart by more than a space" {
+$def = @'
+if ($true) {
+    $true
+}     else {
+    $false
+}
+'@
+             $expected = @'
+if ($true) {
+    $true
+} else {
+    $false
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should correct violations in an if-else-elseif block" {
+            $def = @'
+$x = 1
+if ($x -eq 1) {
+    "1"
+}
+elseif ($x -eq 2) {
+    "2"
+}
+else {
+    "3"
+}
+'@
+             $expected = @'
+$x = 1
+if ($x -eq 1) {
+    "1"
+} elseif ($x -eq 2) {
+    "2"
+} else {
+    "3"
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should correct violations in a try-catch-finally block" {
+            $def = @'
+try {
+    "try"
+}
+catch {
+    "catch"
+}
+finally {
+    "finally"
+}
+'@
+            $expected = @'
+try {
+    "try"
+} catch {
+    "catch"
+} finally {
+    "finally"
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
+        }
+
+        It "Should not find violations when a script has two close braces in succession" {
+            $def = @'
+function foo {
+if ($true) {
+"true"
+} else {
+"false"
+}
+}
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 0
