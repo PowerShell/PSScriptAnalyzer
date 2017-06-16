@@ -1557,7 +1557,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(text));
             }
 
-            // todo validate range
             var isRangeNull = range == null;
             if (!isRangeNull && !text.IsValidRange(range))
             {
@@ -1598,8 +1597,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 previousUnusedCorrections = unusedCorrections;
-
-                // todo add a TextLines.NumLines property because accessing TextLines.Lines is expensive
                 var lineCount = text.LineCount;
                 if (!isRangeNull && lineCount != previousLineCount)
                 {
