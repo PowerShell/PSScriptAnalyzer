@@ -17,6 +17,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private TextLines lines { get; set; }
 
         /// <summary>
+        /// Return the number of lines in the text.
+        /// </summary>
+        public int LineCount => lines.Count;
+
+        /// <summary>
         /// The text that is available for editing.
         /// </summary>
         public string Text { get { return String.Join(NewLine, lines); } }
