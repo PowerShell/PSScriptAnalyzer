@@ -1557,7 +1557,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(text));
             }
 
-            // todo validate range
             var isRangeNull = range == null;
             if (!isRangeNull && !text.IsValidRange(range))
             {
@@ -1569,7 +1568,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             range = isRangeNull ? null : SnapToEdges(text, range);
-            var previousLineCount = text.Lines.Length;
+            var previousLineCount = text.LineCount;
             var previousUnusedCorrections = 0;
             do
             {
@@ -1598,9 +1597,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 previousUnusedCorrections = unusedCorrections;
-
-                // todo add a TextLines.NumLines property because accessing TextLines.Lines is expensive
-                var lineCount = text.Lines.Length;
+                var lineCount = text.LineCount;
                 if (!isRangeNull && lineCount != previousLineCount)
                 {
                     range = new Range(

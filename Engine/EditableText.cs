@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
@@ -17,6 +18,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private TextLines lines { get; set; }
 
         /// <summary>
+        /// Return the number of lines in the text.
+        /// </summary>
+        public int LineCount => lines.Count;
+
+        /// <summary>
         /// The text that is available for editing.
         /// </summary>
         public string Text { get { return String.Join(NewLine, lines); } }
@@ -24,7 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// The lines in the Text.
         /// </summary>
-        public string[] Lines { get { return lines.ToArray(); } }
+        public ReadOnlyCollection<string> Lines => lines.ReadOnly();
 
         /// <summary>
         /// The new line character in the Text.
@@ -118,8 +124,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(range));
             }
 
-            return range.Start.Line <= Lines.Length
-                && range.End.Line <= Lines.Length
+            return range.Start.Line <= Lines.Count
+                && range.End.Line <= Lines.Count
                 && range.Start.Column <= Lines[range.Start.Line - 1].Length
                 && range.End.Column <= Lines[range.End.Line - 1].Length + 1;
         }

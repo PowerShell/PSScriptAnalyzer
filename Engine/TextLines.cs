@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 
@@ -78,6 +79,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 Insert(index, value);
                 RemoveAt(index);
             }
+        }
+
+        /// <summary>
+        /// Return a readonly collection of the current object.
+        /// </summary>
+        /// <returns>A readonly collection of the current object.</returns>
+        public ReadOnlyCollection<string> ReadOnly()
+        {
+            return new ReadOnlyCollection<string>(this);
         }
 
         /// <summary>

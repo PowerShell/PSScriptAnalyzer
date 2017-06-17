@@ -104,5 +104,38 @@ function foo {
             $result = $editableText.ApplyEdit($edit)
             $result.ToString() | Should Be $expected
         }
+
+        It "Should return a read-only collection of lines in the text" {
+            $def = @'
+function foo {
+    param(
+        [bool] $param1
+    )
+}
+'@
+            $text = New-Object `
+                -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText" `
+                -ArgumentList @($def)
+
+            {$text.Lines.Add("abc")} | Should Throw
+        }
+
+        It "Should return the correct number of lines in the text" {
+            $def = @'
+function foo
+{
+get-childitem
+$x=1+2
+$hashtable = @{
+property1 = "value"
+    anotherProperty = "another value"
+}
+}
+'@
+            $text = New-Object `
+                -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText" `
+                -ArgumentList @($def)
+            $text.LineCount | Should Be 9
+        }
      }
 }
