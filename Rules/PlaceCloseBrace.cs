@@ -28,6 +28,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class PlaceCloseBrace : ConfigurableRule
     {
+        private HashSet<Token> tokensToIgnore;
+        private List<Func<Token[], int, int, string, DiagnosticRecord>> violationFinders
+            = new List<Func<Token[], int, int, string, DiagnosticRecord>>();
+
         /// <summary>
         /// Indicates if there should or should not be an empty line before a close brace.
         ///
@@ -57,7 +61,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool NewLineAfter { get; protected set; }
 
-        private HashSet<Token> tokensToIgnore;
+        /// <summary>
+        /// Sets the configurable properties of this rule.
+        /// </summary>
+        /// <param name="paramValueMap">A dictionary that maps parameter name to it value. Must be non-null</param>
+        public override void ConfigureRule(IDictionary<string, object> paramValueMap)
+        {
+            base.ConfigureRule(paramValueMap);
+            violationFinders.Add(GetViolationForBraceShouldBeOnNewLine);
+            if (NoEmptyLineBefore)
+            {
+                violationFinders.Add(GetViolationForBraceShouldNotFollowEmptyLine);
+            }
+
+            if (NewLineAfter)
+            {
+                violationFinders.Add(GetViolationForBraceShouldHaveNewLineAfter);
+            }
+            else
+            {
+                violationFinders.Add(GetViolationsForUncuddledBranches);
+            }
+        }
 
         /// <summary>
         /// Analyzes the given ast to find violations.
@@ -121,27 +146,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             continue;
                         }
 
-                        AddToDiagnosticRecords(
-                            GetViolationForBraceShouldBeOnNewLine(tokens, k, openBracePos, fileName),
-                            ref diagnosticRecords);
-
-                        if (NoEmptyLineBefore)
+                        foreach (var violationFinder in violationFinders)
                         {
                             AddToDiagnosticRecords(
-                                GetViolationForBraceShouldNotFollowEmptyLine(tokens, k, openBracePos, fileName),
-                                ref diagnosticRecords);
-                        }
-
-                        if (NewLineAfter)
-                        {
-                            AddToDiagnosticRecords(
-                                GetViolationForBraceShouldHaveNewLineAfter(tokens, k, openBracePos, fileName),
-                                ref diagnosticRecords);
-                        }
-                        else
-                        {
-                            AddToDiagnosticRecords(
-                                GetViolationsForUncuddledBranches(tokens, k, openBracePos, fileName),
+                                violationFinder(tokens, k, openBracePos, fileName),
                                 ref diagnosticRecords);
                         }
                     }
