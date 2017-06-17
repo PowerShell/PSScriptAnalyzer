@@ -11,14 +11,14 @@
     Rules = @{
         PSPlaceOpenBrace = @{
             Enable             = $true
-            OnSameLine         = $false
+            OnSameLine         = $true
             NewLineAfter       = $true
             IgnoreOneLineBlock = $true
         }
 
         PSPlaceCloseBrace = @{
             Enable             = $true
-            NewLineAfter       = $false
+            NewLineAfter       = $true
             IgnoreOneLineBlock = $true
             NoEmptyLineBefore  = $false
         }
