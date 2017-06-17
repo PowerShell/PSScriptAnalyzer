@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
@@ -29,7 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// The lines in the Text.
         /// </summary>
-        public IList<string> Lines => lines.ReadOnly();
+        public ReadOnlyCollection<string> Lines => lines.ReadOnly();
 
         /// <summary>
         /// The new line character in the Text.

@@ -294,9 +294,6 @@
   <data name="TextLinesNoNullItem" xml:space="preserve">
     <value>Line element cannot be null.</value>
   </data>
-  <data name="TextLinesReadOnlyCollection" xml:space="preserve">
-    <value>Collection is read-only.</value>
-  </data>
   <data name="TextEditNoNullItem" xml:space="preserve">
     <value>Line element cannot be null.</value>
   </data>

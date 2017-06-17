@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 
@@ -30,7 +31,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             lines = new LinkedList<string>();
             Count = 0;
-            IsReadOnly = false;
             InvalidateLastAccessed();
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// If the object is ReadOnly or not.
         /// </summary>
-        public bool IsReadOnly { get; private set; }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Sets or gets the element at the given index.
@@ -82,16 +82,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Creates a readonly shallow copy.
+        /// Return a readonly collection of the current object.
         /// </summary>
-        /// <returns>A readonly shallow copy of the current object.</returns>
-        public IList<string> ReadOnly()
+        /// <returns>A readonly collection of the current object.</returns>
+        public ReadOnlyCollection<string> ReadOnly()
         {
-            var ret = new TextLines();
-            ret.IsReadOnly = true;
-            ret.Count = this.Count;
-            ret.lines = this.lines;
-            return ret;
+            return new ReadOnlyCollection<string>(this);
         }
 
         /// <summary>
@@ -108,7 +104,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public void Clear()
         {
-            ValidateReadOnly();
             lines.Clear();
         }
 
@@ -169,7 +164,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public void Insert(int index, string item)
         {
-            ValidateReadOnly();
             ThrowIfNull(item, nameof(item));
             LinkedListNode<string> itemInserted;
             if (Count == 0 && index == 0)
@@ -196,7 +190,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>true if removal is successful, otherwise false.</returns>
         public bool Remove(string item)
         {
-            ValidateReadOnly();
             var itemIndex = IndexOf(item);
             if (itemIndex == -1)
             {
@@ -212,7 +205,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         public void RemoveAt(int index)
         {
-            ValidateReadOnly();
             ValidateIndex(index);
             var node = GetNodeAt(index);
             if (node.Next != null)
@@ -356,14 +348,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (param == null)
             {
                 throw new ArgumentNullException(paramName);
-            }
-        }
-
-        private void ValidateReadOnly()
-        {
-            if (IsReadOnly)
-            {
-                throw new NotSupportedException(Strings.TextLinesReadOnlyCollection);
             }
         }
     }
