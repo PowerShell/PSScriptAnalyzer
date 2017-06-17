@@ -177,6 +177,27 @@ if (Test-Path "blah") {
             Test-CorrectionExtentFromContent @params
         }
 
+        It "Should find a violation for a close brace followed by a catch statement" {
+             $def = @'
+try {
+    "try"
+} catch {
+    "catch"
+}
+
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
+            $params = @{
+                RawContent       = $def
+                DiagnosticRecord = $violations[0]
+                CorrectionsCount = 1
+                ViolationText    = '}'
+                CorrectionText   = '}' + [System.Environment]::NewLine
+            }
+            Test-CorrectionExtentFromContent @params
+
+        }
         It "Should not find a violation for a close brace followed by a comma in an array expression" {
             $def = @'
 Some-Command -Param1 @{

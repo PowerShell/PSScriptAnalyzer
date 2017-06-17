@@ -320,9 +320,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (tokens.Length > 1 && tokens.Length > expectedNewLinePos)
             {
                 var closeBraceToken = tokens[closeBracePos];
-                if ((tokens[expectedNewLinePos].Kind == TokenKind.Else
-                    || tokens[expectedNewLinePos].Kind == TokenKind.ElseIf)
-                    && !tokensToIgnore.Contains(closeBraceToken))
+                if (!tokensToIgnore.Contains(closeBraceToken) && IsBranchingStatementToken(tokens[expectedNewLinePos]))
                 {
                     return new DiagnosticRecord(
                         GetError(Strings.PlaceCloseBraceErrorShouldFollowNewLine),
