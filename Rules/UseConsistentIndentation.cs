@@ -36,6 +36,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: 4)]
         public int IndentationSize { get; protected set; }
 
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool InsertSpaces { get; protected set; }
+
         private enum IndentationKind { Space, Tab };
 
         // TODO make this configurable
