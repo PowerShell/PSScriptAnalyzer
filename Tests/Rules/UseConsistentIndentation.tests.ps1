@@ -8,8 +8,8 @@ $indentationUnit = ' '
 $indentationSize = 4
 $ruleConfiguration = @{
     Enable          = $true
-    InsertSpaces    = $true
     IndentationSize = 4
+    Kind            = 'space'
 }
 
 $settings = @{
@@ -173,7 +173,7 @@ $x = "this " + `
 
     Context "When tabs instead of spaces are used for indentation" {
         BeforeAll {
-            $ruleConfiguration.'InsertSpaces' = $false
+            $ruleConfiguration.'Kind' = 'tab'
         }
 
         It "Should indent using tabs" {
