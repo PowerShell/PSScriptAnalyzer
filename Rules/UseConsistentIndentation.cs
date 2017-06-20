@@ -36,10 +36,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: 4)]
         public int IndentationSize { get; protected set; }
 
-        private enum IndentationKind { Space, Tab };
+
+        // Cannot name to IndentationKind due to the enum type of the same name.
+        /// <summary>
+        /// Represents the kind of indentation to be used.
+        ///
+        /// Possible values are: `space`, `tab`. If any invalid value is given, the
+        /// property defaults to `space`.
+        ///
+        /// `space` means `IndentationSize` number of `space` characters are used to provide one level of indentation.
+        /// `tab` means a tab character, `\t`.
+        ///</summary>
+        [ConfigurableRuleProperty(defaultValue: "space")]
+        public string Kind
+        {
+            get
+            {
+                return indentationKind.ToString();
+            }
+            set
+            {
+                if (String.IsNullOrWhiteSpace(value) ||
+                    !Enum.TryParse<IndentationKind>(value, true, out indentationKind))
+                {
+                    indentationKind = IndentationKind.Space;
+                }
+            }
+        }
+
+        private bool insertSpaces;
+        private char indentationChar;
+        private int indentationLevelMultiplier;
+
+        // TODO Enable auto when the rule is able to detect indentation
+        private enum IndentationKind {
+            Space,
+            Tab,
+            // Auto
+        };
 
         // TODO make this configurable
-        private readonly IndentationKind indentationKind = IndentationKind.Space;
+        private IndentationKind indentationKind = IndentationKind.Space;
+
 
         /// <summary>
         /// Analyzes the given ast to find violations.
@@ -60,6 +98,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return Enumerable.Empty<DiagnosticRecord>();
             }
+
+            // It is more efficient to initialize these fields in ConfigurRule method
+            // but when the rule will enable `Auto` IndentationKind, we will anyways need to move
+            // the setting of these variables back here after the rule detects the indentation kind for
+            // each invocation.
+            insertSpaces = indentationKind == IndentationKind.Space;
+            indentationChar = insertSpaces ? ' ' : '\t';
+            indentationLevelMultiplier = insertSpaces ? IndentationSize : 1;
 
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
@@ -262,17 +308,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private int GetIndentation(int indentationLevel)
         {
-            return indentationLevel * this.IndentationSize;
-        }
-
-        private char GetIndentationChar()
-        {
-            return indentationKind == IndentationKind.Space ? ' ' : '\t';
+            // todo if condition can be evaluated during rule configuration
+            return indentationLevel * indentationLevelMultiplier;
         }
 
         private string GetIndentationString(int indentationLevel)
         {
-            return new string(GetIndentationChar(), GetIndentation(indentationLevel));
+            return new string(indentationChar, GetIndentation(indentationLevel));
         }
     }
 }

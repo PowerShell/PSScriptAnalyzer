@@ -6,16 +6,18 @@ Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $indentationUnit = ' '
 $indentationSize = 4
-$settings = @{
-    IncludeRules = @("PSUseConsistentIndentation")
-    Rules = @{
-        PSUseConsistentIndentation = @{
-            Enable = $true
-            IndentationSize = 4
-        }
-    }
+$ruleConfiguration = @{
+    Enable          = $true
+    IndentationSize = 4
+    Kind            = 'space'
 }
 
+$settings = @{
+    IncludeRules = @("PSUseConsistentIndentation")
+    Rules        = @{
+        PSUseConsistentIndentation = $ruleConfiguration
+    }
+}
 
 Describe "UseConsistentIndentation" {
     Context "When top level indentation is not consistent" {
@@ -127,8 +129,8 @@ function foo {
 get-process |
 where-object {$_.Name -match 'powershell'}
 '@
-          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-          $violations.Count | Should Be 1
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
         }
 
         It "Should not find a violation if a pipleline element is indented correctly" {
@@ -136,8 +138,8 @@ where-object {$_.Name -match 'powershell'}
 get-process |
     where-object {$_.Name -match 'powershell'}
 '@
-          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-          $violations.Count | Should Be 0
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
         }
 
         It "Should ignore comment in the pipleline" {
@@ -147,8 +149,8 @@ get-process |
 select Name,Id |
        format-list
 '@
-          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-          $violations.Count | Should Be 3
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 3
         }
 
         It "Should indent properly after line continuation (backtick) character" {
@@ -159,13 +161,46 @@ $x = "this " + `
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
             $params = @{
-                RawContent = $def
+                RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText = "`"Should be indented properly`""
-                CorrectionText = (New-Object -TypeName String -ArgumentList $indentationUnit,$indentationSize) + "`"Should be indented properly`""
+                ViolationText    = "`"Should be indented properly`""
+                CorrectionText   = (New-Object -TypeName String -ArgumentList $indentationUnit, $indentationSize) + "`"Should be indented properly`""
             }
             Test-CorrectionExtentFromContent @params
+        }
+    }
+
+    Context "When tabs instead of spaces are used for indentation" {
+        BeforeAll {
+            $ruleConfiguration.'Kind' = 'tab'
+        }
+
+        It "Should indent using tabs" {
+            $def = @'
+function foo
+{
+get-childitem
+$x=1+2
+$hashtable = @{
+property1 = "value"
+    anotherProperty = "another value"
+}
+}
+'@
+            ${t} = "`t"
+            $expected = @"
+function foo
+{
+${t}get-childitem
+${t}`$x=1+2
+${t}`$hashtable = @{
+${t}${t}property1 = "value"
+${t}${t}anotherProperty = "another value"
+${t}}
+}
+"@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
         }
     }
 }
