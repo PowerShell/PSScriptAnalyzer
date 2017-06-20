@@ -265,12 +265,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private int GetIndentation(int indentationLevel)
         {
-            return indentationLevel * this.IndentationSize;
+            // todo if condition can be evaluated during rule configuration
+            return indentationLevel * (InsertSpaces ? this.IndentationSize : 1);
         }
 
         private char GetIndentationChar()
         {
-            return indentationKind == IndentationKind.Space ? ' ' : '\t';
+            // todo can be evaluated during rule configuration
+            return InsertSpaces ? ' ' : '\t';
         }
 
         private string GetIndentationString(int indentationLevel)
