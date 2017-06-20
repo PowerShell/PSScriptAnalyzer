@@ -28,3 +28,10 @@ Enable or disable the rule during ScriptAnalyzer invocation.
 #### IndentationSize: bool (Default value is `4`)
 
 Indentation size in the number of space characters.
+
+#### Kind: string (Default value is `space`)
+
+Represents the kind of indentation to be used. Possible values are: `space`, `tab`. If any invalid value is given, the property defaults to `space`.
+
+`space` means `IndentationSize` number of `space` characters are used to provide one level of indentation.
+`tab` means a tab character, `\t`.
