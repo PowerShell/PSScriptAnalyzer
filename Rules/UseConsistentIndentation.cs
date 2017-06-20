@@ -45,8 +45,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// property defaults to `space`.
         ///
         /// `space` means `IndentationSize` number of `space` characters are used to provide one level of indentation.
-        /// `tab` means a tab character, `\t`
-        /// `end` means the help is places the end of the function definition body.
+        /// `tab` means a tab character, `\t`.
         ///</summary>
         [ConfigurableRuleProperty(defaultValue: "space")]
         public string Kind
@@ -66,6 +65,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         private bool insertSpaces;
+        private char indentationChar;
+        private int indentationLevelMultiplier;
 
         // TODO Enable auto when the rule is able to detect indentation
         private enum IndentationKind {
@@ -98,7 +99,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return Enumerable.Empty<DiagnosticRecord>();
             }
 
+            // It is more efficient to initialize these fields in ConfigurRule method
+            // but when the rule will enable `Auto` IndentationKind, we will anyways need to move
+            // the setting of these variables back here after the rule detects the indentation kind for
+            // each invocation.
             insertSpaces = indentationKind == IndentationKind.Space;
+            indentationChar = insertSpaces ? ' ' : '\t';
+            indentationLevelMultiplier = insertSpaces ? IndentationSize : 1;
+
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var indentationLevel = 0;
@@ -301,18 +309,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private int GetIndentation(int indentationLevel)
         {
             // todo if condition can be evaluated during rule configuration
-            return indentationLevel * (insertSpaces ? this.IndentationSize : 1);
-        }
-
-        private char GetIndentationChar()
-        {
-            // todo can be evaluated during rule configuration
-            return insertSpaces ? ' ' : '\t';
+            return indentationLevel * indentationLevelMultiplier;
         }
 
         private string GetIndentationString(int indentationLevel)
         {
-            return new string(GetIndentationChar(), GetIndentation(indentationLevel));
+            return new string(indentationChar, GetIndentation(indentationLevel));
         }
     }
 }
