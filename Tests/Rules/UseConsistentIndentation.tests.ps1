@@ -6,16 +6,18 @@ Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $indentationUnit = ' '
 $indentationSize = 4
-$settings = @{
-    IncludeRules = @("PSUseConsistentIndentation")
-    Rules = @{
-        PSUseConsistentIndentation = @{
-            Enable = $true
-            IndentationSize = 4
-        }
-    }
+$ruleConfiguration = @{
+    Enable          = $true
+    InsertSpaces    = $true
+    IndentationSize = 4
 }
 
+$settings = @{
+    IncludeRules = @("PSUseConsistentIndentation")
+    Rules        = @{
+        PSUseConsistentIndentation = $ruleConfiguration
+    }
+}
 
 Describe "UseConsistentIndentation" {
     Context "When top level indentation is not consistent" {
@@ -159,13 +161,46 @@ $x = "this " + `
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should Be 1
             $params = @{
-                RawContent = $def
+                RawContent       = $def
                 DiagnosticRecord = $violations[0]
                 CorrectionsCount = 1
-                ViolationText = "`"Should be indented properly`""
-                CorrectionText = (New-Object -TypeName String -ArgumentList $indentationUnit,$indentationSize) + "`"Should be indented properly`""
+                ViolationText    = "`"Should be indented properly`""
+                CorrectionText   = (New-Object -TypeName String -ArgumentList $indentationUnit, $indentationSize) + "`"Should be indented properly`""
             }
             Test-CorrectionExtentFromContent @params
+        }
+    }
+
+    Context "When tabs instead of spaces are used for indentation" {
+        BeforeAll {
+            $ruleConfiguration.'InsertSpaces' = $false
+        }
+
+        It "Should indent using tabs" {
+            $def = @'
+function foo
+{
+get-childitem
+$x=1+2
+$hashtable = @{
+property1 = "value"
+    anotherProperty = "another value"
+}
+}
+'@
+            ${t} = "`t"
+            $expected = @"
+function foo
+{
+${t}get-childitem
+${t}`$x=1+2
+${t}`$hashtable = @{
+${t}${t}property1 = "value"
+${t}${t}anotherProperty = "another value"
+${t}}
+}
+"@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should Be $expected
         }
     }
 }
