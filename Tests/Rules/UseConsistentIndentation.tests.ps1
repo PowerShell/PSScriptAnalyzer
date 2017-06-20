@@ -129,8 +129,8 @@ function foo {
 get-process |
 where-object {$_.Name -match 'powershell'}
 '@
-          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-          $violations.Count | Should Be 1
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 1
         }
 
         It "Should not find a violation if a pipleline element is indented correctly" {
@@ -138,8 +138,8 @@ where-object {$_.Name -match 'powershell'}
 get-process |
     where-object {$_.Name -match 'powershell'}
 '@
-          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-          $violations.Count | Should Be 0
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 0
         }
 
         It "Should ignore comment in the pipleline" {
@@ -149,8 +149,8 @@ get-process |
 select Name,Id |
        format-list
 '@
-          $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-          $violations.Count | Should Be 3
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should Be 3
         }
 
         It "Should indent properly after line continuation (backtick) character" {
