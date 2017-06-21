@@ -1,4 +1,16 @@
-﻿## [1.14.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.14.1) - 2017-06-12
+﻿## [1.15.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.15.0) - 2017-06-21
+
+### Added
+- (#780) `Range` parameter to the `Invoke-Formatter` cmdlet. The user can specify the range in which formatting should be applied. The primary usage for this parameter is to be used with editors that request selection formatting.
+- (#782, #788) Allman style, Stroustrup style and one true brace style (OTBS) code formatting presets.
+- (#790) `Kind` switch to `PSUseConsistentIndentation` rule to provide tabbed indentation.
+
+### Fixed
+- (#781, #784) `NewLineAfer` switch behavior in `PSPlaceCloseBrace` rule. When the switch is set to `$false`, the emitted suggested corrections enforce branching control statements to be on the same line as their preceding closing braces. On the other hand when the switch is set to `$true`, the emitted suggested corrections enforce branching controls statements to be on the next line.
+
+Many thanks to @rkeithhill for contributing the _Stroustrup_ style code formatting preset.
+
+## [1.14.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.14.1) - 2017-06-12
 
 ### Fixed
 - (#777) `Invoke-Formatter`
