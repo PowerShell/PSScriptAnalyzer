@@ -55,8 +55,7 @@ function foo {
     Context "When no settings are given" {
         It "Should format using default settings" {
             $def = @'
-function foo
-{
+function foo {
 get-childitem
 $x=1+2
 $hashtable = @{
@@ -66,7 +65,8 @@ property1 = "value"
 }
 '@
             $expected = @'
-function foo {
+function foo
+{
     get-childitem
     $x = 1 + 2
     $hashtable = @{
