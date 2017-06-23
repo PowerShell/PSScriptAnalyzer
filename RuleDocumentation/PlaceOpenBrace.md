@@ -27,7 +27,7 @@ Open brace placement should follow a consistent style. It can either follow KR s
 
 Enable or disable the rule during ScriptAnalyzer invocation.
 
-#### OnSameLine: bool (Default value is `$true`)
+#### OnSameLine: bool (Default value is `$false`)
 
 Enforce open brace to be on the same line as that of its preceding keyword.
 

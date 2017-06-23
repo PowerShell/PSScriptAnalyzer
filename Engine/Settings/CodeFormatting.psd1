@@ -10,7 +10,7 @@
     Rules        = @{
         PSPlaceOpenBrace           = @{
             Enable             = $true
-            OnSameLine         = $true
+            OnSameLine         = $false
             NewLineAfter       = $true
             IgnoreOneLineBlock = $true
         }
