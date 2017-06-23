@@ -32,9 +32,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Indicates if an open brace should be on the same line or on the next line of its preceding keyword.
         ///
-        /// Default value is true.
+        /// Default value is false.
         /// </summary>
-        [ConfigurableRuleProperty(defaultValue: true)]
+        [ConfigurableRuleProperty(defaultValue: false)]
         public bool OnSameLine { get; protected set; }
 
         /// <summary>
