@@ -1,6 +1,6 @@
 param(
     [ValidateSet("net451", "netstandard1.6")]
-    [string]$Framework = "netstandard1.6",
+    [string]$Framework = "net451",
 
     [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
     [string]$Configuration = "Debug"
