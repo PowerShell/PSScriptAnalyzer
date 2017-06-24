@@ -61,9 +61,17 @@ function Get-CleanTaskParams($project) {
     }
 }
 
-function Add-ProjectTask([string]$project, [string]$taskName, [hashtable]$taskParams) {
+function Get-TestTaskParam($project) {
+    @{
+        Jobs = {
+            Invoke-Pester
+        }
+    }
+}
+
+function Add-ProjectTask([string]$project, [string]$taskName, [hashtable]$taskParams, [string]$pathPrefix = $buildRoot) {
    $jobs = [scriptblock]::Create(@"
-pushd $buildRoot/$project
+pushd $pathPrefix/$project
 $($taskParams.Jobs)
 popd
 "@)
@@ -83,3 +91,5 @@ task restore "engine/restore", "rules/restore"
 $projects | % {Add-ProjectTask $_ clean (Get-CleanTaskParams $_)}
 task clean "engine/clean", "rules/clean"
 
+$projects | % {Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"}
+task test "engine/test", "rules/test"
