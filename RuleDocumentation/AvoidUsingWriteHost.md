@@ -11,29 +11,32 @@ Commands with the `Show` verb do not have this check applied.
 
 ## How
 
-Replace `Write-Host` with `Write-Output` or `Write-Verbose`.
+Replace `Write-Host` with `Write-Output` or `Write-Verbose` depending on whether the intention is logging or returning one or multiple objects.
 
 ## Example
 
 ### Wrong
 
 ``` PowerShell
-function Test
+function Get-MeaningOfLife
 {
 	...
-	Write-Host "Executing.."
+	Write-Host "Computing the answer to the ultimate question of life, the universe and everything"
 	...
+	Write-Host 42
 }
 ```
 
 ### Correct
 
 ``` PowerShell
-function Test
+function Get-MeaningOfLife
 {
+	[CmdletBinding()]Param() # to make it possible to set the VerbosePreference when calling the function
 	...
-	Write-Output "Executing.."
+	Write-Verbose "Computing the answer to the ultimate question of life, the universe and everything"
 	...
+	Write-Output 42
 }
 
 function Show-Something
