@@ -11,7 +11,7 @@ $resourceScript = Join-Path $BuildRoot "New-StronglyTypedCsFileForResx.ps1"
 function Get-BuildInputs($project) {
     pushd $buildRoot/$project
     gci -Filter *.cs
-    gci -Directory -Exclude obj,bin | gci -Filter *.cs -Recurse
+    gci -Directory -Exclude obj, bin | gci -Filter *.cs -Recurse
     popd
 }
 
@@ -28,7 +28,7 @@ function Get-BuildOutputs($project) {
 
 function Get-BuildTaskParams($project) {
     $taskParams = @{
-        Jobs    = {dotnet build --framework $Framework --configuration $Configuration}
+        Jobs = {dotnet build --framework $Framework --configuration $Configuration}
     }
 
     $outputs = (Get-BuildOutputs $project)
@@ -43,9 +43,9 @@ function Get-BuildTaskParams($project) {
 
 function Get-RestoreTaskParams($project) {
     @{
-        Inputs = "$BuildRoot/$project/project.json"
+        Inputs  = "$BuildRoot/$project/project.json"
         Outputs = "$BuildRoot/$project/project.lock.json"
-        Jobs = {dotnet restore}
+        Jobs    = {dotnet restore}
     }
 }
 
@@ -73,15 +73,15 @@ function Get-TestTaskParam($project) {
 
 function Get-ResourceTaskParam($project) {
     @{
-        Inputs = "$project/Strings.resx"
+        Inputs  = "$project/Strings.resx"
         Outputs = "$project/Strings.cs"
-        Jobs = {& "$resourceScript $project"}
-        Before = "$project/build"
+        Jobs    = {& "$resourceScript $project"}
+        Before  = "$project/build"
     }
 }
 
 function Add-ProjectTask([string]$project, [string]$taskName, [hashtable]$taskParams, [string]$pathPrefix = $buildRoot) {
-   $jobs = [scriptblock]::Create(@"
+    $jobs = [scriptblock]::Create(@"
 pushd $pathPrefix/$project
 $($taskParams.Jobs)
 popd
@@ -108,6 +108,45 @@ task clean "engine/clean", "rules/clean"
 $projects | % {Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"}
 task test "engine/test", "rules/test"
 
-task createModule {
+task makeModule {
+    $solutionDir = $BuildRoot
+    $itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+        "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
 
+    $itemsToCopyCommon = @("$solutionDir\Engine\PSScriptAnalyzer.psd1",
+        "$solutionDir\Engine\PSScriptAnalyzer.psm1",
+        "$solutionDir\Engine\ScriptAnalyzer.format.ps1xml",
+        "$solutionDir\Engine\ScriptAnalyzer.types.ps1xml")
+
+    $destinationDir = "$solutionDir\out\PSScriptAnalyzer"
+    $destinationDirBinaries = $destinationDir
+    if ($Framework -eq "netstandard1.6") {
+        $destinationDirBinaries = "$destinationDir\coreclr"
+    } elseif ($Configuration -match 'PSv3') {
+        $destinationDirBinaries = "$destinationDir\PSv3"
+    }
+
+    Function CopyToDestinationDir($itemsToCopy, $destination) {
+        if (-not (Test-Path $destination)) {
+            New-Item -ItemType Directory $destination -Force
+        }
+        foreach ($file in $itemsToCopy) {
+            Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Force
+        }
+    }
+
+    CopyToDestinationDir $itemsToCopyCommon $destinationDir
+    CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
+
+    # Copy Settings File
+    Copy-Item -Path "$solutionDir\Engine\Settings" -Destination $destinationDir -Force -Recurse
+
+    # copy newtonsoft dll if net451 framework
+    if ($Framework -eq "net451") {
+        copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+    }
+}
+
+task cleanModule {
+    Remove-Item -Path out/ -Recurse -Force
 }
