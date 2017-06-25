@@ -6,6 +6,8 @@ param(
     [string]$Configuration = "Debug"
 )
 
+$resourceScript = Join-Path $BuildRoot "New-StronglyTypedCsFileForResx.ps1"
+
 function Get-BuildInputs($project) {
     pushd $buildRoot/$project
     gci -Filter *.cs
@@ -69,6 +71,15 @@ function Get-TestTaskParam($project) {
     }
 }
 
+function Get-ResourceTaskParam($project) {
+    @{
+        Inputs = "$project/Strings.resx"
+        Outputs = "$project/Strings.cs"
+        Jobs = {& "$resourceScript $project"}
+        Before = "$project/build"
+    }
+}
+
 function Add-ProjectTask([string]$project, [string]$taskName, [hashtable]$taskParams, [string]$pathPrefix = $buildRoot) {
    $jobs = [scriptblock]::Create(@"
 pushd $pathPrefix/$project
@@ -82,6 +93,9 @@ popd
 
 $projects = @("engine", "rules")
 
+$projects | % {Add-ProjectTask $_ buildResource (Get-ResourceTaskParam $_)}
+task buildResource -Before build "engine/buildResource", "rules/buildResource"
+
 $projects | % {Add-ProjectTask $_ build (Get-BuildTaskParams $_)}
 task build "engine/build", "rules/build"
 
@@ -93,3 +107,7 @@ task clean "engine/clean", "rules/clean"
 
 $projects | % {Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"}
 task test "engine/test", "rules/test"
+
+task createModule {
+
+}
