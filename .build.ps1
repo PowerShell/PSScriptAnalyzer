@@ -196,6 +196,10 @@ task buildDocs -Inputs $bdInputs -Outputs $bdOutputs {
     New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force
 }
 
-task cleanDocs {
+task cleanDocs -if (Test-Path $outputDocsPath) {
+    Remove-Item -Path $outputDocsPath -Recurse -Force
+}
 
+task newSession {
+    Start-Process "powershell" -ArgumentList @('-noexit', '-command "import-module c:\users\kabawany\source\repos\psscriptanalyzer\out\psscriptanalyzer"')
 }
