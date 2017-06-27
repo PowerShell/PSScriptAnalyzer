@@ -7,6 +7,14 @@ param(
 )
 
 $resourceScript = Join-Path $BuildRoot "New-StronglyTypedCsFileForResx.ps1"
+$outPath = "$BuildRoot/out"
+$modulePath = "$outPath/PSScriptAnalyzer"
+
+function CreateIfNotExists([string] $folderPath) {
+    if (-not (Test-Path $folderPath)) {
+        New-Item -Path $folderPath -ItemType Directory -Verbose:$verbosity
+    }
+}
 
 function Get-BuildInputs($project) {
     pushd $buildRoot/$project
@@ -122,14 +130,13 @@ task makeModule {
     $destinationDirBinaries = $destinationDir
     if ($Framework -eq "netstandard1.6") {
         $destinationDirBinaries = "$destinationDir\coreclr"
-    } elseif ($Configuration -match 'PSv3') {
+    }
+    elseif ($Configuration -match 'PSv3') {
         $destinationDirBinaries = "$destinationDir\PSv3"
     }
 
     Function CopyToDestinationDir($itemsToCopy, $destination) {
-        if (-not (Test-Path $destination)) {
-            New-Item -ItemType Directory $destination -Force
-        }
+        CreateIfNotExists($destination)
         foreach ($file in $itemsToCopy) {
             Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Force
         }
@@ -149,4 +156,46 @@ task makeModule {
 
 task cleanModule {
     Remove-Item -Path out/ -Recurse -Force
+}
+
+
+$docsPath = Join-Path $BuildRoot 'docs'
+$outputDocsPath = Join-Path $modulePath 'en-US'
+$bdInputs = {Get-ChildItem $docsPath -File -Recurse}
+$bdOutputs = @(
+        "$outputDocsPath/about_PSScriptAnalyzer.help.txt",
+        "$outputDocsPath/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml"
+    )
+
+# $buildDocsParams = @{
+#     Inputs  = (Get-ChildItem $docsPath -File -Recurse)
+#     Outputs = @(
+#         "$outputDocsPath/about_PSScriptAnalyzer.help.txt",
+#         "$outputDocsPath/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml"
+#     )
+# }
+
+task buildDocs -Inputs $bdInputs -Outputs $bdOutputs {
+    # todo move common variables to script scope
+    $markdownDocsPath = Join-Path $docsPath 'markdown'
+    CreateIfNotExists($outputDocsPath)
+
+    # copy the about help file
+    Copy-Item -Path $docsPath\about_PSScriptAnalyzer.help.txt -Destination $outputDocsPath -Force
+
+    # Build documentation using platyPS
+    if ((Get-Module PlatyPS -ListAvailable -Verbose:$verbosity) -eq $null) {
+        throw "Cannot find PlatyPS. Please install it from https://www.powershellgallery.com."
+    }
+    if ((Get-Module PlatyPS -Verbose:$verbosity) -eq $null) {
+        Import-Module PlatyPS -Verbose:$verbosity
+    }
+    if (-not (Test-Path $markdownDocsPath -Verbose:$verbosity)) {
+        throw "Cannot find markdown documentation folder."
+    }
+    New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force
+}
+
+task cleanDocs {
+
 }
