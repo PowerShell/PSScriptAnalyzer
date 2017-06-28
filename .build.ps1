@@ -189,7 +189,7 @@ task createModule {
     Copy-Item -Path "$solutionDir\Engine\Settings" -Destination $destinationDir -Force -Recurse
 }
 
-task cleanModule {
+task cleanModule -if (Test-Path $outPath) {
     Remove-Item -Path out/ -Recurse -Force
 }
 
