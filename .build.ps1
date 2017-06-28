@@ -10,6 +10,25 @@ $resourceScript = Join-Path $BuildRoot "New-StronglyTypedCsFileForResx.ps1"
 $outPath = "$BuildRoot/out"
 $modulePath = "$outPath/PSScriptAnalyzer"
 
+$buildData = @{}
+if ($BuildTask -eq "release") {
+    $buildData = @{
+        Frameworks = @{
+            "net451"         = @{
+                Configuration = @('Release', "PSV3Release")
+            }
+            "netstandard1.6" = @{
+                Configuration = @('Release')
+            }
+        }
+    }
+}
+else {
+    $buildData.Add("Frameworks", @{})
+    $buildData["Frameworks"].Add($Framework, @{})
+    $buildData["Frameworks"][$Framework].Add("Configuration", $Configuration)
+}
+
 function CreateIfNotExists([string] $folderPath) {
     if (-not (Test-Path $folderPath)) {
         New-Item -Path $folderPath -ItemType Directory -Verbose:$verbosity
@@ -36,7 +55,16 @@ function Get-BuildOutputs($project) {
 
 function Get-BuildTaskParams($project) {
     $taskParams = @{
-        Jobs = {dotnet build --framework $Framework --configuration $Configuration}
+        Data = $buildData
+        Jobs = {
+            $d = $($Task.Data)
+            foreach ($frmwrk in $d.Frameworks.Keys) {
+                foreach ($config in $d.Frameworks[$frmwrk].Configuration) {
+					Write-Verbose -message "$config $framework" -Verbose:$true
+                    dotnet build --framework $frmwrk --configuration $config
+                }
+            }
+        }
     }
 
     $outputs = (Get-BuildOutputs $project)
