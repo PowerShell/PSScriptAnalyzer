@@ -144,10 +144,15 @@ task clean "engine/clean", "rules/clean"
 $projects | % {Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"}
 task test "engine/test", "rules/test"
 
-task makeModule {
+task createModule {
+    Function CopyToDestinationDir($itemsToCopy, $destination) {
+        CreateIfNotExists($destination)
+        foreach ($file in $itemsToCopy) {
+            Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Force
+        }
+    }
+
     $solutionDir = $BuildRoot
-    $itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-        "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
 
     $itemsToCopyCommon = @("$solutionDir\Engine\PSScriptAnalyzer.psd1",
         "$solutionDir\Engine\PSScriptAnalyzer.psm1",
@@ -156,30 +161,32 @@ task makeModule {
 
     $destinationDir = "$solutionDir\out\PSScriptAnalyzer"
     $destinationDirBinaries = $destinationDir
-    if ($Framework -eq "netstandard1.6") {
-        $destinationDirBinaries = "$destinationDir\coreclr"
-    }
-    elseif ($Configuration -match 'PSv3') {
-        $destinationDirBinaries = "$destinationDir\PSv3"
-    }
 
-    Function CopyToDestinationDir($itemsToCopy, $destination) {
-        CreateIfNotExists($destination)
-        foreach ($file in $itemsToCopy) {
-            Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Force
+    foreach ($Framework in $buildData.Frameworks.Keys) {
+        foreach ($Configuration in $buildData.Frameworks[$Framework]) {
+            $itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+                "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
+
+            if ($Framework -eq "netstandard1.6") {
+                $destinationDirBinaries = "$destinationDir\coreclr"
+            }
+            elseif ($Configuration -match 'PSv3') {
+                $destinationDirBinaries = "$destinationDir\PSv3"
+            }
+        }
+
+        CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
+
+        # copy newtonsoft dll if net451 framework
+        if ($Framework -eq "net451") {
+            copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
     }
 
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
-    CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 
     # Copy Settings File
     Copy-Item -Path "$solutionDir\Engine\Settings" -Destination $destinationDir -Force -Recurse
-
-    # copy newtonsoft dll if net451 framework
-    if ($Framework -eq "net451") {
-        copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
-    }
 }
 
 task cleanModule {
