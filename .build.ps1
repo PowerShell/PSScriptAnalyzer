@@ -196,19 +196,11 @@ task cleanModule -if (Test-Path $outPath) {
 
 $docsPath = Join-Path $BuildRoot 'docs'
 $outputDocsPath = Join-Path $modulePath 'en-US'
-$bdInputs = {Get-ChildItem $docsPath -File -Recurse}
+$bdInputs = (Get-ChildItem $docsPath -File -Recurse)
 $bdOutputs = @(
-        "$outputDocsPath/about_PSScriptAnalyzer.help.txt",
-        "$outputDocsPath/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml"
-    )
-
-# $buildDocsParams = @{
-#     Inputs  = (Get-ChildItem $docsPath -File -Recurse)
-#     Outputs = @(
-#         "$outputDocsPath/about_PSScriptAnalyzer.help.txt",
-#         "$outputDocsPath/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml"
-#     )
-# }
+    "$outputDocsPath/about_PSScriptAnalyzer.help.txt",
+    "$outputDocsPath/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml"
+)
 
 task buildDocs -Inputs $bdInputs -Outputs $bdOutputs {
     # todo move common variables to script scope
@@ -219,12 +211,10 @@ task buildDocs -Inputs $bdInputs -Outputs $bdOutputs {
     Copy-Item -Path $docsPath\about_PSScriptAnalyzer.help.txt -Destination $outputDocsPath -Force
 
     # Build documentation using platyPS
-    if ((Get-Module PlatyPS -ListAvailable -Verbose:$verbosity) -eq $null) {
+    if ((Get-Module PlatyPS -ListAvailable) -eq $null) {
         throw "Cannot find PlatyPS. Please install it from https://www.powershellgallery.com."
     }
-    if ((Get-Module PlatyPS -Verbose:$verbosity) -eq $null) {
-        Import-Module PlatyPS -Verbose:$verbosity
-    }
+    Import-Module PlatyPS
     if (-not (Test-Path $markdownDocsPath -Verbose:$verbosity)) {
         throw "Cannot find markdown documentation folder."
     }
