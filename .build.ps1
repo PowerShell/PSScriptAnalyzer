@@ -228,3 +228,7 @@ task cleanDocs -if (Test-Path $outputDocsPath) {
 task newSession {
     Start-Process "powershell" -ArgumentList @('-noexit', '-command "import-module c:\users\kabawany\source\repos\psscriptanalyzer\out\psscriptanalyzer"')
 }
+
+# TODO fix building psv3
+task release cleanModule, clean, build, createModule, buildDocs
+task . build, newSession
