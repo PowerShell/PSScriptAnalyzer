@@ -6,6 +6,9 @@ param(
     [string]$Configuration = "Debug"
 )
 
+# todo remove aliases
+# todo make each project have its own build script
+
 $resourceScript = Join-Path $BuildRoot "New-StronglyTypedCsFileForResx.ps1"
 $outPath = "$BuildRoot/out"
 $modulePath = "$outPath/PSScriptAnalyzer"
@@ -60,7 +63,6 @@ function Get-BuildTaskParams($project) {
             $d = $($Task.Data)
             foreach ($frmwrk in $d.Frameworks.Keys) {
                 foreach ($config in $d.Frameworks[$frmwrk].Configuration) {
-					Write-Verbose -message "$config $framework" -Verbose:$true
                     dotnet build --framework $frmwrk --configuration $config
                 }
             }
@@ -163,7 +165,7 @@ task createModule {
     $destinationDirBinaries = $destinationDir
 
     foreach ($Framework in $buildData.Frameworks.Keys) {
-        foreach ($Configuration in $buildData.Frameworks[$Framework]) {
+        foreach ($Configuration in $buildData.Frameworks[$Framework].Configuration) {
             $itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
                 "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
 
@@ -226,9 +228,9 @@ task cleanDocs -if (Test-Path $outputDocsPath) {
 }
 
 task newSession {
-    Start-Process "powershell" -ArgumentList @('-noexit', '-command "import-module c:\users\kabawany\source\repos\psscriptanalyzer\out\psscriptanalyzer"')
+    Start-Process "powershell" -ArgumentList @('-noexit', "-command import-module $BuildRoot\out\psscriptanalyzer -verbose")
 }
 
 # TODO fix building psv3
 task release cleanModule, clean, build, createModule, buildDocs
-task . build, newSession
+task . build, createModule, newSession
