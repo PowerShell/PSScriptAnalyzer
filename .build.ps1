@@ -228,7 +228,7 @@ task cleanDocs -if (Test-Path $outputDocsPath) {
 }
 
 task newSession {
-    Start-Process "powershell" -ArgumentList @('-noexit', "-command import-module $BuildRoot\out\psscriptanalyzer -verbose")
+    Start-Process "powershell" -ArgumentList @('-noexit', "-command import-module $modulePath -verbose")
 }
 
 # TODO fix building psv3
