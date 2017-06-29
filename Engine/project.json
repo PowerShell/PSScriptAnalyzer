@@ -31,7 +31,8 @@
               "Strings.Designer.Core.cs",
               "Strings.Designer.cs"
               ]
-          }
+          },
+          "debugType": "portable"
         }
     },
     "netstandard1.6": {
