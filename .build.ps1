@@ -130,20 +130,18 @@ popd
 }
 
 $projects = @("engine", "rules")
+$projects | ForEach-Object {
+    Add-ProjectTask $_ buildResource (Get-ResourceTaskParam $_)
+    Add-ProjectTask $_ build (Get-BuildTaskParams $_)
+    Add-ProjectTask $_ restore (Get-RestoreTaskParams $_)
+    Add-ProjectTask $_ clean (Get-CleanTaskParams $_)
+    Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"
+}
 
-$projects | % {Add-ProjectTask $_ buildResource (Get-ResourceTaskParam $_)}
 task buildResource -Before build "engine/buildResource", "rules/buildResource"
-
-$projects | % {Add-ProjectTask $_ build (Get-BuildTaskParams $_)}
 task build "engine/build", "rules/build"
-
-$projects | % {Add-ProjectTask $_ "restore" (Get-RestoreTaskParams $_)}
 task restore "engine/restore", "rules/restore"
-
-$projects | % {Add-ProjectTask $_ clean (Get-CleanTaskParams $_)}
 task clean "engine/clean", "rules/clean"
-
-$projects | % {Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"}
 task test "engine/test", "rules/test"
 
 task createModule {
