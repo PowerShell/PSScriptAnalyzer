@@ -173,9 +173,12 @@ task createModule {
             elseif ($Configuration -match 'PSv3') {
                 $destinationDirBinaries = "$destinationDir\PSv3"
             }
-        }
+            else {
+                $destinationDirBinaries = $destinationDir
+            }
 
-        CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
+            CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
+        }
 
         # copy newtonsoft dll if net451 framework
         if ($Framework -eq "net451") {
