@@ -229,6 +229,27 @@ task newSession {
     Start-Process "powershell" -ArgumentList @('-noexit', "-command import-module $modulePath -verbose")
 }
 
+$localPSModulePath = $env:PSMODULEPATH -split ";" | Where-Object {$_.StartsWith($HOME)}
+$pssaDestModulePath = ''
+if ($null -ne $localPSModulePath -and $localPSModulePath.Count -eq 1) {
+    $pssaDestModulePath = Join-Path $localPSModulePath 'PSScriptAnalyzer'
+}
+
+function Test-PSSADestModulePath {
+    ($pssaDestModulePath -ne '') -and (Test-Path $pssaDestModulePath)
+}
+
+task uninstall -if {Test-PSSADestModulePath} {
+    Remove-Item -Force -Recurse $pssaDestModulePath
+}
+
+task install -if {Test-Path $modulePath} uninstall,{
+    Copy-Item `
+        -Recurse `
+        -Path  $modulePath `
+        -Destination  $pssaDestModulePath
+}
+
 # TODO fix building psv3
 task release cleanModule, clean, build, createModule, buildDocs
 task . build, createModule, newSession
