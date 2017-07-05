@@ -19,6 +19,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Reflection;
 using Microsoft.Management.Infrastructure;
 using Microsoft.PowerShell.DesiredStateConfiguration.Internal;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
@@ -215,7 +216,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     isDSCClassCacheInitialized = true;
                 }
 
-                cimClasses = DscClassCache.ImportClasses(mofFilepath, moduleInfo, errors);
+                var importClassesMethod = typeof(DscClassCache).GetMethod("ImportClasses", BindingFlags.Public | BindingFlags.Static);
+                if (importClassesMethod != null)
+                {
+                    var parameters = new List<object>(new object[] { mofFilepath, moduleInfo, errors });
+
+                    // In some version of S.M.A ImportClasses classes method takes 4 parameters
+                    // while in others it takes 3.
+                    if (importClassesMethod.GetParameters().Count() == 4)
+                    {
+                        parameters.Add(false);
+                    }
+                    cimClasses = importClassesMethod.Invoke(null, parameters.ToArray()) as List<CimClass>;
+                }
             }
             catch
             {
