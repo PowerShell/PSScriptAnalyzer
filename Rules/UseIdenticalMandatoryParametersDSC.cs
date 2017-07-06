@@ -216,7 +216,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     isDSCClassCacheInitialized = true;
                 }
 
-                var importClassesMethod = typeof(DscClassCache).GetMethod("ImportClasses", BindingFlags.Public | BindingFlags.Static);
+                var importClassesMethod = typeof(DscClassCache).GetMethod(
+                    "ImportClasses",
+                    BindingFlags.Public | BindingFlags.Static);
                 if (importClassesMethod != null)
                 {
                     var parameters = new List<object>(new object[] { mofFilepath, moduleInfo, errors });
