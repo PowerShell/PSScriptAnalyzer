@@ -1,4 +1,3 @@
-Import-Module PSScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ruleName = 'PSDSCUseIdenticalMandatoryParametersForDSC'
 $resourceBasepath = "$directory\DSCResourceModule\DSCResources"

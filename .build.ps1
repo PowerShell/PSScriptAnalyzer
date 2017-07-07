@@ -173,13 +173,16 @@ task createModule {
             elseif ($Configuration -match 'PSv3') {
                 $destinationDirBinaries = "$destinationDir\PSv3"
             }
-        }
+            else {
+                $destinationDirBinaries = $destinationDir
+            }
 
-        CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
+            CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 
-        # copy newtonsoft dll if net451 framework
-        if ($Framework -eq "net451") {
-            copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            # copy newtonsoft dll if net451 framework
+            if ($Framework -eq "net451") {
+                copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            }
         }
     }
 
@@ -227,6 +230,27 @@ task cleanDocs -if (Test-Path $outputDocsPath) {
 
 task newSession {
     Start-Process "powershell" -ArgumentList @('-noexit', "-command import-module $modulePath -verbose")
+}
+
+$localPSModulePath = $env:PSMODULEPATH -split ";" | Where-Object {$_.StartsWith($HOME)}
+$pssaDestModulePath = ''
+if ($null -ne $localPSModulePath -and $localPSModulePath.Count -eq 1) {
+    $pssaDestModulePath = Join-Path $localPSModulePath 'PSScriptAnalyzer'
+}
+
+function Test-PSSADestModulePath {
+    ($pssaDestModulePath -ne '') -and (Test-Path $pssaDestModulePath)
+}
+
+task uninstall -if {Test-PSSADestModulePath} {
+    Remove-Item -Force -Recurse $pssaDestModulePath
+}
+
+task install -if {Test-Path $modulePath} uninstall, {
+    Copy-Item `
+        -Recurse `
+        -Path  $modulePath `
+        -Destination  $pssaDestModulePath
 }
 
 # TODO fix building psv3
