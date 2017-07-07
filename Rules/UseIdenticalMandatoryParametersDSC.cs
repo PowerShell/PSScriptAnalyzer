@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -41,6 +42,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private string fileName;
         private IDictionary<string, string> propAttrDict;
         private IEnumerable<FunctionDefinitionAst> resourceFunctions;
+        private Func<string, Tuple<string, Version>, Collection<Exception>, List<CimClass>> dscClassImporter;
+
+        public UseIdenticalMandatoryParametersDSC()
+        {
+            var importClassesMethod = typeof(DscClassCache).GetMethod(
+                "ImportClasses",
+                BindingFlags.Public | BindingFlags.Static);
+            if (importClassesMethod != null)
+            {
+                // In some version of S.M.A ImportClasses classes method takes 4 parameters
+                // while in others it takes 3.
+                if (importClassesMethod.GetParameters().Count() == 4)
+                {
+                    dscClassImporter = (path, moduleInfo, errors) =>
+                    {
+                        return importClassesMethod.Invoke(
+                            null,
+                            new object[] { path, moduleInfo, errors, false }) as List<CimClass>;
+                    };
+                }
+                else
+                {
+                    dscClassImporter = (path, moduleInfo, errors) =>
+                    {
+                        return importClassesMethod.Invoke(
+                            null,
+                            new object[] { path, moduleInfo, errors}) as List<CimClass>;
+                    };
+                }
+            }
+            else
+            {
+                dscClassImporter = (path, moduleInfo, errors) => null;
+            }
+        }
 
         /// <summary>
         /// AnalyzeDSCResource: Analyzes given DSC Resource
@@ -216,21 +252,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     isDSCClassCacheInitialized = true;
                 }
 
-                var importClassesMethod = typeof(DscClassCache).GetMethod(
-                    "ImportClasses",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (importClassesMethod != null)
-                {
-                    var parameters = new List<object>(new object[] { mofFilepath, moduleInfo, errors });
-
-                    // In some version of S.M.A ImportClasses classes method takes 4 parameters
-                    // while in others it takes 3.
-                    if (importClassesMethod.GetParameters().Count() == 4)
-                    {
-                        parameters.Add(false);
-                    }
-                    cimClasses = importClassesMethod.Invoke(null, parameters.ToArray()) as List<CimClass>;
-                }
+                cimClasses = dscClassImporter(mofFilepath, moduleInfo, errors);
             }
             catch
             {
