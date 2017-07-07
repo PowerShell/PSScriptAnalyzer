@@ -44,6 +44,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private IEnumerable<FunctionDefinitionAst> resourceFunctions;
         private Func<string, Tuple<string, Version>, Collection<Exception>, List<CimClass>> dscClassImporter;
 
+        /// <summary>
+        /// Constructs an object of type UseIdenticalMandatoryParametersDSC
+        /// </summary>
         public UseIdenticalMandatoryParametersDSC()
         {
             var importClassesMethod = typeof(DscClassCache).GetMethod(
@@ -51,7 +54,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 BindingFlags.Public | BindingFlags.Static);
             if (importClassesMethod != null)
             {
-                // In some version of S.M.A ImportClasses classes method takes 4 parameters
+                // In some version of S.M.A DscClassCache.ImportClasses method takes 4 parameters
                 // while in others it takes 3.
                 if (importClassesMethod.GetParameters().Count() == 4)
                 {
