@@ -178,11 +178,11 @@ task createModule {
             }
 
             CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
-        }
 
-        # copy newtonsoft dll if net451 framework
-        if ($Framework -eq "net451") {
-            copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            # copy newtonsoft dll if net451 framework
+            if ($Framework -eq "net451") {
+                copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            }
         }
     }
 
@@ -246,7 +246,7 @@ task uninstall -if {Test-PSSADestModulePath} {
     Remove-Item -Force -Recurse $pssaDestModulePath
 }
 
-task install -if {Test-Path $modulePath} uninstall,{
+task install -if {Test-Path $modulePath} uninstall, {
     Copy-Item `
         -Recurse `
         -Path  $modulePath `
