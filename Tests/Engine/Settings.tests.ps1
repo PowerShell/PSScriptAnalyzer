@@ -114,4 +114,28 @@ Describe "Settings Class" {
             $settings.RuleArguments["PSProvideCommentHelp"]["Placement"] | Should Be 'end'
         }
     }
+
+    Context "When CustomRulePath parameter is provided" {
+        It "Should return an array of 1 item when only 1 path is given in a hashtable" {
+            $rulePath = "C:\rules\module1"
+            $settingsHashtable = @{
+                CustomRulePath = $rulePath
+            }
+
+            $settings = New-Object -TypeName $settingsTypeName  -ArgumentList $settingsHashtable
+            $settings.CustomRulePath.Count | Should Be 1
+            $settings.CustomRulePath[0] | Should be $rulePath
+        }
+
+        It "Should return an array of n items when n items are given in a hashtable" {
+            $rulePaths = @("C:\rules\module1", "C:\rules\module2")
+            $settingsHashtable = @{
+                CustomRulePath = $rulePaths
+            }
+
+            $settings = New-Object -TypeName $settingsTypeName  -ArgumentList $settingsHashtable
+            $settings.CustomRulePath.Count | Should Be $rulePaths.Count
+            0..($rulePaths.Count - 1) | ForEach-Object { $settings.CustomRulePath[$_] | Should be $rulePaths[$_] }
+        }
+    }
 }

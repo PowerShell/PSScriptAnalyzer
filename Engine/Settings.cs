@@ -32,12 +32,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private List<string> includeRules;
         private List<string> excludeRules;
         private List<string> severities;
+        private List<string> customRulePath;
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
 
+        // todo use 'lambda' expression type getter
         public string FilePath { get { return filePath; } }
         public IEnumerable<string> IncludeRules { get { return includeRules; } }
         public IEnumerable<string> ExcludeRules { get { return excludeRules; } }
         public IEnumerable<string> Severities { get { return severities; } }
+        public IEnumerable<string> CustomRulePath => customRulePath;
         public Dictionary<string, Dictionary<string, object>> RuleArguments { get { return ruleArguments; } }
 
         /// <summary>
@@ -398,6 +401,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     case "excluderules":
                         excludeRules = GetData(val, key);
+                        break;
+
+                    case "customrulepath":
+                        customRulePath = GetData(val, key);
                         break;
 
                     case "rules":
