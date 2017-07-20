@@ -28,6 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class Settings
     {
+        private bool includeDefaultRules;
         private string filePath;
         private List<string> includeRules;
         private List<string> excludeRules;
@@ -35,6 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private List<string> customRulePath;
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
 
+        public bool IncludeDefaultRules => includeDefaultRules;
         public string FilePath => filePath;
         public IEnumerable<string> IncludeRules => includeRules;
         public IEnumerable<string> ExcludeRules => excludeRules;
@@ -404,6 +406,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     case "customrulepath":
                         customRulePath = GetData(val, key);
+                        break;
+
+                    case "includedefaultrules":
+                        if (!(val is bool))
+                        {
+                            throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Not a boolean"));
+                        }
+
+                        includeDefaultRules = (bool)val;
                         break;
 
                     case "rules":

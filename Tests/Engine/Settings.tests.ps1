@@ -138,4 +138,32 @@ Describe "Settings Class" {
             0..($rulePaths.Count - 1) | ForEach-Object { $settings.CustomRulePath[$_] | Should be $rulePaths[$_] }
         }
     }
+
+    Context "When IncludeDefaultRules parameter is provided" {
+        It "Should correctly set the value if a boolean is given - true" {
+            $settingsHashtable = @{
+                IncludeDefaultRules = $true
+            }
+
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+            $settings.IncludeDefaultRules | Should Be $true
+        }
+
+        It "Should correctly set the value if a boolean is given - false" {
+            $settingsHashtable = @{
+                IncludeDefaultRules = $false
+            }
+
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+            $settings.IncludeDefaultRules | Should Be $false
+        }
+
+        It "Should throw if a non-boolean value is given" {
+            $settingsHashtable = @{
+                IncludeDefaultRules = "some random string"
+            }
+
+            { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should Throw
+        }
+    }
 }
