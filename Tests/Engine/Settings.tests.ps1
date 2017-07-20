@@ -136,6 +136,13 @@ Describe "Settings Class" {
             $settings = New-Object -TypeName $settingsTypeName  -ArgumentList $settingsHashtable
             $settings.CustomRulePath.Count | Should Be $rulePaths.Count
             0..($rulePaths.Count - 1) | ForEach-Object { $settings.CustomRulePath[$_] | Should be $rulePaths[$_] }
+
+        }
+
+        It "Should detect the parameter in a settings file" {
+            $settings = New-Object -TypeName $settingsTypeName `
+                              -ArgumentList ([System.IO.Path]::Combine($project1Root, "ExplicitSettings.psd1"))
+            $settings.CustomRulePath.Count | Should Be 2
         }
     }
 
@@ -164,6 +171,12 @@ Describe "Settings Class" {
             }
 
             { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should Throw
+        }
+
+        It "Should detect the parameter in a settings file" {
+            $settings = New-Object -TypeName $settingsTypeName `
+                              -ArgumentList ([System.IO.Path]::Combine($project1Root, "ExplicitSettings.psd1"))
+            $settings.IncludeDefaultRules | Should Be $true
         }
     }
 }
