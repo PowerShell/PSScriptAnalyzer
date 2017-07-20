@@ -35,13 +35,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private List<string> customRulePath;
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
 
-        // todo use 'lambda' expression type getter
-        public string FilePath { get { return filePath; } }
-        public IEnumerable<string> IncludeRules { get { return includeRules; } }
-        public IEnumerable<string> ExcludeRules { get { return excludeRules; } }
-        public IEnumerable<string> Severities { get { return severities; } }
+        public string FilePath => filePath;
+        public IEnumerable<string> IncludeRules => includeRules;
+        public IEnumerable<string> ExcludeRules => excludeRules;
+        public IEnumerable<string> Severities => severities;
         public IEnumerable<string> CustomRulePath => customRulePath;
-        public Dictionary<string, Dictionary<string, object>> RuleArguments { get { return ruleArguments; } }
+        public Dictionary<string, Dictionary<string, object>> RuleArguments => ruleArguments;
 
         /// <summary>
         /// Create a settings object from the input object.
