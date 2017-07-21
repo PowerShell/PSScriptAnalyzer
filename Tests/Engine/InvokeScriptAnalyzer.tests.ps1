@@ -380,9 +380,45 @@ Describe "Test CustomizedRulePath" {
             $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomRulePath ("$directory\CommunityAnalyzerRules", "$directory\samplerule", "$directory\samplerule\samplerule2")
             $customizedRulePath.Count | Should Be 3
         }
-
     }
 
+    if (!$testingLibraryUsage)
+    {
+        Context "When used from settings file" {
+            It "Should use the CustomRulePath parameter" {
+                $settings = @{
+                    CustomRulePath        = "$directory\CommunityAnalyzerRules"
+                    IncludeDefaultRules   = $false
+                    RecurseCustomRulePath = $false
+                }
+
+                $v = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1 -Settings $settings
+                $v.Count | Should Be 1
+            }
+
+            It "Should use the IncludeDefaultRulePath parameter" {
+                $settings = @{
+                    CustomRulePath        = "$directory\CommunityAnalyzerRules"
+                    IncludeDefaultRules   = $true
+                    RecurseCustomRulePath = $false
+                }
+
+                $v = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1 -Settings $settings
+                $v.Count | Should Be 2
+            }
+
+            It "Should use the RecurseCustomRulePath parameter" {
+                $settings = @{
+                    CustomRulePath        = "$directory\samplerule"
+                    IncludeDefaultRules   = $false
+                    RecurseCustomRulePath = $true
+                }
+
+                $v = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1 -Settings $settings
+                $v.Count | Should Be 3
+            }
+        }
+    }
 
     Context "When used incorrectly" {
         It "file cannot be found" {
