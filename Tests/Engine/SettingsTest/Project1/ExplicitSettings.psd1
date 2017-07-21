@@ -1,6 +1,4 @@
 @{
-    "CustomRulePath" = @("C:\rules\module1", "C:\rules\module2")
-    "IncludeDefaultRules" = $true
     "IncludeRules" = @("PSAvoidUsingCmdletAliases", "PSAvoidUsingWriteHost", "PSUseConsistentIndentation")
     "ExcludeRules" = @("PSShouldProcess", "PSAvoidUsingWMICmdlet", "PSUseCmdletCorrectly")
     "rules"        = @{
