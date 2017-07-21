@@ -146,37 +146,37 @@ Describe "Settings Class" {
         }
     }
 
-    Context "When IncludeDefaultRules parameter is provided" {
-        It "Should correctly set the value if a boolean is given - true" {
-            $settingsHashtable = @{
-                IncludeDefaultRules = $true
+    @("IncludeDefaultRules", "RecurseCustomRulePath") | ForEach-Object {
+        $paramName = $_
+        Context "When $paramName parameter is provided" {
+            It "Should correctly set the value if a boolean is given - true" {
+                $settingsHashtable = @{}
+                $settingsHashtable.Add($paramName, $true)
+
+                $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+                $settings."$paramName" | Should Be $true
             }
 
-            $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
-            $settings.IncludeDefaultRules | Should Be $true
-        }
+            It "Should correctly set the value if a boolean is given - false" {
+                $settingsHashtable = @{}
+                $settingsHashtable.Add($paramName, $false)
 
-        It "Should correctly set the value if a boolean is given - false" {
-            $settingsHashtable = @{
-                IncludeDefaultRules = $false
+                $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+                $settings."$paramName" | Should Be $false
             }
 
-            $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
-            $settings.IncludeDefaultRules | Should Be $false
-        }
+            It "Should throw if a non-boolean value is given" {
+                $settingsHashtable = @{}
+                $settingsHashtable.Add($paramName, "some random string")
 
-        It "Should throw if a non-boolean value is given" {
-            $settingsHashtable = @{
-                IncludeDefaultRules = "some random string"
+                { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should Throw
             }
 
-            { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should Throw
-        }
-
-        It "Should detect the parameter in a settings file" {
-            $settings = New-Object -TypeName $settingsTypeName `
-                              -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
-            $settings.IncludeDefaultRules | Should Be $true
+            It "Should detect the parameter in a settings file" {
+                $settings = New-Object -TypeName $settingsTypeName `
+                    -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
+                $settings."$paramName" | Should Be $true
+            }
         }
     }
 }

@@ -28,7 +28,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class Settings
     {
-        private bool includeDefaultRules;
+        private bool recurseCustomRulePath = false;
+        private bool includeDefaultRules = false;
         private string filePath;
         private List<string> includeRules;
         private List<string> excludeRules;
@@ -36,6 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private List<string> customRulePath;
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
 
+        public bool RecurseCustomRulePath => recurseCustomRulePath;
         public bool IncludeDefaultRules => includeDefaultRules;
         public string FilePath => filePath;
         public IEnumerable<string> IncludeRules => includeRules;
@@ -409,12 +411,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "includedefaultrules":
+                    case "recursecustomrulepath":
+                        // todo localize
                         if (!(val is bool))
                         {
                             throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Not a boolean"));
                         }
 
-                        includeDefaultRules = (bool)val;
+                        var booleanVal = (bool)val;
+                        var thisType = this.GetType();
+                        var field = this.GetType().GetField(
+                            key,
+                            BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
+                        field.SetValue(this, booleanVal);
                         break;
 
                     case "rules":
