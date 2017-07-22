@@ -412,10 +412,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     case "includedefaultrules":
                     case "recursecustomrulepath":
-                        // todo localize
                         if (!(val is bool))
                         {
-                            throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Not a boolean"));
+                            throw new InvalidDataException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.SettingsValueTypeMustBeBool,
+                                settingKey));
                         }
 
                         var booleanVal = (bool)val;

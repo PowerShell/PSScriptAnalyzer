@@ -273,6 +273,9 @@
   <data name="SettingsNotParsable" xml:space="preserve">
     <value>Cannot parse settings. Will abort the invocation.</value>
   </data>
+  <data name="SettingsValueTypeMustBeBool" xml:space="preserve">
+    <value>{0} property must be of type bool.</value>
+  </data>
   <data name="ModuleDepHandlerTempLocation" xml:space="preserve">
     <value>Temporary module location: {0}.</value>
   </data>
