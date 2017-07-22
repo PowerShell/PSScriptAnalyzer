@@ -418,6 +418,35 @@ Describe "Test CustomizedRulePath" {
                 $v.Count | Should Be 3
             }
         }
+
+        Context "When used from settings file and command line simulataneusly" {
+            BeforeAll {
+                $settings = @{
+                    CustomRulePath        = "$directory\samplerule"
+                    IncludeDefaultRules   = $false
+                    RecurseCustomRulePath = $false
+                }
+                $isaParams = @{
+                    Path     = "$directory\TestScript.ps1"
+                    Settings = $settings
+                }
+            }
+
+            It "Should combine CustomRulePaths" {
+                $v = Invoke-ScriptAnalyzer @isaParams -CustomRulePath "$directory\CommunityAnalyzerRules"
+                $v.Count | Should Be 2
+            }
+
+            It "Should override the settings IncludeDefaultRules parameter" {
+                $v = Invoke-ScriptAnalyzer @isaParams -IncludeDefaultRules
+                $v.Count | Should Be 2
+            }
+
+            It "Should override the settings RecurseCustomRulePath parameter" {
+                $v = Invoke-ScriptAnalyzer @isaParams -RecurseCustomRulePath
+                $v.Count | Should Be 3
+            }
+        }
     }
 
     Context "When used incorrectly" {

@@ -280,8 +280,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
                     // For includeDefaultRules and RecurseCustomRulePath we override the value in the settings file by
                     // command line argument.
-                    combRecurseCustomRulePath = combRecurseCustomRulePath || settingsObj.RecurseCustomRulePath;
-                    combIncludeDefaultRules = combIncludeDefaultRules || settingsObj.IncludeDefaultRules;
+                    combRecurseCustomRulePath = OverrideSwitchParam(
+                        settingsObj.RecurseCustomRulePath,
+                        "RecurseCustomRulePath");
+                    combIncludeDefaultRules = OverrideSwitchParam(
+                        settingsObj.IncludeDefaultRules,
+                        "IncludeDefaultRules");
                 }
 
                 // Ideally we should not allow the parameter to be set from settings and command line
@@ -408,6 +412,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool IsFileParameterSet()
         {
             return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool OverrideSwitchParam(bool paramValue, string paramName)
+        {
+            return MyInvocation.BoundParameters.ContainsKey(paramName)
+                ? ((SwitchParameter)MyInvocation.BoundParameters[paramName]).ToBool()
+                : paramValue;
         }
 
         #endregion // Private Methods
