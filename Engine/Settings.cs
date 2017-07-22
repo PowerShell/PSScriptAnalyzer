@@ -421,7 +421,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
 
                         var booleanVal = (bool)val;
-                        var thisType = this.GetType();
                         var field = this.GetType().GetField(
                             key,
                             BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
