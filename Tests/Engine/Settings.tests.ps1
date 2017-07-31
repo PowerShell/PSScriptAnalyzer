@@ -114,4 +114,69 @@ Describe "Settings Class" {
             $settings.RuleArguments["PSProvideCommentHelp"]["Placement"] | Should Be 'end'
         }
     }
+
+    Context "When CustomRulePath parameter is provided" {
+        It "Should return an array of 1 item when only 1 path is given in a hashtable" {
+            $rulePath = "C:\rules\module1"
+            $settingsHashtable = @{
+                CustomRulePath = $rulePath
+            }
+
+            $settings = New-Object -TypeName $settingsTypeName  -ArgumentList $settingsHashtable
+            $settings.CustomRulePath.Count | Should Be 1
+            $settings.CustomRulePath[0] | Should be $rulePath
+        }
+
+        It "Should return an array of n items when n items are given in a hashtable" {
+            $rulePaths = @("C:\rules\module1", "C:\rules\module2")
+            $settingsHashtable = @{
+                CustomRulePath = $rulePaths
+            }
+
+            $settings = New-Object -TypeName $settingsTypeName  -ArgumentList $settingsHashtable
+            $settings.CustomRulePath.Count | Should Be $rulePaths.Count
+            0..($rulePaths.Count - 1) | ForEach-Object { $settings.CustomRulePath[$_] | Should be $rulePaths[$_] }
+
+        }
+
+        It "Should detect the parameter in a settings file" {
+            $settings = New-Object -TypeName $settingsTypeName `
+                              -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
+            $settings.CustomRulePath.Count | Should Be 2
+        }
+    }
+
+    @("IncludeDefaultRules", "RecurseCustomRulePath") | ForEach-Object {
+        $paramName = $_
+        Context "When $paramName parameter is provided" {
+            It "Should correctly set the value if a boolean is given - true" {
+                $settingsHashtable = @{}
+                $settingsHashtable.Add($paramName, $true)
+
+                $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+                $settings."$paramName" | Should Be $true
+            }
+
+            It "Should correctly set the value if a boolean is given - false" {
+                $settingsHashtable = @{}
+                $settingsHashtable.Add($paramName, $false)
+
+                $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+                $settings."$paramName" | Should Be $false
+            }
+
+            It "Should throw if a non-boolean value is given" {
+                $settingsHashtable = @{}
+                $settingsHashtable.Add($paramName, "some random string")
+
+                { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should Throw
+            }
+
+            It "Should detect the parameter in a settings file" {
+                $settings = New-Object -TypeName $settingsTypeName `
+                    -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
+                $settings."$paramName" | Should Be $true
+            }
+        }
+    }
 }

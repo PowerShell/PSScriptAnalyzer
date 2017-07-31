@@ -113,7 +113,12 @@ function Get-ResourceTaskParam($project) {
     @{
         Inputs  = "$project/Strings.resx"
         Outputs = "$project/Strings.cs"
-        Jobs    = {& "$resourceScript $project"}
+        Data = $project
+        Jobs    = {
+            Push-Location $BuildRoot
+            & $resourceScript $Task.Data
+            Pop-Location
+        }
         Before  = "$project/build"
     }
 }

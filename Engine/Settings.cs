@@ -28,17 +28,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class Settings
     {
+        private bool recurseCustomRulePath = false;
+        private bool includeDefaultRules = false;
         private string filePath;
         private List<string> includeRules;
         private List<string> excludeRules;
         private List<string> severities;
+        private List<string> customRulePath;
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
 
-        public string FilePath { get { return filePath; } }
-        public IEnumerable<string> IncludeRules { get { return includeRules; } }
-        public IEnumerable<string> ExcludeRules { get { return excludeRules; } }
-        public IEnumerable<string> Severities { get { return severities; } }
-        public Dictionary<string, Dictionary<string, object>> RuleArguments { get { return ruleArguments; } }
+        public bool RecurseCustomRulePath => recurseCustomRulePath;
+        public bool IncludeDefaultRules => includeDefaultRules;
+        public string FilePath => filePath;
+        public IEnumerable<string> IncludeRules => includeRules;
+        public IEnumerable<string> ExcludeRules => excludeRules;
+        public IEnumerable<string> Severities => severities;
+        public IEnumerable<string> CustomRulePath => customRulePath;
+        public Dictionary<string, Dictionary<string, object>> RuleArguments => ruleArguments;
 
         /// <summary>
         /// Create a settings object from the input object.
@@ -398,6 +404,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     case "excluderules":
                         excludeRules = GetData(val, key);
+                        break;
+
+                    case "customrulepath":
+                        customRulePath = GetData(val, key);
+                        break;
+
+                    case "includedefaultrules":
+                    case "recursecustomrulepath":
+                        if (!(val is bool))
+                        {
+                            throw new InvalidDataException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.SettingsValueTypeMustBeBool,
+                                settingKey));
+                        }
+
+                        var booleanVal = (bool)val;
+                        var field = this.GetType().GetField(
+                            key,
+                            BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
+                        field.SetValue(this, booleanVal);
                         break;
 
                     case "rules":

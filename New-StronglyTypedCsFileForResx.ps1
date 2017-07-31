@@ -113,7 +113,7 @@ internal class {0} {{
             $entry -f $name,$val
         }
     } | Out-String
-    
+
     $bodyCode = $body -f $shortClassName,$ModuleName,$entries,$ClassName
 
     if ($NamespaceName)
@@ -126,10 +126,10 @@ internal class {0} {{
     return $resultCode -replace "`r`n?|`n","`r`n"
 }
 
-$projectRoot = Split-Path $MyInvocation.InvocationName
+$projectRoot = $PWD
 if (-not (Test-Path "$projectRoot/global.json"))
 {
-    throw "Not in solution root"
+    throw "Not in solution root: $projectRoot"
 }
 $inputFilePath = Join-Path $projectRoot "$project/Strings.resx"
 $outputFilePath = Join-Path $projectRoot "$project/Strings.cs"

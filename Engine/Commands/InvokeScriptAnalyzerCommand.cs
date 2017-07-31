@@ -265,6 +265,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 ProcessPath();
             }
 
+            string[] combRulePaths = null;
+            var combRecurseCustomRulePath = RecurseCustomRulePath.IsPresent;
+            var combIncludeDefaultRules = IncludeDefaultRules.IsPresent;
             try
             {
                 var settingsObj = PSSASettings.Create(
@@ -274,7 +277,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 if (settingsObj != null)
                 {
                     ScriptAnalyzer.Instance.UpdateSettings(settingsObj);
+
+                    // For includeDefaultRules and RecurseCustomRulePath we override the value in the settings file by
+                    // command line argument.
+                    combRecurseCustomRulePath = OverrideSwitchParam(
+                        settingsObj.RecurseCustomRulePath,
+                        "RecurseCustomRulePath");
+                    combIncludeDefaultRules = OverrideSwitchParam(
+                        settingsObj.IncludeDefaultRules,
+                        "IncludeDefaultRules");
                 }
+
+                // Ideally we should not allow the parameter to be set from settings and command line
+                // simultaneously. But since, this was done before with IncludeRules, ExcludeRules and Severity,
+                // we use the same strategy for CustomRulePath. So, we take the union of CustomRulePath provided in
+                // the settings file and if provided on command line.
+                var settingsCustomRulePath = Helper.ProcessCustomRulePaths(
+                        settingsObj?.CustomRulePath?.ToArray(),
+                        this.SessionState,
+                        combRecurseCustomRulePath);
+                    combRulePaths = rulePaths == null
+                                                ? settingsCustomRulePath
+                                                : settingsCustomRulePath == null
+                                                    ? rulePaths
+                                                    : rulePaths.Concat(settingsCustomRulePath).ToArray();
             }
             catch
             {
@@ -285,11 +311,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             ScriptAnalyzer.Instance.Initialize(
                 this,
-                rulePaths,
+                combRulePaths,
                 this.includeRule,
                 this.excludeRule,
                 this.severity,
-                null == rulePaths ? true : this.includeDefaultRules,
+                combRulePaths == null || combIncludeDefaultRules,
                 this.suppressedOnly);
         }
 
@@ -386,6 +412,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool IsFileParameterSet()
         {
             return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool OverrideSwitchParam(bool paramValue, string paramName)
+        {
+            return MyInvocation.BoundParameters.ContainsKey(paramName)
+                ? ((SwitchParameter)MyInvocation.BoundParameters[paramName]).ToBool()
+                : paramValue;
         }
 
         #endregion // Private Methods
