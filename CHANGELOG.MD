@@ -1,4 +1,12 @@
-﻿## [1.15.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.15.0) - 2017-06-21
+﻿## [1.16.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.16.0) - 2017-08-15
+### Added
+- (#803) `CustomRulePath`, `RecurseCustomRulePath` and `IncludeDefaultRules` parameters to settings file.
+
+### Fixed
+- (#801) Reading DSC classes in `PSUseIdenticalMandatoryParametersForDSC` rule.
+- (#796) `PSAvoidUsingWriteHost` rule documentation (Thanks @bergmeister!).
+
+## [1.15.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.15.0) - 2017-06-21
 
 ### Added
 - (#780) `Range` parameter to the `Invoke-Formatter` cmdlet. The user can specify the range in which formatting should be applied. The primary usage for this parameter is to be used with editors that request selection formatting.
