@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.15.0'
+ModuleVersion = '1.16.0'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -88,14 +88,11 @@ PrivateData = @{
         IconUri = ''
         ReleaseNotes = @'
 ### Added
-- (#780) `Range` parameter to the `Invoke-Formatter` cmdlet. The user can specify the range in which formatting should be applied. The primary usage for this parameter is to be used with editors that request selection formatting.
-- (#782, #788) Allman style, Stroustrup style and one true brace style (OTBS) code formatting presets.
-- (#790) `Kind` switch to `PSUseConsistentIndentation` rule to provide tabbed indentation.
+- (#803) `CustomRulePath`, `RecurseCustomRulePath` and `IncludeDefaultRules` parameters to settings file.
 
 ### Fixed
-- (#781, #784) `NewLineAfer` switch behavior in `PSPlaceCloseBrace` rule. When the switch is set to `$false`, the emitted suggested corrections enforce branching control statements to be on the same line as their preceding closing braces. On the other hand when the switch is set to `$true`, the emitted suggested corrections enforce branching controls statements to be on the next line.
-
-Many thanks to @rkeithhill for contributing the _Stroustrup_ style code formatting preset.
+- (#801) Reading DSC classes in `PSUseIdenticalMandatoryParametersForDSC` rule.
+- (#796) `PSAvoidUsingWriteHost` rule documentation (Thanks @bergmeister!).
 '@
     }
 }
@@ -107,6 +104,7 @@ Many thanks to @rkeithhill for contributing the _Stroustrup_ style code formatti
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 
