@@ -126,7 +126,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return range.Start.Line <= Lines.Count
                 && range.End.Line <= Lines.Count
-                && range.Start.Column <= Lines[range.Start.Line - 1].Length
+                && range.Start.Column <= Lines[range.Start.Line - 1].Length + 1
                 && range.End.Column <= Lines[range.End.Line - 1].Length + 1;
         }
 
