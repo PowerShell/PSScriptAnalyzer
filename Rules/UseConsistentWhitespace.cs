@@ -315,7 +315,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
-                var hasWhitespaceAfter = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
+                var hasWhitespaceAfter = tokenNode.Next.Value.Kind == TokenKind.NewLine
+                            || IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
 
                 if (!hasWhitespaceAfter || !hasWhitespaceBefore)
                 {
