@@ -173,6 +173,15 @@ $x = 1
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
         }
+
+        It "Should not find violation if a binary operator is followed by new line" {
+            $def = @'
+$x = $true -and
+            $false
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+        }
+
     }
 
     Context "When a comma is not followed by a space" {
