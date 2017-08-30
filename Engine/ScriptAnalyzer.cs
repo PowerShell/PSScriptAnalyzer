@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Collections;
 using System.Diagnostics;
+using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -1451,11 +1452,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="path">The path of the file or directory to analyze.</param>
         /// <param name="searchRecursively">
+        /// <param name="autoFix">
         /// If true, recursively searches the given file path and analyzes any
         /// script files that are found.
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false)
+        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false, bool autoFix = false)
         {
             List<string> scriptFilePaths = new List<string>();
 
@@ -1475,6 +1477,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
             foreach (string scriptFilePath in scriptFilePaths)
             {
+                if (autoFix)
+                {
+                    var scriptFileContentWithAutoFixes = Fix(File.ReadAllText(scriptFilePath));
+                    // Use UTF8 when writing to avoid issues with special characters such as e.g. the copyright symbol in *.psd1 files. This could be improved to detect the encoding in order to preserve it.
+                    File.WriteAllText(scriptFilePath, scriptFileContentWithAutoFixes, Encoding.UTF8);
+                }
+
                 // Yield each record in the result so that the
                 // caller can pull them one at a time
                 foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))

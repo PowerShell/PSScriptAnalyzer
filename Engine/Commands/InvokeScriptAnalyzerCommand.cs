@@ -181,6 +181,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool suppressedOnly;
 
         /// <summary>
+        /// Resolves rule violations automatically where possible.
+        /// </summary>
+        [Parameter(Mandatory = false, ParameterSetName = "File")]
+        public SwitchParameter AutoFix
+        {
+            get { return autoFix; }
+            set { autoFix = value; }
+        }
+        private bool autoFix;
+
+        /// <summary>
         /// Returns path to the file that contains user profile or hash table for ScriptAnalyzer
         /// </summary>
         [Alias("Profile")]
@@ -377,7 +388,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 foreach (var p in processedPaths)
                 {
-                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.recurse);
+                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.recurse, this.autoFix);
                     WriteToOutput(diagnosticsList);
                 }
             }
