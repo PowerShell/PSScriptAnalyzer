@@ -1,4 +1,8 @@
-﻿## [1.16.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.16.0) - 2017-08-15
+﻿## [1.16.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.16.1) - 2017-09-01
+### Fixed
+- (#815) Formatter crashes due to invalid extent comparisons
+
+## [1.16.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.16.0) - 2017-08-15
 ### Added
 - (#803) `CustomRulePath`, `RecurseCustomRulePath` and `IncludeDefaultRules` parameters to settings file.
 
