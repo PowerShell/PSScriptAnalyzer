@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.16.0'
+ModuleVersion = '1.16.1'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -87,12 +87,8 @@ PrivateData = @{
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
         IconUri = ''
         ReleaseNotes = @'
-### Added
-- (#803) `CustomRulePath`, `RecurseCustomRulePath` and `IncludeDefaultRules` parameters to settings file.
-
 ### Fixed
-- (#801) Reading DSC classes in `PSUseIdenticalMandatoryParametersForDSC` rule.
-- (#796) `PSAvoidUsingWriteHost` rule documentation (Thanks @bergmeister!).
+- (#815) Formatter crashes due to invalid extent comparisons
 '@
     }
 }
@@ -104,6 +100,7 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
 
 
 
