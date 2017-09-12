@@ -1452,12 +1452,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="path">The path of the file or directory to analyze.</param>
         /// <param name="searchRecursively">
-        /// <param name="autoFix">
+        /// <param name="fix">
         /// If true, recursively searches the given file path and analyzes any
         /// script files that are found.
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false, bool autoFix = false)
+        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false, bool fix = false)
         {
             List<string> scriptFilePaths = new List<string>();
 
@@ -1477,11 +1477,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
             foreach (string scriptFilePath in scriptFilePaths)
             {
-                if (autoFix)
+                if (fix)
                 {
-                    var scriptFileContentWithAutoFixes = Fix(File.ReadAllText(scriptFilePath));
-                    // Use UTF8 when writing to avoid issues with special characters such as e.g. the copyright symbol in *.psd1 files. This could be improved to detect the encoding in order to preserve it.
-                    File.WriteAllText(scriptFilePath, scriptFileContentWithAutoFixes, Encoding.UTF8);
+                    var fileEncoding = GetFileEncoding(scriptFilePath); fileEncoding.GetPreamble();
+                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding));
+                    File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);   // although this preserves the encoding, it will add a BOM to UTF8 files
                 }
 
                 // Yield each record in the result so that the
@@ -1620,6 +1620,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             updatedRange = range;
             return text;
+        }
+
+        private static Encoding GetFileEncoding(string path)
+        {
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                using (var reader = new StreamReader(stream, true))
+                {
+                    reader.ReadToEnd(); // needed in order to populate the CurrentEncoding property
+                    return reader.CurrentEncoding;
+                }
+            }
         }
 
         private static Range SnapToEdges(EditableText text, Range range)
