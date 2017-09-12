@@ -414,6 +414,7 @@ Position: Named
 Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
+```
 
 ### -Settings
 File path that contains user profile or hash table for ScriptAnalyzer
