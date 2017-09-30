@@ -1479,7 +1479,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 if (fix)
                 {
-                    var fileEncoding = GetFileEncoding(scriptFilePath); fileEncoding.GetPreamble();
+                    var fileEncoding = GetFileEncoding(scriptFilePath);
                     var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding));
                     File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);   // although this preserves the encoding, it will add a BOM to UTF8 files
                 }
@@ -1626,9 +1626,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             using (var stream = new FileStream(path, FileMode.Open))
             {
-                using (var reader = new StreamReader(stream, true))
+                using (var reader = new StreamReader(stream))
                 {
-                    reader.ReadToEnd(); // needed in order to populate the CurrentEncoding property
+                    reader.Peek(); // needed in order to populate the CurrentEncoding property
                     return reader.CurrentEncoding;
                 }
             }
