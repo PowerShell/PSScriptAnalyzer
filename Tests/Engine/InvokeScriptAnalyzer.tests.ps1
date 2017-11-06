@@ -494,7 +494,6 @@ Describe "Test -Fix Switch" {
 
         $expectedScriptContentAfterFix = Get-Content $directory\TestScriptWithFixableWarnings_AfterFix.ps1 -Raw
         $actualScriptContentAfterFix = Get-Content $directory\TestScriptWithFixableWarnings.ps1 -Raw
-        write-host $actualScriptContentAfterFix
         $actualScriptContentAfterFix | Should Be $expectedScriptContentAfterFix
     }
 }
