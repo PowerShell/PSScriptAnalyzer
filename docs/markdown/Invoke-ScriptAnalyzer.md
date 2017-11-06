@@ -400,9 +400,9 @@ Accept wildcard characters: False
 ```
 
 ### -Fix
-Certain warnings contain a suggested fix in their DiagnosticRecord and therefore those warnings will be fixed automatically using this fix.
+Fixes certain warnings which contain a fix in their DiagnosticRecord.
 
-When you used Fix, Invoke-ScriptAnalyzer runs as usual but will apply the fixes before running the analysis. Please make sure that you have a backup of your files when using this switch. It tries to pre-server the file encoding but it is possible that a BOM gets added to the fixed files.
+When you used Fix, Invoke-ScriptAnalyzer runs as usual but will apply the fixes before running the analysis. Please make sure that you have a backup of your files when using this switch. It tries to preserve the file encoding but there are still some cases where the encoding can change.
 
 ```yaml
 Type: SwitchParameter
