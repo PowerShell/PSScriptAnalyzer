@@ -465,3 +465,20 @@ Describe "Test CustomizedRulePath" {
         }
     }
 }
+
+Describe "Test -Fix Switch" {
+
+    It "Fixes warnings" {
+        # we expect the script to contain warnings
+        $warningsBeforeFix = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1
+        $warningsBeforeFix.Count | Should Be 4
+
+        # fix the warnings and expect that it should not return the fixed warnings
+        $warningsWithFixSwitch = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1 -Fix
+        $warningsWithFixSwitch.Count | Should Be 0
+
+        # double check that the warnings are really fixed
+        $warningsAfterFix = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1
+        $warningsAfterFix.Count | Should Be 0
+    }
+}
