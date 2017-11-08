@@ -1444,28 +1444,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return results;
         }
 
-#endregion
+        #endregion
 
 
         /// <summary>
         /// Analyzes a script file or a directory containing script files.
         /// </summary>
         /// <param name="path">The path of the file or directory to analyze.</param>
+        /// <param name="shouldProcess">Whether the action should be executed.</param>
         /// <param name="searchRecursively">
         /// If true, recursively searches the given file path and analyzes any
         /// script files that are found.
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false)
+        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, Func<string, string, bool> shouldProcess, bool searchRecursively = false)
         {
             List<string> scriptFilePaths = ScriptPathList(path, searchRecursively);
 
             foreach (string scriptFilePath in scriptFilePaths)
             {
-                // Yield each record in the result so that the caller can pull them one at a time
-                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                if (shouldProcess(scriptFilePath, $"Analyzing file {scriptFilePath}"))
                 {
-                    yield return diagnosticRecord;
+                    // Yield each record in the result so that the caller can pull them one at a time
+                    foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                    {
+                        yield return diagnosticRecord;
+                    }
                 }
             }
         }
@@ -1474,25 +1478,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Analyzes a script file or a directory containing script files and fixes warning where possible.
         /// </summary>
         /// <param name="path">The path of the file or directory to analyze.</param>
+        /// <param name="shouldProcess">Whether the action should be executed.</param>
         /// <param name="searchRecursively">
         /// If true, recursively searches the given file path and analyzes any
         /// script files that are found.
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules and could not be fixed automatically.</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeAndFixPath(string path, bool searchRecursively = false)
+        public IEnumerable<DiagnosticRecord> AnalyzeAndFixPath(string path, Func<string, string, bool> shouldProcess, bool searchRecursively = false)
         {
             List<string> scriptFilePaths = ScriptPathList(path, searchRecursively);
 
             foreach (string scriptFilePath in scriptFilePaths)
             {
-                var fileEncoding = GetFileEncoding(scriptFilePath);
-                var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding));
-                File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
-
-                // Yield each record in the result so that the caller can pull them one at a time
-                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                if (shouldProcess(scriptFilePath, $"Analyzing and fixing file {scriptFilePath}"))
                 {
-                    yield return diagnosticRecord;
+                    var fileEncoding = GetFileEncoding(scriptFilePath);
+                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding));
+                    File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
+
+                    // Yield each record in the result so that the caller can pull them one at a time
+                    foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                    {
+                        yield return diagnosticRecord;
+                    }
                 }
             }
         }
