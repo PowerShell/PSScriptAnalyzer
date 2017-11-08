@@ -388,7 +388,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 foreach (var p in processedPaths)
                 {
-                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.recurse, this.fix);
+                    if (fix)
+                    {
+                        diagnosticsList = ScriptAnalyzer.Instance.AnalyzeAndFixPath(p, this.recurse);
+                    }
+                    else
+                    {
+                        diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.recurse);
+                    }
                     WriteToOutput(diagnosticsList);
                 }
             }

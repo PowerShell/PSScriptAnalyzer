@@ -1452,40 +1452,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="path">The path of the file or directory to analyze.</param>
         /// <param name="searchRecursively">
-        /// <param name="fix">
         /// If true, recursively searches the given file path and analyzes any
         /// script files that are found.
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false, bool fix = false)
+        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false)
         {
-            List<string> scriptFilePaths = new List<string>();
+            List<string> scriptFilePaths = ScriptPathList(path, searchRecursively);
 
-            if (path == null)
-            {
-                this.outputWriter.ThrowTerminatingError(
-                    new ErrorRecord(
-                        new FileNotFoundException(),
-                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path),
-                        ErrorCategory.InvalidArgument,
-                        this));
-            }
-
-            // Create in advance the list of script file paths to analyze.  This
-            // is an optimization over doing the whole operation at once
-            // and calling .Concat on IEnumerables to join results.
-            this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
             foreach (string scriptFilePath in scriptFilePaths)
             {
-                if (fix)
+                // Yield each record in the result so that the caller can pull them one at a time
+                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
                 {
-                    var fileEncoding = GetFileEncoding(scriptFilePath);
-                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding));
-                    File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);   // although this preserves the encoding, it will add a BOM to UTF8 files
+                    yield return diagnosticRecord;
                 }
+            }
+        }
 
-                // Yield each record in the result so that the
-                // caller can pull them one at a time
+        /// <summary>
+        /// Analyzes a script file or a directory containing script files and fixes warning where possible.
+        /// </summary>
+        /// <param name="path">The path of the file or directory to analyze.</param>
+        /// <param name="searchRecursively">
+        /// If true, recursively searches the given file path and analyzes any
+        /// script files that are found.
+        /// </param>
+        /// <returns>An enumeration of DiagnosticRecords that were found by rules and could not be fixed automatically.</returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeAndFixPath(string path, bool searchRecursively = false)
+        {
+            List<string> scriptFilePaths = ScriptPathList(path, searchRecursively);
+
+            foreach (string scriptFilePath in scriptFilePaths)
+            {
+                var fileEncoding = GetFileEncoding(scriptFilePath);
+                var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding));
+                File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
+
+                // Yield each record in the result so that the caller can pull them one at a time
                 foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
                 {
                     yield return diagnosticRecord;
@@ -1674,6 +1678,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             unusedCorrections = correctionExtents.Count() - count;
             return text;
+        }
+
+        private List<string> ScriptPathList(string path, bool searchRecursively)
+        {
+            List<string> scriptFilePaths = new List<string>();
+
+            if (path == null)
+            {
+                this.outputWriter.ThrowTerminatingError(
+                    new ErrorRecord(
+                        new FileNotFoundException(),
+                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path),
+                        ErrorCategory.InvalidArgument,
+                        this));
+            }
+
+            // Create in advance the list of script file paths to analyze.  This
+            // is an optimization over doing the whole operation at once
+            // and calling .Concat on IEnumerables to join results.
+            this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
+
+            return scriptFilePaths;
         }
 
         private void BuildScriptPathList(
