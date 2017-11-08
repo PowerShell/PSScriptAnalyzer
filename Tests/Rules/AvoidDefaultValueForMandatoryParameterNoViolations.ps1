@@ -2,11 +2,11 @@
 {
     param(
         [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]    
+        [ValidateNotNullOrEmpty()]
         [string]
         $Param1,
         [Parameter(Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]    
+        [ValidateNotNullOrEmpty()]
         [string]
         $Param2=$null
     )

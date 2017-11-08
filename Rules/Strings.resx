@@ -870,6 +870,18 @@
   <data name="AvoidGlobalAliasesName" xml:space="preserve">
     <value>AvoidGlobalAliases</value>
   </data>
+  <data name="AvoidTrailingWhitespaceName" xml:space="preserve">
+    <value>AvoidTrailingWhitespace</value>
+  </data>
+  <data name="AvoidTrailingWhitespaceCommonName" xml:space="preserve">
+    <value>Avoid trailing whitespace</value>
+  </data>
+  <data name="AvoidTrailingWhitespaceDescription" xml:space="preserve">
+    <value>Each line should have no trailing whitespace.</value>
+  </data>
+  <data name="AvoidTrailingWhitespaceError" xml:space="preserve">
+    <value>Line has trailing whitespace</value>
+  </data>
   <data name="PlaceOpenBraceName" xml:space="preserve">
     <value>PlaceOpenBrace</value>
   </data>
