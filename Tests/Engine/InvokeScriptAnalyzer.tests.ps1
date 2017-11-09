@@ -482,7 +482,6 @@ Describe "Test -Fix Switch" {
     It "Fixes warnings" {
         # we expect the script to contain warnings
         $warningsBeforeFix = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1
-	$warningsBeforeFix | % { Write-Verbose "$($_.Message)" -Verbose }
         $warningsBeforeFix.Count | Should Be 5
 
         # fix the warnings and expect that it should not return the fixed warnings
