@@ -475,7 +475,7 @@ Describe "Test -Fix Switch" {
     AfterEach {
         if ($null -ne $initialTestScript)
         {
-            [System.IO.File]::WriteAllText("$($directory)\TestScriptWithFixableWarnings.ps1", initialTestScript) # Set-Content -NoNewline was only introduced in PS v5 and would therefore not work in CI
+            [System.IO.File]::WriteAllText("$($directory)\TestScriptWithFixableWarnings.ps1", $initialTestScript) # Set-Content -NoNewline was only introduced in PS v5 and would therefore not work in CI
         }
     }
 
