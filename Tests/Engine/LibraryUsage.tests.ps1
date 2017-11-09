@@ -78,7 +78,7 @@ function Invoke-ScriptAnalyzer {
 	);
 
     if ($PSCmdlet.ParameterSetName -eq "File") {
-		$supportsShouldProcessFunc = [Func[string, string, bool]]{ return $Recurse.IsPresent }
+		$supportsShouldProcessFunc = [Func[string, string, bool]]{ return $true }
 		if ($Fix.IsPresent)
 		{
 			return $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
