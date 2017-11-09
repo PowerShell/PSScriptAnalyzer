@@ -121,7 +121,7 @@ function Get-ParametersDefaultFirst {
 	)
 
 	BEGIN {
-		$Common = 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable'
+		$Common = 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable', 'WhatIf'
 		$parameters = @()
 	}
 	PROCESS {
@@ -266,7 +266,7 @@ foreach ($command in $commands) {
 		Context "Test parameter help for $commandName" {
 
 			$Common = 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable',
-			'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable'
+			'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable', 'WhatIf'
 
 			# Get parameters. When >1 parameter with same name,
 			# get parameter from the default parameter set, if any.
