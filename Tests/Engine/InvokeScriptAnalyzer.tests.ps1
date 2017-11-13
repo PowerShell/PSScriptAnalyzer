@@ -475,14 +475,14 @@ Describe "Test -Fix Switch" {
     AfterEach {
         if ($null -ne $initialTestScript)
         {
-            $initialTestScript | Set-Content $directory\TestScriptWithFixableWarnings.ps1 -NoNewline
+            [System.IO.File]::WriteAllText("$($directory)\TestScriptWithFixableWarnings.ps1", $initialTestScript) # Set-Content -NoNewline was only introduced in PS v5 and would therefore not work in CI
         }
     }
 
     It "Fixes warnings" {
         # we expect the script to contain warnings
         $warningsBeforeFix = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1
-        $warningsBeforeFix.Count | Should Be 4
+        $warningsBeforeFix.Count | Should Be 5
 
         # fix the warnings and expect that it should not return the fixed warnings
         $warningsWithFixSwitch = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1 -Fix
