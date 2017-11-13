@@ -1493,8 +1493,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (shouldProcess(scriptFilePath, $"Analyzing and fixing file {scriptFilePath}"))
                 {
                     var fileEncoding = GetFileEncoding(scriptFilePath);
-                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding));
-                    File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
+                    bool fixesWereApplied;
+                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding), out fixesWereApplied);
+                    if (fixesWereApplied)
+                    {
+                        File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
+                    }
 
                     // Yield each record in the result so that the caller can pull them one at a time
                     foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
@@ -1552,8 +1556,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Fix the violations in the given script text.
         /// </summary>
         /// <param name="scriptDefinition">The script text to be fixed.</param>
+        /// <param name="updatedRange">Whether any warnings were fixed.</param>
         /// <returns>The fixed script text.</returns>
-        public string Fix(string scriptDefinition)
+        public string Fix(string scriptDefinition, out bool fixesWereApplied)
         {
             if (scriptDefinition == null)
             {
@@ -1561,7 +1566,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             Range updatedRange;
-            return Fix(new EditableText(scriptDefinition), null, out updatedRange).ToString();
+            return Fix(new EditableText(scriptDefinition), null, out updatedRange, out fixesWereApplied).ToString();
         }
 
         /// <summary>
@@ -1570,8 +1575,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="text">An object of type `EditableText` that encapsulates the script text to be fixed.</param>
         /// <param name="range">The range in which the fixes are allowed.</param>
         /// <param name="updatedRange">The updated range after the fixes have been applied.</param>
+        /// <param name="updatedRange">Whether any warnings were fixed.</param>
         /// <returns>The same instance of `EditableText` that was passed to the method, but the instance encapsulates the fixed script text. This helps in chaining the Fix method.</returns>
-        public EditableText Fix(EditableText text, Range range, out Range updatedRange)
+        public EditableText Fix(EditableText text, Range range, out Range updatedRange, out bool fixesWereApplied)
         {
             if (text == null)
             {
@@ -1604,7 +1610,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
                 int unusedCorrections;
                 Fix(text, corrections, out unusedCorrections);
-                this.outputWriter.WriteVerbose($"Fixed {corrections.Count - unusedCorrections} violations.");
+                var numberOfFixedViolatons = corrections.Count - unusedCorrections;
+                fixesWereApplied = numberOfFixedViolatons > 0;
+                this.outputWriter.WriteVerbose($"Fixed {numberOfFixedViolatons} violations.");
 
                 // This is an indication of an infinite loop. There is a small chance of this.
                 // It is better to abort the fixing operation at this point.
