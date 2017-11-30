@@ -12,7 +12,7 @@ Evaluates a script or module based on selected best practice rules
 ### UNNAMED_PARAMETER_SET_1
 ```
 Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
- [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly]
+ [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix]
  [-Settings <String>]
 ```
 
@@ -390,6 +390,23 @@ For help, see the examples.
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Fix
+Fixes certain warnings which contain a fix in their DiagnosticRecord.
+
+When you used Fix, Invoke-ScriptAnalyzer runs as usual but will apply the fixes before running the analysis. Please make sure that you have a backup of your files when using this switch. It tries to preserve the file encoding but there are still some cases where the encoding can change.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: UNNAMED_PARAMETER_SET_1
 Aliases:
 
 Required: False

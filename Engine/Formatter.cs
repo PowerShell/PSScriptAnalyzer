@@ -53,7 +53,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
 
                 Range updatedRange;
-                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange);
+                bool fixesWereApplied;
+                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange, out fixesWereApplied);
                 range = updatedRange;
             }
 

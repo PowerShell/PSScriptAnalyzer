@@ -15,7 +15,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 # wraps the usage of ScriptAnalyzer as a .NET library 
 function Invoke-ScriptAnalyzer {
 	param (
-        [CmdletBinding(DefaultParameterSetName="File")]
+        [CmdletBinding(DefaultParameterSetName="File", SupportsShouldProcess = $true)]
 
 		[parameter(Mandatory = $true, Position = 0, ParameterSetName="File")]
 		[Alias("PSPath")]
@@ -48,7 +48,10 @@ function Invoke-ScriptAnalyzer {
 		[switch] $IncludeDefaultRules,
 
         [Parameter(Mandatory = $false)]
-        [switch] $SuppressedOnly
+        [switch] $SuppressedOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $Fix
 	)	
 
     if ($null -eq $CustomRulePath)
@@ -75,7 +78,12 @@ function Invoke-ScriptAnalyzer {
 	);
 
     if ($PSCmdlet.ParameterSetName -eq "File") {
-    	return $scriptAnalyzer.AnalyzePath($Path, $Recurse.IsPresent);
+		$supportsShouldProcessFunc = [Func[string, string, bool]]{ return $PSCmdlet.Shouldprocess }
+		if ($Fix.IsPresent)
+		{
+			return $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+		}
+        return $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
     }
     else {
         return $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);

@@ -38,6 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     [Cmdlet(VerbsLifecycle.Invoke,
         "ScriptAnalyzer",
         DefaultParameterSetName = "File",
+        SupportsShouldProcess = true,
         HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
@@ -179,6 +180,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             set { suppressedOnly = value; }
         }
         private bool suppressedOnly;
+
+        /// <summary>
+        /// Resolves rule violations automatically where possible.
+        /// </summary>
+        [Parameter(Mandatory = false, ParameterSetName = "File")]
+        public SwitchParameter Fix
+        {
+            get { return fix; }
+            set { fix = value; }
+        }
+        private bool fix;
 
         /// <summary>
         /// Returns path to the file that contains user profile or hash table for ScriptAnalyzer
@@ -377,7 +389,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 foreach (var p in processedPaths)
                 {
-                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.recurse);
+                    if (fix)
+                    {
+                        ShouldProcess(p, $"Analyzing and fixing path with Recurse={this.recurse}");
+                        diagnosticsList = ScriptAnalyzer.Instance.AnalyzeAndFixPath(p, this.ShouldProcess, this.recurse);
+                    }
+                    else
+                    {
+                        ShouldProcess(p, $"Analyzing path with Recurse={this.recurse}");
+                        diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.ShouldProcess, this.recurse);
+                    }
                     WriteToOutput(diagnosticsList);
                 }
             }
