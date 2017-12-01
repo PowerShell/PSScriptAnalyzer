@@ -19,7 +19,13 @@ build_script:
     - ps: |
         $PSVersionTable
         Push-Location C:\projects\psscriptanalyzer
-        dotnet restore
+        dotnet --version
+        pushd .\Engine
+        dotnet restore Engine.csproj
+        popd
+        pushd Rules
+        dotnet restore Rules.csproj
+        popd
         C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
         Pop-Location
