@@ -12,7 +12,6 @@ clone_folder: c:\projects\psscriptanalyzer
 
 # Install Pester
 install:
-    - cinst -y pester --version 3.4.0
     - ps: nuget install platyPS -Version 0.5.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
 
 build_script:
