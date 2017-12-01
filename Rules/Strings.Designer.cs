@@ -8,10 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
+namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     using System;
-    
-    
+    using System.Reflection;
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -19,7 +20,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -39,7 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Strings", typeof(Strings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings", typeof(Strings).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +58,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Align assignment statement.
+        /// </summary>
+        internal static string AlignAssignmentStatementCommonName {
+            get {
+                return ResourceManager.GetString("AlignAssignmentStatementCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line up assignment statements such that the assignment operator are aligned..
+        /// </summary>
+        internal static string AlignAssignmentStatementDescription {
+            get {
+                return ResourceManager.GetString("AlignAssignmentStatementDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assignment statements are not aligned.
+        /// </summary>
+        internal static string AlignAssignmentStatementError {
+            get {
+                return ResourceManager.GetString("AlignAssignmentStatementError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AlignAssignmentStatement.
+        /// </summary>
+        internal static string AlignAssignmentStatementName {
+            get {
+                return ResourceManager.GetString("AlignAssignmentStatementName", resourceCulture);
             }
         }
         
@@ -408,6 +445,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string AvoidShouldContinueWithoutForceName {
             get {
                 return ResourceManager.GetString("AvoidShouldContinueWithoutForceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid trailing whitespace.
+        /// </summary>
+        internal static string AvoidTrailingWhitespaceCommonName {
+            get {
+                return ResourceManager.GetString("AvoidTrailingWhitespaceCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Each line should have no trailing whitespace..
+        /// </summary>
+        internal static string AvoidTrailingWhitespaceDescription {
+            get {
+                return ResourceManager.GetString("AvoidTrailingWhitespaceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line has trailing whitespace.
+        /// </summary>
+        internal static string AvoidTrailingWhitespaceError {
+            get {
+                return ResourceManager.GetString("AvoidTrailingWhitespaceError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidTrailingWhitespace.
+        /// </summary>
+        internal static string AvoidTrailingWhitespaceName {
+            get {
+                return ResourceManager.GetString("AvoidTrailingWhitespaceName", resourceCulture);
             }
         }
         
@@ -1312,6 +1385,123 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Place close braces.
+        /// </summary>
+        internal static string PlaceCloseBraceCommonName {
+            get {
+                return ResourceManager.GetString("PlaceCloseBraceCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close brace should be on a new line by itself..
+        /// </summary>
+        internal static string PlaceCloseBraceDescription {
+            get {
+                return ResourceManager.GetString("PlaceCloseBraceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close brace is not on a new line..
+        /// </summary>
+        internal static string PlaceCloseBraceErrorShouldBeOnNewLine {
+            get {
+                return ResourceManager.GetString("PlaceCloseBraceErrorShouldBeOnNewLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close brace before a branch statement is followed by a new line..
+        /// </summary>
+        internal static string PlaceCloseBraceErrorShouldCuddleBranchStatement {
+            get {
+                return ResourceManager.GetString("PlaceCloseBraceErrorShouldCuddleBranchStatement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close brace does not follow a new line..
+        /// </summary>
+        internal static string PlaceCloseBraceErrorShouldFollowNewLine {
+            get {
+                return ResourceManager.GetString("PlaceCloseBraceErrorShouldFollowNewLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close brace does not follow a non-empty line..
+        /// </summary>
+        internal static string PlaceCloseBraceErrorShouldNotFollowEmptyLine {
+            get {
+                return ResourceManager.GetString("PlaceCloseBraceErrorShouldNotFollowEmptyLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PlaceCloseBrace.
+        /// </summary>
+        internal static string PlaceCloseBraceName {
+            get {
+                return ResourceManager.GetString("PlaceCloseBraceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Place open braces consistently.
+        /// </summary>
+        internal static string PlaceOpenBraceCommonName {
+            get {
+                return ResourceManager.GetString("PlaceOpenBraceCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Place open braces either on the same line as the preceding expression or on a new line..
+        /// </summary>
+        internal static string PlaceOpenBraceDescription {
+            get {
+                return ResourceManager.GetString("PlaceOpenBraceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is no new line after open brace..
+        /// </summary>
+        internal static string PlaceOpenBraceErrorNoNewLineAfterBrace {
+            get {
+                return ResourceManager.GetString("PlaceOpenBraceErrorNoNewLineAfterBrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open brace not on same line as preceding keyword. It should be on the same line..
+        /// </summary>
+        internal static string PlaceOpenBraceErrorShouldBeOnSameLine {
+            get {
+                return ResourceManager.GetString("PlaceOpenBraceErrorShouldBeOnSameLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open brace is not on a new line..
+        /// </summary>
+        internal static string PlaceOpenBraceErrorShouldNotBeOnSameLine {
+            get {
+                return ResourceManager.GetString("PlaceOpenBraceErrorShouldNotBeOnSameLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PlaceOpenBrace.
+        /// </summary>
+        internal static string PlaceOpenBraceName {
+            get {
+                return ResourceManager.GetString("PlaceOpenBraceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Null Comparison.
         /// </summary>
         internal static string PossibleIncorrectComparisonWithNullCommonName {
@@ -1825,6 +2015,114 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use consistent indentation.
+        /// </summary>
+        internal static string UseConsistentIndentationCommonName {
+            get {
+                return ResourceManager.GetString("UseConsistentIndentationCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Each statement block should have a consistent indenation..
+        /// </summary>
+        internal static string UseConsistentIndentationDescription {
+            get {
+                return ResourceManager.GetString("UseConsistentIndentationDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indentation not consistent.
+        /// </summary>
+        internal static string UseConsistentIndentationError {
+            get {
+                return ResourceManager.GetString("UseConsistentIndentationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseConsistentIndentation.
+        /// </summary>
+        internal static string UseConsistentIndentationName {
+            get {
+                return ResourceManager.GetString("UseConsistentIndentationName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use whitespaces.
+        /// </summary>
+        internal static string UseConsistentWhitespaceCommonName {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Check for whitespace between keyword and open paren/curly, around assigment operator (&apos;=&apos;), around arithmetic operators and after separators (&apos;,&apos; and &apos;;&apos;).
+        /// </summary>
+        internal static string UseConsistentWhitespaceDescription {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space before open brace..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorBeforeBrace {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorBeforeBrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space before open parenthesis..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorBeforeParen {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorBeforeParen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space before and after binary and assignment operators..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorOperator {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space after a comma..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorSeparatorComma {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorSeparatorComma", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space after a semicolon..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorSeparatorSemi {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorSeparatorSemi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseConsistentWhitespace.
+        /// </summary>
+        internal static string UseConsistentWhitespaceName {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extra Variables.
         /// </summary>
         internal static string UseDeclaredVarsMoreThanAssignmentsCommonName {
@@ -1879,7 +2177,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The mandatory parameter &apos;{0}&apos; is not present in &apos;{1}&apos; DSC resource function(s)..
+        ///   Looks up a localized string similar to The &apos;{0}&apos; parameter &apos;{1}&apos; is not present in &apos;{2}&apos; DSC resource function(s)..
         /// </summary>
         internal static string UseIdenticalMandatoryParametersDSCError {
             get {
@@ -2163,6 +2461,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules {
         internal static string UseStandardDSCFunctionsInResourceName {
             get {
                 return ResourceManager.GetString("UseStandardDSCFunctionsInResourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use SupportsShouldProcess.
+        /// </summary>
+        internal static string UseSupportsShouldProcessCommonName {
+            get {
+                return ResourceManager.GetString("UseSupportsShouldProcessCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Commands typically provide Confirm and Whatif parameters to give more control on its execution in an interactive environment. In PowerShell, a command can use a SupportsShouldProcess attribute to provide this capability. Hence, manual addition of these parameters to a command is discouraged. If a commands need Confirm and Whatif parameters, then it should support ShouldProcess..
+        /// </summary>
+        internal static string UseSupportsShouldProcessDescription {
+            get {
+                return ResourceManager.GetString("UseSupportsShouldProcessDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Whatif and/or Confirm manually defined in function {0}. Instead, please use SupportsShouldProcess attribute..
+        /// </summary>
+        internal static string UseSupportsShouldProcessError {
+            get {
+                return ResourceManager.GetString("UseSupportsShouldProcessError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseSupportsShouldProcess.
+        /// </summary>
+        internal static string UseSupportsShouldProcessName {
+            get {
+                return ResourceManager.GetString("UseSupportsShouldProcessName", resourceCulture);
             }
         }
         

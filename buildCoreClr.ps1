@@ -55,7 +55,7 @@ if ($build)
     {
         throw "Please restore project Engine"
     }
-    .\New-StronglyTypedCsFileForResx.ps1 Engine
+    #.\New-StronglyTypedCsFileForResx.ps1 Engine
     Push-Location Engine\
     dotnet build Engine.csproj --framework $Framework --configuration $Configuration
     Pop-Location
@@ -65,7 +65,7 @@ if ($build)
     {
         throw "Please restore project Rules"
     }
-    .\New-StronglyTypedCsFileForResx.ps1 Rules
+    #.\New-StronglyTypedCsFileForResx.ps1 Rules
     Push-Location Rules\
     dotnet build Rules.csproj --framework $Framework --configuration $Configuration
     Pop-Location

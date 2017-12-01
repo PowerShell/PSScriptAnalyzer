@@ -7,6 +7,7 @@
     <PackageId>Rules</PackageId>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.0.4</RuntimeFrameworkVersion>
+    <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding --
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,16 +30,27 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Remove="Strings.Designer.Core.cs;Strings.Designer.cs" />
-  </ItemGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
     <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <Compile Remove="Strings.Designer.cs;Strings.Designer.Core.cs;UseSingularNouns.cs" />
+    <Compile Remove="Strings.cs;Strings.Designer.Core.cs;UseSingularNouns.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
