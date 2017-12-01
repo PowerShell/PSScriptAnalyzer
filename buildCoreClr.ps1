@@ -20,7 +20,7 @@ Function Test-DotNetRestore
     param(
         [string] $projectPath
     )
-    Test-Path (Join-Path $projectPath 'project.lock.json')
+    Test-Path ([System.IO.Path]::Combine($projectPath, 'obj', 'project.assets.json'))
 }
 
 $solutionDir = Split-Path $MyInvocation.InvocationName
@@ -57,7 +57,7 @@ if ($build)
     }
     .\New-StronglyTypedCsFileForResx.ps1 Engine
     Push-Location Engine\
-    dotnet build --framework $Framework --configuration $Configuration
+    dotnet build Engine.csproj --framework $Framework --configuration $Configuration
     Pop-Location
 
 
@@ -67,7 +67,7 @@ if ($build)
     }
     .\New-StronglyTypedCsFileForResx.ps1 Rules
     Push-Location Rules\
-    dotnet build --framework $Framework --configuration $Configuration
+    dotnet build Rules.csproj --framework $Framework --configuration $Configuration
     Pop-Location
 
     Function CopyToDestinationDir($itemsToCopy, $destination)

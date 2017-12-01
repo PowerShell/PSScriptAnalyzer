@@ -97,7 +97,12 @@ Exit
     ```
 * Restore packages
     ```powershell
-    dotnet restore
+    pushd .\Engine
+    dotnet restore Engine.csproj
+    popd
+    pushd Rules
+    dotnet restore Rules.csproj
+    popd
     ```
 * Build for your platform
     * Windows PowerShell version 5.0 and greater

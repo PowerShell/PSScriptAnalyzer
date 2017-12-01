@@ -10,10 +10,6 @@ environment:
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
 
-# cache nuget packages
-cache:
-    - '%USERPROFILE%\.nuget\packages -> **\project.json'
-
 # Install Pester
 install:
     - cinst -y pester --version 3.4.0
