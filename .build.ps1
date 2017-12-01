@@ -81,8 +81,8 @@ function Get-BuildTaskParams($project) {
 
 function Get-RestoreTaskParams($project) {
     @{
-        Inputs  = "$BuildRoot/$project/project.json"
-        Outputs = "$BuildRoot/$project/project.lock.json"
+        Inputs  = "$BuildRoot/$project/$project.csproj"
+        Outputs = "$BuildRoot/$project/$project.csproj"
         Jobs    = {dotnet restore}
     }
 }
