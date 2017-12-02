@@ -17,8 +17,7 @@ install:
         # the legacy WMF4 image only has the old preview SDKs of dotnet
         if (-not ((dotnet --version).StartsWith('1.1')))
         {
-            Import-Module BitsTransfer
-            Start-BitsTransfer -Source  https://dot.net/v1/dotnet-install.ps1 -Destination dotnet-install.ps1
+            Invoke-WebRequest -BasicParsing https://dot.net/v1/dotnet-install.ps1 -Destination dotnet-install.ps1
             .\dotnet-install.ps1 -Version 1.1
         }
 
@@ -27,12 +26,12 @@ build_script:
         $PSVersionTable
         Push-Location C:\projects\psscriptanalyzer
         dotnet --version
-        pushd .\Engine
-        dotnet restore Engine.csproj
-        popd
-        pushd Rules
-        dotnet restore Rules.csproj
-        popd
+        Push-Location .\Engine
+        dotnet restore Engine.csproj | Out-Null
+        Pop-Location
+        Push-Location Rules
+        dotnet restore Rules.csproj | Out-Null
+        Pop-Location
         C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
         Pop-Location
