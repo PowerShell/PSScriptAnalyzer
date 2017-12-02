@@ -1,5 +1,8 @@
 ﻿param(
+    # Automatically performs a 'dotnet restore' when being run the first time
     [switch]$Build,
+    # Restore Projects in case NuGet packages have changed
+    [switch]$Restore,
     [switch]$Uninstall,
     [switch]$Install,
 
@@ -21,6 +24,16 @@ Function Test-DotNetRestore
         [string] $projectPath
     )
     Test-Path ([System.IO.Path]::Combine($projectPath, 'obj', 'project.assets.json'))
+}
+
+function Invoke-RestoreProjects
+{
+    Push-Location (Join-Path $PSScriptRoot Engine)
+    dotnet restore Engine.csproj
+    Pop-Location
+    Push-Location (Join-Path $PSScriptRoot Rules)
+    dotnet restore Rules.csproj
+    Pop-Location
 }
 
 $solutionDir = Split-Path $MyInvocation.InvocationName
@@ -47,13 +60,17 @@ elseif ($Configuration -match 'PSv3') {
     $destinationDirBinaries = "$destinationDir\PSv3"
 }
 
+if ($Restore.IsPresent)
+{
+    Invoke-RestoreProjects
+}
 
 if ($build)
 {
 
     if (-not (Test-DotNetRestore((Join-Path $solutionDir Engine))))
     {
-        throw "Please restore project Engine"
+        Invoke-RestoreProjects
     }
     Push-Location Engine\
     dotnet build Engine.csproj --framework $Framework --configuration $Configuration
@@ -62,7 +79,7 @@ if ($build)
 
     if (-not (Test-DotNetRestore((Join-Path $solutionDir Rules))))
     {
-        throw "Please restore project Rules"
+        Invoke-RestoreProjects
     }
     Push-Location Rules\
     dotnet build Rules.csproj --framework $Framework --configuration $Configuration
