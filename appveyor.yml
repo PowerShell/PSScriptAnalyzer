@@ -17,8 +17,8 @@ install:
         # the legacy WMF4 image only has the old preview SDKs of dotnet
         if (-not ((dotnet --version).StartsWith('1.1')))
         {
-            Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1'  -OutFile dotnet-install.ps1
-            .\dotnet-install.ps1 -Version 1.1
+            Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
+            .\dotnet-install.ps1 -Channel 1.1
         }
 
 build_script:
