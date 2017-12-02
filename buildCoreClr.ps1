@@ -26,14 +26,9 @@ Function Test-DotNetRestore
     Test-Path ([System.IO.Path]::Combine($projectPath, 'obj', 'project.assets.json'))
 }
 
-function Invoke-RestoreProjects
+function Invoke-RestoreSolution
 {
-    Push-Location (Join-Path $PSScriptRoot Engine)
-    dotnet restore Engine.csproj
-    Pop-Location
-    Push-Location (Join-Path $PSScriptRoot Rules)
-    dotnet restore Rules.csproj
-    Pop-Location
+    dotnet restore (Join-Path $PSScriptRoot .\PSScriptAnalyzer.sln)
 }
 
 $solutionDir = Split-Path $MyInvocation.InvocationName
@@ -62,7 +57,7 @@ elseif ($Configuration -match 'PSv3') {
 
 if ($Restore.IsPresent)
 {
-    Invoke-RestoreProjects
+    Invoke-RestoreSolution
 }
 
 if ($build)
@@ -70,7 +65,7 @@ if ($build)
 
     if (-not (Test-DotNetRestore((Join-Path $solutionDir Engine))))
     {
-        Invoke-RestoreProjects
+        Invoke-RestoreSolution
     }
     Push-Location Engine\
     dotnet build Engine.csproj --framework $Framework --configuration $Configuration
@@ -79,7 +74,7 @@ if ($build)
 
     if (-not (Test-DotNetRestore((Join-Path $solutionDir Rules))))
     {
-        Invoke-RestoreProjects
+        Invoke-RestoreSolution
     }
     Push-Location Rules\
     dotnet build Rules.csproj --framework $Framework --configuration $Configuration
