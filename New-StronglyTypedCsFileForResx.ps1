@@ -1,4 +1,8 @@
-﻿param(
+﻿<#
+# This script can be used to update the *.Designer file if a *.resx ressource file has been updated.
+# However, it is recommended to use Visual Studio instead for editing ressources instead since it takes of that automatically and prodcues cleaner diffs.
+#>
+param(
     [ValidateSet("Engine","Rules")]
     [string] $project
 )
@@ -132,7 +136,7 @@ if (-not (Test-Path "$projectRoot/global.json"))
     throw "Not in solution root: $projectRoot"
 }
 $inputFilePath = Join-Path $projectRoot "$project/Strings.resx"
-$outputFilePath = Join-Path $projectRoot "$project/Strings.cs"
+$outputFilePath = Join-Path $projectRoot "$project/Strings.Designer.cs"
 $className = "Microsoft.Windows.PowerShell.ScriptAnalyzer"
 if ($project -eq "Rules")
 {

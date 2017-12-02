@@ -83,10 +83,11 @@ Exit
 #### Requirements
 * [.NET Core 1.1.5 SDK](https://github.com/dotnet/core/blob/master/release-notes/download-archives/1.1.5.md)
 * [PlatyPS 0.5.0 or greater](https://github.com/PowerShell/platyPS)
+* Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
 
 #### Steps
 * Obtain the source
-    - Download the latest source code from the release page (https://github.com/PowerShell/PSScriptAnalyzer/releases) OR
+    - Download the latest source code from the [release page](https://github.com/PowerShell/PSScriptAnalyzer/releases) OR
     - Clone the repository (needs git)
     ```powershell
     git clone https://github.com/PowerShell/PSScriptAnalyzer
@@ -96,7 +97,8 @@ Exit
     cd path/to/PSScriptAnalyzer
     ```
 * Building
-    You can use either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build for your platform as follows:
+
+    You can either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build using `PowerShell` specifically for your platform as follows:
     * Windows PowerShell version 5.0 and greater
     ```powershell
     .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
@@ -119,6 +121,10 @@ Import-Module .\out\PSScriptAnalyzer\PSScriptAnalyzer.psd1
 ```
 
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the built-in rules
+
+* Adding/Removing resource strings
+
+For adding/removing resource strings in the `*.resx` files, it is recommended to use `Visual Studio` since it automatically updates the strongly typed `*.Designer.cs` files. The `Visual Studio 2017 Community Edition` is free to use but should you not have/want to use `Visual Studio` then you can either manually adapt the `*.Designer.cs` files or use the `New-StronglyTypedCsFileForResx.ps1` script although the latter is discouraged since it leads to a bad diff of the `*.Designer.cs` files.
 
 #### Tests
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
