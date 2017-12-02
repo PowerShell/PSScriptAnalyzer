@@ -17,7 +17,7 @@ msbuild %solutionPath%  /p:Configuration=%configuration% /l:FileLogger,Microsoft
 GOTO END
 
 :CLEAN
-msbuild .\PSScriptAnalyzer.sln  /p:Configuration=%configuration% /t:clean /l:FileLogger,Microsoft.Build.Engine;logfile=PSScriptAnalyzer_Build.log;append=true
+msbuild .\PSScriptAnalyzerDocumentation.sln  /p:Configuration=%configuration% /t:clean /l:FileLogger,Microsoft.Build.Engine;logfile=PSScriptAnalyzer_Build.log;append=true
 GOTO END
 
 :NOTOOLS

@@ -95,7 +95,8 @@ Exit
     ```powershell
     cd path/to/PSScriptAnalyzer
     ```
-* Build for your platform
+* Building
+    You can use either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build for your platform as follows:
     * Windows PowerShell version 5.0 and greater
     ```powershell
     .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
