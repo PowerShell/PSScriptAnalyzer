@@ -115,7 +115,7 @@ Exit
     ```
 * Import the module
 ```powershell
-Import-Module /path/to/PSScriptAnalyzer/out/PSScriptAnalyzer
+Import-Module .\out\PSScriptAnalyzer\PSScriptAnalyzer.psd1
 ```
 
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the built-in rules
