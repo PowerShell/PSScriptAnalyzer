@@ -40,10 +40,10 @@ build_script:
         Push-Location C:\projects\psscriptanalyzer
         dotnet --version
         Push-Location .\Engine
-        dotnet restore Engine.csproj | Out-Null
+        dotnet restore Engine.csproj
         Pop-Location
         Push-Location Rules
-        dotnet restore Rules.csproj | Out-Null
+        dotnet restore Rules.csproj
         Pop-Location
         C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
