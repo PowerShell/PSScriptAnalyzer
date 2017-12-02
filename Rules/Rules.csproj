@@ -35,7 +35,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <Compile Remove="Strings.cs;Strings.Designer.Core.cs;UseSingularNouns.cs" />
+    <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
 
   <ItemGroup>

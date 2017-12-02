@@ -5,7 +5,6 @@
     <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer</AssemblyName>
     <PackageId>Engine</PackageId>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
   </PropertyGroup>
 
@@ -28,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <Compile Remove="SafeDirectoryCatalog.cs;Strings.Designer.Core.cs;Strings.cs;Commands\GetScriptAnalyzerLoggerCommand.cs" />
+    <Compile Remove="SafeDirectoryCatalog.cs" />
   </ItemGroup>
 
   <ItemGroup>
