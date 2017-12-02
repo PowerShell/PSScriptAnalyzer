@@ -81,7 +81,7 @@ Exit
 ### From Source
 
 #### Requirements
-* [.NET Core 1.0 SDK Preview 2](https://github.com/dotnet/core/blob/master/release-notes/download-archives/1.0-preview2-download.md)
+* [.NET Core 1.1.5 SDK](https://github.com/dotnet/core/blob/master/release-notes/download-archives/1.1.5.md)
 * [PlatyPS 0.5.0 or greater](https://github.com/PowerShell/platyPS)
 
 #### Steps
