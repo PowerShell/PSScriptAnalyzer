@@ -136,14 +136,14 @@ popd
 
 $projects = @("engine", "rules")
 $projects | ForEach-Object {
-    Add-ProjectTask $_ buildResource (Get-ResourceTaskParam $_)
+    #Add-ProjectTask $_ buildResource (Get-ResourceTaskParam $_)
     Add-ProjectTask $_ build (Get-BuildTaskParams $_)
     Add-ProjectTask $_ restore (Get-RestoreTaskParams $_)
     Add-ProjectTask $_ clean (Get-CleanTaskParams $_)
     Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"
 }
 
-task buildResource -Before build "engine/buildResource", "rules/buildResource"
+#task buildResource -Before build "engine/buildResource", "rules/buildResource"
 task build "engine/build", "rules/build"
 task restore "engine/restore", "rules/restore"
 task clean "engine/clean", "rules/clean"
