@@ -15,7 +15,7 @@ install:
     - ps: nuget install platyPS -Version 0.5.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
     - ps: |
         # the legacy WMF4 image only has the old preview SDKs of dotnet
-        if (-not ((dotnet --version).StartsWith('1.1'))
+        if (-not ((dotnet --version).StartsWith('1.1')))
         {
             Import-Module BitsTransfer
             Start-BitsTransfer -Source  https://dot.net/v1/dotnet-install.ps1 -Destination dotnet-install.ps1
