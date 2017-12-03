@@ -301,17 +301,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 var keyStartOffset = kvp.Item1.Extent.StartOffset;
                 var keyTokenNode = tokenOps.GetTokenNodes(
-                    token => token.Extent.StartOffset == keyStartOffset).FirstOrDefault();
-                if (keyTokenNode == null
-                    || keyTokenNode.Next == null
-                    || keyTokenNode.Next.Value.Kind != TokenKind.Equals)
+                    token => token.Kind == TokenKind.Equals).FirstOrDefault();
+                if (keyTokenNode == null || keyTokenNode.Value == null)
                 {
-                    return null;
+                    continue;
                 }
+                var assignmentToken = keyTokenNode.Value.Extent;
 
                 nodeTuples.Add(new Tuple<IScriptExtent, IScriptExtent>(
-                    kvp.Item1.Extent,
-                    keyTokenNode.Next.Value.Extent));
+                    kvp.Item1.Extent, assignmentToken));
             }
 
             return nodeTuples;
