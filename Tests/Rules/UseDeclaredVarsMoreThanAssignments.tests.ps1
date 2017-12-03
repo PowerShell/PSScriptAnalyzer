@@ -49,6 +49,18 @@ function MyFunc2() {
             Get-Count | `
             Should Be 0
         }
+
+        It "flags a variable that is defined twice but never used" {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$myvar=1;$myvar=2' -IncludeRule $violationName | `
+            Get-Count | `
+            Should Be 1
+        }
+
+        It "does not flag a variable that is defined twice but gets assigned to another variable and flags the other variable instead" {
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition '$myvar=1;$myvar=2;$mySecondvar=$myvar' -IncludeRule $violationName
+            $results | Get-Count | Should Be 1
+            $results[0].Extent | Should Be '$mySecondvar'
+        }
     }
 
     Context "When there are no violations" {
