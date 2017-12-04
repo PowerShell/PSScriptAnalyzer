@@ -300,8 +300,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var kvp in hashtableAst.KeyValuePairs)
             {
                 var keyStartOffset = kvp.Item1.Extent.StartOffset;
+                bool keyStartOffSetReached = false;
                 var keyTokenNode = tokenOps.GetTokenNodes(
-                    token => token.Kind == TokenKind.Equals).FirstOrDefault();
+                    token =>
+                    {
+                        if (keyStartOffSetReached)
+                        {
+                            return token.Kind == TokenKind.Equals;
+                        }
+                        if (token.Extent.StartOffset == keyStartOffset)
+                        {
+                            keyStartOffSetReached = true;
+                        }
+                        return false;
+                        }).FirstOrDefault();
                 if (keyTokenNode == null || keyTokenNode.Value == null)
                 {
                     continue;
