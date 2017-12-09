@@ -53,7 +53,7 @@ function Invoke-ScriptAnalyzer {
         [Parameter(Mandatory = $false)]
         [switch] $Fix,
 		
-		[Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false)]
         [switch] $EnableExit
 	)	
 
@@ -97,7 +97,7 @@ function Invoke-ScriptAnalyzer {
         $results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
     }
 	
-	if ($null -ne $results)
+	if ($EnableExit.IsPresent -and $null -ne $results)
 	{
 		exit $results.Count
 	}
