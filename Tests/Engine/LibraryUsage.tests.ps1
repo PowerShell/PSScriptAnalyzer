@@ -81,26 +81,28 @@ function Invoke-ScriptAnalyzer {
 	);
 
     if ($PSCmdlet.ParameterSetName -eq "File")
-	{
-		$supportsShouldProcessFunc = [Func[string, string, bool]]{ return $PSCmdlet.Shouldprocess }
-		if ($Fix.IsPresent)
-		{
-			$results = $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
-		}
-		else
-		{
-			$results = $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
-		}
+    {
+        $supportsShouldProcessFunc = [Func[string, string, bool]] { return $PSCmdlet.Shouldprocess }
+        if ($Fix.IsPresent)
+        {
+            $results = $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+        }
+        else
+        {
+            $results = $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+        }
     }
     else
-	{
+    {
         $results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
-    }
-	
-	if ($EnableExit.IsPresent -and $null -ne $results)
-	{
-		exit $results.Count
 	}
+	
+	$results
+	
+    if ($EnableExit.IsPresent -and $null -ne $results)
+    {
+        exit $results.Count
+    }
 }
 
 # Define an implementation of the IOutputWriter interface
