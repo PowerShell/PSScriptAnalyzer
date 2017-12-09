@@ -193,6 +193,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool fix;
 
         /// <summary>
+        /// Sets the exit code to the number of warnings for usage in CI.
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        public SwitchParameter EnableExit
+        {
+            get { return enableExit; }
+            set { enableExit = value; }
+        }
+        private bool enableExit;
+
+        /// <summary>
         /// Returns path to the file that contains user profile or hash table for ScriptAnalyzer
         /// </summary>
         [Alias("Profile")]
@@ -417,6 +428,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 {
                     logger.LogObject(diagnostic, this);
                 }
+            }
+
+            if (EnableExit.IsPresent)
+            {
+                this.Host.SetShouldExit(diagnosticRecords.Count());
             }
         }
 

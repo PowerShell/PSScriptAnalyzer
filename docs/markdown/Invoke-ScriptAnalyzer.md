@@ -12,14 +12,14 @@ Evaluates a script or module based on selected best practice rules
 ### UNNAMED_PARAMETER_SET_1
 ```
 Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
- [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix]
+ [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix] [-EnableExit]
  [-Settings <String>]
 ```
 
 ### UNNAMED_PARAMETER_SET_2
 ```
 Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
- [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly]
+ [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-EnableExit]
  [-Settings <String>]
 ```
 
@@ -48,6 +48,7 @@ To get rules that were suppressed, run
 Invoke-ScriptAnalyzer with the SuppressedOnly parameter.
 For instructions on suppressing a rule, see the description of
 the SuppressedOnly parameter.
+For usage in CI systems, the -EnableExit exits the shell with an exit code equal to  the number of error records.
 
 The PSScriptAnalyzer module tests the Windows PowerShell code in a script, module, or DSC resource to determine
 whether, and to what extent, it fulfils best practice standards.
@@ -407,6 +408,20 @@ When you used Fix, Invoke-ScriptAnalyzer runs as usual but will apply the fixes 
 ```yaml
 Type: SwitchParameter
 Parameter Sets: UNNAMED_PARAMETER_SET_1
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+
+### -EnableExit
+Exits PowerShell and returns an exit code equal to the number of error records. This can be useful in CI systems.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
 Aliases:
 
 Required: False
