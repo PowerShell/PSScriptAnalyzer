@@ -415,6 +415,7 @@ Position: Named
 Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
+```
 
 ### -EnableExit
 Exits PowerShell and returns an exit code equal to the number of error records. This can be useful in CI systems.
