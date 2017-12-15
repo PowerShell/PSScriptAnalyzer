@@ -29,6 +29,7 @@ Table of Contents
 - [Violation Correction](#violation-correction)
 - [Project Management Dashboard](#project-management-dashboard)
 - [Contributing to ScriptAnalyzer](#contributing-to-scriptanalyzer)
+- [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
 
 <!-- tocstop -->
@@ -399,6 +400,27 @@ You are welcome to contribute to this project. There are many ways to contribute
 You might also read these two blog posts about contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza, and [Don’t “Push” Your Pull Requests](http://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik.
 
 Before submitting a feature or substantial code contribution, please discuss it with the Windows PowerShell team via [Issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed by the Windows PowerShell Team. Only those that meet a high bar for both quality and roadmap fit will be merged into the source.
+
+[Back to ToC](#table-of-contents)
+
+Creating a Release
+================
+
+- Update changelog (`changelog.md`) with the new version number and change set. When updating the changelog please follow the same pattern as that of previous change sets (otherwise this may break the next step).
+- Import the ReleaseMaker module and execute `New-Release` cmdlet to perform the following actions.
+  - Update module manifest (engine/PSScriptAnalyzer.psd1) with the new version number and change set
+  - Update the version number in `engine/project.json` and `rules/project.json`
+  - Create a release build in `out/`
+
+```powershell
+    PS> Import-Module .\Utils\ReleaseMaker.psm1
+    PS> New-Release
+```
+
+- Sign the binaries and PowerShell files in the release build and publish the module to [PowerShell Gallery](www.powershellgallery.com).
+- Create a PR on `development` branch, with all the changes made in the previous step.
+- Merge the changes to `development` and then merge `development` to `master` (Note that the `development` to `master` merge should be a `fast-forward` merge).
+- Draft a new release on github and tag `master` with the new version number.
 
 [Back to ToC](#table-of-contents)
 
