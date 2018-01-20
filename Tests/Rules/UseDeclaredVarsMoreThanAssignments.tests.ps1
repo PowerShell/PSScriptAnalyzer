@@ -38,6 +38,12 @@ function MyFunc2() {
             Should Be 1
         }
 
+        It "flags strongly typed variables" {
+            Invoke-ScriptAnalyzer -ScriptDefinition '[string]$s=''mystring''' -IncludeRule $violationName  | `
+            Get-Count | `
+            Should Be 1
+        }
+
         It "does not flag `$InformationPreference variable" {
             Invoke-ScriptAnalyzer -ScriptDefinition '$InformationPreference=Stop' -IncludeRule $violationName  | `
             Get-Count | `

@@ -135,6 +135,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Only checks for the case where lhs is a variable. Ignore things like $foo.property
                 VariableExpressionAst assignmentVarAst = assignmentAst.Left as VariableExpressionAst;
 
+                if (assignmentVarAst == null)
+                {
+                    // If the variable is declared in a strongly typed way, e.g. [string]$s = 'foo' then the type is ConvertExpressionAst.
+                    // Therefore we need to the VariableExpressionAst from its Child property.
+                    var assignmentVarAstAsConvertExpressionAst = assignmentAst.Left as ConvertExpressionAst;
+                    if (assignmentVarAstAsConvertExpressionAst != null && assignmentVarAstAsConvertExpressionAst.Child != null)
+                    {
+                        assignmentVarAst = assignmentVarAstAsConvertExpressionAst.Child as VariableExpressionAst;
+                    }
+                }
+
                 if (assignmentVarAst != null)
                 {
                     // Ignore if variable is global or environment variable or scope is function
