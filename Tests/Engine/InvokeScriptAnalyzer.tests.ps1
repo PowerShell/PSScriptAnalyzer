@@ -500,7 +500,7 @@ Describe "Test -Fix Switch" {
 
 Describe "Test -EnableExit Switch" {
     It "Returns exit code equivalent to number of warnings" {
-        $process = Start-Process powershell -ArgumentList 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit' -PassThru
+        $process = Start-Process powershell -ArgumentList '-WindowStyle Hidden -Command Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit' -PassThru -Wait
         $process.ExitCode | Should Be 1
     }
 }
