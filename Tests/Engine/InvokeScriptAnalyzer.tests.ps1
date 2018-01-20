@@ -497,3 +497,10 @@ Describe "Test -Fix Switch" {
         $actualScriptContentAfterFix | Should Be $expectedScriptContentAfterFix
     }
 }
+
+Describe "Test -EnableExit Switch" {
+    It "Returns exit code equivalent to number of warnings" {
+        $process = Start-Process powershell -ArgumentList 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit' -PassThru
+        $process.ExitCode | Should Be 1
+    }
+}
