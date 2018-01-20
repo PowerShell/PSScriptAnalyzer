@@ -166,7 +166,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         // Checks if this variableAst is part of the logged assignment
                         foreach (VariableExpressionAst varInAssignment in varsInAssignment)
                         {
-                            inAssignment |= varInAssignment.Equals(varAst);
+                            // Try casting to AssignmentStatementAst to be able to catch case where a variable is assigned more than once (https://github.com/PowerShell/PSScriptAnalyzer/issues/833)
+                            var varInAssignmentAsStatementAst = varInAssignment.Parent as AssignmentStatementAst;
+                            var varAstAsAssignmentStatementAst = varAst.Parent as AssignmentStatementAst;
+                            if (varInAssignmentAsStatementAst != null && varAstAsAssignmentStatementAst != null)
+                            {
+                                inAssignment = varInAssignmentAsStatementAst.Left.Extent.Text.Equals(varAstAsAssignmentStatementAst.Left.Extent.Text, StringComparison.OrdinalIgnoreCase);
+                            }
+                            else
+                            {
+                                inAssignment = varInAssignment.Equals(varAst);
+                            }
                         }
 
                         if (!inAssignment)
