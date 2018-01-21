@@ -51,7 +51,7 @@ Usage
 ``` PowerShell
 Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>] [-Severity <string[]>]
 
-Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [<CommonParameters>]
+Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [-Fix] [<CommonParameters>]
 ```
 
 [Back to ToC](#table-of-contents)
@@ -318,49 +318,16 @@ public System.Collections.Generic.IEnumerable<IRule> GetRule(string[] moduleName
 
 Violation Correction
 ====================
-Most violations can be fixed by replacing the violation causing content with the correct alternative.
 
-In an attempt to provide the user with the ability to correct the violation we provide a property, `SuggestedCorrections`, in each DiagnosticRecord instance,
-that contains information needed to rectify the violation.
+Some violations can be fixed by replacing the violation causing content with a suggested alternative. You can use the `-Fix` switch to automatically apply the suggestions. Since `Invoke-ScriptAnalyzer` implements `SupportsShouldProcess`, you can additionally use `-WhatIf` or `-Confirm` to find out which corrections would be applied. It goes without saying that you should use source control when applying those corrections since some some of them such as the one for `AvoidUsingPlainTextForPassword` might require additional script modifications that cannot be made automatically. Should your scripts be sensitive to encoding you should also check that because the initial encoding can not be preserved in all cases.
 
-For example, consider a script `C:\tmp\test.ps1` with the following content:
-``` PowerShell
-PS> Get-Content C:\tmp\test.ps1
-gci C:\
-```
+The initial motivation behind having the `SuggestedCorrections` property on the `ErrorRecord` (which is how the `-Fix` switch works under the hood) was to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid `SuggestedCorrection` only for the following rules, while gradually adding this feature to more rules.
 
-Invoking PSScriptAnalyzer on the file gives the following output.
-``` PowerShell
-PS>$diagnosticRecord = Invoke-ScriptAnalyzer -Path C:\tmp\test.p1
-PS>$diagnosticRecord | select SuggestedCorrections | Format-Custom
-
-class DiagnosticRecord
-{
-  SuggestedCorrections =
-    [
-    class CorrectionExtent
-    {
-        EndColumnNumber = 4
-        EndLineNumber = 1
-        File = C:\Users\kabawany\tmp\test3.ps1
-        StartColumnNumber = 1
-        StartLineNumber = 1
-        Text = Get-ChildItem
-        Description = Replace gci with Get-ChildItem
-    }
-  ]
-}
-```
-
-The `*LineNumber` and `*ColumnNumber` properties give the region of the script that can be replaced by the contents of `Text` property, i.e., replace gci with Get-ChildItem.
-
-The main motivation behind having `SuggestedCorrections` is to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid `SuggestedCorrection` only for the following rules, while gradually adding this feature to more rules.
-
-* AvoidAlias.cs
-* AvoidUsingPlainTextForPassword.cs
-* MisleadingBacktick.cs
-* MissingModuleManifestField.cs
-* UseToExportFieldsInManifest.cs
+- AvoidAlias.cs
+- AvoidUsingPlainTextForPassword.cs
+- MisleadingBacktick.cs
+- MissingModuleManifestField.cs
+- UseToExportFieldsInManifest.cs
 
 [Back to ToC](#table-of-contents)
 
