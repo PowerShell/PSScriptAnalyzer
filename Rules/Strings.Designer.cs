@@ -2366,7 +2366,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function ’{0}’ has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;..
+        ///   Looks up a localized string similar to Function '{0}' has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;..
         /// </summary>
         internal static string UseShouldProcessForStateChangingFunctionsError {
             get {
@@ -2636,7 +2636,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There is no call to Write-Verbose in DSC function ‘{0}’. If you are using Write-Verbose in a helper function, suppress this rule application..
+        ///   Looks up a localized string similar to There is no call to Write-Verbose in DSC function '{0}'. If you are using Write-Verbose in a helper function, suppress this rule application..
         /// </summary>
         internal static string UseVerboseMessageInDSCResourceErrorFunction {
             get {

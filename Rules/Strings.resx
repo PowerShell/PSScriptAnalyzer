@@ -280,7 +280,7 @@
     <value>It is a best practice to emit informative, verbose messages in DSC resource functions. This helps in debugging issues when a DSC configuration is executed.</value>
   </data>
   <data name="UseVerboseMessageInDSCResourceErrorFunction" xml:space="preserve">
-    <value>There is no call to Write-Verbose in DSC function ‘{0}’. If you are using Write-Verbose in a helper function, suppress this rule application.</value>
+    <value>There is no call to Write-Verbose in DSC function '{0}'. If you are using Write-Verbose in a helper function, suppress this rule application.</value>
   </data>
   <data name="UseVerboseMessageInDSCResourceCommonName" xml:space="preserve">
     <value>Use verbose message in DSC resource</value>
@@ -658,7 +658,7 @@
     <value>Functions that have verbs like New, Start, Stop, Set, Reset, Restart that change system state should support 'ShouldProcess'.</value>
   </data>
   <data name="UseShouldProcessForStateChangingFunctionsError" xml:space="preserve">
-    <value>Function ’{0}’ has verb that could change system state. Therefore, the function has to support 'ShouldProcess'.</value>
+    <value>Function '{0}' has verb that could change system state. Therefore, the function has to support 'ShouldProcess'.</value>
   </data>
   <data name="UseShouldProcessForStateChangingFunctionsName" xml:space="preserve">
     <value>UseShouldProcessForStateChangingFunctions</value>
