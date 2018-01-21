@@ -135,6 +135,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Only checks for the case where lhs is a variable. Ignore things like $foo.property
                 VariableExpressionAst assignmentVarAst = assignmentAst.Left as VariableExpressionAst;
 
+                if (assignmentVarAst == null)
+                {
+                    // If the variable is declared in a strongly typed way, e.g. [string]$s = 'foo' then the type is ConvertExpressionAst.
+                    // Therefore we need to the VariableExpressionAst from its Child property.
+                    var assignmentVarAstAsConvertExpressionAst = assignmentAst.Left as ConvertExpressionAst;
+                    if (assignmentVarAstAsConvertExpressionAst != null && assignmentVarAstAsConvertExpressionAst.Child != null)
+                    {
+                        assignmentVarAst = assignmentVarAstAsConvertExpressionAst.Child as VariableExpressionAst;
+                    }
+                }
+
                 if (assignmentVarAst != null)
                 {
                     // Ignore if variable is global or environment variable or scope is function
@@ -166,7 +177,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         // Checks if this variableAst is part of the logged assignment
                         foreach (VariableExpressionAst varInAssignment in varsInAssignment)
                         {
-                            inAssignment |= varInAssignment.Equals(varAst);
+                            // Try casting to AssignmentStatementAst to be able to catch case where a variable is assigned more than once (https://github.com/PowerShell/PSScriptAnalyzer/issues/833)
+                            var varInAssignmentAsStatementAst = varInAssignment.Parent as AssignmentStatementAst;
+                            var varAstAsAssignmentStatementAst = varAst.Parent as AssignmentStatementAst;
+                            if (varInAssignmentAsStatementAst != null && varAstAsAssignmentStatementAst != null)
+                            {
+                                inAssignment = varInAssignmentAsStatementAst.Left.Extent.Text.Equals(varAstAsAssignmentStatementAst.Left.Extent.Text, StringComparison.OrdinalIgnoreCase);
+                            }
+                            else
+                            {
+                                inAssignment = varInAssignment.Equals(varAst);
+                            }
                         }
 
                         if (!inAssignment)

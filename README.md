@@ -29,6 +29,7 @@ Table of Contents
 - [Violation Correction](#violation-correction)
 - [Project Management Dashboard](#project-management-dashboard)
 - [Contributing to ScriptAnalyzer](#contributing-to-scriptanalyzer)
+- [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
 
 <!-- tocstop -->
@@ -50,7 +51,7 @@ Usage
 ``` PowerShell
 Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>] [-Severity <string[]>]
 
-Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [-EnableExit] [<CommonParameters>]
+Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [-EnableExit] [-Fix] [<CommonParameters>]
 ```
 
 [Back to ToC](#table-of-contents)
@@ -146,12 +147,12 @@ Suppressing Rules
 =================
 
 You can suppress a rule by decorating a script/function or script/function parameter with .NET's [SuppressMessageAttribute](https://msdn.microsoft.com/en-us/library/system.diagnostics.codeanalysis.suppressmessageattribute.aspx).
-`SuppressMessageAttribute`'s constructor takes two parameters: a category and a check ID. Set the `categoryID` parameter to the name of the rule you want to suppress and set the `checkID` parameter to a null or empty string:
+`SuppressMessageAttribute`'s constructor takes two parameters: a category and a check ID. Set the `categoryID` parameter to the name of the rule you want to suppress and set the `checkID` parameter to a null or empty string. You can optionally add a third named parameter with a justification for suppressing the message:
 
 ``` PowerShell
 function SuppressMe()
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp", "", Justification="Just an example")]
     param()
 
     Write-Verbose -Message "I'm making a difference!"
@@ -260,7 +261,7 @@ that does not output an Error or Warning diagnostic record.
 Then invoke that settings file when using `Invoke-ScriptAnalyzer`:
 
 ``` PowerShell
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting ScriptAnalyzerSettings.psd1
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting PSScriptAnalyzerSettings.psd1
 ```
 
 The next example selects a few rules to execute instead of all the default rules.
@@ -317,49 +318,16 @@ public System.Collections.Generic.IEnumerable<IRule> GetRule(string[] moduleName
 
 Violation Correction
 ====================
-Most violations can be fixed by replacing the violation causing content with the correct alternative.
 
-In an attempt to provide the user with the ability to correct the violation we provide a property, `SuggestedCorrections`, in each DiagnosticRecord instance,
-that contains information needed to rectify the violation.
+Some violations can be fixed by replacing the violation causing content with a suggested alternative. You can use the `-Fix` switch to automatically apply the suggestions. Since `Invoke-ScriptAnalyzer` implements `SupportsShouldProcess`, you can additionally use `-WhatIf` or `-Confirm` to find out which corrections would be applied. It goes without saying that you should use source control when applying those corrections since some some of them such as the one for `AvoidUsingPlainTextForPassword` might require additional script modifications that cannot be made automatically. Should your scripts be sensitive to encoding you should also check that because the initial encoding can not be preserved in all cases.
 
-For example, consider a script `C:\tmp\test.ps1` with the following content:
-``` PowerShell
-PS> Get-Content C:\tmp\test.ps1
-gci C:\
-```
+The initial motivation behind having the `SuggestedCorrections` property on the `ErrorRecord` (which is how the `-Fix` switch works under the hood) was to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid `SuggestedCorrection` only for the following rules, while gradually adding this feature to more rules.
 
-Invoking PSScriptAnalyzer on the file gives the following output.
-``` PowerShell
-PS>$diagnosticRecord = Invoke-ScriptAnalyzer -Path C:\tmp\test.p1
-PS>$diagnosticRecord | select SuggestedCorrections | Format-Custom
-
-class DiagnosticRecord
-{
-  SuggestedCorrections =
-    [
-    class CorrectionExtent
-    {
-        EndColumnNumber = 4
-        EndLineNumber = 1
-        File = C:\Users\kabawany\tmp\test3.ps1
-        StartColumnNumber = 1
-        StartLineNumber = 1
-        Text = Get-ChildItem
-        Description = Replace gci with Get-ChildItem
-    }
-  ]
-}
-```
-
-The `*LineNumber` and `*ColumnNumber` properties give the region of the script that can be replaced by the contents of `Text` property, i.e., replace gci with Get-ChildItem.
-
-The main motivation behind having `SuggestedCorrections` is to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid `SuggestedCorrection` only for the following rules, while gradually adding this feature to more rules.
-
-* AvoidAlias.cs
-* AvoidUsingPlainTextForPassword.cs
-* MisleadingBacktick.cs
-* MissingModuleManifestField.cs
-* UseToExportFieldsInManifest.cs
+- AvoidAlias.cs
+- AvoidUsingPlainTextForPassword.cs
+- MisleadingBacktick.cs
+- MissingModuleManifestField.cs
+- UseToExportFieldsInManifest.cs
 
 [Back to ToC](#table-of-contents)
 
@@ -399,6 +367,27 @@ You are welcome to contribute to this project. There are many ways to contribute
 You might also read these two blog posts about contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza, and [Don’t “Push” Your Pull Requests](http://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik.
 
 Before submitting a feature or substantial code contribution, please discuss it with the Windows PowerShell team via [Issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed by the Windows PowerShell Team. Only those that meet a high bar for both quality and roadmap fit will be merged into the source.
+
+[Back to ToC](#table-of-contents)
+
+Creating a Release
+================
+
+- Update changelog (`changelog.md`) with the new version number and change set. When updating the changelog please follow the same pattern as that of previous change sets (otherwise this may break the next step).
+- Import the ReleaseMaker module and execute `New-Release` cmdlet to perform the following actions.
+  - Update module manifest (engine/PSScriptAnalyzer.psd1) with the new version number and change set
+  - Update the version number in `engine/project.json` and `rules/project.json`
+  - Create a release build in `out/`
+
+```powershell
+    PS> Import-Module .\Utils\ReleaseMaker.psm1
+    PS> New-Release
+```
+
+- Sign the binaries and PowerShell files in the release build and publish the module to [PowerShell Gallery](www.powershellgallery.com).
+- Create a PR on `development` branch, with all the changes made in the previous step.
+- Merge the changes to `development` and then merge `development` to `master` (Note that the `development` to `master` merge should be a `fast-forward` merge).
+- Draft a new release on github and tag `master` with the new version number.
 
 [Back to ToC](#table-of-contents)
 
