@@ -3,9 +3,15 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: Desktop
     BuildConfiguration: Release
+    TargetFramework: netstandard1.6
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    PowerShellEdition: Desktop
+    BuildConfiguration: Release
+    TargetFramework: net451
   - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
     PowerShellEdition: Desktop
     BuildConfiguration: PSv3Release
+    TargetFramework: net451
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
@@ -37,10 +43,10 @@ install:
 build_script:
     - ps: |
         $PSVersionTable
-        Push-Location C:\projects\psscriptanalyzer
         dotnet --version
-        C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
-        C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
+        Push-Location C:\projects\psscriptanalyzer
+        .\buildCoreClr.ps1 -Framework $env:TargetFramework -Configuration $env:BuildConfiguration -Build
+        .\build.ps1 -BuildDocs
         Pop-Location
 
 # branches to build
