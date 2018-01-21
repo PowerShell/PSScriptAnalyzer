@@ -1,6 +1,6 @@
 environment:
   matrix:
-  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 5
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: Desktop
     BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
@@ -10,20 +10,35 @@ environment:
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
 
-# cache nuget packages
+# cache Nuget packages and dotnet CLI cache
 cache:
-    - '%USERPROFILE%\.nuget\packages -> **\project.json'
+  - '%USERPROFILE%\.nuget\packages -> appveyor.yml'
+  - '%LocalAppData%\Microsoft\dotnet -> appveyor.yml'
 
 # Install Pester
 install:
-    - cinst -y pester --version 3.4.0
     - ps: nuget install platyPS -Version 0.5.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+    - ps: |
+        $requiredPesterVersion = '3.4.0'
+        $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
+        $pester
+        if ($null -eq $pester) # WMF 4 build does not have pester
+        {
+            cinst -y pester --version $requiredPesterVersion
+        }
+    - ps: |
+        # the legacy WMF4 image only has the old preview SDKs of dotnet
+        if (-not ((dotnet --version).StartsWith('2.1.4')))
+        {
+            Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
+            .\dotnet-install.ps1 -Version 2.1.4
+        }
 
 build_script:
     - ps: |
         $PSVersionTable
         Push-Location C:\projects\psscriptanalyzer
-        dotnet restore
+        dotnet --version
         C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
         Pop-Location

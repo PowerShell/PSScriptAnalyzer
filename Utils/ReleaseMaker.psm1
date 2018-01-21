@@ -171,8 +171,8 @@ function Update-Version
         [string] $solutionPath
     )
 
-    $ruleJson = Combine-Path $solutionPath 'Rules' 'project.json'
-    $engineJson = Combine-Path $solutionPath 'Engine' 'project.json'
+    $ruleJson = Combine-Path $solutionPath 'Rules' 'Rules.csproj'
+    $engineJson = Combine-Path $solutionPath 'Engine' 'Engine.csproj'
     $pssaManifest = Combine-Path $solutionPath 'Engine' 'PSScriptAnalyzer.psd1'
 
     Update-PatternInFile $ruleJson '"version": "{0}"' $oldVer $newVer

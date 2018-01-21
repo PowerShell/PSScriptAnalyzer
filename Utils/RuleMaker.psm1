@@ -22,7 +22,7 @@ Function Get-SolutionRoot
     $PSModule = $ExecutionContext.SessionState.Module
     $path = $PSModule.ModuleBase
     $root = Split-Path -Path $path -Parent
-    $solutionFilename = 'psscriptanalyzer.sln'
+    $solutionFilename = 'PSScriptAnalyzer.sln'
     if (-not (Test-Path (Join-Path $root $solutionFilename)))
     {
         return $null
