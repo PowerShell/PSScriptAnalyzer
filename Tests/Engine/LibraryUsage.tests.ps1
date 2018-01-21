@@ -51,7 +51,10 @@ function Invoke-ScriptAnalyzer {
         [switch] $SuppressedOnly,
 
         [Parameter(Mandatory = $false)]
-        [switch] $Fix
+        [switch] $Fix,
+		
+        [Parameter(Mandatory = $false)]
+        [switch] $EnableExit
 	)	
 
     if ($null -eq $CustomRulePath)
@@ -77,16 +80,28 @@ function Invoke-ScriptAnalyzer {
 		$SuppressedOnly.IsPresent
 	);
 
-    if ($PSCmdlet.ParameterSetName -eq "File") {
-		$supportsShouldProcessFunc = [Func[string, string, bool]]{ return $PSCmdlet.Shouldprocess }
-		if ($Fix.IsPresent)
-		{
-			return $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
-		}
-        return $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+    if ($PSCmdlet.ParameterSetName -eq "File")
+    {
+        $supportsShouldProcessFunc = [Func[string, string, bool]] { return $PSCmdlet.Shouldprocess }
+        if ($Fix.IsPresent)
+        {
+            $results = $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+        }
+        else
+        {
+            $results = $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+        }
     }
-    else {
-        return $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
+    else
+    {
+        $results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
+	}
+	
+	$results
+	
+    if ($EnableExit.IsPresent -and $null -ne $results)
+    {
+        exit $results.Count
     }
 }
 

@@ -497,3 +497,10 @@ Describe "Test -Fix Switch" {
         $actualScriptContentAfterFix | Should Be $expectedScriptContentAfterFix
     }
 }
+
+Describe "Test -EnableExit Switch" {
+    It "Returns exit code equivalent to number of warnings" {
+        powershell -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        $LASTEXITCODE  | Should Be 1
+    }
+}
