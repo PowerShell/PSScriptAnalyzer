@@ -39,6 +39,9 @@ build_script:
         $PSVersionTable
         Push-Location C:\projects\psscriptanalyzer
         dotnet --version
+        # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
+        .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration $env:BuildConfiguration -Build
+        git clean -dfx
         C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
         Pop-Location
