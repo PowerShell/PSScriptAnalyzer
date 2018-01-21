@@ -9,7 +9,6 @@ param(
 # todo remove aliases
 # todo make each project have its own build script
 
-$resourceScript = Join-Path $BuildRoot "New-StronglyTypedCsFileForResx.ps1"
 $outPath = "$BuildRoot/out"
 $modulePath = "$outPath/PSScriptAnalyzer"
 
@@ -81,8 +80,8 @@ function Get-BuildTaskParams($project) {
 
 function Get-RestoreTaskParams($project) {
     @{
-        Inputs  = "$BuildRoot/$project/project.json"
-        Outputs = "$BuildRoot/$project/project.lock.json"
+        Inputs  = "$BuildRoot/$project/$project.csproj"
+        Outputs = "$BuildRoot/$project/$project.csproj"
         Jobs    = {dotnet restore}
     }
 }
@@ -109,20 +108,6 @@ function Get-TestTaskParam($project) {
     }
 }
 
-function Get-ResourceTaskParam($project) {
-    @{
-        Inputs  = "$project/Strings.resx"
-        Outputs = "$project/Strings.cs"
-        Data = $project
-        Jobs    = {
-            Push-Location $BuildRoot
-            & $resourceScript $Task.Data
-            Pop-Location
-        }
-        Before  = "$project/build"
-    }
-}
-
 function Add-ProjectTask([string]$project, [string]$taskName, [hashtable]$taskParams, [string]$pathPrefix = $buildRoot) {
     $jobs = [scriptblock]::Create(@"
 pushd $pathPrefix/$project
@@ -136,14 +121,12 @@ popd
 
 $projects = @("engine", "rules")
 $projects | ForEach-Object {
-    Add-ProjectTask $_ buildResource (Get-ResourceTaskParam $_)
     Add-ProjectTask $_ build (Get-BuildTaskParams $_)
     Add-ProjectTask $_ restore (Get-RestoreTaskParams $_)
     Add-ProjectTask $_ clean (Get-CleanTaskParams $_)
     Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"
 }
 
-task buildResource -Before build "engine/buildResource", "rules/buildResource"
 task build "engine/build", "rules/build"
 task restore "engine/restore", "rules/restore"
 task clean "engine/clean", "rules/clean"
