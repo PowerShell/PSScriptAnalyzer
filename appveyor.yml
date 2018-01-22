@@ -28,10 +28,10 @@ install:
         }
     - ps: |
         # the legacy WMF4 image only has the old preview SDKs of dotnet
-        if (-not ((dotnet --version).StartsWith('1.1')))
+        if (-not ((dotnet --version).StartsWith('2.1.4')))
         {
             Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
-            .\dotnet-install.ps1 -Channel 1.1
+            .\dotnet-install.ps1 -Version 2.1.4
         }
 
 build_script:
@@ -39,6 +39,9 @@ build_script:
         $PSVersionTable
         Push-Location C:\projects\psscriptanalyzer
         dotnet --version
+        # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
+        .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+        git clean -dfx
         C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
         Pop-Location
