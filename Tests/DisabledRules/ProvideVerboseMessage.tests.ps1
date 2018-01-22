@@ -1,5 +1,5 @@
 ﻿Import-Module PSScriptAnalyzer
-$violationMessage = [regex]::Escape("There is no call to Write-Verbose in the function ‘Verb-Files’.")
+$violationMessage = [regex]::Escape("There is no call to Write-Verbose in the function 'Verb-Files'.")
 $violationName = "PSProvideVerboseMessage"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
