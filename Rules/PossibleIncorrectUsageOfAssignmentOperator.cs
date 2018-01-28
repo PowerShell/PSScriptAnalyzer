@@ -29,9 +29,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class PossibleIncorrectUsageOfAssignmentOperator : AstVisitor, IScriptRule
     {
-        List<DiagnosticRecord> records;
-        string fileName;
-
         /// <summary>
         /// AnalyzeScript: 
         /// The idea is to get all AssignmentStatementAsts and then check if the parent is an IfStatementAst, which includes if, elseif and else statements.
