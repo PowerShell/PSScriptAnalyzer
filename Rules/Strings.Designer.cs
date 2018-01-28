@@ -11,8 +11,8 @@
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     using System;
     using System.Reflection;
-
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -1538,6 +1538,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;=&apos; operator means assignment. Did you mean the equal operator &apos;-eq&apos;?.
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorCommonName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Did you really mean to make an assignment inside an if statement? If you rather meant to check for equality, use the &apos;-eq&apos;  operator..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorError {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PossibleIncorrectUsageOfAssignmentOperator.
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Basic Comment Help.
         /// </summary>
         internal static string ProvideCommentHelpCommonName {
@@ -2366,7 +2393,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function '{0}' has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;..
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;..
         /// </summary>
         internal static string UseShouldProcessForStateChangingFunctionsError {
             get {
@@ -2636,7 +2663,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There is no call to Write-Verbose in DSC function '{0}'. If you are using Write-Verbose in a helper function, suppress this rule application..
+        ///   Looks up a localized string similar to There is no call to Write-Verbose in DSC function &apos;{0}&apos;. If you are using Write-Verbose in a helper function, suppress this rule application..
         /// </summary>
         internal static string UseVerboseMessageInDSCResourceErrorFunction {
             get {
