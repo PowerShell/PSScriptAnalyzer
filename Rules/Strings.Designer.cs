@@ -11,8 +11,8 @@
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     using System;
     using System.Reflection;
-
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -94,6 +94,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string AlignAssignmentStatementName {
             get {
                 return ResourceManager.GetString("AlignAssignmentStatementName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use a different variable name.
+        /// </summary>
+        internal static string AvoidAssignmentToAutomaticVariable {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Changing automtic variables might have undesired side effects.
+        /// </summary>
+        internal static string AvoidAssignmentToAutomaticVariableCommonName {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatic variables are built into PowerShell and are ony meant to be consumed but not changed..
+        /// </summary>
+        internal static string AvoidAssignmentToAutomaticVariableDescription {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Variable {0} should use a different name since it is an automatic variable..
+        /// </summary>
+        internal static string AvoidAssignmentToAutomaticVariableError {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidAssignmentToAutomaticVariable.
+        /// </summary>
+        internal static string AvoidAssignmentToAutomaticVariableName {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableName", resourceCulture);
             }
         }
         
@@ -2366,7 +2411,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Function '{0}' has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;..
+        ///   Looks up a localized string similar to Function &apos;{0}&apos; has verb that could change system state. Therefore, the function has to support &apos;ShouldProcess&apos;..
         /// </summary>
         internal static string UseShouldProcessForStateChangingFunctionsError {
             get {
@@ -2636,7 +2681,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There is no call to Write-Verbose in DSC function '{0}'. If you are using Write-Verbose in a helper function, suppress this rule application..
+        ///   Looks up a localized string similar to There is no call to Write-Verbose in DSC function &apos;{0}&apos;. If you are using Write-Verbose in a helper function, suppress this rule application..
         /// </summary>
         internal static string UseVerboseMessageInDSCResourceErrorFunction {
             get {
