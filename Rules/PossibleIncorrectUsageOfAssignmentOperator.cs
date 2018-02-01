@@ -30,20 +30,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class PossibleIncorrectUsageOfAssignmentOperator : AstVisitor, IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: 
         /// The idea is to get all AssignmentStatementAsts and then check if the parent is an IfStatementAst, which includes if, elseif and else statements.
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            IEnumerable<Ast> ifStatementAsts = ast.FindAll(testAst => testAst is IfStatementAst, searchNestedScriptBlocks: true);
-            foreach (IfStatementAst ifStatememntAst in ifStatementAsts)
+            var ifStatementAsts = ast.FindAll(testAst => testAst is IfStatementAst, searchNestedScriptBlocks: true);
+            foreach (IfStatementAst ifStatementAst in ifStatementAsts)
             {
-                foreach (var clause in ifStatememntAst.Clauses)
+                foreach (var clause in ifStatementAst.Clauses)
                 {
-                    var assignmentStatementAst = clause.Item1.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false);
-                    if (assignmentStatementAst != null)
+                    var assignmentStatementAst = clause.Item1.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false) as AssignmentStatementAst;
+                    // if the right hand side is an CommandExpressionAst, then it is going to be a variable assignment. Otherwise also check if someone used '=='
+                    if (assignmentStatementAst != null && (assignmentStatementAst.Right is CommandExpressionAst || assignmentStatementAst.Right.Extent.Text.StartsWith("=")))
                     {
                         yield return new DiagnosticRecord(
                             Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
