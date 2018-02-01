@@ -32,21 +32,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// AnalyzeScript: 
         /// The idea is to get all AssignmentStatementAsts and then check if the parent is an IfStatementAst, which includes if, elseif and else statements.
-        /// This is just a simple smoke check to catch cases like 'if (($a=$b)){}' but was not made too complex avoid false positives.
-        /// It does not catch cases with expressions inside the if staement like e.g. 'if (($a=$b)){}'
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            IEnumerable<Ast> ifStatementAsts = ast.FindAll(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: true);
-            foreach (var aast in ifStatementAsts)
+            IEnumerable<Ast> ifStatementAsts = ast.FindAll(testAst => testAst is IfStatementAst, searchNestedScriptBlocks: true);
+            foreach (IfStatementAst ifStatememntAst in ifStatementAsts)
             {
-                if (aast.Parent is IfStatementAst)
+                foreach (var clause in ifStatememntAst.Clauses)
                 {
-                    yield return new DiagnosticRecord(
-                        Strings.PossibleIncorrectUsageOfAssignmentOperatorError, aast.Extent,
-                        GetName(), DiagnosticSeverity.Information, fileName);
+                    var assignmentStatementAst = clause.Item1.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false);
+                    if (assignmentStatementAst != null)
+                    {
+                        yield return new DiagnosticRecord(
+                            Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
+                            GetName(), DiagnosticSeverity.Information, fileName);
+                    }
                 }
             }
         }
