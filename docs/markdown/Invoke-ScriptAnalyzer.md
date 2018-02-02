@@ -113,8 +113,8 @@ This example runs only the rules that are Error severity and have the PSDSC sour
 function Get-Widgets
 {
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingCmdletAliases", Justification="Resolution in progress.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingCmdletAliases", "", Justification="Resolution in progress.")]
     Param()
 
     dir $pshome
