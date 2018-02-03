@@ -3,7 +3,7 @@ $ruleName = "PSAvoidAssignmentToAutomaticVariable"
 
 Describe "AvoidAssignmentToAutomaticVariables" {
     Context "ReadOnly Variables produce warning of severity error" {
-        It "Variable '<VariableName>'" -TestCases @(
+        It "Variable '<VariableName>' produce warning of severity error and throw SessionStateUnauthorizedAccessException" -TestCases @(
             @{ VariableName = '?' }
             @{ VariableName = 'Error' }
             @{ VariableName = 'ExecutionContext' }
@@ -20,9 +20,18 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             @{ VariableName = 'true' }
         ) {
             param ($VariableName)
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$$($VariableName) = Get-Alias" | Where-Object { $_.RuleName -eq $ruleName }
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$$($VariableName) = 'foo'" | Where-Object { $_.RuleName -eq $ruleName }
             $warnings.Count | Should Be 1
             $warnings.Severity | Should Be  "Error"
+            
+            Set-Variable -Name $VariableName -Value 'foo' -ErrorVariable errorVariable -ErrorAction SilentlyContinue
+            $ErrorVariable | Should Not Be Null
+            $ErrorVariable.Exception | Should Not Be Null
+            if ($VariableName -ne 'Error') # setting the $Error variable has the side effect of the ErrorVariable to contain only the exception message string
+            {
+                $ErrorVariable.Exception.GetType() | Should Not Be Null
+                $ErrorVariable.Exception.GetType().FullName | Should Be 'System.Management.Automation.SessionStateUnauthorizedAccessException'
+            }
         }
     }
 }
