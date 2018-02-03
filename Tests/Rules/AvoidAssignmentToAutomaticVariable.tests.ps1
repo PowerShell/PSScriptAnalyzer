@@ -51,17 +51,23 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             $warnings.Count | Should Be 0
         }
 
-        It "Setting Variable '<VariableName>' throws SessionStateUnauthorizedAccessException to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
+        It "Setting Variable '<VariableName>' throws exception to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName)
-
-            Set-Variable -Name $VariableName -Value 'foo' -ErrorVariable errorVariable -ErrorAction SilentlyContinue
-            $ErrorVariable | Should Not Be Null
-            $ErrorVariable.Exception | Should Not Be Null
-            if ($VariableName -ne 'Error') # setting the $Error variable has the side effect of the ErrorVariable to contain only the exception message string
+            
+            # Setting the $Error variable has the side effect of the ErrorVariable to contain only the exception message string -> exclude
+            if ($VariableName -ne 'Error')
             {
-                $ErrorVariable.Exception.GetType() | Should Not Be Null
-                $ErrorVariable.Exception.GetType().FullName | Should Be 'System.Management.Automation.SessionStateUnauthorizedAccessException'
+                try
+                {
+                    Set-Variable -Name $VariableName -Value 'foo' -ErrorVariable errorVariable -ErrorAction Stop
+                    throw "Expected exception did not occur when assigning value to read-only variable '$VariableName'"
+                }
+                catch
+                {
+                    $_.FullyQualifiedErrorId | Should Be 'VariableNotWritable,Microsoft.PowerShell.Commands.SetVariableCommand'
+                }
             }
         }
+
     }
 }
