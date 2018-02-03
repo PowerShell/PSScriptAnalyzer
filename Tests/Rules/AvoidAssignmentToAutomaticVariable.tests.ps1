@@ -2,8 +2,10 @@
 $ruleName = "PSAvoidAssignmentToAutomaticVariable"
 
 Describe "AvoidAssignmentToAutomaticVariables" {
-    Context "ReadOnly Variables produce warning of severity error" {
-        It "Variable '<VariableName>' produce warning of severity error and throw SessionStateUnauthorizedAccessException" -TestCases @(
+    Context "ReadOnly Variables" {
+
+        $readOnlyVariableSeverity = "Error"
+        $testCases_ReadOnlyVariables = @(
             @{ VariableName = '?' }
             @{ VariableName = 'Error' }
             @{ VariableName = 'ExecutionContext' }
@@ -18,12 +20,40 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             @{ VariableName = 'PSVersionTable' }
             @{ VariableName = 'ShellId' }
             @{ VariableName = 'true' }
-        ) {
+        )
+
+        It "Variable '<VariableName>' produces warning of severity error" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName)
+
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$$($VariableName) = 'foo'" | Where-Object { $_.RuleName -eq $ruleName }
             $warnings.Count | Should Be 1
-            $warnings.Severity | Should Be  "Error"
-            
+            $warnings.Severity | Should Be $readOnlyVariableSeverity
+        }
+
+        It "Using Variable '<VariableName>' as parameter name produces warning of severity error" -TestCases $testCases_ReadOnlyVariables {
+            param ($VariableName)
+
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}" | Where-Object {$_.RuleName -eq $ruleName }
+            $warnings.Count | Should Be 1
+            $warnings.Severity | Should Be $readOnlyVariableSeverity
+        }
+
+        It "Using Variable '<VariableName>' as parameter name in param block produces warning of severity error" -TestCases $testCases_ReadOnlyVariables {
+            param ($VariableName)
+
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}" | Where-Object {$_.RuleName -eq $ruleName }
+            $warnings.Count | Should Be 1
+            $warnings.Severity | Should Be $readOnlyVariableSeverity
+        }
+
+        It "Does not flag parameter attributes" {
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'function foo{Param([Parameter(Mandatory=$true)]$param1)}' | Where-Object { $_.RuleName -eq $ruleName }
+            $warnings.Count | Should Be 0
+        }
+
+        It "Setting Variable '<VariableName>' throws SessionStateUnauthorizedAccessException to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
+            param ($VariableName)
+
             Set-Variable -Name $VariableName -Value 'foo' -ErrorVariable errorVariable -ErrorAction SilentlyContinue
             $ErrorVariable | Should Not Be Null
             $ErrorVariable.Exception | Should Not Be Null

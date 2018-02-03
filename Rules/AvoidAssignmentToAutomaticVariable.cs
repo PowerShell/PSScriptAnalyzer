@@ -46,17 +46,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-
             IEnumerable<Ast> assignmentStatementAsts = ast.FindAll(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: true);
-            IEnumerable<Ast> parameterAsts = ast.FindAll(testAst => testAst is ParameterAst, searchNestedScriptBlocks: true);
-            
-
-            var assignmentStatementAndParamterAsts = assignmentStatementAsts.Concat(parameterAsts);
-            foreach (var assignmentStatementAst in assignmentStatementAndParamterAsts)
+            foreach (var assignmentStatementAst in assignmentStatementAsts)
             {
                 var variableExpressionAst = assignmentStatementAst.Find(testAst => testAst is VariableExpressionAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
                 var variableName = variableExpressionAst.VariablePath.UserPath;
                 if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                {
+                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
+                                                      variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
+                }
+            }
+
+            IEnumerable<Ast> parameterAsts = ast.FindAll(testAst => testAst is ParameterAst, searchNestedScriptBlocks: true);
+            foreach (ParameterAst parameterAst in parameterAsts)
+            {
+                var variableExpressionAst = parameterAst.Find(testAst => testAst is VariableExpressionAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
+                var variableName = variableExpressionAst.VariablePath.UserPath;
+                // also check the parent to exclude parameter attributes such as '[Parameter(Mandatory=$true)]' where the read-only variable $true appears.
+                if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase) && !(variableExpressionAst.Parent is NamedAttributeArgumentAst))
                 {
                     yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
                                                       variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
