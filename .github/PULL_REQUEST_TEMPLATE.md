@@ -4,7 +4,7 @@
 
 ## PR Checklist
 
-Note: Please mark anything not applicable to this PR `NA`.
+Note: Tick the boxes below that apply to this pull request by putting an `x` between the square brackets. Please mark anything not applicable to this PR `NA`.
 
 - [ ] PR has a meaningful title
     - [ ] Use the present tense and imperative mood when describing your changes
