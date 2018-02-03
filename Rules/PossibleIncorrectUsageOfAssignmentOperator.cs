@@ -44,27 +44,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     var assignmentStatementAst = clause.Item1.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false) as AssignmentStatementAst;
                     if (assignmentStatementAst != null)
                     {
-                        // if the right hand side is an CommandExpressionAst, then it is going to be a variable assignment. Otherwise also check if someone used '=='
-                        // Check if someone used '==', which can easily happen when the person is used to coding a lot in C#
+                        // Check if someone used '==', which can easily happen when the person is used to coding a lot in C#.
+                        // In most cases, this will be a runtime error because PowerShell will look for a cmdlet name starting with '=', which is technically possible to define
                         if (assignmentStatementAst.Right.Extent.Text.StartsWith("="))
                         {
                             yield return new DiagnosticRecord(
                                 Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
-                                GetName(), DiagnosticSeverity.Information, fileName);
+                                GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                         else
                         {
-                            // If the right hand side is an CommandExpressionAst, then it is going to be either a variable expression in some way or a command
-                            var rightHandSideCommandExpressioAst = assignmentStatementAst.Right as CommandExpressionAst;
-                            if (rightHandSideCommandExpressioAst != null)
+                            // If the right hand side contains a CommandAst at some point, then we do not want to warn
+                            // because this could be intentional in cases like 'if ($a = Get-ChildItem){ }'
+                            var commandAst = assignmentStatementAst.Right.Find(testAst => testAst is CommandAst, searchNestedScriptBlocks: true) as CommandAst;
+                            if (commandAst == null)
                             {
-                                var commandAst = rightHandSideCommandExpressioAst.Find(testAst => testAst is CommandAst, searchNestedScriptBlocks: true) as CommandAst;
-                                if (commandAst == null) // allow CommandAst for cases like 'if ($a = Get-ChildItem){ }'
-                                {
-                                    yield return new DiagnosticRecord(
-                                       Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
-                                       GetName(), DiagnosticSeverity.Information, fileName);
-                                }
+                                yield return new DiagnosticRecord(
+                                   Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
+                                   GetName(), DiagnosticSeverity.Information, fileName);
                             }
                         }
                     }
