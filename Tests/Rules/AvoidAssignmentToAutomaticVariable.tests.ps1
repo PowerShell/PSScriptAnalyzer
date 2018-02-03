@@ -54,8 +54,9 @@ Describe "AvoidAssignmentToAutomaticVariables" {
         It "Setting Variable '<VariableName>' throws exception to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName)
             
-            # Setting the $Error variable has the side effect of the ErrorVariable to contain only the exception message string -> exclude
-            if ($VariableName -ne 'Error')
+            # Setting the $Error variable has the side effect of the ErrorVariable to contain only the exception message string, therefore exclude this case.
+            # For the library test in WMF 4, assigning a value $PSEdition does not seem to throw an error, therefore this special case is excluded as well.
+            if ($VariableName -ne 'Error' -and ($VariableName -ne 'PSEdition' -and $PSVersionTable.PSVersion.Major -ne 4))
             {
                 try
                 {
