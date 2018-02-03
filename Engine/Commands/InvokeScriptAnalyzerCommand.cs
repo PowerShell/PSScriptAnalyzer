@@ -243,7 +243,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             set { attachAndDebug = value; }
         }
         private bool attachAndDebug = false;
+
 #endif
+        /// <summary>
+        ///      If true, reports an additional single line summary of issue counts.
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        public SwitchParameter ReportSummary
+        {
+            get { return reportSummary; }
+            set { reportSummary = value; }
+        }
+        private SwitchParameter reportSummary;
+
         #endregion Parameters
 
         #region Overrides
@@ -424,9 +436,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
             {
+                var errorCount = 0;
+                var warningCount = 0;
+                var infoCount = 0;
+
                 foreach (DiagnosticRecord diagnostic in diagnosticRecords)
                 {
                     logger.LogObject(diagnostic, this);
+                    switch (diagnostic.Severity)
+                    {
+                        case DiagnosticSeverity.Information:
+                            infoCount++;
+                            break;
+                        case DiagnosticSeverity.Warning:
+                            warningCount++;
+                            break;
+                        case DiagnosticSeverity.Error:
+                            errorCount++;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(diagnostic.Severity), $"Severity '{diagnostic.Severity}' is unknown");
+                    }
+                }
+
+                if (ReportSummary.IsPresent)
+                {
+                    logger.LogObject($"{DiagnosticSeverity.Error} : {errorCount} \t {DiagnosticSeverity.Warning} : {warningCount} \t {DiagnosticSeverity.Information} : {infoCount}", this);
                 }
             }
 
