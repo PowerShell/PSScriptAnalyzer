@@ -981,17 +981,17 @@
   <data name="AlignAssignmentStatementError" xml:space="preserve">
     <value>Assignment statements are not aligned</value>
   </data>
-  <data name="AvoidAssignmentToAutomaticVariable" xml:space="preserve">
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariable" xml:space="preserve">
     <value>Use a different variable name</value>
   </data>
-  <data name="AvoidAssignmentToAutomaticVariableCommonName" xml:space="preserve">
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableCommonName" xml:space="preserve">
     <value>Changing automtic variables might have undesired side effects</value>
   </data>
-  <data name="AvoidAssignmentToAutomaticVariableDescription" xml:space="preserve">
-    <value>Automatic variables are built into PowerShell and are ony meant to be consumed but not changed.</value>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableDescription" xml:space="preserve">
+    <value>This automatic variables is built into PowerShell and readonly.</value>
   </data>
-  <data name="AvoidAssignmentToAutomaticVariableError" xml:space="preserve">
-    <value>Variable {0} should use a different name since it is an automatic variable.</value>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableError" xml:space="preserve">
+    <value>Variable {0} should use a different name since it is a readonly automatic variable.</value>
   </data>
   <data name="AvoidAssignmentToAutomaticVariableName" xml:space="preserve">
     <value>AvoidAssignmentToAutomaticVariable</value>

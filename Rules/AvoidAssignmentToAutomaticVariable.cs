@@ -15,7 +15,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-using System.Management.Automation;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -31,8 +30,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class AvoidAssignmentToAutomaticVariable : IScriptRule
     {
+        private static readonly IList<string> _readOnlyAutomaticVariables = new List<string>()
+            {
+                // Attempting to assign to any of those read-only variable would result in an error at runtime
+                "?", "true", "false", "Host", "PSCulture", "Error", "ExecutionContext", "Home", "PID", "PSEdition", "PSHome", "PSUICulture", "PSVersionTable", "SHellId"
+            };
+
         /// <summary>
-        /// AnalyzeScript: Analyzes the ast to check that $null is on the left side of any equality comparisons.
+        /// Checks for assignment to automatic variables.
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The script's file name</param>
         /// <returns>The diagnostic results of this rule</returns>
@@ -41,35 +46,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            IEnumerable<Ast> assignmentStatementAsts = ast.FindAll(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: true);
-            var automaticVariables = new List<string>()
-            {
-                // TODO: fill in list from https://github.com/PowerShell/PowerShell/blob/master/src/System.Management.Automation/engine/SpecialVariables.cs
-                // and consider making the class above public
-                "_", "PSItem", "$", "?", "^", "ARGS", "CONSOLEFILENAME", "ERROR", "EVENT",
-                "EVENTARGS", "EVENTSUBSCRIBER", "EXECUTIONCONTEXT", "FALSE", 
-            };
 
-            foreach (var assignmentStatementAst in assignmentStatementAsts)
+            IEnumerable<Ast> assignmentStatementAsts = ast.FindAll(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: true);
+            IEnumerable<Ast> parameterAsts = ast.FindAll(testAst => testAst is ParameterAst, searchNestedScriptBlocks: true);
+            
+
+            var assignmentStatementAndParamterAsts = assignmentStatementAsts.Concat(parameterAsts);
+            foreach (var assignmentStatementAst in assignmentStatementAndParamterAsts)
             {
                 var variableExpressionAst = assignmentStatementAst.Find(testAst => testAst is VariableExpressionAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
                 var variableName = variableExpressionAst.VariablePath.UserPath;
-                if (automaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
                 {
-                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToAutomaticVariableError, variableName),
-                                                      variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
+                                                      variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                 }
             }
-
-#if PSV3
-
-            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
-
-#else
-
-            IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Union(ast.FindAll(item => item is FunctionMemberAst, true));
-
-#endif
         }
 
         /// <summary>
@@ -87,7 +79,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidAssignmentToAutomaticVariableCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidAssignmentToReadOnlyAutomaticVariableCommonName);
         }
 
         /// <summary>
@@ -96,7 +88,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidAssignmentToAutomaticVariableDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidAssignmentToReadOnlyAutomaticVariableDescription);
         }
 
         /// <summary>

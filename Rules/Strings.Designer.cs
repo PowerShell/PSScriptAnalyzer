@@ -98,47 +98,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AvoidAssignmentToAutomaticVariable.
+        /// </summary>
+        internal static string AvoidAssignmentToAutomaticVariableName {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use a different variable name.
         /// </summary>
-        internal static string AvoidAssignmentToAutomaticVariable {
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariable {
             get {
-                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariable", resourceCulture);
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariable", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Changing automtic variables might have undesired side effects.
         /// </summary>
-        internal static string AvoidAssignmentToAutomaticVariableCommonName {
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariableCommonName {
             get {
-                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableCommonName", resourceCulture);
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariableCommonName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Automatic variables are built into PowerShell and are ony meant to be consumed but not changed..
+        ///   Looks up a localized string similar to This automatic variables is built into PowerShell and readonly..
         /// </summary>
-        internal static string AvoidAssignmentToAutomaticVariableDescription {
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariableDescription {
             get {
-                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableDescription", resourceCulture);
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariableDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Variable {0} should use a different name since it is an automatic variable..
+        ///   Looks up a localized string similar to Variable {0} should use a different name since it is a readonly automatic variable..
         /// </summary>
-        internal static string AvoidAssignmentToAutomaticVariableError {
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariableError {
             get {
-                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidAssignmentToAutomaticVariable.
-        /// </summary>
-        internal static string AvoidAssignmentToAutomaticVariableName {
-            get {
-                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableName", resourceCulture);
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariableError", resourceCulture);
             }
         }
         
