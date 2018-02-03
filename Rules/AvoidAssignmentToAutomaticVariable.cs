@@ -33,7 +33,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private static readonly IList<string> _readOnlyAutomaticVariables = new List<string>()
             {
                 // Attempting to assign to any of those read-only variable would result in an error at runtime
-                "?", "true", "false", "Host", "PSCulture", "Error", "ExecutionContext", "Home", "PID", "PSEdition", "PSHome", "PSUICulture", "PSVersionTable", "SHellId"
+                "?", "true", "false", "Host", "PSCulture", "Error", "ExecutionContext", "Home", "PID", "PSEdition", "PSHome", "PSUICulture", "PSVersionTable", "ShellId"
             };
 
         /// <summary>
