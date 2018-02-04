@@ -202,7 +202,7 @@ task buildDocs -Inputs $bdInputs -Outputs $bdOutputs {
     Copy-Item -Path $docsPath\about_PSScriptAnalyzer.help.txt -Destination $outputDocsPath -Force
 
     # Build documentation using platyPS
-    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge 0.5 })) {
+    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge 0.9 })) {
         throw "Cannot find platyPS of version greater or equal to 0.9. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
     Import-Module platyPS
