@@ -461,7 +461,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
                 if (ReportSummary.IsPresent)
                 {
-                    logger.LogObject($"{DiagnosticSeverity.Error} : {errorCount} \t {DiagnosticSeverity.Warning} : {warningCount} \t {DiagnosticSeverity.Information} : {infoCount}", this);
+                    Host.UI.WriteLine($"{DiagnosticSeverity.Error} : {errorCount} \t {DiagnosticSeverity.Warning} : {warningCount} \t {DiagnosticSeverity.Information} : {infoCount}");
                 }
             }
 
