@@ -93,7 +93,6 @@ function New-ReleaseBuild
     try
     {
         remove-item out/ -recurse -force
-        dotnet restore
         .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
         .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
         .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
