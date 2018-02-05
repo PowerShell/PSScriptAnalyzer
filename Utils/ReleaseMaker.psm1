@@ -89,7 +89,7 @@ function Get-VersionsFromChangeLog
 function New-ReleaseBuild
 {
     $solutionPath = Get-SolutionPath
-    pushd $solutionPath
+    Push-Location $solutionPath
     try
     {
         remove-item out/ -recurse -force
@@ -101,7 +101,7 @@ function New-ReleaseBuild
     }
     finally
     {
-        popd
+        Pop-Location
     }
 }
 
