@@ -991,7 +991,7 @@
     <value>This automatic variables is built into PowerShell and readonly.</value>
   </data>
   <data name="AvoidAssignmentToReadOnlyAutomaticVariableError" xml:space="preserve">
-    <value>Variable {0} should use a different name since it is a readonly automatic variable.</value>
+    <value>The Variable '{0}' cannot be assigned since it is a readonly automatic variable that is built into PowerShell, please use a different name.</value>
   </data>
   <data name="AvoidAssignmentToAutomaticVariableName" xml:space="preserve">
     <value>AvoidAssignmentToAutomaticVariable</value>

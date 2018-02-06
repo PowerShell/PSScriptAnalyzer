@@ -4,7 +4,7 @@
 
 ## Description
 
-`PowerShell` exposes some of its build in variables that are known as automatic variables. Many of them are read-only and PowerShell would throw an error when trying to assign an value on those. The remaining automatic variables should only be assigned to in certain special cases to achieve a certain effect as a special technique.
+`PowerShell` exposes some of its built-in variables that are known as automatic variables. Many of them are read-only and PowerShell would throw an error when trying to assign an value on those. Other automatic variables should only be assigned to in certain special cases to achieve a certain effect as a special technique.
 
 To understand more about automatic variables, see ```Get-Help about_Automatic_Variables```.
 

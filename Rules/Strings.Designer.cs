@@ -134,7 +134,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Variable {0} should use a different name since it is a readonly automatic variable..
+        ///   Looks up a localized string similar to The Variable &apos;{0}&apos; cannot be assigned since it is a readonly automatic variable that is built into PowerShell, please use a different name..
         /// </summary>
         internal static string AvoidAssignmentToReadOnlyAutomaticVariableError {
             get {
