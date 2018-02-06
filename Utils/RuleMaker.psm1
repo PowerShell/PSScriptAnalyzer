@@ -286,7 +286,7 @@ Function Add-RuleStrings($Rule)
 Function Remove-RuleStrings($Rule)
 {
     $stringsXml = Get-RuleStrings $Rule
-    $nodesToRemove = $stringsXml.root.GetElementsByTagName("data") | ? {$_.name -match $Rule.Name}
+    $nodesToRemove = $stringsXml.root.GetElementsByTagName("data") | Where-Object { $_.name -match $Rule.Name }
     $nodesToRemove | Foreach-Object { $stringsXml.root.RemoveChild($_) }
     Set-RuleStrings $stringsXml
 }
@@ -307,7 +307,7 @@ Function Set-RuleProjectXml($projectXml)
 
 Function Get-CompileTargetGroup($projectXml)
 {
-    $projectXml.Project.ItemGroup | ? {$_.Compile -ne $null}
+    $projectXml.Project.ItemGroup | Where-Object { $_.Compile -ne $null }
 }
 
 Function Add-RuleToProject($Rule)
@@ -324,7 +324,7 @@ Function Remove-RuleFromProject($Rule)
 {
     $projectXml = Get-RuleProjectXml
     $compileItemgroup = Get-CompileTargetGroup $projectXml
-    $itemToRemove = $compileItemgroup.Compile | ? {$_.Include -eq $Rule.SourceFileName}
+    $itemToRemove = $compileItemgroup.Compile | Where-Object { $_.Include -eq $Rule.SourceFileName }
     $compileItemgroup.RemoveChild($itemToRemove)
     Set-RuleProjectXml $projectXml
 }

@@ -110,7 +110,7 @@ internal class {0} {{
         }}
     }}
 '@
-    $entries = $xml.root.data | % {
+    $entries = $xml.root.data | ForEach-Object {
         if ($_) {
             $val = $_.value.Replace("`n", "`n    ///")
             $name = $_.name.Replace(' ', '_')

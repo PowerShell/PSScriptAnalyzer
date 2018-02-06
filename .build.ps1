@@ -38,20 +38,20 @@ function CreateIfNotExists([string] $folderPath) {
 }
 
 function Get-BuildInputs($project) {
-    pushd $buildRoot/$project
-    gci -Filter *.cs
-    gci -Directory -Exclude obj, bin | gci -Filter *.cs -Recurse
-    popd
+    Push-Location $buildRoot/$project
+    Get-ChildItem -Filter *.cs
+    Get-ChildItem -Directory -Exclude obj, bin | Get-ChildItem -Filter *.cs -Recurse
+    Pop-Location
 }
 
 function Get-BuildOutputs($project) {
     $bin = "$buildRoot/$project/bin/$Configuration/$Framework"
     $obj = "$buildRoot/$project/obj/$Configuration/$Framework"
     if (Test-Path $bin) {
-        gci $bin -Recurse
+        Get-ChildItem $bin -Recurse
     }
     if (Test-Path $obj) {
-        gci $obj -Recurse
+        Get-ChildItem $obj -Recurse
     }
 }
 

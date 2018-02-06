@@ -1583,6 +1583,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;=&apos; operator means assignment. Did you mean the equal operator &apos;-eq&apos;?.
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorCommonName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Did you really mean to make an assignment inside an if statement? If you rather meant to check for equality, use the &apos;-eq&apos;  operator..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorError {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PossibleIncorrectUsageOfAssignmentOperator.
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Basic Comment Help.
         /// </summary>
         internal static string ProvideCommentHelpCommonName {

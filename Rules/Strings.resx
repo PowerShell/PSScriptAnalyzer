@@ -981,6 +981,15 @@
   <data name="AlignAssignmentStatementError" xml:space="preserve">
     <value>Assignment statements are not aligned</value>
   </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorCommonName" xml:space="preserve">
+    <value>'=' operator means assignment. Did you mean the equal operator '-eq'?</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorError" xml:space="preserve">
+    <value>Did you really mean to make an assignment inside an if statement? If you rather meant to check for equality, use the '-eq'  operator.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorName" xml:space="preserve">
+    <value>PossibleIncorrectUsageOfAssignmentOperator</value>
+  </data>
   <data name="AvoidAssignmentToReadOnlyAutomaticVariable" xml:space="preserve">
     <value>Use a different variable name</value>
   </data>
