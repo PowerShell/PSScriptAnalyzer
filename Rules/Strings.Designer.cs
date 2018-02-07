@@ -98,6 +98,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AvoidAssignmentToAutomaticVariable.
+        /// </summary>
+        internal static string AvoidAssignmentToAutomaticVariableName {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToAutomaticVariableName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use a different variable name.
+        /// </summary>
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariable {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Changing automtic variables might have undesired side effects.
+        /// </summary>
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariableCommonName {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariableCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This automatic variables is built into PowerShell and readonly..
+        /// </summary>
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariableDescription {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariableDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Variable &apos;{0}&apos; cannot be assigned since it is a readonly automatic variable that is built into PowerShell, please use a different name..
+        /// </summary>
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariableError {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariableError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ComputerName Hardcoded.
         /// </summary>
         internal static string AvoidComputerNameHardcodedCommonName {
