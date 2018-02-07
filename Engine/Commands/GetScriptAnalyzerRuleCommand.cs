@@ -23,7 +23,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// <summary>
     /// GetScriptAnalyzerRuleCommand: Cmdlet to list all the analyzer rule names and descriptions.
     /// </summary>
-    [Cmdlet(VerbsCommon.Get, "ScriptAnalyzerRule", HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525913")]
+    [Cmdlet(VerbsCommon.Get, "ScriptAnalyzerRule", HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525913")]
     public class GetScriptAnalyzerRuleCommand : PSCmdlet, IOutputWriter
     {
         #region Parameters

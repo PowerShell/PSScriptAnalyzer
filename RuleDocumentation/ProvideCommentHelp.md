@@ -6,7 +6,7 @@
 
 Comment based help should be provided for all PowerShell commands. This test only checks for the presence of comment based help and not on the validity or format.
 
-For assistance on comment based help, use the command ```Get-Help about_comment_based_help``` or the article, "How to Write Cmdlet Help" (http://go.microsoft.com/fwlink/?LinkID=123415).
+For assistance on comment based help, use the command ```Get-Help about_comment_based_help``` or the article, "How to Write Cmdlet Help" (https://go.microsoft.com/fwlink/?LinkID=123415).
 
 ## Configuration
 

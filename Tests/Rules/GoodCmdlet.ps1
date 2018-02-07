@@ -25,7 +25,7 @@ function Get-File
     [CmdletBinding(DefaultParameterSetName='Parameter Set 1',
                   SupportsShouldProcess=$true,
                   PositionalBinding=$false,
-                  HelpUri = 'http://www.microsoft.com/',
+                  HelpUri = 'https://www.microsoft.com/',
                   ConfirmImpact='Medium')]
     [Alias()]
     [OutputType([String], [System.Double], [Hashtable], "MyCustom.OutputType")]
@@ -134,7 +134,7 @@ function Get-Folder
     [CmdletBinding(DefaultParameterSetName='Parameter Set 1',
                   SupportsShouldProcess,
                   PositionalBinding=$false,
-                  HelpUri = 'http://www.microsoft.com/',
+                  HelpUri = 'https://www.microsoft.com/',
                   ConfirmImpact='Medium')]
     [Alias()]
     [OutputType([String], [System.Double], [Hashtable], "MyCustom.OutputType")]

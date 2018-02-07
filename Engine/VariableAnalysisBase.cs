@@ -546,7 +546,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// Returns the immediate dominator of each block. The array returned is
         /// indexed by postorder number of each block.
-        /// Based on http://www.cs.rice.edu/~keith/Embed/dom.pdf
+        /// Based on https://www.cs.rice.edu/~keith/Embed/dom.pdf
         /// </summary>
         /// <param name="entry"></param>
         /// <param name="Blocks"></param>
