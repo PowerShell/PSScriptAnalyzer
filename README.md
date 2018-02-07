@@ -378,7 +378,7 @@ Creating a Release
 - Update changelog (`changelog.md`) with the new version number and change set. When updating the changelog please follow the same pattern as that of previous change sets (otherwise this may break the next step).
 - Import the ReleaseMaker module and execute `New-Release` cmdlet to perform the following actions.
   - Update module manifest (engine/PSScriptAnalyzer.psd1) with the new version number and change set
-  - Update the version number in `engine/project.json` and `rules/project.json`
+  - Update the version number in `Engine/Engine.csproj` and `Rules/Rules.csproj`
   - Create a release build in `out/`
 
 ```powershell
