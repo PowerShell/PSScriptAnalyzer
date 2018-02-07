@@ -20,7 +20,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -2141,11 +2141,74 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is present in PowerShell edition &apos;{1}&apos;, version &apos;{2}&apos;, on OS &apos;{3}&apos; but is not functional..
+        /// </summary>
+        internal static string UseCompatibleCmdletsKnownIssueError {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdletsKnownIssueError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to UseCompatibleCmdlets.
         /// </summary>
         internal static string UseCompatibleCmdletsName {
             get {
                 return ResourceManager.GetString("UseCompatibleCmdletsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is a full Windows PowerShell cmdlet.  This cmdlet should work with PowerShell edition &apos;{1}&apos;, version &apos;{2}&apos; on OS &apos;{3}&apos; but compatibility cannot be guaranteed..
+        /// </summary>
+        internal static string UseCompatibleCmdletsWindowsPowerShellError {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdletsWindowsPowerShellError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use compatible types.
+        /// </summary>
+        internal static string UseCompatibleTypesCommonName {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use types compatible with the given PowerShell version and edition and operating system.
+        /// </summary>
+        internal static string UseCompatibleTypesDescription {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not compatible with PowerShell edition &apos;{1}&apos;, version &apos;{2}&apos; and OS &apos;{3}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleTypes.
+        /// </summary>
+        internal static string UseCompatibleTypesName {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not resolve type &apos;{0}&apos;.  If this is not a user-created type, please use full type name with namespace to evaluate with PSScript Analyzer..
+        /// </summary>
+        internal static string UseCompatibleTypesUnresolvedError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesUnresolvedError", resourceCulture);
             }
         }
         

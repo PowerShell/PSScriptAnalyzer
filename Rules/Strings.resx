@@ -1026,4 +1026,25 @@
   <data name="PossibleIncorrectUsageOfRedirectionOperatorName" xml:space="preserve">
     <value>PossibleIncorrectUsageOfRedirectionOperator</value>
   </data>
+  <data name="UseCompatibleCmdletsKnownIssueError" xml:space="preserve">
+    <value>'{0}' is present in PowerShell edition '{1}', version '{2}', on OS '{3}' but is not functional.</value>
+  </data>
+  <data name="UseCompatibleCmdletsWindowsPowerShellError" xml:space="preserve">
+    <value>'{0}' is a full Windows PowerShell cmdlet.  This cmdlet should work with PowerShell edition '{1}', version '{2}' on OS '{3}' but compatibility cannot be guaranteed.</value>
+  </data>
+  <data name="UseCompatibleTypesCommonName" xml:space="preserve">
+    <value>Use compatible types</value>
+  </data>
+  <data name="UseCompatibleTypesDescription" xml:space="preserve">
+    <value>Use types compatible with the given PowerShell version and edition and operating system</value>
+  </data>
+  <data name="UseCompatibleTypesError" xml:space="preserve">
+    <value>'{0}' is not compatible with PowerShell edition '{1}', version '{2}' and OS '{3}'</value>
+  </data>
+  <data name="UseCompatibleTypesName" xml:space="preserve">
+    <value>UseCompatibleTypes</value>
+  </data>
+  <data name="UseCompatibleTypesUnresolvedError" xml:space="preserve">
+    <value>Could not resolve type '{0}'.  If this is not a user-created type, please use full type name with namespace to evaluate with PSScript Analyzer.</value>
+  </data>
 </root>

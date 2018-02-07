@@ -1,0 +1,15 @@
+[
+    "Wait-Process",
+    "Register-PSSessionConfiguration",
+    "Unregister-PSSessionConfiguration",
+    "Get-PSSessionConfiguration",
+    "Get-Event",
+    "New-Event",
+    "Register-EngineEvent",
+    "Register-WmiEvent",
+    "Remove-Event",
+    "Unregister-Event",
+    "Set-ExecutionPolicy",
+    "New-PSSessionOption",
+    "New-PSTransportOption",
+]
