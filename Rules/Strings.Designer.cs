@@ -1610,6 +1610,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Did you really mean to use the redirection operator &apos;&gt;&apos;? If you wanted to use an equality comparer then use the &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal) operators..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfFileRedirectionOperatorError {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfFileRedirectionOperatorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Basic Comment Help.
         /// </summary>
         internal static string ProvideCommentHelpCommonName {

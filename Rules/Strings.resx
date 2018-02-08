@@ -1005,4 +1005,7 @@
   <data name="AvoidAssignmentToAutomaticVariableName" xml:space="preserve">
     <value>AvoidAssignmentToAutomaticVariable</value>
   </data>
+  <data name="PossibleIncorrectUsageOfFileRedirectionOperatorError" xml:space="preserve">
+    <value>Did you really mean to use the redirection operator '&gt;'? If you wanted to use an equality comparer then use the '-gt' (greater than) or '-ge' (greater or equal) operators.</value>
+  </data>
 </root>

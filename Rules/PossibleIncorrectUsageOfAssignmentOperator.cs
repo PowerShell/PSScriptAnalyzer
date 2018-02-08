@@ -65,6 +65,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             }
                         }
                     }
+
+                    var fileRedirectionAst = clause.Item1.Find(testAst => testAst is FileRedirectionAst, searchNestedScriptBlocks: false) as FileRedirectionAst;
+                    if (fileRedirectionAst != null)
+                    {
+                        yield return new DiagnosticRecord(
+                            Strings.PossibleIncorrectUsageOfFileRedirectionOperatorError, fileRedirectionAst.Extent, // TODO: better error message string and rename rule
+                            GetName(), DiagnosticSeverity.Warning, fileName);
+                    }
                 }
             }
         }
