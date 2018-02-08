@@ -22,12 +22,13 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// PossibleIncorrectUsageOfAssignmentOperator: Warn if someone uses the '=' or '==' by accident in an if statement because in most cases that is not the intention.
+    /// PossibleIncorrectUsageOfAssignmentOperator: Warn if someone uses '>', '=' or '==' operators inside an if or elseif statement because in most cases that is not the intention.
+    /// The origin of this rule is that people often forget that operators change when switching between different languages such as C# and PowerShell.
     /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
 #endif
-    public class PossibleIncorrectUsageOfAssignmentOperator : AstVisitor, IScriptRule
+    public class PossibleIncorrectUsageOfComparisonOperator : AstVisitor, IScriptRule
     {
         /// <summary>
         /// The idea is to get all AssignmentStatementAsts and then check if the parent is an IfStatementAst, which includes if, elseif and else statements.
@@ -49,7 +50,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (assignmentStatementAst.Right.Extent.Text.StartsWith("="))
                         {
                             yield return new DiagnosticRecord(
-                                Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
+                                Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, assignmentStatementAst.Extent,
                                 GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                         else
@@ -60,7 +61,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             if (commandAst == null)
                             {
                                 yield return new DiagnosticRecord(
-                                   Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
+                                   Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, assignmentStatementAst.Extent,
                                    GetName(), DiagnosticSeverity.Information, fileName);
                             }
                         }
@@ -70,7 +71,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (fileRedirectionAst != null)
                     {
                         yield return new DiagnosticRecord(
-                            Strings.PossibleIncorrectUsageOfFileRedirectionOperatorError, fileRedirectionAst.Extent, // TODO: better error message string and rename rule
+                            Strings.PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError, fileRedirectionAst.Extent, // TODO: better error message string and rename rule
                             GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
@@ -83,7 +84,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.PossibleIncorrectUsageOfAssignmentOperatorName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.PossibleIncorrectUsageOfComparisonOperatorName);
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectUsageOfAssignmentOperatorCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectUsageOfComparisonOperatorCommonName);
         }
 
         /// <summary>
@@ -101,7 +102,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWriteHostDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectUsageOfComparisonOperatorDescription);
         }
 
         /// <summary>

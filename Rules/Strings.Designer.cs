@@ -1583,38 +1583,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Did you really mean to use the assignment operator &apos;=&apos; inside an if statement? If you rather meant to check for equality, use the &apos;-eq&apos;  operator..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;=&apos; operator means assignment. Did you mean the equal operator &apos;-eq&apos;?.
         /// </summary>
-        internal static string PossibleIncorrectUsageOfAssignmentOperatorCommonName {
+        internal static string PossibleIncorrectUsageOfComparisonOperatorCommonName {
             get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorCommonName", resourceCulture);
+                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorCommonName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Did you really mean to make an assignment inside an if statement? If you rather meant to check for equality, use the &apos;-eq&apos;  operator..
+        ///   Looks up a localized string similar to &apos;&gt;&apos;, &apos;=&apos; or &apos;==&apos; are not comparison operators in the PowerShell language and rarely needed inside if statements..
         /// </summary>
-        internal static string PossibleIncorrectUsageOfAssignmentOperatorError {
+        internal static string PossibleIncorrectUsageOfComparisonOperatorDescription {
             get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to PossibleIncorrectUsageOfAssignmentOperator.
-        /// </summary>
-        internal static string PossibleIncorrectUsageOfAssignmentOperatorName {
-            get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorName", resourceCulture);
+                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorDescription", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Did you really mean to use the redirection operator &apos;&gt;&apos;? If you wanted to use an equality comparer then use the &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal) operators..
         /// </summary>
-        internal static string PossibleIncorrectUsageOfFileRedirectionOperatorError {
+        internal static string PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError {
             get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfFileRedirectionOperatorError", resourceCulture);
+                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PossibleIncorrectUsageOfComparisonOperator.
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfComparisonOperatorName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorName", resourceCulture);
             }
         }
         
