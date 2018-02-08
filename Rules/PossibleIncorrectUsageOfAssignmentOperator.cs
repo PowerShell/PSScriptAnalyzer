@@ -71,7 +71,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (fileRedirectionAst != null)
                     {
                         yield return new DiagnosticRecord(
-                            Strings.PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError, fileRedirectionAst.Extent, // TODO: better error message string and rename rule
+                            Strings.PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError, fileRedirectionAst.Extent
                             GetName(), DiagnosticSeverity.Warning, fileName);
                     }
                 }
