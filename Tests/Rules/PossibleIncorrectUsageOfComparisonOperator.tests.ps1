@@ -39,11 +39,6 @@ Describe "PossibleIncorrectUsageOfComparisonOperator" {
         }
 
         It "File redirection operator inside if statement causes warning" {
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a > b){}' | Where-Object {$_.RuleName -eq $ruleName}
-            $warnings.Count | Should Be 1
-        }
-
-        It "File redirection operator inside if statement causes warning" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a > $b){}' | Where-Object {$_.RuleName -eq $ruleName}
             $warnings.Count | Should Be 1
         }
