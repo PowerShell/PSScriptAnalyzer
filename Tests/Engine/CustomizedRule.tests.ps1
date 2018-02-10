@@ -106,7 +106,7 @@ Describe "Test importing correct customized rules" {
 		It "will show the custom rules when given a glob" {
 			# needs fixing for Linux
 			$expectedNumRules = 4
-			if ( ! $IsWindows )
+			if (!$IsWindows)
 			{
 				$expectedNumRules = 3
 			}
@@ -122,7 +122,7 @@ Describe "Test importing correct customized rules" {
 		It "will show the custom rules when given glob with recurse switch" {
 			# needs fixing for Linux
 			$expectedNumRules = 5
-			if (! $IsWindows )
+			if (!$IsWindows)
 			{
 				$expectedNumRules = 4
 			}

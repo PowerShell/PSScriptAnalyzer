@@ -470,7 +470,7 @@ Describe "Test -Fix Switch" {
 
     BeforeAll {
         $scriptName = "TestScriptWithFixableWarnings.ps1"
-        $testSource = join-path $PSScriptRoot ${scriptName}
+        $testSource = join-path $PSScriptRoot $scriptName
         $fixedScript = join-path $PSScriptRoot TestScriptWithFixableWarnings_AfterFix.ps1
         $expectedScriptContent = Get-Content $fixedScript -raw
         $testScript  = Join-Path $TESTDRIVE $scriptName

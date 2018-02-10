@@ -66,7 +66,7 @@ $x = @{ }
     }
 
     Context "When assignment statements are in DSC Configuration" {
-        It "Should find violations when assignment statements are not aligned" -skip:($IsLinux -or $IsMacOS) {
+        It "Should find violations when assignment statements are not aligned" -skip:(!$IsWindows) {
             $def = @'
 Configuration MyDscConfiguration {
 
