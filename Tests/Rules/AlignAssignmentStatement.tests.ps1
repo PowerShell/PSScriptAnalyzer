@@ -66,7 +66,7 @@ $x = @{ }
     }
 
     Context "When assignment statements are in DSC Configuration" {
-        It "Should find violations when assignment statements are not aligned" {
+        It "Should find violations when assignment statements are not aligned" -skip:($IsLinux -or $IsMacOS) {
             $def = @'
 Configuration MyDscConfiguration {
 
@@ -91,7 +91,7 @@ Configuration MyDscConfiguration {
 
     if ($PSVersionTable.PSVersion.Major -ge 5) {
         Context "When assignment statements are in DSC Configuration that has parse errors" {
-            It "Should find violations when assignment statements are not aligned" {
+            It "Should find violations when assignment statements are not aligned" -skip:($IsLinux -or $IsMacOS) {
                 $def = @'
 Configuration Sample_ChangeDescriptionAndPermissions
 {

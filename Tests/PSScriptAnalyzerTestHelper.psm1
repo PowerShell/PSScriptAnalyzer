@@ -56,11 +56,6 @@ Function Test-PSEditionCoreCLR
     [bool]$IsCoreCLR
 }
 
-Function Test-PSEditionCoreCLRLinux
-{
-    (Test-PSEditionCoreCLR) -and $IsLinux
-}
-
 Function Test-PSVersionV3
 {
 	$PSVersionTable.PSVersion.Major -eq 3
@@ -82,7 +77,6 @@ Export-ModuleMember -Function Get-ExtentText
 Export-ModuleMember -Function Test-CorrectionExtent
 Export-ModuleMember -Function Test-CorrectionExtentFromContent
 Export-ModuleMember -Function Test-PSEditionCoreCLR
-Export-ModuleMember -Function Test-PSEditionCoreCLRLinux
 Export-ModuleMember -Function Test-PSVersionV3
 Export-ModuleMember -Function Test-PSVersionV4
 Export-ModuleMember -Function Get-Count

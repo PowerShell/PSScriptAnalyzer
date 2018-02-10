@@ -468,33 +468,34 @@ Describe "Test CustomizedRulePath" {
 
 Describe "Test -Fix Switch" {
 
-    BeforeEach {
-        $initialTestScript = Get-Content $directory\TestScriptWithFixableWarnings.ps1 -Raw
+    BeforeAll {
+        $scriptName = "TestScriptWithFixableWarnings.ps1"
+        $testSource = join-path $PSScriptRoot ${scriptName}
+        $fixedScript = join-path $PSScriptRoot TestScriptWithFixableWarnings_AfterFix.ps1
+        $expectedScriptContent = Get-Content $fixedScript -raw
+        $testScript  = Join-Path $TESTDRIVE $scriptName
     }
 
-    AfterEach {
-        if ($null -ne $initialTestScript)
-        {
-            [System.IO.File]::WriteAllText("$($directory)\TestScriptWithFixableWarnings.ps1", $initialTestScript) # Set-Content -NoNewline was only introduced in PS v5 and would therefore not work in CI
-        }
+    BeforeEach {
+        Copy-Item $testSource $TESTDRIVE
     }
 
     It "Fixes warnings" {
         # we expect the script to contain warnings
-        $warningsBeforeFix = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1
+        $warningsBeforeFix = Invoke-ScriptAnalyzer $testScript
         $warningsBeforeFix.Count | Should Be 5
 
         # fix the warnings and expect that it should not return the fixed warnings
-        $warningsWithFixSwitch = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1 -Fix
+        $warningsWithFixSwitch = Invoke-ScriptAnalyzer $testScript -Fix
         $warningsWithFixSwitch.Count | Should Be 0
 
         # double check that the warnings are really fixed
-        $warningsAfterFix = Invoke-ScriptAnalyzer $directory\TestScriptWithFixableWarnings.ps1
+        $warningsAfterFix = Invoke-ScriptAnalyzer $testScript
         $warningsAfterFix.Count | Should Be 0
 
-        $expectedScriptContentAfterFix = Get-Content $directory\TestScriptWithFixableWarnings_AfterFix.ps1 -Raw
-        $actualScriptContentAfterFix = Get-Content $directory\TestScriptWithFixableWarnings.ps1 -Raw
-        $actualScriptContentAfterFix | Should Be $expectedScriptContentAfterFix
+        # check content to ensure we have what we expect
+        $actualScriptContentAfterFix = Get-Content $testScript -Raw
+        $actualScriptContentAfterFix | Should Be $expectedScriptContent
     }
 }
 
