@@ -54,7 +54,10 @@ function Invoke-ScriptAnalyzer {
         [switch] $Fix,
 		
         [Parameter(Mandatory = $false)]
-        [switch] $EnableExit
+		[switch] $EnableExit,
+		
+		[Parameter(Mandatory = $false)]
+        [switch] $ReportSummary
 	)	
 
     if ($null -eq $CustomRulePath)
@@ -98,6 +101,11 @@ function Invoke-ScriptAnalyzer {
 	}
 	
 	$results
+
+	if ($ReportSummary.IsPresent -and $null -ne $results)
+    {
+        Write-Host "Found $results.Count warnings" # This is not the exact message that it would print but close enough
+    }
 	
     if ($EnableExit.IsPresent -and $null -ne $results)
     {
