@@ -50,7 +50,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (assignmentStatementAst.Right.Extent.Text.StartsWith("="))
                         {
                             yield return new DiagnosticRecord(
-                                Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, assignmentStatementAst.Extent,
+                                Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
                                 GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                         else
@@ -61,7 +61,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             if (commandAst == null)
                             {
                                 yield return new DiagnosticRecord(
-                                   Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, assignmentStatementAst.Extent,
+                                   Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
                                    GetName(), DiagnosticSeverity.Information, fileName);
                             }
                         }
