@@ -126,7 +126,7 @@ function Measure-RequiresRunAsAdministrator
 .DESCRIPTION
     The #Requires statement prevents a script from running unless the Windows PowerShell version, modules, snap-ins, and module and snap-in version prerequisites are met.
     From Windows PowerShell 3.0, the #Requires statement let script developers specify Windows PowerShell modules that the script requires.
-    To fix a violation of this rule, please consider to use #Requires -RunAsAdministrator instead of using Import-Module.
+    To fix a violation of this rule, please consider to use #Requires -Modules instead of using Import-Module.
 .EXAMPLE
     Measure-RequiresModules -ScriptBlockAst $ScriptBlockAst
 .INPUTS
