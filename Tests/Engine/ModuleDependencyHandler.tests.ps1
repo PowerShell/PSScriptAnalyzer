@@ -177,10 +177,13 @@ Describe "Resolve DSC Resource Dependency" {
             $env:PSModulePath | Should Be $oldPSModulePath
         }
 
-        $env:LOCALAPPDATA = $oldLocalAppDataPath
-        $env:TEMP = $oldTempPath
-        Remove-Item -Recurse -Path $tempModulePath -Force
-        Remove-Item -Recurse -Path $tempPath -Force
+        if (!$skipTest)
+        {
+            $env:LOCALAPPDATA = $oldLocalAppDataPath
+            $env:TEMP = $oldTempPath
+            Remove-Item -Recurse -Path $tempModulePath -Force
+            Remove-Item -Recurse -Path $tempPath -Force
+        }
 
         It "Keeps the environment variables unchanged" -skip:$skipTest {
             Test-EnvironmentVariables($oldEnvVars)
