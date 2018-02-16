@@ -31,6 +31,7 @@ function Invoke-RestoreSolution
     dotnet restore (Join-Path $PSScriptRoot .\PSScriptAnalyzer.sln)
 }
 
+Write-Progress "Building ScriptAnalyzer"
 $solutionDir = Split-Path $MyInvocation.InvocationName
 if (-not (Test-Path "$solutionDir/global.json"))
 {
@@ -63,6 +64,7 @@ if ($Restore.IsPresent)
 if ($build)
 {
 
+    Write-Progress "Building Engine"
     if (-not (Test-DotNetRestore((Join-Path $solutionDir Engine))))
     {
         Invoke-RestoreSolution
@@ -76,6 +78,7 @@ if ($build)
     {
         Invoke-RestoreSolution
     }
+    Write-Progress "Building for framework $Framework, configuration $Configuration"
     Push-Location Rules\
     dotnet build Rules.csproj --framework $Framework --configuration $Configuration
     Pop-Location
@@ -84,23 +87,26 @@ if ($build)
     {
         if (-not (Test-Path $destination))
         {
-            New-Item -ItemType Directory $destination -Force
+            $null = New-Item -ItemType Directory $destination -Force
         }
         foreach ($file in $itemsToCopy)
         {
-            Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Verbose -Force
+            Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Force
         }
     }
+
+
+    Write-Progress "Copying files to $destinationDir"
     CopyToDestinationDir $itemsToCopyCommon $destinationDir
     CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 
     # Copy Settings File
-    Copy-Item -Path "$solutionDir\Engine\Settings" -Destination $destinationDir -Force -Recurse -Verbose
+    Copy-Item -Path "$solutionDir\Engine\Settings" -Destination $destinationDir -Force -Recurse
 
     # copy newtonsoft dll if net451 framework
     if ($Framework -eq "net451")
     {
-        copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries -Verbose
+        copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
     }
 }
 
@@ -112,11 +118,12 @@ if ($uninstall)
 {
     if ((Test-Path $pssaModulePath))
     {
-        Remove-Item -Recurse $pssaModulePath -Verbose
+        Remove-Item -Recurse $pssaModulePath
     }
 }
 
 if ($install)
 {
-    Copy-Item -Recurse -Path "$destinationDir" -Destination "$modulePath\." -Verbose -Force
+    Write-Progress "Installing to $modulePath"
+    Copy-Item -Recurse -Path "$destinationDir" -Destination "$modulePath\." -Force
 }

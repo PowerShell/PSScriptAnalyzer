@@ -34,7 +34,7 @@ Describe "MissingRequiredFieldModuleManifest" {
         }
 
     # On Linux, mismatch in line endings cause this to fail
-	It "has the right suggested correction" -Skip:(Test-PSEditionCoreCLRLinux) {
+	It "has the right suggested correction" -Skip:($IsLinux) {
 	   $expectedText = @'
 # Version number of this module.
 ModuleVersion = '1.0.0.0'

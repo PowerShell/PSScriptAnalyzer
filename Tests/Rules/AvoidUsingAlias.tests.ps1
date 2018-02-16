@@ -43,7 +43,7 @@ gci -Path C:\
             $noViolations.Count | Should Be 0
         }
 
-        It "should return no violation for assignment statement-like command in dsc configuration" {
+        It "should return no violation for assignment statement-like command in dsc configuration" -skip:($IsLinux -or $IsMacOS) {
             $target = @'
 Configuration MyDscConfiguration {
     Node "NodeA" {
