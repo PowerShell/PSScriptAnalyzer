@@ -22,9 +22,9 @@ install:
         $requiredPesterVersion = '4.1.1'
         $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
         $pester
-        if ($null -eq $pester) # WMF 4 build does not have pester
+        if ($null -eq $pester)
         {
-            nuget install Pester -Version 4.1.1 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
         }
     - ps: |
         # the legacy WMF4 image only has the old preview SDKs of dotnet
@@ -37,8 +37,7 @@ install:
 build_script:
     - ps: |
         $PSVersionTable
-        Get-Module Pester -ListAvailable
-        Get-Command Invoke-Pester
+        (Get-Command Invoke-Pester).Version
         Push-Location C:\projects\psscriptanalyzer
         dotnet --version
         # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
