@@ -8,7 +8,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingInternalURLsNoViolati
 Describe "AvoidUsingInternalURLs" {
     Context "When there are violations" {
         It "has 3 violations" {
-            $violations.Count | Should Be 3
+            $violations.Count | Should -Be 3
         }
 
         It "has the correct description message" {
@@ -18,7 +18,7 @@ Describe "AvoidUsingInternalURLs" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

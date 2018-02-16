@@ -33,7 +33,7 @@ stop-process 12,23 -ErrorVariable ev -ErrorAction SilentlyContinue
 if($null -ne $ev)
 {
     Write-host $ev[0]
-    # no error should be raised here
+    # no error Should -Be raised here
     Invoke-Command {$b}
 }
 
@@ -44,7 +44,8 @@ function Test-PreferenceVariable
 {
 
    if (-not $PSBoundParameters.ContainsKey('Verbose')) {
-       $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') -as 
+       $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') -as 
+
         [System.Management.Automation.ActionPreference]
         }
 

@@ -17,11 +17,11 @@ Describe "Resolve DSC Resource Dependency" {
         Function Test-EnvironmentVariables($oldEnv)
         {
             $newEnv = Get-Item Env:\* | Sort-Object -Property Key
-            $newEnv.Count | Should Be $oldEnv.Count
+            $newEnv.Count | Should -Be $oldEnv.Count
             foreach ($index in 1..$newEnv.Count)
             {
-                $newEnv[$index].Key | Should Be $oldEnv[$index].Key
-                $newEnv[$index].Value | Should Be $oldEnv[$index].Value
+                $newEnv[$index].Key | Should -Be $oldEnv[$index].Key
+                $newEnv[$index].Value | Should -Be $oldEnv[$index].Value
             }
         }
     }
@@ -43,19 +43,19 @@ Describe "Resolve DSC Resource Dependency" {
             $depHandler = $moduleHandlerType::new($rsp)
 
             $expectedPath = [System.IO.Path]::GetTempPath()
-            $depHandler.TempPath | Should Be $expectedPath
+            $depHandler.TempPath | Should -Be $expectedPath
 
             $expectedLocalAppDataPath = $env:LOCALAPPDATA
-            $depHandler.LocalAppDataPath | Should Be $expectedLocalAppDataPath
+            $depHandler.LocalAppDataPath | Should -Be $expectedLocalAppDataPath
 
             $expectedModuleRepository = "PSGallery"
-            $depHandler.ModuleRepository | Should Be $expectedModuleRepository
+            $depHandler.ModuleRepository | Should -Be $expectedModuleRepository
 
             $expectedPssaAppDataPath = Join-Path $depHandler.LocalAppDataPath "PSScriptAnalyzer"
-            $depHandler.PSSAAppDataPath | Should Be $expectedPssaAppDataPath
+            $depHandler.PSSAAppDataPath | Should -Be $expectedPssaAppDataPath
 
             $expectedPSModulePath = $oldPSModulePath + [System.IO.Path]::PathSeparator + $depHandler.TempModulePath
-            $env:PSModulePath | Should Be $expectedPSModulePath
+            $env:PSModulePath | Should -Be $expectedPSModulePath
 
             $depHandler.Dispose()
             $rsp.Dispose()
@@ -86,7 +86,7 @@ Describe "Resolve DSC Resource Dependency" {
             $parseError = $null
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
             $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast).ToArray()
-            $resultModuleNames[0] | Should Be 'SomeDscModule1'
+            $resultModuleNames[0] | Should -Be 'SomeDscModule1'
         }
 
         It "Extracts more than 1 module names" -skip:$skipTest {
@@ -100,9 +100,9 @@ Describe "Resolve DSC Resource Dependency" {
             $parseError = $null
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
             $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast).ToArray()
-            $resultModuleNames[0] | Should Be 'SomeDscModule1'
-            $resultModuleNames[1] | Should Be 'SomeDscModule2'
-            $resultModuleNames[2] | Should Be 'SomeDscModule3'
+            $resultModuleNames[0] | Should -Be 'SomeDscModule1'
+            $resultModuleNames[1] | Should -Be 'SomeDscModule2'
+            $resultModuleNames[2] | Should -Be 'SomeDscModule3'
         }
 
 
@@ -117,14 +117,14 @@ Describe "Resolve DSC Resource Dependency" {
             $parseError = $null
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
             $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast).ToArray()
-            $resultModuleNames[0] | Should Be 'SomeDscModule1'
+            $resultModuleNames[0] | Should -Be 'SomeDscModule1'
         }
     }
 
     Context "Invoke-ScriptAnalyzer without switch" {
         It "Has parse errors" -skip:$skipTest {
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
-            $parseErrors.Count | Should Be 1
+            $parseErrors.Count | Should -Be 1
         }
     }
 
@@ -178,12 +178,12 @@ Describe "Resolve DSC Resource Dependency" {
         It "Doesn't have parse errors" -skip:$skipTest {
             # invoke script analyzer
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
-            $dr.Count | Should Be 0
+            $dr.Count | Should -Be 0
         }
 
         It "Keeps PSModulePath unchanged before and after invocation" -skip:$skipTest {
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
-            $env:PSModulePath | Should Be $oldPSModulePath
+            $env:PSModulePath | Should -Be $oldPSModulePath
         }
 
         It "Keeps the environment variables unchanged" -skip:$skipTest {

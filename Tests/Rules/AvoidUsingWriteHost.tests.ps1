@@ -9,7 +9,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingWriteHostNoViolations
 Describe "AvoidUsingWriteHost" {
     Context "When there are violations" {
         It "has 4 Write-Host violations" {
-            $violations.Count | Should Be 4
+            $violations.Count | Should -Be 4
         }
 
         It "has the correct description message for Write-Host" {
@@ -19,7 +19,7 @@ Describe "AvoidUsingWriteHost" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

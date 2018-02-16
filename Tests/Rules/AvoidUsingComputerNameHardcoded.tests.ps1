@@ -8,7 +8,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingComputerNameHardcoded
 Describe "AvoidUsingComputerNameHardcoded" {
     Context "When there are violations" {
         It "has 2 avoid using ComputerName hardcoded violations" {
-            $violations.Count | Should Be 2
+            $violations.Count | Should -Be 2
         }
 
         It "has the correct description message" {
@@ -19,7 +19,7 @@ Describe "AvoidUsingComputerNameHardcoded" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

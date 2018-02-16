@@ -11,12 +11,12 @@ Describe "AvoidUsingPlainTextForPassword" {
     Context "When there are violations" {
     $expectedNumViolations = 7
         It "has $expectedNumViolations violations" {
-            $violations.Count | Should Be $expectedNumViolations
+            $violations.Count | Should -Be $expectedNumViolations
         }
 
 	It "suggests corrections" {
 	    Test-CorrectionExtent $violationFilepath $violations[0] 1 '$passphrases' '[SecureString] $passphrases'
-	    $violations[0].SuggestedCorrections[0].Description | Should Be 'Set $passphrases type to SecureString'
+	    $violations[0].SuggestedCorrections[0].Description | Should -Be 'Set $passphrases type to SecureString'
 
 	    Test-CorrectionExtent $violationFilepath $violations[1] 1 '$passwordparam' '[SecureString] $passwordparam'
 	    Test-CorrectionExtent $violationFilepath $violations[2] 1 '$credential' '[SecureString] $credential'
@@ -33,7 +33,7 @@ Describe "AvoidUsingPlainTextForPassword" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

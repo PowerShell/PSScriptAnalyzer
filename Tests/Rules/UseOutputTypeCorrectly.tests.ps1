@@ -14,7 +14,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {
 Describe "UseOutputTypeCorrectly" {
     Context "When there are violations" {
         It "has 2 Use OutputType Correctly violations" {
-            $violations.Count | Should Be 2
+            $violations.Count | Should -Be 2
         }
 
         It "has the correct description message" {
@@ -23,14 +23,14 @@ Describe "UseOutputTypeCorrectly" {
 
         if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
             It "Does not count violation in DSC class" {
-                $dscViolations.Count | Should Be 0
+                $dscViolations.Count | Should -Be 0
             }
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

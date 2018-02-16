@@ -11,7 +11,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidGlobalFunctionsNoViolation
 Describe "$violationName " {
     Context "When there are violations" {
         It "Has 1 avoid global function violations" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "Has the correct description message" {
@@ -22,7 +22,7 @@ Describe "$violationName " {
 
     Context "When there are no violations" {
         It "Returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

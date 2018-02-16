@@ -27,7 +27,7 @@ class FileResource
     [string]$Path
 
     <#
-        This property indicates if the settings should be present or absent
+        This property indicates if the settings Should -Be present or absent
         on the system. For present, the resource ensures the file pointed
         to by $Path exists. For absent, it ensures the file point to by
         $Path does not exist.

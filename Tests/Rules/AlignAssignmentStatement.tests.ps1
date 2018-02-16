@@ -26,14 +26,14 @@ $hashtable = @{
 }
 '@
 
-            # Expected output after correction should be the following
+            # Expected output after correction Should -Be the following
             # $hashtable = @{
             #     property1       = "value"
             #     anotherProperty = "another value"
             # }
 
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
             Test-CorrectionExtentFromContent $def $violations 1 ' ' '       '
         }
 
@@ -45,14 +45,14 @@ $hashtable = @{
 }
 '@
 
-            # Expected output should be the following
+            # Expected output Should -Be the following
             # $hashtable = @{
             #     property1       = "value"
             #     anotherProperty = "another value"
             # }
 
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
             Test-CorrectionExtentFromContent $def $violations 1 '              ' '       '
         }
 
@@ -60,7 +60,7 @@ $hashtable = @{
             $def = @'
 $x = @{ }
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 0
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should -Be 0
 
         }
     }
@@ -85,7 +85,7 @@ Configuration MyDscConfiguration {
     }
 }
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 2
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should -Be 2
         }
     }
 
@@ -118,7 +118,7 @@ Configuration Sample_ChangeDescriptionAndPermissions
                 # SilentlyContinue
                 Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
                     Get-Count |
-                    Should Be 4
+                    Should -Be 4
             }
         }
     }

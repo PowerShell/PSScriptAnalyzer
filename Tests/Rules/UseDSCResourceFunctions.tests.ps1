@@ -16,7 +16,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
 Describe "StandardDSCFunctionsInResource" {
     Context "When there are violations" {
         It "has 1 missing standard DSC functions violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
@@ -26,7 +26,7 @@ Describe "StandardDSCFunctionsInResource" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }
@@ -35,7 +35,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
  Describe "StandardDSCFunctionsInClass" {
     Context "When there are violations" {
         It "has 1 missing standard DSC functions violation" {
-            $classViolations.Count | Should Be 1
+            $classViolations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
@@ -45,7 +45,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noClassViolations.Count | Should Be 0
+            $noClassViolations.Count | Should -Be 0
         }
     }
  }

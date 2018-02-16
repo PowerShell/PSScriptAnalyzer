@@ -8,7 +8,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidConvertToSecureStringWithP
 Describe "AvoidUsingInvokeExpression" {
     Context "When there are violations" {
         It "has 2 Avoid Using Invoke-Expression violations" {
-            $violations.Count | Should Be 2
+            $violations.Count | Should -Be 2
         }
 
         It "has the correct description message" {
@@ -18,7 +18,7 @@ Describe "AvoidUsingInvokeExpression" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

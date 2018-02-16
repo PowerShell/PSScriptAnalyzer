@@ -21,10 +21,10 @@ function Test-Extent {
         $expectedEndLineNumber,
         $expectedEndColumnNumber)
 
-    $translatedExtent.StartLineNumber | Should Be $expectedStartLineNumber
-    $translatedExtent.StartColumnNumber | Should Be $expectedStartColumnNumber
-    $translatedExtent.EndLineNumber | Should Be $expectedEndLineNumber
-    $translatedExtent.EndColumnNumber | Should Be $expectedEndColumnNumber
+    $translatedExtent.StartLineNumber | Should -Be $expectedStartLineNumber
+    $translatedExtent.StartColumnNumber | Should -Be $expectedStartColumnNumber
+    $translatedExtent.EndLineNumber | Should -Be $expectedEndLineNumber
+    $translatedExtent.EndColumnNumber | Should -Be $expectedEndColumnNumber
 }
 
 $extNamespace = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions.Extensions]
@@ -33,7 +33,7 @@ Describe "String extension methods" {
     Context "When a text is given to GetLines" {
         It "Should return only one line if input is a single line." {
             $def = "This is a single line"
-            $extNamespace::GetLines($def) | Get-Count | Should Be 1
+            $extNamespace::GetLines($def) | Get-Count | Should -Be 1
         }
 
         It "Should return 2 lines if input string has 2 lines." {
@@ -41,7 +41,7 @@ Describe "String extension methods" {
 This is line one.
 This is line two.
 '@
-            $extNamespace::GetLines($def) | Get-Count | Should Be 2
+            $extNamespace::GetLines($def) | Get-Count | Should -Be 2
         }
     }
 }
@@ -51,10 +51,10 @@ Describe "IScriptExtent extension methods" {
             $extent = Get-Extent $null 1 2 3 4
             $range = $extNamespace::ToRange($extent)
 
-            $range.Start.Line | Should Be $extent.StartLineNumber
-            $range.Start.Column | Should Be $extent.StartColumnNumber
-            $range.End.Line | Should Be $extent.EndLineNumber
-            $range.End.Column | Should Be $extent.EndColumnNumber
+            $range.Start.Line | Should -Be $extent.StartLineNumber
+            $range.Start.Column | Should -Be $extent.StartColumnNumber
+            $range.End.Line | Should -Be $extent.EndLineNumber
+            $range.End.Column | Should -Be $extent.EndColumnNumber
         }
     }
 }
@@ -68,11 +68,11 @@ Describe "FunctionDefinitionAst extension methods" {
         }
 
         It "Should return the parameters" {
-            $parameterAsts | Get-Count | Should Be 2
+            $parameterAsts | Get-Count | Should -Be 2
         }
 
         It "Should set paramBlock to `$null" {
-            $paramBlock | Should Be $null
+            $paramBlock | Should -Be $null
         }
     }
 
@@ -87,7 +87,7 @@ Describe "FunctionDefinitionAst extension methods" {
         }
 
         It "Should return the parameters" {
-            $parameterAsts | Get-Count | Should Be 2
+            $parameterAsts | Get-Count | Should -Be 2
         }
 
         It "Should set paramBlock" {
@@ -118,7 +118,7 @@ Describe "AttributeAst extension methods" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0]
             $extNamespace::IsCmdletBindingAttributeAst($funcDefnAst.Body.ParamBlock.Attributes[0]) |
-                Should Be $true
+                Should -Be $true
         }
     }
 
@@ -131,7 +131,7 @@ Describe "AttributeAst extension methods" {
                 }}.Ast.EndBlock.Statements[0]
             $attrAst = $extNamespace::GetSupportsShouldProcessAst($funcDefnAst.Body.ParamBlock.Attributes[0])
             $attrAst | Should Not Be $null
-            $attrAst.Extent.Text | Should Be "SupportsShouldProcess"
+            $attrAst.Extent.Text | Should -Be "SupportsShouldProcess"
         }
     }
 }
@@ -145,8 +145,8 @@ Describe "NamedAttributeArgumentAst" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0].Body.ParamBlock.Attributes[0].NamedArguments[0]
             $expressionAst = $null
-            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should Be $true
-            $expressionAst | Should Be $null
+            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should -Be $true
+            $expressionAst | Should -Be $null
         }
 
         It "Should return true if argument value is `$true" {
@@ -156,7 +156,7 @@ Describe "NamedAttributeArgumentAst" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0].Body.ParamBlock.Attributes[0].NamedArguments[0]
             $expressionAst = $null
-            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should Be $true
+            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should -Be $true
             $expressionAst | Should Not Be $null
         }
 
@@ -167,7 +167,7 @@ Describe "NamedAttributeArgumentAst" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0].Body.ParamBlock.Attributes[0].NamedArguments[0]
             $expressionAst = $null
-            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should Be $false
+            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should -Be $false
             $expressionAst | Should Not Be $null
 
         }

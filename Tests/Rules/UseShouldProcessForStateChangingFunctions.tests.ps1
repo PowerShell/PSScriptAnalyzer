@@ -16,7 +16,7 @@ Function New-{0} () {{ }}
             $scriptDef = $scriptDefinitionGeneric -f $verb
             It ('finds "{0}" verb in function name' -f $verb) {
                 $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule $violationName
-                $violations.Count | Should Be 1
+                $violations.Count | Should -Be 1
             }
         }
 
@@ -26,7 +26,7 @@ Function New-{0} () {{ }}
     Context "When there are violations" {
     	$numViolations = 5
         It ("has {0} violations where ShouldProcess is not supported" -f $numViolations) {
-            $violations.Count | Should Be $numViolations
+            $violations.Count | Should -Be $numViolations
         }
 
         It "has the correct description message" {
@@ -34,13 +34,13 @@ Function New-{0} () {{ }}
         }
 
         It "has the correct extent" {
-        $violations[0].Extent.Text | Should Be "Set-MyObject"
+        $violations[0].Extent.Text | Should -Be "Set-MyObject"
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

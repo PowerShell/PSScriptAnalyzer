@@ -14,7 +14,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
 Describe "UseIdenticalParametersDSC" {
     Context "When there are violations" {
         It "has 1 Use Identical Parameters For DSC violations" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
@@ -24,14 +24,14 @@ Describe "UseIdenticalParametersDSC" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
 
         if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
         {
 
             It "returns no violations for DSC Classes" {
-                $noClassViolations.Count | Should Be 0
+                $noClassViolations.Count | Should -Be 0
             }
         }
     }

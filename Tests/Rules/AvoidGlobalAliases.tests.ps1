@@ -12,7 +12,7 @@ $IsV3OrV4 = (Test-PSVersionV3) -or (Test-PSVersionV4)
 Describe "$violationName " {
     Context "When there are violations" {
         It "Has 4 avoid global alias violations" -Skip:$IsV3OrV4 {
-            $violations.Count | Should Be 4
+            $violations.Count | Should -Be 4
         }
 
         It "Has the correct description message" -Skip:$IsV3OrV4 {
@@ -22,7 +22,7 @@ Describe "$violationName " {
 
     Context "When there are no violations" {
         It "Returns no violations" -Skip:$IsV3OrV4 {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

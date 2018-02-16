@@ -8,7 +8,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {
 Describe "Avoid Using Reserved Char" {
     Context "When there are violations" {
         It "has 1 Reserved Char Violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
@@ -18,7 +18,7 @@ Describe "Avoid Using Reserved Char" {
 
     Context "When there are no violations" {
         It "has no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

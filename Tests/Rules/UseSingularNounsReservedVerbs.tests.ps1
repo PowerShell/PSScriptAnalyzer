@@ -3,7 +3,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
-$nounViolationMessage = "The cmdlet 'Verb-Files' uses a plural noun. A singular noun should be used instead."
+$nounViolationMessage = "The cmdlet 'Verb-Files' uses a plural noun. A singular noun Should -Be used instead."
 $verbViolationMessage = "The cmdlet 'Verb-Files' uses an unapproved verb."
 $nounViolationName = "PSUseSingularNouns"
 $verbViolationName = "PSUseApprovedVerbs"
@@ -20,7 +20,7 @@ if (-not (Test-PSEditionCoreCLR))
     Describe "UseSingularNouns" {
         Context "When there are violations" {
             It "has a cmdlet singular noun violation" {
-                $nounViolations.Count | Should Be 1
+                $nounViolations.Count | Should -Be 1
             }
 
             It "has the correct description message" {
@@ -28,7 +28,7 @@ if (-not (Test-PSEditionCoreCLR))
             }
 
             It "has the correct extent" {
-            $nounViolations[0].Extent.Text | Should be "Verb-Files"
+            $nounViolations[0].Extent.Text | Should -Be "Verb-Files"
             }
         }
 
@@ -44,13 +44,13 @@ Function Add-SomeData
                 Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
                     -IncludeRule "PSUseSingularNouns" `
                     -OutVariable violations
-                $violations.Count | Should Be 0
+                $violations.Count | Should -Be 0
             }
         }
 
         Context "When there are no violations" {
             It "returns no violations" {
-                $nounNoViolations.Count | Should Be 0
+                $nounNoViolations.Count | Should -Be 0
             }
         }
     }
@@ -59,7 +59,7 @@ Function Add-SomeData
 Describe "UseApprovedVerbs" {
     Context "When there are violations" {
         It "has an approved verb violation" {
-            $verbViolations.Count | Should Be 1
+            $verbViolations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
@@ -67,13 +67,13 @@ Describe "UseApprovedVerbs" {
         }
 
         It "has the correct extent" {
-                $verbViolations[0].Extent.Text | Should be "Verb-Files"
+                $verbViolations[0].Extent.Text | Should -Be "Verb-Files"
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $verbNoViolations.Count | Should Be 0
+            $verbNoViolations.Count | Should -Be 0
         }
     }
 }

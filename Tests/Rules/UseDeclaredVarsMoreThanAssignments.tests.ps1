@@ -12,7 +12,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\UseDeclaredVarsMoreThanAssignme
 Describe "UseDeclaredVarsMoreThanAssignments" {
     Context "When there are violations" {
         It "has 2 use declared vars more than assignments violations" {
-            $violations.Count | Should Be 2
+            $violations.Count | Should -Be 2
         }
 
         It "has the correct description message" {
@@ -35,43 +35,43 @@ function MyFunc2() {
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $target -IncludeRule $violationName | `
             Get-Count | `
-            Should Be 1
+            Should -Be 1
         }
 
         It "flags strongly typed variables" {
             Invoke-ScriptAnalyzer -ScriptDefinition '[string]$s=''mystring''' -IncludeRule $violationName  | `
             Get-Count | `
-            Should Be 1
+            Should -Be 1
         }
 
         It "does not flag `$InformationPreference variable" {
             Invoke-ScriptAnalyzer -ScriptDefinition '$InformationPreference=Stop' -IncludeRule $violationName  | `
             Get-Count | `
-            Should Be 0
+            Should -Be 0
         }
 
         It "does not flag `$PSModuleAutoLoadingPreference variable" {
             Invoke-ScriptAnalyzer -ScriptDefinition '$PSModuleAutoLoadingPreference=None' -IncludeRule $violationName | `
             Get-Count | `
-            Should Be 0
+            Should -Be 0
         }
 
         It "flags a variable that is defined twice but never used" {
             Invoke-ScriptAnalyzer -ScriptDefinition '$myvar=1;$myvar=2' -IncludeRule $violationName | `
             Get-Count | `
-            Should Be 1
+            Should -Be 1
         }
 
         It "does not flag a variable that is defined twice but gets assigned to another variable and flags the other variable instead" {
             $results = Invoke-ScriptAnalyzer -ScriptDefinition '$myvar=1;$myvar=2;$mySecondvar=$myvar' -IncludeRule $violationName
-            $results | Get-Count | Should Be 1
-            $results[0].Extent | Should Be '$mySecondvar'
+            $results | Get-Count | Should -Be 1
+            $results[0].Extent | Should -Be '$mySecondvar'
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

@@ -9,25 +9,25 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUserNameAndPasswordParamsN
 Describe "AvoidUserNameAndPasswordParams" {
     Context "When there are violations" {
         It "has 1 avoid username and password parameter violations" {
-            $violations.Count | Should Be 2
+            $violations.Count | Should -Be 2
         }
 
         It "has the correct violation message" {
-            $violations[0].Message | Should Be $violationMessage
+            $violations[0].Message | Should -Be $violationMessage
         }
 
 	It "has correct extent" {
 	   $expectedExtent = '$password, $username'
-	   $violations[0].Extent.Text | Should Be $expectedExtent
+	   $violations[0].Extent.Text | Should -Be $expectedExtent
 
 	   $expectedExtent = '$username, $password'
-	   $violations[1].Extent.Text | Should Be $expectedExtent
+	   $violations[1].Extent.Text | Should -Be $expectedExtent
 	}
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

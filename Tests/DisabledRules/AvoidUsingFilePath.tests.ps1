@@ -1,9 +1,9 @@
 ﻿Import-Module PSScriptAnalyzer
 $violationMessage = @'
-The file path "D:\\Code" of AvoidUsingFilePath.ps1 is rooted. This should be avoided if AvoidUsingFilePath.ps1 is published online
+The file path "D:\\Code" of AvoidUsingFilePath.ps1 is rooted. This Should -Be avoided if AvoidUsingFilePath.ps1 is published online
 '@
 $violationUNCMessage = @'
-The file path "\\\\scratch2\\scratch\\" of AvoidUsingFilePath.ps1 is rooted. This should be avoided if AvoidUsingFilePath.ps1 is published online.
+The file path "\\\\scratch2\\scratch\\" of AvoidUsingFilePath.ps1 is rooted. This Should -Be avoided if AvoidUsingFilePath.ps1 is published online.
 '@
 
 $violationName = "PSAvoidUsingFilePath"
@@ -14,7 +14,7 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingFilePathNoViolations.
 Describe "AvoidUsingFilePath" {
     Context "When there are violations" {
         It "has 4 avoid using file path violations" {
-            $violations.Count | Should Be 4
+            $violations.Count | Should -Be 4
         }
 
         It "has the correct description message with drive name" {
@@ -28,7 +28,7 @@ Describe "AvoidUsingFilePath" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

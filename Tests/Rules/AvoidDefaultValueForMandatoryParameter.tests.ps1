@@ -8,7 +8,7 @@ $noViolations = Invoke-ScriptAnalyzer "$directory\AvoidDefaultValueForMandatoryP
 Describe "AvoidDefaultValueForMandatoryParameter" {
     Context "When there are violations" {
         It "has 1 provide default value for mandatory parameter violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
@@ -18,7 +18,7 @@ Describe "AvoidDefaultValueForMandatoryParameter" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

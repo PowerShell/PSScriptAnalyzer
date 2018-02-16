@@ -9,7 +9,7 @@ $notHelpFileViolations = Invoke-ScriptAnalyzer $directory\utf16.txt | Where-Obje
 Describe "UseUTF8EncodingForHelpFile" {
     Context "When there are violations" {
         It "has 1 avoid use utf8 encoding violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
@@ -20,11 +20,11 @@ Describe "UseUTF8EncodingForHelpFile" {
 
     Context "When there are no violations" {
         It "returns no violations for correct utf8 help file" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
 
         It "returns no violations for utf16 file that is not a help file" {
-            $notHelpFileViolations.Count | Should Be 0
+            $notHelpFileViolations.Count | Should -Be 0
         }
     }
 }

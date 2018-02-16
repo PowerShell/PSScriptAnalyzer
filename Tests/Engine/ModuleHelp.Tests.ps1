@@ -245,20 +245,20 @@ foreach ($command in $commands) {
 		# If help is not found, synopsis in auto-generated help is the syntax diagram
 		It "should not be auto-generated" {
 			# Replace pester BeLike with powershell -like as pester 3.3.9 does not support BeLike
-			$Help.Synopsis -like '*`[`<CommonParameters`>`]*' | Should Be $false
+			$Help.Synopsis -like '*`[`<CommonParameters`>`]*' | Should -Be $false
 		}
 
-		# Should be a description for every function
+		# Should -Be a description for every function
 		It "gets description for $commandName" {
 			$Help.Description | Should Not BeNullOrEmpty
 		}
 
-		# Should be at least one example
+		# Should -Be at least one example
 		It "gets example code from $commandName" {
 			($Help.Examples.Example | Select-Object -First 1).Code | Should Not BeNullOrEmpty
 		}
 
-		# Should be at least one example description
+		# Should -Be at least one example description
 		It "gets example help from $commandName" {
 			($Help.Examples.Example.Remarks | Select-Object -First 1).Text | Should Not BeNullOrEmpty
 		}
@@ -282,17 +282,17 @@ foreach ($command in $commands) {
 				$parameterName = $parameter.Name
 				$parameterHelp = $Help.parameters.parameter | Where-Object Name -EQ $parameterName
 
-				# Should be a description for every parameter
+				# Should -Be a description for every parameter
 				It "gets help for parameter: $parameterName : in $commandName" {
 					# `$parameterHelp.Description.Text | Should Not BeNullOrEmpty` fails for -Settings paramter
 					# without explicit [string] casting on the Text property
-					[string]::IsNullOrEmpty($parameterHelp.Description.Text) | Should Be $false
+					[string]::IsNullOrEmpty($parameterHelp.Description.Text) | Should -Be $false
 				}
 
 				# Required value in Help should match IsMandatory property of parameter
 				It "help for $parameterName parameter in $commandName has correct Mandatory value" {
 					$codeMandatory = $parameter.IsMandatory.toString()
-					$parameterHelp.Required | Should Be $codeMandatory
+					$parameterHelp.Required | Should -Be $codeMandatory
 				}
 
 				# Parameter type in Help should match code
@@ -300,7 +300,7 @@ foreach ($command in $commands) {
 					$codeType = $parameter.ParameterType.Name
 					# To avoid calling Trim method on a null object.
 					$helpType = if ($parameterHelp.parameterValue) { $parameterHelp.parameterValue.Trim() }
-					$helpType | Should be $codeType
+					$helpType | Should -Be $codeType
 				}
 			}
 
@@ -310,7 +310,7 @@ foreach ($command in $commands) {
 				}
 				# Shouldn't find extra parameters in help.
 				It "finds help parameter in code: $helpParm" {
-					$helpParm -in $parameterNames | Should Be $true
+					$helpParm -in $parameterNames | Should -Be $true
 				}
 			}
 		}
