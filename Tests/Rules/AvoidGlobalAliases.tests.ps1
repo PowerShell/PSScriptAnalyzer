@@ -16,7 +16,7 @@ Describe "$violationName " {
         }
 
         It "Has the correct description message" -Skip:$IsV3OrV4 {
-            $violations[0].Message | Should Match $AvoidGlobalAliasesError
+            $violations[0].Message | Should -Match $AvoidGlobalAliasesError
         }
     }
 

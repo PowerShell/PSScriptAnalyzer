@@ -25,7 +25,7 @@ Describe "MissingRequiredFieldModuleManifest" {
         }
 
         It "has the correct description message" {
-            $violations.Message | Should Match $missingMessage
+            $violations.Message | Should -Match $missingMessage
         }
 
         $numExpectedCorrections = 1
@@ -39,8 +39,8 @@ Describe "MissingRequiredFieldModuleManifest" {
 # Version number of this module.
 ModuleVersion = '1.0.0.0'
 '@
-            $violations[0].SuggestedCorrections[0].Text | Should Match $expectedText
-            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should Match ""
+            $violations[0].SuggestedCorrections[0].Text | Should -Match $expectedText
+            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -Match ""
     }
 }
 

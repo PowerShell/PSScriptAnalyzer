@@ -118,7 +118,7 @@ function SuppressPwdParam()
             It "Throws a non-terminating error" {
                 Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionBad -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -ErrorVariable errorRecord -ErrorAction SilentlyContinue
                 $errorRecord.Count | Should -Be 1
-                $errorRecord.FullyQualifiedErrorId | Should match "suppression message attribute error"
+                $errorRecord.FullyQualifiedErrorId | Should -Match "suppression message attribute error"
             }
         }
 

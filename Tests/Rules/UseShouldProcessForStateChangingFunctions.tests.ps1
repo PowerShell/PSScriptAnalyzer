@@ -30,7 +30,7 @@ Function New-{0} () {{ }}
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should -Match $violationMessage
         }
 
         It "has the correct extent" {

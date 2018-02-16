@@ -18,11 +18,11 @@ Describe "AvoidUsingFilePath" {
         }
 
         It "has the correct description message with drive name" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should -Match $violationMessage
         }
 
         It "has the correct description message (UNC)" {
-            $violations[2].Message | Should Match $violationUNCMessage
+            $violations[2].Message | Should -Match $violationUNCMessage
         }
     }
 

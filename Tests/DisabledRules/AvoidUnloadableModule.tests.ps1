@@ -12,7 +12,7 @@ Describe "AvoidUnloadableModule" {
         }
 
         It "has the correct description message" {
-            $violations.Message | Should Match $unloadableMessage
+            $violations.Message | Should -Match $unloadableMessage
         }
     }
 

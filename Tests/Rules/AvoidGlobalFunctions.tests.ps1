@@ -15,7 +15,7 @@ Describe "$violationName " {
         }
 
         It "Has the correct description message" {
-            $violations[0].Message | Should Match $functionErroMessage
+            $violations[0].Message | Should -Match $functionErroMessage
         }
 
     }

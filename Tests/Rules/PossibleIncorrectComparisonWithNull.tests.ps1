@@ -12,7 +12,7 @@ Describe "PossibleIncorrectComparisonWithNull" {
         }
 
         It "has the correct description message" {
-            $violations.Message | Should Match $violationMessage
+            $violations.Message | Should -Match $violationMessage
         }
     }
 

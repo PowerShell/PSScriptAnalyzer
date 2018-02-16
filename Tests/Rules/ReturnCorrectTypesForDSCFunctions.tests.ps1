@@ -20,7 +20,7 @@ Describe "ReturnCorrectTypesForDSCFunctions" {
         }
 
         It "has the correct description message" {
-            $violations[2].Message | Should Match $violationMessageDSCResource
+            $violations[2].Message | Should -Match $violationMessageDSCResource
         }
     }
 
@@ -39,7 +39,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
         }
 
         It "has the correct description message" {
-            $classViolations[3].Message | Should Match $violationMessageDSCClass
+            $classViolations[3].Message | Should -Match $violationMessageDSCClass
         }
     }
 

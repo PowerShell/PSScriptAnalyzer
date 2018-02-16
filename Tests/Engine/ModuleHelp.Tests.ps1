@@ -288,13 +288,13 @@ foreach ($command in $commands) {
 					$parameterHelp.Description.Text | Should -Not -BeNullOrEmpty
 				}
 
-				# Required value in Help should match IsMandatory property of parameter
+				# Required value in Help Should -Match IsMandatory property of parameter
 				It "help for $parameterName parameter in $commandName has correct Mandatory value" {
 					$codeMandatory = $parameter.IsMandatory.toString()
 					$parameterHelp.Required | Should -Be $codeMandatory
 				}
 
-				# Parameter type in Help should match code
+				# Parameter type in Help Should -Match code
 				It "help for $commandName has correct parameter type for $parameterName" {
 					$codeType = $parameter.ParameterType.Name
 					# To avoid calling Trim method on a null object.

@@ -13,7 +13,7 @@ Describe "AvoidUsingClearHost" {
         }
 
         It "has the correct description message for Clear-Host" {
-            $violations[0].Message | Should Match $clearHostMessage
+            $violations[0].Message | Should -Match $clearHostMessage
         }
     }
 

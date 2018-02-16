@@ -12,7 +12,7 @@ Describe "Avoid Using One Char" {
         }
 
         It "has the correct description message" {
-            $oneCharViolations[0].Message | Should Match $oneCharMessage
+            $oneCharViolations[0].Message | Should -Match $oneCharMessage
         }
     }
 

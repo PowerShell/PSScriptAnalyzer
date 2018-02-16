@@ -18,7 +18,7 @@ Describe "UseOutputTypeCorrectly" {
         }
 
         It "has the correct description message" {
-            $violations[1].Message | Should Match $violationMessage
+            $violations[1].Message | Should -Match $violationMessage
         }
 
         if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {

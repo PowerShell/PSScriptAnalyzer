@@ -24,7 +24,7 @@ if (-not (Test-PSEditionCoreCLR))
             }
 
             It "has the correct description message" {
-                $nounViolations[0].Message | Should Match $nounViolationMessage
+                $nounViolations[0].Message | Should -Match $nounViolationMessage
             }
 
             It "has the correct extent" {
@@ -63,7 +63,7 @@ Describe "UseApprovedVerbs" {
         }
 
         It "has the correct description message" {
-            $verbViolations[0].Message | Should Match $verbViolationMessage
+            $verbViolations[0].Message | Should -Match $verbViolationMessage
         }
 
         It "has the correct extent" {

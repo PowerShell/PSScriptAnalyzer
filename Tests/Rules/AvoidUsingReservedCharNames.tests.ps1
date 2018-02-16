@@ -12,7 +12,7 @@ Describe "Avoid Using Reserved Char" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $reservedCharMessage
+            $violations[0].Message | Should -Match $reservedCharMessage
         }
     }
 

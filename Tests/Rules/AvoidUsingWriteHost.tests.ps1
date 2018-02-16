@@ -13,7 +13,7 @@ Describe "AvoidUsingWriteHost" {
         }
 
         It "has the correct description message for Write-Host" {
-            $violations[0].Message | Should Match $writeHostMessage
+            $violations[0].Message | Should -Match $writeHostMessage
         }
     }
 

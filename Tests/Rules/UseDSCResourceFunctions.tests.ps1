@@ -20,7 +20,7 @@ Describe "StandardDSCFunctionsInResource" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should -Match $violationMessage
         }
     }
 
@@ -39,7 +39,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
         }
 
         It "has the correct description message" {
-            $classViolations[0].Message | Should Match $classViolationMessage
+            $classViolations[0].Message | Should -Match $classViolationMessage
         }
     }
 

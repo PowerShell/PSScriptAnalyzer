@@ -20,7 +20,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should -Match $violationMessage
         }
     }
 
@@ -54,7 +54,7 @@ Describe "DscExamplesPresent rule in regular (non-class) based resource" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should -Match $violationMessage
         }
     }
 

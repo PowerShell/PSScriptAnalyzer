@@ -87,19 +87,19 @@ Describe "GlobalSuppression" {
         It "Raises Error for file not found" {
             $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Settings ".\ThisFileDoesNotExist.ps1" -ErrorAction SilentlyContinue
             $invokeWithError.Count | Should -Be 0
-            $Error[0].FullyQualifiedErrorId | should match "SettingsFileNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
+            $Error[0].FullyQualifiedErrorId | Should -Match "SettingsFileNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
         }
 
         It "Raises Error for file with no hash table" {
             $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Settings "$directory\GlobalSuppression.ps1" -ErrorAction SilentlyContinue
             $invokeWithError.Count | Should -Be 0
-            $Error[0].FullyQualifiedErrorId | should match "SettingsFileHasNoHashTable,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
+            $Error[0].FullyQualifiedErrorId | Should -Match "SettingsFileHasNoHashTable,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
         }
 
         It "Raises Error for wrong profile" {
             $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Settings "$directory\WrongProfile.ps1" -ErrorAction SilentlyContinue
             $invokeWithError.Count | Should -Be 0
-            $Error[0].FullyQualifiedErrorId | should match "WrongSettingsKey,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
+            $Error[0].FullyQualifiedErrorId | Should -Match "WrongSettingsKey,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
         }
     }
 }

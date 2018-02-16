@@ -12,7 +12,7 @@ Describe "UseTypeAtVariableAssignment" {
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should -Match $violationMessage
         }
     }
 

@@ -15,7 +15,7 @@ Describe "UseBOMForUnicodeEncodedFile" {
         }
 
         It "has the correct description message for BOM Absent - UTF16 Encoded file" {
-            $violationsOne[0].Message | Should Match $violationMessageOne
+            $violationsOne[0].Message | Should -Match $violationMessageOne
         }
 
         It "has 1 rule violation for BOM Absent - Unknown Encoded file" {
@@ -23,7 +23,7 @@ Describe "UseBOMForUnicodeEncodedFile" {
         }
 
         It "has the correct description message for BOM Absent - Unknown Encoded file" {
-            $violationsTwo[0].Message | Should Match $violationMessageTwo
+            $violationsTwo[0].Message | Should -Match $violationMessageTwo
         }
 
     }

@@ -38,7 +38,7 @@ Describe "AvoidGlobalVars" {
 
 
         It "has the correct description message" {
-            $globalViolations[0].Message | Should Match $globalMessage
+            $globalViolations[0].Message | Should -Match $globalMessage
         }
     }
 
@@ -71,7 +71,7 @@ Describe "AvoidUnitializedVars" {
         }
 
         It "has the correct description message" {
-            $nonInitializedViolations[0].Message | Should Match $nonInitializedMessage
+            $nonInitializedViolations[0].Message | Should -Match $nonInitializedMessage
         }
     }
 

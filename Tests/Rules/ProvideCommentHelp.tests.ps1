@@ -53,7 +53,7 @@ Describe "ProvideCommentHelp" {
         }
 
         It "has the correct description message" {
-            $violations[1].Message | Should Match $violationMessage
+            $violations[1].Message | Should -Match $violationMessage
         }
 
         It "has extent that includes only the function name" {

@@ -27,7 +27,7 @@ Describe "AvoidUsingPlainTextForPassword" {
 	}
 
         It "has the correct violation message" {
-            $violations[3].Message | Should Match $violationMessage
+            $violations[3].Message | Should -Match $violationMessage
         }
     }
 

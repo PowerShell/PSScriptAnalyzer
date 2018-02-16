@@ -14,7 +14,7 @@ Describe "UseVerboseMessageInDSCResource" {
         }
 
         It "has the correct description message" {
-            $violations[1].Message | Should Match $violationMessage
+            $violations[1].Message | Should -Match $violationMessage
         }
     }
 
