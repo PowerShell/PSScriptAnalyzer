@@ -160,7 +160,7 @@ class FileResource
         }
         elseif( $item.PSProvider.Name -ne "FileSystem")
         {
-            will show the custom rules when given a glob "Path $($location) is not a file path."
+            throw "Path $($location) is not a file path."
         }
         elseif($item.PSIsContainer)
         {

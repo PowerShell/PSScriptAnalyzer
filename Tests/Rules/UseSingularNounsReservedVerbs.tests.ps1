@@ -3,7 +3,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
-$nounViolationMessage = "The cmdlet 'Verb-Files' uses a plural noun. A singular noun Should Be used instead."
+$nounViolationMessage = "The cmdlet 'Verb-Files' uses a plural noun. A singular noun should be used instead."
 $verbViolationMessage = "The cmdlet 'Verb-Files' uses an unapproved verb."
 $nounViolationName = "PSUseSingularNouns"
 $verbViolationName = "PSUseApprovedVerbs"

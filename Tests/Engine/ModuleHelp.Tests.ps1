@@ -248,17 +248,17 @@ foreach ($command in $commands) {
 			$Help.Synopsis -like '*`[`<CommonParameters`>`]*' | Should Be $false
 		}
 
-		# Should -Be a description for every function
+		# Should be a description for every function
 		It "gets description for $commandName" {
 			$Help.Description | Should -Not -BeNullOrEmpty
 		}
 
-		# Should -Be at least one example
+		# Should be at least one example
 		It "gets example code from $commandName" {
 			($Help.Examples.Example | Select-Object -First 1).Code | Should -Not -BeNullOrEmpty
 		}
 
-		# Should -Be at least one example description
+		# Should be at least one example description
 		It "gets example help from $commandName" {
 			($Help.Examples.Example.Remarks | Select-Object -First 1).Text | Should -Not -BeNullOrEmpty
 		}
@@ -282,20 +282,20 @@ foreach ($command in $commands) {
 				$parameterName = $parameter.Name
 				$parameterHelp = $Help.parameters.parameter | Where-Object Name -EQ $parameterName
 
-				# Should -Be a description for every parameter
+				# Should be a description for every parameter
 				It "gets help for parameter: $parameterName : in $commandName" {
 					# `$parameterHelp.Description.Text | Should -Not -BeNullOrEmpty` fails for -Settings paramter
 					# without explicit [string] casting on the Text property
 					$parameterHelp.Description.Text | Should -Not -BeNullOrEmpty
 				}
 
-				# Required value in Help Should -Match IsMandatory property of parameter
+				# Required value in Help should match IsMandatory property of parameter
 				It "help for $parameterName parameter in $commandName has correct Mandatory value" {
 					$codeMandatory = $parameter.IsMandatory.toString()
 					$parameterHelp.Required | Should -Be $codeMandatory
 				}
 
-				# Parameter type in Help Should -Match code
+				# Parameter type in Help should match code
 				It "help for $commandName has correct parameter type for $parameterName" {
 					$codeType = $parameter.ParameterType.Name
 					# To avoid calling Trim method on a null object.

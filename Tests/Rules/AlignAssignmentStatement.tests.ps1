@@ -26,7 +26,7 @@ $hashtable = @{
 }
 '@
 
-            # Expected output after correction Should Be the following
+            # Expected output after correction should be the following
             # $hashtable = @{
             #     property1       = "value"
             #     anotherProperty = "another value"
@@ -45,7 +45,7 @@ $hashtable = @{
 }
 '@
 
-            # Expected output Should -Be the following
+            # Expected output should be the following
             # $hashtable = @{
             #     property1       = "value"
             #     anotherProperty = "another value"
