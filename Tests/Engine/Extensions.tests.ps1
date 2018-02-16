@@ -91,7 +91,7 @@ Describe "FunctionDefinitionAst extension methods" {
         }
 
         It "Should set paramBlock" {
-            $paramBlockAst | Should -Not Be $null
+            $paramBlockAst | Should -Not -Be $null
         }
     }
 }
@@ -104,7 +104,7 @@ Describe "ParamBlockAst extension methods" {
                     [CmdletBinding()]
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0]
-            $extNamespace::GetCmdletBindingAttributeAst($funcDefnAst.Body.ParamBlock) | Should -Not Be $null
+            $extNamespace::GetCmdletBindingAttributeAst($funcDefnAst.Body.ParamBlock) | Should -Not -Be $null
         }
     }
 }
@@ -130,7 +130,7 @@ Describe "AttributeAst extension methods" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0]
             $attrAst = $extNamespace::GetSupportsShouldProcessAst($funcDefnAst.Body.ParamBlock.Attributes[0])
-            $attrAst | Should -Not Be $null
+            $attrAst | Should -Not -Be $null
             $attrAst.Extent.Text | Should -Be "SupportsShouldProcess"
         }
     }
@@ -157,7 +157,7 @@ Describe "NamedAttributeArgumentAst" {
                 }}.Ast.EndBlock.Statements[0].Body.ParamBlock.Attributes[0].NamedArguments[0]
             $expressionAst = $null
             $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should -Be $true
-            $expressionAst | Should -Not Be $null
+            $expressionAst | Should -Not -Be $null
         }
 
         It "Should return false if argument value is `$false" {
@@ -168,7 +168,7 @@ Describe "NamedAttributeArgumentAst" {
                 }}.Ast.EndBlock.Statements[0].Body.ParamBlock.Attributes[0].NamedArguments[0]
             $expressionAst = $null
             $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should -Be $false
-            $expressionAst | Should -Not Be $null
+            $expressionAst | Should -Not -Be $null
 
         }
     }
