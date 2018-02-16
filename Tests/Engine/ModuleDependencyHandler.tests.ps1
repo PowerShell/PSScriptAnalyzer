@@ -1,7 +1,9 @@
+$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 Describe "Resolve DSC Resource Dependency" {
     BeforeAll {
         $skipTest = $false
-        if ( -not $IsWindows -or $testingLibararyUsage -or ($PSversionTable.PSVersion -lt [Version]'5.0.0'))
+        if ($IsLinux -or $IsMacOS -or $testingLibararyUsage -or ($PSversionTable.PSVersion -lt [Version]'5.0.0'))
         {
             $skipTest = $true
             return
@@ -9,8 +11,6 @@ Describe "Resolve DSC Resource Dependency" {
         $SavedPSModulePath = $env:PSModulePath
         $violationFileName = 'MissingDSCResource.ps1'
         $violationFilePath = Join-Path $directory $violationFileName
-
-        $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
         $testRootDirectory = Split-Path -Parent $directory
         Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
@@ -166,15 +166,6 @@ Describe "Resolve DSC Resource Dependency" {
             Copy-Item -Recurse -Path $modulePath -Destination $tempModulePath
         }
 
-        AfterAll {
-            if ( $skipTest ) { return }
-            #restore environment variables and clean up temporary location
-            $env:LOCALAPPDATA = $oldLocalAppDataPath
-            $env:TEMP = $oldTempPath
-            Remove-Item -Recurse -Path $tempModulePath -Force
-            Remove-Item -Recurse -Path $tempPath -Force
-        }
-
         It "Doesn't have parse errors" -skip:$skipTest {
             # invoke script analyzer
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
@@ -185,6 +176,11 @@ Describe "Resolve DSC Resource Dependency" {
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
             $env:PSModulePath | Should Be $oldPSModulePath
         }
+
+        $env:LOCALAPPDATA = $oldLocalAppDataPath
+        $env:TEMP = $oldTempPath
+        Remove-Item -Recurse -Path $tempModulePath -Force
+        Remove-Item -Recurse -Path $tempPath -Force
 
         It "Keeps the environment variables unchanged" -skip:$skipTest {
             Test-EnvironmentVariables($oldEnvVars)
