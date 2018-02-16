@@ -16,13 +16,13 @@ Describe "TextEdit Class" {
         It "throws if end line number is less than start line number" {
             $text = "Get-ChildItem"
             {New-Object -TypeName $type -ArgumentList @(2, 1, 1, ($text.Length + 1), $text)} |
-                Should Throw
+                Should -Throw
         }
 
         It "throws if end column number is less than start column number for same line" {
             $text = "start-process"
             {New-Object -TypeName $type -ArgumentList @(1, 2, 1, 1, $text)} |
-                    Should Throw
+                    Should -Throw
             }
         }
     }

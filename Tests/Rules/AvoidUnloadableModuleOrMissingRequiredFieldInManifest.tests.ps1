@@ -52,7 +52,7 @@ ModuleVersion = '1.0.0.0'
 
     Context "When an .psd1 file doesn't contain a hashtable" {
         It "does not throw exception" {
-            {Invoke-ScriptAnalyzer -Path $noHashtableFilepath -IncludeRule $missingMemberRuleName} | Should -Not Throw
+            {Invoke-ScriptAnalyzer -Path $noHashtableFilepath -IncludeRule $missingMemberRuleName} | Should -Not -Throw
         }
     }
 

@@ -165,11 +165,11 @@ Describe "Settings Class" {
                 $settings."$paramName" | Should -Be $false
             }
 
-            It "Should throw if a non-boolean value is given" {
+            It "Should -Throw if a non-boolean value is given" {
                 $settingsHashtable = @{}
                 $settingsHashtable.Add($paramName, "some random string")
 
-                { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should Throw
+                { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should -Throw
             }
 
             It "Should detect the parameter in a settings file" {

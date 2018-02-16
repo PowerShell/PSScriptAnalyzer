@@ -342,7 +342,7 @@ Describe "Test Severity" {
 
     Context "When used incorrectly" {
         It "throws error" {
-            { Invoke-ScriptAnalyzer -Severity "Wrong" $directory\TestScript.ps1 } | Should Throw
+            { Invoke-ScriptAnalyzer -Severity "Wrong" $directory\TestScript.ps1 } | Should -Throw
         }
     }
 }

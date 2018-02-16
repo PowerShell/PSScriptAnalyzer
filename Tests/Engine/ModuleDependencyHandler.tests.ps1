@@ -66,12 +66,12 @@ Describe "Resolve DSC Resource Dependency" {
         }
 
         It "Throws if runspace is null" -skip:$skipTest {
-            {$moduleHandlerType::new($null)} | Should Throw
+            {$moduleHandlerType::new($null)} | Should -Throw
         }
 
         It "Throws if runspace is not opened" -skip:$skipTest {
             $rsp = [runspacefactory]::CreateRunspace()
-            {$moduleHandlerType::new($rsp)} | Should Throw
+            {$moduleHandlerType::new($rsp)} | Should -Throw
             $rsp.Dispose()
         }
 

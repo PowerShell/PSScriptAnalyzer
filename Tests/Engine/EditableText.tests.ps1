@@ -117,7 +117,7 @@ function foo {
                 -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText" `
                 -ArgumentList @($def)
 
-            {$text.Lines.Add("abc")} | Should Throw
+            {$text.Lines.Add("abc")} | Should -Throw
         }
 
         It "Should return the correct number of lines in the text" {
