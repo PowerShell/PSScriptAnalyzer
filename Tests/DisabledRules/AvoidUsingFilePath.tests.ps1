@@ -1,9 +1,9 @@
 ﻿Import-Module PSScriptAnalyzer
 $violationMessage = @'
-The file path "D:\\Code" of AvoidUsingFilePath.ps1 is rooted. This should Be avoided if AvoidUsingFilePath.ps1 is published online
+The file path "D:\\Code" of AvoidUsingFilePath.ps1 is rooted. This should be avoided if AvoidUsingFilePath.ps1 is published online
 '@
 $violationUNCMessage = @'
-The file path "\\\\scratch2\\scratch\\" of AvoidUsingFilePath.ps1 is rooted. This should Be avoided if AvoidUsingFilePath.ps1 is published online.
+The file path "\\\\scratch2\\scratch\\" of AvoidUsingFilePath.ps1 is rooted. This should be avoided if AvoidUsingFilePath.ps1 is published online.
 '@
 
 $violationName = "PSAvoidUsingFilePath"

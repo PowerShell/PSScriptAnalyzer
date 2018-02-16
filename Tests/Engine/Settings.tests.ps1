@@ -165,7 +165,7 @@ Describe "Settings Class" {
                 $settings."$paramName" | Should -Be $false
             }
 
-            It "Should Throw if a non-boolean value is given" {
+            It "Should throw if a non-boolean value is given" {
                 $settingsHashtable = @{}
                 $settingsHashtable.Add($paramName, "some random string")
 
