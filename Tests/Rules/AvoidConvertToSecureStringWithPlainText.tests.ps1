@@ -1,6 +1,6 @@
 ﻿Import-Module PSScriptAnalyzer
 Set-Alias ctss ConvertTo-SecureString
-$violationMessage = "File 'AvoidConvertToSecureStringWithPlainText.ps1' uses ConvertTo-SecureString with plaintext. This will expose secure information. Encrypted standard strings Should -Be used instead."
+$violationMessage = "File 'AvoidConvertToSecureStringWithPlainText.ps1' uses ConvertTo-SecureString with plaintext. This will expose secure information. Encrypted standard strings Should be used instead."
 $violationName = "PSAvoidUsingConvertToSecureStringWithPlainText"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidConvertToSecureStringWithPlainText.ps1 | Where-Object {$_.RuleName -eq $violationName}

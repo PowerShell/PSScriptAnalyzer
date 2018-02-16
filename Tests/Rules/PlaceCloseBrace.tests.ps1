@@ -130,7 +130,7 @@ $x = if ($true) { "blah" } else { "blah blah" }
         }
     }
 
-    Context "When a close brace Should -Be followed by a new line" {
+    Context "When a close brace should be followed by a new line" {
         BeforeAll {
             $ruleConfiguration.'NoEmptyLineBefore' = $false
             $ruleConfiguration.'IgnoreOneLineBlock' = $false

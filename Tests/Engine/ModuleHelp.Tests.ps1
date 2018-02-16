@@ -244,7 +244,8 @@ foreach ($command in $commands) {
 
 		# If help is not found, synopsis in auto-generated help is the syntax diagram
 		It "should not be auto-generated" {
-			$Help.Synopsis | Should -Not -Be '*`[`<CommonParameters`>`]*'
+			# Replace pester BeLike with powershell -like as pester 3.3.9 does not support BeLike
+			$Help.Synopsis -like '*`[`<CommonParameters`>`]*' | Should Be $false
 		}
 
 		# Should -Be a description for every function

@@ -77,7 +77,7 @@ Describe "Settings Class" {
             $settings.RuleArguments["PSAvoidUsingCmdletAliases"]["WhiteList"][1] | Should -Be "cp"
         }
 
-        It "Should -Be case insensitive" {
+        It "Should Be case insensitive" {
             $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"].Count | Should -Be 2
             $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"][0] | Should -Be "cd"
             $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"][1] | Should -Be "cp"
@@ -165,7 +165,7 @@ Describe "Settings Class" {
                 $settings."$paramName" | Should -Be $false
             }
 
-            It "Should -Throw if a non-boolean value is given" {
+            It "Should Throw if a non-boolean value is given" {
                 $settingsHashtable = @{}
                 $settingsHashtable.Add($paramName, "some random string")
 
