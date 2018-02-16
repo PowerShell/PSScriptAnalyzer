@@ -255,12 +255,12 @@ foreach ($command in $commands) {
 
 		# Should -Be at least one example
 		It "gets example code from $commandName" {
-			($Help.Examples.Example | Select-Object -First 1).Code | Should Not BeNullOrEmpty
+			($Help.Examples.Example | Select-Object -First 1).Code | Should -Not BeNullOrEmpty
 		}
 
 		# Should -Be at least one example description
 		It "gets example help from $commandName" {
-			($Help.Examples.Example.Remarks | Select-Object -First 1).Text | Should Not BeNullOrEmpty
+			($Help.Examples.Example.Remarks | Select-Object -First 1).Text | Should -Not BeNullOrEmpty
 		}
 
 		Context "Test parameter help for $commandName" {
@@ -284,7 +284,7 @@ foreach ($command in $commands) {
 
 				# Should -Be a description for every parameter
 				It "gets help for parameter: $parameterName : in $commandName" {
-					# `$parameterHelp.Description.Text | Should Not BeNullOrEmpty` fails for -Settings paramter
+					# `$parameterHelp.Description.Text | Should -Not BeNullOrEmpty` fails for -Settings paramter
 					# without explicit [string] casting on the Text property
 					[string]::IsNullOrEmpty($parameterHelp.Description.Text) | Should -Be $false
 				}
