@@ -82,7 +82,7 @@ Exit
 ### From Source
 
 * [.NET Core 2.1.4 SDK](https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.0.5-download.md)
-* [PlatyPS 0.5.0 or greater](https://github.com/PowerShell/platyPS)
+* [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
 
 #### Steps
@@ -129,7 +129,7 @@ For adding/removing resource strings in the `*.resx` files, it is recommended to
 #### Tests
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
-* Ensure Pester 3.4 is installed on the machine
+* Ensure Pester 4.1.1 is installed on the machine
 * Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
 * Go the Tests folder in your local repository
 * Run Engine Tests:
@@ -353,7 +353,7 @@ Contributing to ScriptAnalyzer
 ==============================
 You are welcome to contribute to this project. There are many ways to contribute:
 
-1. Submit a bug report via [Issues]( https://github.com/PowerShell/PSScriptAnalyzer/issues). For a guide to submitting good bug reports, please read [Painless Bug Tracking](http://www.joelonsoftware.com/articles/fog0000000029.html).
+1. Submit a bug report via [Issues]( https://github.com/PowerShell/PSScriptAnalyzer/issues). For a guide to submitting good bug reports, please read [Painless Bug Tracking](https://www.joelonsoftware.com/articles/fog0000000029.html).
 2. Verify fixes for bugs.
 3. Submit your fixes for a bug. Before submitting, please make sure you have:
   * Performed code reviews of your own
@@ -366,7 +366,7 @@ You are welcome to contribute to this project. There are many ways to contribute
 7. Tell others about the project.
 8. Tell the developers how much you appreciate the product!
 
-You might also read these two blog posts about contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza, and [Don’t “Push” Your Pull Requests](http://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik.
+You might also read these two blog posts about contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza, and [Don’t “Push” Your Pull Requests](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik.
 
 Before submitting a feature or substantial code contribution, please discuss it with the Windows PowerShell team via [Issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed by the Windows PowerShell Team. Only those that meet a high bar for both quality and roadmap fit will be merged into the source.
 
@@ -378,7 +378,7 @@ Creating a Release
 - Update changelog (`changelog.md`) with the new version number and change set. When updating the changelog please follow the same pattern as that of previous change sets (otherwise this may break the next step).
 - Import the ReleaseMaker module and execute `New-Release` cmdlet to perform the following actions.
   - Update module manifest (engine/PSScriptAnalyzer.psd1) with the new version number and change set
-  - Update the version number in `engine/project.json` and `rules/project.json`
+  - Update the version number in `Engine/Engine.csproj` and `Rules/Rules.csproj`
   - Create a release build in `out/`
 
 ```powershell

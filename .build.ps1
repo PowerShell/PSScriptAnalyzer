@@ -38,20 +38,20 @@ function CreateIfNotExists([string] $folderPath) {
 }
 
 function Get-BuildInputs($project) {
-    pushd $buildRoot/$project
-    gci -Filter *.cs
-    gci -Directory -Exclude obj, bin | gci -Filter *.cs -Recurse
-    popd
+    Push-Location $buildRoot/$project
+    Get-ChildItem -Filter *.cs
+    Get-ChildItem -Directory -Exclude obj, bin | Get-ChildItem -Filter *.cs -Recurse
+    Pop-Location
 }
 
 function Get-BuildOutputs($project) {
     $bin = "$buildRoot/$project/bin/$Configuration/$Framework"
     $obj = "$buildRoot/$project/obj/$Configuration/$Framework"
     if (Test-Path $bin) {
-        gci $bin -Recurse
+        Get-ChildItem $bin -Recurse
     }
     if (Test-Path $obj) {
-        gci $obj -Recurse
+        Get-ChildItem $obj -Recurse
     }
 }
 
@@ -202,10 +202,10 @@ task buildDocs -Inputs $bdInputs -Outputs $bdOutputs {
     Copy-Item -Path $docsPath\about_PSScriptAnalyzer.help.txt -Destination $outputDocsPath -Force
 
     # Build documentation using platyPS
-    if ((Get-Module PlatyPS -ListAvailable) -eq $null) {
-        throw "Cannot find PlatyPS. Please install it from https://www.powershellgallery.com."
+    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge 0.9 })) {
+        throw "Cannot find platyPS of version greater or equal to 0.9. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
-    Import-Module PlatyPS
+    Import-Module platyPS
     if (-not (Test-Path $markdownDocsPath -Verbose:$verbosity)) {
         throw "Cannot find markdown documentation folder."
     }

@@ -1,4 +1,4 @@
-# Inspired by http://eslint.org/docs/rules/brace-style#stroustrup
+# Inspired by https://eslint.org/docs/rules/brace-style#stroustrup
 @{
     IncludeRules = @(
         'PSPlaceOpenBrace',

@@ -39,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         "ScriptAnalyzer",
         DefaultParameterSetName = "File",
         SupportsShouldProcess = true,
-        HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
+        HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
         #region Private variables
