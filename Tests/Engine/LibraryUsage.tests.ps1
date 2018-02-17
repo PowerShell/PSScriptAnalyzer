@@ -52,13 +52,13 @@ function Invoke-ScriptAnalyzer {
 
         [Parameter(Mandatory = $false)]
         [switch] $Fix,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $EnableExit,
 		
         [Parameter(Mandatory = $false)]
-		[switch] $EnableExit,
-		
-		[Parameter(Mandatory = $false)]
         [switch] $ReportSummary
-	)	
+    )
 
     if ($null -eq $CustomRulePath)
     {
