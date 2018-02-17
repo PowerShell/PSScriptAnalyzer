@@ -24,7 +24,16 @@ install:
         $pester
         if ($null -eq $pester)
         {
-            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+            if ($null -eq (Get-Command Install-Module))
+            {
+                # WMF 4 image build
+                nuget install Pester -Version $requiredPesterVersion -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+            }
+            else
+            {
+                # Visual Studio 2017 build (has already Pester v3, therefore a different installation mechanism is needed to make it also use the new version 4)
+                Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+            }
         }
     - ps: |
         # the legacy WMF4 image only has the old preview SDKs of dotnet
