@@ -246,7 +246,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
 #endif
         /// <summary>
-        ///      If true, reports an additional single line summary of issue counts.
+        /// Write a summary of rule violations to the host, which might be undesirable in some cases, therefore this switch is optional.
         /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter ReportSummary
@@ -461,7 +461,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
                 if (ReportSummary.IsPresent)
                 {
-                    Host.UI.WriteLine($"{DiagnosticSeverity.Error} : {errorCount} \t {DiagnosticSeverity.Warning} : {warningCount} \t {DiagnosticSeverity.Information} : {infoCount}");
+                    var numberOfRuleViolations = infoCount + warningCount + errorCount;
+                    if (numberOfRuleViolations == 0)
+                    {
+                        Host.UI.WriteLine(foregroundColor: ConsoleColor.Green, backgroundColor: Host.UI.RawUI.BackgroundColor,
+                                          value: "0 rule violations found.");
+                    }
+                    else
+                    {
+                        var foregroundConsoleColor = warningCount + errorCount == 0 ? ConsoleColor.Yellow : ConsoleColor.Red;
+                        var pluralS = numberOfRuleViolations > 1 ? "s" : string.Empty;
+                        Host.UI.WriteLine(foregroundColor: foregroundConsoleColor, backgroundColor: Host.UI.RawUI.BackgroundColor,
+                            value: $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}");
+                    }
                 }
             }
 

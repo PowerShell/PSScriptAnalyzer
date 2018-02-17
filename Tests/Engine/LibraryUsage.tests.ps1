@@ -102,9 +102,16 @@ function Invoke-ScriptAnalyzer {
 	
 	$results
 
-	if ($ReportSummary.IsPresent -and $null -ne $results)
+    if ($ReportSummary.IsPresent)
     {
-        Write-Host "Found $results.Count warnings" # This is not the exact message that it would print but close enough
+        if ($null -ne $results)
+        {
+            Write-Host "$($results.Count) rule violations found.    Severity distribution:  Error = 1, Warning = 3, Information  = 5" -ForegroundColor Red # This is not the exact message that it would print but close enough
+        }
+        else
+        {
+            Write-Host '0 rule violations found.' -ForegroundColor Green
+        }
     }
 	
     if ($EnableExit.IsPresent -and $null -ne $results)
