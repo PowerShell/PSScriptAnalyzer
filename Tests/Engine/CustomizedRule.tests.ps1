@@ -97,19 +97,16 @@ Describe "Test importing correct customized rules" {
 		    $customizedRulePath.Count | Should Be 1
 		}
 
-        It "will show the custom rule when given a rule folder path with trailing backslash" {
+        It "will show the custom rule when given a rule folder path with trailing backslash" -skip:(!$IsWindows){
 			# needs fixing for linux
-			if (-not (Test-PSEditionCoreCLRLinux))
-			{
-				$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory/samplerule/ | Where-Object {$_.RuleName -eq $measure}
-				$customizedRulePath.Count | Should Be 1
-			}
+            $customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory/samplerule/ | Where-Object {$_.RuleName -eq $measure}
+            $customizedRulePath.Count | Should Be 1
 		}
 
 		It "will show the custom rules when given a glob" {
 			# needs fixing for Linux
 			$expectedNumRules = 4
-			if (Test-PSEditionCoreCLRLinux)
+			if (!$IsWindows)
 			{
 				$expectedNumRules = 3
 			}
@@ -125,7 +122,7 @@ Describe "Test importing correct customized rules" {
 		It "will show the custom rules when given glob with recurse switch" {
 			# needs fixing for Linux
 			$expectedNumRules = 5
-			if (Test-PSEditionCoreCLRLinux)
+			if (!$IsWindows)
 			{
 				$expectedNumRules = 4
 			}
@@ -165,7 +162,7 @@ Describe "Test importing correct customized rules" {
 		{
             It "will show the custom rule in the results when given a rule folder path with trailing backslash" {
 				# needs fixing for Linux
-				if (-not (Test-PSEditionCoreCLRLinux))
+				if ($IsWindows)
 				{
 					$customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\ | Where-Object {$_.Message -eq $message}
 					$customizedRulePath.Count | Should Be 1

@@ -19,12 +19,12 @@ cache:
 install:
     - ps: nuget install platyPS -Version 0.9.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
     - ps: |
-        $requiredPesterVersion = '3.4.0'
+        $requiredPesterVersion = '4.1.1'
         $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
         $pester
         if ($null -eq $pester) # WMF 4 build does not have pester
         {
-            cinst -y pester --version $requiredPesterVersion
+            nuget install Pester -Version 4.1.1 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
         }
     - ps: |
         # the legacy WMF4 image only has the old preview SDKs of dotnet
@@ -59,18 +59,14 @@ branches:
 test_script:
     - SET PATH=c:\Program Files\WindowsPowerShell\Modules\;%PATH%;
     - ps: |
-        copy "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
-        $engineTestResultsFile = ".\EngineTestResults.xml"
+        copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
+        $testResultsFile = ".\TestResults.xml"
         $ruleTestResultsFile = ".\RuleTestResults.xml"
-        $engineTestResults = Invoke-Pester -Script "C:\projects\psscriptanalyzer\Tests\Engine" -OutputFormat NUnitXml -OutputFile $engineTestResultsFile -PassThru
-        (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $engineTestResultsFile))
+        $testScripts = "C:\projects\psscriptanalyzer\Tests\Engine","C:\projects\psscriptanalyzer\Tests\Rules"
+        $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
+        (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
         if ($engineTestResults.FailedCount -gt 0) {
             throw "$($engineTestResults.FailedCount) tests failed."
-        }
-        $ruleTestResults = Invoke-Pester -Script "C:\projects\psscriptanalyzer\Tests\Rules" -OutputFormat NUnitXml -OutputFile $ruleTestResultsFile -PassThru
-        (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $ruleTestResultsFile))
-        if ($ruleTestResults.FailedCount -gt 0) {
-            throw "$($ruleTestResults.FailedCount) tests failed."
         }
 
 # Upload the project along with TestResults as a zip archive
