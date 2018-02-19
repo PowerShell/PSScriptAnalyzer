@@ -28,7 +28,7 @@ install:
         }
     - ps: |
         # the legacy WMF4 image only has the old preview SDKs of dotnet
-        $globalDotJson = Get-Content .\global.json | ConvertFrom-Json
+        $globalDotJson = Get-Content .\global.json -Raw | ConvertFrom-Json
         $dotNetCoreSDKVersion = $globalDotJson.sdk.version
         if (-not ((dotnet --version).StartsWith($dotNetCoreSDKVersion)))
         {
