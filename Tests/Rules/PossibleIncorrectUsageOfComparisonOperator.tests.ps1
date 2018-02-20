@@ -40,22 +40,22 @@ Describe "PossibleIncorrectUsageOfComparisonOperator" {
 
         It "File redirection operator inside if statement causes warning" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a > $b){}' | Where-Object {$_.RuleName -eq $ruleName}
-            $warnings.Count | Should Be 1
+            $warnings.Count | Should -Be 1
         }
 
         It "File redirection operator inside if statement causes warning when wrapped in command expression" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a > ($b)){}' | Where-Object {$_.RuleName -eq $ruleName}
-            $warnings.Count | Should Be 1
+            $warnings.Count | Should -Be 1
         }
 
         It "File redirection operator inside if statement causes warning when wrapped in expression" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a > "$b"){}' | Where-Object {$_.RuleName -eq $ruleName}
-            $warnings.Count | Should Be 1
+            $warnings.Count | Should -Be 1
         }
 
         It "File redirection operator inside elseif statement causes warning" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a -eq $b){}elseif($a > $b){}' | Where-Object {$_.RuleName -eq $ruleName}
-            $warnings.Count | Should Be 1
+            $warnings.Count | Should -Be 1
         }
     }
 
