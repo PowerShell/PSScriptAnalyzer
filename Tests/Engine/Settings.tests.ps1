@@ -43,6 +43,8 @@ Describe "Settings Class" {
             @{ Name = "Severity" }
             @{ Name = "RuleArguments" }
         ) {
+            Param($Name)
+
             ${settings}.${Name}.Count | Should -Be 0
         }
     }
