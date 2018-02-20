@@ -78,14 +78,6 @@ function Get-BuildTaskParams($project) {
     $taskParams
 }
 
-function Get-RestoreTaskParams($project) {
-    @{
-        Inputs  = "$BuildRoot/$project/$project.csproj"
-        Outputs = "$BuildRoot/$project/$project.csproj"
-        Jobs    = {dotnet restore}
-    }
-}
-
 function Get-CleanTaskParams($project) {
     @{
         Jobs = {
@@ -122,13 +114,11 @@ popd
 $projects = @("engine", "rules")
 $projects | ForEach-Object {
     Add-ProjectTask $_ build (Get-BuildTaskParams $_)
-    Add-ProjectTask $_ restore (Get-RestoreTaskParams $_)
     Add-ProjectTask $_ clean (Get-CleanTaskParams $_)
     Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"
 }
 
 task build "engine/build", "rules/build"
-task restore "engine/restore", "rules/restore"
 task clean "engine/clean", "rules/clean"
 task test "engine/test", "rules/test"
 
