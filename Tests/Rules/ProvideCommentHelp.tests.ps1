@@ -31,33 +31,33 @@ function Test-Correction {
     param($scriptDef, $expectedCorrection, $settings)
 
     $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -Settings $settings
-    $violations.Count | Should Be 1
+    $violations.Count | Should -Be 1
 
     # We split the lines because appveyor checks out files with "\n" endings
     # on windows, which results in inconsistent line endings between corrections
     # and result.
     $resultLines = $violations[0].SuggestedCorrections[0].Text -split "\r?\n"
     $expectedLines = $expectedCorrection -split "\r?\n"
-    $resultLines.Count | Should Be $expectedLines.Count
+    $resultLines.Count | Should -Be $expectedLines.Count
     for ($i = 0; $i -lt $resultLines.Count; $i++) {
         $resultLine = $resultLines[$i]
         $expectedLine = $expectedLines[$i]
-        $resultLine | Should Be $expectedLine
+        $resultLine | Should -Be $expectedLine
     }
 }
 
 Describe "ProvideCommentHelp" {
     Context "When there are violations" {
         It "has 2 provide comment help violations" {
-            $violations.Count | Should Be 2
+            $violations.Count | Should -Be 2
         }
 
         It "has the correct description message" {
-            $violations[1].Message | Should Match $violationMessage
+            $violations[1].Message | Should -Match $violationMessage
         }
 
         It "has extent that includes only the function name" {
-            $violations[1].Extent.Text | Should Be "Comment"
+            $violations[1].Extent.Text | Should -Be "Comment"
         }
 
         It "should find violations in functions that are not exported" {
@@ -66,7 +66,7 @@ function foo {
 }
 '@
 
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 1
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should -Be 1
         }
         It "should return a help snippet correction with 0 parameters" {
             $def = @'
@@ -334,14 +334,14 @@ $s$s$s$s
 
         if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
             It "Does not count violation in DSC class" {
-                $dscViolations.Count | Should Be 0
+                $dscViolations.Count | Should -Be 0
             }
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

@@ -20,15 +20,15 @@ if (-not (Test-PSEditionCoreCLR))
     Describe "UseSingularNouns" {
         Context "When there are violations" {
             It "has a cmdlet singular noun violation" {
-                $nounViolations.Count | Should Be 1
+                $nounViolations.Count | Should -Be 1
             }
 
             It "has the correct description message" {
-                $nounViolations[0].Message | Should Match $nounViolationMessage
+                $nounViolations[0].Message | Should -Match $nounViolationMessage
             }
 
             It "has the correct extent" {
-            $nounViolations[0].Extent.Text | Should be "Verb-Files"
+            $nounViolations[0].Extent.Text | Should -Be "Verb-Files"
             }
         }
 
@@ -44,13 +44,13 @@ Function Add-SomeData
                 Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
                     -IncludeRule "PSUseSingularNouns" `
                     -OutVariable violations
-                $violations.Count | Should Be 0
+                $violations.Count | Should -Be 0
             }
         }
 
         Context "When there are no violations" {
             It "returns no violations" {
-                $nounNoViolations.Count | Should Be 0
+                $nounNoViolations.Count | Should -Be 0
             }
         }
     }
@@ -59,21 +59,21 @@ Function Add-SomeData
 Describe "UseApprovedVerbs" {
     Context "When there are violations" {
         It "has an approved verb violation" {
-            $verbViolations.Count | Should Be 1
+            $verbViolations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
-            $verbViolations[0].Message | Should Match $verbViolationMessage
+            $verbViolations[0].Message | Should -Match $verbViolationMessage
         }
 
         It "has the correct extent" {
-                $verbViolations[0].Extent.Text | Should be "Verb-Files"
+                $verbViolations[0].Extent.Text | Should -Be "Verb-Files"
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $verbNoViolations.Count | Should Be 0
+            $verbNoViolations.Count | Should -Be 0
         }
     }
 }

@@ -15,11 +15,11 @@ Describe "PSCredentialType" {
             $expectedViolations = 2
         }
         It ("has {0} PSCredential type violation" -f $expectedViolations) {
-            $violations.Count | Should Be $expectedViolations
+            $violations.Count | Should -Be $expectedViolations
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Be $violationMessage
+            $violations[0].Message | Should -Be $violationMessage
         }
 
         It "detects attributes on the same line without space" {
@@ -33,14 +33,14 @@ function Get-Credential
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule $violationName
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
     }
 
     Context ("When there are no violations") {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

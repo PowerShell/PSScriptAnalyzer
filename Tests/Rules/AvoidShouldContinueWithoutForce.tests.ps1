@@ -8,17 +8,17 @@ $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {
 Describe "AvoidShouldContinueWithoutForce" {
     Context "When there are violations" {
         It "has 2 avoid ShouldContinue without boolean Force parameter violations" {
-            $violations.Count | Should Be 2
+            $violations.Count | Should -Be 2
         }
 
         It "has the correct description message" {
-            $violations[1].Message | Should Match $violationMessage
+            $violations[1].Message | Should -Match $violationMessage
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

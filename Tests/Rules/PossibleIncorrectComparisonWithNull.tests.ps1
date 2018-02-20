@@ -8,17 +8,17 @@ $noViolations = Invoke-ScriptAnalyzer $directory\PossibleIncorrectComparisonWith
 Describe "PossibleIncorrectComparisonWithNull" {
     Context "When there are violations" {
         It "has 4 possible incorrect comparison with null violation" {
-            $violations.Count | Should Be 4
+            $violations.Count | Should -Be 4
         }
 
         It "has the correct description message" {
-            $violations.Message | Should Match $violationMessage
+            $violations.Message | Should -Match $violationMessage
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }
