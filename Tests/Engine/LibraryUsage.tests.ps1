@@ -106,7 +106,8 @@ function Invoke-ScriptAnalyzer {
     {
         if ($null -ne $results)
         {
-            Write-Host "$($results.Count) rule violations found.    Severity distribution:  Error = 1, Warning = 3, Information  = 5" -ForegroundColor Red # This is not the exact message that it would print but close enough
+			 # This is not the exact message that it would print but close enough
+            Write-Host "$($results.Count) rule violations found.    Severity distribution:  Error = 1, Warning = 3, Information  = 5" -ForegroundColor Red
         }
         else
         {
