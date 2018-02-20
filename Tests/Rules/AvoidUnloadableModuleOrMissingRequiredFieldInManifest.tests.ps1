@@ -40,7 +40,7 @@ Describe "MissingRequiredFieldModuleManifest" {
 ModuleVersion = '1.0.0.0'
 '@
             $violations[0].SuggestedCorrections[0].Text | Should -Match $expectedText
-            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -Match ""
+            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -BeNullOrEmpty
     }
 }
 

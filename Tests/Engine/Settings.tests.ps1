@@ -37,10 +37,13 @@ Describe "Settings Class" {
             $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{}
         }
 
-        'IncludeRules', 'ExcludeRules', 'Severity', 'RuleArguments' | ForEach-Object {
-            It ("Should return empty {0} property" -f $_) {
-                $settings.${$_}.Count | Should -Be 0
-            }
+        It "Should return empty <name> property" -TestCases @(
+            @{ Name = "IncludeRules" }
+            @{ Name = "ExcludeRules" }
+            @{ Name = "Severity" }
+            @{ Name = "RuleArguments" }
+        ) {
+            ${settings}.${Name}.Count | Should -Be 0
         }
     }
 
@@ -90,15 +93,18 @@ Describe "Settings Class" {
                               -ArgumentList ([System.IO.Path]::Combine($project1Root, "ExplicitSettings.psd1"))
         }
 
-        It "Should return 2 IncludeRules" {
-            $settings.IncludeRules.Count | Should -Be 3
+        $expectedNumberOfIncludeRules = 3
+        It "Should return $expectedNumberOfIncludeRules IncludeRules" {
+            $settings.IncludeRules.Count | Should -Be $expectedNumberOfIncludeRules
+        }
+        
+        $expectedNumberOfExcludeRules = 3
+        It "Should return $expectedNumberOfExcludeRules ExcludeRules" {
+            $settings.ExcludeRules.Count | Should -Be $expectedNumberOfExcludeRules
         }
 
-        It "Should return 2 ExcludeRules" {
-            $settings.ExcludeRules.Count | Should -Be 3
-        }
-
-        It "Should return 1 rule argument" {
+        $expectedNumberOfRuleArguments = 3
+        It "Should return $expectedNumberOfRuleArguments rule argument" {
             $settings.RuleArguments.Count | Should -Be 3
         }
 

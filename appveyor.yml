@@ -46,9 +46,9 @@ install:
 build_script:
     - ps: |
         $PSVersionTable
-        (Get-Command Invoke-Pester).Version
+        Write-Verbose "Pester version: $((Get-Command Invoke-Pester).Version)" -Verbose
+        Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose
         Push-Location C:\projects\psscriptanalyzer
-        dotnet --version
         # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
         .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
         git clean -dfx
