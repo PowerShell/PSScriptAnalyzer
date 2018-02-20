@@ -61,12 +61,11 @@ test_script:
     - ps: |
         copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
         $testResultsFile = ".\TestResults.xml"
-        $ruleTestResultsFile = ".\RuleTestResults.xml"
         $testScripts = "C:\projects\psscriptanalyzer\Tests\Engine","C:\projects\psscriptanalyzer\Tests\Rules"
         $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
         (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
-        if ($engineTestResults.FailedCount -gt 0) {
-            throw "$($engineTestResults.FailedCount) tests failed."
+        if ($testResults.FailedCount -gt 0) {
+            throw "$($testResults.FailedCount) tests failed."
         }
 
 # Upload the project along with TestResults as a zip archive
