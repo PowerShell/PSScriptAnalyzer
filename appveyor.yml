@@ -28,10 +28,12 @@ install:
         }
     - ps: |
         # the legacy WMF4 image only has the old preview SDKs of dotnet
-        if (-not ((dotnet --version).StartsWith('2.1.4')))
+        $globalDotJson = Get-Content .\global.json -Raw | ConvertFrom-Json
+        $dotNetCoreSDKVersion = $globalDotJson.sdk.version
+        if (-not ((dotnet --version).StartsWith($dotNetCoreSDKVersion)))
         {
             Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
-            .\dotnet-install.ps1 -Version 2.1.4
+            .\dotnet-install.ps1 -Version $dotNetCoreSDKVersion
         }
 
 build_script:
