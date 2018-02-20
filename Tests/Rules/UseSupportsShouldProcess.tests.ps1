@@ -33,8 +33,8 @@ $s$s$s$s$s$s$s$s
 }
 "@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
         It "Should return valid correction text if whatif is the first parameter" {
@@ -56,8 +56,8 @@ function foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
         It "Should return valid correction text if whatif is in the middle" {
@@ -81,8 +81,8 @@ function foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
 
@@ -105,8 +105,8 @@ function foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
 
         }
 
@@ -130,8 +130,8 @@ $s$s$s$s$s$s$s$s
 }
 "@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
         It "Should find violation if both Whatif and Confirm are added" {
@@ -153,8 +153,8 @@ $s$s$s$s$s$s$s$s
 }
 "@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
             # TODO Make test-correction extent take more than 1 corrections
             # or modify the rule such that it outputs only 1 correction.
             # Test-CorrectionExtentFromContent $def $violation 2 $expectedViolationText ''
@@ -180,8 +180,8 @@ $s$s$s$s$s$s$s$s
 }
 "@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
         It "Suggests adding SupportsShouldProcess attribute, when arguments are present" {
@@ -204,8 +204,8 @@ $s$s$s$s$s$s$s$s
 }
 "@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
         It "Suggests replacing function parameter declaration with a param block" {
@@ -224,8 +224,8 @@ function foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
         It "Suggests replacing function parameter declaration with whatif and confirm with a param block" {
@@ -244,8 +244,8 @@ function foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
         It "Suggests replacing function parameter declaration with non-contiguous whatif and confirm with a param block" {
@@ -264,8 +264,8 @@ function foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
         It "Suggests setting SupportsShouldProcess to `$true" {
@@ -283,8 +283,8 @@ function foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
-            $violations[0].SuggestedCorrections[0].Text | Should Be $expectedCorrection
+            $violations.Count | Should -Be 1
+            $violations[0].SuggestedCorrections[0].Text | Should -Be $expectedCorrection
         }
 
 

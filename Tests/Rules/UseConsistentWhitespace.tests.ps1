@@ -41,21 +41,21 @@ if ($true){}
             $def = @'
 if($true) {}
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if an open brace follows a foreach member invocation" {
             $def = @'
 (1..5).foreach{$_}
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if an open brace follows a where member invocation" {
             $def = @'
 (1..5).where{$_}
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
     }
@@ -82,7 +82,7 @@ function foo($param1) {
 
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation in a param block" {
@@ -91,7 +91,7 @@ function foo() {
     param( )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation in a nested open paren" {
@@ -100,14 +100,14 @@ function foo($param) {
     ((Get-Process))
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation on a method call" {
             $def = @'
 $x.foo("bar")
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
     }
 
@@ -157,21 +157,21 @@ $x = @"
 "abc"
 "@
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if there are whitespaces of size 1 around an assignment operator for here string" {
             $def = @'
 $x = 1
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if there are no whitespaces around DotDot operator" {
             $def = @'
 1..5
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if a binary operator is followed by new line" {
@@ -179,7 +179,7 @@ $x = 1
 $x = $true -and
             $false
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
     }
@@ -204,7 +204,7 @@ $x = @(1,2)
             $def = @'
 $x = @(1, 2)
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
     }
 
@@ -228,7 +228,7 @@ $x = @{a=1;b=2}
             $def = @'
 $x = @{a=1; b=2}
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a new-line follows a semi-colon" {
@@ -238,14 +238,14 @@ $x = @{
     b=2
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a end of input follows a semi-colon" {
             $def = @'
 $x = "abc";
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should Be $null
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
 

@@ -1,8 +1,5 @@
 ﻿param(
-    # Automatically performs a 'dotnet restore' when being run the first time
     [switch]$Build,
-    # Restore Projects in case NuGet packages have changed
-    [switch]$Restore,
     [switch]$Uninstall,
     [switch]$Install,
 
@@ -16,19 +13,6 @@
 if ($Configuration -match "PSv3" -and $Framework -eq "netstandard1.6")
 {
     throw ("{0} configuration is not applicable to {1} framework" -f $Configuration,$Framework)
-}
-
-Function Test-DotNetRestore
-{
-    param(
-        [string] $projectPath
-    )
-    Test-Path ([System.IO.Path]::Combine($projectPath, 'obj', 'project.assets.json'))
-}
-
-function Invoke-RestoreSolution
-{
-    dotnet restore (Join-Path $PSScriptRoot .\PSScriptAnalyzer.sln)
 }
 
 Write-Progress "Building ScriptAnalyzer"
@@ -56,28 +40,14 @@ elseif ($Configuration -match 'PSv3') {
     $destinationDirBinaries = "$destinationDir\PSv3"
 }
 
-if ($Restore.IsPresent)
-{
-    Invoke-RestoreSolution
-}
-
 if ($build)
 {
 
     Write-Progress "Building Engine"
-    if (-not (Test-DotNetRestore((Join-Path $solutionDir Engine))))
-    {
-        Invoke-RestoreSolution
-    }
     Push-Location Engine\
     dotnet build Engine.csproj --framework $Framework --configuration $Configuration
     Pop-Location
 
-
-    if (-not (Test-DotNetRestore((Join-Path $solutionDir Rules))))
-    {
-        Invoke-RestoreSolution
-    }
     Write-Progress "Building for framework $Framework, configuration $Configuration"
     Push-Location Rules\
     dotnet build Rules.csproj --framework $Framework --configuration $Configuration

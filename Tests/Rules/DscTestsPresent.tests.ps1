@@ -16,11 +16,11 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
         $violationMessage = "No tests found for resource 'FileResource'"
 
         It "has 1 missing test violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Be $violationMessage
+            $violations[0].Message | Should -Be $violationMessage
         }
     }
 
@@ -31,7 +31,7 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
         $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $classResourcePath | Where-Object {$_.RuleName -eq $ruleName}
 
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
 
         Remove-Item -Path $testsPath -Recurse -Force
@@ -50,11 +50,11 @@ Describe "DscTestsPresent rule in regular (non-class) based resource" {
         $violationMessage = "No tests found for resource 'MSFT_WaitForAll'"
 
         It "has 1 missing tests violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Be $violationMessage
+            $violations[0].Message | Should -Be $violationMessage
         }
     }
 
@@ -65,7 +65,7 @@ Describe "DscTestsPresent rule in regular (non-class) based resource" {
         $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $resourcePath | Where-Object {$_.RuleName -eq $ruleName}
 
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
 
         Remove-Item -Path $testsPath -Recurse -Force

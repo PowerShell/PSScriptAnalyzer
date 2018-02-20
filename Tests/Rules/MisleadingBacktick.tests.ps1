@@ -9,7 +9,7 @@ Import-Module (Join-Path $directory "PSScriptAnalyzerTestHelper.psm1")
 Describe "Avoid Misleading Backticks" {
     Context "When there are violations" {
         It "has 5 misleading backtick violations" {
-            $violations.Count | Should Be 5
+            $violations.Count | Should -Be 5
         }
 	
 	It "suggests correction" {
@@ -23,7 +23,7 @@ Describe "Avoid Misleading Backticks" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }
