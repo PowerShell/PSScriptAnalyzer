@@ -27,11 +27,11 @@ function foo ($param1)
         }
 
         It "Should find a violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "Should mark only the open brace" {
-            $violations[0].Extent.Text | Should Be '{'
+            $violations[0].Extent.Text | Should -Be '{'
         }
     }
 
@@ -49,7 +49,7 @@ switch ($x) {
         }
 
         It "Should not find a violation" {
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
     }
 
@@ -71,15 +71,15 @@ Get-Process | % { "blah" }
         }
 
         It "Should find a violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "Should mark only the open brace" {
-            $violations[0].Extent.Text | Should Be '{'
+            $violations[0].Extent.Text | Should -Be '{'
         }
 
         It "Should ignore violations for a command element" {
-            $violationsShouldIgnore.Count | Should Be 0
+            $violationsShouldIgnore.Count | Should -Be 0
         }
 
         It "Should ignore violations for one line if statement" {
@@ -88,7 +88,7 @@ $x = if ($true) { "blah" } else { "blah blah" }
 '@
             $ruleConfiguration.'IgnoreOneLineBlock' = $true
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
     }
 
@@ -104,11 +104,11 @@ function foo { }
         }
 
         It "Should find a violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "Should mark only the open brace" {
-            $violations[0].Extent.Text | Should Be '{'
+            $violations[0].Extent.Text | Should -Be '{'
         }
     }
 }

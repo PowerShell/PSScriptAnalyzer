@@ -28,7 +28,7 @@ function foo {
                 }
             }
 
-            Invoke-Formatter $def $settings | Should Be $expected
+            Invoke-Formatter $def $settings | Should -Be $expected
         }
     }
 
@@ -48,7 +48,7 @@ function foo {
 }
 "@
 
-            Invoke-Formatter -ScriptDefinition $def -Range @(3, 1, 4, 1) | Should Be $expected
+            Invoke-Formatter -ScriptDefinition $def -Range @(3, 1, 4, 1) | Should -Be $expected
         }
     }
 
@@ -76,7 +76,7 @@ function foo {
 }
 '@
 
-            Invoke-Formatter -ScriptDefinition $def | Should Be $expected
+            Invoke-Formatter -ScriptDefinition $def | Should -Be $expected
         }
     }
 

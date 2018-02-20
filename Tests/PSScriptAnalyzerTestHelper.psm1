@@ -45,10 +45,10 @@ Function Test-CorrectionExtentFromContent {
     )
 
 	$corrections = $diagnosticRecord.SuggestedCorrections
-	$corrections.Count | Should Be $correctionsCount
-	$corrections[0].Text | Should Be $correctionText
+	$corrections.Count | Should -Be $correctionsCount
+	$corrections[0].Text | Should -Be $correctionText
 	Get-ExtentTextFromContent $corrections[0] $rawContent | `
-		       Should Be $violationText
+		       Should -Be $violationText
 }
 
 Function Test-PSEditionCoreCLR

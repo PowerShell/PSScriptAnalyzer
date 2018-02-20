@@ -14,18 +14,18 @@ Describe "Test Directed Graph" {
         $digraph.AddEdge('v2', 'v4');
 
         It "correctly adds the vertices" {
-            $digraph.NumVertices | Should Be 5
+            $digraph.NumVertices | Should -Be 5
         }
 
         It "correctly adds the edges" {
-            $digraph.GetOutDegree('v1') | Should Be 2
+            $digraph.GetOutDegree('v1') | Should -Be 2
             $neighbors = $digraph.GetNeighbors('v1')
-            $neighbors -contains 'v2' | Should Be $true
-            $neighbors -contains 'v5' | Should Be $true
+            $neighbors -contains 'v2' | Should -Be $true
+            $neighbors -contains 'v5' | Should -Be $true
         }
 
         It "finds the connection" {
-            $digraph.IsConnected('v1', 'v4') | Should Be $true
+            $digraph.IsConnected('v1', 'v4') | Should -Be $true
         }
     }
 }
