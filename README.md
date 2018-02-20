@@ -82,7 +82,7 @@ Exit
 ### From Source
 
 * [.NET Core 2.1.4 SDK](https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.0.5-download.md)
-* [PlatyPS 0.5.0 or greater](https://github.com/PowerShell/platyPS)
+* [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
 
 #### Steps
@@ -129,7 +129,7 @@ For adding/removing resource strings in the `*.resx` files, it is recommended to
 #### Tests
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
-* Ensure Pester 3.4 is installed on the machine
+* Ensure Pester 4.1.1 is installed on the machine
 * Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
 * Go the Tests folder in your local repository
 * Run Engine Tests:

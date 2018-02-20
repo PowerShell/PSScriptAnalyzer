@@ -33,8 +33,8 @@ Enter the version of the module to test. This parameter is optional. If you
 omit it, the test runs on the latest version of the module in $env:PSModulePath.
 
 .EXAMPLE
-.\Module.Help.Tests.ps1 -ModuleName Pester -RequiredVersion 3.4.0
-This command runs the tests on the commands in Pester 3.4.0.
+.\Module.Help.Tests.ps1 -ModuleName Pester -RequiredVersion 4.1.1
+This command runs the tests on the commands in Pester 4.1.1.
 
 .EXAMPLE
 .\Module.Help.Tests.ps1 -ModuleName Pester
@@ -63,7 +63,7 @@ Param
 	$RequiredVersion
 )
 
-# #Requires -Module @{ModuleName = 'Pester'; ModuleVersion = '3.4.0'}
+# #Requires -Module @{ModuleName = 'Pester'; ModuleVersion = '4.1.1'}
 
 <#
 .SYNOPSIS
