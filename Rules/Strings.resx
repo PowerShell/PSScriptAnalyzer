@@ -1009,6 +1009,6 @@
     <value>'&gt;', '=' or '==' are not comparison operators in the PowerShell language and rarely needed inside if statements.</value>
   </data>
   <data name="PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError" xml:space="preserve">
-    <value>Did you really mean to use the redirection operator '&gt;'? If you wanted to use an equality comparer then use the '-gt' (greater than) or '-ge' (greater or equal) operators.</value>
+    <value>Did you really mean to use the redirection operator '&gt;'? If you wanted to use a comparison operator then use the '-gt' (greater than) or '-ge' (greater or equal) operators.</value>
   </data>
 </root>

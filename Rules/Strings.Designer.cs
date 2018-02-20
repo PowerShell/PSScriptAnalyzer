@@ -1610,7 +1610,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Did you really mean to use the redirection operator &apos;&gt;&apos;? If you wanted to use an equality comparer then use the &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal) operators..
+        ///   Looks up a localized string similar to Did you really mean to use the redirection operator &apos;&gt;&apos;? If you wanted to use a comparison operator then use the &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal) operators..
         /// </summary>
         internal static string PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError {
             get {
