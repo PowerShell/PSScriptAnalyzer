@@ -18,6 +18,7 @@ using System.ComponentModel.Composition;
 #endif
 using System.Management.Automation.Language;
 using System.Globalization;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -42,29 +43,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 foreach (var clause in ifStatementAst.Clauses)
                 {
-                    var assignmentStatementAst = clause.Item1.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false) as AssignmentStatementAst;
+                    var ifStatementCondition = clause.Item1;
+                    var assignmentStatementAst = ifStatementCondition.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false) as AssignmentStatementAst;
                     if (assignmentStatementAst != null)
                     {
                         // Check if someone used '==', which can easily happen when the person is used to coding a lot in C#.
                         // In most cases, this will be a runtime error because PowerShell will look for a cmdlet name starting with '=', which is technically possible to define
                         if (assignmentStatementAst.Right.Extent.Text.StartsWith("="))
                         {
-                            yield return new DiagnosticRecord(
-                                Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
-                                GetName(), DiagnosticSeverity.Warning, fileName);
+                            yield return PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError(assignmentStatementAst.ErrorPosition, fileName);
                         }
                         else
                         {
-                            // If the right hand side contains a CommandAst at some point, then we do not want to warn
-                            // because this could be intentional in cases like 'if ($a = Get-ChildItem){ }'
-                            var commandAst = assignmentStatementAst.Right.Find(testAst => testAst is CommandAst, searchNestedScriptBlocks: true) as CommandAst;
-                            if (commandAst == null)
+                            var leftVariableExpressionAstOfAssignment = assignmentStatementAst.Left as VariableExpressionAst;
+                            if (leftVariableExpressionAstOfAssignment != null)
                             {
-                                yield return new DiagnosticRecord(
-                                   Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
-                                   GetName(), DiagnosticSeverity.Information, fileName);
+                                var statementBlockOfIfStatenent = clause.Item2;
+                                var variableExpressionAstsInStatementBlockOfIfStatement = statementBlockOfIfStatenent.FindAll(testAst =>
+                                                                                                testAst is VariableExpressionAst, searchNestedScriptBlocks: true);
+                                if (variableExpressionAstsInStatementBlockOfIfStatement == null) // no variable usages at all
+                                {
+                                    yield return PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError(assignmentStatementAst.ErrorPosition, fileName);
+                                }
+                                else
+                                {
+                                    var variableOnLHSIsBeingUsed = variableExpressionAstsInStatementBlockOfIfStatement.Where(x => x is VariableExpressionAst)
+                                        .Any(x => ((VariableExpressionAst)x).VariablePath.UserPath.Equals(
+                                            leftVariableExpressionAstOfAssignment.VariablePath.UserPath, StringComparison.OrdinalIgnoreCase));
+
+                                    if (!variableOnLHSIsBeingUsed)
+                                    {
+                                        yield return PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError(assignmentStatementAst.ErrorPosition, fileName);
+                                    }
+                                }
                             }
                         }
+
                     }
 
                     var fileRedirectionAst = clause.Item1.Find(testAst => testAst is FileRedirectionAst, searchNestedScriptBlocks: false) as FileRedirectionAst;
@@ -76,6 +90,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
+        }
+
+        private DiagnosticRecord PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError(IScriptExtent errorPosition, string fileName)
+        {
+            return new DiagnosticRecord(Strings.PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError, errorPosition, GetName(), DiagnosticSeverity.Warning, fileName);
         }
 
         /// <summary>
@@ -119,7 +138,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Information;
+            return RuleSeverity.Warning;
         }
 
         /// <summary>
