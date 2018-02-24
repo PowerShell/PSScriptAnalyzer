@@ -22,6 +22,6 @@ Describe "Issue 828: No NullReferenceExceptionin AlignAssignmentStatement rule w
             Set-Location $initialLocation
         }
         
-        $cmdletThrewError | Should -Be $false
+        $cmdletThrewError | Should BeFalse
     }
 }

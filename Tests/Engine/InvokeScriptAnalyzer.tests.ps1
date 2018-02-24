@@ -21,7 +21,7 @@ Describe "Test available parameters" {
     $params = $sa.Parameters
     Context "Path parameter" {
         It "has a Path parameter" {
-            $params.ContainsKey("Path") | Should -Be $true
+            $params.ContainsKey("Path") | Should BeTrue
         }
 
         It "accepts string" {
@@ -31,7 +31,7 @@ Describe "Test available parameters" {
 
     Context "Path parameter" {
         It "has a ScriptDefinition parameter" {
-            $params.ContainsKey("ScriptDefinition") | Should -Be $true
+            $params.ContainsKey("ScriptDefinition") | Should BeTrue
         }
 
         It "accepts string" {
@@ -41,7 +41,7 @@ Describe "Test available parameters" {
 
     Context "CustomRulePath parameters" {
         It "has a CustomRulePath parameter" {
-            $params.ContainsKey("CustomRulePath") | Should -Be $true
+            $params.ContainsKey("CustomRulePath") | Should BeTrue
         }
 
         It "accepts a string array" {
@@ -49,13 +49,13 @@ Describe "Test available parameters" {
         }
 
 		It "has a CustomizedRulePath alias"{
-			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should -Be $true
+			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should BeTrue
 		}
     }
 
     Context "IncludeRule parameters" {
         It "has an IncludeRule parameter" {
-            $params.ContainsKey("IncludeRule") | Should -Be $true
+            $params.ContainsKey("IncludeRule") | Should BeTrue
         }
 
         It "accepts string array" {
@@ -65,7 +65,7 @@ Describe "Test available parameters" {
 
     Context "Severity parameters" {
         It "has a severity parameters" {
-            $params.ContainsKey("Severity") | Should -Be $true
+            $params.ContainsKey("Severity") | Should BeTrue
         }
 
         It "accepts string array" {
@@ -77,7 +77,7 @@ Describe "Test available parameters" {
     {
         Context "SaveDscDependency parameter" {
             It "has the parameter" {
-                $params.ContainsKey("SaveDscDependency") | Should -Be $true
+                $params.ContainsKey("SaveDscDependency") | Should BeTrue
             }
 
             It "is a switch parameter" {
@@ -100,7 +100,7 @@ Describe "Test available parameters" {
                 }
             }
 
-            $hasFile | Should -Be $true
+            $hasFile | Should BeTrue
         }
 
         It "Has ScriptDefinition parameter set" {
@@ -112,7 +112,7 @@ Describe "Test available parameters" {
                 }
             }
 
-            $hasFile | Should -Be $true
+            $hasFile | Should BeTrue
         }
 
     }
@@ -132,7 +132,7 @@ Describe "Test Path" {
         It "Has the same effect as without Path parameter" {
             $withPath = Invoke-ScriptAnalyzer $directory\TestScript.ps1
             $withoutPath = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1
-            $withPath.Count -eq $withoutPath.Count | Should -Be $true
+            $withPath.Count -eq $withoutPath.Count | Should BeTrue
         }
 
         It "Does not run rules on script with more than 10 parser errors" {
@@ -199,7 +199,7 @@ Describe "Test Path" {
         $withPathWithDirectory = Invoke-ScriptAnalyzer -Recurse -Path $directory\RecursionDirectoryTest
 
         It "Has the same count as without Path parameter"{
-            $withoutPathWithDirectory.Count -eq $withPathWithDirectory.Count | Should -Be $true
+            $withoutPathWithDirectory.Count -eq $withPathWithDirectory.Count | Should BeTrue
         }
 
         It "Analyzes all the files" {
@@ -209,7 +209,7 @@ Describe "Test Path" {
             Write-Output $globalVarsViolation.Count
             Write-Output $clearHostViolation.Count
             Write-Output $writeHostViolation.Count
-            $globalVarsViolation.Count -eq 1 -and $writeHostViolation.Count -eq 1 | Should -Be $true
+            $globalVarsViolation.Count -eq 1 -and $writeHostViolation.Count -eq 1 | Should BeTrue
         }
     }
 }
@@ -231,7 +231,7 @@ Describe "Test ExcludeRule" {
         It "does not exclude any rules" {
             $noExclude = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1
             $withExclude = Invoke-ScriptAnalyzer $directory\..\Rules\BadCmdlet.ps1 -ExcludeRule "This is a wrong rule"
-            $withExclude.Count -eq $noExclude.Count | Should -Be $true
+            $withExclude.Count -eq $noExclude.Count | Should BeTrue
         }
     }
 

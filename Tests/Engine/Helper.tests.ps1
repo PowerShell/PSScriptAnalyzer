@@ -20,12 +20,12 @@ Describe "Test Directed Graph" {
         It "correctly adds the edges" {
             $digraph.GetOutDegree('v1') | Should -Be 2
             $neighbors = $digraph.GetNeighbors('v1')
-            $neighbors -contains 'v2' | Should -Be $true
-            $neighbors -contains 'v5' | Should -Be $true
+            $neighbors -contains 'v2' | Should BeTrue
+            $neighbors -contains 'v5' | Should BeTrue
         }
 
         It "finds the connection" {
-            $digraph.IsConnected('v1', 'v4') | Should -Be $true
+            $digraph.IsConnected('v1', 'v4') | Should BeTrue
         }
     }
 }
