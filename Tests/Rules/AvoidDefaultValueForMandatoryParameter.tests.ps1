@@ -1,24 +1,26 @@
 ﻿Import-Module PSScriptAnalyzer
-$violationName = "PSAvoidDefaultValueForMandatoryParameter"
-$violationMessage = "Mandatory Parameter 'Param1' is initialized in the Param block. To fix a violation of this rule, please leave it unintialized."
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer "$directory\AvoidDefaultValueForMandatoryParameter.ps1" | Where-Object {$_.RuleName -match $violationName}
-$noViolations = Invoke-ScriptAnalyzer "$directory\AvoidDefaultValueForMandatoryParameterNoViolations.ps1"
+$ruleName = 'PSAvoidDefaultValueForMandatoryParameter'
 
 Describe "AvoidDefaultValueForMandatoryParameter" {
     Context "When there are violations" {
-        It "has 1 provide default value for mandatory parameter violation" {
+        It "has 1 provide default value for mandatory parameter violation with CmdletBinding" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Function foo{ [CmdletBinding()]Param([Parameter(Mandatory)]$Param1=''defaultValue'') }' |
+                Where-Object { $_.RuleName -eq $ruleName }
             $violations.Count | Should -Be 1
         }
 
-        It "has the correct description message" {
-            $violations[0].Message | Should -Match $violationMessage
+        It "has 1 provide default value for mandatory=$true parameter violation without CmdletBinding" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Function foo{ Param([Parameter(Mandatory=$true)]$Param1=''defaultValue'') }' |
+                Where-Object { $_.RuleName -eq $ruleName }
+            $violations.Count | Should -Be 1
         }
     }
 
     Context "When there are no violations" {
-        It "returns no violations" {
-            $noViolations.Count | Should -Be 0
+        It "has 1 provide default value for mandatory parameter violation" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Function foo{ Param([Parameter(Mandatory=$false)]$Param1=''val1'', [Parameter(Mandatory)]$Param2=''val2'', $Param3=''val3'') }' |
+                Where-Object { $_.RuleName -eq $ruleName }
+            $violations.Count | Should -Be 0
         }
     }
 }
