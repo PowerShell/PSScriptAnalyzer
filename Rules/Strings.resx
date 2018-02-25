@@ -984,9 +984,6 @@
   <data name="PossibleIncorrectUsageOfAssignmentOperatorCommonName" xml:space="preserve">
     <value>'=' is not an assignment operator. Did you mean the equal operator '-eq'?</value>
   </data>
-  <data name="PossibleIncorrectUsageOfAssignmentOperatorAssignmentOperatorError" xml:space="preserve">
-    <value>Did you really mean to use the assignment operator '=' inside an if statement? If you rather meant to check for equality, use the '-eq'  operator.</value>
-  </data>
   <data name="PossibleIncorrectUsageOfAssignmentOperatorName" xml:space="preserve">
     <value>PossibleIncorrectUsageOfAssignmentOperator</value>
   </data>

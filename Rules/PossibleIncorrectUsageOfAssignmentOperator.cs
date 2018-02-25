@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// The origin of this rule is that people often forget that operators change when switching between different languages such as C# and PowerShell.
     /// </summary>
 #if !CORECLR
-    [Export(typeof(IScriptRule))]
+[Export(typeof(IScriptRule))]
 #endif
     public class PossibleIncorrectUsageOfAssignmentOperator : AstVisitor, IScriptRule
     {
@@ -41,7 +41,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (assignmentStatementAst.Right.Extent.Text.StartsWith("="))
                         {
                             yield return new DiagnosticRecord(
-                                Strings.PossibleIncorrectUsageOfAssignmentOperatorAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
+                                Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
                                 GetName(), DiagnosticSeverity.Warning, fileName);
                         }
                         else
@@ -56,7 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             if (commandAst == null && invokeMemberExpressionAst == null && binaryExpressionAst == null)
                             {
                                 yield return new DiagnosticRecord(
-                                   Strings.PossibleIncorrectUsageOfAssignmentOperatorAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
+                                   Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
                                    GetName(), DiagnosticSeverity.Information, fileName);
                             }
                         }

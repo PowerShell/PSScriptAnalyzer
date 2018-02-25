@@ -1583,15 +1583,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Did you really mean to use the assignment operator &apos;=&apos; inside an if statement? If you rather meant to check for equality, use the &apos;-eq&apos;  operator..
-        /// </summary>
-        internal static string PossibleIncorrectUsageOfAssignmentOperatorAssignmentOperatorError {
-            get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorAssignmentOperatorError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;=&apos; is not an assignment operator. Did you mean the equal operator &apos;-eq&apos;?.
         /// </summary>
         internal static string PossibleIncorrectUsageOfAssignmentOperatorCommonName {
