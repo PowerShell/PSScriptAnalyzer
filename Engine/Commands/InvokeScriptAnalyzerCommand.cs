@@ -464,15 +464,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     var numberOfRuleViolations = infoCount + warningCount + errorCount;
                     if (numberOfRuleViolations == 0)
                     {
-                        Host.UI.WriteLine(foregroundColor: ConsoleColor.Green, backgroundColor: Host.UI.RawUI.BackgroundColor,
-                                          value: "0 rule violations found.");
+                        Host.UI.WriteLine("0 rule violations found.");
                     }
                     else
                     {
-                        var foregroundConsoleColor = warningCount + errorCount == 0 ? ConsoleColor.Yellow : ConsoleColor.Red;
                         var pluralS = numberOfRuleViolations > 1 ? "s" : string.Empty;
-                        Host.UI.WriteLine(foregroundColor: foregroundConsoleColor, backgroundColor: Host.UI.RawUI.BackgroundColor,
-                            value: $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}");
+                        var message = $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}";
+                        if (warningCount + errorCount == 0)
+                        {
+                            Host.UI.WriteWarningLine(message);
+                        }
+                        else
+                        {
+                            Host.UI.WriteErrorLine(message);
+                        }
                     }
                 }
             }
