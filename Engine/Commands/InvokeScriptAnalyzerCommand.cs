@@ -472,11 +472,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         var message = $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}";
                         if (warningCount + errorCount == 0)
                         {
-                            Host.UI.WriteWarningLine(message);
+                            ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "WarningForegroundColor", "WarningBackgroundColor", message);
                         }
                         else
                         {
-                            Host.UI.WriteErrorLine(message);
+                            ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "ErrorForegroundColor", "ErrorBackgroundColor", message);
                         }
                     }
                 }
