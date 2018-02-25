@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using System;
 using System.Management.Automation.Host;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
@@ -19,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
         }
 
-        internal static bool TryGetPrivateDataConsoleColor(PSHost psHost, string propertyName, out ConsoleColor consoleColor)
+        private static bool TryGetPrivateDataConsoleColor(PSHost psHost, string propertyName, out ConsoleColor consoleColor)
         {
             consoleColor = default(ConsoleColor);
             var property = psHost.PrivateData.Properties[propertyName];
