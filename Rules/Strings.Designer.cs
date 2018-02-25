@@ -1585,45 +1585,81 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         /// <summary>
         ///   Looks up a localized string similar to Did you really mean to use the assignment operator &apos;=&apos; inside an if statement? If you rather meant to check for equality, use the &apos;-eq&apos;  operator..
         /// </summary>
-        internal static string PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError {
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorAssignmentOperatorError {
             get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorAssignmentOperatorError", resourceCulture);
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorAssignmentOperatorError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;=&apos; operator means assignment. Did you mean the equal operator &apos;-eq&apos;?.
+        ///   Looks up a localized string similar to &apos;=&apos; is not an assignment operator. Did you mean the equal operator &apos;-eq&apos;?.
         /// </summary>
-        internal static string PossibleIncorrectUsageOfComparisonOperatorCommonName {
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorCommonName {
             get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorCommonName", resourceCulture);
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorCommonName", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;&gt;&apos;, &apos;=&apos; or &apos;==&apos; are not comparison operators in the PowerShell language and rarely needed inside if statements..
+        ///   Looks up a localized string similar to &apos;=&apos; or &apos;==&apos; are not comparison operators in the PowerShell language and rarely needed inside if statements..
         /// </summary>
-        internal static string PossibleIncorrectUsageOfComparisonOperatorDescription {
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorDescription {
             get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorDescription", resourceCulture);
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Did you really mean to use the redirection operator &apos;&gt;&apos;? If you wanted to use a comparison operator then use the &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal) operators..
+        ///   Looks up a localized string similar to Did you mean to use the assignment operator &apos;=&apos;? The equals operator in PowerShell is &apos;eq&apos;..
         /// </summary>
-        internal static string PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError {
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorError {
             get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorFileRedirectionOperatorError", resourceCulture);
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PossibleIncorrectUsageOfComparisonOperator.
+        ///   Looks up a localized string similar to PossibleIncorrectUsageOfAssignmentOperator.
         /// </summary>
-        internal static string PossibleIncorrectUsageOfComparisonOperatorName {
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorName {
             get {
-                return ResourceManager.GetString("PossibleIncorrectUsageOfComparisonOperatorName", resourceCulture);
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;&gt;&apos; is not a comparison operator. Use  &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal)..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfRedirectionOperatorCommonName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfRedirectionOperatorCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When switching between different languages it is easy to forget that &apos;&gt;&apos; does not mean &apos;great than&apos; in PowerShell..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfRedirectionOperatorDescription {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfRedirectionOperatorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Did you mean to use the redirection operator &apos;&gt;&apos;? The comparison operators in PowerShell are &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal)..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfRedirectionOperatorError {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfRedirectionOperatorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PossibleIncorrectUsageOfRedirectionOperator.
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfRedirectionOperatorName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfRedirectionOperatorName", resourceCulture);
             }
         }
         
