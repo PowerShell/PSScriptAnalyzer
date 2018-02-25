@@ -1,4 +1,4 @@
-#Import-Module PSScriptAnalyzer
+Import-Module PSScriptAnalyzer
 $ruleName = "PSPossibleIncorrectUsageOfRedirectionOperator"
 
 Describe "PossibleIncorrectUsageOfComparisonOperator" {
