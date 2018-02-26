@@ -385,6 +385,18 @@ Describe "Test CustomizedRulePath" {
     if (!$testingLibraryUsage)
     {
         Context "When used from settings file" {
+            It "Should process relative settings path" {
+                try {
+                    $initialLocation = Get-Location
+                    Set-Location $PSScriptRoot
+                    $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings .\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1
+                    $warnings.Count | Should -Be 1
+                }
+                finally {
+                    Set-Location $initialLocation
+                }
+            }
+
             It "Should use the CustomRulePath parameter" {
                 $settings = @{
                     CustomRulePath        = "$directory\CommunityAnalyzerRules"
