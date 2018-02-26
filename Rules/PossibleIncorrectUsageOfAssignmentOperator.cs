@@ -50,10 +50,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             var commandAst = assignmentStatementAst.Right.Find(testAst => testAst is CommandAst, searchNestedScriptBlocks: true) as CommandAst;
                             // If the RHS contains an InvokeMemberExpressionAst, then we also do not want to warn because this could e.g. be 'if ($f = [System.IO.Path]::GetTempFileName()){ }'
                             var invokeMemberExpressionAst = assignmentStatementAst.Right.Find(testAst => testAst is ExpressionAst, searchNestedScriptBlocks: true) as InvokeMemberExpressionAst;
-                            // If the RHS contains a BinaryExpressionAst, then we also do not want to warn because this could e.g. be 'if ($a = $b -match $c){ }'
-                            var binaryExpressionAst = assignmentStatementAst.Right.Find(testAst => testAst is BinaryExpressionAst, searchNestedScriptBlocks: true) as BinaryExpressionAst;
 
-                            if (commandAst == null && invokeMemberExpressionAst == null && binaryExpressionAst == null)
+                            if (commandAst == null && invokeMemberExpressionAst == null)
                             {
                                 yield return new DiagnosticRecord(
                                    Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
