@@ -118,7 +118,7 @@ Describe "AttributeAst extension methods" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0]
             $extNamespace::IsCmdletBindingAttributeAst($funcDefnAst.Body.ParamBlock.Attributes[0]) |
-                Should BeTrue
+                Should -BeTrue
         }
     }
 
@@ -145,7 +145,7 @@ Describe "NamedAttributeArgumentAst" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0].Body.ParamBlock.Attributes[0].NamedArguments[0]
             $expressionAst = $null
-            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should BeTrue
+            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should -BeTrue
             $expressionAst | Should -Be $null
         }
 
@@ -156,7 +156,7 @@ Describe "NamedAttributeArgumentAst" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0].Body.ParamBlock.Attributes[0].NamedArguments[0]
             $expressionAst = $null
-            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should BeTrue
+            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should -BeTrue
             $expressionAst | Should -Not -Be $null
         }
 
@@ -167,7 +167,7 @@ Describe "NamedAttributeArgumentAst" {
                     param($param1, $param2)
                 }}.Ast.EndBlock.Statements[0].Body.ParamBlock.Attributes[0].NamedArguments[0]
             $expressionAst = $null
-            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should BeFalse
+            $extNamespace::GetValue($attrAst, [ref]$expressionAst) | Should -BeFalse
             $expressionAst | Should -Not -Be $null
 
         }

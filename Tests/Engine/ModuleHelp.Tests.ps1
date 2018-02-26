@@ -310,7 +310,7 @@ foreach ($command in $commands) {
 				}
 				# Shouldn't find extra parameters in help.
 				It "finds help parameter in code: $helpParm" {
-					$helpParm -in $parameterNames | Should BeTrue
+					$helpParm -in $parameterNames | Should -BeTrue
 				}
 			}
 		}
