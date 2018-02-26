@@ -34,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (var clause in ifStatementAst.Clauses)
                 {
                     var assignmentStatementAst = clause.Item1.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false) as AssignmentStatementAst;
-                    if (assignmentStatementAst != null && !ClangSuppresion.ScriptExtendIsWrappedInParenthesis(assignmentStatementAst.Extent))
+                    if (assignmentStatementAst != null && !ClangSuppresion.ScriptExtendIsWrappedInParenthesis(clause.Item1.Extent))
                     {
                         // Check if someone used '==', which can easily happen when the person is used to coding a lot in C#.
                         // In most cases, this will be a runtime error because PowerShell will look for a cmdlet name starting with '=', which is technically possible to define
