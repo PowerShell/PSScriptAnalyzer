@@ -206,11 +206,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 case SettingsMode.Preset:
                 case SettingsMode.File:
+                    settingsFound = Path.Combine(cwd, settingsFound.ToString());
                     outputWriter?.WriteVerbose(
                         String.Format(
                             CultureInfo.CurrentCulture,
                             Strings.SettingsUsingFile,
-                            (string)settingsFound));
+                            settingsFound.ToString()));
                     break;
 
                 case SettingsMode.Hashtable:

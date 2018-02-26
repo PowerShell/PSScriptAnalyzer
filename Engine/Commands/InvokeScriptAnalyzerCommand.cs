@@ -293,9 +293,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             var combIncludeDefaultRules = IncludeDefaultRules.IsPresent;
             try
             {
+                var currentWorkingDirectory = CurrentProviderLocation("FileSystem").ProviderPath;
                 var settingsObj = PSSASettings.Create(
                     settings,
-                    processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
+                    processedPaths == null || processedPaths.Count == 0 ? currentWorkingDirectory : processedPaths[0],
                     this);
                 if (settingsObj != null)
                 {
