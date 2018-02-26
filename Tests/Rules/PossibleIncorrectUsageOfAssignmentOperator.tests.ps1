@@ -51,7 +51,7 @@ Describe "PossibleIncorrectUsageOfComparisonOperator" {
         }
 
         It "returns no violations when using implicit clang style suppresion" {
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ( ($a -eq $b) ){ }' | Where-Object {$_.RuleName -eq $ruleName}
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ( ($a = $b) ){ }' | Where-Object {$_.RuleName -eq $ruleName}
             $warnings.Count | Should -Be 0
         }
 
