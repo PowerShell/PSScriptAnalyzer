@@ -33,8 +33,8 @@ Enter the version of the module to test. This parameter is optional. If you
 omit it, the test runs on the latest version of the module in $env:PSModulePath.
 
 .EXAMPLE
-.\Module.Help.Tests.ps1 -ModuleName Pester -RequiredVersion 4.1.1
-This command runs the tests on the commands in Pester 4.1.1.
+.\Module.Help.Tests.ps1 -ModuleName Pester -RequiredVersion 4.3.1
+This command runs the tests on the commands in Pester 4.3.1.
 
 .EXAMPLE
 .\Module.Help.Tests.ps1 -ModuleName Pester
@@ -63,7 +63,7 @@ Param
 	$RequiredVersion
 )
 
-# #Requires -Module @{ModuleName = 'Pester'; ModuleVersion = '4.1.1'}
+# #Requires -Module @{ModuleName = 'Pester'; ModuleVersion = '4.3.1'}
 
 <#
 .SYNOPSIS
@@ -310,7 +310,7 @@ foreach ($command in $commands) {
 				}
 				# Shouldn't find extra parameters in help.
 				It "finds help parameter in code: $helpParm" {
-					$helpParm -in $parameterNames | Should -Be $true
+					$helpParm -in $parameterNames | Should -BeTrue
 				}
 			}
 		}

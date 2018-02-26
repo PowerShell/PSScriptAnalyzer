@@ -132,7 +132,7 @@ if ($Install)
 
 if ($Test)
 {
-    Import-Module -Name Pester -MinimumVersion 4.1.1 -ErrorAction Stop
+    Import-Module -Name Pester -MinimumVersion 4.3.1 -ErrorAction Stop
     Function GetTestRunnerScriptContent($testPath)
     {
         $x = @"

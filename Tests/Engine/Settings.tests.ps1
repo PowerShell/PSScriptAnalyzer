@@ -111,7 +111,7 @@ Describe "Settings Class" {
         }
 
         It "Should parse boolean type argument" {
-            $settings.RuleArguments["PSUseConsistentIndentation"]["Enable"] | Should -Be $true
+            $settings.RuleArguments["PSUseConsistentIndentation"]["Enable"] | Should -BeTrue
         }
 
         It "Should parse int type argument" {
@@ -162,7 +162,7 @@ Describe "Settings Class" {
                 $settingsHashtable.Add($paramName, $true)
 
                 $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
-                $settings."$paramName" | Should -Be $true
+                $settings."$paramName" | Should -BeTrue
             }
 
             It "Should correctly set the value if a boolean is given - false" {
@@ -170,7 +170,7 @@ Describe "Settings Class" {
                 $settingsHashtable.Add($paramName, $false)
 
                 $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
-                $settings."$paramName" | Should -Be $false
+                $settings."$paramName" | Should -BeFalse
             }
 
             It "Should throw if a non-boolean value is given" {
@@ -183,7 +183,7 @@ Describe "Settings Class" {
             It "Should detect the parameter in a settings file" {
                 $settings = New-Object -TypeName $settingsTypeName `
                     -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
-                $settings."$paramName" | Should -Be $true
+                $settings."$paramName" | Should -BeTrue
             }
         }
     }

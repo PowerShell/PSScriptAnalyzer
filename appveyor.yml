@@ -19,7 +19,7 @@ cache:
 install:
     - ps: nuget install platyPS -Version 0.9.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
     - ps: |
-        $requiredPesterVersion = '4.1.1'
+        $requiredPesterVersion = '4.3.1'
         $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
         $pester
         if ($null -eq $pester)
