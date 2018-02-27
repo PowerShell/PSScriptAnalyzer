@@ -349,26 +349,15 @@ Throughput Graph
 
 [Back to ToC](#table-of-contents)
 
-Contributing to ScriptAnalyzer
+Contributions are welcome
 ==============================
-You are welcome to contribute to this project. There are many ways to contribute:
 
-1. Submit a bug report via [Issues]( https://github.com/PowerShell/PSScriptAnalyzer/issues). For a guide to submitting good bug reports, please read [Painless Bug Tracking](https://www.joelonsoftware.com/articles/fog0000000029.html).
-2. Verify fixes for bugs.
-3. Submit your fixes for a bug. Before submitting, please make sure you have:
-  * Performed code reviews of your own
-  * Updated the test cases if needed
-  * Run the test cases to ensure no feature breaks or test breaks
-  * Added the test cases for new code
-4. Submit a feature request.
-5. Help answer questions in the discussions list.
-6. Submit test cases.
-7. Tell others about the project.
-8. Tell the developers how much you appreciate the product!
+There are many ways to contribute:
 
-You might also read these two blog posts about contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza, and [Don’t “Push” Your Pull Requests](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik.
-
-Before submitting a feature or substantial code contribution, please discuss it with the Windows PowerShell team via [Issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed by the Windows PowerShell Team. Only those that meet a high bar for both quality and roadmap fit will be merged into the source.
+1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new).
+2. Participate in the discussions of [issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), [pull requests](https://github.com/PowerShell/PSScriptAnalyzer/pulls) and verify/test fixes or new features.
+3. Submit your own fixes or features for a bug as a pull request but please for bigger changes please discuss it beforehand in an issue.
+4. Submit test cases.
 
 [Back to ToC](#table-of-contents)
 
