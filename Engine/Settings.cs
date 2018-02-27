@@ -203,7 +203,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 case SettingsMode.Preset:
                 case SettingsMode.File:
                     var resolvedPath = getResolvedProviderPathFromPSPathDelegate(settingsFound.ToString(), out ProviderInfo providerInfo).Single();
-                    //var resolvedPath  = pathResolver(settingsFound.ToString());
                     settingsFound = resolvedPath;
                     outputWriter?.WriteVerbose(
                         String.Format(

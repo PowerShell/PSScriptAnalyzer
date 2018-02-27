@@ -280,7 +280,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 var settingsObj = PSSASettings.Create(
                     settings,
                     processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
-                    this, GetResolvedProviderPathFromPSPath);
+                    this,
+                    GetResolvedProviderPathFromPSPath);
                 if (settingsObj != null)
                 {
                     ScriptAnalyzer.Instance.UpdateSettings(settingsObj);
