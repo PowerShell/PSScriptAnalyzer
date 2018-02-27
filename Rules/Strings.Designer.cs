@@ -1583,7 +1583,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;=&apos; is not an assignment operator. Did you mean the equal operator &apos;-eq&apos;?.
+        ///   Looks up a localized string similar to &apos;=&apos; is not an assignment operator. Did you mean the equality operator &apos;-eq&apos;?.
         /// </summary>
         internal static string PossibleIncorrectUsageOfAssignmentOperatorCommonName {
             get {
@@ -1601,7 +1601,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Did you mean to use the assignment operator &apos;=&apos;? The equals operator in PowerShell is &apos;eq&apos;..
+        ///   Looks up a localized string similar to Did you mean to use the assignment operator &apos;=&apos;? The equality operator in PowerShell is &apos;eq&apos;..
         /// </summary>
         internal static string PossibleIncorrectUsageOfAssignmentOperatorError {
             get {

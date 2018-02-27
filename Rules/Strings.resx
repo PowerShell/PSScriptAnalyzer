@@ -982,7 +982,7 @@
     <value>Assignment statements are not aligned</value>
   </data>
   <data name="PossibleIncorrectUsageOfAssignmentOperatorCommonName" xml:space="preserve">
-    <value>'=' is not an assignment operator. Did you mean the equal operator '-eq'?</value>
+    <value>'=' is not an assignment operator. Did you mean the equality operator '-eq'?</value>
   </data>
   <data name="PossibleIncorrectUsageOfAssignmentOperatorName" xml:space="preserve">
     <value>PossibleIncorrectUsageOfAssignmentOperator</value>
@@ -1006,7 +1006,7 @@
     <value>'=' or '==' are not comparison operators in the PowerShell language and rarely needed inside if statements.</value>
   </data>
   <data name="PossibleIncorrectUsageOfAssignmentOperatorError" xml:space="preserve">
-    <value>Did you mean to use the assignment operator '='? The equals operator in PowerShell is 'eq'.</value>
+    <value>Did you mean to use the assignment operator '='? The equality operator in PowerShell is 'eq'.</value>
   </data>
   <data name="PossibleIncorrectUsageOfRedirectionOperatorCommonName" xml:space="preserve">
     <value>'&gt;' is not a comparison operator. Use  '-gt' (greater than) or '-ge' (greater or equal).</value>
