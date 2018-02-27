@@ -1,18 +1,8 @@
-//
-// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
@@ -91,7 +81,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             this.range = Range == null ? null : new Range(Range[0], Range[1], Range[2], Range[3]);
             try
             {
-                inputSettings = PSSASettings.Create(Settings, this.MyInvocation.PSScriptRoot, this);
+                inputSettings = PSSASettings.Create(Settings, this.MyInvocation.PSScriptRoot, this, GetResolvedProviderPathFromPSPath);
             }
             catch (Exception e)
             {
