@@ -34,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (var clause in ifStatementAst.Clauses)
                 {
                     var assignmentStatementAst = clause.Item1.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false) as AssignmentStatementAst;
-                    if (assignmentStatementAst != null && !ClangSuppresion.ScriptExtendIsWrappedInParenthesis(clause.Item1.Extent))
+                    if (assignmentStatementAst != null)
                     {
                         // Check if someone used '==', which can easily happen when the person is used to coding a lot in C#.
                         // In most cases, this will be a runtime error because PowerShell will look for a cmdlet name starting with '=', which is technically possible to define
@@ -43,20 +43,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             yield return new DiagnosticRecord(
                                 Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
                                 GetName(), DiagnosticSeverity.Warning, fileName);
-                        }
-                        else
-                        {
-                            // If the RHS contains a CommandAst at some point, then we do not want to warn  because this could be intentional in cases like 'if ($a = Get-ChildItem){ }'
-                            var commandAst = assignmentStatementAst.Right.Find(testAst => testAst is CommandAst, searchNestedScriptBlocks: true) as CommandAst;
-                            // If the RHS contains an InvokeMemberExpressionAst, then we also do not want to warn because this could e.g. be 'if ($f = [System.IO.Path]::GetTempFileName()){ }'
-                            var invokeMemberExpressionAst = assignmentStatementAst.Right.Find(testAst => testAst is ExpressionAst, searchNestedScriptBlocks: true) as InvokeMemberExpressionAst;
 
-                            if (commandAst == null && invokeMemberExpressionAst == null)
+                            continue;
+                        }
+
+                        // Check if LHS is $null and then always warn
+                        if (assignmentStatementAst.Left is VariableExpressionAst variableExpressionAst)
+                        {
+                            if (variableExpressionAst.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase))
                             {
                                 yield return new DiagnosticRecord(
-                                   Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
-                                   GetName(), DiagnosticSeverity.Information, fileName);
+                                    Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
+                                    GetName(), DiagnosticSeverity.Warning, fileName);
+                                continue;
                             }
+                        }
+
+                        // If the RHS contains a CommandAst at some point, then we do not want to warn  because this could be intentional in cases like 'if ($a = Get-ChildItem){ }'
+                        var commandAst = assignmentStatementAst.Right.Find(testAst => testAst is CommandAst, searchNestedScriptBlocks: true) as CommandAst;
+                        // If the RHS contains an InvokeMemberExpressionAst, then we also do not want to warn because this could e.g. be 'if ($f = [System.IO.Path]::GetTempFileName()){ }'
+                        var invokeMemberExpressionAst = assignmentStatementAst.Right.Find(testAst => testAst is ExpressionAst, searchNestedScriptBlocks: true) as InvokeMemberExpressionAst;
+                        var doNotWarnBecauseImplicitClangStyleSuppressionWasUsed = ClangSuppresion.ScriptExtendIsWrappedInParenthesis(clause.Item1.Extent);
+                        if (commandAst == null && invokeMemberExpressionAst == null && !doNotWarnBecauseImplicitClangStyleSuppressionWasUsed)
+                        {
+                            yield return new DiagnosticRecord(
+                               Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
+                               GetName(), DiagnosticSeverity.Information, fileName);
                         }
                     }
                 }

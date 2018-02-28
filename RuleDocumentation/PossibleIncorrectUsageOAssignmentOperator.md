@@ -44,7 +44,7 @@ if ($a = Get-Something) # Only execute action if command returns something and a
 
 ## Implicit suppresion using Clang style
 
-There are some rare cases where assignment of variable inside an if statement is by design. Instead of suppression the rule, one can also signal that assignment was intentional by wrapping the expression in extra parenthesis:
+There are some rare cases where assignment of variable inside an if statement is by design. Instead of suppression the rule, one can also signal that assignment was intentional by wrapping the expression in extra parenthesis. An exception for this is when `$null` is used on the LHS is used because there is no use case for this.
 
 ```` powershell
 if (($shortVariableName = $SuperLongVariableName['SpecialItem']['AnotherItem']))

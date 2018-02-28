@@ -1,4 +1,4 @@
-Import-Module PSScriptAnalyzer
+#Import-Module PSScriptAnalyzer
 $ruleName = "PSPossibleIncorrectUsageOfAssignmentOperator"
 
 Describe "PossibleIncorrectUsageOfComparisonOperator" {
@@ -40,6 +40,16 @@ Describe "PossibleIncorrectUsageOfComparisonOperator" {
 
         It "using an expression like a Binaryexpressionastast on the RHS causes warning" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a = $b -match $c){ }' | Where-Object {$_.RuleName -eq $ruleName}
+            $warnings.Count | Should -Be 1
+        }
+
+        It "always returns a violations when LHS is `$null even when RHS is a command that would normally not make it trigger" {
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($null = Get-ChildItem){ }' | Where-Object {$_.RuleName -eq $ruleName}
+            $warnings.Count | Should -Be 1
+        }
+
+        It "always returns a violations when LHS is `$null even when using clang style" {
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if (($null = $b)){ }' | Where-Object {$_.RuleName -eq $ruleName}
             $warnings.Count | Should -Be 1
         }
     }
