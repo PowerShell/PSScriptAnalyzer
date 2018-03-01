@@ -703,6 +703,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         settingsMode = SettingsMode.Hashtable;
                     }
+                    else // if the provided object is wrapped in multiple expressions then it might not be resolved yet at this stage -> try using the File type as a last resort and best guess.
+                    {
+                        settingsMode = SettingsMode.File;
+                    }
                 }
             }
 
