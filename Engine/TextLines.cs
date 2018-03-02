@@ -45,7 +45,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 throw new ArgumentException(String.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.TextLinesNoNullItem));
+                    EngineStrings.TextLinesNoNullItem));
 
             }
 

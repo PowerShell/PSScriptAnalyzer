@@ -97,7 +97,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.ThrowTerminatingError(new ErrorRecord(
                     new ArgumentException(String.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.SettingsNotParsable)),
+                        EngineStrings.SettingsNotParsable)),
                     "SETTINGS_ERROR",
                     ErrorCategory.InvalidArgument,
                     Settings));

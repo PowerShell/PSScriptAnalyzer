@@ -52,9 +52,9 @@ build_script:
         Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose
         Push-Location C:\projects\psscriptanalyzer
         # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
-        .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+        .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build -ResGen
         git clean -dfx
-        C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
+        C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build -ResGen
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
         Pop-Location
 

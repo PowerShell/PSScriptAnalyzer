@@ -312,7 +312,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
             catch
             {
-                this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
+                this.WriteWarning(String.Format(CultureInfo.CurrentCulture, EngineStrings.SettingsNotParsable));
                 stopProcessing = true;
                 return;
             }
@@ -351,7 +351,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         this.WriteVerbose(
                             String.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.ModuleDepHandlerTempLocation,
+                                EngineStrings.ModuleDepHandlerTempLocation,
                                 moduleHandler.TempModulePath));
                         ProcessInput();
                     }

@@ -1,4 +1,4 @@
-Import-Module -Verbose PSScriptAnalyzer
+Import-Module PSScriptAnalyzer
 
 $currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ruleName = "PSDSCDscTestsPresent"
