@@ -458,7 +458,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot find a settings file..
+        ///   Looks up a localized string similar to Cannot resolve settings file path &apos;{0}&apos;..
         /// </summary>
         internal static string SettingsCannotFindFile {
             get {
@@ -508,6 +508,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string SettingsNotProvided {
             get {
                 return ResourceManager.GetString("SettingsNotProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings object could not be resolved..
+        /// </summary>
+        internal static string SettingsObjectCouldNotBResolved {
+            get {
+                return ResourceManager.GetString("SettingsObjectCouldNotBResolved", resourceCulture);
             }
         }
         

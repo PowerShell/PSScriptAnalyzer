@@ -387,25 +387,23 @@ Describe "Test CustomizedRulePath" {
         Context "When used from settings file" {
             It "Should process relative settings path" {
                 try {
-                    $initialLocation = Get-Location
-                    Set-Location $PSScriptRoot
+                    Push-Location $PSScriptRoot
                     $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings .\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1
                     $warnings.Count | Should -Be 1
                 }
                 finally {
-                    Set-Location $initialLocation
+                    Pop-Location
                 }
             }
 
-            It "Should process relative settings path even when settings path object is an expression" {
+            It "Should process relative settings path even when settings path object is not resolved to a string yet" {
                 try {
-                    $initialLocation = Get-Location
-                    Set-Location $PSScriptRoot
+                    Push-Location $PSScriptRoot
                     $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings (Join-Path (Get-Location).Path '.\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1')
                     $warnings.Count | Should -Be 1
                 }
                 finally {
-                    Set-Location $initialLocation
+                    Pop-Location
                 }
             }
 

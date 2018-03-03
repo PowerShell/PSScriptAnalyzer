@@ -202,13 +202,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 case SettingsMode.Preset:
                 case SettingsMode.File:
-                    var resolvedPath = getResolvedProviderPathFromPSPathDelegate(settingsFound.ToString(), out ProviderInfo providerInfo).Single();
-                    settingsFound = resolvedPath;
-                    outputWriter?.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsUsingFile,
-                            resolvedPath));
+                    var userProvidedSettingsString = settingsFound.ToString();
+                    try
+                    {
+                        var resolvedPath = getResolvedProviderPathFromPSPathDelegate(userProvidedSettingsString, out ProviderInfo providerInfo).Single();
+                        settingsFound = resolvedPath;
+                        outputWriter?.WriteVerbose(
+                            String.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.SettingsUsingFile,
+                                resolvedPath));
+                    }
+                    catch
+                    {
+                        outputWriter?.WriteVerbose(
+                            String.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.SettingsCannotFindFile,
+                                userProvidedSettingsString));
+                    }
                     break;
 
                 case SettingsMode.Hashtable:
@@ -218,20 +230,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             Strings.SettingsUsingHashtable));
                     break;
 
-                default: // case SettingsMode.None
+                default:
                     outputWriter?.WriteVerbose(
                         String.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.SettingsCannotFindFile));
-                    break;
+                            Strings.SettingsObjectCouldNotBResolved));
+                    return null;
             }
 
-            if (settingsMode != SettingsMode.None)
-            {
-                return new Settings(settingsFound);
-            }
-
-            return null;
+            return new Settings(settingsFound);
         }
 
         /// <summary>
