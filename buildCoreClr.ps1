@@ -3,14 +3,14 @@
     [switch]$Uninstall,
     [switch]$Install,
 
-    [ValidateSet("net451", "netstandard1.6")]
-    [string]$Framework = "netstandard1.6",
+    [ValidateSet("net451", "netstandard2.0")]
+    [string]$Framework = "netstandard2.0",
 
     [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
     [string]$Configuration = "Debug"
 )
 
-if ($Configuration -match "PSv3" -and $Framework -eq "netstandard1.6")
+if ($Configuration -match "PSv3" -and $Framework -eq "netstandard2.0")
 {
     throw ("{0} configuration is not applicable to {1} framework" -f $Configuration,$Framework)
 }
@@ -32,7 +32,7 @@ $itemsToCopyCommon = @("$solutionDir\Engine\PSScriptAnalyzer.psd1",
 
 $destinationDir = "$solutionDir\out\PSScriptAnalyzer"
 $destinationDirBinaries = $destinationDir
-if ($Framework -eq "netstandard1.6")
+if ($Framework -eq "netstandard2.0")
 {
     $destinationDirBinaries = "$destinationDir\coreclr"
 }

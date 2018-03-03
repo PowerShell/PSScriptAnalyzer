@@ -109,7 +109,7 @@ Exit
     ```
     * PowerShell Core
     ```powershell
-    .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+    .\buildCoreClr.ps1 -Framework netstandard2.0 -Configuration Release -Build
     ```
 * Build documenatation
     ```powershell
