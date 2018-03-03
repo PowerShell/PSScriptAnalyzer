@@ -42,7 +42,7 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             $warnings.Severity | Should -Be $ExpectedSeverity
         }
 
-        It "Using Variable '<VariableName>' as parameter name in param block produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
+        It "Using Variable <VariableName> as parameter name in param block produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity)
 
             [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}" | Where-Object {$_.RuleName -eq $ruleName }
@@ -55,7 +55,7 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             $warnings.Count | Should -Be 0
         }
 
-        It "Setting Variable '<VariableName>' throws exception to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
+        It "Setting Variable <VariableName> throws exception to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity, $OnlyPresentInCoreClr)
 
             if ($OnlyPresentInCoreClr -and !$IsCoreCLR)
