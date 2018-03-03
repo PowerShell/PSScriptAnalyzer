@@ -65,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (_readOnlyAutomaticVariablesIntroducedInVersion6_0.Contains(variableName, StringComparer.OrdinalIgnoreCase))
                 {
-                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
+                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error, variableName),
                                                       variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
             }
@@ -89,7 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (_readOnlyAutomaticVariablesIntroducedInVersion6_0.Contains(variableName, StringComparer.OrdinalIgnoreCase))
                 {
-                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
+                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error, variableName),
                                                       variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
             }
