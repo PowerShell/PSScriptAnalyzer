@@ -1005,4 +1005,7 @@
   <data name="AvoidAssignmentToAutomaticVariableName" xml:space="preserve">
     <value>AvoidAssignmentToAutomaticVariable</value>
   </data>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error" xml:space="preserve">
+    <value>Starting from PowerShell 6.0, the Variable '{0}' cannot be assigned any more since it is a readonly automatic variable that is built into PowerShell, please use a different name.</value>
+  </data>
 </root>

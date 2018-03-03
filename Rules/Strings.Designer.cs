@@ -143,6 +143,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Starting from PowerShell 6.0, the Variable &apos;{0}&apos; cannot be assigned any more since it is a readonly automatic variable that is built into PowerShell, please use a different name..
+        /// </summary>
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ComputerName Hardcoded.
         /// </summary>
         internal static string AvoidComputerNameHardcodedCommonName {

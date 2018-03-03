@@ -31,10 +31,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class AvoidAssignmentToAutomaticVariable : IScriptRule
     {
         private static readonly IList<string> _readOnlyAutomaticVariables = new List<string>()
-            {
-                // Attempting to assign to any of those read-only variable would result in an error at runtime
-                "?", "true", "false", "Host", "PSCulture", "Error", "ExecutionContext", "Home", "PID", "PSEdition", "PSHome", "PSUICulture", "PSVersionTable", "ShellId"
-            };
+        {
+            // Attempting to assign to any of those read-only variable would result in an error at runtime
+            "?", "true", "false", "Host", "PSCulture", "Error", "ExecutionContext", "Home", "PID", "PSEdition", "PSHome", "PSUICulture", "PSVersionTable", "ShellId"
+        };
+
+        private static readonly IList<string> _readOnlyAutomaticVariablesIntroducedInVersion6_0 = new List<string>()
+        {
+            // Attempting to assign to any of those read-only variable will result in an error at runtime
+            "IsCoreCLR", "IsLinux", "IsMacOS", "IsWindows"
+        };
 
         /// <summary>
         /// Checks for assignment to automatic variables.
@@ -56,6 +62,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
                                                       variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                 }
+
+                if (_readOnlyAutomaticVariablesIntroducedInVersion6_0.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                {
+                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
+                                                      variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                }
             }
 
             IEnumerable<Ast> parameterAsts = ast.FindAll(testAst => testAst is ParameterAst, searchNestedScriptBlocks: true);
@@ -64,10 +76,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var variableExpressionAst = parameterAst.Find(testAst => testAst is VariableExpressionAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
                 var variableName = variableExpressionAst.VariablePath.UserPath;
                 // also check the parent to exclude parameter attributes such as '[Parameter(Mandatory=$true)]' where the read-only variable $true appears.
-                if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase) && !(variableExpressionAst.Parent is NamedAttributeArgumentAst))
+                if (variableExpressionAst.Parent is NamedAttributeArgumentAst)
+                {
+                    continue;
+                }
+
+                if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
                 {
                     yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
                                                       variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
+                }
+
+                if (_readOnlyAutomaticVariablesIntroducedInVersion6_0.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                {
+                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
+                                                      variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
             }
         }
