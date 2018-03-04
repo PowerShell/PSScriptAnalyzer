@@ -710,9 +710,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         settingsMode = SettingsMode.Hashtable;
                     }
-                    else // if the provided object is wrapped in multiple expressions then it might not be resolved yet at this stage -> try using the File type as a last resort and best guess.
+                    else // if the provided argument is wrapped in an expressions then PowerShell resolves it but it will be of type PSObject and we have to operate then on the BaseObject
                     {
-                        settingsMode = SettingsMode.File;
+                        if (settingsFound is PSObject settingsFoundPSObject)
+                        {
+                            if (settingsFoundPSObject.BaseObject is String)
+                            {
+                                settingsMode = SettingsMode.File;
+                            }
+                        }
                     }
                 }
             }
