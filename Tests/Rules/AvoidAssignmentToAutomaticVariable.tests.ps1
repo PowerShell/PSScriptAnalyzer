@@ -4,6 +4,12 @@ $ruleName = "PSAvoidAssignmentToAutomaticVariable"
 Describe "AvoidAssignmentToAutomaticVariables" {
     Context "ReadOnly Variables" {
 
+        $excpectedSeverityForAutomaticVariablesInPowerShell6 = 'Warning'
+        if ($PSVersionTable.PSVersion.Major -ge 6)
+        {
+            $excpectedSeverityForAutomaticVariablesInPowerShell6 = 'Error'
+        }
+
         $testCases_ReadOnlyVariables = @(
             @{ VariableName = '?'; ExpectedSeverity = 'Error'; }
             @{ VariableName = 'Error' ; ExpectedSeverity = 'Error' }
@@ -20,10 +26,10 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             @{ VariableName = 'ShellId'; ExpectedSeverity = 'Error' }
             @{ VariableName = 'true'; ExpectedSeverity = 'Error' }
             # Variables introuced only in PowerShell 6.0 have a Severity of Warning only
-            @{ VariableName = 'IsCoreCLR'; ExpectedSeverity = 'Warning'; OnlyPresentInCoreClr = $true }
-            @{ VariableName = 'IsLinux'; ExpectedSeverity = 'Warning'; OnlyPresentInCoreClr = $true }
-            @{ VariableName = 'IsMacOS'; ExpectedSeverity = 'Warning'; OnlyPresentInCoreClr = $true }
-            @{ VariableName = 'IsWindows'; ExpectedSeverity = 'Warning'; OnlyPresentInCoreClr = $true }
+            @{ VariableName = 'IsCoreCLR'; ExpectedSeverity = $excpectedSeverityForAutomaticVariablesInPowerShell6; OnlyPresentInCoreClr = $true }
+            @{ VariableName = 'IsLinux'; ExpectedSeverity = $excpectedSeverityForAutomaticVariablesInPowerShell6; OnlyPresentInCoreClr = $true }
+            @{ VariableName = 'IsMacOS'; ExpectedSeverity = $excpectedSeverityForAutomaticVariablesInPowerShell6; OnlyPresentInCoreClr = $true }
+            @{ VariableName = 'IsWindows'; ExpectedSeverity = $excpectedSeverityForAutomaticVariablesInPowerShell6; OnlyPresentInCoreClr = $true }
         )
 
         It "Variable <VariableName> produces warning of Severity <ExpectedSeverity>" -TestCases $testCases_ReadOnlyVariables {
@@ -55,11 +61,13 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             $warnings.Count | Should -Be 0
         }
 
-        It "Setting Variable <VariableName> throws exception to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
+        It "Setting Variable <VariableName> throws exception in applicable PowerShell version to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity, $OnlyPresentInCoreClr)
 
             if ($OnlyPresentInCoreClr -and !$IsCoreCLR)
             {
+                # In this special case we expect it to not throw
+                Set-Variable -Name $VariableName -Value 'foo'
                 continue
             }
             
