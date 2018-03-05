@@ -8,6 +8,10 @@
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
   </PropertyGroup>
 
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="dotnet run" WorkingDirectory="$(ProjectDir)\..\ResGen" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="System.Management.Automation" Version="6.0.0-alpha13" />
   </ItemGroup>

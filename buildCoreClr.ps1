@@ -2,7 +2,6 @@
     [switch]$Build,
     [switch]$Uninstall,
     [switch]$Install,
-    [switch]$ResGen,
     [switch]$Docs,
 
     [ValidateSet("net451", "netstandard1.6")]
@@ -42,15 +41,8 @@ elseif ($Configuration -match 'PSv3') {
     $destinationDirBinaries = "$destinationDir\PSv3"
 }
 
-if ( $ResGen ) {
-    Push-Location ResGen
-    dotnet run
-    Pop-Location
-}
-
 if ($build)
 {
-
     Write-Progress "Building Engine"
     Push-Location Engine\
     $null = dotnet build Engine.csproj --framework $Framework --configuration $Configuration
