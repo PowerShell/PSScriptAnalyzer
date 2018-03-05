@@ -43,7 +43,7 @@ Function New-{0} () {{ }}
             $noViolations.Count | Should -Be 0
         }
 
-        It "Workflows should not trigger a warning because they do not allow SupportsShouldProcess" {
+        It "Workflows should not trigger a warning because they do not allow SupportsShouldProcess" -Skip:$IsCoreCLR {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'workflow Set-Something {[CmdletBinding()]Param($Param1)}' | Where-Object {
                 $_.RuleName -eq 'PSUseShouldProcessForStateChangingFunctions' }
             $violations.Count | Should -Be 0
