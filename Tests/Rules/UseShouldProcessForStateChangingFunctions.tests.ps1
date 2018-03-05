@@ -42,5 +42,11 @@ Function New-{0} () {{ }}
         It "returns no violations" {
             $noViolations.Count | Should -Be 0
         }
+
+        It "Workflows do no trigger a warning because they do not allow SupportsShouldProcess" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'workflow Set-Something {[CmdletBinding()]Param($Param1)}' | Where-Object {
+                $_.RuleName -eq 'PSUseShouldProcessForStateChangingFunctions' }
+            $violations.Count | Should -Be 0
+        }
     }
 }
