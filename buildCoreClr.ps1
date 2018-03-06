@@ -2,6 +2,7 @@
     [switch]$Build,
     [switch]$Uninstall,
     [switch]$Install,
+    [switch]$Docs,
 
     [ValidateSet("net451", "netstandard1.6")]
     [string]$Framework = "netstandard1.6",
@@ -42,15 +43,14 @@ elseif ($Configuration -match 'PSv3') {
 
 if ($build)
 {
-
     Write-Progress "Building Engine"
     Push-Location Engine\
-    dotnet build Engine.csproj --framework $Framework --configuration $Configuration
+    $null = dotnet build Engine.csproj --framework $Framework --configuration $Configuration
     Pop-Location
 
     Write-Progress "Building for framework $Framework, configuration $Configuration"
     Push-Location Rules\
-    dotnet build Rules.csproj --framework $Framework --configuration $Configuration
+    $null = dotnet build Rules.csproj --framework $Framework --configuration $Configuration
     Pop-Location
 
     Function CopyToDestinationDir($itemsToCopy, $destination)

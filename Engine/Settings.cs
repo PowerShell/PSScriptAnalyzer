@@ -80,7 +80,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     throw new ArgumentException(
                         String.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.InvalidPath,
+                            EngineStrings.InvalidPath,
                             settingsFilePath));
                 }
             }
@@ -93,7 +93,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 else
                 {
-                    throw new ArgumentException(Strings.SettingsInvalidType);
+                    throw new ArgumentException(EngineStrings.SettingsInvalidType);
                 }
             }
         }
@@ -191,12 +191,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     outputWriter?.WriteVerbose(
                         String.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.SettingsNotProvided,
+                            EngineStrings.SettingsNotProvided,
                             ""));
                     outputWriter?.WriteVerbose(
                         String.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.SettingsAutoDiscovered,
+                            EngineStrings.SettingsAutoDiscovered,
                             (string)settingsFound));
                     break;
 
@@ -210,7 +210,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         outputWriter?.WriteVerbose(
                             String.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.SettingsUsingFile,
+                                EngineStrings.SettingsUsingFile,
                                 resolvedPath));
                     }
                     catch
@@ -218,7 +218,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         outputWriter?.WriteVerbose(
                             String.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.SettingsCannotFindFile,
+                                EngineStrings.SettingsCannotFindFile,
                                 userProvidedSettingsString));
                     }
                     break;
@@ -227,14 +227,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     outputWriter?.WriteVerbose(
                         String.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.SettingsUsingHashtable));
+                            EngineStrings.SettingsUsingHashtable));
                     break;
 
                 default:
                     outputWriter?.WriteVerbose(
                         String.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.SettingsObjectCouldNotBResolved));
+                            EngineStrings.SettingsObjectCouldNotBResolved));
                     return null;
             }
 
@@ -257,7 +257,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     throw new InvalidDataException(
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.KeyNotString,
+                            EngineStrings.KeyNotString,
                             key));
                 }
 
@@ -267,7 +267,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     throw new InvalidDataException(
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.WrongValueHashTable,
+                            EngineStrings.WrongValueHashTable,
                             "",
                             key));
                 }
@@ -304,7 +304,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new InvalidDataException(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.WrongValueHashTable,
+                        EngineStrings.WrongValueHashTable,
                         "",
                         key));
             }
@@ -338,7 +338,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             throw new InvalidDataException(
                                 string.Format(
                                     CultureInfo.CurrentCulture,
-                                    Strings.WrongValueHashTable,
+                                    EngineStrings.WrongValueHashTable,
                                     val,
                                     key));
                         }
@@ -349,7 +349,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     throw new InvalidDataException(
                             string.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.WrongValueHashTable,
+                                EngineStrings.WrongValueHashTable,
                                 val,
                                 key));
                 }
@@ -367,12 +367,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var ruleArgs = ruleArguments as Dictionary<string, object>;
             if (ruleArgs == null)
             {
-                throw new ArgumentException(Strings.SettingsInputShouldBeDictionary, nameof(ruleArguments));
+                throw new ArgumentException(EngineStrings.SettingsInputShouldBeDictionary, nameof(ruleArguments));
             }
 
             if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
             {
-                throw new ArgumentException(Strings.SettingsDictionaryShouldBeCaseInsesitive, nameof(ruleArguments));
+                throw new ArgumentException(EngineStrings.SettingsDictionaryShouldBeCaseInsesitive, nameof(ruleArguments));
             }
 
             var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
@@ -381,7 +381,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 var argsDict = ruleArgs[rule] as Dictionary<string, object>;
                 if (argsDict == null)
                 {
-                    throw new InvalidDataException(Strings.SettingsInputShouldBeDictionary);
+                    throw new InvalidDataException(EngineStrings.SettingsInputShouldBeDictionary);
                 }
                 ruleArgsDict[rule] = argsDict;
             }
@@ -421,7 +421,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         {
                             throw new InvalidDataException(string.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.SettingsValueTypeMustBeBool,
+                                EngineStrings.SettingsValueTypeMustBeBool,
                                 settingKey));
                         }
 
@@ -440,7 +440,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         catch (ArgumentException argumentException)
                         {
                             throw new InvalidDataException(
-                                string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, "", key),
+                                string.Format(CultureInfo.CurrentCulture, EngineStrings.WrongValueHashTable, "", key),
                                 argumentException);
                         }
 
@@ -450,7 +450,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         throw new InvalidDataException(
                             string.Format(
                                 CultureInfo.CurrentCulture,
-                                Strings.WrongKeyHashTable,
+                                EngineStrings.WrongKeyHashTable,
                                 key));
                 }
             }
@@ -466,7 +466,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // no hashtable, raise warning
             if (hashTableAsts.Count() == 0)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, settingsFilePath));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, EngineStrings.InvalidProfile, settingsFilePath));
             }
 
             HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
@@ -479,7 +479,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             catch (InvalidOperationException e)
             {
-                throw new ArgumentException(Strings.InvalidProfile, e);
+                throw new ArgumentException(EngineStrings.InvalidProfile, e);
             }
 
             if (hashtable == null)
@@ -487,7 +487,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentException(
                     String.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.InvalidProfile,
+                        EngineStrings.InvalidProfile,
                         settingsFilePath));
             }
 
@@ -641,7 +641,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             throw new InvalidDataException(string.Format(
                                     CultureInfo.CurrentCulture,
-                                    Strings.WrongValueFormat,
+                                    EngineStrings.WrongValueFormat,
                                     extent.StartLineNumber,
                                     extent.StartColumnNumber,
                                     extent.File ?? ""));

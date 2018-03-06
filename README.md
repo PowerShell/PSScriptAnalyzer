@@ -16,10 +16,7 @@ Table of Contents
       - [Requirements](#requirements)
         * [Windows](#windows)
         * [Linux (*Tested only on Ubuntu 14.04*)](#linux-tested-only-on-ubuntu-1404)
-    + [From Source](#from-source)
-      - [Requirements](#requirements-1)
-      - [Steps](#steps)
-      - [Tests](#tests)
+- [Building and Testing](#building-and-testing)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
   * [Built-in Presets](#built-in-presets)
@@ -29,7 +26,6 @@ Table of Contents
 - [Violation Correction](#violation-correction)
 - [Project Management Dashboard](#project-management-dashboard)
 - [Contributions are welcome](#contributions-are-welcome)
-- [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
 
 <!-- tocstop -->
@@ -79,69 +75,9 @@ Exit
 ##### Linux (*Tested only on Ubuntu 14.04*)
 - PowerShell Core
 
-### From Source
+#### Building And Testing
 
-* [.NET Core 2.1.4 SDK](https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.0.5-download.md)
-* [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
-* Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
-
-#### Steps
-* Obtain the source
-    - Download the latest source code from the [release page](https://github.com/PowerShell/PSScriptAnalyzer/releases) OR
-    - Clone the repository (needs git)
-    ```powershell
-    git clone https://github.com/PowerShell/PSScriptAnalyzer
-    ```
-* Navigate to the source directory
-    ```powershell
-    cd path/to/PSScriptAnalyzer
-    ```
-* Building
-
-    You can either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build using `PowerShell` specifically for your platform as follows:
-    * Windows PowerShell version 5.0 and greater
-    ```powershell
-    .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
-    ```
-    * Windows PowerShell version 3.0 and 4.0
-    ```powershell
-    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
-    ```
-    * PowerShell Core
-    ```powershell
-    .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
-    ```
-* Build documenatation
-    ```powershell
-    .\build.ps1 -BuildDocs
-    ```
-* Import the module
-```powershell
-Import-Module .\out\PSScriptAnalyzer\PSScriptAnalyzer.psd1
-```
-
-To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the built-in rules
-
-* Adding/Removing resource strings
-
-For adding/removing resource strings in the `*.resx` files, it is recommended to use `Visual Studio` since it automatically updates the strongly typed `*.Designer.cs` files. The `Visual Studio 2017 Community Edition` is free to use but should you not have/want to use `Visual Studio` then you can either manually adapt the `*.Designer.cs` files or use the `New-StronglyTypedCsFileForResx.ps1` script although the latter is discouraged since it leads to a bad diff of the `*.Designer.cs` files.
-
-#### Tests
-Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
-
-* Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) is installed
-* Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
-* Go the Tests folder in your local repository
-* Run Engine Tests:
-``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Engine
-Invoke-Pester
-```
-* Run Tests for Built-in rules:
-``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Rules
-Invoke-Pester
-```
+see [Building and Testing ScriptAnalyzer](docs/dev-process/building.md) for more information
 
 [Back to ToC](#table-of-contents)
 
@@ -333,8 +269,8 @@ The initial motivation behind having the `SuggestedCorrections` property on the 
 
 [Back to ToC](#table-of-contents)
 
-Project Management Dashboard
-============================
+# Project Management Dashboard
+
 You can track issues, pull requests, backlog items here:
 
 [![Stories in progress](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=In%20Progress&title=In%20Progress)](https://waffle.io/PowerShell/PSScriptAnalyzer)
@@ -361,26 +297,6 @@ There are many ways to contribute:
 
 [Back to ToC](#table-of-contents)
 
-Creating a Release
-================
-
-- Update changelog (`changelog.md`) with the new version number and change set. When updating the changelog please follow the same pattern as that of previous change sets (otherwise this may break the next step).
-- Import the ReleaseMaker module and execute `New-Release` cmdlet to perform the following actions.
-  - Update module manifest (engine/PSScriptAnalyzer.psd1) with the new version number and change set
-  - Update the version number in `Engine/Engine.csproj` and `Rules/Rules.csproj`
-  - Create a release build in `out/`
-
-```powershell
-    PS> Import-Module .\Utils\ReleaseMaker.psm1
-    PS> New-Release
-```
-
-- Sign the binaries and PowerShell files in the release build and publish the module to [PowerShell Gallery](www.powershellgallery.com).
-- Create a PR on `development` branch, with all the changes made in the previous step.
-- Merge the changes to `development` and then merge `development` to `master` (Note that the `development` to `master` merge should be a `fast-forward` merge).
-- Draft a new release on github and tag `master` with the new version number.
-
-[Back to ToC](#table-of-contents)
 
 Code of Conduct
 ===============

@@ -31,7 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             if (defaultValue == null)
             {
-                throw new ArgumentNullException(nameof(defaultValue), Strings.ConfigurableScriptRuleNRE);
+                throw new ArgumentNullException(nameof(defaultValue), EngineStrings.ConfigurableScriptRuleNRE);
             }
 
             DefaultValue = defaultValue;

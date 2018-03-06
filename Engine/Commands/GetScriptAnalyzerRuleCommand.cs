@@ -111,7 +111,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             IEnumerable<IRule> rules = ScriptAnalyzer.Instance.GetRule(modNames, name);
             if (rules == null)
             {
-                WriteObject(string.Format(CultureInfo.CurrentCulture, Strings.RulesNotFound));
+                WriteObject(string.Format(CultureInfo.CurrentCulture, EngineStrings.RulesNotFound));
             }
             else
             {
