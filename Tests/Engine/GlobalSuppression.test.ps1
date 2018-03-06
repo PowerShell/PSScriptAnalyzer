@@ -3,7 +3,7 @@
 # accident
 if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
 {
-	Import-Module -Verbose PSScriptAnalyzer
+	Import-Module PSScriptAnalyzer
 }
 
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

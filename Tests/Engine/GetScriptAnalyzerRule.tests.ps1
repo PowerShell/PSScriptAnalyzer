@@ -1,6 +1,6 @@
 ﻿
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-Import-Module -Verbose PSScriptAnalyzer
+Import-Module PSScriptAnalyzer
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 $sa = Get-Command Get-ScriptAnalyzerRule

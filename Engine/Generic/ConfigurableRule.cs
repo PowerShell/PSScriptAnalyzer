@@ -146,7 +146,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             if (attr == null)
             {
                 throw new ArgumentException(
-                    String.Format(Strings.ConfigurableScriptRulePropertyHasNotAttribute, property.Name),
+                    String.Format(EngineStrings.ConfigurableScriptRulePropertyHasNotAttribute, property.Name),
                     nameof(property));
             }
 

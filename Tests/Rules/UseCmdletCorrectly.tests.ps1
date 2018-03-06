@@ -1,4 +1,4 @@
-﻿Import-Module -Verbose PSScriptAnalyzer
+﻿Import-Module PSScriptAnalyzer
 $violationMessage = "Cmdlet 'Write-Warning' may be used incorrectly. Please check that all mandatory parameters are supplied."
 $violationName = "PSUseCmdletCorrectly"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
