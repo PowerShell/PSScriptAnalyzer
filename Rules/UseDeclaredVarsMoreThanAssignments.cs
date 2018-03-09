@@ -16,6 +16,7 @@ using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -200,6 +201,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         {
                             assignments.Remove(varKey);
                         }
+                    }
+                }
+            }
+
+            // Detect usages of Get-Variable
+            var getVariableCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Get-Variable");
+            IEnumerable<Ast> getVariableCommandAsts = scriptBlockAst.FindAll(testAst => testAst is CommandAst commandAst &&
+                getVariableCmdletNamesAndAliases.Contains(commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
+            foreach (CommandAst getVariableCommandAst in getVariableCommandAsts)
+            {
+                var commandElements = getVariableCommandAst.CommandElements.ToList();
+                // The following extracts the variable name only in the simplest possibe case 'Get-Variable variableName'
+                if (commandElements.Count == 2 && commandElements[1] is StringConstantExpressionAst constantExpressionAst)
+                {
+                    var variableName = constantExpressionAst.Value;
+                    if (assignments.ContainsKey(variableName))
+                    {
+                        assignments.Remove(variableName);
                     }
                 }
             }
