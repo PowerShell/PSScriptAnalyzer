@@ -26,6 +26,11 @@ Describe "AvoidUsingAlias" {
             Test-CorrectionExtent $violationFilepath $violations[1] 1 'cls' 'Clear-Host'
             $violations[1].SuggestedCorrections[0].Description | Should -Be 'Replace cls with Clear-Host'
         }
+
+        It "warns when 'Get-' prefix was omitted" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'verb' | Where-Object { $_.RuleName -eq $violationName }
+            $violations.Count | Should -Be 1
+        }
     }
 
     Context "Violation Extent" {
