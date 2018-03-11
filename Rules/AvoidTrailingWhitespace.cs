@@ -15,7 +15,6 @@ using System.Text.RegularExpressions;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
-using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 

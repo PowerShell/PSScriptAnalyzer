@@ -25,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// UseStandardDSCFunctionsInResource: Checks if the DSC resource uses standard Get/Set/Test TargetResource functions.
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
 [Export(typeof(IDSCResourceRule))]
 #endif
     public class UseStandardDSCFunctionsInResource : IDSCResourceRule

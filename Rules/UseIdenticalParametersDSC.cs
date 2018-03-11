@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseIdenticalParametersDSC: Check that the Test-TargetResource and
     /// Set-TargetResource have identical parameters.
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
 [Export(typeof(IDSCResourceRule))]
 #endif
     public class UseIdenticalParametersDSC : IDSCResourceRule

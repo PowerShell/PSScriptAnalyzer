@@ -19,7 +19,6 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Text;
 using System.Globalization;

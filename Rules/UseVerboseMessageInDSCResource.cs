@@ -19,14 +19,13 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
-using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
     /// UseVerboseMessageInDSCResource: Analyzes the ast to check that Write-Verbose is called for DSC Resources.
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
 [Export(typeof(IDSCResourceRule))]
 #endif
     public class UseVerboseMessageInDSCResource : SkipNamedBlock, IDSCResourceRule

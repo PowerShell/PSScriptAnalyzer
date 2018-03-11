@@ -19,7 +19,6 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
-using System.Threading;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Loggers
 {

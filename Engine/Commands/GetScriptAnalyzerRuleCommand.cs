@@ -10,13 +10,13 @@
 // THE SOFTWARE.
 //
 
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
