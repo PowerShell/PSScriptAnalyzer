@@ -33,6 +33,37 @@ function foo ($param1)
         It "Should mark only the open brace" {
             $violations[0].Extent.Text | Should -Be '{'
         }
+
+        It "Should correct violation" {
+            $scriptDefinition = @'
+foreach ($x in $y)
+{
+    Get-Something
+}
+'@
+            $expected = @'
+foreach ($x in $y) {
+    Get-Something
+}
+'@
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
+        }
+
+        It "Should correct violation and take comment into account" {
+            $scriptDefinition = @'
+foreach ($x in $y) # useful comment
+{
+    Get-Something
+}
+'@
+            $expected = @'
+foreach ($x in $y) { # useful comment
+    Get-Something
+}
+'@
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
+        }
+
     }
 
     Context "When an open brace must be on the same line in a switch statement" {
