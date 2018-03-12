@@ -89,7 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 throw new ArgumentException(
                     String.Format(CultureInfo.CurrentCulture,
-                    Strings.TextEditNoNullItem), nameof(lines));
+                    EngineStrings.TextEditNoNullItem), nameof(lines));
             }
 
             Lines = lines.ToArray();

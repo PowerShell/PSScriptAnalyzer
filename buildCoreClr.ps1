@@ -42,7 +42,6 @@ elseif ($Configuration -match 'PSv3') {
 
 if ($build)
 {
-
     Write-Progress "Building Engine"
     Push-Location Engine\
     dotnet build Engine.csproj --framework $Framework --configuration $Configuration

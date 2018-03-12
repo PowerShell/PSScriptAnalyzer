@@ -206,3 +206,6 @@ FakesAssemblies/
 
 ##Our project binplace location
 PSScriptAnalyzer/
+
+## generated resource files
+gen/
