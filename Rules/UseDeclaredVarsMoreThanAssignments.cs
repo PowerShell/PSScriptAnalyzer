@@ -180,13 +180,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             // Try casting to AssignmentStatementAst to be able to catch case where a variable is assigned more than once (https://github.com/PowerShell/PSScriptAnalyzer/issues/833)
                             var varInAssignmentAsStatementAst = varInAssignment.Parent as AssignmentStatementAst;
                             var varAstAsAssignmentStatementAst = varAst.Parent as AssignmentStatementAst;
-                            if (varInAssignmentAsStatementAst != null && varAstAsAssignmentStatementAst != null)
+                            if (varAstAsAssignmentStatementAst != null && varAstAsAssignmentStatementAst.Operator == TokenKind.Equals)
                             {
-                                inAssignment = varInAssignmentAsStatementAst.Left.Extent.Text.Equals(varAstAsAssignmentStatementAst.Left.Extent.Text, StringComparison.OrdinalIgnoreCase);
-                            }
-                            else
-                            {
-                                inAssignment = varInAssignment.Equals(varAst);
+                                if (varInAssignmentAsStatementAst != null)
+                                {
+                                    inAssignment = varInAssignmentAsStatementAst.Left.Extent.Text.Equals(varAstAsAssignmentStatementAst.Left.Extent.Text, StringComparison.OrdinalIgnoreCase);
+                                }
+                                else
+                                {
+                                    inAssignment = varInAssignment.Equals(varAst);
+                                }
                             }
                         }
 
