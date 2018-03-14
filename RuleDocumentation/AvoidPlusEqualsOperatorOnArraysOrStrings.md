@@ -4,7 +4,7 @@
 
 ## Description
 
-PowerShell's `+=` operator creates a new array everytime an element gets added to it. This can leads to a noticable performance hit on arrays that have more than 1000 elements and many elements are being added.
+PowerShell's `+=` operator creates a new array everytime an element gets added to it. This can leads to a noticable performance hit on arrays that have more than 1000 elements and many elements are being added. Another negative side effect is also that by re-creating an entire new array one loses the reference to the original object.
 
 ## How
 
