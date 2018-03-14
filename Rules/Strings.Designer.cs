@@ -458,7 +458,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Using the += operator is discouraged for arrays or strings. The reason is that it can result in bad performance because the underlying type System.Array is of fixed size and needs to be-recreated for each addition. Consider replacing it with other types such as System.Collections.ArrayList or System.Text.StringBuilder, especially in cases where more than 100 additions can happen..
+        ///   Looks up a localized string similar to Using the += operator is discouraged for arrays or strings. The reason is that it can result in bad performance because the underlying type System.Array is of fixed size and needs to be-recreated for each addition. Consider replacing it with other types such as System.Collections.ArrayList or System.Text.StringBuilder, especially for arrays with more than 1000 elements..
         /// </summary>
         internal static string AvoidPlusEqualsOperatorOnArraysDescription {
             get {
