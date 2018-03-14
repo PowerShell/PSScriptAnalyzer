@@ -1218,6 +1218,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Get the type of varAst from the internal variable analysis.
+        /// </summary>
+        /// <param name="varAst"></param>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        public Type GetTypeFromInternalVariableAnalysis(VariableExpressionAst varAst, Ast ast)
+        {
+            try
+            {
+                if (VariableAnalysisDictionary.ContainsKey(ast))
+                {
+                    VariableAnalysis VarTypeAnalysis = VariableAnalysisDictionary[ast];
+                    VariableAnalysisDetails details = VarTypeAnalysis.GetInternalVariableAnalysis(varAst);
+                    return details.Type;
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
+        /// <summary>
         /// Get type of variable from the variable analysis
         /// </summary>
         /// <param name="varAst"></param>

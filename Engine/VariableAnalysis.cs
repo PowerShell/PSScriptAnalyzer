@@ -338,6 +338,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return VariablesDictionary[key];
         }
 
+        /// <summary>
+        /// Get VariableAnalysisDetails of internal variables.
+        /// </summary>
+        /// <param name="varTarget"></param>
+        /// <returns></returns>
+        public VariableAnalysisDetails GetInternalVariableAnalysis(VariableExpressionAst varTarget)
+        {
+            if (varTarget == null)
+            {
+                return null;
+            }
+
+            string key = varTarget.VariablePath.UserPath;
+
+            if (!InternalVariablesDictionary.ContainsKey(key))
+            {
+                return null;
+            }
+
+            return InternalVariablesDictionary[key];
+        }
+
         internal static string AnalysisDictionaryKey(VariableExpressionAst varExprAst)
         {
             if (varExprAst == null)

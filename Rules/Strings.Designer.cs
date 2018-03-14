@@ -449,6 +449,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use other .Net classes such as System.Collections.ArrayList or System.Texst.StringBuilder instead..
+        /// </summary>
+        internal static string AvoidPlusEqualsOperatorOnArraysCommonName {
+            get {
+                return ResourceManager.GetString("AvoidPlusEqualsOperatorOnArraysCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Using the += operator is discouraged for arrays or strings. The reason is that it can result in bad performance because the underlying type System.Array is of fixed size and needs to be-recreated for each addition. Consider replacing it with other types such as System.Collections.ArrayList or System.Text.StringBuilder, especially in cases where more than 100 additions can happen..
+        /// </summary>
+        internal static string AvoidPlusEqualsOperatorOnArraysDescription {
+            get {
+                return ResourceManager.GetString("AvoidPlusEqualsOperatorOnArraysDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid using += operator for arrays or strings..
+        /// </summary>
+        internal static string AvoidPlusEqualsOperatorOnArraysError {
+            get {
+                return ResourceManager.GetString("AvoidPlusEqualsOperatorOnArraysError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidPlusEqualsOperatorOnArraysOrStrings.
+        /// </summary>
+        internal static string AvoidPlusEqualsOperatorOnArraysName {
+            get {
+                return ResourceManager.GetString("AvoidPlusEqualsOperatorOnArraysName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ShouldContinue Without Boolean Force Parameter.
         /// </summary>
         internal static string AvoidShouldContinueWithoutForceCommonName {
