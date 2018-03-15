@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Management.Automation" Version="6.0.0-alpha13" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
