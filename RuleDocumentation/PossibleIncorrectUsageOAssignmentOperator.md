@@ -6,7 +6,7 @@
 
 In many programming languages, the equality operator is denoted as `==` or `=` in many programming languages, but `PowerShell` uses `-eq`. Therefore it can easily happen that the wrong operator is used unintentionally and this rule catches a few special cases where the likelihood of that is quite high.
 
-The rule looks for usages of `==` and `=` operators inside if statements but it will not warn if any kind of command or expression is used at the right hand side as this is probably by design.
+The rule looks for usages of `==` and `=` operators inside `if`, `else if`, `while` and `do-while` statements but it will not warn if any kind of command or expression is used at the right hand side as this is probably by design.
 
 ## Example
 

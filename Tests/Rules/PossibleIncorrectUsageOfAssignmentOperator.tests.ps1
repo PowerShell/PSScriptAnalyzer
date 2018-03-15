@@ -8,6 +8,16 @@ Describe "PossibleIncorrectUsageOfComparisonOperator" {
             $warnings.Count | Should -Be 1
         }
 
+        It "assignment inside while statement causes warning" {
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'while ($a=$b){}' | Where-Object {$_.RuleName -eq $ruleName}
+            $warnings.Count | Should -Be 1
+        }
+
+        It "assignment inside do-while statement causes warning" {
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'do {} while ($a=$b){}' | Where-Object {$_.RuleName -eq $ruleName}
+            $warnings.Count | Should -Be 1
+        }
+
         It "assignment inside if statement causes warning when when wrapped in command expression" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a=($b)){}' | Where-Object {$_.RuleName -eq $ruleName}
             $warnings.Count | Should -Be 1
@@ -82,6 +92,11 @@ Describe "PossibleIncorrectUsageOfComparisonOperator" {
 
         It "returns no violations when there is a command on the RHS wrapped in an expression" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'if ($a = (Get-ChildItem)){ }' | Where-Object {$_.RuleName -eq $ruleName}
+            $warnings.Count | Should -Be 0
+        }
+
+        It "returns no violations when using for loop" {
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'for ($i = 0; $ -lt 42; $i++){ }' | Where-Object {$_.RuleName -eq $ruleName}
             $warnings.Count | Should -Be 0
         }
     }
