@@ -1592,7 +1592,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;=&apos; or &apos;==&apos; are not comparison operators in the PowerShell language and rarely needed inside if statements..
+        ///   Looks up a localized string similar to &apos;=&apos; or &apos;==&apos; are not comparison operators in the PowerShell language and rarely needed inside conditional statements..
         /// </summary>
         internal static string PossibleIncorrectUsageOfAssignmentOperatorDescription {
             get {

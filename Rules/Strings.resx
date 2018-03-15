@@ -1003,7 +1003,7 @@
     <value>AvoidAssignmentToAutomaticVariable</value>
   </data>
   <data name="PossibleIncorrectUsageOfAssignmentOperatorDescription" xml:space="preserve">
-    <value>'=' or '==' are not comparison operators in the PowerShell language and rarely needed inside if statements.</value>
+    <value>'=' or '==' are not comparison operators in the PowerShell language and rarely needed inside conditional statements.</value>
   </data>
   <data name="PossibleIncorrectUsageOfAssignmentOperatorError" xml:space="preserve">
     <value>Did you mean to use the assignment operator '='? The equality operator in PowerShell is 'eq'.</value>
