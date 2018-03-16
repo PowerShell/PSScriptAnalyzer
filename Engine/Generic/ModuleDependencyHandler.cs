@@ -1,4 +1,7 @@
-﻿#if !PSV3
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#if !PSV3
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
