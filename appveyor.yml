@@ -6,6 +6,9 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: Desktop
     BuildConfiguration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
+    PowerShellEdition: Desktop
+    BuildConfiguration: PSv3Release
 
 clone_folder: C:\projects\psscriptanalyzer
 
