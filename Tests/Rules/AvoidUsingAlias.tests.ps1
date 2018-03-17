@@ -100,5 +100,10 @@ Configuration MyDscConfiguration {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition "CD" -Settings $settings -IncludeRule $violationName
             $violations.Count | Should -Be 0
         }
+
+        It "do not warn when about Get-* completed cmdlets when the command exists natively on Unix platforms" -skip:(!$IsLinux -and !$IsmacOS) {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'service' | Where-Object { $_.RuleName -eq $violationName }
+            $violations.Count | Should -Be 0
+        }
     }
 }
