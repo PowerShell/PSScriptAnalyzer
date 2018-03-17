@@ -101,7 +101,7 @@ test_script:
         }
     - pwsh: |
         if ($env:PowerShellEdition -eq 'PowerShellCore') {
-            copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\powershell\6.0.1\Modules\" -Recurse -Force
+            copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
             $testResultsFile = ".\TestResults.xml"
             $testScripts = "C:\projects\psscriptanalyzer\Tests\Engine","C:\projects\psscriptanalyzer\Tests\Rules"
             $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
