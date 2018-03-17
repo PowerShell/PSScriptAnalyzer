@@ -17,8 +17,8 @@ cache:
 
 install:
   - ps: Import-Module .\tools\Appveyor.psm1
-  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell')        { Invoke-AppveyorInstall }
-  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore') { Import-Module .\tools\Appveyor.psm1; Invoke-AppveyorInstall }
+  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { Invoke-AppveyorInstall }
+  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\Appveyor.psm1; Invoke-AppveyorInstall }
 
 build_script:
   - ps:   |
