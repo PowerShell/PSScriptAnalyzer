@@ -15,14 +15,12 @@ cache:
   - '%USERPROFILE%\.nuget\packages -> appveyor.yml'
   - '%LocalAppData%\Microsoft\dotnet -> appveyor.yml'
 
-# Install Pester
+# Install Pester, PlatyPS and the required .Net Core SDK
 install:
-    - ps: nuget install platyPS -Version 0.9.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
     - ps: |
         if ($env:PowerShellEdition -eq 'Desktop') {
             $requiredPesterVersion = '4.3.1'
             $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
-            $pester
             if ($null -eq $pester)
             {
                 if ($null -eq (Get-Module -ListAvailable PowershellGet))
@@ -36,16 +34,11 @@ install:
                     Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
                 }
             }
+            Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion '0.9.0'
         }
     - pwsh: |
         if ($env:PowerShellEdition -eq 'PowerShellCore') {
-            $requiredPesterVersion = '4.3.1'
-            $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
-            $pester
-            if ($null -eq $pester)
-            {
-                Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
-            }
+            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -RequiredVersion '4.3.1'
             Install-Module -Name platyPS -Force 
         }
 
@@ -66,11 +59,8 @@ build_script:
             Write-Verbose "Pester version: $((Get-Command Invoke-Pester).Version)" -Verbose
             Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose
             Push-Location C:\projects\psscriptanalyzer
-            # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
-            .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
-            git clean -dfx
-            C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
-            C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
+            .\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
+            .\build.ps1 -BuildDocs
             Pop-Location
         }
     - pwsh: |
@@ -79,9 +69,8 @@ build_script:
             Write-Verbose "Pester version: $((Get-Command Invoke-Pester).Version)" -Verbose
             Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose
             Push-Location C:\projects\psscriptanalyzer
-            # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
             .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
-            C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
+            .\build.ps1 -BuildDocs
             Pop-Location
         }
 
@@ -90,7 +79,7 @@ test_script:
     - SET PATH=c:\Program Files\WindowsPowerShell\Modules\;%PATH%;
     - ps: |
         if ($env:PowerShellEdition -eq 'Desktop') {
-            copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
+            Copy-Item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
             $testResultsFile = ".\TestResults.xml"
             $testScripts = "C:\projects\psscriptanalyzer\Tests\Engine","C:\projects\psscriptanalyzer\Tests\Rules"
             $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
@@ -101,7 +90,7 @@ test_script:
         }
     - pwsh: |
         if ($env:PowerShellEdition -eq 'PowerShellCore') {
-            copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
+            Copy-Item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
             $testResultsFile = ".\TestResults.xml"
             $testScripts = "C:\projects\psscriptanalyzer\Tests\Engine","C:\projects\psscriptanalyzer\Tests\Rules"
             $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
