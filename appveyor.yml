@@ -18,7 +18,6 @@ cache:
 # Install Pester
 install:
     - ps: nuget install platyPS -Version 0.9.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
-    - ps: nuget install platyPS -Version 0.9.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\powershell\6.0.1\Modules\\." -ExcludeVersion
     - ps: |
         if ($env:PowerShellEdition -eq 'Desktop') {
             $requiredPesterVersion = '4.3.1'
@@ -47,6 +46,7 @@ install:
             {
                 Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
             }
+            Install-Module -Name platyPS -Force 
         }
 
     - ps: |
