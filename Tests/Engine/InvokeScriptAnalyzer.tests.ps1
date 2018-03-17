@@ -523,7 +523,12 @@ Describe "Test -Fix Switch" {
 
 Describe "Test -EnableExit Switch" {
     It "Returns exit code equivalent to number of warnings" {
-        powershell -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        if ($null -eq $env:IsCoreCLR) {
+            powershell -command 'Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        }
+        else {
+            pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        }
         $LASTEXITCODE  | Should -Be 1
     }
 
@@ -534,7 +539,7 @@ Describe "Test -EnableExit Switch" {
                 $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
             }
             else {
-                $result = pwsh -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
+                $result = pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
             }
             
             "$result" | Should -BeLike $reportSummaryFor1Warning 
@@ -544,7 +549,7 @@ Describe "Test -EnableExit Switch" {
                 $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
             }
             else {
-                $result = pwsh -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
+                $result = pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-Scriptanalyzer -ScriptDefinition gci'
             }
             
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
