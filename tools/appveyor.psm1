@@ -56,6 +56,7 @@ function Invoke-AppVeyorBuild {
     Write-Verbose "Pester version: $((Get-Command Invoke-Pester).Version)" -Verbose
     Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose
     Push-Location $CheckoutPath
+    [Environment]::SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", 1) # avoid unneccessary initialization in CI
     if ($BuildType -eq 'FullCLR') {
         .\buildCoreClr.ps1 -Framework net451 -Configuration $BuildConfiguration -Build
     }
