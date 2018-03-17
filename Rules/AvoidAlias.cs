@@ -127,18 +127,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletNameIfCommandNameWasAlias));
                 }
 
-                var commdNameWithGetPrefix = $"Get-{commandName}";
-                var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo($"Get-{commandName}");
-                if (cmdletNameIfCommandWasMissingGetPrefix!= null)
+                var isNativeCommand = Helper.Instance.GetCommandInfo(commandName) != null;
+                if (!isNativeCommand)
                 {
-                    yield return new DiagnosticRecord(
-                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, commandName, commdNameWithGetPrefix),
-                        GetCommandExtent(cmdAst),
-                        GetName(),
-                        DiagnosticSeverity.Warning,
-                        fileName,
-                        commandName,
-                        suggestedCorrections: GetCorrectionExtent(cmdAst, commdNameWithGetPrefix));
+                    var commdNameWithGetPrefix = $"Get-{commandName}";
+                    var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo($"Get-{commandName}");
+                    if (cmdletNameIfCommandWasMissingGetPrefix != null)
+                    {
+                        yield return new DiagnosticRecord(
+                            string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
+                            GetCommandExtent(cmdAst),
+                            GetName(),
+                            DiagnosticSeverity.Warning,
+                            fileName,
+                            commandName,
+                            suggestedCorrections: GetCorrectionExtent(cmdAst, commdNameWithGetPrefix));
+                    }
                 }
             }
         }
