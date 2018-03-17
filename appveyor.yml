@@ -3,9 +3,9 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: Desktop
     BuildConfiguration: Release
-  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
-    PowerShellEdition: Desktop
-    BuildConfiguration: PSv3Release
+- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    PowerShellEdition: PowerShellCore
+    BuildConfiguration: Release
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
@@ -18,23 +18,37 @@ cache:
 # Install Pester
 install:
     - ps: nuget install platyPS -Version 0.9.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+    - ps: nuget install platyPS -Version 0.9.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\powershell\6.0.1\Modules\\." -ExcludeVersion
     - ps: |
-        $requiredPesterVersion = '4.3.1'
-        $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
-        $pester
-        if ($null -eq $pester)
-        {
-            if ($null -eq (Get-Module -ListAvailable PowershellGet))
+        if ($env:PowerShellEdition -eq 'Desktop') {
+            $requiredPesterVersion = '4.3.1'
+            $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
+            $pester
+            if ($null -eq $pester)
             {
-                # WMF 4 image build
-                nuget install Pester -Version $requiredPesterVersion -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+                if ($null -eq (Get-Module -ListAvailable PowershellGet))
+                {
+                    # WMF 4 image build
+                    nuget install Pester -Version $requiredPesterVersion -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+                }
+                else
+                {
+                    # Visual Studio 2017 build (has already Pester v3, therefore a different installation mechanism is needed to make it also use the new version 4)
+                    Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+                }
             }
-            else
+        }
+    - pwsh: |
+        if ($env:PowerShellEdition -eq 'PowerShellCore') {
+            $requiredPesterVersion = '4.3.1'
+            $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
+            $pester
+            if ($null -eq $pester)
             {
-                # Visual Studio 2017 build (has already Pester v3, therefore a different installation mechanism is needed to make it also use the new version 4)
                 Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
             }
         }
+
     - ps: |
         # the legacy WMF4 image only has the old preview SDKs of dotnet
         $globalDotJson = Get-Content .\global.json -Raw | ConvertFrom-Json
@@ -47,35 +61,54 @@ install:
 
 build_script:
     - ps: |
-        $PSVersionTable
-        Write-Verbose "Pester version: $((Get-Command Invoke-Pester).Version)" -Verbose
-        Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose
-        Push-Location C:\projects\psscriptanalyzer
-        # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
-        .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
-        git clean -dfx
-        C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
-        C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
-        Pop-Location
-
-# branches to build
-branches:
-  # whitelist
-  only:
-    - master
-    - development
+        if ($env:PowerShellEdition -eq 'Desktop') {
+            $PSVersionTable
+            Write-Verbose "Pester version: $((Get-Command Invoke-Pester).Version)" -Verbose
+            Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose
+            Push-Location C:\projects\psscriptanalyzer
+            # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
+            .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+            git clean -dfx
+            C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
+            C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
+            Pop-Location
+        }
+    - pwsh: |
+        if ($env:PowerShellEdition -eq 'PowerShellCore') {
+            $PSVersionTable
+            Write-Verbose "Pester version: $((Get-Command Invoke-Pester).Version)" -Verbose
+            Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose
+            Push-Location C:\projects\psscriptanalyzer
+            # Test build using netstandard to test whether APIs are being called that are not available in .Net Core. Remove output afterwards.
+            .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+            C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
+            Pop-Location
+        }
 
 # Run Pester tests and store the results
 test_script:
     - SET PATH=c:\Program Files\WindowsPowerShell\Modules\;%PATH%;
     - ps: |
-        copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
-        $testResultsFile = ".\TestResults.xml"
-        $testScripts = "C:\projects\psscriptanalyzer\Tests\Engine","C:\projects\psscriptanalyzer\Tests\Rules"
-        $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
-        (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
-        if ($testResults.FailedCount -gt 0) {
-            throw "$($testResults.FailedCount) tests failed."
+        if ($env:PowerShellEdition -eq 'Desktop') {
+            copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
+            $testResultsFile = ".\TestResults.xml"
+            $testScripts = "C:\projects\psscriptanalyzer\Tests\Engine","C:\projects\psscriptanalyzer\Tests\Rules"
+            $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
+            (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
+            if ($testResults.FailedCount -gt 0) {
+                throw "$($testResults.FailedCount) tests failed."
+            }
+        }
+    - pwsh: |
+        if ($env:PowerShellEdition -eq 'PowerShellCore') {
+            copy-item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\powershell\6.0.1\Modules\" -Recurse -Force
+            $testResultsFile = ".\TestResults.xml"
+            $testScripts = "C:\projects\psscriptanalyzer\Tests\Engine","C:\projects\psscriptanalyzer\Tests\Rules"
+            $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
+            (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
+            if ($testResults.FailedCount -gt 0) {
+                throw "$($testResults.FailedCount) tests failed."
+            }
         }
 
 # Upload the project along with TestResults as a zip archive
