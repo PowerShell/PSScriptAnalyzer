@@ -60,30 +60,6 @@ function Invoke-AppVeyorBuild {
     Pop-Location
 }
 
-# Implement AppVeyor 'Test_script'
-function Invoke-AppVeyorTest {
-    Param(
-        [Parameter(Mandatory)]
-        [ValidateScript( {Test-Path $_})]
-        $CheckoutPath
-    )
-
-    $psScriptAnalyzerModuleOutput = (Join-Path $CheckoutPath 'out\PSScriptAnalyzer')
-    if ($IsCoreCLR) {
-        Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
-    }
-    else {
-        Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
-    }
-    $testResultsFile = '.\TestResults.xml'
-    $testScripts = (Join-Path $CheckoutPath 'Tests\Engine'),(Join-Path $CheckoutPath 'Tests\Rules')
-    $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
-    (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}", (Resolve-Path $testResultsFile))
-    if ($testResults.FailedCount -gt 0) {
-        throw "$($testResults.FailedCount) tests failed."
-    }
-}
-
 # Implements AppVeyor 'on_finish' step
 function Invoke-AppveyorFinish {
     $stagingDirectory = (Resolve-Path ..).Path
