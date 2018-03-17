@@ -4,10 +4,10 @@ environment:
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    PowerShellEdition: Desktop
+    PowerShellEdition: WindowsPowerShell
     BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
-    PowerShellEdition: Desktop
+    PowerShellEdition: WindowsPowerShell
     BuildConfiguration: PSv3Release
 
 # cache Nuget packages and dotnet CLI cache
@@ -17,12 +17,12 @@ cache:
 
 install:
   - ps: Import-Module .\tools\Appveyor.psm1
-  - ps:   if ($env:PowerShellEdition -eq 'Desktop')        { Invoke-AppveyorInstall }
+  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell')        { Invoke-AppveyorInstall }
   - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore') { Import-Module .\tools\Appveyor.psm1; Invoke-AppveyorInstall }
 
 build_script:
   - ps:   |
-            if ($env:PowerShellEdition -eq 'Desktop') {
+            if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
                 Invoke-AppveyorBuild -CheckoutPath $env:APPVEYOR_BUILD_FOLDER -BuildConfiguration $env:BuildConfiguration -BuildType 'FullCLR'
             }
   - pwsh: |
@@ -35,7 +35,7 @@ build_script:
 test_script:
   - SET PATH=C:\Program Files\WindowsPowerShell\Modules\;%PATH%;
   - ps:   |
-            if ($env:PowerShellEdition -eq 'Desktop') {
+            if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
                 $modulePath = $env:PSModulePath.Split(';') | Where-Object { Test-Path $_} | Select-Object -First 1
                 Copy-Item "${env:APPVEYOR_BUILD_FOLDER}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
                 $testResultsFile = ".\TestResults.xml"
