@@ -30,7 +30,7 @@ build_script:
             }
 
 test_script:
-  - SET PATH=C:\Program Files\WindowsPowerShell\Modules\;%PATH%;
+    - SET PATH=C:\Program Files\WindowsPowerShell\Modules\;%PATH%;
     - ps: |
         if ($env:PowerShellEdition -eq 'Desktop') {
             Copy-Item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
