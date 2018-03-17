@@ -62,19 +62,15 @@ function Invoke-AppVeyorBuild {
 function Invoke-AppVeyorTest {
     Param(
         [Parameter(Mandatory)]
-        [ValidateSet('WindowsPowerShell', 'PowerShellCore')]
-        $BuildType,
-
-        [Parameter(Mandatory)]
         [ValidateScript( {Test-Path $_})]
         $CheckoutPath
     )
 
     $psScriptAnalyzerModuleOutput = (Join-Path $CheckoutPath 'out\PSScriptAnalyzer')
-    if ($BuildType -eq 'WindowsPowerShell') {
+    if ($IsCoreCLR) {
         Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
     }
-    elseif ($BuildType -eq 'PowerShellCore') {
+    else {
         Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
     }
     $testResultsFile = ".\TestResults.xml"
