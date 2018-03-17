@@ -8,7 +8,7 @@ function Invoke-AppVeyorInstall {
     if ($null -eq $pester) {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
             # WMF 4 image build
-            nuget install Pester -Version $requiredPesterVersion -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+            nuget install Pester -Version $requiredPesterVersion -source https://www.powershellgallery.com/api/v2 -outputDirectory "$env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
         }
         else {
             # Visual Studio 2017 build (has already Pester v3, therefore a different installation mechanism is needed to make it also use the new version 4)
@@ -73,11 +73,23 @@ function Invoke-AppVeyorTest {
     else {
         Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
     }
-    $testResultsFile = ".\TestResults.xml"
-    $testScripts = (Join-Path $CheckoutPath 'Test\Engine'),(Join-Path $CheckoutPath 'Test\Rules')
+    $testResultsFile = '.\TestResults.xml'
+    $testScripts = (Join-Path $CheckoutPath 'Tests\Engine'),(Join-Path $CheckoutPath 'Tests\Rules')
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
     (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}", (Resolve-Path $testResultsFile))
     if ($testResults.FailedCount -gt 0) {
         throw "$($testResults.FailedCount) tests failed."
     }
+}
+
+# Implements AppVeyor 'on_finish' step
+function Invoke-AppveyorFinish {
+    $stagingDirectory = (Resolve-Path ..).Path
+    $zipFile = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
+    Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($pwd, $zipFile)
+    @(
+        # You can add other artifacts here
+        (Get-ChildItem $zipFile)
+    ) | ForEach-Object { Push-AppveyorArtifact $_.FullName }
 }

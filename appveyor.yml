@@ -8,7 +8,7 @@ environment:
     BuildConfiguration: Release
 
 # clone directory
-clone_folder: c:\projects\psscriptanalyzer
+clone_folder: C:\projects\psscriptanalyzer
 
 # cache Nuget packages and dotnet CLI cache
 cache:
@@ -29,14 +29,6 @@ test_script:
     - ps:   if ($env:PowerShellEdition -eq 'Desktop')        { Invoke-AppveyorTest 'C:\projects\psscriptanalyzer'}
     - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore') { Invoke-AppveyorTest 'C:\projects\psscriptanalyzer'}
 
-# Upload the project along with TestResults as a zip archive
+# Upload the project along with test results as a zip archive
 on_finish:
-    - ps: |
-        $stagingDirectory = (Resolve-Path ..).Path
-        $zipFile = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
-        Add-Type -assemblyname System.IO.Compression.FileSystem
-        [System.IO.Compression.ZipFile]::CreateFromDirectory($pwd, $zipFile)
-        @(
-            # You can add other artifacts here
-            (ls $zipFile)
-        ) | % { Push-AppveyorArtifact $_.FullName }
+    - ps: Invoke-AppveyorFinish
