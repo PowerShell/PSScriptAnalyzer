@@ -30,8 +30,8 @@ build_script:
             }
 
 test_script:
-    - SET PATH=C:\Program Files\WindowsPowerShell\Modules\;%PATH%;
-    - ps: |
+  - SET PATH=C:\Program Files\WindowsPowerShell\Modules\;%PATH%;
+  - ps: |
         if ($env:PowerShellEdition -eq 'Desktop') {
             Copy-Item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
             $testResultsFile = ".\TestResults.xml"
@@ -42,7 +42,7 @@ test_script:
                 throw "$($testResults.FailedCount) tests failed."
             }
         }
-    - pwsh: |
+  - pwsh: |
         if ($env:PowerShellEdition -eq 'PowerShellCore') {
             Copy-Item "C:\projects\psscriptanalyzer\out\PSScriptAnalyzer" "$Env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
             $testResultsFile = ".\TestResults.xml"
@@ -56,5 +56,4 @@ test_script:
 
 # Upload the project along with test results as a zip archive
 on_finish:
-  - ps:   if ($env:PowerShellEdition -eq 'Desktop')        { Invoke-AppveyorFinish }
-  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore') { Import-Module .\tools\Appveyor.psm1; Invoke-AppveyorFinish }
+  - ps: Invoke-AppveyorFinish
