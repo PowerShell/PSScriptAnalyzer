@@ -530,11 +530,23 @@ Describe "Test -EnableExit Switch" {
     Describe "-ReportSummary switch" {
         $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
         It "prints the correct report summary using the -NoReportSummary switch" {
-            $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
+            if ($null -eq $env:IsCoreCLR) {
+                $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
+            }
+            else {
+                $result = pwsh -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
+            }
+            
             "$result" | Should -BeLike $reportSummaryFor1Warning 
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
-            $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
+            if ($null -eq $env:IsCoreCLR) {
+                $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
+            }
+            else {
+                $result = pwsh -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
+            }
+            
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
         }
     }
