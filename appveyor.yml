@@ -1,11 +1,14 @@
 environment:
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    PowerShellEdition: Desktop
-    BuildConfiguration: Release
-  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    PowerShellEdition: Desktop
+    BuildConfiguration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
+    PowerShellEdition: Desktop
+    BuildConfiguration: PSv3Release
 
 # clone directory
 clone_folder: C:\projects\psscriptanalyzer
@@ -20,15 +23,29 @@ install:
   - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore') { Import-Module .\tools\Appveyor.psm1; Invoke-AppveyorInstall }
 
 build_script:
-  - ps:   if ($env:PowerShellEdition -eq 'Desktop')        { Invoke-AppveyorBuild 'FullCLR'     $env:BuildConfiguration 'C:\projects\psscriptanalyzer' }
-  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore') { Invoke-AppveyorBuild 'NetStandard' $env:BuildConfiguration 'C:\projects\psscriptanalyzer' }
+  - ps:   |
+            if ($env:PowerShellEdition -eq 'Desktop') {
+                Invoke-AppveyorBuild -CheckoutPath 'C:\projects\psscriptanalyzer' -BuildConfiguration $env:BuildConfiguration -BuildType 'FullCLR'
+            }
+  - pwsh: |
+            if ($env:PowerShellEdition -eq 'PowerShellCore') {
+                Import-Module .\tools\Appveyor.psm1 # Appveyor does not persist pwsh sessions like it does for ps
+                Invoke-AppveyorBuild -CheckoutPath 'C:\projects\psscriptanalyzer' -BuildConfiguration $env:BuildConfiguration -BuildType 'NetStandard'
+            }
 
 # Run Pester tests and store the results
 test_script:
-    - SET PATH=c:\Program Files\WindowsPowerShell\Modules\;%PATH%;
-    - ps:   if ($env:PowerShellEdition -eq 'Desktop')        { Invoke-AppveyorTest 'C:\projects\psscriptanalyzer'}
-    - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore') { Invoke-AppveyorTest 'C:\projects\psscriptanalyzer'}
+  - SET PATH=c:\Program Files\WindowsPowerShell\Modules\;%PATH%;
+  - ps:   |
+            if ($env:PowerShellEdition -eq 'Desktop') {
+                Invoke-AppveyorTest -CheckoutPath 'C:\projects\psscriptanalyzer'
+            }
+  - pwsh: |
+            if ($env:PowerShellEdition -eq 'PowerShellCore') {
+                Import-Module .\tools\Appveyor.psm1  # Appveyor does not persist pwsh sessions like it does for ps
+                Invoke-AppveyorTest -CheckoutPath 'C:\projects\psscriptanalyzer'
+            }
 
 # Upload the project along with test results as a zip archive
 on_finish:
-    - ps: Invoke-AppveyorFinish
+  - ps: Invoke-AppveyorFinish

@@ -68,10 +68,10 @@ function Invoke-AppVeyorTest {
 
     $psScriptAnalyzerModuleOutput = (Join-Path $CheckoutPath 'out\PSScriptAnalyzer')
     if ($IsCoreCLR) {
-        Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
+        Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
     }
     else {
-        Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\powershell\6.0.0\Modules\" -Recurse -Force
+        Copy-Item $psScriptAnalyzerModuleOutput "$env:ProgramFiles\WindowsPowerShell\Modules\" -Recurse -Force
     }
     $testResultsFile = '.\TestResults.xml'
     $testScripts = (Join-Path $CheckoutPath 'Tests\Engine'),(Join-Path $CheckoutPath 'Tests\Rules')
