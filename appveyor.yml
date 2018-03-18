@@ -3,9 +3,6 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: Desktop
     BuildConfiguration: Release
-  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
-    PowerShellEdition: Desktop
-    BuildConfiguration: PSv3Release
 
 # clone directory
 clone_folder: c:\projects\psscriptanalyzer
@@ -57,13 +54,6 @@ build_script:
         C:\projects\psscriptanalyzer\buildCoreClr.ps1 -Framework net451 -Configuration $env:BuildConfiguration -Build
         C:\projects\psscriptanalyzer\build.ps1 -BuildDocs
         Pop-Location
-
-# branches to build
-branches:
-  # whitelist
-  only:
-    - master
-    - development
 
 # Run Pester tests and store the results
 test_script:
