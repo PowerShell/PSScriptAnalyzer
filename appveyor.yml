@@ -33,7 +33,6 @@ build_script:
 
 # Test scripts are not in a module function because the tests behave differently for unknown reasons in AppVeyor
 test_script:
-  - SET PATH=C:\Program Files\WindowsPowerShell\Modules\;%PATH%;
   - ps:   |
             if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
                 $modulePath = $env:PSModulePath.Split(';') | Where-Object { Test-Path $_} | Select-Object -First 1
