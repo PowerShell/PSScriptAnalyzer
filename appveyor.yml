@@ -13,7 +13,7 @@ cache:
   - '%LocalAppData%\Microsoft\dotnet -> appveyor.yml'
 
 install:
-  - ps: Import-Module .\tools\Appveyor.psm1
+  - ps: Get-Location; Write-Host "loc:'${env:APPVEYOR_BUILD_FOLDER}'"; Import-Module .\tools\Appveyor.psm1
   - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { Invoke-AppveyorInstall }
   - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\Appveyor.psm1; Invoke-AppveyorInstall }
 
