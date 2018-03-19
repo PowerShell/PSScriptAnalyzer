@@ -13,9 +13,8 @@ cache:
   - '%LocalAppData%\Microsoft\dotnet -> appveyor.yml'
 
 install:
-  - ps: Get-Location; Write-Host "loc:'${env:APPVEYOR_BUILD_FOLDER}'"; Import-Module .\tools\Appveyor.psm1
-  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { Invoke-AppveyorInstall }
-  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\Appveyor.psm1; Invoke-AppveyorInstall }
+  - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
+  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
 
 build_script:
   - ps:   |
@@ -24,7 +23,7 @@ build_script:
             }
   - pwsh: |
             if ($env:PowerShellEdition -eq 'PowerShellCore') {
-                Import-Module .\tools\Appveyor.psm1 # Appveyor does not persist pwsh sessions like it does for ps
+                Import-Module .\tools\appveyor.psm1 # Appveyor does not persist pwsh sessions like it does for ps
                 Invoke-AppveyorBuild -CheckoutPath $env:APPVEYOR_BUILD_FOLDER -BuildConfiguration $env:BuildConfiguration -BuildType 'NetStandard'
             }
 
@@ -44,13 +43,7 @@ test_script:
             }
   - pwsh: |
             if ($env:PowerShellEdition -eq 'PowerShellCore') {
-                if ($IsLinux) {
-                  $modulePath = $env:PSModulePath.Split(':') | Where-Object { Test-Path $_} | Select-Object -First 1
-                }
-                else
-                {
-                  $modulePath = $env:PSModulePath.Split(';') | Where-Object { Test-Path $_} | Select-Object -First 1
-                }
+                $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
                 Copy-Item "${env:APPVEYOR_BUILD_FOLDER}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
                 $testResultsFile = ".\TestResults.xml"
                 $testScripts = "${env:APPVEYOR_BUILD_FOLDER}\Tests\Engine","${env:APPVEYOR_BUILD_FOLDER}\Tests\Rules"
@@ -63,4 +56,4 @@ test_script:
 
 # Upload the project along with test results as a zip archive
 on_finish:
-  - ps: Invoke-AppveyorFinish
+  - ps: Import-Module .\tools\appveyor.psm1; Invoke-AppveyorFinish
