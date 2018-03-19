@@ -3,12 +3,9 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
-  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+  - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     PowerShellEdition: WindowsPowerShell
     BuildConfiguration: Release
-  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
-    PowerShellEdition: WindowsPowerShell
-    BuildConfiguration: PSv3Release
 
 # cache Nuget packages and dotnet CLI cache
 cache:
