@@ -3,6 +3,12 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    PowerShellEdition: WindowsPowerShell
+    BuildConfiguration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
+    PowerShellEdition: WindowsPowerShell
+    BuildConfiguration: PSv3Release
   - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
