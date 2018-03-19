@@ -16,9 +16,9 @@ cache:
   - '%LocalAppData%\Microsoft\dotnet -> appveyor.yml'
 
 install:
-  - ps: Import-Module .\tools\Appveyor.psm1
+  - ps: Import-Module .\tools\appveyor.psm1
   - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { Invoke-AppveyorInstall }
-  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\Appveyor.psm1; Invoke-AppveyorInstall }
+  - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
 
 build_script:
   - ps:   |
@@ -27,7 +27,7 @@ build_script:
             }
   - pwsh: |
             if ($env:PowerShellEdition -eq 'PowerShellCore') {
-                Import-Module .\tools\Appveyor.psm1 # Appveyor does not persist pwsh sessions like it does for ps
+                Import-Module .\tools\appveyor.psm1 # Appveyor does not persist pwsh sessions like it does for ps
                 Invoke-AppveyorBuild -CheckoutPath $env:APPVEYOR_BUILD_FOLDER -BuildConfiguration $env:BuildConfiguration -BuildType 'NetStandard'
             }
 
@@ -35,7 +35,7 @@ build_script:
 test_script:
   - ps:   |
             if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
-                $modulePath = $env:PSModulePath.Split(';') | Where-Object { Test-Path $_} | Select-Object -First 1
+                $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
                 Copy-Item "${env:APPVEYOR_BUILD_FOLDER}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
                 $testResultsFile = ".\TestResults.xml"
                 $testScripts = "${env:APPVEYOR_BUILD_FOLDER}\Tests\Engine","${env:APPVEYOR_BUILD_FOLDER}\Tests\Rules"
