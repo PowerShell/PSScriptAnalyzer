@@ -4,7 +4,7 @@ environment:
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-    PowerShellEdition: WindowsPowerShell
+    PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
 
 # cache Nuget packages and dotnet CLI cache
