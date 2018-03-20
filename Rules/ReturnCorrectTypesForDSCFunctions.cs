@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// ReturnCorrectTypeDSCFunctions: Check that DSC functions return the correct type.
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
 [Export(typeof(IDSCResourceRule))]
 #endif
     public class ReturnCorrectTypesForDSCFunctions : IDSCResourceRule

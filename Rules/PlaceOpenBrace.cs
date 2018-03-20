@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
-using System.Linq;
 using System.Management.Automation.Language;
 using System.Text;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;

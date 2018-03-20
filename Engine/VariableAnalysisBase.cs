@@ -5,11 +5,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
-using System.Management.Automation.Language;
-using System.Management.Automation;
 using System.Globalization;
+using System.Linq;
+using System.Management.Automation;
+using System.Management.Automation.Language;
+using System.Reflection;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
