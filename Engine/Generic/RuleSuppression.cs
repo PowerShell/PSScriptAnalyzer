@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Globalization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {

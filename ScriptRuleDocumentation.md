@@ -4,7 +4,7 @@ PSScriptAnalyzer uses MEF(Managed Extensibility Framework) to import all rules d
 
 When calling Invoke-ScriptAnalyzer, users can specify custom rules using the parameter `CustomizedRulePath`.
 
-The purpose of this documentation is to server as a basic guide on creating your own customized rules.
+The purpose of this documentation is to serve as a basic guide on creating your own customized rules.
 
 ### Basics
 
@@ -29,7 +29,7 @@ The purpose of this documentation is to server as a basic guide on creating your
 [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
 ```
 
-- Make sure each function takes either a Token or an Ast as a parameter
+- Make sure each function takes either a Token array or an Ast as a parameter. The _Ast_ parameter name must end with 'Ast' and the _Token_ parameter name must end with 'Token'
 
 ``` PowerShell
 Param
@@ -38,6 +38,16 @@ Param
     [ValidateNotNullOrEmpty()]
     [System.Management.Automation.Language.ScriptBlockAst]
     $testAst
+)
+```
+
+``` PowerShell
+Param
+(
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [System.Management.Automation.Language.Token[]]
+    $testToken
 )
 ```
 

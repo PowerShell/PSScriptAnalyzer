@@ -21,7 +21,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     ///     For class based resources it should be present at the same folder level as resource psm1 file. 
     /// Examples folder should contain sample configuration for given resource - file name should contain resource's name.
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
 [Export(typeof(IDSCResourceRule))]
 #endif
     public class DscExamplesPresent : IDSCResourceRule
