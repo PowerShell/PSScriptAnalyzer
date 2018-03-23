@@ -75,7 +75,7 @@ function MyFunc2() {
         }
 
         It "Using a variable via 'Get-Variable' does not trigger a warning" {
-            $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition '$a=4; get-variable a' | Where-Object { $_.RuleName -eq $violationName }
+            $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition '$a=4; get-variable a'
             $noViolations.Count | Should -Be 0
         }
     }
