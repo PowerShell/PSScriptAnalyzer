@@ -35,7 +35,7 @@ Describe "AvoidAssignmentToAutomaticVariables" {
         It "Variable <VariableName> produces warning of Severity <ExpectedSeverity>" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity)
 
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$${VariableName} = 'foo'"
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$${VariableName} = 'foo'" -ExcludeRule PSUseDeclaredVarsMoreThanAssignments
             $warnings.Count | Should -Be 1
             $warnings.Severity | Should -Be $ExpectedSeverity
             $warnings.RuleName | Should -Be $ruleName
