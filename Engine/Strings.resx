@@ -268,7 +268,7 @@
     <value>Using settings hashtable.</value>
   </data>
   <data name="SettingsCannotFindFile" xml:space="preserve">
-    <value>Cannot find a settings file.</value>
+    <value>Cannot resolve settings file path '{0}'.</value>
   </data>
   <data name="SettingsNotParsable" xml:space="preserve">
     <value>Cannot parse settings. Will abort the invocation.</value>
@@ -320,5 +320,8 @@
   </data>
   <data name="PositionRefPosLessThanInputPos" xml:space="preserve">
     <value>Input position should be less than that of the invoking object.</value>
+  </data>
+  <data name="SettingsObjectCouldNotBResolved" xml:space="preserve">
+    <value>Settings object could not be resolved.</value>
   </data>
 </root>
