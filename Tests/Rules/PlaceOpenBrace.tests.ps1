@@ -62,6 +62,8 @@ foreach ($x in $y) { # useful comment
 }
 '@
             Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTBS' | Should -Be $expected
         }
 
     }
@@ -140,6 +142,23 @@ function foo { }
 
         It "Should mark only the open brace" {
             $violations[0].Extent.Text | Should -Be '{'
+        }
+
+        It "Should correct violation and take comment into account" {
+            $scriptDefinition = @'
+foreach ($x in $y) # useful comment
+{
+    Get-Something
+}
+'@
+            $expected = @'
+foreach ($x in $y) { # useful comment
+    Get-Something
+}
+'@
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTBS' | Should -Be $expected
         }
     }
 }
