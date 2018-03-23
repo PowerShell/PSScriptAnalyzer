@@ -4,29 +4,35 @@
 
 ## Description
 
-Just like non-global scoped variables, parameters must have a default value if they are not mandatory, i.e `Mandatory=$false`.
-Having optional parameters without default values leads to uninitialized variables leading to potential bugs.
-
-## How
-
-Specify a default value for all parameters that are not mandatory.
+Mandatory parameters should not have a default values because there is no scenario where the default can be used because `PowerShell` will prompt anyway if the parameter value is not specified when calling the function.
 
 ## Example
 
 ### Wrong
 
 ``` PowerShell
-function Test($Param1)
+function Test
 {
-	$Param1
+
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory=$true)]
+        $Parameter1 = 'default Value'
+    )
 }
 ```
 
 ### Correct
 
 ``` PowerShell
-function Test($Param1 = $null)
+function Test
 {
-	$Param1
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory=$true)]
+        $Parameter1
+    )
 }
 ```

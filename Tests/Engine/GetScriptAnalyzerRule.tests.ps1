@@ -14,7 +14,7 @@ Describe "Test available parameters" {
     $params = $sa.Parameters
     Context "Name parameter" {
         It "has a RuleName parameter" {
-            $params.ContainsKey("Name") | Should -Be $true
+            $params.ContainsKey("Name") | Should -BeTrue
         }
 
         It "accepts string" {
@@ -24,7 +24,7 @@ Describe "Test available parameters" {
 
     Context "RuleExtension parameters" {
         It "has a RuleExtension parameter" {
-            $params.ContainsKey("CustomRulePath") | Should -Be $true
+            $params.ContainsKey("CustomRulePath") | Should -BeTrue
         }
 
         It "accepts string array" {
@@ -32,7 +32,7 @@ Describe "Test available parameters" {
         }
 
 		It "takes CustomizedRulePath parameter as an alias of CustomRulePath parameter" {
-			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should -Be $true
+			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should -BeTrue
 		}
     }
 

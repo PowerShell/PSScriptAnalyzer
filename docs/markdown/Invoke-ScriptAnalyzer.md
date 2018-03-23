@@ -12,14 +12,14 @@ Evaluates a script or module based on selected best practice rules
 ### UNNAMED_PARAMETER_SET_1
 ```
 Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
- [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix] [-EnableExit]
+ [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix] [-EnableExit] [-ReportSummary]
  [-Settings <String>]
 ```
 
 ### UNNAMED_PARAMETER_SET_2
 ```
 Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
- [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-EnableExit]
+ [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-EnableExit] [-ReportSummary]
  [-Settings <String>]
 ```
 
@@ -419,6 +419,21 @@ Accept wildcard characters: False
 
 ### -EnableExit
 Exits PowerShell and returns an exit code equal to the number of error records. This can be useful in CI systems.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ReportSummary
+Writes a report summary of the found warnings to the host.
 
 ```yaml
 Type: SwitchParameter

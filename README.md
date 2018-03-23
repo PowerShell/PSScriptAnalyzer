@@ -28,7 +28,7 @@ Table of Contents
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
 - [Violation Correction](#violation-correction)
 - [Project Management Dashboard](#project-management-dashboard)
-- [Contributing to ScriptAnalyzer](#contributing-to-scriptanalyzer)
+- [Contributions are welcome](#contributions-are-welcome)
 - [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
 
@@ -49,9 +49,13 @@ Usage
 ======================
 
 ``` PowerShell
-Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>] [-Severity <string[]>]
+Get-ScriptAnalyzerRule [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-Name <String[]>] [-Severity <String[]>] [<CommonParameters>]
 
-Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [-EnableExit] [-Fix] [<CommonParameters>]
+Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-ExcludeRule <String[]>] [-IncludeDefaultRules] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix] [-EnableExit] [-ReportSummary] [-Settings <Object>] [-SaveDscDependency] [<CommonParameters>]
+
+Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-ExcludeRule <String[]>] [-IncludeDefaultRules] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-EnableExit] [-ReportSummary] [-Settings <Object>] [-SaveDscDependency] [<CommonParameters>]
+
+Invoke-Formatter [-ScriptDefinition] <String> [[-Settings] <Object>] [[-Range] <Int32[]>] [<CommonParameters>]
 ```
 
 [Back to ToC](#table-of-contents)
@@ -81,7 +85,7 @@ Exit
 
 ### From Source
 
-* [.NET Core 2.1.4 SDK](https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.0.5-download.md)
+* [.NET Core 2.1.101 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.101) or newer
 * [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
 
@@ -129,7 +133,7 @@ For adding/removing resource strings in the `*.resx` files, it is recommended to
 #### Tests
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
-* Ensure Pester 4.1.1 is installed on the machine
+* Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) is installed
 * Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
 * Go the Tests folder in your local repository
 * Run Engine Tests:
@@ -349,26 +353,15 @@ Throughput Graph
 
 [Back to ToC](#table-of-contents)
 
-Contributing to ScriptAnalyzer
+Contributions are welcome
 ==============================
-You are welcome to contribute to this project. There are many ways to contribute:
 
-1. Submit a bug report via [Issues]( https://github.com/PowerShell/PSScriptAnalyzer/issues). For a guide to submitting good bug reports, please read [Painless Bug Tracking](https://www.joelonsoftware.com/articles/fog0000000029.html).
-2. Verify fixes for bugs.
-3. Submit your fixes for a bug. Before submitting, please make sure you have:
-  * Performed code reviews of your own
-  * Updated the test cases if needed
-  * Run the test cases to ensure no feature breaks or test breaks
-  * Added the test cases for new code
-4. Submit a feature request.
-5. Help answer questions in the discussions list.
-6. Submit test cases.
-7. Tell others about the project.
-8. Tell the developers how much you appreciate the product!
+There are many ways to contribute:
 
-You might also read these two blog posts about contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza, and [Don’t “Push” Your Pull Requests](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik.
-
-Before submitting a feature or substantial code contribution, please discuss it with the Windows PowerShell team via [Issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed by the Windows PowerShell Team. Only those that meet a high bar for both quality and roadmap fit will be merged into the source.
+1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new).
+2. Participate in the discussions of [issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), [pull requests](https://github.com/PowerShell/PSScriptAnalyzer/pulls) and verify/test fixes or new features.
+3. Submit your own fixes or features as a pull request but please discuss it beforehand in an issue if the change is substantial.
+4. Submit test cases.
 
 [Back to ToC](#table-of-contents)
 
