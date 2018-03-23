@@ -387,13 +387,23 @@ Describe "Test CustomizedRulePath" {
         Context "When used from settings file" {
             It "Should process relative settings path" {
                 try {
-                    $initialLocation = Get-Location
-                    Set-Location $PSScriptRoot
+                    Push-Location $PSScriptRoot
                     $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings .\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1
                     $warnings.Count | Should -Be 1
                 }
                 finally {
-                    Set-Location $initialLocation
+                    Pop-Location
+                }
+            }
+
+            It "Should process relative settings path even when settings path object is not resolved to a string yet" {
+                try {
+                    Push-Location $PSScriptRoot
+                    $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings (Join-Path (Get-Location).Path '.\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1')
+                    $warnings.Count | Should -Be 1
+                }
+                finally {
+                    Pop-Location
                 }
             }
 
@@ -513,18 +523,35 @@ Describe "Test -Fix Switch" {
 
 Describe "Test -EnableExit Switch" {
     It "Returns exit code equivalent to number of warnings" {
-        powershell -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        if ($IsCoreCLR) {
+            pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        }
+        else {
+            powershell -command 'Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        }
         $LASTEXITCODE  | Should -Be 1
     }
 
     Describe "-ReportSummary switch" {
         $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
         It "prints the correct report summary using the -NoReportSummary switch" {
-            $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
+            if ($IsCoreCLR) {
+                $result = pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
+            }
+            else {
+                $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
+            }
+            
             "$result" | Should -BeLike $reportSummaryFor1Warning 
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
-            $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
+            if ($IsCoreCLR) {
+                $result = pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-Scriptanalyzer -ScriptDefinition gci'
+            }
+            else {
+                $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
+            }
+            
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
         }
     }
