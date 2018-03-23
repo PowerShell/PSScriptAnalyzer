@@ -13,7 +13,7 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// PossibleIncorrectUsageOfRedirectionOperator: Warn if someone uses '>' or '>=' inside an if or elseif statement because in most cases that is not the intention.
+    /// PossibleIncorrectUsageOfRedirectionOperator: Warn if someone uses '>' or '>=' inside an if, elseif, while or do-while statement because in most cases that is not the intention.
     /// The origin of this rule is that people often forget that operators change when switching between different languages such as C# and PowerShell.
     /// </summary>
 #if !CORECLR
