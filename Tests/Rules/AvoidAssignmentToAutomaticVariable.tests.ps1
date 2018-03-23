@@ -35,29 +35,32 @@ Describe "AvoidAssignmentToAutomaticVariables" {
         It "Variable <VariableName> produces warning of Severity <ExpectedSeverity>" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity)
 
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$${VariableName} = 'foo'" | Where-Object { $_.RuleName -eq $ruleName }
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$${VariableName} = 'foo'"
             $warnings.Count | Should -Be 1
             $warnings.Severity | Should -Be $ExpectedSeverity
+            $warnings.RuleName | Should -Be $ruleName
         }
 
         It "Using Variable <VariableName> as parameter name produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity)
 
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}" | Where-Object {$_.RuleName -eq $ruleName }
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}"
             $warnings.Count | Should -Be 1
             $warnings.Severity | Should -Be $ExpectedSeverity
+            $warnings.RuleName | Should -Be $ruleName
         }
 
         It "Using Variable <VariableName> as parameter name in param block produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity)
 
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}" | Where-Object {$_.RuleName -eq $ruleName }
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}"
             $warnings.Count | Should -Be 1
             $warnings.Severity | Should -Be $ExpectedSeverity
+            $warnings.RuleName | Should -Be $ruleName
         }
 
         It "Does not flag parameter attributes" {
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'function foo{Param([Parameter(Mandatory=$true)]$param1)}' | Where-Object { $_.RuleName -eq $ruleName }
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'function foo{Param([Parameter(Mandatory=$true)]$param1)}'
             $warnings.Count | Should -Be 0
         }
 
