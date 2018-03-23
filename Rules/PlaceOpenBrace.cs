@@ -14,7 +14,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check for violation.
+    /// A formatting rule about whether braces should start on the same line or not.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
@@ -201,6 +201,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && tokens[k - 1].Kind == TokenKind.NewLine
                     && !tokensToIgnore.Contains(tokens[k]))
                 {
+                    var precedingExpression = tokens[k - 2];
+                    Token optionalComment = null;
+                    // If a comment is before the open brace, then take the token before the comment
+                    if (precedingExpression.Kind == TokenKind.Comment && k > 2)
+                    {
+                        precedingExpression = tokens[k - 3];
+                        optionalComment = tokens[k - 2];
+                    }
+
                     yield return new DiagnosticRecord(
                         GetError(Strings.PlaceOpenBraceErrorShouldBeOnSameLine),
                         tokens[k].Extent,
@@ -208,7 +217,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         fileName,
                         null,
-                        GetCorrectionsForBraceShouldBeOnSameLine(tokens[k - 2], tokens[k], fileName));
+                        GetCorrectionsForBraceShouldBeOnSameLine(precedingExpression, optionalComment, tokens[k], fileName));
                 }
             }
         }
@@ -336,17 +345,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private List<CorrectionExtent> GetCorrectionsForBraceShouldBeOnSameLine(
             Token precedingExpression,
+            Token optionalCommentOfPrecedingExpression,
             Token lCurly,
             string fileName)
         {
             var corrections = new List<CorrectionExtent>();
+            var optionalComment = optionalCommentOfPrecedingExpression != null ? $" {optionalCommentOfPrecedingExpression}" : string.Empty;
             corrections.Add(
                 new CorrectionExtent(
                     precedingExpression.Extent.StartLineNumber,
                     lCurly.Extent.EndLineNumber,
                     precedingExpression.Extent.StartColumnNumber,
                     lCurly.Extent.EndColumnNumber,
-                    precedingExpression.Text + " " + lCurly.Text,
+                    $"{precedingExpression.Text} {lCurly.Text}{optionalComment}",
                     fileName));
             return corrections;
         }
