@@ -160,12 +160,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsOperator(Token token)
         {
-            // exclude unary operator for cases like $foo.bar(-$Var)
-            if (TokenTraits.HasTrait(token.Kind, TokenFlags.UnaryOperator))
-            {
-                return false;
-            }
-
             return TokenTraits.HasTrait(token.Kind, TokenFlags.AssignmentOperator)
                     || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceAdd)
                     || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceMultiply)
@@ -309,6 +303,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (tokenNode.Previous == null
                     || tokenNode.Next == null
                     || tokenNode.Value.Kind == TokenKind.DotDot)
+                {
+                    continue;
+                }
+
+                // exclude unary operator for cases like $foo.bar(-$Var)
+                if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) && tokenNode.Previous.Value.Kind == TokenKind.LParen)
                 {
                     continue;
                 }
