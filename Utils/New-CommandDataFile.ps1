@@ -60,10 +60,6 @@ Function Get-CmdletDataFileName
         {
             $os = 'macos'
         }
-        elseif ($IsOSX)
-        {
-            $os = 'osx'
-        }
         # else it is windows, which is already set
     }
     $sb = New-Object 'System.Text.StringBuilder'
