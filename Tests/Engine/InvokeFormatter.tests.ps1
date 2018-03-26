@@ -37,7 +37,7 @@ function foo {
         }
 
         It "Should expand unary operators when not being used as a single negative argument" {
-            Invoke-Formatter '$foo.bar(-$a+$b+$c)' -Settings CodeFormatting | Should -Be '$foo.bar(- $a + $b + $c)' 
+            Invoke-Formatter '$foo.bar(-$a+$b+$c)' -Settings CodeFormatting | Should -Be '$foo.bar(-$a + $b + $c)' 
         }
     }
 
