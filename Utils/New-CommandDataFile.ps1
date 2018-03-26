@@ -56,6 +56,10 @@ Function Get-CmdletDataFileName
         {
             $os = 'linux'
         }
+        elseif ($IsMacOS)
+        {
+            $os = 'macos'
+        }
         elseif ($IsOSX)
         {
             $os = 'osx'
