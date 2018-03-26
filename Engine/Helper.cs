@@ -410,7 +410,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<Ast> cmdAsts = ast.FindAll(item => item is CommandAst
                 && exportFunctionsCmdlet.Contains((item as CommandAst).GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
 
-            CommandInfo exportMM = Helper.Instance.GetCommandInfo("export-modulemember", CommandTypes.Cmdlet);
+            CommandInfo exportMM = Helper.Instance.GetCommandInfoLegacy("export-modulemember", CommandTypes.Cmdlet);
 
             // switch parameters
             IEnumerable<ParameterMetadata> switchParams = (exportMM != null) ? exportMM.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter) : Enumerable.Empty<ParameterMetadata>();
@@ -625,7 +625,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            var commandInfo = GetCommandInfo(cmdAst.GetCommandName());
+            var commandInfo = GetCommandInfoLegacy(cmdAst.GetCommandName());
             if (commandInfo == null || (commandInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
             {
                 return false;
@@ -705,26 +705,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Get a CommandInfo object of the given command name
         /// </summary>
         /// <returns>Returns null if command does not exists</returns>
-        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType = null)
+        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
-                var cmdInfo = ps.AddCommand("Get-Command")
-                                .AddArgument(cmdName)
-                                .AddParameter("ErrorAction", "SilentlyContinue")
-                                .Invoke<CommandInfo>()
-                                .FirstOrDefault();
-                return cmdInfo;
+                var psCommand = ps.AddCommand("Get-Command")
+                    .AddParameter("Name", cmdName)
+                    .AddParameter("ErrorAction", "SilentlyContinue");
+
+                if(commandType!=null)
+                {
+                    psCommand.AddParameter("CommandType", commandType);
+                }
+
+                var commandInfo = psCommand.Invoke<CommandInfo>()
+                         .FirstOrDefault();
+
+                return commandInfo;
             }
         }
 
         /// <summary>
-        /// Given a command's name, checks whether it exists
+
+        ///  Legacy method, new callers should use <see cref="GetCommandInfo"/> instead.
+        ///  Given a command's name, checks whether it exists. It does not use the passed in CommandTypes parameter, which is a bug.
+        ///  But existing method callers are already depending on this behaviour and therefore this could not be simply fixed.
+        ///  It also populates the commandInfoCache which can have side effects in some cases.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="commandType"></param>
+        /// <param name="name">Command Name.</param>
+        /// <param name="commandType">Not being used.</param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null)
+        [Obsolete]
+        public CommandInfo GetCommandInfoLegacy(string name, CommandTypes? commandType = null)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -747,6 +759,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
                 commandInfoCache.Add(cmdletName, commandInfo);
+                return commandInfo;
+            }
+        }
+
+        /// <summary>
+        /// Given a command's name, checks whether it exists.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="commandType"></param>
+        /// <returns></returns>
+        public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            lock (getCommandLock)
+            {
+                if (commandInfoCache.ContainsKey(name))
+                {
+                    return commandInfoCache[name];
+                }
+
+                var commandInfo = GetCommandInfoInternal(name, commandType);
+
                 return commandInfo;
             }
         }

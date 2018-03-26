@@ -10,6 +10,7 @@ using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using System.Linq;
+using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -127,7 +128,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletNameIfCommandNameWasAlias));
                 }
 
-                var isNativeCommand = Helper.Instance.GetCommandInfo(commandName) != null;
+                var isNativeCommand = Helper.Instance.GetCommandInfo(commandName, CommandTypes.Application | CommandTypes.ExternalScript) != null;
                 if (!isNativeCommand)
                 {
                     var commdNameWithGetPrefix = $"Get-{commandName}";
