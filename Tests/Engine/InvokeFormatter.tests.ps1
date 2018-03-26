@@ -30,6 +30,11 @@ function foo {
 
             Invoke-Formatter $def $settings | Should -Be $expected
         }
+
+        It "Should not expand unary operators when being used as a negative argument" {
+            $script = '$foo.bar(-$Var)' 
+            Invoke-Formatter '$foo.bar(-$Var)' -Settings CodeFormatting | Should -Be $script
+        }
     }
 
     Context "When a range is given" {
