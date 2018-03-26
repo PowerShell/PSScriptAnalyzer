@@ -308,7 +308,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 // exclude unary operator for cases like $foo.bar(-$Var)
-                if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) && tokenNode.Previous.Value.Kind == TokenKind.LParen)
+                if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) &&
+                    tokenNode.Previous.Value.Kind == TokenKind.LParen &&
+                    tokenNode.Next.Value.Kind == TokenKind.Variable)
                 {
                     continue;
                 }

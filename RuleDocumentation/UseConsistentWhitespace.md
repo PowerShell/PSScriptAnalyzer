@@ -39,7 +39,6 @@ Checks if there is space between a keyword and its corresponding open parenthesi
 #### CheckOperator: bool (Default value is `$true`)
 
 Checks if a binary or unary operator is surrounded on both sides by a space. E.g. `$x = 1`.
-For the special case of `$foo.bar(-$Var)`, it does not add spaces.
 
 #### CheckSeparator: bool (Default value is `$true`)
 
