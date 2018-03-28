@@ -406,6 +406,13 @@ Describe "Test CustomizedRulePath" {
                     Pop-Location
                 }
             }
+            
+            It "resolves rule preset when passed in via pipeline" {
+                $warnings = 'CodeFormattingStroustrup' | ForEach-Object {
+                    Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){}' -Settings $_}
+                $warnings.Count | Should -Be 1
+                $warnings.RuleName | Should -Be 'PSUseConsistentWhitespace'
+            }
 
             It "Should use the CustomRulePath parameter" {
                 $settings = @{
