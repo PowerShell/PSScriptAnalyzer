@@ -35,6 +35,59 @@ function foo ($param1)
         }
     }
 
+    Context "Handling of comments when using Invoke-Formatter" {
+        It "Should correct violation when brace should be on the same line" {
+            $scriptDefinition = @'
+foreach ($x in $y)
+{
+    Get-Something
+}
+'@
+            $expected = @'
+foreach ($x in $y) {
+    Get-Something
+}
+'@
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTBS' | Should -Be $expected
+        }
+
+        It "Should correct violation when brace should be on the same line and take comment into account" {
+            $scriptDefinition = @'
+foreach ($x in $y) # useful comment
+{
+    Get-Something
+}
+'@
+            $expected = @'
+foreach ($x in $y) { # useful comment
+    Get-Something
+}
+'@
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTBS' | Should -Be $expected
+        }
+
+        It "Should correct violation when the brace should be on the next line and take comment into account" {
+            $scriptDefinition = @'
+foreach ($x in $y) # useful comment
+{
+    Get-Something
+}
+'@
+            $expected = @'
+foreach ($x in $y) { # useful comment
+    Get-Something
+}
+'@
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingStroustrup' | Should -Be $expected
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings 'CodeFormattingOTBS' | Should -Be $expected
+        }
+    }
+
     Context "When an open brace must be on the same line in a switch statement" {
         BeforeAll {
             $def = @'
