@@ -307,6 +307,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                // exclude unary operator for cases like $foo.bar(-$Var)
+                if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) &&
+                    tokenNode.Previous.Value.Kind == TokenKind.LParen &&
+                    tokenNode.Next.Value.Kind == TokenKind.Variable)
+                {
+                    continue;
+                }
+
                 var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
                 var hasWhitespaceAfter = tokenNode.Next.Value.Kind == TokenKind.NewLine
                             || IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
