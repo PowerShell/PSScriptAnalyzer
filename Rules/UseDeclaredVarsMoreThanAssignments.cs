@@ -1,12 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Collections.Generic;
@@ -180,9 +173,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             // Try casting to AssignmentStatementAst to be able to catch case where a variable is assigned more than once (https://github.com/PowerShell/PSScriptAnalyzer/issues/833)
                             var varInAssignmentAsStatementAst = varInAssignment.Parent as AssignmentStatementAst;
                             var varAstAsAssignmentStatementAst = varAst.Parent as AssignmentStatementAst;
-                            if (varInAssignmentAsStatementAst != null && varAstAsAssignmentStatementAst != null)
+                            if (varAstAsAssignmentStatementAst != null)
                             {
-                                inAssignment = varInAssignmentAsStatementAst.Left.Extent.Text.Equals(varAstAsAssignmentStatementAst.Left.Extent.Text, StringComparison.OrdinalIgnoreCase);
+                                if (varAstAsAssignmentStatementAst.Operator == TokenKind.Equals)
+                                {
+                                    if (varInAssignmentAsStatementAst != null)
+                                    {
+                                        inAssignment = varInAssignmentAsStatementAst.Left.Extent.Text.Equals(varAstAsAssignmentStatementAst.Left.Extent.Text, StringComparison.OrdinalIgnoreCase);
+                                    }
+                                    else
+                                    {
+                                        inAssignment = varInAssignment.Equals(varAst);
+                                    }
+                                }
                             }
                             else
                             {

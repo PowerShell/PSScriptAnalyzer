@@ -690,40 +690,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             else
             {
-                var settingsFilePath = settingsFound as String;
-                if (settingsFilePath != null)
-                {
-                    if (IsBuiltinSettingPreset(settingsFilePath))
-                    {
-                        settingsMode = SettingsMode.Preset;
-                        settingsFound = GetSettingPresetFilePath(settingsFilePath);
-                    }
-                    else
-                    {
-                        settingsMode = SettingsMode.File;
-                        settingsFound = settingsFilePath;
-                    }
-                }
-                else
+                if (!TryResolveSettingForStringType(settingsFound, ref settingsMode, ref settingsFound))
                 {
                     if (settingsFound is Hashtable)
                     {
                         settingsMode = SettingsMode.Hashtable;
                     }
-                    else // if the provided argument is wrapped in an expressions then PowerShell resolves it but it will be of type PSObject and we have to operate then on the BaseObject
+                    // if the provided argument is wrapped in an expressions then PowerShell resolves it but it will be of type PSObject and we have to operate then on the BaseObject
+                    else if (settingsFound is PSObject settingsFoundPSObject)
                     {
-                        if (settingsFound is PSObject settingsFoundPSObject)
-                        {
-                            if (settingsFoundPSObject.BaseObject is String)
-                            {
-                                settingsMode = SettingsMode.File;
-                            }
-                        }
+                        TryResolveSettingForStringType(settingsFoundPSObject.BaseObject, ref settingsMode, ref settingsFound);
                     }
                 }
             }
 
             return settingsMode;
+        }
+
+        // If the settings object is a string determine wheter it is one of the settings preset or a file path and resolve the setting in the former case.
+        private static bool TryResolveSettingForStringType(object settingsObject, ref SettingsMode settingsMode, ref object resolvedSettingValue)
+        {
+            if (settingsObject is string settingsString)
+            {
+                if (IsBuiltinSettingPreset(settingsString))
+                {
+                    settingsMode = SettingsMode.Preset;
+                    resolvedSettingValue = GetSettingPresetFilePath(settingsString);
+                }
+                else
+                {
+                    settingsMode = SettingsMode.File;
+                    resolvedSettingValue = settingsString;
+                }
+                return true;
+            }
+
+            return false;
         }
     }
 }

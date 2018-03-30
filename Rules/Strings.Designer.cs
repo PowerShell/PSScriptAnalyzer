@@ -746,7 +746,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Avoid Using Cmdlet Aliases.
+        ///   Looks up a localized string similar to Avoid Using Cmdlet Aliases or omitting the &apos;Get-&apos; prefix..
         /// </summary>
         internal static string AvoidUsingCmdletAliasesCommonName {
             get {
@@ -764,7 +764,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availability..
+        ///   Looks up a localized string similar to An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. An implicit alias is also the omission of the &apos;Get-&apos; prefix for commands with this prefix. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availa [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string AvoidUsingCmdletAliasesDescription {
             get {
@@ -778,6 +778,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string AvoidUsingCmdletAliasesError {
             get {
                 return ResourceManager.GetString("AvoidUsingCmdletAliasesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is implicitly aliasing &apos;{1}&apos; because it is missing the &apos;Get-&apos; prefix. This can introduce possible problems and make scripts hard to maintain. Please consider changing command to its full name..
+        /// </summary>
+        internal static string AvoidUsingCmdletAliasesMissingGetPrefixError {
+            get {
+                return ResourceManager.GetString("AvoidUsingCmdletAliasesMissingGetPrefixError", resourceCulture);
             }
         }
         

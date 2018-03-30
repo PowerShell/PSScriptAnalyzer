@@ -73,5 +73,15 @@ function MyFunc2() {
         It "returns no violations" {
             $noViolations.Count | Should -Be 0
         }
+        
+        It "Does not flag += operator" {
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition '$array=@(); $list | ForEach-Object { $array += $c }' | Where-Object { $_.RuleName -eq $violationName }
+            $results.Count | Should -Be 0
+        }
+
+        It "Does not flag += operator when using unassigned variable" {
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition '$list | ForEach-Object { $array += $c }' | Where-Object { $_.RuleName -eq $violationName }
+            $results.Count | Should -Be 0
+        }
     }
 }

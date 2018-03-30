@@ -83,7 +83,7 @@ Describe "UseManifestExportFields" {
             $results[0].Extent.Text | Should -Be "'*'"
         }
 
-        It "suggests corrections for AliasesToExport with wildcard" -pending:($IsLinux -or $IsMacOS) {
+        It "suggests corrections for AliasesToExport with wildcard" -pending:($IsCoreClr) {
             $violations = Run-PSScriptAnalyzerRule $testManifestBadAliasesWildcardPath
             $violationFilepath = Join-path $testManifestPath $testManifestBadAliasesWildcardPath
             Test-CorrectionExtent $violationFilepath $violations[0] 1  "'*'" "@('gbar', 'gfoo')"
