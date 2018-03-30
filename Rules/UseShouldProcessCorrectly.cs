@@ -299,7 +299,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
-            var cmdInfo = Helper.Instance.GetCommandInfoLegacy(cmdName);
+            var cmdInfo = Helper.Instance.GetCommandInfo(cmdName);
             if (cmdInfo == null)
             {
                 return false;

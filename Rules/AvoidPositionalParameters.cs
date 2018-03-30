@@ -39,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // MSDN: CommandAst.GetCommandName Method
                 if (cmdAst.GetCommandName() == null) continue;
                 
-                if (Helper.Instance.GetCommandInfoLegacy(cmdAst.GetCommandName()) != null
+                if (Helper.Instance.GetCommandInfo(cmdAst.GetCommandName()) != null
                     && Helper.Instance.PositionalParameterUsed(cmdAst, true))
                 {
                     PipelineAst parent = cmdAst.Parent as PipelineAst;
