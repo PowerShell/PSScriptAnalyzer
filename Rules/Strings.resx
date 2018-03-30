@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AvoidUsingCmdletAliasesDescription" xml:space="preserve">
-    <value>An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availability.</value>
+    <value>An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. An implicit alias is also the omission of the 'Get-' prefix for commands with this prefix. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availability.</value>
   </data>
   <data name="AvoidUsingCmdletAliasesCommonName" xml:space="preserve">
-    <value>Avoid Using Cmdlet Aliases</value>
+    <value>Avoid Using Cmdlet Aliases or omitting the 'Get-' prefix.</value>
   </data>
   <data name="AvoidUsingEmptyCatchBlockDescription" xml:space="preserve">
     <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, using Write-Error or throw statements in catch blocks.</value>
@@ -1007,5 +1007,8 @@
   </data>
   <data name="AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error" xml:space="preserve">
     <value>Starting from PowerShell 6.0, the Variable '{0}' cannot be assigned any more since it is a readonly automatic variable that is built into PowerShell, please use a different name.</value>
+  </data>
+  <data name="AvoidUsingCmdletAliasesMissingGetPrefixError" xml:space="preserve">
+    <value>'{0}' is implicitly aliasing '{1}' because it is missing the 'Get-' prefix. This can introduce possible problems and make scripts hard to maintain. Please consider changing command to its full name.</value>
   </data>
 </root>
