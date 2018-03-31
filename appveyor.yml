@@ -62,4 +62,5 @@ test_script:
 
 # Upload the project along with test results as a zip archive
 on_finish:
+  - ps: .\Utils\New-CommandDataFile.ps1
   - ps: Import-Module .\tools\appveyor.psm1; Invoke-AppveyorFinish
