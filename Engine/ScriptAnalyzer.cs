@@ -1661,6 +1661,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     relevantParseErrors.Add(parseError);
                 }
+                else
+                {
+                    this.outputWriter.WriteVerbose(
+                        $"Ignoring 'TypeNotFound' parse error on type {parseError.Extent}, which is likely due to the type not being knowm due to e.g. 'using' statements. Parse error message was '{parseError.Message}'.");
+                }
             }
 
             return relevantParseErrors;

@@ -562,4 +562,18 @@ Describe "Test -EnableExit Switch" {
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
         }
     }
+
+    Describe "Handles parse errors due to unknown types" {
+        $script = @'
+        using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
+        using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
+        Import-Module "AzureRm"
+        class MyClass { [IStorageContext]$StorageContext }
+        gci # Produce AvoidAlias rule
+'@
+        It {
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
+            $warnings.Count | Should -Be 1 -Because 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the AvoidAlias warning due to gci'
+        }
+    }
 }
