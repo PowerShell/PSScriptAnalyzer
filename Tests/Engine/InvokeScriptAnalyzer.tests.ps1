@@ -571,9 +571,21 @@ Describe "Test -EnableExit Switch" {
         class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using stetement but is not known at parse time
         gci # Produce AvoidAlias rule
 '@
-        It "does not throw and detect one expected warning after the parse error has occured" {
+        It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
             $warnings.Count | Should -Be 1 -Because 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the AvoidAlias warning due to gci'
+        }
+
+        It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
+            try {
+                $testFilePath = (Join-Path $PWD 'testFile.ps1')
+                $script > $testFilePath
+                $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
+                $warnings.Count | Should -Be 1 -Because 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the AvoidAlias warning due to gci'
+            }
+            finally {
+                Remove-Item $testFilePath
+            }
         }
     }
 }
