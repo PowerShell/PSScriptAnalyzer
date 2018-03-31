@@ -576,16 +576,11 @@ Describe "Test -EnableExit Switch" {
             $warnings.Count | Should -Be 1 -Because 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the AvoidAlias warning due to gci'
         }
 
+        $testFilePath = "TestDrive:\testfile.ps1"
+        Set-Content $testFilePath -value $script
         It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
-            try {
-                $testFilePath = (Join-Path $PWD 'testFile.ps1')
-                $script > $testFilePath
-                $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
-                $warnings.Count | Should -Be 1 -Because 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the AvoidAlias warning due to gci'
-            }
-            finally {
-                Remove-Item $testFilePath
-            }
+            $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
+            $warnings.Count | Should -Be 1 -Because 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the AvoidAlias warning due to gci'
         }
     }
 }
