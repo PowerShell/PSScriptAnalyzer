@@ -1522,16 +1522,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-            if (errors != null && errors.Length > 0)
+            var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors);
+
+            if (relevantParseErrors != null && relevantParseErrors.Count > 0)
             {
-                foreach (ParseError error in errors)
+                foreach (ParseError error in relevantParseErrors)
                 {
                     string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
                     this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
                 }
             }
 
-            if (errors != null && errors.Length > 10)
+            if (relevantParseErrors != null && relevantParseErrors.Count > 10)
             {
                 string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessageForScriptDefinition);
                 this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, scriptDefinition));
@@ -1642,6 +1644,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     return reader.CurrentEncoding;
                 }
             }
+        }
+
+        /// <summary>
+        /// Inspects Parse errors and removes TypeNotFound errors that can be ignored that can be due to types that are not known yet (e.g. due to 'using' statements)
+        /// </summary>
+        /// <param name="parseErrors"></param>
+        /// <returns>List of relevant parse errors.</returns>
+        private List<ParseError> RemoveTypeNotFoundParseErrors(ParseError[] parseErrors)
+        {
+            var relevantParseErrors = new List<ParseError>();
+            foreach(var parseError in parseErrors)
+            {
+                // If types are not known due them not being imported yet, the parser throws an error that can be ignored
+                if (parseError.ErrorId != "TypeNotFound")
+                {
+                    relevantParseErrors.Add(parseError);
+                }
+            }
+
+            return relevantParseErrors;
         }
 
         private static Range SnapToEdges(EditableText text, Range range)
@@ -1829,17 +1851,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
                     }
 #endif //!PSV3
+                    var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors);
+
                     //Runspace.DefaultRunspace = oldDefault;
-                    if (errors != null && errors.Length > 0)
+                    if (relevantParseErrors != null && relevantParseErrors.Count > 0)
                     {
-                        foreach (ParseError error in errors)
+                        foreach (ParseError error in relevantParseErrors)
                         {
                             string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, error.Extent.File, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
                             this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
                         }
                     }
 
-                    if (errors != null && errors.Length > 10)
+                    if (relevantParseErrors != null && relevantParseErrors.Count > 10)
                     {
                         string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
                         this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));
