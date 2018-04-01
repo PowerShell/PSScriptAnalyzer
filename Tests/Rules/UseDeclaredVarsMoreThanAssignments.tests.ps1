@@ -83,5 +83,10 @@ function MyFunc2() {
             $results = Invoke-ScriptAnalyzer -ScriptDefinition '$list | ForEach-Object { $array += $c }' | Where-Object { $_.RuleName -eq $violationName }
             $results.Count | Should -Be 0
         }
+
+        It "Does not flag drive qualified variables such as env" {
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition '$env:foo = 1; function foo($env:bar = 42)'
+            $results.Count | Should -Be 0
+        }
     }
 }
