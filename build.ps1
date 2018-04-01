@@ -91,11 +91,9 @@ if ($BuildDocs)
     $outputDocsPath = Join-Path $destinationPath en-US
 
     CreateIfNotExists($outputDocsPath)
-    # copy the about help file
-    Copy-Item -Path $docsPath\about_PSScriptAnalyzer.help.txt -Destination $outputDocsPath -Force -Verbose:$verbosity
 
     # Build documentation using platyPS
-    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge 0.5 }))
+    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge 0.9 }))
     {
         "Cannot find platyPS. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
