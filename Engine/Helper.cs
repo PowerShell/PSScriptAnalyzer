@@ -701,6 +701,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
+            // Don't hold the lock during the pipeline call
+            lock (getCommandLock)
+            {
+                CommandInfo cmdletInfo;
+                if (commandInfoCache.TryGetValue(cmdName, out cmdletInfo)) {
+                    return cmdletInfo;
+                }
+            }
+
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
                 var psCommand = ps.AddCommand("Get-Command")
@@ -711,6 +720,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 var commandInfo = psCommand.Invoke<CommandInfo>()
                          .FirstOrDefault();
 
+                lock (getCommandLock)
+                {
+                    CommandInfo cmdletInfo;
+                    if (! commandInfoCache.TryGetValue(cmdName, out cmdletInfo) )
+                    {
+                        commandInfoCache.Add(cmdName, commandInfo);
+                    }
+                }
                 return commandInfo;
             }
         }
@@ -723,6 +740,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>The first CommandInfo found based on the name and type or null if nothing was found</returns>
         public CommandInfo GetCommandInfo(string name, CommandTypes commandType)
         {
+            // We don't check for alias in this case as the user has been explicit about
+            // the CommandTypes desired
             return GetCommandInfoInternal(name, commandType);
         }
 
@@ -733,7 +752,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>The first CommandInfo found based on the name of any command type or null if nothing was found</returns>
         public CommandInfo GetCommandInfo(string name)
         {
-            return GetCommandInfo(name, CommandTypes.All);
+            // check to see if it's an alias and use the resolved cmdlet name if it is
+            string cmdletName = Helper.Instance.GetCmdletNameFromAlias(name);
+            if ( string.IsNullOrWhiteSpace(cmdletName))
+            {
+                cmdletName = name;
+            }
+            return GetCommandInfo(cmdletName, CommandTypes.All);
         }
 
         /// <summary>
