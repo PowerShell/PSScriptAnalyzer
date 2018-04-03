@@ -48,7 +48,7 @@ test_script:
                 }
             }
   - pwsh: |
-            if ($env:PowerShellEdition -eq 'PowerShellCore') {
+            if ($env:PowerShellEdition -eq 'PowerShellCore' -and $PSVersionTable.PSVersion -ge [version]'6.0.2') {
                 $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
                 Copy-Item "${env:APPVEYOR_BUILD_FOLDER}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
                 $testResultsFile = ".\TestResults.xml"
