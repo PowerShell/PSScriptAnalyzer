@@ -41,7 +41,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private HashSet<string> referenceCmdletMap;
 
         // Name of PowerShell desktop version reference file.
-        private readonly string defaultReferenceFileName = "desktop-5.1.15063.0-windows.json";
+        private readonly string defaultReferenceFileName = "desktop-5.1*";
 
         // List of user created cmdlets found in ast (functionDefinitionAsts).
         private List<string> customCommands;
@@ -161,7 +161,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                     // If the cmdlet does NOT exist on target platform NOR on reference platform, then it is probably a non-builtin
                     // command OR an alias (which we do not check for), so continue.
-                    else if (!(platform.Value.Contains(commandName)) && !(referenceCmdletMap.Contains(commandName)))
+                    else if (!platform.Value.Contains(commandName) && !referenceCmdletMap.Contains(commandName))
                     {
                         continue;
                     }
@@ -312,7 +312,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Set up our reference cmdlet map.
-            referenceCmdletMap = SetUpAdditionalCmdletMap(settingsPath, defaultReferenceFileName);
+            referenceCmdletMap = SetUpReferenceCmdletMap(settingsPath, defaultReferenceFileName);
 
             // Set up known issues list if target is linux or osx.
             string linux = compatibilityList.FirstOrDefault(s => s.Contains("linux"));
@@ -395,7 +395,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Set up cmdlet map from the latest desktop version of PowerShell.
         /// </summary>
-        private HashSet<string> SetUpAdditionalCmdletMap(string path, string fileName)
+        private HashSet<string> SetUpReferenceCmdletMap(string path, string fileName)
         {
             string[] cmdletFile = Directory.GetFiles(path, fileName);
             dynamic deserialized = JObject.Parse(File.ReadAllText(cmdletFile[0]));
@@ -452,7 +452,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             string dateString = String.Format("{0:g}", DateTime.Now);
             string editedDate = (new Regex("\\W")).Replace(dateString, "_");
-            string logFile = settingsPath + "\\UseCompatibleTypesErrorLog" + editedDate + ".txt";
+            string logFile = settingsPath + "\\UseCompatibleCmdletsErrorLog" + editedDate + ".txt";
             return logFile;
         }
 

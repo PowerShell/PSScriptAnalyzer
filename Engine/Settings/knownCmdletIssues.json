@@ -11,5 +11,5 @@
     "Unregister-Event",
     "Set-ExecutionPolicy",
     "New-PSSessionOption",
-    "New-PSTransportOption",
+    "New-PSTransportOption"
 ]

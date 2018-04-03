@@ -1,17 +1,18 @@
 ﻿$ruleName = "PSUseCompatibleCmdlets"
 $directory = Split-Path $MyInvocation.MyCommand.Path -Parent
 $testRootDirectory = Split-Path -Parent $directory
-$ruleTestDirectory = Join-Path $directory 'UseCompatibleCmdlets'
+$ruleTestDirectory = Join-Path $directory 'UseCompatible/Cmdlets/'
+$violationFilePath = Join-Path $ruleTestDirectory 'ScriptWithViolation.ps1'
+$settingsFilePath =  [System.IO.Path]::Combine($ruleTestDirectory, 'PSScriptAnalyzerSettings.psd1');
+$settingsLinux = [System.IO.Path]::Combine($ruleTestDirectory, 'PSScriptAnalyzerSettingsLinux.psd1');
 
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
 Describe "UseCompatibleCmdlets" {
     Context "script has violation" {
-        It "detects violation" {
-            $violationFilePath = Join-Path $ruleTestDirectory 'ScriptWithViolation.ps1'
-            $settingsFilePath =  [System.IO.Path]::Combine($ruleTestDirectory, 'PSScriptAnalyzerSettings.psd1');
-            $diagnosticRecords = Invoke-ScriptAnalyzer -Path $violationFilePath -IncludeRule $ruleName -Settings $settingsFilePath
-            $diagnosticRecords.Count | Should -Be 1
+        It "detects violation" { 
+            $diagnosticRecords = Invoke-ScriptAnalyzer -Path $violationFilePath -Settings $settingsFilePath
+            $diagnosticRecords.Count | Should Be 1
         }
     }
 
@@ -20,38 +21,41 @@ Describe "UseCompatibleCmdlets" {
         param (
             [Parameter(ValueFromPipeline)]
             $command,
-            $settings,
-            $expectedViolations
+            $expectedViolations,
+            $settingsFile
         )
         process
         {
             It ("found {0} violations for '{1}'" -f $expectedViolations, $command) {
-                Invoke-ScriptAnalyzer -ScriptDefinition $command -IncludeRule $ruleName -Settings $settings | `
+                Invoke-ScriptAnalyzer -ScriptDefinition $command -IncludeRule $ruleName -Settings $settingsFile | `
                     Get-Count | `
                     Should -Be $expectedViolations
             }
         }
     }
 
-    $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("core-6.0.2-windows")}}}
-
     Context "Microsoft.PowerShell.Core" {
          @('Enter-PSSession', 'Foreach-Object', 'Get-Command') | `
-            Test-Command -Settings $settings -ExpectedViolations 0
+            Test-Command -ExpectedViolations 0 -SettingsFile $settingsFilePath
     }
 
     Context "Non-builtin commands" {
         @('get-foo', 'get-bar', 'get-baz') | `
-            Test-Command -Settings $settings -ExpectedViolations 0
+            Test-Command -ExpectedViolations 0 -SettingsFile $settingsFilePath
     }
 
     Context "Aliases" {
         @('where', 'select', 'cd') | `
-            Test-Command -Settings $settings -ExpectedViolations 0
+            Test-Command -ExpectedViolations 0 -SettingsFile $settingsFilePath
     }
 
     Context "Commands present in reference platform but not in target platform" {
         @("Start-VM", "New-SmbShare", "Get-Disk") | `
-            Test-Command -Settings $settings -ExpectedViolations 1
+            Test-Command -ExpectedViolations 1 -SettingsFile $settingsFilePath
+    }
+
+    Context "Known issue cmdlets" {
+        @("Register-WmiEvent", "Remove-Event", "Unregister-Event") | `
+            Test-Command -ExpectedViolations 1 -SettingsFile $settingsLinux 
     }
 }

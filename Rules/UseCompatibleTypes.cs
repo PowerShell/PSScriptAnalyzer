@@ -16,6 +16,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -67,6 +68,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         // List of user created types found in ast (TypeDefinitionAst).
         private List<string> customTypes;
 
+        // List of exceptions from script.
+        private List<ErrorObject> errorList;
+
         // List of all diagnostic records for incompatible types.
         private List<DiagnosticRecord> diagnosticRecords;
 
@@ -84,6 +88,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 fullName = null;
                 isCustomType = customType;
                 isTypeAccelerator = false;
+            }
+        }
+
+        private class ErrorObject
+        {
+            public string errorType;
+            public dynamic errorRecords;
+            public string message;
+            public IScriptExtent extent;
+            public ErrorObject(string type, dynamic recordList, string errorMessage, IScriptExtent typeObjectExtent)
+            {
+                errorType = type;
+                errorRecords = recordList;
+                message = errorMessage;
+                extent = typeObjectExtent;
             }
         }
 
@@ -124,7 +143,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             scriptPath = fileName;
             allTypesFromAst = new List<dynamic>();
             customTypes = new List<string>();
-
+            
             // TypeConstraintAsts  
             IEnumerable<Ast> constraintAsts = ast.FindAll(testAst => testAst is TypeConstraintAst, true);
             addAstElementToList(constraintAsts);
@@ -133,11 +152,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> expressionAsts = ast.FindAll(testAst => testAst is TypeExpressionAst, true);
             addAstElementToList(expressionAsts);
 
-            // Types named within a command.  We want only types used with the 'New-Object'
-            // cmdlet, but will filter those out later.
+            // Types named within a command.  We only want types used with the 'New-Object' cmdlet.
             IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
-            addAstElementToList(commandAsts);
+            if (!commandAsts.Count().Equals(0))
+            {
+                List<dynamic> newObjectCommands = new List<dynamic>();
+                
+                foreach (CommandAst command in commandAsts)
+                {
+                    if (String.Equals(command.GetCommandName(), "New-Object", StringComparison.OrdinalIgnoreCase))
+                    {
+                        newObjectCommands.Add(command);
+                    }
+                }
 
+                addAstElementToList(newObjectCommands);
+            }
+            
             // Types declared by the user (defined within a user-created class).
             IEnumerable<Ast> definitionAsts = ast.FindAll(testAst => testAst is TypeDefinitionAst, true);
             foreach (Ast item in definitionAsts)
@@ -157,12 +188,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // If we have no types to check, we can exit from this rule.
-            if (allTypesFromAst.Count == 0)
+            if (allTypesFromAst.Count.Equals(0))
             {
                 return new DiagnosticRecord[0];
             }
 
             CheckCompatibility();
+
+            ProcessErrors();
 
             return diagnosticRecords;
         }
@@ -196,11 +229,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             // way to check for that, so create a diagnostic record.
                             else
                             {
-                                // If we have multiple target platforms to check and we cannot resolve a type, we don't want
+                                // If we have multiple target platforms to check and cannot resolve a type, we don't want
                                 // multiple 'could not resolve' errors for the same type.
                                 if (couldNotResolveCount < 1)
                                 {
-                                    GenerateDiagnosticRecord(typeObject, nameObject.fullName, platform.Key, false, nameObject.isTypeAccelerator);
+                                    GenerateDiagnosticRecord(typeObject, nameObject.fullName, platform.Key, nameObject.isTypeAccelerator, true);
                                 }
                                 couldNotResolveCount++;
                             }
@@ -215,7 +248,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             else
                             {
                                 // If not, then the type is incompatible so generate an error Diagnostic Record.
-                                GenerateDiagnosticRecord(typeObject, nameObject.fullName, platform.Key, true, nameObject.isTypeAccelerator);
+                                GenerateDiagnosticRecord(typeObject, nameObject.fullName, platform.Key, nameObject.isTypeAccelerator, false);
                             }
                         }
                     }
@@ -230,16 +263,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             dynamic astObject,
             string fullTypeName,
             string platform,
-            bool resolved,
-            bool typeAccelerator)
+            bool typeAccelerator,
+            bool unresolved)
         {
             var extent = astObject.Extent;
             var platformInfo = platformSpecMap[platform];
-
-            if (resolved)
+         
+            // Error record for types we could not resolve.
+            if (unresolved)
+            {
+                diagnosticRecords.Add(new DiagnosticRecord(
+                    String.Format(
+                        Strings.UseCompatibleTypesUnresolvedError,
+                        fullTypeName),
+                    extent,
+                    GetName(),
+                    GetDiagnosticSeverity(),
+                    scriptPath,
+                    null,
+                    null));
+            }
+            else
             {
                 // Here we are just including the type accelerator name so the type will be easier to spot in the script
-                // on the line number we provide in their diagnostic record.
+                // on the line number we provide in the diagnostic record.
                 string accelerator = "";
                 if (typeAccelerator)
                 {
@@ -250,30 +297,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     catch { }
                 }
 
-                // Diagnostic Record for resolved types that do not exist on 
-                // target platform.
-                diagnosticRecords.Add(new DiagnosticRecord(
-                String.Format(
-                    Strings.UseCompatibleTypesError,
-                    fullTypeName + accelerator,
-                    platformInfo.PSEdition,
-                    platformInfo.PSVersion,
-                    platformInfo.OS),
-                extent,
-                GetName(),
-                GetDiagnosticSeverity(),
-                scriptPath,
-                null,
-                null));
-            }
-            else
-            {
-                // Diagnostic Record for unresolved (usually user-created) types.
+                // Create diagnostic record.
                 diagnosticRecords.Add(new DiagnosticRecord(
                     String.Format(
-                        Strings.UseCompatibleTypesUnresolvedError,
-                        fullTypeName
-                        ),
+                        Strings.UseCompatibleTypesError,
+                        fullTypeName + accelerator,
+                        platformInfo.PSEdition,
+                        platformInfo.PSVersion,
+                        platformInfo.OS),
                     extent,
                     GetName(),
                     GetDiagnosticSeverity(),
@@ -284,11 +315,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
+        /// Process errors and add to diagnosticRecords list.
+        /// </summary>
+        private void ProcessErrors()
+        {
+            foreach (ErrorObject error in errorList)
+            {
+                string message  = null;
+
+                if (error.errorRecords != null)
+                {
+                    foreach (ParseError pe in error.errorRecords)
+                    {
+                        message += pe.Message + " ";
+                    }
+                }
+                else
+                {
+                    message = error.message;
+                }
+                
+                diagnosticRecords.Add(new DiagnosticRecord(
+                    String.Format(
+                        Strings.UseCompatibleTypesException,
+                        error.extent.ToString(),
+                        error.errorType,
+                        message),
+                    error.extent,
+                    GetName(),
+                    GetDiagnosticSeverity(),
+                    scriptPath,
+                    null,
+                    null));
+            }
+        }
+        /// <summary>
         /// Initialize data structures needed to check type compatibility.
         /// </summary>
         private void Initialize()
         {
             diagnosticRecords = new List<DiagnosticRecord>();
+            errorList = new List<ErrorObject>();
             psTypeMap = new Dictionary<string, HashSet<string>>((StringComparer.OrdinalIgnoreCase));
             referenceMap = new HashSet<string>((StringComparer.OrdinalIgnoreCase));
             typeAcceleratorMap = new Dictionary<string, string>();
@@ -376,7 +443,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Set up the reference type map (from desktop PowerShell).
-            referenceMap = SetUpAdditionalTypeMap(settingsPath, referenceFileName);
+            CreateReferenceTypeMap(settingsPath, referenceFileName);
 
             // Set up type accelerator map.
             CreateTypeAcceleratorMap(settingsPath);
@@ -444,274 +511,161 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Set up type map from the latest desktop version of PowerShell.
         /// </summary>
-        private HashSet<string> SetUpAdditionalTypeMap(string path, string fileName)
+        private void CreateReferenceTypeMap(string path, string fileName)
         {
             string[] typeFile = Directory.GetFiles(path, fileName);
             dynamic deserialized = JObject.Parse(File.ReadAllText(typeFile[0]));
-            return GetTypesFromData(deserialized);
+            referenceMap = GetTypesFromData(deserialized);
+        }
+
+        ///<summary>
+        /// Separate type from New-Ojbect command, pass to GetFullNames to retrieve full type name.
+        ///</summary>
+        private List<fullTypeNameObject> RetrieveFullTypeName(dynamic typeObject)
+        {
+            List<fullTypeNameObject> fullNameObjectList = new List<fullTypeNameObject>();
+
+            // Check to see if our object is a CommandAst. 
+            if (typeObject is CommandAst)
+            {
+                try
+                {
+                    var firstElement = typeObject.CommandElements[1];
+                    CommandElementAst typeBeingCreated = null;
+
+                    if (firstElement is CommandParameterAst)
+                    {
+                        string parameterName = firstElement.ParameterName.ToLower();
+                        if (parameterName.Contains("type")) // Get only -TypeName, not -ComObject
+                        {
+                            typeBeingCreated = typeObject.CommandElements[2];
+                        }
+                        else
+                        {
+                            return fullNameObjectList;
+                        }  
+                    }
+                    else
+                    {
+                        typeBeingCreated = firstElement;
+                    }
+
+                    if (typeBeingCreated != null)
+                    {
+                        string name;
+                        ScriptBlock script;
+                        // Create a TypeExpressionAst from the CommandElementAst
+                        try
+                        {
+                            name = (typeBeingCreated.GetType().GetProperty("Value", typeof(string)).GetValue(typeBeingCreated)).ToString();
+                        }
+                        catch
+                        {
+                            name = typeBeingCreated.ToString().TrimEnd(new char[] {'\\'}).TrimStart(new char[] {'\\'});
+                        }
+                        if (name.StartsWith("["))
+                        {
+                            script = ScriptBlock.Create(name);
+                        }
+                        else
+                        {
+                            script = ScriptBlock.Create("[" + name + "]");
+                        }
+                        
+                        typeObject = script.Ast.Find(ast => ast is TypeExpressionAst, true) as TypeExpressionAst;
+                    }
+                    else
+                    {
+                        return fullNameObjectList;
+                    }
+                }
+                catch (ParseException pe)
+                {
+                    ErrorObject error = new ErrorObject(pe.GetType().ToString(), pe.Errors, pe.Message, typeObject.Extent);
+                    errorList.Add(error);
+                    return fullNameObjectList;
+                }
+                catch (Exception e)
+                {
+                    ErrorObject error = new ErrorObject(e.GetType().ToString(), null, e.Message, typeObject.Extent);
+                    errorList.Add(error);
+                    return fullNameObjectList;
+                }
+            }
+
+            ITypeName typeNameProperty = typeObject.TypeName;
+
+            return GetFullNames(fullNameObjectList, typeNameProperty);
         }
 
         ///<summary>
         /// Get full type name from ast object.
         ///</summary>
-        private List<fullTypeNameObject> RetrieveFullTypeName(dynamic typeObject)
+        private List<fullTypeNameObject> GetFullNames (List<fullTypeNameObject> listOfNames, ITypeName typeName)
         {
-            // Check to see if our object is a CommandAst. 
-            string AstType = (typeObject.GetType()).Name;
+            string fullName = null;
+            bool typeAccelerator = false;
+            bool possibleCustomType = false;
 
-            if (String.Equals(AstType, "CommandAst", StringComparison.OrdinalIgnoreCase))
+            var reflectedType = typeName.GetReflectionType();
+
+            if (reflectedType != null)
             {
-                return GetFullNameFromNewObjectCommand(typeObject);
+                // Remove brackets if type is an array.
+                fullName = (String.Format("{0}.{1}", reflectedType.Namespace, reflectedType.Name)).Replace("[]", "");
             }
-
-            // If we make it here our ast object is either a TypeConstraintAst or a TypeExpressionAst.
-
-            List<fullTypeNameObject> fullNameObjectList = new List<fullTypeNameObject>();
-            var typeNameProperty = typeObject.TypeName;
-
-            var type = typeNameProperty.GetReflectionType();
-
-            if (type != null)
+            else
             {
-                string[] splitNames = type.ToString().Split(new Char[] { '[', ',', ']' },
-                                                           StringSplitOptions.RemoveEmptyEntries);
+                fullName = (typeName.Name).Replace("[]", "");
 
-                foreach (string name in splitNames)
+                // Is this a type accelerator?
+                string typeAccName = CheckTypeAcceleratorMap(fullName);
+
+                if (!String.IsNullOrEmpty(typeAccName))
                 {
-                    fullTypeNameObject fullTypeNameInfoObject = new fullTypeNameObject(false);
-                    fullTypeNameInfoObject.fullName = name;
-                    fullNameObjectList.Add(fullTypeNameInfoObject);
+                    fullName = typeAccName;
+                    typeAccelerator = true;
                 }
-            }
-            else // Reflection couldn't give us the type names.
-            {
-                string[] splitNames = typeNameProperty.ToString().Split(new Char[] { '[', ',', ']' },
-                                                           StringSplitOptions.RemoveEmptyEntries);
-
-                // If splitNames length is greater than 1, then we want to try and use the ast object again to 
-                // get full type names.  This is because we have an instance of a type taking parameters and we will not
-                // get the full type name from the string only. 
-                // Example:  the string 'System.Collections.Generic.List[string]' will not give us 'System.Collections.Generic.List`1'
-                // which is what we want.
-
-                if (splitNames.Length > 1)
-                {
-                    fullTypeNameObject outsideType = new fullTypeNameObject(false);
-                    var typeName = typeNameProperty.TypeName;
-
-                    outsideType.fullName = GetAstField(typeName, "_type");
-
-                    if (outsideType.fullName == null)
-                    {
-                        outsideType.fullName = GetAstField(typeName, "_name");
-                    }
-                    // Sometimes the full name of the outsideType will still contain '[]' so we need to remove it.
-                    string[] split = outsideType.fullName.Split('[');
-                    outsideType.fullName = split[0];
-
-                    // If this is already a full type name we can add it to our list.
-                    if (StartsWithKnownNamespace(outsideType.fullName))
-                    {
-                        fullNameObjectList.Add(outsideType);
-                    }
-                    // If not, we have to find it ourselves.
-                    else
-                    {
-                        outsideType = TryToBuildFullTypeName(outsideType);
-                        fullNameObjectList.Add(outsideType);
-                    }
-
-                    // Our inside types are the GenericArguments on our typeNameProperty object.
-                    dynamic insideTypes = typeNameProperty.GenericArguments;
-
-                    foreach (dynamic argument in insideTypes)
-                    {
-                        fullTypeNameObject insideType = new fullTypeNameObject(false);
-                        insideType.fullName = GetAstField(argument, "_type");
-
-                        if (insideType.fullName == null)
-                        {
-                            insideType.fullName = GetAstField(argument, "_name");
-                        }
-
-                        // Now we'll do the same check as we did for the outside type.
-                        if (StartsWithKnownNamespace(insideType.fullName))
-                        {
-                            fullNameObjectList.Add(insideType);
-                        }
-                        else
-                        {
-                            insideType = TryToBuildFullTypeName(insideType);
-                            fullNameObjectList.Add(insideType);
-                        }
-                    }
-                }
-                // SplitNames has only one element.
                 else
                 {
-                    fullTypeNameObject fullTypeNameInfoObject = new fullTypeNameObject(false);
-                    fullTypeNameInfoObject.fullName = splitNames[0];
+                    // Is this a type from a known namespace or a 'using namespace' statement in the script?
+                    string usingNameSpace = TryKnownNameSpaces(fullName);
 
-                    if (StartsWithKnownNamespace(fullTypeNameInfoObject.fullName))
-                    {
-                        fullNameObjectList.Add(fullTypeNameInfoObject);
-                    }
-                    else
-                    {
-                        fullTypeNameInfoObject = TryToBuildFullTypeName(fullTypeNameInfoObject);
-                        fullNameObjectList.Add(fullTypeNameInfoObject);
-                    }
+                     if (!String.IsNullOrEmpty(usingNameSpace))
+                     {
+                         fullName = usingNameSpace;
+                     }
+                     else
+                     {
+                        // This may be a user created type.
+                        possibleCustomType = true;
+                     }
                 }
             }
-            return fullNameObjectList;
-        }
 
-        /// <summary>
-        /// Retrieve full type names from a 'New-Object' CommandAst.
-        /// </summary>
-        private List<fullTypeNameObject> GetFullNameFromNewObjectCommand(dynamic typeObject)
-        {
-            // Each commandAst object has the CommandElements property that looks like the following:
-            // 
-            // CommandElements[0] = The name of the command i.e. 'Get-Command', 'New-Object'.
-            //
-            // CommandElements[1] = Either a parameter name OR the object/type.
-            //
-            // CommandElements[2] = If CommandElements[1] is a parameter, then this is the object/type 
-            //                      i.e.'string', 'myType'.                 
-
-            List<fullTypeNameObject> fullNameObjectList = new List<fullTypeNameObject>();
-            string typeName = null;
-
-            try
+            // Are there nested types?
+            if (typeName.IsGeneric)
             {
-                // Get only the 'New-Object' commandAsts.
-                if (String.Equals(typeObject.GetCommandName(), "New-Object", StringComparison.OrdinalIgnoreCase))
+                GenericTypeName genericType = typeName as GenericTypeName;
+
+                if (genericType == null)
+                { 
+                    throw new Exception("could not convert to generic typeName");
+                }
+
+                foreach (ITypeName tName in genericType.GenericArguments)
                 {
-                    StringConstantExpressionAst typeBeingCreated = null;
-
-                    try
-                    {
-                        string possibleParam = (typeObject.CommandElements[1].GetType()).Name;
-
-                        // Is there a named parameter?
-                        if (String.Equals(possibleParam, "CommandParameterAst", StringComparison.OrdinalIgnoreCase))
-                        {
-                            // Now we only want the parameters that include 'type'.
-                            string paramName = typeObject.CommandElements[1].ParameterName.ToLower();
-
-                            if (paramName.Contains("type"))
-                            {
-                                typeBeingCreated = typeObject.CommandElements[2] as StringConstantExpressionAst;
-                            }
-                        }
-                        // If the secondElement is not a parameter name, then it will be the type being created.
-                        else
-                        {
-                            typeBeingCreated = typeObject.CommandElements[1] as StringConstantExpressionAst;
-                        }
-                    }
-                    catch { }
-
-                    // There is a possibility typeBeingCreated could be an array (string[]) in which case we 
-                    // just want 'string', or more than one type (someType[string, int]) in which case we want 
-                    // all three types.
-                    string[] typeNameComponents = typeBeingCreated.Value.Split(new Char[] { '[', ',', ']', ' ', '\'', '(', ')' },
-                                                        StringSplitOptions.RemoveEmptyEntries);
-
-                    // For full type names that specify the number of parameters they take (System.Collections.Generic.SortedList`2), 
-                    // we will very rarely get the full type name with " `2 " in it from the string after 'New-Object'.
-                    // Most likely the string would be along the lines of: System.Collections.Generic.SortedList[string, string].
-                    // If there is more than one item in our typeNameComponents array we know what number to put after the ` based 
-                    // on how many items we have in typeNameComponents.
-                    if (typeNameComponents.Length > 1 && (!typeNameComponents[0].Contains("`")))
-                    {
-                        string parameterNumber = (typeNameComponents.Length - 1).ToString();
-                        typeNameComponents[0] = typeNameComponents[0] + "`" + parameterNumber;
-                    }
-
-                    // Now we need to find the full name for each of our types.
-                    foreach (string name in typeNameComponents)
-                    {
-                        fullTypeNameObject fullNameObject = new fullTypeNameObject(false);
-                        fullNameObject.fullName = name;
-
-                        // Is our name already a full name (includes namespace)?
-                        if (StartsWithKnownNamespace(name))
-                        {
-                            fullNameObjectList.Add(fullNameObject);
-                        }
-                        else
-                        {
-                            fullNameObject = TryToBuildFullTypeName(fullNameObject);
-                            fullNameObjectList.Add(fullNameObject);
-                        }
-                    }
+                    GetFullNames(listOfNames, tName);
                 }
             }
-            // If the CommandAst is a type we don't want to analyze (like a scriptblock), or
-            // if the New-Object command is tyring to create a ComObject, the properties we are
-            // trying to access in the above 'if' statement won't exist and will throw an exception.
-            // We'll just catch it and move on since we don't want to deal with those anyway.
-            catch (System.Exception) { }
 
-            return fullNameObjectList;
-        }
+            fullTypeNameObject fullTypeNameObject = new fullTypeNameObject(possibleCustomType);
+            fullTypeNameObject.fullName = fullName;
+            fullTypeNameObject.isTypeAccelerator = typeAccelerator;
 
-        ///<summary>
-        /// Retrieves a non-public field from an ast object.
-        ///</summary>
-        private string GetAstField(dynamic typeNamePropertyObject, string desiredProperty)
-        {
-            dynamic property = typeNamePropertyObject.GetType()?.GetField(desiredProperty,
-                               BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(
-                               typeNamePropertyObject);
+            listOfNames.Add(fullTypeNameObject);
 
-            if (desiredProperty == "_type" && property != null)
-            {
-                return property.FullName.ToString();
-            }
-            else if (property != null)
-            {
-                return property.ToString();
-            }
-            else
-            {
-                return property;
-            }
-        }
-
-        ///<summary>
-        /// Tries to get a full type name from our built-in maps and libraries.
-        ///</summary>
-        private fullTypeNameObject TryToBuildFullTypeName(fullTypeNameObject typeObject)
-        {
-            string name = typeObject.fullName;
-
-            // Is this a type accelerator? 
-            typeObject.fullName = CheckTypeAcceleratorMap(name);
-
-            if (typeObject.fullName != null)
-            {
-                typeObject.isTypeAccelerator = true;
-            }
-            else
-            {
-                // Can we create a full type name by checking known namespaces?
-                typeObject.fullName = TryKnownNameSpaces(name);
-
-                if (typeObject.fullName == null)
-                {
-                    typeObject.fullName = name;
-                    // Is this a UWP type?
-                    if (!PossibleUWPtype(typeObject.fullName))
-                    {
-                        // We will assume this is a user-created type.
-                        typeObject.isCustomType = true;
-                    }
-                }
-            }
-            return typeObject;
+            return listOfNames;
         }
 
         ///<summary>
@@ -719,9 +673,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         ///</summary>
         private string CheckTypeAcceleratorMap(string typeName)
         {
-            typeName = typeName.ToLower();
             string value = null;
-            if (typeAcceleratorMap.TryGetValue(typeName, out value))
+            if (typeAcceleratorMap.TryGetValue(typeName.ToLower(), out value))
             {
                 return value;
             }
@@ -734,11 +687,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// first. (We will take the first match we find regardless of platform because
         /// all we want is the full type name).
         ///</summary>
-        private string TryKnownNameSpaces(string TypeName)
+        private string TryKnownNameSpaces(string typeName)
         {
+            // Does typeName already start with a known namespace?
             foreach (string nspace in knownNamespaces)
             {
-                string possibleFullName = nspace + TypeName;
+                if (typeName.StartsWith(nspace, StringComparison.OrdinalIgnoreCase))
+                {
+                    return typeName;
+                }
+            }
+            // If not, try to build full type name.
+            foreach (string nspace in knownNamespaces)
+            {
+                string possibleFullName = nspace + typeName;
 
                 // Try our target platforms first.
                 foreach (var platform in psTypeMap)
@@ -757,39 +719,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             // No match anywhere.
             return null;
-        }
-
-        ///<summary>
-        /// Check if type name starts with a known namespace.
-        ///</summary>
-        private bool StartsWithKnownNamespace(string typeName)
-        {
-            if (typeName != null)
-            {
-                foreach (string nspace in knownNamespaces)
-                {
-                    if (typeName.StartsWith(nspace, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        ///<summary>
-        /// Check if type is from a Universal Windows Platform (UWP) namespace. If the typeName 
-        /// starts with 'Windows' it does not ALWAYS mean it's from a UWP namespace, but usually it is.  
-        /// We are using this check to prevent our type from being labeled 'custom' and therefore giving
-        /// the incorrect error message.
-        ///</summary>
-        private bool PossibleUWPtype(string typeName)
-        {
-            if (typeName.StartsWith("Windows.", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            return false;
         }
 
         /// <summary>
@@ -919,10 +848,3 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
-
-
-
-
-
-
-

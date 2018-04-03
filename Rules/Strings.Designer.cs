@@ -2204,11 +2204,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not resolve type &apos;{0}&apos;.  If this is not a user-created type, please use full type name with namespace to evaluate with PSScript Analyzer..
+        ///   Looks up a localized string similar to Could not resolve type &apos;{0}&apos;.
         /// </summary>
         internal static string UseCompatibleTypesUnresolvedError {
             get {
                 return ResourceManager.GetString("UseCompatibleTypesUnresolvedError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to '{0}' throws a {1}:  {2}
+        /// </summary>
+        internal static string UseCompatibleTypesException {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesException", resourceCulture);
             }
         }
         
