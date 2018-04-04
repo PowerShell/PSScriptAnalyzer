@@ -38,6 +38,7 @@ test_script:
   - ps:   |
             if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
                 $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
+                if ( Test-Path "$modulePath\PSScriptAnalyzer" ) { Remove-Item -recurse -force "$modulePath\PSScriptAnalyzer" }
                 Copy-Item "${env:APPVEYOR_BUILD_FOLDER}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
                 $testResultsFile = ".\TestResults.xml"
                 $testScripts = "${env:APPVEYOR_BUILD_FOLDER}\Tests\Engine","${env:APPVEYOR_BUILD_FOLDER}\Tests\Rules"
