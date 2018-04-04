@@ -15,8 +15,11 @@ if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition
     $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'coreclr'
 }
 else {
-    if ($PSVersionTable.PSVersion -lt [Version]'5.0') {
+    if ($PSVersionTable.PSVersion.Major -eq 3) {
         $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv3'
+    }
+    elseif ($PSVersionTable.PSVersion.Major -eq 4) {
+        $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv4'
     }
 }
 

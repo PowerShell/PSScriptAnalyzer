@@ -65,7 +65,12 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
-    <DefineConstants>$(DefineConstants);PSV3;PSV5</DefineConstants>
+    <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Release' ">
+    <DefineConstants>PSV3</DefineConstants>
+    <DefineConstants>PSV4</DefineConstants>
   </PropertyGroup>
 
 </Project>

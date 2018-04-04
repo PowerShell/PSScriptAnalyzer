@@ -6,7 +6,7 @@
     [ValidateSet("net451", "netstandard2.0")]
     [string]$Framework = "netstandard2.0",
 
-    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
+    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release", "PSv4Release")]
     [string]$Configuration = "Debug"
 )
 
@@ -38,6 +38,9 @@ if ($Framework -eq "netstandard2.0")
 }
 elseif ($Configuration -match 'PSv3') {
     $destinationDirBinaries = "$destinationDir\PSv3"
+}
+elseif ($Configuration -match 'PSv4') {
+    $destinationDirBinaries = "$destinationDir\PSv4"
 }
 
 if ($build)

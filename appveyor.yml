@@ -8,7 +8,7 @@ environment:
     BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
     PowerShellEdition: WindowsPowerShell
-    BuildConfiguration: PSv3Release
+    BuildConfiguration: PSv4Release
   - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
@@ -35,6 +35,10 @@ install:
 build_script:
   - ps:   |
             if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
+                if ($env:BuildConfiguration -eq 'PSv4Release') {
+                  # On WMF$: Also build for v3 to check it builds at least since we do not have a WMF3 image
+                  Invoke-AppveyorBuild -CheckoutPath $env:APPVEYOR_BUILD_FOLDER -BuildConfiguration PSv3Release -BuildType 'FullCLR'
+                }
                 Invoke-AppveyorBuild -CheckoutPath $env:APPVEYOR_BUILD_FOLDER -BuildConfiguration $env:BuildConfiguration -BuildType 'FullCLR'
             }
   - pwsh: |

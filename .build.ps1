@@ -2,7 +2,7 @@ param(
     [ValidateSet("net451", "netstandard2.0")]
     [string]$Framework = "net451",
 
-    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
+    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release", "PSv4Release")]
     [string]$Configuration = "Debug"
 )
 
@@ -17,7 +17,7 @@ if ($BuildTask -eq "release") {
     $buildData = @{
         Frameworks = @{
             "net451"         = @{
-                Configuration = @('Release', "PSV3Release")
+                Configuration = @('Release', "PSV3Release", "PSv4Release")
             }
             "netstandard2.0" = @{
                 Configuration = @('Release')
