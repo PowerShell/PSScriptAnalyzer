@@ -105,11 +105,11 @@ Exit
     You can either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build using `PowerShell` specifically for your platform as follows:
     * Windows PowerShell version 5.0 and greater
     ```powershell
-    .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
+    .\buildCoreClr.ps1 -Framework net461 -Configuration Release -Build
     ```
     * Windows PowerShell version 3.0 and 4.0
     ```powershell
-    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
+    .\buildCoreClr.ps1 -Framework net461 -Configuration PSV3Release -Build
     ```
     * PowerShell Core
     ```powershell
