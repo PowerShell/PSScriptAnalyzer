@@ -21,6 +21,16 @@ cache:
 install:
   - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
   - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
+  - ps:   |
+            # Windows image still has version 6.0.0 of pwsh but 6.0.2 is required due to System.Management.Automation package https://github.com/appveyor/ci/issues/2230
+            if ($env:PowerShellEdition -eq 'PowerShellCore' -and $PSVersionTable.PSVersion -lt [version]'6.0.2' -and $IsWindows) {
+                $msiPath = "$env:TEMP\PowerShell-6.0.2-win-x64.msi"
+                (New-Object Net.WebClient).DownloadFile('https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.msi', $msiPath)
+                Write-Verbose 'Installing pwsh 6.0.2' -Verbose
+                Start-Process 'msiexec.exe' -Wait -ArgumentList "/i $msiPath /quiet"
+                Remove-Item $msiPath
+                $env:Path = "$env:ProgramFiles\PowerShell\6.0.2;$env:Path"
+            }
 
 build_script:
   - ps:   |
@@ -48,7 +58,7 @@ test_script:
                 }
             }
   - pwsh: |
-            if ($env:PowerShellEdition -eq 'PowerShellCore' -and $PSVersionTable.PSVersion -ge [version]'6.0.2') {
+            if ($env:PowerShellEdition -eq 'PowerShellCore') {
                 $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
                 Copy-Item "${env:APPVEYOR_BUILD_FOLDER}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
                 $testResultsFile = ".\TestResults.xml"
