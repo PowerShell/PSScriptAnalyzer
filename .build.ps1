@@ -1,6 +1,6 @@
 param(
-    [ValidateSet("net461", "netstandard2.0")]
-    [string]$Framework = "net461",
+    [ValidateSet("net451", "netstandard2.0")]
+    [string]$Framework = "net451",
 
     [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
     [string]$Configuration = "Debug"
@@ -16,7 +16,7 @@ $buildData = @{}
 if ($BuildTask -eq "release") {
     $buildData = @{
         Frameworks = @{
-            "net461"         = @{
+            "net451"         = @{
                 Configuration = @('Release', "PSV3Release")
             }
             "netstandard2.0" = @{
@@ -157,8 +157,8 @@ task createModule {
 
             CopyToDestinationDir $itemsToCopyBinaries $destinationDirBinaries
 
-            # copy newtonsoft dll if net461 framework
-            if ($Framework -eq "net461") {
+            # copy newtonsoft dll if net451 framework
+            if ($Framework -eq "net451") {
                 copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
             }
         }

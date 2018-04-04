@@ -3,7 +3,7 @@
     [switch]$Uninstall,
     [switch]$Install,
 
-    [ValidateSet("net461", "netstandard2.0")]
+    [ValidateSet("net451", "netstandard2.0")]
     [string]$Framework = "netstandard2.0",
 
     [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
@@ -73,8 +73,8 @@ if ($build)
     # Copy Settings File
     Copy-Item -Path "$solutionDir\Engine\Settings" -Destination $destinationDir -Force -Recurse
 
-    # copy newtonsoft dll if net461 framework
-    if ($Framework -eq "net461")
+    # copy newtonsoft dll if net451 framework
+    if ($Framework -eq "net451")
     {
         copy-item -path "$solutionDir\Rules\bin\$Configuration\$Framework\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
     }

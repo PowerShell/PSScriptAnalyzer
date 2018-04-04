@@ -58,7 +58,7 @@ function Invoke-AppVeyorBuild {
     Push-Location $CheckoutPath
     [Environment]::SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", 1) # avoid unneccessary initialization in CI
     if ($BuildType -eq 'FullCLR') {
-        .\buildCoreClr.ps1 -Framework net461 -Configuration $BuildConfiguration -Build
+        .\buildCoreClr.ps1 -Framework net451 -Configuration $BuildConfiguration -Build
     }
     elseif ($BuildType -eq 'NetStandard') {
         .\buildCoreClr.ps1 -Framework netstandard2.0 -Configuration Release -Build
