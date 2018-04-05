@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer 
-$violationMessage = [regex]::Escape('$null should be on the left side of equality comparisons.')
+﻿$violationMessage = [regex]::Escape('$null should be on the left side of equality comparisons.')
 $violationName = "PSPossibleIncorrectComparisonWithNull"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\PossibleIncorrectComparisonWithNull.ps1 | Where-Object {$_.RuleName -eq $violationName}

@@ -1,6 +1,4 @@
-﻿Import-Module -Verbose PSScriptAnalyzer
-
-$violationMessageDSCResource = "Test-TargetResource function in DSC Resource should return object of type System.Boolean instead of System.Collections.Hashtable"
+﻿$violationMessageDSCResource = "Test-TargetResource function in DSC Resource should return object of type System.Boolean instead of System.Collections.Hashtable"
 $violationMessageDSCClass = "Get function in DSC Class FileResource should return object of type FileResource instead of type System.Collections.Hashtable"
 $violationName = "PSDSCReturnCorrectTypesForDSCFunctions"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

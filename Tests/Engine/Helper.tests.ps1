@@ -1,5 +1,3 @@
-Import-Module PSScriptAnalyzer
-
 Describe "Test Directed Graph" {
     Context "When a graph is created" {
         $digraph = New-Object -TypeName 'Microsoft.Windows.PowerShell.ScriptAnalyzer.DiGraph[string]'
