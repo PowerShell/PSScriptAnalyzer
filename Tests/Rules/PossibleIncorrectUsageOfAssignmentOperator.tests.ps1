@@ -1,4 +1,3 @@
-#Import-Module PSScriptAnalyzer
 $ruleName = "PSPossibleIncorrectUsageOfAssignmentOperator"
 
 Describe "PossibleIncorrectUsageOfComparisonOperator" {

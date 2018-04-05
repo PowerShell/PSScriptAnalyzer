@@ -1,9 +1,8 @@
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
-Import-Module PSScriptAnalyzer
 
-# test is meant to verify functionality if chsarp apis are used. Hence not if psedition is CoreCLR
+# test is meant to verify functionality if csharp apis are used. Hence not if psedition is CoreCLR
 if ((Test-PSEditionCoreCLR))
 {
 	return

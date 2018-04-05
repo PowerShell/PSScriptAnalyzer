@@ -107,13 +107,17 @@ Exit
     ```powershell
     .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
     ```
-    * Windows PowerShell version 3.0 and 4.0
+    * Windows PowerShell version 4.0
+    ```powershell
+    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV4Release -Build
+    ```
+    * Windows PowerShell version 3.0
     ```powershell
     .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
     ```
     * PowerShell Core
     ```powershell
-    .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+    .\buildCoreClr.ps1 -Framework netstandard2.0 -Configuration Release -Build
     ```
 * Build documenatation
     ```powershell

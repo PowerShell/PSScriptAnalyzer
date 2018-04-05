@@ -1,5 +1,3 @@
-Import-Module PSScriptAnalyzer
-
 Describe "Correction Extent" {
     $type = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent]
 
