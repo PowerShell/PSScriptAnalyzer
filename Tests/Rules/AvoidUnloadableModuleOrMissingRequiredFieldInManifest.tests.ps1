@@ -1,6 +1,5 @@
 ﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
-Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
 $missingMessage = "The member 'ModuleVersion' is not present in the module manifest."

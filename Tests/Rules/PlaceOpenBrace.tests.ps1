@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$ruleConfiguration = @{
+﻿$ruleConfiguration = @{
     Enable = $true
     OnSameLine = $true
     NewLineAfter = $true

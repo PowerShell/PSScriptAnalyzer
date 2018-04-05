@@ -1,4 +1,3 @@
-Import-Module PSScriptAnalyzer
 $writeHostName = "PSMisleadingBacktick"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violationFilepath = Join-Path $directory 'MisleadingBacktick.ps1'

@@ -1,7 +1,6 @@
 ﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
-Import-Module PSScriptAnalyzer
 
 $violationMessage = "The Credential parameter in 'Credential' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute."
 $violationName = "PSUsePSCredentialType"
