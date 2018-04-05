@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$ruleName = "PSAvoidAssignmentToAutomaticVariable"
+﻿$ruleName = "PSAvoidAssignmentToAutomaticVariable"
 
 Describe "AvoidAssignmentToAutomaticVariables" {
     Context "ReadOnly Variables" {

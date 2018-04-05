@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$violationMessage = [regex]::Escape("Verb-Files' defines the reserved common parameter 'Verbose'.")
+﻿$violationMessage = [regex]::Escape("Verb-Files' defines the reserved common parameter 'Verbose'.")
 $violationName = "PSReservedParams"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}

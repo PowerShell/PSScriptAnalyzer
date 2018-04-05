@@ -142,10 +142,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (assignmentVarAst != null)
                 {
-                    // Ignore if variable is global or environment variable or scope is function
+                    // Ignore if variable is global or environment variable or scope is drive qualified variable
                     if (!Helper.Instance.IsVariableGlobalOrEnvironment(assignmentVarAst, scriptBlockAst)
                         && !assignmentVarAst.VariablePath.IsScript
-                        && !string.Equals(assignmentVarAst.VariablePath.DriveName, "function", StringComparison.OrdinalIgnoreCase))
+                        && assignmentVarAst.VariablePath.DriveName == null)
                     {
                         string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
 
