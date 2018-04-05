@@ -1,5 +1,4 @@
-﻿Import-Module -Verbose PSScriptAnalyzer
-
+﻿
 $violationMessage = "Missing 'Get-TargetResource' function. DSC Resource must implement Get, Set and Test-TargetResource functions."
 $classViolationMessage = "Missing 'Set' function. DSC Class must implement Get, Set and Test functions."
 $violationName = "PSDSCStandardDSCFunctionsInResource"

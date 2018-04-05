@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$ruleName = 'PSAvoidDefaultValueForMandatoryParameter'
+﻿$ruleName = 'PSAvoidDefaultValueForMandatoryParameter'
 
 Describe "AvoidDefaultValueForMandatoryParameter" {
     Context "When there are violations" {

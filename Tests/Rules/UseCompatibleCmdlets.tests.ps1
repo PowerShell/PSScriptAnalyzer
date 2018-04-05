@@ -3,7 +3,6 @@ $directory = Split-Path $MyInvocation.MyCommand.Path -Parent
 $testRootDirectory = Split-Path -Parent $directory
 $ruleTestDirectory = Join-Path $directory 'UseCompatibleCmdlets'
 
-Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
 Describe "UseCompatibleCmdlets" {
