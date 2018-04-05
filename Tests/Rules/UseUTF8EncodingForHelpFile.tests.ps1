@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$violationMessage = "File about_utf16.help.txt has to use UTF8 instead of System.Text.UTF32Encoding encoding because it is a powershell help file."
+﻿$violationMessage = "File about_utf16.help.txt has to use UTF8 instead of System.Text.UTF32Encoding encoding because it is a powershell help file."
 $violationName = "PSUseUTF8EncodingForHelpFile"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\about_utf16.help.txt | Where-Object {$_.RuleName -eq $violationName}

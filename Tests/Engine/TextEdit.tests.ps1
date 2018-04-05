@@ -1,5 +1,3 @@
-Import-Module PSScriptAnalyzer
-
 Describe "TextEdit Class" {
     $type = [Microsoft.Windows.PowerShell.ScriptAnalyzer.TextEdit]
 

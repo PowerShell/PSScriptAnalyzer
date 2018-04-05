@@ -1,7 +1,3 @@
-if (!(Get-Module PSScriptAnalyzer)) {
-    Import-Module PSScriptAnalyzer
-}
-
 $directory = Split-Path $MyInvocation.MyCommand.Path
 $settingsTestDirectory = [System.IO.Path]::Combine($directory, "SettingsTest")
 $project1Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project1")

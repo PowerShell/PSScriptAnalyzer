@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$violationMessage = [regex]::Escape("The ComputerName parameter of cmdlet 'Invoke-Command' is hardcoded. This will expose sensitive information about the system if the script is shared.")
+﻿$violationMessage = [regex]::Escape("The ComputerName parameter of cmdlet 'Invoke-Command' is hardcoded. This will expose sensitive information about the system if the script is shared.")
 $violationName = "PSAvoidUsingComputerNameHardcoded"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidUsingComputerNameHardcoded.ps1 | Where-Object {$_.RuleName -eq $violationName}
