@@ -1647,7 +1647,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Inspects Parse errors and removes TypeNotFound errors that can be ignored that can be due to types that are not known yet (e.g. due to 'using' statements)
+        /// Inspects Parse errors and removes TypeNotFound errors that can be ignored since some types are not known yet (e.g. due to 'using' statements).
         /// </summary>
         /// <param name="parseErrors"></param>
         /// <returns>List of relevant parse errors.</returns>
