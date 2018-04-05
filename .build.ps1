@@ -1,8 +1,8 @@
 param(
-    [ValidateSet("net451", "netstandard1.6")]
+    [ValidateSet("net451", "netstandard2.0")]
     [string]$Framework = "net451",
 
-    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
+    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release", "PSv4Release")]
     [string]$Configuration = "Debug"
 )
 
@@ -17,9 +17,9 @@ if ($BuildTask -eq "release") {
     $buildData = @{
         Frameworks = @{
             "net451"         = @{
-                Configuration = @('Release', "PSV3Release")
+                Configuration = @('Release', "PSV3Release", "PSv4Release")
             }
-            "netstandard1.6" = @{
+            "netstandard2.0" = @{
                 Configuration = @('Release')
             }
         }
@@ -145,7 +145,7 @@ task createModule {
             $itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
                 "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
 
-            if ($Framework -eq "netstandard1.6") {
+            if ($Framework -eq "netstandard2.0") {
                 $destinationDirBinaries = "$destinationDir\coreclr"
             }
             elseif ($Configuration -match 'PSv3') {
