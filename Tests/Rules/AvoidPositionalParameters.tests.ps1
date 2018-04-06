@@ -26,4 +26,21 @@ Describe "AvoidPositionalParameters" {
             $noViolationsDSC.Count | Should -Be 0
         }
     }
+
+    Context "Function defined and called in script, which has 3 or more positional parameters triggers rule." {
+        $sb=
+        {
+            Function Foo {
+             param(
+                [Parameter(Mandatory=$true,Position=1)] $A,
+                [Parameter(Position=2)]$B,
+                [Parameter(Position=3)]$C)
+            }
+            Foo "a" "b" "c"
+        }
+        $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "$sb"
+        $warnings.Count | Should -BeGreaterThan 0
+        $warning.RuleName | Should -Contain "PSAvoidUsingPositionalParameters"
+        $warnings.Message | Should -Contain "Cmdlet 'Foo' has positional parameter. Please use named parameters instead of positional parameters when calling a command."
+    }
 }
