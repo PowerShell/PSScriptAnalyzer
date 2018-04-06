@@ -129,7 +129,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true;
             }
 
+<<<<<<< 29f5017120de0ccf4c9737ca8a89d50ee66b63a1
             if (mandParams.Count == 0 || (Helper.Instance.IsCmdlet(cmdAst) && Helper.Instance.PositionalParameterUsed(cmdAst)))
+=======
+            if (mandParams.Count() == 0 || (Helper.Instance.IsCmdlet(cmdAst) && Helper.Instance.PositionalParameterUsed(cmdAst)))
+>>>>>>> Trigger AvoidPositionalParameters rule for function defined and called inside a sript given as argument to Script Analyzer.
             {
                 returnValue = true;
             }
