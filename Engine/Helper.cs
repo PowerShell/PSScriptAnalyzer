@@ -602,6 +602,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Given a commandast, checks if the command is a Cmdlet.
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <returns></returns>
+        public bool IsCmdlet(CommandAst cmdAst) {
+            if (cmdAst == null)
+            {
+                return false;
+            }
+
+            var commandInfo = GetCommandInfo(cmdAst.GetCommandName());
+            return (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet);
+        }
+
+        /// <summary>
         /// Given a commandast, checks whether positional parameters are used or not.
         /// </summary>
         /// <param name="cmdAst"></param>
@@ -609,34 +624,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanThreePositional = false)
         {
-            if (cmdAst == null)
-            {
-                return false;
-            }
-
-            var commandInfo = GetCommandInfoLegacy(cmdAst.GetCommandName());
-            if (commandInfo == null || (commandInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
-            {
-                return false;
-            }
-
-            IEnumerable<ParameterMetadata> switchParams = null;
-
             if (HasSplattedVariable(cmdAst))
             {
                 return false;
-            }
-
-            if (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet)
-            {
-                try
-                {
-                    switchParams = commandInfo.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter);
-                }
-                catch (Exception)
-                {
-                    switchParams = null;
-                }
             }
 
             int parameters = 0;
@@ -646,27 +636,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             foreach (CommandElementAst ceAst in cmdAst.CommandElements)
             {
                 var cmdParamAst = ceAst as CommandParameterAst;
-                if (cmdParamAst != null)
-                {
-                    // Skip if it's a switch parameter
-                    if (switchParams != null &&
-                        switchParams.Any(
-                            pm => String.Equals(
-                                pm.Name,
-                                cmdParamAst.ParameterName, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        continue;
-                    }
-
-                    parameters += 1;
-
-                    if (cmdParamAst.Argument != null)
-                    {
-                        arguments += 1;
-                    }
-
-                }
-                else
+                if (cmdParamAst == null)
                 {
                     arguments += 1;
                 }
