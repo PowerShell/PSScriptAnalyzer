@@ -629,10 +629,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-<<<<<<< 29f5017120de0ccf4c9737ca8a89d50ee66b63a1
-=======
-            int parameters = 0;
->>>>>>> Trigger AvoidPositionalParameters rule for function defined and called inside a sript given as argument to Script Analyzer.
             // Because of the way we count, we will also count the cmdlet as an argument so we have to -1
             int argumentsWithoutProcedingParameters = -1;
             bool parameterPreceding = false;
@@ -640,7 +636,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             foreach (CommandElementAst ceAst in cmdAst.CommandElements)
             {
                 var cmdParamAst = ceAst as CommandParameterAst;
-<<<<<<< 29f5017120de0ccf4c9737ca8a89d50ee66b63a1
                 if (cmdParamAst != null)
                 {
                     parameterPreceding = true;
@@ -651,11 +646,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         argumentsWithoutProcedingParameters += 1;
                     }
                     parameterPreceding = false;
-=======
-                if (cmdParamAst == null)
-                {
-                    arguments += 1;
->>>>>>> Trigger AvoidPositionalParameters rule for function defined and called inside a sript given as argument to Script Analyzer.
                 }
             }
 
