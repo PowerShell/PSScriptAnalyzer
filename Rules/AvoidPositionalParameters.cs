@@ -54,7 +54,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if ((Helper.Instance.IsCmdlet(cmdAst) || declaredFunctionNames.Contains(cmdAst.GetCommandName())) &&
                     (Helper.Instance.PositionalParameterUsed(cmdAst)))
                 {
-                    Console.WriteLine("Cmdlet or function call");
                     PipelineAst parent = cmdAst.Parent as PipelineAst;
 
                     if (parent != null && parent.PipelineElements.Count > 1)
