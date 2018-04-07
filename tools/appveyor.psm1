@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+$ErrorActionPreference = 'Stop'
+
 # Implements the AppVeyor 'install' step and installs the required versions of Pester, platyPS and the .Net Core SDK if needed.
 function Invoke-AppVeyorInstall {
     $requiredPesterVersion = '4.3.1'
