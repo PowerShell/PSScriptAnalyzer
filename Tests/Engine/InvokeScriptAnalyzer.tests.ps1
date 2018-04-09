@@ -558,7 +558,7 @@ Describe "Test -EnableExit Switch" {
                 using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
                 using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
                 Import-Module "AzureRm"
-                class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using stetement but is not known at parse time
+                class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
                 gci # Produce AvoidAlias rule
 '@
             $assertionMessage = 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the PSAvoidUsingCmdletAliases warning due to gci'
