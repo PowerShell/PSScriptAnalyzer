@@ -59,7 +59,8 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             {
                 try
                 {
-                    Set-Variable -Name $VariableName -Value 'foo' -ErrorVariable errorVariable -ErrorAction Stop
+                    # Global scope has to be used due to a bug in PS. https://github.com/PowerShell/PowerShell/issues/6378
+                    Set-Variable -Name $VariableName -Value 'foo' -ErrorVariable errorVariable -ErrorAction Stop -Scope Global
                     throw "Expected exception did not occur when assigning value to read-only variable '$VariableName'"
                 }
                 catch
