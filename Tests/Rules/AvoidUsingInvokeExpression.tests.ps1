@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$violationMessage = "Invoke-Expression is used. Please remove Invoke-Expression from script and find other options instead."
+﻿$violationMessage = "Invoke-Expression is used. Please remove Invoke-Expression from script and find other options instead."
 $violationName = "PSAvoidUsingInvokeExpression"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidUsingInvokeExpression.ps1 | Where-Object {$_.RuleName -eq $violationName}

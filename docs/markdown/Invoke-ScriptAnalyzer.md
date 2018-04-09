@@ -52,11 +52,9 @@ For usage in CI systems, the -EnableExit exits the shell with an exit code equal
 
 The PSScriptAnalyzer module tests the Windows PowerShell code in a script, module, or DSC resource to determine
 whether, and to what extent, it fulfils best practice standards.
-For more information about PSScriptAnalyzer, type:
-Get-Help about_PSScriptAnalyzer.
 
 PSScriptAnalyzer is an open-source project.
-To contribute or file an issue, see GitHub.com\PowerShell\PSScriptAnalyzer.
+For more information about PSScriptAnalyzer, to contribute or file an issue, see GitHub.com\PowerShell\PSScriptAnalyzer.
 
 ## EXAMPLES
 
@@ -538,7 +536,4 @@ If you use the SuppressedOnly parameter, Invoke-ScriptAnalyzer instead returns a
 
 [Get-ScriptAnalyzerRule]()
 
-[about_PSScriptAnalyzer]()
-
 [PSScriptAnalyzer on GitHub](https://github.com/PowerShell/PSScriptAnalyzer)
-

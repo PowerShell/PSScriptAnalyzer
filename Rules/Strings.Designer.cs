@@ -143,6 +143,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Starting from PowerShell 6.0, the Variable &apos;{0}&apos; cannot be assigned any more since it is a readonly automatic variable that is built into PowerShell, please use a different name..
+        /// </summary>
+        internal static string AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ComputerName Hardcoded.
         /// </summary>
         internal static string AvoidComputerNameHardcodedCommonName {
@@ -1592,7 +1601,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;=&apos; operator means assignment. Did you mean the equal operator &apos;-eq&apos;?.
+        ///   Looks up a localized string similar to &apos;=&apos; is not an assignment operator. Did you mean the equality operator &apos;-eq&apos;?.
         /// </summary>
         internal static string PossibleIncorrectUsageOfAssignmentOperatorCommonName {
             get {
@@ -1601,7 +1610,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Did you really mean to make an assignment inside an if statement? If you rather meant to check for equality, use the &apos;-eq&apos;  operator..
+        ///   Looks up a localized string similar to &apos;=&apos; or &apos;==&apos; are not comparison operators in the PowerShell language and rarely needed inside conditional statements..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfAssignmentOperatorDescription {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Did you mean to use the assignment operator &apos;=&apos;? The equality operator in PowerShell is &apos;eq&apos;..
         /// </summary>
         internal static string PossibleIncorrectUsageOfAssignmentOperatorError {
             get {
@@ -1615,6 +1633,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string PossibleIncorrectUsageOfAssignmentOperatorName {
             get {
                 return ResourceManager.GetString("PossibleIncorrectUsageOfAssignmentOperatorName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;&gt;&apos; is not a comparison operator. Use  &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal)..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfRedirectionOperatorCommonName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfRedirectionOperatorCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When switching between different languages it is easy to forget that &apos;&gt;&apos; does not mean &apos;great than&apos; in PowerShell..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfRedirectionOperatorDescription {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfRedirectionOperatorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Did you mean to use the redirection operator &apos;&gt;&apos;? The comparison operators in PowerShell are &apos;-gt&apos; (greater than) or &apos;-ge&apos; (greater or equal)..
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfRedirectionOperatorError {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfRedirectionOperatorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PossibleIncorrectUsageOfRedirectionOperator.
+        /// </summary>
+        internal static string PossibleIncorrectUsageOfRedirectionOperatorName {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectUsageOfRedirectionOperatorName", resourceCulture);
             }
         }
         
