@@ -23,10 +23,9 @@ Use this cmdlet to create collections of rules to include and exclude when runni
 To get information about the rules, see the value of the Description property of each rule.
 
 The PSScriptAnalyzer module tests the Windows PowerShell code in a script, module, or DSC resource to determine whether, and to what extent, it fulfils best practice standards.
-For more information about PSScriptAnalyzer, type: Get-Help about_PSScriptAnalyzer.
 
 PSScriptAnalyzer is an open-source project.
-To contribute or file an issue, see GitHub.com\PowerShell\PSScriptAnalyzer.
+For more information about PSScriptAnalyzer, to contribute or file an issue, see GitHub.com\PowerShell\PSScriptAnalyzer.
 
 ## EXAMPLES
 
@@ -166,7 +165,4 @@ The RuleInfo object is a custom object created especially for Script Analyzer. I
 
 [Invoke-ScriptAnalyzer]()
 
-[about_PSScriptAnalyzer]()
-
 [PSScriptAnalyzer on GitHub](https://github.com/PowerShell/PSScriptAnalyzer)
-
