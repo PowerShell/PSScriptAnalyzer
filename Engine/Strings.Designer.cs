@@ -10,7 +10,6 @@
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -589,6 +588,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string TextLinesNoNullItem {
             get {
                 return ResourceManager.GetString("TextLinesNoNullItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignoring &apos;TypeNotFound&apos; parse error on type {0}, which can also be due to the type not being known due to e.g. &apos;using&apos; statements. Parse error message was &apos;{1}&apos;..
+        /// </summary>
+        internal static string TypeNotFoundParseErrorFound {
+            get {
+                return ResourceManager.GetString("TypeNotFoundParseErrorFound", resourceCulture);
             }
         }
         
