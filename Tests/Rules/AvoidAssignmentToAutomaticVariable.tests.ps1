@@ -3,55 +3,75 @@
 Describe "AvoidAssignmentToAutomaticVariables" {
     Context "ReadOnly Variables" {
 
-        $readOnlyVariableSeverity = "Error"
+        $excpectedSeverityForAutomaticVariablesInPowerShell6 = 'Warning'
+        if ($PSVersionTable.PSVersion.Major -ge 6)
+        {
+            $excpectedSeverityForAutomaticVariablesInPowerShell6 = 'Error'
+        }
+
         $testCases_ReadOnlyVariables = @(
-            @{ VariableName = '?' }
-            @{ VariableName = 'Error' }
-            @{ VariableName = 'ExecutionContext' }
-            @{ VariableName = 'false' }
-            @{ VariableName = 'Home' }
-            @{ VariableName = 'Host' }
-            @{ VariableName = 'PID' }
-            @{ VariableName = 'PSCulture' }
-            @{ VariableName = 'PSEdition' }
-            @{ VariableName = 'PSHome' }
-            @{ VariableName = 'PSUICulture' }
-            @{ VariableName = 'PSVersionTable' }
-            @{ VariableName = 'ShellId' }
-            @{ VariableName = 'true' }
+            @{ VariableName = '?'; ExpectedSeverity = 'Error'; }
+            @{ VariableName = 'Error' ; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'ExecutionContext'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'false'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'Home'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'Host'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'PID'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'PSCulture'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'PSEdition'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'PSHome'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'PSUICulture'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'PSVersionTable'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'ShellId'; ExpectedSeverity = 'Error' }
+            @{ VariableName = 'true'; ExpectedSeverity = 'Error' }
+            # Variables introuced only in PowerShell 6.0 have a Severity of Warning only
+            @{ VariableName = 'IsCoreCLR'; ExpectedSeverity = $excpectedSeverityForAutomaticVariablesInPowerShell6; OnlyPresentInCoreClr = $true }
+            @{ VariableName = 'IsLinux'; ExpectedSeverity = $excpectedSeverityForAutomaticVariablesInPowerShell6; OnlyPresentInCoreClr = $true }
+            @{ VariableName = 'IsMacOS'; ExpectedSeverity = $excpectedSeverityForAutomaticVariablesInPowerShell6; OnlyPresentInCoreClr = $true }
+            @{ VariableName = 'IsWindows'; ExpectedSeverity = $excpectedSeverityForAutomaticVariablesInPowerShell6; OnlyPresentInCoreClr = $true }
         )
 
-        It "Variable '<VariableName>' produces warning of severity error" -TestCases $testCases_ReadOnlyVariables {
-            param ($VariableName)
+        It "Variable <VariableName> produces warning of Severity <ExpectedSeverity>" -TestCases $testCases_ReadOnlyVariables {
+            param ($VariableName, $ExpectedSeverity)
 
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$${VariableName} = 'foo'" | Where-Object { $_.RuleName -eq $ruleName }
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$${VariableName} = 'foo'" -ExcludeRule PSUseDeclaredVarsMoreThanAssignments
             $warnings.Count | Should -Be 1
-            $warnings.Severity | Should -Be $readOnlyVariableSeverity
+            $warnings.Severity | Should -Be $ExpectedSeverity
+            $warnings.RuleName | Should -Be $ruleName
         }
 
-        It "Using Variable '<VariableName>' as parameter name produces warning of severity error" -TestCases $testCases_ReadOnlyVariables {
-            param ($VariableName)
+        It "Using Variable <VariableName> as parameter name produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
+            param ($VariableName, $ExpectedSeverity)
 
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}" | Where-Object {$_.RuleName -eq $ruleName }
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}"
             $warnings.Count | Should -Be 1
-            $warnings.Severity | Should -Be $readOnlyVariableSeverity
+            $warnings.Severity | Should -Be $ExpectedSeverity
+            $warnings.RuleName | Should -Be $ruleName
         }
 
-        It "Using Variable '<VariableName>' as parameter name in param block produces warning of severity error" -TestCases $testCases_ReadOnlyVariables {
-            param ($VariableName)
+        It "Using Variable <VariableName> as parameter name in param block produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
+            param ($VariableName, $ExpectedSeverity)
 
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}" | Where-Object {$_.RuleName -eq $ruleName }
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}"
             $warnings.Count | Should -Be 1
-            $warnings.Severity | Should -Be $readOnlyVariableSeverity
+            $warnings.Severity | Should -Be $ExpectedSeverity
+            $warnings.RuleName | Should -Be $ruleName
         }
 
         It "Does not flag parameter attributes" {
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'function foo{Param([Parameter(Mandatory=$true)]$param1)}' | Where-Object { $_.RuleName -eq $ruleName }
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'function foo{Param([Parameter(Mandatory=$true)]$param1)}'
             $warnings.Count | Should -Be 0
         }
 
-        It "Setting Variable '<VariableName>' throws exception to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
-            param ($VariableName)
+        It "Setting Variable <VariableName> throws exception in applicable PowerShell version to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
+            param ($VariableName, $ExpectedSeverity, $OnlyPresentInCoreClr)
+
+            if ($OnlyPresentInCoreClr -and !$IsCoreCLR)
+            {
+                # In this special case we expect it to not throw
+                Set-Variable -Name $VariableName -Value 'foo'
+                continue
+            }
             
             # Setting the $Error variable has the side effect of the ErrorVariable to contain only the exception message string, therefore exclude this case.
             # For the library test in WMF 4, assigning a value $PSEdition does not seem to throw an error, therefore this special case is excluded as well.
