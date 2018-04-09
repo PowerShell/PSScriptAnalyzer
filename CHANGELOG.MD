@@ -47,7 +47,7 @@
 
 ### Documentation, Error Messages and miscellaneous Improvements
 
-- Add base changelog for 1.17.0 (#964) (by @bergmeister)
+- Add base changelog for 1.17.0 (#967) (by @bergmeister)
 - Remove outdated about_scriptanalyzer help file (#951) (by @bergmeister)
 - Fixes a typo and enhances the documentation for the parameters required for script rules (#942) (Thanks @MWL88!)
 - Remove unused using statements and sort them (#931) (by @bergmeister)
