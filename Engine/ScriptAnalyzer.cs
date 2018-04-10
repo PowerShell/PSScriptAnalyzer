@@ -1663,7 +1663,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 else
                 {
-                    this.outputWriter.WriteVerbose(string.Format(Strings.TypeNotFoundParseErrorFound, parseError.Extent, parseError.Message));
+                    this.outputWriter.WriteWarning(string.Format(Strings.TypeNotFoundParseErrorFound, parseError.Extent, parseError.Message));
                 }
             }
 
