@@ -73,6 +73,30 @@ Describe "Test available parameters" {
                 $params["SaveDscDependency"].ParameterType.FullName | Should -Be "System.Management.Automation.SwitchParameter"
             }
         }
+
+        Describe "Handles parse errors due to unknown types" {
+            $script = @'
+                using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
+                using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
+                Import-Module "AzureRm"
+                class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
+                gci # Produce AvoidAlias rule
+'@
+            $assertionMessage = 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the PSAvoidUsingCmdletAliases warning due to gci'
+            It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
+                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
+                $warnings.Count | Should -Be 1 -Because $assertionMessage
+                $warnings.RuleName | Should -Be 'PSAvoidUsingCmdletAliases' -Because $assertionMessage
+            }
+
+            $testFilePath = "TestDrive:\testfile.ps1"
+            Set-Content $testFilePath -value $script
+            It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
+                $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
+                $warnings.Count | Should -Be 1 -Because $assertionMessage
+                $warnings.RuleName | Should -Be 'PSAvoidUsingCmdletAliases' -Because $assertionMessage
+            }
+        }
     }
 
     Context "It has 2 parameter sets: File and ScriptDefinition" {
@@ -552,29 +576,4 @@ Describe "Test -EnableExit Switch" {
         }
     }
 
-    if (!$testingLibraryUsage) {
-        Describe "Handles parse errors due to unknown types" {
-            $script = @'
-                using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
-                using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
-                Import-Module "AzureRm"
-                class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
-                gci # Produce AvoidAlias rule
-'@
-            $assertionMessage = 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the PSAvoidUsingCmdletAliases warning due to gci'
-            It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
-                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
-                $warnings.Count | Should -Be 1 -Because $assertionMessage
-                $warnings.RuleName | Should -Be 'PSAvoidUsingCmdletAliases' -Because $assertionMessage
-            }
-
-            $testFilePath = "TestDrive:\testfile.ps1"
-            Set-Content $testFilePath -value $script
-            It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
-                $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
-                $warnings.Count | Should -Be 1 -Because $assertionMessage
-                $warnings.RuleName | Should -Be 'PSAvoidUsingCmdletAliases' -Because $assertionMessage
-            }
-        }
-    }
 }
