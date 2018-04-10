@@ -6,11 +6,11 @@
 - Add `-EnableExit` switch to Invoke-ScriptAnalyzer for exit and return exit code for CI purposes (#842) (by @bergmeister)
 - Add `-Fix` switch to `-Path` parameter set of `Invoke-ScriptAnalyzer` (#817, #852) (by @bergmeister)
 
-### Rules
+### New Rules and Warnings
 
 - Warn when 'Get-' prefix was omitted in `AvoidAlias` rule. (#927) (by @bergmeister)
 - `AvoidAssignmentToAutomaticVariable`. NB: Currently only warns against read-only automatic variables (#864, #917) (by @bergmeister)
-- `PossibleIncorrectUsageOfAssignmentOperator`. (#859, #881) (by @bergmeister)
+- `PossibleIncorrectUsageOfRedirectionOperator` and `PossibleIncorrectUsageOfAssignmentOperator`. (#859, #881) (by @bergmeister)
 - Add PSAvoidTrailingWhitespace rule (#820) (Thanks @dlwyatt!)
 
 ### Fixes and Improvements
