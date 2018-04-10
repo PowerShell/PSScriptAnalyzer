@@ -24,34 +24,22 @@ Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String>] [-
 ```
 
 ## DESCRIPTION
-Invoke-ScriptAnalyzer evaluates a script or module based on a collection of best practice rules and returns objects
-that represent rule violations.
-In each evaluation, you can run all rules or use the IncludeRule and ExcludeRule
-parameters to run only selected rules.
-Invoke-ScriptAnalyzer includes special rules to analyze DSC resources.
+Invoke-ScriptAnalyzer evaluates a script or module files (.ps1, .psm1 and .psd1 files) based on a collection of best practice rules and returns objects
+that represent rule violations. It also includes special rules to analyze DSC resources.
 
-Invoke-ScriptAnalyzer evaluates only .ps1 and .psm1 files.
-If you specify a path with multiple file types, the .ps1 and
-.psm1 files are tested; all other file types are ignored.
-
+In each evaluation, you can run either all rules or just a specific set using the -IncludeRule parameter and also exclude rules using the -ExcludeRule parameter.
 Invoke-ScriptAnalyzer comes with a set of built-in rules, but you can also use customized rules that you write in
-Windows PowerShell scripts, or compile in assemblies by using C#.
-Just as with the built-in rules, you can add the
-ExcludeRule and IncludeRule parameters to your Invoke-ScriptAnalyzer command to exclude or include custom rules.
+Windows PowerShell scripts, or compile in assemblies by using C#. This is possible by using the -CustomRulePath parameter and it will then only run those custom rules, if the built-in rules should still be run, then also specify the -IncludeDefaultRules parameter. Custom rules are also supported together with the -IncludeRule and -ExcludeRule parameters. To include multiple custom rules, the -RecurseCustomRulePath parameter can be used.
 
 To analyze your script or module, begin by using the Get-ScriptAnalyzerRule cmdlet to examine and select the rules you
 want to include and/or exclude from the evaluation.
 
 You can also include a rule in the analysis, but suppress the output of that rule for selected functions or scripts.
 This feature should be used only when absolutely necessary.
-To get rules that were suppressed, run
-Invoke-ScriptAnalyzer with the SuppressedOnly parameter.
-For instructions on suppressing a rule, see the description of
-the SuppressedOnly parameter.
-For usage in CI systems, the -EnableExit exits the shell with an exit code equal to  the number of error records.
+To get rules that were suppressed, run Invoke-ScriptAnalyzer with the -SuppressedOnly parameter.
+For instructions on suppressing a rule, see the description of the SuppressedOnly parameter.
 
-The PSScriptAnalyzer module tests the Windows PowerShell code in a script, module, or DSC resource to determine
-whether, and to what extent, it fulfils best practice standards.
+For usage in CI systems, the -EnableExit exits the shell with an exit code equal to  the number of error records.
 
 PSScriptAnalyzer is an open-source project.
 For more information about PSScriptAnalyzer, to contribute or file an issue, see GitHub.com\PowerShell\PSScriptAnalyzer.
@@ -219,7 +207,7 @@ Accept wildcard characters: False
 ```
 
 ### -CustomRulePath
-Adds the custom rules defined in the specified paths to the analysis.
+Uses only the custom rules defined in the specified paths to the analysis. To still use the built-in rules, additionally use the -IncludeDefaultRules switch.
 
 Enter the path to a file that defines rules or a directory that contains files that define rules.
 Wildcard characters are supported.
@@ -243,7 +231,8 @@ Accept wildcard characters: False
 
 ### -RecurseCustomRulePath
 Adds rules defined in subdirectories of the CustomRulePath location.
-By default, Invoke-ScriptAnalyzer adds only the custom rules defined in the specified file or directory.
+By default, Invoke-ScriptAnalyzer uses only the custom rules defined in the specified file or directory.
+To still use the built-in rules, additionally use the -IncludeDefaultRules switch.
 
 ```yaml
 Type: SwitchParameter
@@ -262,16 +251,12 @@ Omits the specified rules from the Script Analyzer test.
 Wildcard characters are supported.
 
 Enter a comma-separated list of rule names, a variable that contains rule names, or a command that gets rule names.
-You
-can also specify a list of excluded rules in a Script Analyzer profile file.
-You can exclude standard rules and rules
-in a custom rule path.
+You can also specify a list of excluded rules in a Script Analyzer profile file.
+You can exclude standard rules and rules in a custom rule path.
 
 When you exclude a rule, the rule does not run on any of the files in the path.
-To exclude a rule on a particular line,
-parameter, function, script, or class, adjust the Path parameter or suppress the rule.
-For information about
-suppressing a rule, see the examples.
+To exclude a rule on a particular line, parameter, function, script, or class, adjust the Path parameter or suppress the rule.
+For information about suppressing a rule, see the examples.
 
 If a rule is specified in both the ExcludeRule and IncludeRule collections, the rule is excluded.
 
@@ -302,7 +287,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-
 ### -IncludeRule
 Runs only the specified rules in the Script Analyzer test.
 By default, PSScriptAnalyzer runs all rules.
@@ -317,8 +301,7 @@ custom rule paths.
 If a rule is specified in both the ExcludeRule and IncludeRule collections, the rule is excluded.
 
 Also, Severity takes precedence over IncludeRule.
-For example, if Severity is Error, you cannot use IncludeRule to
-include a Warning rule.
+For example, if Severity is Error, you cannot use IncludeRule to include a Warning rule.
 
 ```yaml
 Type: String[]
@@ -339,13 +322,11 @@ Valid values are: Error, Warning, and Information.
 You can specify one ore more severity values.
 
 Because this parameter filters the rules only after running with all rules, it is not an efficient filter.
-To filter
-rules efficiently, use Get-ScriptAnalyzer rule to get the rules you want to run or exclude and then use the ExcludeRule
-or IncludeRule parameters.
+To filter rules efficiently, use Get-ScriptAnalyzer rule to get the rules you want to run or exclude and
+then use the ExcludeRule or IncludeRule parameters.
 
 Also, Severity takes precedence over IncludeRule.
-For example, if Severity is Error, you cannot use IncludeRule to
-include a Warning rule.
+For example, if Severity is Error, you cannot use IncludeRule to include a Warning rule.
 
 ```yaml
 Type: String[]
@@ -401,7 +382,9 @@ Accept wildcard characters: False
 ### -Fix
 Fixes certain warnings which contain a fix in their DiagnosticRecord.
 
-When you used Fix, Invoke-ScriptAnalyzer runs as usual but will apply the fixes before running the analysis. Please make sure that you have a backup of your files when using this switch. It tries to preserve the file encoding but there are still some cases where the encoding can change.
+When you used Fix, Invoke-ScriptAnalyzer runs as usual but will apply the fixes before running the analysis.
+Please make sure that you have a backup of your files when using this switch.
+It tries to preserve the file encoding but there are still some cases where the encoding can change.
 
 ```yaml
 Type: SwitchParameter
@@ -450,12 +433,16 @@ File path that contains user profile or hash table for ScriptAnalyzer
 
 Runs Invoke-ScriptAnalyzer with the parameters and values specified in a Script Analyzer profile file or hash table
 
-If the path, the file's or hashtable's content are invalid, it is ignored. The parameters and values in the profile take precedence over the same parameter and values specified at the command line.
+If the path, the file's or hashtable's content are invalid, it is ignored.
+The parameters and values in the profile take precedence over the same parameter and values specified at the command line.
 
 A Script Analyzer profile file is a text file that contains a hash table with one or more of the following keys:
 -- Severity
 -- IncludeRules
 -- ExcludeRules
+-- Rules
+-- CustomRulePath
+-- IncludeDefaultRules
 
 The keys and values in the profile are interpreted as if they were standard parameters and parameter values of Invoke-ScriptAnalyzer.
 
@@ -468,6 +455,17 @@ To specify multiple values, enclose the values in an array.
 For example:
 
     @{ Severity = 'Error', 'Warning'}
+
+A more sophisticated example is:
+
+    @{
+        CustomRulePath='path\to\CustomRuleModule.psm1'
+        IncludeDefaultRules=$true
+        ExcludeRules = @(
+            'PSAvoidUsingWriteHost',
+            'MyCustomRuleName'
+        )
+    }
 
 ```yaml
 Type: Object
@@ -502,7 +500,7 @@ Accept wildcard characters: False
 ### -SaveDscDependency
 Resolve DSC resource dependency
 
-Whenever Invoke-ScriptAnalyzer (isa) is run on a script having the dynamic keyword "Import-DSCResource -ModuleName <somemodule>", if <somemodule> is not present in any of the PSModulePath, isa gives parse error. This error is caused by the powershell parser not being able to find the symbol for <somemodule>. If isa finds the module on PowerShell Gallery (www.powershellgallery.com) then it downloads the missing module to a temp path. The temp path is then added to PSModulePath only for duration of the scan. The temp location can be found in $LOCALAPPDATA/PSScriptAnalyzer/TempModuleDir.
+Whenever Invoke-ScriptAnalyzer is run on a script having the dynamic keyword "Import-DSCResource -ModuleName <somemodule>", if <somemodule> is not present in any of the PSModulePath, Invoke-ScriptAnalyzer gives parse error. This error is caused by the powershell parser not being able to find the symbol for <somemodule>. If Invoke-ScriptAnalyzer finds the module on PowerShell Gallery (www.powershellgallery.com) then it downloads the missing module to a temp path. The temp path is then added to PSModulePath only for duration of the scan. The temp location can be found in $LOCALAPPDATA/PSScriptAnalyzer/TempModuleDir.
 
 ```yaml
 Type: SwitchParameter
