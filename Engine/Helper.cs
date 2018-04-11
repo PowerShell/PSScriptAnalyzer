@@ -629,16 +629,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            int parameters = 0;
             // Because of the way we count, we will also count the cmdlet as an argument so we have to -1
-            int arguments = -1;
+            int argumentsWithoutParameters = -1;
+            bool wasParameter = false;
 
             foreach (CommandElementAst ceAst in cmdAst.CommandElements)
             {
                 var cmdParamAst = ceAst as CommandParameterAst;
-                if (cmdParamAst == null)
+                if (cmdParamAst != null)
                 {
-                    arguments += 1;
+                    wasParameter = true;
+                } else {
+                    if (!wasParameter) {
+                        argumentsWithoutParameters += 1;
+                    }
+                    wasParameter = false;
                 }
             }
 
@@ -647,16 +652,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
             {
-                arguments += 1;
+                argumentsWithoutParameters += 1;
             }
 
-            // if we are only checking for 3 or more positional parameters, check that arguments < parameters + 3
-            if (moreThanThreePositional && (arguments - parameters) < 3)
-            {
-                return false;
-            }
-
-            return arguments > parameters;
+            return moreThanThreePositional ? argumentsWithoutParameters >= 3 : argumentsWithoutParameters > 0;
         }
 
 
