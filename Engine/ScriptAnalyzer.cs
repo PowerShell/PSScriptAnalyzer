@@ -1522,7 +1522,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-            var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors);
+            var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
 
             if (relevantParseErrors != null && relevantParseErrors.Count > 0)
             {
@@ -1541,7 +1541,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return new List<DiagnosticRecord>();
             }
 
-            return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty);
+            return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty));
         }
 
         /// <summary>
@@ -1651,10 +1651,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="parseErrors"></param>
         /// <returns>List of relevant parse errors.</returns>
-        private List<ParseError> RemoveTypeNotFoundParseErrors(ParseError[] parseErrors)
+        private List<ParseError> RemoveTypeNotFoundParseErrors(ParseError[] parseErrors, out List<DiagnosticRecord> diagnosticRecords)
         {
             var relevantParseErrors = new List<ParseError>();
-            foreach(var parseError in parseErrors)
+            diagnosticRecords = new List<DiagnosticRecord>();
+
+            foreach (var parseError in parseErrors)
             {
                 // If types are not known due them not being imported yet, the parser throws an error that can be ignored
                 if (parseError.ErrorId != "TypeNotFound")
@@ -1663,7 +1665,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 else
                 {
-                    this.outputWriter.WriteWarning(string.Format(Strings.TypeNotFoundParseErrorFound, parseError.Extent, parseError.Message));
+                    diagnosticRecords.Add(new DiagnosticRecord(
+                        string.Format(Strings.TypeNotFoundParseErrorFound, parseError.Extent), parseError.Extent, "TypeNotFound", DiagnosticSeverity.Information, parseError.Extent.File));
                 }
             }
 
@@ -1832,6 +1835,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ParseError[] errors = null;
 
             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, filePath));
+            var diagnosticRecords = new List<DiagnosticRecord>();
 
             //Parse the file
             if (File.Exists(filePath))
@@ -1855,7 +1859,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
                     }
 #endif //!PSV3
-                    var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors);
+                    var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
 
                     //Runspace.DefaultRunspace = oldDefault;
                     if (relevantParseErrors != null && relevantParseErrors.Count > 0)
@@ -1884,7 +1888,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-            return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath);
+            return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
         }
 
         private bool IsModuleNotFoundError(ParseError error)

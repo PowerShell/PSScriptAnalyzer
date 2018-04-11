@@ -592,7 +592,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignoring &apos;TypeNotFound&apos; parse error on type {0}, which can be due to the type not being known due to e.g. &apos;using&apos; statements. Parse error message was &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Ignoring &apos;TypeNotFound&apos; parse error on type &apos;{0}&apos;. Check if the specified type is correct. This can also be due the type not being known at parse time due to types imported by &apos;using&apos; statements..
         /// </summary>
         internal static string TypeNotFoundParseErrorFound {
             get {

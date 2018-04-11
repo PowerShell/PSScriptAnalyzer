@@ -325,6 +325,6 @@
     <value>Settings object could not be resolved.</value>
   </data>
   <data name="TypeNotFoundParseErrorFound" xml:space="preserve">
-    <value>Ignoring 'TypeNotFound' parse error on type {0}, which can be due to the type not being known due to e.g. 'using' statements. Parse error message was '{1}'.</value>
+    <value>Ignoring 'TypeNotFound' parse error on type '{0}'. Check if the specified type is correct. This can also be due the type not being known at parse time due to types imported by 'using' statements.</value>
   </data>
 </root>

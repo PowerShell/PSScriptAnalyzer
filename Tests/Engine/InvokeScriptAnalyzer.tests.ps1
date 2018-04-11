@@ -560,21 +560,19 @@ Describe "Test -EnableExit Switch" {
                 using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
                 Import-Module "AzureRm"
                 class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
-                gci # Produce AvoidAlias rule
 '@
-            $assertionMessage = 'PSSA should analyze the whole script after the parse error on [IStorageContext] and find the PSAvoidUsingCmdletAliases warning due to gci'
             It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
                 $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
-                $warnings.Count | Should -Be 1 -Because $assertionMessage
-                $warnings.RuleName | Should -Be 'PSAvoidUsingCmdletAliases' -Because $assertionMessage
+                $warnings.Count | Should -Be 1
+                $warnings.RuleName | Should -Be 'TypeNotFound'
             }
 
             $testFilePath = "TestDrive:\testfile.ps1"
             Set-Content $testFilePath -value $script
             It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
                 $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
-                $warnings.Count | Should -Be 1 -Because $assertionMessage
-                $warnings.RuleName | Should -Be 'PSAvoidUsingCmdletAliases' -Because $assertionMessage
+                $warnings.Count | Should -Be 1
+                $warnings.RuleName | Should -Be 'TypeNotFound'
             }
         }
     }
