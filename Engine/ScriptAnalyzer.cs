@@ -1526,10 +1526,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (relevantParseErrors != null && relevantParseErrors.Count > 0)
             {
-                foreach (ParseError error in relevantParseErrors)
+                foreach (var parseError in relevantParseErrors)
                 {
-                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
-                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
+                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
                 }
             }
 
@@ -1864,10 +1864,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     //Runspace.DefaultRunspace = oldDefault;
                     if (relevantParseErrors != null && relevantParseErrors.Count > 0)
                     {
-                        foreach (ParseError error in relevantParseErrors)
+                        foreach (var parseError in relevantParseErrors)
                         {
-                            string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, error.Extent.File, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
-                            this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
+                            string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, parseError.Extent.File, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
+                            this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
                         }
                     }
 
