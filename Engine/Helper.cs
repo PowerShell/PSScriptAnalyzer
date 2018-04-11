@@ -657,7 +657,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 argumentsWithoutProcedingParameters += 1;
             }
 
-            return moreThanTwoPositional ? argumentsWithoutProcedingParameters >= 3 : argumentsWithoutProcedingParameters > 0;
+            return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
         }
 
 
