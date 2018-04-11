@@ -31,9 +31,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> functionDefinitionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
             HashSet<String> declaredFunctionNames = new HashSet<String>();
 
-            foreach (Ast foundAst in functionDefinitionAsts) {
-                FunctionDefinitionAst functionDefinitionAst = (FunctionDefinitionAst)foundAst;
-                if (string.IsNullOrEmpty(functionDefinitionAst.Name)) {
+            foreach (FunctionDefinitionAst functionDefinitionAst in functionDefinitionAsts)
+            {
+                if (string.IsNullOrEmpty(functionDefinitionAst.Name))
+                {
                     continue;
                 }
                 declaredFunctionNames.Add(functionDefinitionAst.Name);

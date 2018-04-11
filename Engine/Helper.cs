@@ -620,9 +620,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Given a commandast, checks whether positional parameters are used or not.
         /// </summary>
         /// <param name="cmdAst"></param>
-        /// <param name="moreThanThreePositional">only return true if more than three positional parameters are used</param>
+        /// <param name="moreThanTwoPositional">only return true if more than three positional parameters are used</param>
         /// <returns></returns>
-        public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanThreePositional = false)
+        public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanTwoPositional = false)
         {
             if (HasSplattedVariable(cmdAst))
             {
@@ -630,20 +630,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             // Because of the way we count, we will also count the cmdlet as an argument so we have to -1
-            int argumentsWithoutParameters = -1;
-            bool wasParameter = false;
+            int argumentsWithoutProcedingParameters = -1;
+            bool parameterPreceding = false;
 
             foreach (CommandElementAst ceAst in cmdAst.CommandElements)
             {
                 var cmdParamAst = ceAst as CommandParameterAst;
                 if (cmdParamAst != null)
                 {
-                    wasParameter = true;
-                } else {
-                    if (!wasParameter) {
-                        argumentsWithoutParameters += 1;
+                    parameterPreceding = true;
+                } else
+                {
+                    if (!parameterPreceding)
+                    {
+                        argumentsWithoutProcedingParameters += 1;
                     }
-                    wasParameter = false;
+                    parameterPreceding = false;
                 }
             }
 
@@ -652,10 +654,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
             {
-                argumentsWithoutParameters += 1;
+                argumentsWithoutProcedingParameters += 1;
             }
 
-            return moreThanThreePositional ? argumentsWithoutParameters >= 3 : argumentsWithoutParameters > 0;
+            return moreThanTwoPositional ? argumentsWithoutProcedingParameters >= 3 : argumentsWithoutProcedingParameters > 0;
         }
 
 

@@ -41,7 +41,7 @@ Describe "AvoidPositionalParameters" {
             }
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "$sb"
             $warnings.Count | Should -BeGreaterThan 0
-            $warnings.RuleName | Should -Contain "PSAvoidUsingPositionalParameters"
+            $warnings.RuleName | Should -Contain $violationName
             $warnings.Message | Should -Contain "Cmdlet 'Foo' has positional parameter. Please use named parameters instead of positional parameters when calling a command."
         }
     }
