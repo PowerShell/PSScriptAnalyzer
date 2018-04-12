@@ -37,12 +37,10 @@ Describe "AvoidPositionalParameters" {
                     [Parameter(Position=2)]$B,
                     [Parameter(Position=3)]$C)
                 }
-                Foo "a" "b" "c"
-            }
+                Foo "a" "b" "c"}
             $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "$sb"
-            $warnings.Count | Should -BeGreaterThan 0
-            $warnings.RuleName | Should -Contain $violationName
-            $warnings.Message | Should -Contain "Cmdlet 'Foo' has positional parameter. Please use named parameters instead of positional parameters when calling a command."
+            $warnings.Count | Should -Be 1
+            $warnings.RuleName | Should -BeExactly $violationName
         }
     }
 }
