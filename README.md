@@ -76,12 +76,8 @@ Exit
 
 #### Requirements
 
-##### Windows
 - Windows PowerShell 3.0 or greater
-- PowerShell Core
-
-##### Linux (*Tested only on Ubuntu 14.04*)
-- PowerShell Core
+- PowerShell Core on Windows/Linux/macOS
 
 ### From Source
 
