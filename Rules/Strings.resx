@@ -982,10 +982,7 @@
     <value>Assignment statements are not aligned</value>
   </data>
   <data name="PossibleIncorrectUsageOfAssignmentOperatorCommonName" xml:space="preserve">
-    <value>'=' operator means assignment. Did you mean the equal operator '-eq'?</value>
-  </data>
-  <data name="PossibleIncorrectUsageOfAssignmentOperatorError" xml:space="preserve">
-    <value>Did you really mean to make an assignment inside an if statement? If you rather meant to check for equality, use the '-eq'  operator.</value>
+    <value>'=' is not an assignment operator. Did you mean the equality operator '-eq'?</value>
   </data>
   <data name="PossibleIncorrectUsageOfAssignmentOperatorName" xml:space="preserve">
     <value>PossibleIncorrectUsageOfAssignmentOperator</value>
@@ -1005,8 +1002,29 @@
   <data name="AvoidAssignmentToAutomaticVariableName" xml:space="preserve">
     <value>AvoidAssignmentToAutomaticVariable</value>
   </data>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error" xml:space="preserve">
+    <value>Starting from PowerShell 6.0, the Variable '{0}' cannot be assigned any more since it is a readonly automatic variable that is built into PowerShell, please use a different name.</value>
+  </data>
   <data name="AvoidUsingCmdletAliasesMissingGetPrefixError" xml:space="preserve">
     <value>'{0}' is implicitly aliasing '{1}' because it is missing the 'Get-' prefix. This can introduce possible problems and make scripts hard to maintain. Please consider changing command to its full name.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorDescription" xml:space="preserve">
+    <value>'=' or '==' are not comparison operators in the PowerShell language and rarely needed inside conditional statements.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorError" xml:space="preserve">
+    <value>Did you mean to use the assignment operator '='? The equality operator in PowerShell is 'eq'.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfRedirectionOperatorCommonName" xml:space="preserve">
+    <value>'&gt;' is not a comparison operator. Use  '-gt' (greater than) or '-ge' (greater or equal).</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfRedirectionOperatorDescription" xml:space="preserve">
+    <value>When switching between different languages it is easy to forget that '&gt;' does not mean 'great than' in PowerShell.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfRedirectionOperatorError" xml:space="preserve">
+    <value>Did you mean to use the redirection operator '&gt;'? The comparison operators in PowerShell are '-gt' (greater than) or '-ge' (greater or equal).</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfRedirectionOperatorName" xml:space="preserve">
+    <value>PossibleIncorrectUsageOfRedirectionOperator</value>
   </data>
   <data name="AvoidPlusEqualsOperatorOnArraysCommonName" xml:space="preserve">
     <value>Use other .Net classes such as System.Collections.ArrayList or System.Texst.StringBuilder instead.</value>

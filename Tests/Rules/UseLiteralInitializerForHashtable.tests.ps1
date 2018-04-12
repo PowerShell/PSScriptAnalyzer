@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$ruleName = "PSUseLiteralInitializerForHashtable"
+﻿$ruleName = "PSUseLiteralInitializerForHashtable"
 
 Describe "UseLiteralInitlializerForHashtable" {
     Context "When new-object hashtable is used to create a hashtable" {

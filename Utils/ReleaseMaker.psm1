@@ -95,7 +95,7 @@ function New-ReleaseBuild
         remove-item out/ -recurse -force
         .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
         .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
-        .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+        .\buildCoreClr.ps1 -Framework netstandard2.0 -Configuration Release -Build
         .\build.ps1 -BuildDocs
     }
     finally

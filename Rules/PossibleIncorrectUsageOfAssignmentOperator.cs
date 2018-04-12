@@ -13,7 +13,8 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// PossibleIncorrectUsageOfAssignmentOperator: Warn if someone uses the '=' or '==' by accident in an if statement because in most cases that is not the intention.
+    /// PossibleIncorrectUsageOfAssignmentOperator: Warn if someone uses '>', '=' or '==' operators inside an if, elseif, while and do-while statement because in most cases that is not the intention.
+    /// The origin of this rule is that people often forget that operators change when switching between different languages such as C# and PowerShell.
     /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
@@ -21,43 +22,78 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class PossibleIncorrectUsageOfAssignmentOperator : AstVisitor, IScriptRule
     {
         /// <summary>
-        /// The idea is to get all AssignmentStatementAsts and then check if the parent is an IfStatementAst, which includes if, elseif and else statements.
+        /// The idea is to get all AssignmentStatementAsts and then check if the parent is an IfStatementAst/WhileStatementAst/DoWhileStatementAst,
+        /// which includes if, elseif, while and do-while statements.
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+
+            var whileStatementAsts = ast.FindAll(testAst => testAst is WhileStatementAst || testAst is DoWhileStatementAst, searchNestedScriptBlocks: true);
+            foreach (LoopStatementAst whileStatementAst in whileStatementAsts)
+            {
+                var diagnosticRecord = AnalyzePipelineBaseAst(whileStatementAst.Condition, fileName);
+                if (diagnosticRecord != null)
+                {
+                    yield return diagnosticRecord;
+                }
+            }
 
             var ifStatementAsts = ast.FindAll(testAst => testAst is IfStatementAst, searchNestedScriptBlocks: true);
             foreach (IfStatementAst ifStatementAst in ifStatementAsts)
             {
                 foreach (var clause in ifStatementAst.Clauses)
                 {
-                    var assignmentStatementAst = clause.Item1.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false) as AssignmentStatementAst;
-                    if (assignmentStatementAst != null)
+                    var diagnosticRecord = AnalyzePipelineBaseAst(clause.Item1, fileName);
+                    if (diagnosticRecord != null)
                     {
-                        // Check if someone used '==', which can easily happen when the person is used to coding a lot in C#.
-                        // In most cases, this will be a runtime error because PowerShell will look for a cmdlet name starting with '=', which is technically possible to define
-                        if (assignmentStatementAst.Right.Extent.Text.StartsWith("="))
-                        {
-                            yield return new DiagnosticRecord(
-                                Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
-                                GetName(), DiagnosticSeverity.Warning, fileName);
-                        }
-                        else
-                        {
-                            // If the right hand side contains a CommandAst at some point, then we do not want to warn
-                            // because this could be intentional in cases like 'if ($a = Get-ChildItem){ }'
-                            var commandAst = assignmentStatementAst.Right.Find(testAst => testAst is CommandAst, searchNestedScriptBlocks: true) as CommandAst;
-                            if (commandAst == null)
-                            {
-                                yield return new DiagnosticRecord(
-                                   Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.Extent,
-                                   GetName(), DiagnosticSeverity.Information, fileName);
-                            }
-                        }
+                        yield return diagnosticRecord;
                     }
                 }
             }
+        }
+
+        private DiagnosticRecord AnalyzePipelineBaseAst(PipelineBaseAst pipelineBaseAst, string fileName)
+        {
+            var assignmentStatementAst = pipelineBaseAst.Find(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: false) as AssignmentStatementAst;
+            if (assignmentStatementAst == null)
+            {
+                return null;
+            }
+
+            // Check if someone used '==', which can easily happen when the person is used to coding a lot in C#.
+            // In most cases, this will be a runtime error because PowerShell will look for a cmdlet name starting with '=', which is technically possible to define
+            if (assignmentStatementAst.Right.Extent.Text.StartsWith("="))
+            {
+                return new DiagnosticRecord(
+                    Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
+                    GetName(), DiagnosticSeverity.Warning, fileName);
+            }
+
+            // Check if LHS is $null and then always warn
+            if (assignmentStatementAst.Left is VariableExpressionAst variableExpressionAst)
+            {
+                if (variableExpressionAst.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new DiagnosticRecord(
+                        Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
+                        GetName(), DiagnosticSeverity.Warning, fileName);
+                }
+            }
+
+            // If the RHS contains a CommandAst at some point, then we do not want to warn  because this could be intentional in cases like 'if ($a = Get-ChildItem){ }'
+            var commandAst = assignmentStatementAst.Right.Find(testAst => testAst is CommandAst, searchNestedScriptBlocks: true) as CommandAst;
+            // If the RHS contains an InvokeMemberExpressionAst, then we also do not want to warn because this could e.g. be 'if ($f = [System.IO.Path]::GetTempFileName()){ }'
+            var invokeMemberExpressionAst = assignmentStatementAst.Right.Find(testAst => testAst is ExpressionAst, searchNestedScriptBlocks: true) as InvokeMemberExpressionAst;
+            var doNotWarnBecauseImplicitClangStyleSuppressionWasUsed = ClangSuppresion.ScriptExtendIsWrappedInParenthesis(pipelineBaseAst.Extent);
+            if (commandAst == null && invokeMemberExpressionAst == null && !doNotWarnBecauseImplicitClangStyleSuppressionWasUsed)
+            {
+                return new DiagnosticRecord(
+                   Strings.PossibleIncorrectUsageOfAssignmentOperatorError, assignmentStatementAst.ErrorPosition,
+                   GetName(), DiagnosticSeverity.Information, fileName);
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -84,7 +120,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingWriteHostDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectUsageOfAssignmentOperatorDescription);
         }
 
         /// <summary>

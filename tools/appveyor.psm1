@@ -44,7 +44,7 @@ function Invoke-AppVeyorBuild {
         $BuildType,
         
         [Parameter(Mandatory)]
-        [ValidateSet('Release', 'PSv3Release')]
+        [ValidateSet('Release', 'PSv4Release', 'PSv4Release')]
         $BuildConfiguration,
 
         [Parameter(Mandatory)]
@@ -61,10 +61,29 @@ function Invoke-AppVeyorBuild {
         .\buildCoreClr.ps1 -Framework net451 -Configuration $BuildConfiguration -Build
     }
     elseif ($BuildType -eq 'NetStandard') {
-        .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+        .\buildCoreClr.ps1 -Framework netstandard2.0 -Configuration Release -Build
     }
     .\build.ps1 -BuildDocs
     Pop-Location
+}
+
+# Implements AppVeyor 'test_script' step
+function Invoke-AppveyorTest {
+    Param(
+        [Parameter(Mandatory)]
+        [ValidateScript( {Test-Path $_})]
+        $CheckoutPath
+    )
+
+    $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
+    Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
+    $testResultsFile = ".\TestResults.xml"
+    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules"
+    $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
+    (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}", (Resolve-Path $testResultsFile))
+    if ($testResults.FailedCount -gt 0) {
+        throw "$($testResults.FailedCount) tests failed."
+    }
 }
 
 # Implements AppVeyor 'on_finish' step

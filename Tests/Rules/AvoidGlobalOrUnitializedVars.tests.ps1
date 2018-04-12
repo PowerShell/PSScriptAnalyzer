@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$globalMessage = "Found global variable 'Global:1'."
+﻿$globalMessage = "Found global variable 'Global:1'."
 $globalName = "PSAvoidGlobalVars"
 
 # PSAvoidUninitializedVariable rule has been deprecated

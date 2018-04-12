@@ -1,6 +1,4 @@
-﻿
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-Import-Module -Verbose PSScriptAnalyzer
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 $sa = Get-Command Get-ScriptAnalyzerRule
@@ -144,7 +142,7 @@ Describe "Test RuleExtension" {
             }
             catch
             {
-                $Error[0].FullyQualifiedErrorId | Should -Match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.GetScriptAnalyzerRuleCommand"
+                $_.FullyQualifiedErrorId | Should -Match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.GetScriptAnalyzerRuleCommand"
             }
         }
 
@@ -175,7 +173,7 @@ Describe "TestWildCard" {
     }
 
     It "filters rules based on wild card input and severity"{
-        $rules = Get-ScriptAnalyzerRule -Name PSDSC*　-Severity Information
+        $rules = Get-ScriptAnalyzerRule -Name PSDSC* -Severity Information
         $rules.Count | Should -Be 4
     }
 }

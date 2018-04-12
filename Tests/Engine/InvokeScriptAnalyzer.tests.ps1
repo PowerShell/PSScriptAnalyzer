@@ -1,15 +1,4 @@
-﻿# Check if PSScriptAnalyzer is already loaded so we don't
-# overwrite a test version of Invoke-ScriptAnalyzer by
-# accident
-if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
-{
-	Import-Module PSScriptAnalyzer
-    $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $testRootDirectory = Split-Path -Parent $directory
-    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
-}
-
-$sa = Get-Command Invoke-ScriptAnalyzer
+﻿$sa = Get-Command Invoke-ScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $singularNouns = "PSUseSingularNouns"
 $approvedVerb = "PSUseApprovedVerbs"
@@ -488,7 +477,7 @@ Describe "Test CustomizedRulePath" {
             {
                 if (-not $testingLibraryUsage)
 			    {
-                    $Error[0].FullyQualifiedErrorId | Should -Match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
+                    $_.FullyQualifiedErrorId | Should -Match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
                 }
             }
         }
