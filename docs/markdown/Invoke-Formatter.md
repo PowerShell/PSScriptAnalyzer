@@ -15,7 +15,7 @@ Invoke-Formatter [-ScriptDefinition] <String> [-Settings <object>] [-Range <int[
 
 ## DESCRIPTION
 
-The Invoke-Formatter cmdlet takes a string parameter named ScriptDefinition and formats it according to  the input settings parameter Settings. If no Settings parameter is provided, the cmdlet assumes the default code formatting settings as defined in Settings/CodeFormatting.psd1.
+The Invoke-Formatter cmdlet takes a string parameter named ScriptDefinition and formats it according to the input settings parameter Settings. If no Settings parameter is provided, the cmdlet assumes the default code formatting settings as defined in Settings/CodeFormatting.psd1.
 
 ## EXAMPLES
 
