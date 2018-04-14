@@ -207,7 +207,7 @@ Accept wildcard characters: False
 ```
 
 ### -CustomRulePath
-Uses only the custom rules defined in the specified paths to the analysis. To still use the built-in rules, additionally use the -IncludeDefaultRules switch.
+Uses only the custom rules defined in the specified paths to the analysis. To still use the built-in rules, add the -IncludeDefaultRules switch.
 
 Enter the path to a file that defines rules or a directory that contains files that define rules.
 Wildcard characters are supported.
@@ -500,7 +500,7 @@ Accept wildcard characters: False
 ### -SaveDscDependency
 Resolve DSC resource dependency
 
-Whenever Invoke-ScriptAnalyzer is run on a script having the dynamic keyword "Import-DSCResource -ModuleName <somemodule>", if <somemodule> is not present in any of the PSModulePath, Invoke-ScriptAnalyzer gives parse error. This error is caused by the powershell parser not being able to find the symbol for <somemodule>. If Invoke-ScriptAnalyzer finds the module on PowerShell Gallery (www.powershellgallery.com) then it downloads the missing module to a temp path. The temp path is then added to PSModulePath only for duration of the scan. The temp location can be found in $LOCALAPPDATA/PSScriptAnalyzer/TempModuleDir.
+Whenever Invoke-ScriptAnalyzer is run on a script having the dynamic keyword "Import-DSCResource -ModuleName <somemodule>", if <somemodule> is not present in any of the PSModulePath, Invoke-ScriptAnalyzer gives parse error. This error is caused by the powershell parser not being able to find the symbol for <somemodule>. If Invoke-ScriptAnalyzer finds the module in the PowerShell Gallery (www.powershellgallery.com) then it downloads the missing module to a temp path. The temp path is then added to PSModulePath only for duration of the scan. The temp location can be found in $LOCALAPPDATA/PSScriptAnalyzer/TempModuleDir.
 
 ```yaml
 Type: SwitchParameter
