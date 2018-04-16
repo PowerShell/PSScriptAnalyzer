@@ -29,7 +29,7 @@ Describe "AvoidDefaultValueForMandatoryParameter" {
         }
 
         It "returns no violations when the parameter is specified as mandatory=0 and has a default value" {
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Function foo{ Param([Parameter(Mandatory=$false)]$Param1=''val1'', [Parameter(Mandatory)]$Param2=''val2'', $Param3=''val3'') }' |
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Function foo{ Param([Parameter(Mandatory=0)]$Param1=''val1'') }' |
                 Where-Object { $_.RuleName -eq $ruleName }
             $violations.Count | Should -Be 0
         }
