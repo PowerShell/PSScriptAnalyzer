@@ -16,10 +16,6 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
-  - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-    PowerShellEdition: PowerShellCore
-    Preview: true
-    BuildConfiguration: Release
 
 # cache Nuget packages and dotnet CLI cache
 cache:
@@ -47,9 +43,6 @@ install:
                 else {
                   $env:Path = "$env:ProgramFiles\PowerShell\6.0.2;$env:Path"
                 }
-            }
-            elseif ($env:Preview -eq 'true' -and $IsLinux) {
-              sudo apt-get update powershell
             }
 
 build_script:
