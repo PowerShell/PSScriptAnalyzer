@@ -48,7 +48,7 @@ install:
                   $env:Path = "$env:ProgramFiles\PowerShell\6.0.2;$env:Path"
                 }
             }
-            elsif ($env:Preview -eq 'true' -and $ IsLinux)
+            elsif ($env:Preview -eq 'true' -and $IsLinux)
             {
               sudo apt-get update powershell
             }
