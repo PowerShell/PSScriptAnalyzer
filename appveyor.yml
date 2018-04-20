@@ -31,7 +31,7 @@ install:
   - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
   - ps:   |
             # Windows image still has version 6.0.0 of pwsh but 6.0.2 is required due to System.Management.Automation package https://github.com/appveyor/ci/issues/2230
-            if ($env:Preview -eq 'true' -or ($env:PowerShellEdition -eq 'PowerShellCore' -and $PSVersionTable.PSVersion -lt [version]'6.0.2' -and $IsWindows)) {
+            if ($env:PowerShellEdition -eq 'PowerShellCore' -and $PSVersionTable.PSVersion -lt [version]'6.0.2' -and $IsWindows) {
                 $msiPath = "$env:TEMP\PowerShell.msi"
                 $downloadPath = 'https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.msi'
                 if ($env:Preview -eq 'true') {
@@ -47,6 +47,10 @@ install:
                 else {
                   $env:Path = "$env:ProgramFiles\PowerShell\6.0.2;$env:Path"
                 }
+            }
+            elsif ($env:Preview -eq 'true' -and $ IsLinux)
+            {
+              sudo apt-get update powershell
             }
 
 build_script:
