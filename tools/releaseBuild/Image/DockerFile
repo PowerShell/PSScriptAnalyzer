@@ -10,6 +10,7 @@ SHELL ["C:\\windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "-comma
 # Git installs to C:\Program Files\Git
 # nuget installs to C:\ProgramData\chocolatey\bin\NuGet.exe
 COPY dockerInstall.psm1 containerFiles/dockerInstall.psm1
+
 RUN Import-Module PackageManagement; `
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; `
     Import-Module ./containerFiles/dockerInstall.psm1; `
@@ -21,11 +22,13 @@ RUN Import-Module PackageManagement; `
     Add-Path C:/Users/ContainerAdministrator/AppData/Local/Microsoft/dotnet;
 
 RUN Import-Module ./containerFiles/dockerInstall.psm1; `
-    git clone https://Github.com/PowerShell/PSScriptAnalyzer; `
+#   git clone https://Github.com/PowerShell/PSScriptAnalyzer; `
     Install-ChocolateyPackage -PackageName dotnet4.5;
 
 RUN Import-Module ./containerFiles/dockerInstall.psm1; `
     Install-ChocolateyPackage -PackageName netfx-4.5.1-devpack;
+
+COPY buildPSSA.ps1 containerFiles/buildPSSA.ps1
 
 ENTRYPOINT ["C:\\windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "-command"]
 
