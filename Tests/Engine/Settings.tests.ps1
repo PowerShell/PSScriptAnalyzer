@@ -21,9 +21,12 @@ Describe "Settings Precedence" {
         }
 
         It "runs rules from the implicit setting file using the -ScriptDefinition parameter set" {
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Recurse
+            Push-Location $project1Root
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'gci; Write-Host' -Recurse
+            Pop-Location
             $violations.Count | Should -Be 1
-            $violations[0].RuleName | Should -Be "PSAvoidUsingCmdletAliases"
+            $violations[0].RuleName | Should -Be "PSAvoidUsingCmdletAliases" `
+                -Because 'the implicit settings file should have run only the PSAvoidUsingCmdletAliases rule but not PSAvoidUsingWriteHost'
         }
 
         It "cannot find file if not named PSScriptAnalyzerSettings.psd1" {
