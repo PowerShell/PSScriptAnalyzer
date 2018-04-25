@@ -14,8 +14,14 @@ Describe "Settings Precedence" {
     }
 
     Context "settings file is implicit" {
-        It "runs rules from the implicit setting file" {
+        It "runs rules from the implicit setting file using the -Path parameter set" {
             $violations = Invoke-ScriptAnalyzer -Path $project1Root -Recurse
+            $violations.Count | Should -Be 1
+            $violations[0].RuleName | Should -Be "PSAvoidUsingCmdletAliases"
+        }
+
+        It "runs rules from the implicit setting file using the -ScriptDefinition parameter set" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Recurse
             $violations.Count | Should -Be 1
             $violations[0].RuleName | Should -Be "PSAvoidUsingCmdletAliases"
         }
