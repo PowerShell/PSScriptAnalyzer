@@ -14,8 +14,6 @@ Table of Contents
 - [Installation](#installation)
     + [From PowerShell Gallery](#from-powershell-gallery)
       - [Requirements](#requirements)
-        * [Windows](#windows)
-        * [Linux (*Tested only on Ubuntu 14.04*)](#linux-tested-only-on-ubuntu-1404)
     + [From Source](#from-source)
       - [Requirements](#requirements-1)
       - [Steps](#steps)
@@ -80,6 +78,8 @@ Exit
 - PowerShell Core on Windows/Linux/macOS
 
 ### From Source
+
+#### Requirements
 
 * [.NET Core 2.1.101 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.101) or newer
 * [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
