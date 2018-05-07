@@ -78,11 +78,16 @@ Exit
 
 - Windows PowerShell 3.0 or greater
 - PowerShell Core on Windows/Linux/macOS
-- Docker (tested only using Docker CE on Windows 10 1803):
-  - [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) for Windows. Example:
-  ```docker run -it microsoft/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
-  - [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/) for Linux. Example:
-  ```docker run -it microsoft/powershell pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+- Docker image tags from [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/) (tested only using Docker CE on Windows 10 1803):
+  - Windows NanoServer (note that the [microsoft/nanoserver](https://hub.docker.com/r/microsoft/windowsservercore/) image does not work because it contains version 5.1 of PowerShell Core) - Example:
+
+     ```docker run -it microsoft/powershell:nanoserver pwsh -command "Save-Module -Name PSScriptAnalyzer -Path .; Import-Module C:\PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - Windows Server Core (note that the [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) image works alternatively as well) - Example:
+
+     ```docker run -it microsoft/powershell:nanoserver pwsh -command "Save-Module -Name PSScriptAnalyzer -Path .; Import-Module C:\PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - Linux - Example:
+
+     ```docker run -it microsoft/powershell pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
 
 ### From Source
 
