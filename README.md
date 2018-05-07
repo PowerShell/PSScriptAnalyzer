@@ -13,7 +13,7 @@ Table of Contents
 - [Usage](#usage)
 - [Installation](#installation)
     + [From PowerShell Gallery](#from-powershell-gallery)
-      - [Requirements](#requirements)
+      - [Supported PowerShell Versions and Platforms](#supported-powerShell-versions-and-platforms)
     + [From Source](#from-source)
       - [Requirements](#requirements-1)
       - [Steps](#steps)
@@ -68,14 +68,19 @@ Install-Module -Name PSScriptAnalyzer
 
 **Note**: For PowerShell version `5.1.14393.206` or newer, before installing PSScriptAnalyzer, please install the latest Nuget provider by running the following in an elevated PowerShell session.
 ```powershell
-Install-PackageProvider Nuget –force –verbose
+Install-PackageProvider Nuget -MinimumVersion 2.8.5.201 –Force
 Exit
 ```
 
-#### Requirements
+#### Supported PowerShell Versions and Platforms
 
 - Windows PowerShell 3.0 or greater
 - PowerShell Core on Windows/Linux/macOS
+- Docker (tested only using Docker CE on Windows 10 1803):
+  - [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) for Windows. Example:
+  ```docker run -it microsoft/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/) for Linux. Example:
+  ```docker run -it microsoft/powershell pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
 
 ### From Source
 
