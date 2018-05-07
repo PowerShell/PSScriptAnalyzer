@@ -80,9 +80,9 @@ Exit
 - PowerShell Core on Windows/Linux/macOS
 - Docker (tested only using Docker CE on Windows 10 1803):
   - [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) for Windows. Example:
-  ```docker run --it microsoft/powershell pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  ```docker run -it microsoft/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
   - [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/) for Linux. Example:
-  ```docker run --it microsoft/windowsservercore powershell -command "$null = Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  ```docker run -it microsoft/powershell pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
 
 ### From Source
 
