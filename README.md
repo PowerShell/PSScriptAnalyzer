@@ -15,7 +15,7 @@ Table of Contents
     + [From PowerShell Gallery](#from-powershell-gallery)
       - [Supported PowerShell Versions and Platforms](#supported-powerShell-versions-and-platforms)
     + [From Source](#from-source)
-      - [Requirements](#requirements-1)
+      - [Requirements](#requirements)
       - [Steps](#steps)
       - [Tests](#tests)
 - [Suppressing Rules](#suppressing-rules)
