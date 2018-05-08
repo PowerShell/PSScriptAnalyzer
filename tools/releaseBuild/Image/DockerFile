@@ -1,5 +1,6 @@
 # escape=`
 #0.3.6 (no powershell 6)
+# FROM microsoft/windowsservercore
 FROM microsoft/dotnet-framework:4.7.1
 LABEL maintainer='PowerShell Team <powershellteam@hotmail.com>'
 LABEL description="This Dockerfile for Windows Server Core with git installed via chocolatey."
