@@ -86,7 +86,7 @@ Exit
 
 ### From Source
 
-* [.NET Core 2.1.101 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.101) or newer
+* [.NET Core 2.1.200 SDK](https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.1.200-sdk-download.md) or newer
 * [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
 
