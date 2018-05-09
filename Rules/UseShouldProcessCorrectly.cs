@@ -312,17 +312,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var funcInfo = cmdInfo as FunctionInfo;
                 if (funcInfo != null
                     && funcInfo.CmdletBinding
-                    && funcInfo.ScriptBlock != null
-                    && funcInfo.ScriptBlock.Attributes != null)
+                    && funcInfo.ScriptBlock != null)
                 {
-                    foreach (var attr in funcInfo.ScriptBlock.Attributes)
+                    try
                     {
-                        var cmdletBindingAttr = attr as CmdletBindingAttribute;
-                        if (cmdletBindingAttr != null)
+                        if (funcInfo.ScriptBlock.Attributes != null)
                         {
-                            return cmdletBindingAttr.SupportsShouldProcess;
+                            foreach (var attr in funcInfo.ScriptBlock.Attributes)
+                            {
+                                var cmdletBindingAttr = attr as CmdletBindingAttribute;
+                                if (cmdletBindingAttr != null)
+                                {
+                                    return cmdletBindingAttr.SupportsShouldProcess;
+                                }
+                            }
                         }
                     }
+                    catch (RuntimeException)
+                    {
+                        // The call to .Attributes on funcInfo.ScriptBlock.Attributes can throw if the attribute is custom and defined in a different file, therefore no action is being taken in this case
+                    }
+
                 }
 
                 return false;
