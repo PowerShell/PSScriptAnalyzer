@@ -114,10 +114,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> functionDefinitionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
             foreach (Ast functionDefinition in functionDefinitionAsts)
             {
-                string function = functionDefinition.GetType().GetProperty("Name").GetValue(functionDefinition).ToString();
-                customCommands.Add(function);
+                FunctionDefinitionAst definition = (FunctionDefinitionAst)functionDefinition;
+                customCommands.Add(definition.Name);
             }
-
             // If we have no cmdlets to check, we can exit from this rule.
             if (commandAsts.Count() == 0)
             {
