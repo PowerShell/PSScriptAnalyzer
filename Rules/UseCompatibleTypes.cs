@@ -171,20 +171,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             
             // Types declared by the user (defined within a user-created class).
             IEnumerable<Ast> definitionAsts = ast.FindAll(testAst => testAst is TypeDefinitionAst, true);
-            foreach (Ast item in definitionAsts)
+            foreach (Ast definition in definitionAsts)
             {
-                string customType = item.GetType().GetProperty("Name").GetValue(item).ToString();
-                customTypes.Add(customType);
+                TypeDefinitionAst customType = (TypeDefinitionAst)definition;
+                customTypes.Add(customType.Name);
             }
 
             // These are namespaces used in the script.  This will help getting full type names for types
             // from ast objects that only give us the type name as a string.  We will add these to the 
             // beginning of our known namespaces list so we check those first.
             IEnumerable<Ast> useStatementAsts = ast.FindAll(testAst => testAst is UsingStatementAst, true);
-            foreach (Ast item in useStatementAsts)
+            foreach (Ast use in useStatementAsts)
             {
-                string nspace = item.GetType().GetProperty("Name").GetValue(item).ToString();
-                knownNamespaces.Insert(0, nspace + ".");
+                UsingStatementAst nspace = (UsingStatementAst)use;
+                knownNamespaces.Insert(0, nspace.Name.Value + ".");
             }
 
             // If we have no types to check, we can exit from this rule.
