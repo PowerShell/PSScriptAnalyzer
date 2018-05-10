@@ -31,11 +31,16 @@ function Invoke-AppVeyorInstall {
     $dotNetCoreSDKVersion = $globalDotJson.sdk.version
     if (-not ((dotnet --version).StartsWith($dotNetCoreSDKVersion))) {
         # dotnet.ps1 does not support Unix: https://github.com/dotnet/cli/issues/9234
-        if (-not ($IsLinux -or $IsMacOS)) {
+        if ($IsLinux -or $IsMacOS) {
+            Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
+            bash dotnet-install.sh --version $dotNetCoreSDKVersion
+            [System.Environment]::SetEnvironmentVariable('PATH', "/home/appveyor/.dotnet$([System.IO.Path]::PathSeparator)$PATH")
+        }
+        else {
             Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
             .\dotnet-install.ps1 -Version $dotNetCoreSDKVersion
-            Remove-Item .\dotnet-install.ps1
         }
+        Remove-Item .\dotnet-install.*
     }
 }
 
