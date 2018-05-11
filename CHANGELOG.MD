@@ -1,4 +1,4 @@
-﻿## [1.17.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.0) - 2018-04-27
+﻿## [1.17.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.0) - 2018-05-14
 
 ### New Parameters
 
