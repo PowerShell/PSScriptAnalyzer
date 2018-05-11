@@ -51,8 +51,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                     {
                                         if (String.Equals(namedArgument.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase))
                                         {
-                                            // 2 cases: [Parameter(Mandatory)] and [Parameter(Mandatory=$true)]
-                                            if (namedArgument.ExpressionOmitted || (!namedArgument.ExpressionOmitted && String.Equals(namedArgument.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase)))
+                                            // 3 cases: [Parameter(Mandatory)], [Parameter(Mandatory=$true)] and [Parameter(Mandatory=value)] where value is not equal to 0.
+                                            if (namedArgument.ExpressionOmitted
+                                                || (String.Equals(namedArgument.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase))
+                                                || (int.TryParse(namedArgument.Argument.Extent.Text, out int mandatoryValue) && mandatoryValue != 0))
                                             {
                                                 mandatory = true;
                                                 break;

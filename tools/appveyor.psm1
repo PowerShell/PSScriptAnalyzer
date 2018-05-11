@@ -52,7 +52,7 @@ function Invoke-AppVeyorBuild {
         $BuildType,
         
         [Parameter(Mandatory)]
-        [ValidateSet('Release', 'PSv4Release', 'PSv4Release')]
+        [ValidateSet('Release', 'PSv3Release', 'PSv4Release')]
         $BuildConfiguration,
 
         [Parameter(Mandatory)]
