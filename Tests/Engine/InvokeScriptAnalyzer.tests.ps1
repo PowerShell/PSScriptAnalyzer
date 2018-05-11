@@ -551,4 +551,29 @@ Describe "Test -EnableExit Switch" {
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
         }
     }
+
+    # using statements are only supported in v5+
+    if (!$testingLibraryUsage -and ($PSVersionTable.PSVersion -ge [Version]'5.0.0')) {
+        Describe "Handles parse errors due to unknown types" {
+            $script = @'
+                using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
+                using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
+                Import-Module "AzureRm"
+                class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
+'@
+            It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
+                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
+                $warnings.Count | Should -Be 1
+                $warnings.RuleName | Should -Be 'TypeNotFound'
+            }
+
+            $testFilePath = "TestDrive:\testfile.ps1"
+            Set-Content $testFilePath -value $script
+            It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
+                $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
+                $warnings.Count | Should -Be 1
+                $warnings.RuleName | Should -Be 'TypeNotFound'
+            }
+        }
+    }
 }
