@@ -1,0 +1,15 @@
+{
+  "Windows": {
+        "Name": "win7-x64",
+        "RepoDestinationPath": "C:\\PSScriptAnalyzer",
+        "BuildCommand": "C:\\containerFiles\\buildPSSA.ps1",
+        "DockerFile": ".\\tools\\releaseBuild\\Image\\DockerFile",
+        "DockerImageName": "pssa",
+        "BinaryBucket": "release",
+        "PublishAsFolder": true,
+        "AdditionalContextFiles" : [
+            ".\\tools\\releaseBuild\\Image\\buildPSSA.ps1",
+            ".\\tools\\releaseBuild\\Image\\dockerInstall.psm1"
+        ]
+    }
+}
