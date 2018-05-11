@@ -13,11 +13,9 @@ Table of Contents
 - [Usage](#usage)
 - [Installation](#installation)
     + [From PowerShell Gallery](#from-powershell-gallery)
-      - [Requirements](#requirements)
-        * [Windows](#windows)
-        * [Linux (*Tested only on Ubuntu 14.04*)](#linux-tested-only-on-ubuntu-1404)
+      - [Supported PowerShell Versions and Platforms](#supported-powerShell-versions-and-platforms)
     + [From Source](#from-source)
-      - [Requirements](#requirements-1)
+      - [Requirements](#requirements)
       - [Steps](#steps)
       - [Tests](#tests)
 - [Suppressing Rules](#suppressing-rules)
@@ -70,16 +68,28 @@ Install-Module -Name PSScriptAnalyzer
 
 **Note**: For PowerShell version `5.1.14393.206` or newer, before installing PSScriptAnalyzer, please install the latest Nuget provider by running the following in an elevated PowerShell session.
 ```powershell
-Install-PackageProvider Nuget –force –verbose
+Install-PackageProvider Nuget -MinimumVersion 2.8.5.201 –Force
 Exit
 ```
 
-#### Requirements
+#### Supported PowerShell Versions and Platforms
 
 - Windows PowerShell 3.0 or greater
 - PowerShell Core on Windows/Linux/macOS
+- Docker (tested only using Docker CE on Windows 10 1803
+  - PowerShell 6 Windows Image tags using  from [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `nanoserver`, `6.0.2-nanoserver`, `6.0.2-nanoserver-1709`, `windowsservercore` and `6.0.2-windowsservercore`. Example (1 warning gets produced by `Save-Module` but can be ignored):
+
+    ```docker run -it microsoft/powershell:nanoserver pwsh -command "Save-Module -Name PSScriptAnalyzer -Path .; Import-Module .\PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - PowerShell 5.1 (Windows): Only the [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) images work but not the [microsoft/nanoserver](https://hub.docker.com/r/microsoft/windowsservercore/) images because they contain a Core version of it. Example:
+
+    ```docker run -it microsoft/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - Linux tags from  [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `latest`, `ubuntu16.04`, `ubuntu14.04` and `centos7`. - Example:
+
+     ```docker run -it microsoft/powershell:latest pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
 
 ### From Source
+
+#### Requirements
 
 * [.NET Core 2.1.101 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.101) or newer
 * [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
