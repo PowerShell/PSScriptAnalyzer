@@ -87,5 +87,10 @@ function MyFunc2() {
             $results = Invoke-ScriptAnalyzer -ScriptDefinition '$env:foo = 1; function foo(){ $env:bar = 42 }'
             $results.Count | Should -Be 0
         }
+
+        It "Using a variable via 'Get-Variable' does not trigger a warning" {
+            $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition '$a=4; get-variable a'
+            $noViolations.Count | Should -Be 0
+        }
     }
 }
