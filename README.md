@@ -87,6 +87,17 @@ Exit
 
      ```docker run -it microsoft/powershell:latest pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
 
+### From Chocolatey
+
+If you prefer to manage PSScritpAnalyzer as a Windows package, you can use [Chocolatey](https://chocolatey.org) to install it.
+
+If you don't have Chocolatey, you can install it from the [Chocolately Install page](https://chocolatey.org/install).
+With Chocolatey installed, execute the following command to install PSScriptAnalyzer:
+
+```powershell
+choco install psscriptanalyzer
+```
+
 ### From Source
 
 #### Requirements
