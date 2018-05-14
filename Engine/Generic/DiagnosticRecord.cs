@@ -18,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private DiagnosticSeverity severity;
         private string scriptPath;
         private string ruleSuppressionId;
-        private List<CorrectionExtent> suggestedCorrections;
+        private IEnumerable<CorrectionExtent> suggestedCorrections;
 
         /// <summary>
         /// Represents a string from the rule about why this diagnostic was created.
@@ -89,6 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public IEnumerable<CorrectionExtent> SuggestedCorrections
         {
             get { return suggestedCorrections;  }            
+            set { suggestedCorrections = value; }
         }
 
         /// <summary>
