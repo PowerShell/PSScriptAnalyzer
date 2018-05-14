@@ -98,6 +98,8 @@ With Chocolatey installed, execute the following command to install PSScriptAnal
 choco install psscriptanalyzer
 ```
 
+Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the community.
+
 ### From Source
 
 #### Requirements
