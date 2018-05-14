@@ -51,7 +51,7 @@ Param
 )
 ```
 
-- DiagnosticRecord should have four properties: Message, Extent, RuleName and Severity
+- DiagnosticRecord should have at least four properties: Message, Extent, RuleName and Severity
 
 ``` PowerShell
 $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{
@@ -59,6 +59,27 @@ $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[
     "Extent"   = $ast.Extent
     "RuleName" = $PSCmdlet.MyInvocation.InvocationName
     "Severity" = "Warning"
+}
+```
+Optionally, since version 1.17.0, a `SuggestedCorrections` property of type `IEnumerable<CorrectionExtent>` can also be added in script rules but care must be taken that the type is correct, an example is:
+```powershell
+[int]$startLineNumber =  $ast.Extent.StartLineNumber
+[int]$endLineNumber = $ast.Extent.EndLineNumber
+[int]$startColumnNumber = $ast.Extent.StartColumnNumber
+[int]$endColumnNumber = $ast.Extent.EndColumnNumber
+[string]$correction = 'Correct text that replaces Extent text'
+[string]$file = $MyInvocation.MyCommand.Definition
+[string]$optionalDescription = 'Useful but optional description text'
+$correctionExtent = New-Object 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent' $startLineNumber,$endLineNumber,$startColumnNumber,$endColumnNumber,$correction,$description
+$suggestedCorrections = New-Object System.Collections.ObjectModel.Collection['Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent']
+$suggestedCorrections.add($correctionExtent) | out-null
+
+[Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{
+    "Message"              = "This is a rule with a suggested correction"
+    "Extent"               = $ast.Extent
+    "RuleName"             = $PSCmdlet.MyInvocation.InvocationName
+    "Severity"             = "Warning"
+    "SuggestedCorrections" = $suggestedCorrections
 }
 ```
 

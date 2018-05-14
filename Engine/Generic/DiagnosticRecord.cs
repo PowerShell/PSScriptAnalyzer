@@ -109,7 +109,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="severity">The severity of this diagnostic</param>
         /// <param name="scriptPath">The full path of the script file being analyzed</param>
         /// <param name="suggestedCorrections">The correction suggested by the rule to replace the extent text</param>
-        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptPath, string ruleId = null, List<CorrectionExtent> suggestedCorrections = null)
+        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptPath, string ruleId = null, IEnumerable<CorrectionExtent> suggestedCorrections = null)
         {
             Message  = message;
             RuleName = ruleName;
