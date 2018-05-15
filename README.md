@@ -18,6 +18,7 @@ Table of Contents
       - [Requirements](#requirements)
       - [Steps](#steps)
       - [Tests](#tests)
+    + [From Chocolatey](#from-chocolatey)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
   * [Built-in Presets](#built-in-presets)

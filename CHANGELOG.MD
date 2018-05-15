@@ -51,6 +51,7 @@
 
 ### Documentation, Error Messages and miscellaneous Improvements
 
+- Added Chocolatey Install help, which has community support (#999) (Thanks @pauby)
 - Finalize Release Logs and bump version to 1.17 (#998) (by @bergmeister)
 - Docker examples: (#987, #990) (by @bergmeister)
 - Use multiple GitHub issue templates for bugs, feature requests and support questions (#986) (by @bergmeister
