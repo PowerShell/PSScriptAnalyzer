@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$violationMessage = "Function ’Set-MyObject’ has verb that could change system state. Therefore, the function has to support 'ShouldProcess'"
+﻿$violationMessage = "Function 'Set-MyObject' has verb that could change system state. Therefore, the function has to support 'ShouldProcess'"
 $violationName = "PSUseShouldProcessForStateChangingFunctions"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\UseShouldProcessForStateChangingFunctions.ps1 | Where-Object {$_.RuleName -eq $violationName}
@@ -16,7 +15,7 @@ Function New-{0} () {{ }}
             $scriptDef = $scriptDefinitionGeneric -f $verb
             It ('finds "{0}" verb in function name' -f $verb) {
                 $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule $violationName
-                $violations.Count | Should Be 1
+                $violations.Count | Should -Be 1
             }
         }
 
@@ -26,21 +25,27 @@ Function New-{0} () {{ }}
     Context "When there are violations" {
     	$numViolations = 5
         It ("has {0} violations where ShouldProcess is not supported" -f $numViolations) {
-            $violations.Count | Should Be $numViolations
+            $violations.Count | Should -Be $numViolations
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should -Match $violationMessage
         }
 
         It "has the correct extent" {
-        $violations[0].Extent.Text | Should Be "Set-MyObject"
+        $violations[0].Extent.Text | Should -Be "Set-MyObject"
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
+        }
+
+        It "Workflows should not trigger a warning because they do not allow SupportsShouldProcess" -Skip:$IsCoreCLR {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'workflow Set-Something {[CmdletBinding()]Param($Param1)}' | Where-Object {
+                $_.RuleName -eq 'PSUseShouldProcessForStateChangingFunctions' }
+            $violations.Count | Should -Be 0
         }
     }
 }

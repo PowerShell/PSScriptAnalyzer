@@ -4,7 +4,6 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
-Import-Module PSScriptAnalyzer
 
 $violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
@@ -13,18 +12,18 @@ $IsV3OrV4 = (Test-PSVersionV3) -or (Test-PSVersionV4)
 Describe "UseShouldProcessCorrectly" {
     Context "When there are violations" {
         It "has 3 should process violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
-            $violations[0].Message | Should Match $violationMessage
+            $violations[0].Message | Should -Match $violationMessage
         }
 
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 
@@ -57,7 +56,7 @@ function Bar
 Foo
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
         It "finds violation if downstream function does not declare SupportsShouldProcess" {
@@ -85,7 +84,7 @@ function Bar
 Foo
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "finds violation for 2 level downstream calls" {
@@ -118,7 +117,7 @@ function Bar
 Foo
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
     }
 
@@ -143,7 +142,7 @@ function Foo
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
     }
 
@@ -160,7 +159,7 @@ function Remove-Foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
         It "finds no violation when caller does not declare SupportsShouldProcess and callee is a cmdlet with ShouldProcess" {
@@ -174,7 +173,7 @@ function Remove-Foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
         # Install-Module is present by default only on PSv5 and above
@@ -189,7 +188,7 @@ function Install-Foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
         It "finds no violation when caller does not declare SupportsShouldProcess and callee is a function with ShouldProcess" {
@@ -202,7 +201,7 @@ function Install-Foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
        It "finds no violation for a function with self reference" {
@@ -226,7 +225,7 @@ function Install-ModuleWithDeps {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
        # Install-Module is present by default only on PSv5 and above
@@ -251,7 +250,7 @@ function Install-ModuleWithDeps {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
     }
 
@@ -265,7 +264,7 @@ function Foo
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations[0].Extent.Text | Should Be 'SupportsShouldProcess'
+            $violations[0].Extent.Text | Should -Be 'SupportsShouldProcess'
         }
 
         It "should mark only the ShouldProcess call" {
@@ -277,7 +276,7 @@ function Foo
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
-            $violations[0].Extent.Text | Should Be 'ShouldProcess'
+            $violations[0].Extent.Text | Should -Be 'ShouldProcess'
         }
     }
 }

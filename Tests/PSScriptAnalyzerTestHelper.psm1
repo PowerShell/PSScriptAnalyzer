@@ -45,20 +45,15 @@ Function Test-CorrectionExtentFromContent {
     )
 
 	$corrections = $diagnosticRecord.SuggestedCorrections
-	$corrections.Count | Should Be $correctionsCount
-	$corrections[0].Text | Should Be $correctionText
+	$corrections.Count | Should -Be $correctionsCount
+	$corrections[0].Text | Should -Be $correctionText
 	Get-ExtentTextFromContent $corrections[0] $rawContent | `
-		       Should Be $violationText
+		       Should -Be $violationText
 }
 
 Function Test-PSEditionCoreCLR
 {
     [bool]$IsCoreCLR
-}
-
-Function Test-PSEditionCoreCLRLinux
-{
-    (Test-PSEditionCoreCLR) -and $IsLinux
 }
 
 Function Test-PSVersionV3
@@ -82,7 +77,6 @@ Export-ModuleMember -Function Get-ExtentText
 Export-ModuleMember -Function Test-CorrectionExtent
 Export-ModuleMember -Function Test-CorrectionExtentFromContent
 Export-ModuleMember -Function Test-PSEditionCoreCLR
-Export-ModuleMember -Function Test-PSEditionCoreCLRLinux
 Export-ModuleMember -Function Test-PSVersionV3
 Export-ModuleMember -Function Test-PSVersionV4
 Export-ModuleMember -Function Get-Count

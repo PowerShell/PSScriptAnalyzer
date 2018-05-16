@@ -1,4 +1,4 @@
-# PowerShell Script Analyzer Rules
+# PSScriptAnalyzer Rules
 
 ## Table of Contents
 

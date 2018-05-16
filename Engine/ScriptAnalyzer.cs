@@ -1,15 +1,5 @@
-﻿
-//
-// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System.Text.RegularExpressions;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
@@ -31,6 +21,7 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Collections;
 using System.Diagnostics;
+using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -1140,7 +1131,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             {
                                 dynamic description = helpContent[0].Properties["Description"];
 
-                                if (null != description && null != description.Value && description.Value.GetType().IsArray)
+                                if (description != null && description.Value != null && description.Value.GetType().IsArray)
                                 {
                                     desc = description.Value[0].Text;
                                 }
@@ -1443,43 +1434,67 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return results;
         }
 
-#endregion
+        #endregion
 
 
         /// <summary>
         /// Analyzes a script file or a directory containing script files.
         /// </summary>
         /// <param name="path">The path of the file or directory to analyze.</param>
+        /// <param name="shouldProcess">Whether the action should be executed.</param>
         /// <param name="searchRecursively">
         /// If true, recursively searches the given file path and analyzes any
         /// script files that are found.
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
-        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, bool searchRecursively = false)
+        public IEnumerable<DiagnosticRecord> AnalyzePath(string path, Func<string, string, bool> shouldProcess, bool searchRecursively = false)
         {
-            List<string> scriptFilePaths = new List<string>();
+            List<string> scriptFilePaths = ScriptPathList(path, searchRecursively);
 
-            if (path == null)
-            {
-                this.outputWriter.ThrowTerminatingError(
-                    new ErrorRecord(
-                        new FileNotFoundException(),
-                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path),
-                        ErrorCategory.InvalidArgument,
-                        this));
-            }
-
-            // Create in advance the list of script file paths to analyze.  This
-            // is an optimization over doing the whole operation at once
-            // and calling .Concat on IEnumerables to join results.
-            this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
             foreach (string scriptFilePath in scriptFilePaths)
             {
-                // Yield each record in the result so that the
-                // caller can pull them one at a time
-                foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                if (shouldProcess(scriptFilePath, $"Analyzing file {scriptFilePath}"))
                 {
-                    yield return diagnosticRecord;
+                    // Yield each record in the result so that the caller can pull them one at a time
+                    foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                    {
+                        yield return diagnosticRecord;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Analyzes a script file or a directory containing script files and fixes warning where possible.
+        /// </summary>
+        /// <param name="path">The path of the file or directory to analyze.</param>
+        /// <param name="shouldProcess">Whether the action should be executed.</param>
+        /// <param name="searchRecursively">
+        /// If true, recursively searches the given file path and analyzes any
+        /// script files that are found.
+        /// </param>
+        /// <returns>An enumeration of DiagnosticRecords that were found by rules and could not be fixed automatically.</returns>
+        public IEnumerable<DiagnosticRecord> AnalyzeAndFixPath(string path, Func<string, string, bool> shouldProcess, bool searchRecursively = false)
+        {
+            List<string> scriptFilePaths = ScriptPathList(path, searchRecursively);
+
+            foreach (string scriptFilePath in scriptFilePaths)
+            {
+                if (shouldProcess(scriptFilePath, $"Analyzing and fixing file {scriptFilePath}"))
+                {
+                    var fileEncoding = GetFileEncoding(scriptFilePath);
+                    bool fixesWereApplied;
+                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding), out fixesWereApplied);
+                    if (fixesWereApplied)
+                    {
+                        File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
+                    }
+
+                    // Yield each record in the result so that the caller can pull them one at a time
+                    foreach (var diagnosticRecord in this.AnalyzeFile(scriptFilePath))
+                    {
+                        yield return diagnosticRecord;
+                    }
                 }
             }
         }
@@ -1507,16 +1522,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-            if (errors != null && errors.Length > 0)
+            var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
+
+            if (relevantParseErrors != null && relevantParseErrors.Count > 0)
             {
-                foreach (ParseError error in errors)
+                foreach (var parseError in relevantParseErrors)
                 {
-                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
-                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
+                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
                 }
             }
 
-            if (errors != null && errors.Length > 10)
+            if (relevantParseErrors != null && relevantParseErrors.Count > 10)
             {
                 string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessageForScriptDefinition);
                 this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, scriptDefinition));
@@ -1524,15 +1541,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return new List<DiagnosticRecord>();
             }
 
-            return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty);
+            return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty));
         }
 
         /// <summary>
         /// Fix the violations in the given script text.
         /// </summary>
         /// <param name="scriptDefinition">The script text to be fixed.</param>
+        /// <param name="updatedRange">Whether any warnings were fixed.</param>
         /// <returns>The fixed script text.</returns>
-        public string Fix(string scriptDefinition)
+        public string Fix(string scriptDefinition, out bool fixesWereApplied)
         {
             if (scriptDefinition == null)
             {
@@ -1540,7 +1558,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             Range updatedRange;
-            return Fix(new EditableText(scriptDefinition), null, out updatedRange).ToString();
+            return Fix(new EditableText(scriptDefinition), null, out updatedRange, out fixesWereApplied).ToString();
         }
 
         /// <summary>
@@ -1549,8 +1567,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="text">An object of type `EditableText` that encapsulates the script text to be fixed.</param>
         /// <param name="range">The range in which the fixes are allowed.</param>
         /// <param name="updatedRange">The updated range after the fixes have been applied.</param>
+        /// <param name="updatedRange">Whether any warnings were fixed.</param>
         /// <returns>The same instance of `EditableText` that was passed to the method, but the instance encapsulates the fixed script text. This helps in chaining the Fix method.</returns>
-        public EditableText Fix(EditableText text, Range range, out Range updatedRange)
+        public EditableText Fix(EditableText text, Range range, out Range updatedRange, out bool fixesWereApplied)
         {
             if (text == null)
             {
@@ -1583,7 +1602,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
                 int unusedCorrections;
                 Fix(text, corrections, out unusedCorrections);
-                this.outputWriter.WriteVerbose($"Fixed {corrections.Count - unusedCorrections} violations.");
+                var numberOfFixedViolatons = corrections.Count - unusedCorrections;
+                fixesWereApplied = numberOfFixedViolatons > 0;
+                this.outputWriter.WriteVerbose($"Fixed {numberOfFixedViolatons} violations.");
 
                 // This is an indication of an infinite loop. There is a small chance of this.
                 // It is better to abort the fixing operation at this point.
@@ -1611,6 +1632,45 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             updatedRange = range;
             return text;
+        }
+
+        private static Encoding GetFileEncoding(string path)
+        {
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    reader.Peek(); // needed in order to populate the CurrentEncoding property
+                    return reader.CurrentEncoding;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Inspects Parse errors and removes TypeNotFound errors that can be ignored since some types are not known yet (e.g. due to 'using' statements).
+        /// </summary>
+        /// <param name="parseErrors"></param>
+        /// <returns>List of relevant parse errors.</returns>
+        private List<ParseError> RemoveTypeNotFoundParseErrors(ParseError[] parseErrors, out List<DiagnosticRecord> diagnosticRecords)
+        {
+            var relevantParseErrors = new List<ParseError>();
+            diagnosticRecords = new List<DiagnosticRecord>();
+
+            foreach (var parseError in parseErrors)
+            {
+                // If types are not known due them not being imported yet, the parser throws an error that can be ignored
+                if (parseError.ErrorId != "TypeNotFound")
+                {
+                    relevantParseErrors.Add(parseError);
+                }
+                else
+                {
+                    diagnosticRecords.Add(new DiagnosticRecord(
+                        string.Format(Strings.TypeNotFoundParseErrorFound, parseError.Extent), parseError.Extent, "TypeNotFound", DiagnosticSeverity.Information, parseError.Extent.File));
+                }
+            }
+
+            return relevantParseErrors;
         }
 
         private static Range SnapToEdges(EditableText text, Range range)
@@ -1653,6 +1713,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             unusedCorrections = correctionExtents.Count() - count;
             return text;
+        }
+
+        private List<string> ScriptPathList(string path, bool searchRecursively)
+        {
+            List<string> scriptFilePaths = new List<string>();
+
+            if (path == null)
+            {
+                this.outputWriter.ThrowTerminatingError(
+                    new ErrorRecord(
+                        new FileNotFoundException(),
+                        string.Format(CultureInfo.CurrentCulture, Strings.FileNotFound, path),
+                        ErrorCategory.InvalidArgument,
+                        this));
+            }
+
+            // Create in advance the list of script file paths to analyze.  This
+            // is an optimization over doing the whole operation at once
+            // and calling .Concat on IEnumerables to join results.
+            this.BuildScriptPathList(path, searchRecursively, scriptFilePaths);
+
+            return scriptFilePaths;
         }
 
         private void BuildScriptPathList(
@@ -1753,6 +1835,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ParseError[] errors = null;
 
             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, filePath));
+            var diagnosticRecords = new List<DiagnosticRecord>();
 
             //Parse the file
             if (File.Exists(filePath))
@@ -1776,17 +1859,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
                     }
 #endif //!PSV3
+                    var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
+
                     //Runspace.DefaultRunspace = oldDefault;
-                    if (errors != null && errors.Length > 0)
+                    if (relevantParseErrors != null && relevantParseErrors.Count > 0)
                     {
-                        foreach (ParseError error in errors)
+                        foreach (var parseError in relevantParseErrors)
                         {
-                            string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, error.Extent.File, error.Message.TrimEnd('.'), error.Extent.StartLineNumber, error.Extent.StartColumnNumber);
-                            this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, error.ErrorId));
+                            string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, parseError.Extent.File, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
+                            this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
                         }
                     }
 
-                    if (errors != null && errors.Length > 10)
+                    if (relevantParseErrors != null && relevantParseErrors.Count > 10)
                     {
                         string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
                         this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));
@@ -1803,7 +1888,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-            return this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath);
+            return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
         }
 
         private bool IsModuleNotFoundError(ParseError error)

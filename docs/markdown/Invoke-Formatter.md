@@ -15,7 +15,7 @@ Invoke-Formatter [-ScriptDefinition] <String> [-Settings <object>] [-Range <int[
 
 ## DESCRIPTION
 
-The `Invoke-Formatter` cmdlet takes a string parameter named `ScriptDefinition` and formats it according to  the input settings parameter `Settings`. If no `Settings` parameter is provided, the cmdlet assumes the default code formatting settings as defined in `Settings/CodeFormatting.psd`.
+The Invoke-Formatter cmdlet takes a string parameter named ScriptDefinition and formats it according to the input settings parameter Settings. If no Settings parameter is provided, the cmdlet assumes the default code formatting settings as defined in Settings/CodeFormatting.psd1.
 
 ## EXAMPLES
 
@@ -56,14 +56,14 @@ $settings = @{
 Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings
 ```
 
-This command formats the input script text using the settings defined in the `$settings` hashtable.
+This command formats the input script text using the settings defined in the $settings hashtable.
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
 Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings /path/to/settings.psd1
 ```
 
-This command formats the input script text using the settings defined in the `settings.psd1` file.
+This command formats the input script text using the settings defined in the settings.psd1 file.
 
 ## PARAMETERS
 

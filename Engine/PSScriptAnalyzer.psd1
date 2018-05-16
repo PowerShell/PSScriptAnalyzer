@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.14.1'
+ModuleVersion = '1.16.1'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -88,9 +88,7 @@ PrivateData = @{
         IconUri = ''
         ReleaseNotes = @'
 ### Fixed
-- (#777) `Invoke-Formatter`
-    - Make the cmdlet parameters positional.
-    - Updated documentation so that `Get-Help Invoke-Formatter -Syntax` returns a valid syntax.
+- (#815) Formatter crashes due to invalid extent comparisons
 '@
     }
 }
@@ -102,6 +100,9 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
+
+
 
 
 

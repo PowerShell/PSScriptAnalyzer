@@ -22,10 +22,10 @@ Function Test-CorrectionExtent
 		[string] $correctionText
 	)
 	$corrections = $diagnosticRecord.SuggestedCorrections
-	$corrections.Count | Should Be $correctionsCount
-	$corrections[0].Text | Should Be $correctionText
+	$corrections.Count | Should -Be $correctionsCount
+	$corrections[0].Text | Should -Be $correctionText
 	Get-ExtentText $corrections[0] $violationFilepath | `
-		       Should Be $violationText
+		       Should -Be $violationText
 }
 
 

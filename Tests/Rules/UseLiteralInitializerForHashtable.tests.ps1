@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$ruleName = "PSUseLiteralInitializerForHashtable"
+﻿$ruleName = "PSUseLiteralInitializerForHashtable"
 
 Describe "UseLiteralInitlializerForHashtable" {
     Context "When new-object hashtable is used to create a hashtable" {
@@ -11,7 +10,7 @@ Describe "UseLiteralInitlializerForHashtable" {
             $htable4 = new-object collections.hashtable
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $violationScriptDef -IncludeRule $ruleName
-            $violations.Count | Should Be 4
+            $violations.Count | Should -Be 4
         }
 
         It "does not detect violation if arguments given to new-object contain ignore case string comparer" {
@@ -22,7 +21,7 @@ Describe "UseLiteralInitlializerForHashtable" {
             $htable4 = new-object -Typename hashtable [system.stringcomparer]::ordinalignorecase
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $violationScriptDef -IncludeRule $ruleName
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
         It "suggests correction" {
@@ -30,7 +29,7 @@ Describe "UseLiteralInitlializerForHashtable" {
             $htable1 = new-object hashtable
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $violationScriptDef -IncludeRule $ruleName
-            $violations[0].SuggestedCorrections[0].Text | Should Be '@{}'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be '@{}'
         }
     }
 
@@ -43,7 +42,7 @@ Describe "UseLiteralInitlializerForHashtable" {
             $htable4 = [collections.hashtable]::new()
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $violationScriptDef -IncludeRule $ruleName
-            $violations.Count | Should Be 4
+            $violations.Count | Should -Be 4
         }
 
         It "does not detect violation if arguments given to [hashtable]::new contain ignore case string comparer" {
@@ -52,7 +51,7 @@ Describe "UseLiteralInitlializerForHashtable" {
             $htable2 = [hashtable]::new(10, [system.stringcomparer]::ordinalignorecase)
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $violationScriptDef -IncludeRule $ruleName
-            $violations.Count | Should Be 0
+            $violations.Count | Should -Be 0
         }
 
         It "suggests correction" {
@@ -60,7 +59,7 @@ Describe "UseLiteralInitlializerForHashtable" {
             $htable1 = [hashtable]::new()
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $violationScriptDef -IncludeRule $ruleName
-            $violations[0].SuggestedCorrections[0].Text | Should Be '@{}'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be '@{}'
         }
 
     }

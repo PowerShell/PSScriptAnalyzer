@@ -1,6 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-
-$functionErroMessage = "Avoid creating functions with a Global scope."
+﻿$functionErroMessage = "Avoid creating functions with a Global scope."
 $violationName = "PSAvoidGlobalFunctions"
 
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -11,18 +9,18 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidGlobalFunctionsNoViolation
 Describe "$violationName " {
     Context "When there are violations" {
         It "Has 1 avoid global function violations" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "Has the correct description message" {
-            $violations[0].Message | Should Match $functionErroMessage
+            $violations[0].Message | Should -Match $functionErroMessage
         }
 
     }
 
     Context "When there are no violations" {
         It "Returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

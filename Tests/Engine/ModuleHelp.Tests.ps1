@@ -33,8 +33,8 @@ Enter the version of the module to test. This parameter is optional. If you
 omit it, the test runs on the latest version of the module in $env:PSModulePath.
 
 .EXAMPLE
-.\Module.Help.Tests.ps1 -ModuleName Pester -RequiredVersion 3.4.0
-This command runs the tests on the commands in Pester 3.4.0.
+.\Module.Help.Tests.ps1 -ModuleName Pester -RequiredVersion 4.3.1
+This command runs the tests on the commands in Pester 4.3.1.
 
 .EXAMPLE
 .\Module.Help.Tests.ps1 -ModuleName Pester
@@ -63,7 +63,7 @@ Param
 	$RequiredVersion
 )
 
-# #Requires -Module @{ModuleName = 'Pester'; ModuleVersion = '3.4.0'}
+# #Requires -Module @{ModuleName = 'Pester'; ModuleVersion = '4.3.1'}
 
 <#
 .SYNOPSIS
@@ -121,7 +121,7 @@ function Get-ParametersDefaultFirst {
 	)
 
 	BEGIN {
-		$Common = 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable'
+		$Common = 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable', 'WhatIf', 'Confirm'
 		$parameters = @()
 	}
 	PROCESS {
@@ -250,23 +250,23 @@ foreach ($command in $commands) {
 
 		# Should be a description for every function
 		It "gets description for $commandName" {
-			$Help.Description | Should Not BeNullOrEmpty
+			$Help.Description | Should -Not -BeNullOrEmpty
 		}
 
 		# Should be at least one example
 		It "gets example code from $commandName" {
-			($Help.Examples.Example | Select-Object -First 1).Code | Should Not BeNullOrEmpty
+			($Help.Examples.Example | Select-Object -First 1).Code | Should -Not -BeNullOrEmpty
 		}
 
 		# Should be at least one example description
 		It "gets example help from $commandName" {
-			($Help.Examples.Example.Remarks | Select-Object -First 1).Text | Should Not BeNullOrEmpty
+			($Help.Examples.Example.Remarks | Select-Object -First 1).Text | Should -Not -BeNullOrEmpty
 		}
 
 		Context "Test parameter help for $commandName" {
 
 			$Common = 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable',
-			'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable'
+			'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable', 'WhatIf', 'Confirm'
 
 			# Get parameters. When >1 parameter with same name,
 			# get parameter from the default parameter set, if any.
@@ -284,15 +284,15 @@ foreach ($command in $commands) {
 
 				# Should be a description for every parameter
 				It "gets help for parameter: $parameterName : in $commandName" {
-					# `$parameterHelp.Description.Text | Should Not BeNullOrEmpty` fails for -Settings paramter
+					# `$parameterHelp.Description.Text | Should -Not -BeNullOrEmpty` fails for -Settings paramter
 					# without explicit [string] casting on the Text property
-					[string]::IsNullOrEmpty($parameterHelp.Description.Text) | Should Be $false
+					$parameterHelp.Description.Text | Should -Not -BeNullOrEmpty
 				}
 
 				# Required value in Help should match IsMandatory property of parameter
 				It "help for $parameterName parameter in $commandName has correct Mandatory value" {
 					$codeMandatory = $parameter.IsMandatory.toString()
-					$parameterHelp.Required | Should Be $codeMandatory
+					$parameterHelp.Required | Should -Be $codeMandatory
 				}
 
 				# Parameter type in Help should match code
@@ -300,7 +300,7 @@ foreach ($command in $commands) {
 					$codeType = $parameter.ParameterType.Name
 					# To avoid calling Trim method on a null object.
 					$helpType = if ($parameterHelp.parameterValue) { $parameterHelp.parameterValue.Trim() }
-					$helpType | Should be $codeType
+					$helpType | Should -Be $codeType
 				}
 			}
 
@@ -310,7 +310,7 @@ foreach ($command in $commands) {
 				}
 				# Shouldn't find extra parameters in help.
 				It "finds help parameter in code: $helpParm" {
-					$helpParm -in $parameterNames | Should Be $true
+					$helpParm -in $parameterNames | Should -BeTrue
 				}
 			}
 		}

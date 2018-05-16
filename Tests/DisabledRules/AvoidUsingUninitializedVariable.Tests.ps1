@@ -8,17 +8,17 @@ $noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingUninitializedVariable
 Describe "AvoidUsingUninitializedVariable" {
     Context "Script uses uninitialized variables - Violation" {
         It "Have 3 rule violations" {
-            $violations.Count | Should Be 3
+            $violations.Count | Should -Be 3
         }
 
         It "has the correct description message for UninitializedVariable rule violation" {
-            $violations[0].Message | Should Be $violationMessage            
+            $violations[0].Message | Should -Be $violationMessage            
         }
     }
 
     Context "Script uses initialized variables - No violation" {
         It "results in no rule violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 }

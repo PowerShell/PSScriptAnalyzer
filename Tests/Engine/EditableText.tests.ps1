@@ -1,7 +1,6 @@
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 
-Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $editableTextType = "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText"
@@ -14,7 +13,7 @@ Describe "EditableText class" {
             $edit = New-Object -TypeName $textEditType -ArgumentList 1,14,1,22,"one"
             $editableText = New-Object -TypeName $editableTextType -ArgumentList $def
             $result = $editableText.ApplyEdit($edit)
-            $result.ToString() | Should Be "This is just one line."
+            $result.ToString() | Should -Be "This is just one line."
         }
 
         It "Should replace in a single line string in the start" {
@@ -22,7 +21,7 @@ Describe "EditableText class" {
             $edit = New-Object -TypeName $textEditType -ArgumentList 1,1,1,5,"That"
             $editableText = New-Object -TypeName $editableTextType -ArgumentList $def
             $result = $editableText.ApplyEdit($edit)
-            $result.ToString() | Should Be 'That is just a single line.'
+            $result.ToString() | Should -Be 'That is just a single line.'
         }
 
         It "Should replace in a single line string in the end" {
@@ -30,7 +29,7 @@ Describe "EditableText class" {
             $edit = New-Object -TypeName $textEditType -ArgumentList 1,23,1,27,"sentence"
             $editableText = New-Object -TypeName $editableTextType -ArgumentList $def
             $result = $editableText.ApplyEdit($edit)
-            $result.ToString() | Should Be 'This is just a single sentence.'
+            $result.ToString() | Should -Be 'This is just a single sentence.'
         }
 
         It "Should replace in multi-line string" {
@@ -51,7 +50,7 @@ three
             $edit = New-Object -TypeName $textEditType -ArgumentList 2,12,3,5,$newText
             $editableText = New-Object -TypeName $editableTextType -ArgumentList $def
             $result = $editableText.ApplyEdit($edit)
-            $result.ToString() | Should Be $expected
+            $result.ToString() | Should -Be $expected
         }
 
         It "Should delete in a multi-line string" {
@@ -74,7 +73,7 @@ function foo {
             $edit = New-Object -TypeName $textEditType -ArgumentList 3,23,4,23,$newText
             $editableText = New-Object -TypeName $editableTextType -ArgumentList $def
             $result = $editableText.ApplyEdit($edit)
-            $result.ToString() | Should Be $expected
+            $result.ToString() | Should -Be $expected
         }
 
         It "Should insert in a multi-line string" {
@@ -102,7 +101,7 @@ function foo {
             $edit = New-Object -TypeName $textEditType -ArgumentList 2,1,2,1,$newText
             $editableText = New-Object -TypeName $editableTextType -ArgumentList $def
             $result = $editableText.ApplyEdit($edit)
-            $result.ToString() | Should Be $expected
+            $result.ToString() | Should -Be $expected
         }
 
         It "Should return a read-only collection of lines in the text" {
@@ -117,7 +116,7 @@ function foo {
                 -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText" `
                 -ArgumentList @($def)
 
-            {$text.Lines.Add("abc")} | Should Throw
+            {$text.Lines.Add("abc")} | Should -Throw
         }
 
         It "Should return the correct number of lines in the text" {
@@ -135,7 +134,7 @@ property1 = "value"
             $text = New-Object `
                 -TypeName "Microsoft.Windows.PowerShell.ScriptAnalyzer.EditableText" `
                 -ArgumentList @($def)
-            $text.LineCount | Should Be 9
+            $text.LineCount | Should -Be 9
         }
      }
 }

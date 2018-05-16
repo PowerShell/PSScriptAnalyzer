@@ -1,14 +1,5 @@
-﻿//
-// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Collections.Generic;
@@ -19,6 +10,7 @@ using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using System.Linq;
+using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -104,38 +96,54 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
             // Iterates all CommandAsts and check the command name.
-            foreach (Ast foundAst in foundAsts)
+            foreach (CommandAst cmdAst in foundAsts)
             {
-                CommandAst cmdAst = (CommandAst)foundAst;
-
                 // Check if the command ast should be ignored
                 if (IgnoreCommandast(cmdAst))
                 {
                     continue;
                 }
 
-                string aliasName = cmdAst.GetCommandName();
+                string commandName = cmdAst.GetCommandName();
 
                 // Handles the exception caused by commands like, {& $PLINK $args 2> $TempErrorFile}.
                 // You can also review the remark section in following document,
                 // MSDN: CommandAst.GetCommandName Method
-                if (aliasName == null
-                    || whiteList.Contains<string>(aliasName, StringComparer.OrdinalIgnoreCase))
+                if (commandName == null
+                    || whiteList.Contains<string>(commandName, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                string cmdletName = Helper.Instance.GetCmdletNameFromAlias(aliasName);
-                if (!String.IsNullOrEmpty(cmdletName))
+                string cmdletNameIfCommandNameWasAlias = Helper.Instance.GetCmdletNameFromAlias(commandName);
+                if (!String.IsNullOrEmpty(cmdletNameIfCommandNameWasAlias))
                 {
                     yield return new DiagnosticRecord(
-                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, aliasName, cmdletName),
+                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, commandName, cmdletNameIfCommandNameWasAlias),
                         GetCommandExtent(cmdAst),
                         GetName(),
                         DiagnosticSeverity.Warning,
                         fileName,
-                        aliasName,
-                        suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletName));
+                        commandName,
+                        suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletNameIfCommandNameWasAlias));
+                }
+
+                var isNativeCommand = Helper.Instance.GetCommandInfo(commandName, CommandTypes.Application | CommandTypes.ExternalScript) != null;
+                if (!isNativeCommand)
+                {
+                    var commdNameWithGetPrefix = $"Get-{commandName}";
+                    var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo($"Get-{commandName}");
+                    if (cmdletNameIfCommandWasMissingGetPrefix != null)
+                    {
+                        yield return new DiagnosticRecord(
+                            string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
+                            GetCommandExtent(cmdAst),
+                            GetName(),
+                            DiagnosticSeverity.Warning,
+                            fileName,
+                            commandName,
+                            suggestedCorrections: GetCorrectionExtent(cmdAst, commdNameWithGetPrefix));
+                    }
                 }
             }
         }

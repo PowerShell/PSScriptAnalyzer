@@ -1,17 +1,12 @@
-﻿//
-// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+// this rule can only compile on v4+
+#if (PSV4 || !PSV3)
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -19,6 +14,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Reflection;
 using Microsoft.Management.Infrastructure;
 using Microsoft.PowerShell.DesiredStateConfiguration.Internal;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
@@ -40,6 +36,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private string fileName;
         private IDictionary<string, string> propAttrDict;
         private IEnumerable<FunctionDefinitionAst> resourceFunctions;
+        private Func<string, Tuple<string, Version>, Collection<Exception>, List<CimClass>> dscClassImporter;
+
+        /// <summary>
+        /// Constructs an object of type UseIdenticalMandatoryParametersDSC
+        /// </summary>
+        public UseIdenticalMandatoryParametersDSC()
+        {
+            var importClassesMethod = typeof(DscClassCache).GetMethod(
+                "ImportClasses",
+                BindingFlags.Public | BindingFlags.Static);
+            if (importClassesMethod != null)
+            {
+                // In some version of S.M.A DscClassCache.ImportClasses method takes 4 parameters
+                // while in others it takes 3.
+                if (importClassesMethod.GetParameters().Count() == 4)
+                {
+                    dscClassImporter = (path, moduleInfo, errors) =>
+                    {
+                        return importClassesMethod.Invoke(
+                            null,
+                            new object[] { path, moduleInfo, errors, false }) as List<CimClass>;
+                    };
+                }
+                else
+                {
+                    dscClassImporter = (path, moduleInfo, errors) =>
+                    {
+                        return importClassesMethod.Invoke(
+                            null,
+                            new object[] { path, moduleInfo, errors}) as List<CimClass>;
+                    };
+                }
+            }
+            else
+            {
+                dscClassImporter = (path, moduleInfo, errors) => null;
+            }
+        }
 
         /// <summary>
         /// AnalyzeDSCResource: Analyzes given DSC Resource
@@ -215,7 +249,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     isDSCClassCacheInitialized = true;
                 }
 
-                cimClasses = DscClassCache.ImportClasses(mofFilepath, moduleInfo, errors);
+                cimClasses = dscClassImporter(mofFilepath, moduleInfo, errors);
             }
             catch
             {
@@ -304,5 +338,4 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     }
 }
 
-
-
+#endif

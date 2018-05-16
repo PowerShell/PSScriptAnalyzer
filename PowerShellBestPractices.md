@@ -126,6 +126,6 @@ The following guidelines come from a combined effort from both the PowerShell te
 ###Reference:
 * Cmdlet Development Guidelines from MSDN site (Cmdlet Development Guidelines): https://msdn.microsoft.com/en-us/library/ms714657(v=vs.85).aspx 
 * The Community Book of PowerShell Practices (Compiled by Don Jones and Matt Penny and the Windows PowerShell Community): https://powershell.org/community-book-of-powershell-practices/
-* PowerShell DSC Resource Design and Testing Checklist: http://blogs.msdn.com/b/powershell/archive/2014/11/18/powershell-dsc-resource-design-and-testing-checklist.aspx
+* PowerShell DSC Resource Design and Testing Checklist: https://blogs.msdn.com/b/powershell/archive/2014/11/18/powershell-dsc-resource-design-and-testing-checklist.aspx
 * DSC Guidelines can also be found in the DSC Resources Repository: https://github.com/PowerShell/DscResources
 * The Unofficial PowerShell Best Practices and Style Guide: https://github.com/PoshCode/PowerShellPracticeAndStyle

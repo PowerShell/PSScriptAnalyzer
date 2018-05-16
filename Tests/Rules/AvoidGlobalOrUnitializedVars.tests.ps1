@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$globalMessage = "Found global variable 'Global:1'."
+﻿$globalMessage = "Found global variable 'Global:1'."
 $globalName = "PSAvoidGlobalVars"
 
 # PSAvoidUninitializedVariable rule has been deprecated
@@ -26,25 +25,25 @@ $noGlobalViolations = $noViolations | Where-Object {$_.RuleName -eq $globalName}
 Describe "AvoidGlobalVars" {
     Context "When there are violations" {
         It "has 1 avoid using global variable violation" {
-            $globalViolations.Count | Should Be 1
+            $globalViolations.Count | Should -Be 1
         }
 
         <#
         # PSAvoidUninitializedVariable rule has been deprecated
         It "has 4 violations for dsc resources (not counting the variables in parameters)" {
-            $dscResourceViolations.Count | Should Be 4
+            $dscResourceViolations.Count | Should -Be 4
         }
         #>
 
 
         It "has the correct description message" {
-            $globalViolations[0].Message | Should Match $globalMessage
+            $globalViolations[0].Message | Should -Match $globalMessage
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noGlobalViolations.Count | Should Be 0
+            $noGlobalViolations.Count | Should -Be 0
         }
     }
 
@@ -57,7 +56,7 @@ if ($global:lastexitcode -ne 0)
 }
 '@
             $local:violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -IncludeRule $globalName
-            $local:violations.Count | Should Be 0
+            $local:violations.Count | Should -Be 0
         }
     }
 }
@@ -67,17 +66,17 @@ if ($global:lastexitcode -ne 0)
 Describe "AvoidUnitializedVars" {
     Context "When there are violations" {
         It "has 5 avoid using unitialized variable violations" {
-            $nonInitializedViolations.Count | Should Be 5
+            $nonInitializedViolations.Count | Should -Be 5
         }
 
         It "has the correct description message" {
-            $nonInitializedViolations[0].Message | Should Match $nonInitializedMessage
+            $nonInitializedViolations[0].Message | Should -Match $nonInitializedMessage
         }
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noUninitializedViolations.Count | Should Be 0
+            $noUninitializedViolations.Count | Should -Be 0
         }
     }
 }

@@ -1,9 +1,8 @@
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
-Import-Module PSScriptAnalyzer
 
-# test is meant to verify functionality if chsarp apis are used. Hence not if psedition is CoreCLR
+# test is meant to verify functionality if csharp apis are used. Hence not if psedition is CoreCLR
 if ((Test-PSEditionCoreCLR))
 {
 	return
@@ -15,7 +14,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 # wraps the usage of ScriptAnalyzer as a .NET library 
 function Invoke-ScriptAnalyzer {
 	param (
-        [CmdletBinding(DefaultParameterSetName="File")]
+        [CmdletBinding(DefaultParameterSetName="File", SupportsShouldProcess = $true)]
 
 		[parameter(Mandatory = $true, Position = 0, ParameterSetName="File")]
 		[Alias("PSPath")]
@@ -48,8 +47,17 @@ function Invoke-ScriptAnalyzer {
 		[switch] $IncludeDefaultRules,
 
         [Parameter(Mandatory = $false)]
-        [switch] $SuppressedOnly
-	)	
+        [switch] $SuppressedOnly,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $Fix,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $EnableExit,
+		
+        [Parameter(Mandatory = $false)]
+        [switch] $ReportSummary
+    )
 
     if ($null -eq $CustomRulePath)
     {
@@ -74,11 +82,41 @@ function Invoke-ScriptAnalyzer {
 		$SuppressedOnly.IsPresent
 	);
 
-    if ($PSCmdlet.ParameterSetName -eq "File") {
-    	return $scriptAnalyzer.AnalyzePath($Path, $Recurse.IsPresent);
+    if ($PSCmdlet.ParameterSetName -eq "File")
+    {
+        $supportsShouldProcessFunc = [Func[string, string, bool]] { return $PSCmdlet.Shouldprocess }
+        if ($Fix.IsPresent)
+        {
+            $results = $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+        }
+        else
+        {
+            $results = $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+        }
     }
-    else {
-        return $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
+    else
+    {
+        $results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
+	}
+	
+	$results
+
+    if ($ReportSummary.IsPresent)
+    {
+        if ($null -ne $results)
+        {
+			 # This is not the exact message that it would print but close enough
+            Write-Host "$($results.Count) rule violations found.    Severity distribution:  Error = 1, Warning = 3, Information  = 5" -ForegroundColor Red
+        }
+        else
+        {
+            Write-Host '0 rule violations found.' -ForegroundColor Green
+        }
+    }
+	
+    if ($EnableExit.IsPresent -and $null -ne $results)
+    {
+        exit $results.Count
     }
 }
 

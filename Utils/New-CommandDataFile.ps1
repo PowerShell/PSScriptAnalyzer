@@ -56,9 +56,9 @@ Function Get-CmdletDataFileName
         {
             $os = 'linux'
         }
-        elseif ($IsOSX)
+        elseif ($IsMacOS)
         {
-            $os = 'osx'
+            $os = 'macos'
         }
         # else it is windows, which is already set
     }
@@ -82,8 +82,8 @@ $shortModuleInfos = Get-ChildItem -Path $builtinModulePath `
         $module = $_
         Write-Progress $module.Name
         $commands = Get-Command -Module $module
-        $shortCommands = $commands | select -Property Name,@{Label='CommandType';Expression={$_.CommandType.ToString()}},ParameterSets
-        $shortModuleInfo = $module | select -Property Name,@{Label='Version';Expression={$_.Version.ToString()}}
+        $shortCommands = $commands | Select-Object -Property Name,@{Label='CommandType';Expression={$_.CommandType.ToString()}},ParameterSets
+        $shortModuleInfo = $module | Select-Object -Property Name,@{Label='Version';Expression={$_.Version.ToString()}}
         Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedCommands' -NotePropertyValue $shortCommands
         Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedAliases' -NotePropertyValue $module.ExportedAliases.Keys -PassThru
     }
@@ -95,12 +95,12 @@ $shortModuleInfos = Get-ChildItem -Path $builtinModulePath `
 $psCoreSnapinName = 'Microsoft.PowerShell.Core'
 Write-Progress $psCoreSnapinName
 $commands = Get-Command -Module $psCoreSnapinName
-$shortCommands = $commands | select -Property Name,@{Label='CommandType';Expression={$_.CommandType.ToString()}},ParameterSets
+$shortCommands = $commands | Select-Object -Property Name,@{Label='CommandType';Expression={$_.CommandType.ToString()}},ParameterSets
 $shortModuleInfo = New-Object -TypeName PSObject -Property @{Name=$psCoreSnapinName; Version=$commands[0].PSSnapin.PSVersion.ToString()}
 Add-Member -InputObject $shortModuleInfo -NotePropertyName 'ExportedCommands' -NotePropertyValue $shortCommands
 
 # Find the exported aliases for the commands in Microsoft.PowerShell.Core
-$aliases = Get-Alias * | where {($commands).Name -contains $_.ResolvedCommandName}
+$aliases = Get-Alias * | Where-Object { ($commands).Name -contains $_.ResolvedCommandName }
 if ($null -eq $aliases) {
     $aliases = @()
 }

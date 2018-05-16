@@ -91,17 +91,15 @@ if ($BuildDocs)
     $outputDocsPath = Join-Path $destinationPath en-US
 
     CreateIfNotExists($outputDocsPath)
-    # copy the about help file
-    Copy-Item -Path $docsPath\about_PSScriptAnalyzer.help.txt -Destination $outputDocsPath -Force -Verbose:$verbosity
 
     # Build documentation using platyPS
-    if ((Get-Module PlatyPS -ListAvailable -Verbose:$verbosity) -eq $null)
+    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge 0.9 }))
     {
-        throw "Cannot find PlatyPS. Please install it from https://www.powershellgallery.com."
+        "Cannot find platyPS. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
-    if ((Get-Module PlatyPS -Verbose:$verbosity) -eq $null)
+    if ((Get-Module platyPS -Verbose:$verbosity) -eq $null)
     {
-        Import-Module PlatyPS -Verbose:$verbosity
+        Import-Module platyPS -Verbose:$verbosity
     }
     if (-not (Test-Path $markdownDocsPath -Verbose:$verbosity))
     {
@@ -132,7 +130,7 @@ if ($Install)
 
 if ($Test)
 {
-    Import-Module -Name Pester -MinimumVersion 3.4.0 -ErrorAction Stop
+    Import-Module -Name Pester -MinimumVersion 4.3.1 -ErrorAction Stop
     Function GetTestRunnerScriptContent($testPath)
     {
         $x = @"
