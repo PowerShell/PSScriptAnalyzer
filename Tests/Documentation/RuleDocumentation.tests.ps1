@@ -3,7 +3,6 @@ $testRootDirectory = Split-Path -Parent $directory
 $repoRootDirectory = Split-Path -Parent $testRootDirectory
 $ruleDocDirectory = Join-Path $repoRootDirectory RuleDocumentation
 
-Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 Describe "Validate rule documentation files" {
