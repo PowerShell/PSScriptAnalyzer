@@ -33,6 +33,7 @@
 
 ### Engine, Building and Testing
 
+- Support `SuggestedCorrections` property on DiagnosticRecord for script based rules #1000 (by @bergmeister)
 - Add CommandData files of PowerShell Core 6.0.2 for Windows/Linux/macOS and WMF3/4 that are used by UseCompatibleCmdlets rule (#954) (by @bergmeister)
 - If no path is found or when using the -ScriptDefinition parameter set, default to the current location for the directory search of the implicit settings file (#979) (by @bergmeister)
 - Allow TypeNotFound parser errors (#957) (by @bergmeister)
