@@ -5,6 +5,7 @@
 | Rule | Severity | Configurable |
 |------|----------------------------------|--------------|
 |[AlignAssignmentStatement](./AlignAssignmentStatement.md) | Warning | |
+|[AvoidAssignmentToAutomaticVariable](./AvoidAssignmentToAutomaticVariable.md) | Warning | |
 |[AvoidDefaultValueForMandatoryParameter](./AvoidDefaultValueForMandatoryParameter.md) | Warning | |
 |[AvoidDefaultValueSwitchParameter](./AvoidDefaultValueSwitchParameter.md) | Warning | |
 |[AvoidGlobalAliases](./AvoidGlobalAliases.md) | Warning | |
@@ -21,6 +22,7 @@
 |[AvoidUsingInvokeExpression](./AvoidUsingInvokeExpression.md) | Warning | |
 |[AvoidUsingPlainTextForPassword](./AvoidUsingPlainTextForPassword.md) | Warning | |
 |[AvoidUsingPositionalParameters](./AvoidUsingPositionalParameters.md) | Warning | |
+|[AvoidTrailingWhitespace](./AvoidTrailingWhitespace.md) | Warning | |
 |[AvoidUsingUsernameAndPasswordParams](./AvoidUsingUsernameAndPasswordParams.md) | Error | |
 |[AvoidUsingWMICmdlet](./AvoidUsingWMICmdlet.md) | Warning | |
 |[AvoidUsingWriteHost](./AvoidUsingWriteHost.md) | Warning | |
@@ -34,6 +36,8 @@
 |[MisleadingBacktick](./MisleadingBacktick.md) | Warning | |
 |[MissingModuleManifestField](./MissingModuleManifestField.md) | Warning | |
 |[PossibleIncorrectComparisonWithNull](./PossibleIncorrectComparisonWithNull.md) | Warning | |
+|[PossibleIncorrectUsageOfAssignmentOperator](./PossibleIncorrectUsageOfAssignmentOperator.md) | Warning | |
+|[PossibleIncorrectUsageOfRedirectionOperator](./PossibleIncorrectUsageOfRedirectionOperator.md) | Warning | |
 |[ProvideCommentHelp](./ProvideCommentHelp.md) | Information | Yes |
 |[ReservedCmdletChar](./ReservedCmdletChar.md) | Error | |
 |[ReservedParams](./ReservedParams.md) | Error | |
