@@ -291,7 +291,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 var settingsObj = PSSASettings.Create(
                     settings,
-                    processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
+                    processedPaths == null || processedPaths.Count == 0 ? CurrentProviderLocation("FileSystem").ProviderPath : processedPaths[0],
                     this,
                     GetResolvedProviderPathFromPSPath);
                 if (settingsObj != null)
