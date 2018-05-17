@@ -33,7 +33,10 @@
 
 ### Engine, Building and Testing
 
+- Add CommandData files of PowerShell Core 6.0.2 for Windows/Linux/macOS and WMF3/4 that are used by UseCompatibleCmdlets rule (#954) (by @bergmeister)
+- If no path is found or when using the -ScriptDefinition parameter set, default to the current location for the directory search of the implicit settings file (#979) (by @bergmeister)
 - Allow TypeNotFound parser errors (#957) (by @bergmeister)
+- Fix release script by building also for v3 and misc. improvements (#996) (by @bergmeister)
 - Scripts needed to build and sign PSSA via MS VSTS so it can be published in the gallery (#983) (by @JamesWTruher)
 - Move common test code into AppVeyor module (#961) (by @bergmeister)
 - Remove extraneous import-module commands in tests (#962) (by @JamesWTruher)
