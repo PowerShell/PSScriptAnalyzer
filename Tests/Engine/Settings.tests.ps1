@@ -14,10 +14,19 @@ Describe "Settings Precedence" {
     }
 
     Context "settings file is implicit" {
-        It "runs rules from the implicit setting file" {
+        It "runs rules from the implicit setting file using the -Path parameter set" {
             $violations = Invoke-ScriptAnalyzer -Path $project1Root -Recurse
             $violations.Count | Should -Be 1
             $violations[0].RuleName | Should -Be "PSAvoidUsingCmdletAliases"
+        }
+
+        It "runs rules from the implicit setting file using the -ScriptDefinition parameter set" {
+            Push-Location $project1Root
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'gci; Write-Host' -Recurse
+            Pop-Location
+            $violations.Count | Should -Be 1
+            $violations[0].RuleName | Should -Be "PSAvoidUsingCmdletAliases" `
+                -Because 'the implicit settings file should have run only the PSAvoidUsingCmdletAliases rule but not PSAvoidUsingWriteHost'
         }
 
         It "cannot find file if not named PSScriptAnalyzerSettings.psd1" {
