@@ -630,31 +630,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             // Because of the way we count, we will also count the cmdlet as an argument so we have to -1
-            int argumentsWithoutProcedingParameters = -1;
-            bool parameterPreceding = false;
+            int argumentsWithoutProcedingParameters = 0;
 
-            foreach (CommandElementAst ceAst in cmdAst.CommandElements)
-            {
-                var cmdParamAst = ceAst as CommandParameterAst;
-                if (cmdParamAst != null)
+            var commandElementCollection = cmdAst.CommandElements;
+            for (int i = 1; i < commandElementCollection.Count(); i++) {
+                if (!(commandElementCollection[i] is CommandParameterAst) && !(commandElementCollection[i-1] is CommandParameterAst))
                 {
-                    parameterPreceding = true;
-                } else
-                {
-                    if (!parameterPreceding)
-                    {
-                        argumentsWithoutProcedingParameters += 1;
-                    }
-                    parameterPreceding = false;
+                    argumentsWithoutProcedingParameters++;
                 }
             }
 
             // if not the first element in a pipeline, increase the number of arguments by 1
             PipelineAst parent = cmdAst.Parent as PipelineAst;
-
             if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
             {
-                argumentsWithoutProcedingParameters += 1;
+                argumentsWithoutProcedingParameters++;
             }
 
             return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
