@@ -70,9 +70,9 @@ Optionally, since version 1.17.0, a `SuggestedCorrections` property of type `IEn
 [string]$correction = 'Correct text that replaces Extent text'
 [string]$file = $MyInvocation.MyCommand.Definition
 [string]$optionalDescription = 'Useful but optional description text'
-$correctionExtent = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent]::new($startLineNumber,$endLineNumber,$startColumnNumber,$endColumnNumber,$correction,$description)
-$suggestedCorrections = [System.Collections.ObjectModel.Collection['Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent']]::new()
-$suggestedCorrections.Add($correctionExtent)
+$correctionExtent = New-Object 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent' $startLineNumber,$endLineNumber,$startColumnNumber,$endColumnNumber,$correction,$description
+$suggestedCorrections = New-Object System.Collections.ObjectModel.Collection['Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent']
+$suggestedCorrections.add($correctionExtent) | out-null
 
 [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{
     "Message"              = "This is a rule with a suggested correction"
