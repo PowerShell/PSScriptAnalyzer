@@ -3,6 +3,5 @@
                    'PSAvoidUsingComputerNameHardcoded',
                    'PSAvoidUsingConvertToSecureStringWithPlainText',
                    'PSUsePSCredentialType',
-                   'PSAvoidUsingUserNameAndPasswordParams',
-                   'PSAvoidUsingFilePath')
+                   'PSAvoidUsingUserNameAndPasswordParams')
 }

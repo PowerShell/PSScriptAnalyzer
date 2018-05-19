@@ -537,79 +537,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidTrailingWhitespaceName", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No traps in the script..
-        /// </summary>
-        internal static string AvoidTrapStatementCommonName {
-            get {
-                return ResourceManager.GetString("AvoidTrapStatementCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Avoid using Traps in the script..
-        /// </summary>
-        internal static string AvoidTrapStatementDescription {
-            get {
-                return ResourceManager.GetString("AvoidTrapStatementDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Trap found..
-        /// </summary>
-        internal static string AvoidTrapStatementError {
-            get {
-                return ResourceManager.GetString("AvoidTrapStatementError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidTrapStatement.
-        /// </summary>
-        internal static string AvoidTrapStatementName {
-            get {
-                return ResourceManager.GetString("AvoidTrapStatementName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Initializing non-global variables.
-        /// </summary>
-        internal static string AvoidUninitializedVariableCommonName {
-            get {
-                return ResourceManager.GetString("AvoidUninitializedVariableCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables..
-        /// </summary>
-        internal static string AvoidUninitializedVariableDescription {
-            get {
-                return ResourceManager.GetString("AvoidUninitializedVariableDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Variable &apos;{0}&apos; is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables..
-        /// </summary>
-        internal static string AvoidUninitializedVariableError {
-            get {
-                return ResourceManager.GetString("AvoidUninitializedVariableError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidUninitializedVariable.
-        /// </summary>
-        internal static string AvoidUninitializedVariableName {
-            get {
-                return ResourceManager.GetString("AvoidUninitializedVariableName", resourceCulture);
-            }
-        }
-        
+                
         /// <summary>
         ///   Looks up a localized string similar to Module Must Be Loadable.
         /// </summary>
@@ -879,43 +807,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidUsingEmptyCatchBlockName", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Avoid Using File Path.
-        /// </summary>
-        internal static string AvoidUsingFilePathCommonName {
-            get {
-                return ResourceManager.GetString("AvoidUsingFilePathCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to If a rooted file path is used in a script that is published online, this may expose information about your computer. Furthermore, the file path may not work on other computer when they try to use the script..
-        /// </summary>
-        internal static string AvoidUsingFilePathDescription {
-            get {
-                return ResourceManager.GetString("AvoidUsingFilePathDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The file path &apos;{0}&apos; of &apos;{1}&apos; is rooted. This should be avoided if &apos;{1}&apos; is published online..
-        /// </summary>
-        internal static string AvoidUsingFilePathError {
-            get {
-                return ResourceManager.GetString("AvoidUsingFilePathError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidUsingFilePath.
-        /// </summary>
-        internal static string AvoidUsingFilePathName {
-            get {
-                return ResourceManager.GetString("AvoidUsingFilePathName", resourceCulture);
-            }
-        }
-        
+                
         /// <summary>
         ///   Looks up a localized string similar to Avoid Using Internal URLs.
         /// </summary>

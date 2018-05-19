@@ -24,11 +24,11 @@ Describe "Validate rule documentation files" {
         {
             $RulesNotSupportedInNetstandard2 = @("PSUseSingularNouns")
             $docs = $docs | Where-Object {$RulesNotSupportedInNetstandard2 -notcontains $_}
-            $readmeRules = $readmeRules | Where-Object {$RulesNotSupportedInNetstandard2 -notcontains $_}
+            $readmeRules = $readmeRules | Where-Object { $RulesNotSupportedInNetstandard2 -notcontains $_ }
         }
         elseif ($PSVersionTable.PSVersion.Major -eq 4) {
             $docs = $docs | Where-Object {$_ -notmatch '^PSAvoidGlobalAliases$'}
-            $readmeRules = $readmeRules | Where-Object {$_ -notmatch '^PSAvoidGlobalAliases$'}
+            $readmeRules = $readmeRules | Where-Object { $_ -notmatch '^PSAvoidGlobalAliases$' }
         }
 
         $rulesDocsDiff = Compare-Object -ReferenceObject $rules -DifferenceObject $docs -SyncWindow 25
