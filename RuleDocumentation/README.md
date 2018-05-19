@@ -8,7 +8,7 @@
 |[AvoidAssignmentToAutomaticVariable](./AvoidAssignmentToAutomaticVariable.md) | Warning | |
 |[AvoidDefaultValueForMandatoryParameter](./AvoidDefaultValueForMandatoryParameter.md) | Warning | |
 |[AvoidDefaultValueSwitchParameter](./AvoidDefaultValueSwitchParameter.md) | Warning | |
-|[AvoidGlobalAliases](./AvoidGlobalAliases.md) | Warning | |
+|[AvoidGlobalAliases<sup>*</sup>](./AvoidGlobalAliases.md) | Warning | |
 |[AvoidGlobalFunctions](./AvoidGlobalFunctions.md) | Warning | |
 |[AvoidGlobalVars](./AvoidGlobalVars.md) | Warning | |
 |[AvoidInvokingEmptyMembers](./AvoidInvokingEmptyMembers.md) | Warning | |
@@ -50,7 +50,7 @@
 |[UseOutputTypeCorrectly](./UseOutputTypeCorrectly.md) | Information | |
 |[UsePSCredentialType](./UsePSCredentialType.md) | Warning | |
 |[UseShouldProcessForStateChangingFunctions](./UseShouldProcessForStateChangingFunctions.md) | Warning | |
-|[UseSingularNouns](./UseSingularNouns.md) | Warning | |
+|[UseSingularNouns<sup>*</sup>](./UseSingularNouns.md) | Warning | |
 |[UseSupportsShouldProcess](./UseSupportsShouldProcess.md) | Warning | |
 |[UseToExportFieldsInManifest](./UseToExportFieldsInManifest.md) | Warning | |
 |[UseCompatibleCmdlets](./UseCompatibleCmdlets.md) | Warning | Yes |
@@ -59,3 +59,5 @@
 |[UseConsistentIndentation](./UseConsistentIndentation.md) | Warning | Yes |
 |[UseConsistentWhitespace](./UseConsistentWhitespace.md) | Warning | Yes |
 |[UseUTF8EncodingForHelpFile](./UseUTF8EncodingForHelpFile.md) | Warning | |
+
+<sup>*</sup> Rule is not available on all PowerShell versions, editions and/or OS platforms. See the rule's documentation for details.
