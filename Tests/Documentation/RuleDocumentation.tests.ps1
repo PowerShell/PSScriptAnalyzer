@@ -7,8 +7,8 @@ Describe "Validate rule documentation files" {
     BeforeAll {
         $docs = Get-ChildItem $ruleDocDirectory/*.md -Exclude README.md |
             ForEach-Object { "PS" + $_.BaseName} | Sort-Object
+
         $rules = Get-ScriptAnalyzerRule | ForEach-Object RuleName | Sort-Object
-        $rulesDocsDiff = Compare-Object -ReferenceObject $rules -DifferenceObject $docs -SyncWindow 25
 
         $readmeLinks = @{}
         $readmeRules = Get-Content -LiteralPath $ruleDocDirectory/README.md |
@@ -18,6 +18,20 @@ Describe "Validate rule documentation files" {
                 "PS${ruleName}"
             }} |
             Sort-Object
+
+        # Remove rules from the diff list that aren't supported on PSCore
+        if (($PSVersionTable.PSVersion.Major -ge 6) -and ($PSVersionTable.PSEdition -eq "Core"))
+        {
+            $RulesNotSupportedInNetstandard2 = @("PSUseSingularNouns")
+            $docs = $docs | Where-Object {$RulesNotSupportedInNetstandard2 -notcontains $_}
+            $readmeRules = $readmeRules | Where-Object {$RulesNotSupportedInNetstandard2 -notcontains $_}
+        }
+        elseif ($PSVersionTable.PSVersion.Major -eq 4) {
+            $docs = $docs | Where-Object {$_ -notmatch '^PSAvoidGlobalAliases$'}
+            $readmeRules = $readmeRules | Where-Object {$_ -notmatch '^PSAvoidGlobalAliases$'}
+        }
+
+        $rulesDocsDiff = Compare-Object -ReferenceObject $rules -DifferenceObject $docs -SyncWindow 25
         $rulesReadmeDiff = Compare-Object -ReferenceObject $rules -DifferenceObject $readmeRules -SyncWindow 25
     }
 
