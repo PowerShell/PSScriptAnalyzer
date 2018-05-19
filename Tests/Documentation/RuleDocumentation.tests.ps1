@@ -13,7 +13,7 @@ Describe "Validate rule documentation files" {
         $readmeLinks = @{}
         $readmeRules = Get-Content -LiteralPath $ruleDocDirectory/README.md |
             Foreach-Object { if ($_ -match '^\s*\|\s*\[([^]]+)\]\(([^)]+)\)\s*\|') {
-                $ruleName = $matches[1]
+                $ruleName = $matches[1] -replace '<sup>.</sup>$', ''
                 $readmeLinks["$ruleName"] = $matches[2]
                 "PS${ruleName}"
             }} |
