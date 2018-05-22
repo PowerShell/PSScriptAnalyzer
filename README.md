@@ -18,6 +18,7 @@ Table of Contents
       - [Requirements](#requirements)
       - [Steps](#steps)
       - [Tests](#tests)
+    + [From Chocolatey](#from-chocolatey)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
   * [Built-in Presets](#built-in-presets)
@@ -381,7 +382,7 @@ Contributions are welcome
 
 There are many ways to contribute:
 
-1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new).
+1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new/choose).
 2. Participate in the discussions of [issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), [pull requests](https://github.com/PowerShell/PSScriptAnalyzer/pulls) and verify/test fixes or new features.
 3. Submit your own fixes or features as a pull request but please discuss it beforehand in an issue if the change is substantial.
 4. Submit test cases.
