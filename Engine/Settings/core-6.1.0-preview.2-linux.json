@@ -1,66 +1,10 @@
 {
   "Edition": {
-    "OS": "windows",
+    "OS": "linux",
     "PowerShellEdition": "core",
-    "PowerShellVersion": "6.0.1"
+    "PowerShellVersion": "6.1.0-preview.2"
   },
   "Modules": [
-    {
-      "Name": "CimCmdlets",
-      "Version": "1.0.0.0",
-      "ExportedCommands": [
-        {
-          "Name": "Get-CimAssociatedInstance"
-        },
-        {
-          "Name": "Get-CimClass"
-        },
-        {
-          "Name": "Get-CimInstance"
-        },
-        {
-          "Name": "Get-CimSession"
-        },
-        {
-          "Name": "Invoke-CimMethod"
-        },
-        {
-          "Name": "New-CimInstance"
-        },
-        {
-          "Name": "New-CimSession"
-        },
-        {
-          "Name": "New-CimSessionOption"
-        },
-        {
-          "Name": "Register-CimIndicationEvent"
-        },
-        {
-          "Name": "Remove-CimInstance"
-        },
-        {
-          "Name": "Remove-CimSession"
-        },
-        {
-          "Name": "Set-CimInstance"
-        }
-      ],
-      "ExportedAliases": [
-        "gcim",
-        "scim",
-        "ncim",
-        "rcim",
-        "icim",
-        "gcai",
-        "rcie",
-        "ncms",
-        "rcms",
-        "gcms",
-        "ncso",
-        "gcls"
-      ]
-    },
     {
       "Name": "Microsoft.PowerShell.Archive",
       "Version": "1.1.0.0",
@@ -70,19 +14,6 @@
         },
         {
           "Name": "Expand-Archive"
-        }
-      ],
-      "ExportedAliases": []
-    },
-    {
-      "Name": "Microsoft.PowerShell.Diagnostics",
-      "Version": "3.0.0.0",
-      "ExportedCommands": [
-        {
-          "Name": "Get-WinEvent"
-        },
-        {
-          "Name": "New-WinEvent"
         }
       ],
       "ExportedAliases": []
@@ -132,9 +63,6 @@
           "Name": "Get-ChildItem"
         },
         {
-          "Name": "Get-ComputerInfo"
-        },
-        {
           "Name": "Get-Content"
         },
         {
@@ -157,9 +85,6 @@
         },
         {
           "Name": "Get-PSProvider"
-        },
-        {
-          "Name": "Get-Service"
         },
         {
           "Name": "Get-TimeZone"
@@ -186,9 +111,6 @@
           "Name": "New-PSDrive"
         },
         {
-          "Name": "New-Service"
-        },
-        {
           "Name": "Pop-Location"
         },
         {
@@ -204,12 +126,6 @@
           "Name": "Remove-PSDrive"
         },
         {
-          "Name": "Remove-Service"
-        },
-        {
-          "Name": "Rename-Computer"
-        },
-        {
           "Name": "Rename-Item"
         },
         {
@@ -217,15 +133,6 @@
         },
         {
           "Name": "Resolve-Path"
-        },
-        {
-          "Name": "Restart-Computer"
-        },
-        {
-          "Name": "Restart-Service"
-        },
-        {
-          "Name": "Resume-Service"
         },
         {
           "Name": "Set-Content"
@@ -240,31 +147,16 @@
           "Name": "Set-Location"
         },
         {
-          "Name": "Set-Service"
-        },
-        {
-          "Name": "Set-TimeZone"
-        },
-        {
           "Name": "Split-Path"
         },
         {
           "Name": "Start-Process"
         },
         {
-          "Name": "Start-Service"
-        },
-        {
-          "Name": "Stop-Computer"
-        },
-        {
           "Name": "Stop-Process"
         },
         {
-          "Name": "Stop-Service"
-        },
-        {
-          "Name": "Suspend-Service"
+          "Name": "Test-Connection"
         },
         {
           "Name": "Test-Path"
@@ -274,9 +166,7 @@
         }
       ],
       "ExportedAliases": [
-        "gin",
-        "gtz",
-        "stz"
+        "gtz"
       ]
     },
     {
@@ -290,15 +180,6 @@
           "Name": "ConvertTo-SecureString"
         },
         {
-          "Name": "Get-Acl"
-        },
-        {
-          "Name": "Get-AuthenticodeSignature"
-        },
-        {
-          "Name": "Get-CmsMessage"
-        },
-        {
           "Name": "Get-Credential"
         },
         {
@@ -308,25 +189,7 @@
           "Name": "Get-PfxCertificate"
         },
         {
-          "Name": "New-FileCatalog"
-        },
-        {
-          "Name": "Protect-CmsMessage"
-        },
-        {
-          "Name": "Set-Acl"
-        },
-        {
-          "Name": "Set-AuthenticodeSignature"
-        },
-        {
           "Name": "Set-ExecutionPolicy"
-        },
-        {
-          "Name": "Test-FileCatalog"
-        },
-        {
-          "Name": "Unprotect-CmsMessage"
         }
       ],
       "ExportedAliases": []
@@ -335,9 +198,6 @@
       "Name": "Microsoft.PowerShell.Utility",
       "Version": "3.1.0.0",
       "ExportedCommands": [
-        {
-          "Name": "ConvertFrom-SddlString"
-        },
         {
           "Name": "Add-Member"
         },
@@ -603,10 +463,10 @@
           "Name": "Tee-Object"
         },
         {
-          "Name": "Trace-Command"
+          "Name": "Test-Json"
         },
         {
-          "Name": "Unblock-File"
+          "Name": "Trace-Command"
         },
         {
           "Name": "Unregister-Event"
@@ -651,52 +511,6 @@
       "ExportedAliases": [
         "fhx"
       ]
-    },
-    {
-      "Name": "Microsoft.WSMan.Management",
-      "Version": "3.0.0.0",
-      "ExportedCommands": [
-        {
-          "Name": "Connect-WSMan"
-        },
-        {
-          "Name": "Disable-WSManCredSSP"
-        },
-        {
-          "Name": "Disconnect-WSMan"
-        },
-        {
-          "Name": "Enable-WSManCredSSP"
-        },
-        {
-          "Name": "Get-WSManCredSSP"
-        },
-        {
-          "Name": "Get-WSManInstance"
-        },
-        {
-          "Name": "Invoke-WSManAction"
-        },
-        {
-          "Name": "New-WSManInstance"
-        },
-        {
-          "Name": "New-WSManSessionOption"
-        },
-        {
-          "Name": "Remove-WSManInstance"
-        },
-        {
-          "Name": "Set-WSManInstance"
-        },
-        {
-          "Name": "Set-WSManQuickConfig"
-        },
-        {
-          "Name": "Test-WSMan"
-        }
-      ],
-      "ExportedAliases": []
     },
     {
       "Name": "PackageManagement",
@@ -836,13 +650,13 @@
       "Version": "0.0",
       "ExportedCommands": [
         {
+          "Name": "Add-NodeKeys"
+        },
+        {
           "Name": "AddDscResourceProperty"
         },
         {
           "Name": "AddDscResourcePropertyFromMetadata"
-        },
-        {
-          "Name": "Add-NodeKeys"
         },
         {
           "Name": "CheckResourceFound"
@@ -863,9 +677,6 @@
           "Name": "Get-ComplexResourceQualifier"
         },
         {
-          "Name": "GetCompositeResource"
-        },
-        {
           "Name": "Get-ConfigurationErrorCount"
         },
         {
@@ -878,22 +689,13 @@
           "Name": "Get-EncryptedPassword"
         },
         {
-          "Name": "GetImplementingModulePath"
-        },
-        {
           "Name": "Get-InnerMostErrorRecord"
-        },
-        {
-          "Name": "GetModule"
         },
         {
           "Name": "Get-MofInstanceName"
         },
         {
           "Name": "Get-MofInstanceText"
-        },
-        {
-          "Name": "GetPatterns"
         },
         {
           "Name": "Get-PositionInfo"
@@ -918,6 +720,18 @@
         },
         {
           "Name": "Get-PublicKeyFromStore"
+        },
+        {
+          "Name": "GetCompositeResource"
+        },
+        {
+          "Name": "GetImplementingModulePath"
+        },
+        {
+          "Name": "GetModule"
+        },
+        {
+          "Name": "GetPatterns"
         },
         {
           "Name": "GetResourceFromKeyword"
@@ -1037,9 +851,6 @@
           "Name": "ValidateUpdate-ConfigurationData"
         },
         {
-          "Name": "WriteFile"
-        },
-        {
           "Name": "Write-Log"
         },
         {
@@ -1047,36 +858,9 @@
         },
         {
           "Name": "Write-NodeMOFFile"
-        }
-      ],
-      "ExportedAliases": [
-        "rtcfg",
-        "ulcm",
-        "upcfg",
-        "glcm",
-        "pbcfg",
-        "tcfg",
-        "gcfg",
-        "sacfg",
-        "gcfgs",
-        "slcm"
-      ]
-    },
-    {
-      "Name": "PSDiagnostics",
-      "Version": "1.0.0.0",
-      "ExportedCommands": [
-        {
-          "Name": "Disable-PSTrace"
         },
         {
-          "Name": "Enable-PSTrace"
-        },
-        {
-          "Name": "Get-LogProperties"
-        },
-        {
-          "Name": "Set-LogProperties"
+          "Name": "WriteFile"
         }
       ],
       "ExportedAliases": []
@@ -1108,7 +892,7 @@
     },
     {
       "Name": "Microsoft.PowerShell.Core",
-      "Version": "6.0.1",
+      "Version": "6.1.0",
       "ExportedCommands": [
         {
           "Name": "Add-History"
@@ -1117,34 +901,10 @@
           "Name": "Clear-History"
         },
         {
-          "Name": "Connect-PSSession"
-        },
-        {
           "Name": "Debug-Job"
         },
         {
-          "Name": "Disable-PSRemoting"
-        },
-        {
-          "Name": "Disable-PSSessionConfiguration"
-        },
-        {
-          "Name": "Disconnect-PSSession"
-        },
-        {
-          "Name": "Enable-PSRemoting"
-        },
-        {
-          "Name": "Enable-PSSessionConfiguration"
-        },
-        {
-          "Name": "Enter-PSHostProcess"
-        },
-        {
           "Name": "Enter-PSSession"
-        },
-        {
-          "Name": "Exit-PSHostProcess"
         },
         {
           "Name": "Exit-PSSession"
@@ -1171,16 +931,7 @@
           "Name": "Get-Module"
         },
         {
-          "Name": "Get-PSHostProcessInfo"
-        },
-        {
           "Name": "Get-PSSession"
-        },
-        {
-          "Name": "Get-PSSessionCapability"
-        },
-        {
-          "Name": "Get-PSSessionConfiguration"
         },
         {
           "Name": "Import-Module"
@@ -1204,12 +955,6 @@
           "Name": "New-PSSession"
         },
         {
-          "Name": "New-PSSessionConfigurationFile"
-        },
-        {
-          "Name": "New-PSSessionOption"
-        },
-        {
           "Name": "New-PSTransportOption"
         },
         {
@@ -1225,13 +970,7 @@
           "Name": "Receive-Job"
         },
         {
-          "Name": "Receive-PSSession"
-        },
-        {
           "Name": "Register-ArgumentCompleter"
-        },
-        {
-          "Name": "Register-PSSessionConfiguration"
         },
         {
           "Name": "Remove-Job"
@@ -1249,9 +988,6 @@
           "Name": "Set-PSDebug"
         },
         {
-          "Name": "Set-PSSessionConfiguration"
-        },
-        {
           "Name": "Set-StrictMode"
         },
         {
@@ -1262,12 +998,6 @@
         },
         {
           "Name": "Test-ModuleManifest"
-        },
-        {
-          "Name": "Test-PSSessionConfigurationFile"
-        },
-        {
-          "Name": "Unregister-PSSessionConfiguration"
         },
         {
           "Name": "Update-Help"
@@ -1281,8 +1011,6 @@
       ],
       "ExportedAliases": [
         "clhy",
-        "cnsn",
-        "dnsn",
         "etsn",
         "exsn",
         "%",
@@ -1302,7 +1030,6 @@
         "nsn",
         "oh",
         "rcjb",
-        "rcsn",
         "rjb",
         "rmo",
         "rsn",
@@ -1361,6 +1088,10 @@
     },
     {
       "Name": "TelemetryConfiguration",
+      "Namespace": "Microsoft.ApplicationInsights.Extensibility"
+    },
+    {
+      "Name": "TelemetrySink",
       "Namespace": "Microsoft.ApplicationInsights.Extensibility"
     },
     {
@@ -1437,6 +1168,10 @@
     },
     {
       "Name": "Extensions",
+      "Namespace": "Microsoft.ApplicationInsights.Extensibility.Implementation.Tracing"
+    },
+    {
+      "Name": "IHeartbeatPropertyManager",
       "Namespace": "Microsoft.ApplicationInsights.Extensibility.Implementation.Tracing"
     },
     {
@@ -1553,6 +1288,10 @@
     },
     {
       "Name": "CSharpScriptCompilationInfo",
+      "Namespace": "Microsoft.CodeAnalysis.CSharp"
+    },
+    {
+      "Name": "DeconstructionInfo",
       "Namespace": "Microsoft.CodeAnalysis.CSharp"
     },
     {
@@ -3844,111 +3583,7 @@
       "Namespace": "Microsoft.CSharp.RuntimeBinder"
     },
     {
-      "Name": "CimCmdletsAssemblyInitializer",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "CimBaseCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "CimIndicationEventArgs",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "CimIndicationEventExceptionEventArgs",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "CimIndicationEventInstanceEventArgs",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "CimIndicationWatcher",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "AsyncResultType",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "GetCimAssociatedInstanceCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "GetCimClassCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "GetCimInstanceCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "GetCimSessionCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "InvokeCimMethodCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "NewCimInstanceCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "NewCimSessionCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "ProtocolType",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "NewCimSessionOptionCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "RegisterCimIndicationCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "RemoveCimInstanceCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "RemoveCimSessionCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
-      "Name": "SetCimInstanceCommand",
-      "Namespace": "Microsoft.Management.Infrastructure.CimCmdlets"
-    },
-    {
       "Name": "CimClass",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimConverter",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimException",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimFlags",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimSubscriptionDeliveryType",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimInstance",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimPropertyDeclaration",
       "Namespace": "Microsoft.Management.Infrastructure"
     },
     {
@@ -3960,39 +3595,7 @@
       "Namespace": "Microsoft.Management.Infrastructure"
     },
     {
-      "Name": "CimMethodParameter",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimMethodParametersCollection",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimMethodResultBase",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimMethodResult",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimMethodStreamedResult",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimProperty",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimQualifier",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
       "Name": "CimSystemProperties",
-      "Namespace": "Microsoft.Management.Infrastructure"
-    },
-    {
-      "Name": "CimSession",
       "Namespace": "Microsoft.Management.Infrastructure"
     },
     {
@@ -4000,11 +3603,67 @@
       "Namespace": "Microsoft.Management.Infrastructure"
     },
     {
-      "Name": "CimType",
+      "Name": "CimMethodStreamedResult",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimMethodParametersCollection",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimSession",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimException",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimMethodParameter",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimPropertyDeclaration",
       "Namespace": "Microsoft.Management.Infrastructure"
     },
     {
       "Name": "NativeErrorCode",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimType",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimProperty",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimMethodResultBase",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimInstance",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimConverter",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimQualifier",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimMethodResult",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimFlags",
+      "Namespace": "Microsoft.Management.Infrastructure"
+    },
+    {
+      "Name": "CimSubscriptionDeliveryType",
       "Namespace": "Microsoft.Management.Infrastructure"
     },
     {
@@ -4024,27 +3683,59 @@
       "Namespace": "Microsoft.Management.Infrastructure.Serialization"
     },
     {
+      "Name": "CimAsyncResult`1",
+      "Namespace": "Microsoft.Management.Infrastructure.Generic"
+    },
+    {
+      "Name": "CimKeyedCollection`1",
+      "Namespace": "Microsoft.Management.Infrastructure.Generic"
+    },
+    {
+      "Name": "CimAsyncStatus",
+      "Namespace": "Microsoft.Management.Infrastructure.Generic"
+    },
+    {
+      "Name": "CimAsyncMultipleResults`1",
+      "Namespace": "Microsoft.Management.Infrastructure.Generic"
+    },
+    {
+      "Name": "CimReadOnlyKeyedCollection`1",
+      "Namespace": "Microsoft.Management.Infrastructure.Generic"
+    },
+    {
+      "Name": "NativeCimCredential",
+      "Namespace": "Microsoft.Management.Infrastructure.Native"
+    },
+    {
+      "Name": "MI_ProxyType",
+      "Namespace": "Microsoft.Management.Infrastructure.Native"
+    },
+    {
+      "Name": "MI_Transport",
+      "Namespace": "Microsoft.Management.Infrastructure.Native"
+    },
+    {
+      "Name": "MI_CallbackMode",
+      "Namespace": "Microsoft.Management.Infrastructure.Native"
+    },
+    {
+      "Name": "MI_AuthType",
+      "Namespace": "Microsoft.Management.Infrastructure.Native"
+    },
+    {
+      "Name": "MI_PacketEncoding",
+      "Namespace": "Microsoft.Management.Infrastructure.Native"
+    },
+    {
+      "Name": "MI_ImpersonationType",
+      "Namespace": "Microsoft.Management.Infrastructure.Native"
+    },
+    {
       "Name": "CimCredential",
       "Namespace": "Microsoft.Management.Infrastructure.Options"
     },
     {
-      "Name": "CimOperationFlags",
-      "Namespace": "Microsoft.Management.Infrastructure.Options"
-    },
-    {
-      "Name": "PasswordAuthenticationMechanism",
-      "Namespace": "Microsoft.Management.Infrastructure.Options"
-    },
-    {
-      "Name": "CertificateAuthenticationMechanism",
-      "Namespace": "Microsoft.Management.Infrastructure.Options"
-    },
-    {
-      "Name": "ImpersonatedAuthenticationMechanism",
-      "Namespace": "Microsoft.Management.Infrastructure.Options"
-    },
-    {
-      "Name": "CimOperationOptions",
+      "Name": "CimSessionOptions",
       "Namespace": "Microsoft.Management.Infrastructure.Options"
     },
     {
@@ -4080,11 +3771,7 @@
       "Namespace": "Microsoft.Management.Infrastructure.Options"
     },
     {
-      "Name": "CimSessionOptions",
-      "Namespace": "Microsoft.Management.Infrastructure.Options"
-    },
-    {
-      "Name": "CimSubscriptionDeliveryOptions",
+      "Name": "WSManSessionOptions",
       "Namespace": "Microsoft.Management.Infrastructure.Options"
     },
     {
@@ -4096,7 +3783,27 @@
       "Namespace": "Microsoft.Management.Infrastructure.Options"
     },
     {
-      "Name": "PacketEncoding",
+      "Name": "CimSubscriptionDeliveryOptions",
+      "Namespace": "Microsoft.Management.Infrastructure.Options"
+    },
+    {
+      "Name": "CimOperationOptions",
+      "Namespace": "Microsoft.Management.Infrastructure.Options"
+    },
+    {
+      "Name": "CimOperationFlags",
+      "Namespace": "Microsoft.Management.Infrastructure.Options"
+    },
+    {
+      "Name": "PasswordAuthenticationMechanism",
+      "Namespace": "Microsoft.Management.Infrastructure.Options"
+    },
+    {
+      "Name": "CertificateAuthenticationMechanism",
+      "Namespace": "Microsoft.Management.Infrastructure.Options"
+    },
+    {
+      "Name": "ImpersonatedAuthenticationMechanism",
       "Namespace": "Microsoft.Management.Infrastructure.Options"
     },
     {
@@ -4104,44 +3811,8 @@
       "Namespace": "Microsoft.Management.Infrastructure.Options"
     },
     {
-      "Name": "WSManSessionOptions",
+      "Name": "PacketEncoding",
       "Namespace": "Microsoft.Management.Infrastructure.Options"
-    },
-    {
-      "Name": "CimAsyncMultipleResults`1",
-      "Namespace": "Microsoft.Management.Infrastructure.Generic"
-    },
-    {
-      "Name": "CimAsyncResult`1",
-      "Namespace": "Microsoft.Management.Infrastructure.Generic"
-    },
-    {
-      "Name": "CimAsyncStatus",
-      "Namespace": "Microsoft.Management.Infrastructure.Generic"
-    },
-    {
-      "Name": "CimKeyedCollection`1",
-      "Namespace": "Microsoft.Management.Infrastructure.Generic"
-    },
-    {
-      "Name": "CimReadOnlyKeyedCollection`1",
-      "Namespace": "Microsoft.Management.Infrastructure.Generic"
-    },
-    {
-      "Name": "PerformanceCounterCategoryType",
-      "Namespace": "System.Diagnostics"
-    },
-    {
-      "Name": "PerformanceCounterType",
-      "Namespace": "System.Diagnostics"
-    },
-    {
-      "Name": "GetWinEventCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "NewWinEventCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
       "Name": "AddContentCommand",
@@ -4160,34 +3831,6 @@
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
-      "Name": "RestartComputerTimeoutException",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "WaitForServiceTypes",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "RestartComputerCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "StopComputerCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "RenameComputerCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ComputerChangeInfo",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "RenameComputerChangeInfo",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
       "Name": "ContentCommandBase",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
@@ -4201,158 +3844,6 @@
     },
     {
       "Name": "GetChildItemCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "GetComputerInfoCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DeviceGuard",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "HotFix",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "NetworkAdapter",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "Processor",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ComputerInfo",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "AdminPasswordStatus",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "BootOptionAction",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "SystemElementState",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CpuArchitecture",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CpuAvailability",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CpuStatus",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DataExecutionPreventionSupportPolicy",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DeviceGuardSmartStatus",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DeviceGuardConfigCodeIntegrityStatus",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DeviceGuardHardwareSecure",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DeviceGuardSoftwareSecure",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DomainRole",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "FirmwareType",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ForegroundApplicationBoost",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "FrontPanelResetStatus",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "HardwareSecurity",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "NetConnectionStatus",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "OSEncryptionLevel",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "OSProductSuite",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "OperatingSystemSKU",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "OSType",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "PCSystemType",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "PCSystemTypeEx",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "PowerManagementCapabilities",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "PowerState",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ProcessorType",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ResetCapability",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "WakeUpType",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "PowerPlatformRole",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ProductType",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ServerLevel",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "SoftwareElementState",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
@@ -4520,62 +4011,6 @@
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
-      "Name": "ServiceBaseCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "MultipleServiceCommandBase",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "GetServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ServiceOperationBaseCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "StopServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "StartServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "SuspendServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ResumeServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "RestartServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "SetServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "NewServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "RemoveServiceCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ServiceCommandException",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "ServiceStartupType",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
       "Name": "SetContentCommand",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
@@ -4584,11 +4019,11 @@
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
-      "Name": "GetTimeZoneCommand",
+      "Name": "TestConnectionCommand",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
-      "Name": "SetTimeZoneCommand",
+      "Name": "GetTimeZoneCommand",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
@@ -4621,10 +4056,6 @@
     },
     {
       "Name": "AddTypeCompilerError",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "AddTypeCommandBase",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
@@ -5000,6 +4431,10 @@
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
+      "Name": "TestJsonCommand",
+      "Namespace": "Microsoft.PowerShell.Commands"
+    },
+    {
       "Name": "MeasureCommandCommand",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
@@ -5021,10 +4456,6 @@
     },
     {
       "Name": "TraceListenerCommandBase",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "UnblockFileCommand",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
@@ -5112,6 +4543,10 @@
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
+      "Name": "HttpResponseException",
+      "Namespace": "Microsoft.PowerShell.Commands"
+    },
+    {
       "Name": "WebResponseObject",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
@@ -5125,10 +4560,6 @@
     },
     {
       "Name": "InvokeWebRequestCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "HttpResponseException",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
@@ -5484,71 +4915,7 @@
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
-      "Name": "GetAclCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "SetAclCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CatalogCommandsBase",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "NewFileCatalogCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "TestFileCatalogCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
       "Name": "GetPfxCertificateCommand",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DnsNameRepresentation",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CertificateProvider",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "X509StoreLocation",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "EnhancedKeyUsageRepresentation",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "SendAsTrustedIssuerProperty",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "EnhancedKeyUsageProperty",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "DnsNameProperty",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CertificateProviderItemNotFoundException",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CertificateNotFoundException",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CertificateStoreNotFoundException",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "CertificateStoreLocationNotFoundException",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
@@ -5770,186 +5137,6 @@
     {
       "Name": "SafeRegistryHandle",
       "Namespace": "Microsoft.Win32.SafeHandles"
-    },
-    {
-      "Name": "WSManConfigProvider",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManProviderNewItemComputerParameters",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManProviderNewItemPluginParameters",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManProviderInitializeParameters",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManProviderNewItemResourceParameters",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManProviderNewItemSecurityParameters",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManProviderClientCertificateParameters",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManProvidersListenerParameters",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManProviderSetItemDynamicParameters",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManConfigElement",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManConfigLeafElement",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManConfigContainerElement",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManCredSSPCommandBase",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "DisableWSManCredSSPCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "EnableWSManCredSSPCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "GetWSManCredSSPCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManEnumFlags",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManSessionFlags",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "AuthenticationMechanism",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSMan",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSManConnectionOptions",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSManConnectionOptionsEx",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSManConnectionOptionsEx2",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSManEnumerator",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSManEx",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSManResourceLocator",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSManSession",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "IWSManResourceLocatorInternal",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "WSManClass",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "GPClass",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "GpoNativeApi",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "InvokeWSManActionCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "NewWSManSessionOptionCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "TestWSManCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "SetWSManQuickConfigCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "AuthenticatingWSManCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "ConnectWSManCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "DisconnectWSManCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "GetWSManInstanceCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "SetWSManInstanceCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "RemoveWSManInstanceCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "NewWSManInstanceCommand",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "SessionOption",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "ProxyAccessType",
-      "Namespace": "Microsoft.WSMan.Management"
-    },
-    {
-      "Name": "ProxyAuthentication",
-      "Namespace": "Microsoft.WSMan.Management"
     },
     {
       "Name": "FormatterAssemblyStyle",
@@ -6482,6 +5669,234 @@
     {
       "Name": "BsonWriter",
       "Namespace": "Newtonsoft.Json.Bson"
+    },
+    {
+      "Name": "ConversionUtilities",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "DefaultSchemaNameGenerator",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "DefaultTypeNameGenerator",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "EnumHandling",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "IDocumentPathProvider",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "IJsonExtensionObject",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "ISchemaNameGenerator",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "ITypeNameGenerator",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonExtensionObject",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonFormatStrings",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonObjectType",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonPathUtilities",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonProperty",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonReferenceResolver",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonSchema4",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonSchemaReferenceUtilities",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonSchemaResolver",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonXmlObject",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "PropertyNameHandling",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "ReferenceTypeNullHandling",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "SchemaType",
+      "Namespace": "NJsonSchema"
+    },
+    {
+      "Name": "JsonReferenceVisitorBase",
+      "Namespace": "NJsonSchema.Visitors"
+    },
+    {
+      "Name": "JsonSchemaVisitorBase",
+      "Namespace": "NJsonSchema.Visitors"
+    },
+    {
+      "Name": "ChildSchemaValidationError",
+      "Namespace": "NJsonSchema.Validation"
+    },
+    {
+      "Name": "JsonSchemaValidator",
+      "Namespace": "NJsonSchema.Validation"
+    },
+    {
+      "Name": "ValidationError",
+      "Namespace": "NJsonSchema.Validation"
+    },
+    {
+      "Name": "ValidationErrorKind",
+      "Namespace": "NJsonSchema.Validation"
+    },
+    {
+      "Name": "IJsonReference",
+      "Namespace": "NJsonSchema.References"
+    },
+    {
+      "Name": "IJsonReferenceBase",
+      "Namespace": "NJsonSchema.References"
+    },
+    {
+      "Name": "JsonReferenceBase`1",
+      "Namespace": "NJsonSchema.References"
+    },
+    {
+      "Name": "JsonReferenceExtensions",
+      "Namespace": "NJsonSchema.References"
+    },
+    {
+      "Name": "DynamicApis",
+      "Namespace": "NJsonSchema.Infrastructure"
+    },
+    {
+      "Name": "ReflectionCache",
+      "Namespace": "NJsonSchema.Infrastructure"
+    },
+    {
+      "Name": "ReflectionExtensions",
+      "Namespace": "NJsonSchema.Infrastructure"
+    },
+    {
+      "Name": "TypeNameStyle",
+      "Namespace": "NJsonSchema.Infrastructure"
+    },
+    {
+      "Name": "XmlDocumentationExtensions",
+      "Namespace": "NJsonSchema.Infrastructure"
+    },
+    {
+      "Name": "XmlObjectExtension",
+      "Namespace": "NJsonSchema.Infrastructure"
+    },
+    {
+      "Name": "DefaultReflectionService",
+      "Namespace": "NJsonSchema.Generation"
+    },
+    {
+      "Name": "IReflectionService",
+      "Namespace": "NJsonSchema.Generation"
+    },
+    {
+      "Name": "ISchemaProcessor",
+      "Namespace": "NJsonSchema.Generation"
+    },
+    {
+      "Name": "JsonSchemaGenerator",
+      "Namespace": "NJsonSchema.Generation"
+    },
+    {
+      "Name": "JsonSchemaGeneratorSettings",
+      "Namespace": "NJsonSchema.Generation"
+    },
+    {
+      "Name": "JsonTypeDescription",
+      "Namespace": "NJsonSchema.Generation"
+    },
+    {
+      "Name": "SampleJsonSchemaGenerator",
+      "Namespace": "NJsonSchema.Generation"
+    },
+    {
+      "Name": "SchemaProcessorContext",
+      "Namespace": "NJsonSchema.Generation"
+    },
+    {
+      "Name": "ITypeMapper",
+      "Namespace": "NJsonSchema.Generation.TypeMappers"
+    },
+    {
+      "Name": "ObjectTypeMapper",
+      "Namespace": "NJsonSchema.Generation.TypeMappers"
+    },
+    {
+      "Name": "PrimitiveTypeMapper",
+      "Namespace": "NJsonSchema.Generation.TypeMappers"
+    },
+    {
+      "Name": "TypeMapperContext",
+      "Namespace": "NJsonSchema.Generation.TypeMappers"
+    },
+    {
+      "Name": "JsonInheritanceConverter",
+      "Namespace": "NJsonSchema.Converters"
+    },
+    {
+      "Name": "JsonReferenceConverter",
+      "Namespace": "NJsonSchema.Converters"
+    },
+    {
+      "Name": "CanBeNullAttribute",
+      "Namespace": "NJsonSchema.Annotations"
+    },
+    {
+      "Name": "JsonSchemaAttribute",
+      "Namespace": "NJsonSchema.Annotations"
+    },
+    {
+      "Name": "JsonSchemaDateAttribute",
+      "Namespace": "NJsonSchema.Annotations"
+    },
+    {
+      "Name": "JsonSchemaExtensionDataAttribute",
+      "Namespace": "NJsonSchema.Annotations"
+    },
+    {
+      "Name": "MultipleOfAttribute",
+      "Namespace": "NJsonSchema.Annotations"
+    },
+    {
+      "Name": "NotNullAttribute",
+      "Namespace": "NJsonSchema.Annotations"
     },
     {
       "Name": "ManagedPSEntry",
@@ -9012,11 +8427,15 @@
       "Namespace": "System.IO.Compression"
     },
     {
-      "Name": "FileSystemAclExtensions",
-      "Namespace": "System.IO"
+      "Name": "DirectoryObjectSecurity",
+      "Namespace": "System.Security.AccessControl"
     },
     {
-      "Name": "FileSystemRights",
+      "Name": "DirectorySecurity",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "FileSecurity",
       "Namespace": "System.Security.AccessControl"
     },
     {
@@ -9028,20 +8447,16 @@
       "Namespace": "System.Security.AccessControl"
     },
     {
+      "Name": "FileSystemRights",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
       "Name": "FileSystemSecurity",
       "Namespace": "System.Security.AccessControl"
     },
     {
-      "Name": "FileSecurity",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "DirectorySecurity",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "DirectoryObjectSecurity",
-      "Namespace": "System.Security.AccessControl"
+      "Name": "FileSystemAclExtensions",
+      "Namespace": "System.IO"
     },
     {
       "Name": "Directory",
@@ -10024,6 +9439,10 @@
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
+      "Name": "UpdateHelpScope",
+      "Namespace": "Microsoft.PowerShell.Commands"
+    },
+    {
       "Name": "UpdateHelpCommand",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
@@ -10081,14 +9500,6 @@
     },
     {
       "Name": "FunctionProviderDynamicParameters",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "RegistryProvider",
-      "Namespace": "Microsoft.PowerShell.Commands"
-    },
-    {
-      "Name": "RegistryProviderSetItemDynamicParameter",
       "Namespace": "Microsoft.PowerShell.Commands"
     },
     {
@@ -10792,18 +10203,6 @@
       "Namespace": "System.Management.Automation"
     },
     {
-      "Name": "PSTypeConverter",
-      "Namespace": "System.Management.Automation"
-    },
-    {
-      "Name": "ConvertThroughString",
-      "Namespace": "System.Management.Automation"
-    },
-    {
-      "Name": "LanguagePrimitives",
-      "Namespace": "System.Management.Automation"
-    },
-    {
       "Name": "PSParseError",
       "Namespace": "System.Management.Automation"
     },
@@ -10857,6 +10256,18 @@
     },
     {
       "Name": "ScriptBlockToPowerShellNotSupportedException",
+      "Namespace": "System.Management.Automation"
+    },
+    {
+      "Name": "PSTypeConverter",
+      "Namespace": "System.Management.Automation"
+    },
+    {
+      "Name": "ConvertThroughString",
+      "Namespace": "System.Management.Automation"
+    },
+    {
+      "Name": "LanguagePrimitives",
       "Namespace": "System.Management.Automation"
     },
     {
@@ -11420,14 +10831,6 @@
       "Namespace": "System.Management.Automation"
     },
     {
-      "Name": "CatalogValidationStatus",
-      "Namespace": "System.Management.Automation"
-    },
-    {
-      "Name": "CatalogInformation",
-      "Namespace": "System.Management.Automation"
-    },
-    {
       "Name": "CredentialAttribute",
       "Namespace": "System.Management.Automation"
     },
@@ -11642,90 +11045,6 @@
     {
       "Name": "VerbInfo",
       "Namespace": "System.Management.Automation"
-    },
-    {
-      "Name": "PowerShellTraceEvent",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "PowerShellTraceChannel",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "PowerShellTraceLevel",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "PowerShellTraceOperationCode",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "PowerShellTraceTask",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "PowerShellTraceKeywords",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "BaseChannelWriter",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "NullWriter",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "PowerShellChannelWriter",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "PowerShellTraceSource",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "PowerShellTraceSourceFactory",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "EtwEvent",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "CallbackNoParameter",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "CallbackWithState",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "CallbackWithStateAndArgs",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "EtwEventArgs",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "EtwActivity",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "IEtwActivityReverter",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "IEtwEventCorrelator",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "EtwEventCorrelator",
-      "Namespace": "System.Management.Automation.Tracing"
-    },
-    {
-      "Name": "Tracer",
-      "Namespace": "System.Management.Automation.Tracing"
     },
     {
       "Name": "ContainerCmdletProvider",
@@ -12768,6 +12087,30 @@
       "Namespace": "System.Management.Automation.Language"
     },
     {
+      "Name": "EtwActivity",
+      "Namespace": "System.Management.Automation.Tracing"
+    },
+    {
+      "Name": "PowerShellTraceTask",
+      "Namespace": "System.Management.Automation.Tracing"
+    },
+    {
+      "Name": "PowerShellTraceKeywords",
+      "Namespace": "System.Management.Automation.Tracing"
+    },
+    {
+      "Name": "Tracer",
+      "Namespace": "System.Management.Automation.Tracing"
+    },
+    {
+      "Name": "PowerShellTraceSource",
+      "Namespace": "System.Management.Automation.Tracing"
+    },
+    {
+      "Name": "PowerShellTraceSourceFactory",
+      "Namespace": "System.Management.Automation.Tracing"
+    },
+    {
       "Name": "CmdletMetadataAttribute",
       "Namespace": "System.Management.Automation.Internal"
     },
@@ -12832,16 +12175,100 @@
       "Namespace": "System.Management.Automation.Internal"
     },
     {
-      "Name": "AlternateStreamData",
-      "Namespace": "System.Management.Automation.Internal"
-    },
-    {
-      "Name": "AlternateDataStreamUtilities",
-      "Namespace": "System.Management.Automation.Internal"
-    },
-    {
       "Name": "SecuritySupport",
       "Namespace": "System.Management.Automation.Internal"
+    },
+    {
+      "Name": "SequencePosition",
+      "Namespace": "System"
+    },
+    {
+      "Name": "Memory`1",
+      "Namespace": "System"
+    },
+    {
+      "Name": "MemoryExtensions",
+      "Namespace": "System"
+    },
+    {
+      "Name": "ReadOnlyMemory`1",
+      "Namespace": "System"
+    },
+    {
+      "Name": "ReadOnlySpan`1",
+      "Namespace": "System"
+    },
+    {
+      "Name": "Span`1",
+      "Namespace": "System"
+    },
+    {
+      "Name": "SequenceMarshal",
+      "Namespace": "System.Runtime.InteropServices"
+    },
+    {
+      "Name": "MemoryMarshal",
+      "Namespace": "System.Runtime.InteropServices"
+    },
+    {
+      "Name": "BuffersExtensions",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "IBufferWriter`1",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "MemoryPool`1",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "OperationStatus",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "ReadOnlySequence`1",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "ReadOnlySequenceSegment`1",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "StandardFormat",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "IPinnable",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "IMemoryOwner`1",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "MemoryHandle",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "MemoryManager`1",
+      "Namespace": "System.Buffers"
+    },
+    {
+      "Name": "Base64",
+      "Namespace": "System.Buffers.Text"
+    },
+    {
+      "Name": "Utf8Formatter",
+      "Namespace": "System.Buffers.Text"
+    },
+    {
+      "Name": "Utf8Parser",
+      "Namespace": "System.Buffers.Text"
+    },
+    {
+      "Name": "BinaryPrimitives",
+      "Namespace": "System.Buffers.Binary"
     },
     {
       "Name": "ByteArrayContent",
@@ -13020,11 +12447,11 @@
       "Namespace": "System.Net.Http.Headers"
     },
     {
-      "Name": "WindowsProxyUsePolicy",
+      "Name": "CookieUsePolicy",
       "Namespace": "System.Net.Http"
     },
     {
-      "Name": "CookieUsePolicy",
+      "Name": "WindowsProxyUsePolicy",
       "Namespace": "System.Net.Http"
     },
     {
@@ -13181,10 +12608,6 @@
     },
     {
       "Name": "ProtocolType",
-      "Namespace": "System.Net.Internals"
-    },
-    {
-      "Name": "ProtocolFamily",
       "Namespace": "System.Net.Internals"
     },
     {
@@ -14336,10 +13759,6 @@
       "Namespace": "System"
     },
     {
-      "Name": "__ComObject",
-      "Namespace": "System"
-    },
-    {
       "Name": "Nullable`1",
       "Namespace": "System"
     },
@@ -14960,11 +14379,11 @@
       "Namespace": "System.Diagnostics"
     },
     {
-      "Name": "Debug",
+      "Name": "ConditionalAttribute",
       "Namespace": "System.Diagnostics"
     },
     {
-      "Name": "ConditionalAttribute",
+      "Name": "Debug",
       "Namespace": "System.Diagnostics"
     },
     {
@@ -16736,11 +16155,11 @@
       "Namespace": "System.Runtime.InteropServices"
     },
     {
-      "Name": "ICustomFactory",
+      "Name": "ComEventsHelper",
       "Namespace": "System.Runtime.InteropServices"
     },
     {
-      "Name": "ComEventsHelper",
+      "Name": "ICustomFactory",
       "Namespace": "System.Runtime.InteropServices"
     },
     {
@@ -16774,42 +16193,6 @@
     {
       "Name": "VarEnum",
       "Namespace": "System.Runtime.InteropServices"
-    },
-    {
-      "Name": "DefaultInterfaceAttribute",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
-    },
-    {
-      "Name": "InterfaceImplementedInVersionAttribute",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
-    },
-    {
-      "Name": "ReadOnlyArrayAttribute",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
-    },
-    {
-      "Name": "WriteOnlyArrayAttribute",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
-    },
-    {
-      "Name": "ReturnValueNameAttribute",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
-    },
-    {
-      "Name": "EventRegistrationToken",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
-    },
-    {
-      "Name": "EventRegistrationTokenTable`1",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
-    },
-    {
-      "Name": "IActivationFactory",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
-    },
-    {
-      "Name": "WindowsRuntimeMarshal",
-      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
     },
     {
       "Name": "BIND_OPTS",
@@ -21344,6 +20727,10 @@
       "Namespace": "System.Resources"
     },
     {
+      "Name": "Unsafe",
+      "Namespace": "System.Runtime.CompilerServices"
+    },
+    {
       "Name": "CallConvCdecl",
       "Namespace": "System.Runtime.CompilerServices"
     },
@@ -21880,6 +21267,42 @@
       "Namespace": "System.Runtime.InteropServices"
     },
     {
+      "Name": "DefaultInterfaceAttribute",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
+      "Name": "EventRegistrationToken",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
+      "Name": "EventRegistrationTokenTable`1",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
+      "Name": "IActivationFactory",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
+      "Name": "InterfaceImplementedInVersionAttribute",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
+      "Name": "ReadOnlyArrayAttribute",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
+      "Name": "ReturnValueNameAttribute",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
+      "Name": "WindowsRuntimeMarshal",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
+      "Name": "WriteOnlyArrayAttribute",
+      "Namespace": "System.Runtime.InteropServices.WindowsRuntime"
+    },
+    {
       "Name": "BigInteger",
       "Namespace": "System.Numerics"
     },
@@ -21988,111 +21411,7 @@
       "Namespace": "System.Runtime.Serialization"
     },
     {
-      "Name": "AceType",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "AceFlags",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "GenericAce",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "KnownAce",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "CustomAce",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "CompoundAceType",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "CompoundAce",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "AceQualifier",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "QualifiedAce",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "CommonAce",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "ObjectAceFlags",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "ObjectAce",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "AceEnumerator",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "GenericAcl",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "RawAcl",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "CommonAcl",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "SystemAcl",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "DiscretionaryAcl",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "CommonObjectSecurity",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "InheritanceFlags",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "PropagationFlags",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "AuditFlags",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "SecurityInfos",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "ResourceType",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "AccessControlSections",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
       "Name": "AccessControlActions",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "NativeObjectSecurity",
       "Namespace": "System.Security.AccessControl"
     },
     {
@@ -22100,7 +21419,15 @@
       "Namespace": "System.Security.AccessControl"
     },
     {
-      "Name": "ObjectSecurity",
+      "Name": "AccessControlSections",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AccessControlType",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AccessRule",
       "Namespace": "System.Security.AccessControl"
     },
     {
@@ -22108,7 +21435,119 @@
       "Namespace": "System.Security.AccessControl"
     },
     {
+      "Name": "AceEnumerator",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AceFlags",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AceQualifier",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AceType",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AuditFlags",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AuditRule",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
       "Name": "AuditRule`1",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AuthorizationRule",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "AuthorizationRuleCollection",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "CommonAce",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "CommonAcl",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "CommonObjectSecurity",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "CommonSecurityDescriptor",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "CompoundAce",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "CompoundAceType",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "ControlFlags",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "CustomAce",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "DiscretionaryAcl",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "GenericAce",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "GenericAcl",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "GenericSecurityDescriptor",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "InheritanceFlags",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "KnownAce",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "NativeObjectSecurity",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "ObjectAccessRule",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "ObjectAce",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "ObjectAceFlags",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "ObjectAuditRule",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "ObjectSecurity",
       "Namespace": "System.Security.AccessControl"
     },
     {
@@ -22120,11 +21559,15 @@
       "Namespace": "System.Security.AccessControl"
     },
     {
-      "Name": "ControlFlags",
+      "Name": "PropagationFlags",
       "Namespace": "System.Security.AccessControl"
     },
     {
-      "Name": "GenericSecurityDescriptor",
+      "Name": "QualifiedAce",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "RawAcl",
       "Namespace": "System.Security.AccessControl"
     },
     {
@@ -22132,35 +21575,15 @@
       "Namespace": "System.Security.AccessControl"
     },
     {
-      "Name": "CommonSecurityDescriptor",
+      "Name": "ResourceType",
       "Namespace": "System.Security.AccessControl"
     },
     {
-      "Name": "AccessControlType",
+      "Name": "SecurityInfos",
       "Namespace": "System.Security.AccessControl"
     },
     {
-      "Name": "AuthorizationRule",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "AccessRule",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "ObjectAccessRule",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "AuditRule",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "ObjectAuditRule",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "AuthorizationRuleCollection",
+      "Name": "SystemAcl",
       "Namespace": "System.Security.AccessControl"
     },
     {
@@ -23624,6 +23047,10 @@
       "Namespace": "System.Security.Principal"
     },
     {
+      "Name": "SafeAccessTokenHandle",
+      "Namespace": "Microsoft.Win32.SafeHandles"
+    },
+    {
       "Name": "IdentityNotMappedException",
       "Namespace": "System.Security.Principal"
     },
@@ -23640,10 +23067,6 @@
       "Namespace": "System.Security.Principal"
     },
     {
-      "Name": "WellKnownSidType",
-      "Namespace": "System.Security.Principal"
-    },
-    {
       "Name": "SecurityIdentifier",
       "Namespace": "System.Security.Principal"
     },
@@ -23652,7 +23075,7 @@
       "Namespace": "System.Security.Principal"
     },
     {
-      "Name": "WindowsIdentity",
+      "Name": "WellKnownSidType",
       "Namespace": "System.Security.Principal"
     },
     {
@@ -23660,12 +23083,12 @@
       "Namespace": "System.Security.Principal"
     },
     {
-      "Name": "WindowsPrincipal",
+      "Name": "WindowsIdentity",
       "Namespace": "System.Security.Principal"
     },
     {
-      "Name": "SafeAccessTokenHandle",
-      "Namespace": "Microsoft.Win32.SafeHandles"
+      "Name": "WindowsPrincipal",
+      "Namespace": "System.Security.Principal"
     },
     {
       "Name": "ServiceController",
@@ -23772,7 +23195,19 @@
       "Namespace": "System.Threading"
     },
     {
-      "Name": "MutexRights",
+      "Name": "EventWaitHandleAccessRule",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "EventWaitHandleAuditRule",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "EventWaitHandleRights",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "EventWaitHandleSecurity",
       "Namespace": "System.Security.AccessControl"
     },
     {
@@ -23784,27 +23219,11 @@
       "Namespace": "System.Security.AccessControl"
     },
     {
+      "Name": "MutexRights",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
       "Name": "MutexSecurity",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "EventWaitHandleRights",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "EventWaitHandleAccessRule",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "EventWaitHandleAuditRule",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "EventWaitHandleSecurity",
-      "Namespace": "System.Security.AccessControl"
-    },
-    {
-      "Name": "SemaphoreRights",
       "Namespace": "System.Security.AccessControl"
     },
     {
@@ -23813,6 +23232,10 @@
     },
     {
       "Name": "SemaphoreAuditRule",
+      "Namespace": "System.Security.AccessControl"
+    },
+    {
+      "Name": "SemaphoreRights",
       "Namespace": "System.Security.AccessControl"
     },
     {
