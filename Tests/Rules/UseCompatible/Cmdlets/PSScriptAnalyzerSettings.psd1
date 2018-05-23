@@ -4,7 +4,7 @@
     )
     Rules = @{
         PSUseCompatibleCmdlets = @{
-            compatibility = @("core-6.0.1-windows")
+            compatibility = @("core-6.1.0-preview.2-windows")
         }
     }
 }
