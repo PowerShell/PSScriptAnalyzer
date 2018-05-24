@@ -8,6 +8,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#if !PSV3
+
 using System;
 using System.Collections.Generic;
 #if !CORECLR
@@ -848,3 +850,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
+
+#endif // !PSV3
