@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#if !PSV3
-
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -221,4 +219,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
 }
 
-#endif // !PSV3
+
+
+
