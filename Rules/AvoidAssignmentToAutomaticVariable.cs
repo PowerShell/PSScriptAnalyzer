@@ -47,18 +47,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var assignmentStatementAst in assignmentStatementAsts)
             {
                 var variableExpressionAst = assignmentStatementAst.Find(testAst => testAst is VariableExpressionAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
-                var variableName = variableExpressionAst.VariablePath.UserPath;
-                if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                if (variableExpressionAst != null)
                 {
-                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
-                                                      variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
-                }
+                    var variableName = variableExpressionAst.VariablePath.UserPath;
+                    if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
+                                                          variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
+                    }
 
-                if (_readOnlyAutomaticVariablesIntroducedInVersion6_0.Contains(variableName, StringComparer.OrdinalIgnoreCase))
-                {
-                    var severity = IsPowerShellVersion6OrGreater() ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning;
-                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error, variableName),
-                                                      variableExpressionAst.Extent, GetName(), severity, fileName);
+                    if (_readOnlyAutomaticVariablesIntroducedInVersion6_0.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        var severity = IsPowerShellVersion6OrGreater() ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning;
+                        yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error, variableName),
+                                                          variableExpressionAst.Extent, GetName(), severity, fileName);
+                    }
                 }
             }
 

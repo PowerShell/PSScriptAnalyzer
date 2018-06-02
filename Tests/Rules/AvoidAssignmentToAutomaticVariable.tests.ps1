@@ -63,6 +63,21 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             $warnings.Count | Should -Be 0
         }
 
+        It "Does not throw a NullReferenceException when using assigning a .Net property to a .Net property (Bug in 1.17.0 - issue 1007)" {
+            $exceptionThrown = $false
+            try
+            {
+                Invoke-ScriptAnalyzer -ScriptDefinition '[foo]::bar = [baz]::qux' -ErrorAction Stop
+            }
+            catch
+            {
+                $exceptionThrown = $true
+            }
+
+            $exceptionThrown | Should -Be $false
+        }
+
+
         It "Setting Variable <VariableName> throws exception in applicable PowerShell version to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity, $OnlyPresentInCoreClr)
 
