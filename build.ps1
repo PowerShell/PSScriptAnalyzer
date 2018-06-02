@@ -93,9 +93,10 @@ if ($BuildDocs)
     CreateIfNotExists($outputDocsPath)
 
     # Build documentation using platyPS
-    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge 0.9 }))
+    $requiredVersionOfplatyPS = 0.9
+    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge $requiredVersionOfplatyPS }))
     {
-        "Cannot find platyPS. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
+        "Cannot find required minimum version $requiredVersionOfplatyPS of platyPS. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
     if ((Get-Module platyPS -Verbose:$verbosity) -eq $null)
     {
