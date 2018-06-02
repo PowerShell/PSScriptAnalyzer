@@ -91,7 +91,7 @@ function Invoke-AppveyorFinish {
     $stagingDirectory = (Resolve-Path ..).Path
     $zipFile = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
     Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
-    [System.IO.Compression.ZipFile]::CreateFromDirectory($pwd, $zipFile)
+    [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $pwd 'out'), $zipFile)
     @(
         # You can add other artifacts here
         (Get-ChildItem $zipFile)
