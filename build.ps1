@@ -58,12 +58,6 @@ if (-not (Test-Path $solutionPath))
     throw $errMsg
 }
 
-$buildCmd = Join-Path $projectRoot "build.cmd"
-if (-not (Test-Path $buildCmd))
-{
-    throw "cannot find build.cmd"
-}
-
 if ($CleanOutput)
 {
     Remove-Item -Recurse $outPath\* -Force -Verbose:$verbosity
