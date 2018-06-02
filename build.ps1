@@ -1,15 +1,10 @@
+# This function might be a partially out of date and only the -BuildDoc switch is guaranteed to work since it is used and needed for the build process.
 [CmdletBinding()]
 param(
 
     [Parameter(ParameterSetName='Build')]
     [ValidateSet('PSV3 Debug','PSV3 Release','Debug','Release')]
     [string] $Configuration = 'Debug',
-
-    [Parameter(ParameterSetName='Build')]
-    [switch] $BuildSolution = $false,
-
-    [Parameter(ParameterSetName='Build')]
-    [switch] $CleanSolution = $false,
 
     [Parameter(ParameterSetName='Build')]
     [switch] $BuildDocs = $false,
@@ -72,16 +67,6 @@ if (-not (Test-Path $buildCmd))
 if ($CleanOutput)
 {
     Remove-Item -Recurse $outPath\* -Force -Verbose:$verbosity
-}
-
-if ($CleanSolution)
-{
-    & $buildCmd $solutionPath $Configuration 'clean'
-}
-
-if ($BuildSolution)
-{
-    & $buildCmd $solutionPath $Configuration
 }
 
 if ($BuildDocs)
