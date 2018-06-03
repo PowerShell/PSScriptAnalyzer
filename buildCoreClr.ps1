@@ -45,13 +45,8 @@ elseif ($Configuration -match 'PSv4') {
 
 if ($build)
 {
-
-    Write-Progress "Building Engine"
-    Push-Location Engine\
-    dotnet build Engine.csproj --framework $Framework --configuration $Configuration
-    Pop-Location
-
     Write-Progress "Building for framework $Framework, configuration $Configuration"
+    # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
     Push-Location Rules\
     dotnet build Rules.csproj --framework $Framework --configuration $Configuration
     Pop-Location
