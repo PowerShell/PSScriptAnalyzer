@@ -77,7 +77,7 @@ if ($BuildDocs)
     {
         "Cannot find required minimum version $requiredVersionOfplatyPS of platyPS. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
-    if ((Get-Module platyPS -Verbose:$verbosity) -eq $null)
+    if ($null -eq (Get-Module platyPS -Verbose:$verbosity))
     {
         Import-Module platyPS -Verbose:$verbosity
     }
