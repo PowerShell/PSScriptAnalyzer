@@ -10,7 +10,7 @@
     [string]$Configuration = "Debug"
 )
 
-if ($Configuration -match "PSv3" -and $Framework -eq "netstandard2.0")
+if ($Configuration -match "PSv" -and $Framework -eq "netstandard2.0")
 {
     throw ("{0} configuration is not applicable to {1} framework" -f $Configuration,$Framework)
 }
