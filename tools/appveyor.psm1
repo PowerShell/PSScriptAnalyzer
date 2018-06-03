@@ -42,7 +42,7 @@ function Invoke-AppVeyorBuild {
         [Parameter(Mandatory)]
         [ValidateSet('FullCLR', 'NetStandard')]
         $BuildType,
-
+        
         [Parameter(Mandatory)]
         [ValidateSet('Release', 'PSv3Release', 'PSv4Release')]
         $BuildConfiguration,
@@ -51,7 +51,7 @@ function Invoke-AppVeyorBuild {
         [ValidateScript( {Test-Path $_})]
         $CheckoutPath
     )
-
+    
     $PSVersionTable
     Write-Verbose "Pester version: $((Get-Command Invoke-Pester).Version)" -Verbose
     Write-Verbose ".NET SDK version: $(dotnet --version)" -Verbose

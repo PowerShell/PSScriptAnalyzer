@@ -58,9 +58,9 @@ End {
             ReleaseTag = $ReleaseTag
         }
         $buildArgs = @{
-            RepoPath = $resolvedRepoRoot
-            BuildJsonPath = './tools/releaseBuild/build.json'
-            Parameters = $buildParameters
+            RepoPath = $resolvedRepoRoot 
+            BuildJsonPath = './tools/releaseBuild/build.json' 
+            Parameters = $buildParameters 
             AdditionalFiles = $AdditionalFiles
             Name = "win7-x64"
         }

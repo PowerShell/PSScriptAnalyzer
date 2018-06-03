@@ -1,8 +1,5 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "editor.tabSize": 4,
-    "powershell.codeFormatting.preset": "Allman",
-    "[powershell]": {
-        "files.trimTrailingWhitespace": true
-    }
+    "powershell.codeFormatting.preset": "Allman"
 }
