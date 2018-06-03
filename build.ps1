@@ -90,7 +90,7 @@ if ($BuildDocs)
 
 # Appveyor errors out due to $profile being null. Hence...
 $moduleRootPath = "$HOME/Documents/WindowsPowerShell/Modules"
-if ($profile -ne $null)
+if ($null -ne $profile)
 {
     $moduleRootPath = Join-Path (Split-Path $profile) 'Modules'
 }
