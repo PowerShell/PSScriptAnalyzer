@@ -3,7 +3,7 @@
 param(
 
     [Parameter(ParameterSetName='Build')]
-    [ValidateSet('PSV3 Debug','PSV3 Release','Debug','Release')]
+    [ValidateSet('PSV3 Debug','PSV3 Release', 'Debug','Release')]
     [string] $Configuration = 'Debug',
 
     [Parameter(ParameterSetName='Build')]
@@ -77,7 +77,7 @@ if ($BuildDocs)
     {
         "Cannot find required minimum version $requiredVersionOfplatyPS of platyPS. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
-    if ((Get-Module platyPS -Verbose:$verbosity) -eq $null)
+    if ($null -eq (Get-Module platyPS -Verbose:$verbosity))
     {
         Import-Module platyPS -Verbose:$verbosity
     }
@@ -90,7 +90,7 @@ if ($BuildDocs)
 
 # Appveyor errors out due to $profile being null. Hence...
 $moduleRootPath = "$HOME/Documents/WindowsPowerShell/Modules"
-if ($profile -ne $null)
+if ($null -eq $profile)
 {
     $moduleRootPath = Join-Path (Split-Path $profile) 'Modules'
 }
