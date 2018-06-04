@@ -44,9 +44,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             IEnumerable<Ast> assignmentStatementAsts = ast.FindAll(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: true);
-            foreach (var assignmentStatementAst in assignmentStatementAsts)
+            foreach (AssignmentStatementAst assignmentStatementAst in assignmentStatementAsts)
             {
-                var variableExpressionAst = assignmentStatementAst.Find(testAst => testAst is VariableExpressionAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
+                var variableExpressionAst = assignmentStatementAst.Left.Find(testAst => testAst is VariableExpressionAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
                 if (variableExpressionAst == null) { continue; }
                 var variableName = variableExpressionAst.VariablePath.UserPath;
                 if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
