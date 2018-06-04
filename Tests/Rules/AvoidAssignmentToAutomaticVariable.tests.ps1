@@ -77,6 +77,11 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             $exceptionThrown | Should -Be $false
         }
 
+        It "Does not flag properties of a readonly variable (issue 1012)" {
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition '$Host.PrivateData["ErrorBackgroundColor"] = "Black"'
+            $warnings.Count | Should -Be 0
+        }
+
         It "Does not flag RHS of variable assignment (Bug in 1.17.0, issue 1013)" {
             [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition '[foo]::bar = $true'
             $warnings.Count | Should -Be 0

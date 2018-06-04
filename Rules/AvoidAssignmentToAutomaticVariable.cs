@@ -46,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> assignmentStatementAsts = ast.FindAll(testAst => testAst is AssignmentStatementAst, searchNestedScriptBlocks: true);
             foreach (AssignmentStatementAst assignmentStatementAst in assignmentStatementAsts)
             {
-                var variableExpressionAst = assignmentStatementAst.Left.Find(testAst => testAst is VariableExpressionAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
+                var variableExpressionAst = assignmentStatementAst.Left.Find(testAst => testAst is VariableExpressionAst && testAst.Parent == assignmentStatementAst, searchNestedScriptBlocks: false) as VariableExpressionAst;
                 if (variableExpressionAst == null) { continue; }
                 var variableName = variableExpressionAst.VariablePath.UserPath;
                 if (_readOnlyAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
