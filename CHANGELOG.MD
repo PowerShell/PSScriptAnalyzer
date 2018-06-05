@@ -1,4 +1,4 @@
-﻿## [1.17.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.0) - 2018-04-27
+﻿## [1.17.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.0) - 2018-05-14
 
 ### New Parameters
 
@@ -15,6 +15,8 @@
 
 ### Fixes and Improvements
 
+- AvoidDefaultValueForMandatoryParameter triggers when the field has specification: Mandatory=value and value!=0 (#969) (by @kalgiz)
+- Do not trigger UseDeclaredVarsMoreThanAssignment for variables being used via Get-Variable (#925) (by @bergmeister)
 - Make UseDeclaredVarsMoreThanAssignments not flag drive qualified variables (#958) (by @bergmeister)
 - Fix PSUseDeclaredVarsMoreThanAssignments to not give false positives when using += operator (#935) (by @bergmeister)
 - Tweak UseConsistentWhiteSpace formatting rule to exclude first unary operator when being used in argument (#949) (by @bergmeister)
@@ -31,6 +33,12 @@
 
 ### Engine, Building and Testing
 
+- Support `SuggestedCorrections` property on DiagnosticRecord for script based rules #1000 (by @bergmeister)
+- Add CommandData files of PowerShell Core 6.0.2 for Windows/Linux/macOS and WMF3/4 that are used by UseCompatibleCmdlets rule (#954) (by @bergmeister)
+- If no path is found or when using the -ScriptDefinition parameter set, default to the current location for the directory search of the implicit settings file (#979) (by @bergmeister)
+- Allow TypeNotFound parser errors (#957) (by @bergmeister)
+- Fix release script by building also for v3 and misc. improvements (#996) (by @bergmeister)
+- Scripts needed to build and sign PSSA via MS VSTS so it can be published in the gallery (#983) (by @JamesWTruher)
 - Move common test code into AppVeyor module (#961) (by @bergmeister)
 - Remove extraneous import-module commands in tests (#962) (by @JamesWTruher)
 - Upgrade 'System.Automation.Management' NuGet package of version 6.0.0-alpha13 to  version 6.0.2 from powershell-core feed, which requires upgrade to netstandard2.0. NB: This highly improved behavior on WMF3 but also means that the latest patched version (6.0.2) of PowerShell Core should be used. (#919) by @bergmeister)
@@ -47,6 +55,12 @@
 
 ### Documentation, Error Messages and miscellaneous Improvements
 
+- Added Chocolatey Install help, which has community support (#999) (Thanks @pauby)
+- Finalize Release Logs and bump version to 1.17 (#1002) (by @bergmeister)
+- Docker examples: (#987, #990) (by @bergmeister)
+- Use multiple GitHub issue templates for bugs, feature requests and support questions (#986) (by @bergmeister
+- Fix table of contents (#980) (by @bergmeister)
+- Improve documentation, especially about parameter usage and the settings file (#968) (by @bergmeister)
 - Add base changelog for 1.17.0 (#967) (by @bergmeister)
 - Remove outdated about_scriptanalyzer help file (#951) (by @bergmeister)
 - Fixes a typo and enhances the documentation for the parameters required for script rules (#942) (Thanks @MWL88!)
