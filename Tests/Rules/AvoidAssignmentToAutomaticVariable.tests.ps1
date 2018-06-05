@@ -64,17 +64,7 @@ Describe "AvoidAssignmentToAutomaticVariables" {
         }
 
         It "Does not throw a NullReferenceException when using assigning a .Net property to a .Net property (Bug in 1.17.0 - issue 1007)" {
-            $exceptionThrown = $false
-            try
-            {
-                Invoke-ScriptAnalyzer -ScriptDefinition '[foo]::bar = [baz]::qux' -ErrorAction Stop
-            }
-            catch
-            {
-                $exceptionThrown = $true
-            }
-
-            $exceptionThrown | Should -Be $false
+            Invoke-ScriptAnalyzer -ScriptDefinition '[foo]::bar = [baz]::qux' -ErrorAction Stop
         }
 
         It "Does not flag properties of a readonly variable (issue 1012)" {
