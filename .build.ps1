@@ -1,15 +1,14 @@
 param(
-    [ValidateSet("net451", "netstandard1.6")]
+    [ValidateSet("net451", "netstandard2.0")]
     [string]$Framework = "net451",
 
-    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release")]
+    [ValidateSet("Debug", "Release", "PSv3Debug", "PSv3Release", "PSv4Release")]
     [string]$Configuration = "Debug"
 )
 
 # todo remove aliases
 # todo make each project have its own build script
 
-$resourceScript = Join-Path $BuildRoot "New-StronglyTypedCsFileForResx.ps1"
 $outPath = "$BuildRoot/out"
 $modulePath = "$outPath/PSScriptAnalyzer"
 
@@ -18,9 +17,9 @@ if ($BuildTask -eq "release") {
     $buildData = @{
         Frameworks = @{
             "net451"         = @{
-                Configuration = @('Release', "PSV3Release")
+                Configuration = @('Release', "PSV3Release", "PSv4Release")
             }
-            "netstandard1.6" = @{
+            "netstandard2.0" = @{
                 Configuration = @('Release')
             }
         }
@@ -39,20 +38,20 @@ function CreateIfNotExists([string] $folderPath) {
 }
 
 function Get-BuildInputs($project) {
-    pushd $buildRoot/$project
-    gci -Filter *.cs
-    gci -Directory -Exclude obj, bin | gci -Filter *.cs -Recurse
-    popd
+    Push-Location $buildRoot/$project
+    Get-ChildItem -Filter *.cs
+    Get-ChildItem -Directory -Exclude obj, bin | Get-ChildItem -Filter *.cs -Recurse
+    Pop-Location
 }
 
 function Get-BuildOutputs($project) {
     $bin = "$buildRoot/$project/bin/$Configuration/$Framework"
     $obj = "$buildRoot/$project/obj/$Configuration/$Framework"
     if (Test-Path $bin) {
-        gci $bin -Recurse
+        Get-ChildItem $bin -Recurse
     }
     if (Test-Path $obj) {
-        gci $obj -Recurse
+        Get-ChildItem $obj -Recurse
     }
 }
 
@@ -79,14 +78,6 @@ function Get-BuildTaskParams($project) {
     $taskParams
 }
 
-function Get-RestoreTaskParams($project) {
-    @{
-        Inputs  = "$BuildRoot/$project/project.json"
-        Outputs = "$BuildRoot/$project/project.lock.json"
-        Jobs    = {dotnet restore}
-    }
-}
-
 function Get-CleanTaskParams($project) {
     @{
         Jobs = {
@@ -109,20 +100,6 @@ function Get-TestTaskParam($project) {
     }
 }
 
-function Get-ResourceTaskParam($project) {
-    @{
-        Inputs  = "$project/Strings.resx"
-        Outputs = "$project/Strings.cs"
-        Data = $project
-        Jobs    = {
-            Push-Location $BuildRoot
-            & $resourceScript $Task.Data
-            Pop-Location
-        }
-        Before  = "$project/build"
-    }
-}
-
 function Add-ProjectTask([string]$project, [string]$taskName, [hashtable]$taskParams, [string]$pathPrefix = $buildRoot) {
     $jobs = [scriptblock]::Create(@"
 pushd $pathPrefix/$project
@@ -136,16 +113,12 @@ popd
 
 $projects = @("engine", "rules")
 $projects | ForEach-Object {
-    Add-ProjectTask $_ buildResource (Get-ResourceTaskParam $_)
     Add-ProjectTask $_ build (Get-BuildTaskParams $_)
-    Add-ProjectTask $_ restore (Get-RestoreTaskParams $_)
     Add-ProjectTask $_ clean (Get-CleanTaskParams $_)
     Add-ProjectTask $_ test (Get-TestTaskParam $_) "$BuildRoot/tests"
 }
 
-task buildResource -Before build "engine/buildResource", "rules/buildResource"
 task build "engine/build", "rules/build"
-task restore "engine/restore", "rules/restore"
 task clean "engine/clean", "rules/clean"
 task test "engine/test", "rules/test"
 
@@ -172,7 +145,7 @@ task createModule {
             $itemsToCopyBinaries = @("$solutionDir\Engine\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
                 "$solutionDir\Rules\bin\$Configuration\$Framework\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll")
 
-            if ($Framework -eq "netstandard1.6") {
+            if ($Framework -eq "netstandard2.0") {
                 $destinationDirBinaries = "$destinationDir\coreclr"
             }
             elseif ($Configuration -match 'PSv3') {
@@ -215,14 +188,11 @@ task buildDocs -Inputs $bdInputs -Outputs $bdOutputs {
     $markdownDocsPath = Join-Path $docsPath 'markdown'
     CreateIfNotExists($outputDocsPath)
 
-    # copy the about help file
-    Copy-Item -Path $docsPath\about_PSScriptAnalyzer.help.txt -Destination $outputDocsPath -Force
-
     # Build documentation using platyPS
-    if ((Get-Module PlatyPS -ListAvailable) -eq $null) {
-        throw "Cannot find PlatyPS. Please install it from https://www.powershellgallery.com."
+    if ($null -eq (Get-Module platyPS -ListAvailable -Verbose:$verbosity | Where-Object { $_.Version -ge 0.9 })) {
+        throw "Cannot find platyPS of version greater or equal to 0.9. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
-    Import-Module PlatyPS
+    Import-Module platyPS
     if (-not (Test-Path $markdownDocsPath -Verbose:$verbosity)) {
         throw "Cannot find markdown documentation folder."
     }

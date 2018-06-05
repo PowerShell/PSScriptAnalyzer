@@ -1,7 +1,5 @@
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
-
-Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 Describe "Invoke-Formatter Cmdlet" {
@@ -28,7 +26,16 @@ function foo {
                 }
             }
 
-            Invoke-Formatter $def $settings | Should Be $expected
+            Invoke-Formatter $def $settings | Should -Be $expected
+        }
+
+        It "Should not expand unary operators when being used as a single negative argument" {
+            $script = '$foo.bar(-$a)' 
+            Invoke-Formatter '$foo.bar(-$a)' -Settings CodeFormatting | Should -Be $script
+        }
+
+        It "Should expand unary operators when not being used as a single negative argument" {
+            Invoke-Formatter '$foo.bar(-$a+$b+$c)' -Settings CodeFormatting | Should -Be '$foo.bar(-$a + $b + $c)' 
         }
     }
 
@@ -48,7 +55,7 @@ function foo {
 }
 "@
 
-            Invoke-Formatter -ScriptDefinition $def -Range @(3, 1, 4, 1) | Should Be $expected
+            Invoke-Formatter -ScriptDefinition $def -Range @(3, 1, 4, 1) | Should -Be $expected
         }
     }
 
@@ -76,7 +83,7 @@ function foo {
 }
 '@
 
-            Invoke-Formatter -ScriptDefinition $def | Should Be $expected
+            Invoke-Formatter -ScriptDefinition $def | Should -Be $expected
         }
     }
 

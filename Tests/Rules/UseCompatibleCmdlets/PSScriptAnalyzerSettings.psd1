@@ -1,7 +1,7 @@
 @{
     'Rules' = @{
         'PSUseCompatibleCmdlets' = @{
-            'compatibility' = @("core-6.0.0-alpha-windows")
+            'compatibility' = @("core-6.0.2-windows")
         }
     }
 }

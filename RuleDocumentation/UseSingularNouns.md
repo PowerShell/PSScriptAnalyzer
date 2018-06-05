@@ -6,6 +6,8 @@
 
 PowerShell team best practices state cmdlets should use singular nouns and not plurals.
 
+**NOTE** This rule is not available in PowerShell Core due to the PluralizationService API that the rule uses internally.
+
 ## How
 
 Change plurals to singular.
@@ -17,7 +19,7 @@ Change plurals to singular.
 ``` PowerShell
 function Get-Files
 {
-	...
+    ...
 }
 ```
 
@@ -26,6 +28,6 @@ function Get-Files
 ``` PowerShell
 function Get-File
 {
-	...
+    ...
 }
 ```

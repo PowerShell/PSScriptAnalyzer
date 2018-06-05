@@ -8,17 +8,17 @@ $noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {
 Describe "Avoid Using One Char" {
     Context "When there are violations" {
         It "has 1 One Char Violation" {
-            $oneCharViolations.Count | Should Be 1
+            $oneCharViolations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
-            $oneCharViolations[0].Message | Should Match $oneCharMessage
+            $oneCharViolations[0].Message | Should -Match $oneCharMessage
         }
     }
 
     Context "When there are no violations" {
         It "has no violations" {
-            $noReservedCharViolations.Count | Should Be 0
+            $noReservedCharViolations.Count | Should -Be 0
         }
     }
 }

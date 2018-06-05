@@ -1,19 +1,8 @@
-﻿//
-// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Management.Automation;
 using System.Management.Automation.Language;
 #if !CORECLR
 using System.ComponentModel.Composition;
@@ -24,7 +13,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// ProvideDefaultParameterValue: Check if any uninitialized variable is used.
+    /// AvoidDefaultValueForMandatoryParameter: Check if a mandatory parameter does not have a default value.
     /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
@@ -32,7 +21,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class AvoidDefaultValueForMandatoryParameter : IScriptRule
     {
         /// <summary>
-        /// AnalyzeScript: Check if any uninitialized variable is used.
+        /// AnalyzeScript: Check if a mandatory parameter has a default value.
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
@@ -46,12 +35,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (funcAst.Body != null && funcAst.Body.ParamBlock != null
                     && funcAst.Body.ParamBlock.Attributes != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
-                    // only raise this rule for function with cmdletbinding
-                    if (!funcAst.Body.ParamBlock.Attributes.Any(attr => attr.TypeName.GetReflectionType() == typeof(CmdletBindingAttribute)))
-                    {
-                        continue;
-                    }
-
                     foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
                     {
                         bool mandatory = false;
@@ -68,8 +51,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                     {
                                         if (String.Equals(namedArgument.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase))
                                         {
-                                            // 2 cases: [Parameter(Mandatory)] and [Parameter(Mandatory=$true)]
-                                            if (namedArgument.ExpressionOmitted || (!namedArgument.ExpressionOmitted && String.Equals(namedArgument.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase)))
+                                            // 3 cases: [Parameter(Mandatory)], [Parameter(Mandatory=$true)] and [Parameter(Mandatory=value)] where value is not equal to 0.
+                                            if (namedArgument.ExpressionOmitted
+                                                || (String.Equals(namedArgument.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase))
+                                                || (int.TryParse(namedArgument.Argument.Extent.Text, out int mandatoryValue) && mandatoryValue != 0))
                                             {
                                                 mandatory = true;
                                                 break;

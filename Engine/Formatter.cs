@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using System;
 using System.Collections;
 using System.Management.Automation;
@@ -53,7 +56,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
 
                 Range updatedRange;
-                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange);
+                bool fixesWereApplied;
+                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange, out fixesWereApplied);
                 range = updatedRange;
             }
 

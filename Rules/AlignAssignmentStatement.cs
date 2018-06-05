@@ -1,12 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Collections.Generic;
@@ -300,18 +293,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var kvp in hashtableAst.KeyValuePairs)
             {
                 var keyStartOffset = kvp.Item1.Extent.StartOffset;
+                bool keyStartOffSetReached = false;
                 var keyTokenNode = tokenOps.GetTokenNodes(
-                    token => token.Extent.StartOffset == keyStartOffset).FirstOrDefault();
-                if (keyTokenNode == null
-                    || keyTokenNode.Next == null
-                    || keyTokenNode.Next.Value.Kind != TokenKind.Equals)
+                    token =>
+                    {
+                        if (keyStartOffSetReached)
+                        {
+                            return token.Kind == TokenKind.Equals;
+                        }
+                        if (token.Extent.StartOffset == keyStartOffset)
+                        {
+                            keyStartOffSetReached = true;
+                        }
+                        return false;
+                        }).FirstOrDefault();
+                if (keyTokenNode == null || keyTokenNode.Value == null)
                 {
-                    return null;
+                    continue;
                 }
+                var assignmentToken = keyTokenNode.Value.Extent;
 
                 nodeTuples.Add(new Tuple<IScriptExtent, IScriptExtent>(
-                    kvp.Item1.Extent,
-                    keyTokenNode.Next.Value.Extent));
+                    kvp.Item1.Extent, assignmentToken));
             }
 
             return nodeTuples;

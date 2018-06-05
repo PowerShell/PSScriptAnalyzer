@@ -1,32 +1,16 @@
-﻿//
-// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
-using System.Text.RegularExpressions;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
-using System.ComponentModel;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Language;
-using System.IO;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using System.Threading;
 using System.Management.Automation.Runspaces;
-using System.Collections;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 {
@@ -38,7 +22,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     [Cmdlet(VerbsLifecycle.Invoke,
         "ScriptAnalyzer",
         DefaultParameterSetName = "File",
-        HelpUri = "http://go.microsoft.com/fwlink/?LinkId=525914")]
+        SupportsShouldProcess = true,
+        HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
         #region Private variables
@@ -181,6 +166,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool suppressedOnly;
 
         /// <summary>
+        /// Resolves rule violations automatically where possible.
+        /// </summary>
+        [Parameter(Mandatory = false, ParameterSetName = "File")]
+        public SwitchParameter Fix
+        {
+            get { return fix; }
+            set { fix = value; }
+        }
+        private bool fix;
+
+        /// <summary>
+        /// Sets the exit code to the number of warnings for usage in CI.
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        public SwitchParameter EnableExit
+        {
+            get { return enableExit; }
+            set { enableExit = value; }
+        }
+        private bool enableExit;
+
+        /// <summary>
         /// Returns path to the file that contains user profile or hash table for ScriptAnalyzer
         /// </summary>
         [Alias("Profile")]
@@ -220,7 +227,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             set { attachAndDebug = value; }
         }
         private bool attachAndDebug = false;
+
 #endif
+        /// <summary>
+        /// Write a summary of rule violations to the host, which might be undesirable in some cases, therefore this switch is optional.
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        public SwitchParameter ReportSummary
+        {
+            get { return reportSummary; }
+            set { reportSummary = value; }
+        }
+        private SwitchParameter reportSummary;
+
         #endregion Parameters
 
         #region Overrides
@@ -272,8 +291,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 var settingsObj = PSSASettings.Create(
                     settings,
-                    processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
-                    this);
+                    processedPaths == null || processedPaths.Count == 0 ? CurrentProviderLocation("FileSystem").ProviderPath : processedPaths[0],
+                    this,
+                    GetResolvedProviderPathFromPSPath);
                 if (settingsObj != null)
                 {
                     ScriptAnalyzer.Instance.UpdateSettings(settingsObj);
@@ -377,7 +397,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 foreach (var p in processedPaths)
                 {
-                    diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.recurse);
+                    if (fix)
+                    {
+                        ShouldProcess(p, $"Analyzing and fixing path with Recurse={this.recurse}");
+                        diagnosticsList = ScriptAnalyzer.Instance.AnalyzeAndFixPath(p, this.ShouldProcess, this.recurse);
+                    }
+                    else
+                    {
+                        ShouldProcess(p, $"Analyzing path with Recurse={this.recurse}");
+                        diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.ShouldProcess, this.recurse);
+                    }
                     WriteToOutput(diagnosticsList);
                 }
             }
@@ -392,10 +421,55 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
             {
+                var errorCount = 0;
+                var warningCount = 0;
+                var infoCount = 0;
+
                 foreach (DiagnosticRecord diagnostic in diagnosticRecords)
                 {
                     logger.LogObject(diagnostic, this);
+                    switch (diagnostic.Severity)
+                    {
+                        case DiagnosticSeverity.Information:
+                            infoCount++;
+                            break;
+                        case DiagnosticSeverity.Warning:
+                            warningCount++;
+                            break;
+                        case DiagnosticSeverity.Error:
+                            errorCount++;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(diagnostic.Severity), $"Severity '{diagnostic.Severity}' is unknown");
+                    }
                 }
+
+                if (ReportSummary.IsPresent)
+                {
+                    var numberOfRuleViolations = infoCount + warningCount + errorCount;
+                    if (numberOfRuleViolations == 0)
+                    {
+                        Host.UI.WriteLine("0 rule violations found.");
+                    }
+                    else
+                    {
+                        var pluralS = numberOfRuleViolations > 1 ? "s" : string.Empty;
+                        var message = $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}";
+                        if (warningCount + errorCount == 0)
+                        {
+                            ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "WarningForegroundColor", "WarningBackgroundColor", message);
+                        }
+                        else
+                        {
+                            ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "ErrorForegroundColor", "ErrorBackgroundColor", message);
+                        }
+                    }
+                }
+            }
+
+            if (EnableExit.IsPresent)
+            {
+                this.Host.SetShouldExit(diagnosticRecords.Count());
             }
         }
 

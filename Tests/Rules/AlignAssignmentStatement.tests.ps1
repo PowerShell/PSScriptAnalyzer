@@ -1,7 +1,6 @@
 ﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 
-Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $ruleConfiguration = @{
@@ -33,7 +32,7 @@ $hashtable = @{
             # }
 
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
             Test-CorrectionExtentFromContent $def $violations 1 ' ' '       '
         }
 
@@ -52,7 +51,7 @@ $hashtable = @{
             # }
 
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
             Test-CorrectionExtentFromContent $def $violations 1 '              ' '       '
         }
 
@@ -60,13 +59,13 @@ $hashtable = @{
             $def = @'
 $x = @{ }
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 0
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should -Be 0
 
         }
     }
 
     Context "When assignment statements are in DSC Configuration" {
-        It "Should find violations when assignment statements are not aligned" {
+        It "Should find violations when assignment statements are not aligned" -skip:($IsLinux -or $IsMacOS) {
             $def = @'
 Configuration MyDscConfiguration {
 
@@ -85,13 +84,13 @@ Configuration MyDscConfiguration {
     }
 }
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should Be 2
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Get-Count | Should -Be 2
         }
     }
 
     if ($PSVersionTable.PSVersion.Major -ge 5) {
         Context "When assignment statements are in DSC Configuration that has parse errors" {
-            It "Should find violations when assignment statements are not aligned" {
+            It "Should find violations when assignment statements are not aligned" -skip:($IsLinux -or $IsMacOS) {
                 $def = @'
 Configuration Sample_ChangeDescriptionAndPermissions
 {
@@ -118,7 +117,7 @@ Configuration Sample_ChangeDescriptionAndPermissions
                 # SilentlyContinue
                 Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
                     Get-Count |
-                    Should Be 4
+                    Should -Be 4
             }
         }
     }

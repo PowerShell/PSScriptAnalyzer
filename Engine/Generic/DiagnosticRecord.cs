@@ -1,18 +1,6 @@
-﻿//
-// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
-
-
-using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 
@@ -30,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private DiagnosticSeverity severity;
         private string scriptPath;
         private string ruleSuppressionId;
-        private List<CorrectionExtent> suggestedCorrections;
+        private IEnumerable<CorrectionExtent> suggestedCorrections;
 
         /// <summary>
         /// Represents a string from the rule about why this diagnostic was created.
@@ -101,6 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public IEnumerable<CorrectionExtent> SuggestedCorrections
         {
             get { return suggestedCorrections;  }            
+            set { suggestedCorrections = value; }
         }
 
         /// <summary>
@@ -120,7 +109,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="severity">The severity of this diagnostic</param>
         /// <param name="scriptPath">The full path of the script file being analyzed</param>
         /// <param name="suggestedCorrections">The correction suggested by the rule to replace the extent text</param>
-        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptPath, string ruleId = null, List<CorrectionExtent> suggestedCorrections = null)
+        public DiagnosticRecord(string message, IScriptExtent extent, string ruleName, DiagnosticSeverity severity, string scriptPath, string ruleId = null, IEnumerable<CorrectionExtent> suggestedCorrections = null)
         {
             Message  = message;
             RuleName = ruleName;

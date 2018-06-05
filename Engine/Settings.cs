@@ -1,21 +1,15 @@
-//
-// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Reflection;
 
@@ -183,8 +177,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="settingsObj">An input object of type Hashtable or string.</param>
         /// <param name="cwd">The path in which to search for a settings file.</param>
         /// <param name="outputWriter">An output writer.</param>
+        /// <param name="getResolvedProviderPathFromPSPathDelegate">The GetResolvedProviderPathFromPSPath method from PSCmdlet to resolve relative path including wildcard support.</param>
         /// <returns>An object of Settings type.</returns>
-        public static Settings Create(object settingsObj, string cwd, IOutputWriter outputWriter)
+        internal static Settings Create(object settingsObj, string cwd, IOutputWriter outputWriter,
+            PathResolver.GetResolvedProviderPathFromPSPath<string, ProviderInfo, Collection<string>> getResolvedProviderPathFromPSPathDelegate)
         {
             object settingsFound;
             var settingsMode = FindSettingsMode(settingsObj, cwd, out settingsFound);
@@ -206,11 +202,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 case SettingsMode.Preset:
                 case SettingsMode.File:
-                    outputWriter?.WriteVerbose(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.SettingsUsingFile,
-                            (string)settingsFound));
+                    var userProvidedSettingsString = settingsFound.ToString();
+                    try
+                    {
+                        var resolvedPath = getResolvedProviderPathFromPSPathDelegate(userProvidedSettingsString, out ProviderInfo providerInfo).Single();
+                        settingsFound = resolvedPath;
+                        outputWriter?.WriteVerbose(
+                            String.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.SettingsUsingFile,
+                                resolvedPath));
+                    }
+                    catch
+                    {
+                        outputWriter?.WriteVerbose(
+                            String.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.SettingsCannotFindFile,
+                                userProvidedSettingsString));
+                    }
                     break;
 
                 case SettingsMode.Hashtable:
@@ -220,20 +230,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             Strings.SettingsUsingHashtable));
                     break;
 
-                default: // case SettingsMode.None
+                default:
                     outputWriter?.WriteVerbose(
                         String.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.SettingsCannotFindFile));
-                    break;
+                            Strings.SettingsObjectCouldNotBResolved));
+                    return null;
             }
 
-            if (settingsMode != SettingsMode.None)
-            {
-                return new Settings(settingsFound);
-            }
-
-            return null;
+            return new Settings(settingsFound);
         }
 
         /// <summary>
@@ -685,30 +690,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             else
             {
-                var settingsFilePath = settingsFound as String;
-                if (settingsFilePath != null)
-                {
-                    if (IsBuiltinSettingPreset(settingsFilePath))
-                    {
-                        settingsMode = SettingsMode.Preset;
-                        settingsFound = GetSettingPresetFilePath(settingsFilePath);
-                    }
-                    else
-                    {
-                        settingsMode = SettingsMode.File;
-                        settingsFound = settingsFilePath;
-                    }
-                }
-                else
+                if (!TryResolveSettingForStringType(settingsFound, ref settingsMode, ref settingsFound))
                 {
                     if (settingsFound is Hashtable)
                     {
                         settingsMode = SettingsMode.Hashtable;
                     }
+                    // if the provided argument is wrapped in an expressions then PowerShell resolves it but it will be of type PSObject and we have to operate then on the BaseObject
+                    else if (settingsFound is PSObject settingsFoundPSObject)
+                    {
+                        TryResolveSettingForStringType(settingsFoundPSObject.BaseObject, ref settingsMode, ref settingsFound);
+                    }
                 }
             }
 
             return settingsMode;
+        }
+
+        // If the settings object is a string determine wheter it is one of the settings preset or a file path and resolve the setting in the former case.
+        private static bool TryResolveSettingForStringType(object settingsObject, ref SettingsMode settingsMode, ref object resolvedSettingValue)
+        {
+            if (settingsObject is string settingsString)
+            {
+                if (IsBuiltinSettingPreset(settingsString))
+                {
+                    settingsMode = SettingsMode.Preset;
+                    resolvedSettingValue = GetSettingPresetFilePath(settingsString);
+                }
+                else
+                {
+                    settingsMode = SettingsMode.File;
+                    resolvedSettingValue = settingsString;
+                }
+                return true;
+            }
+
+            return false;
         }
     }
 }

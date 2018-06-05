@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AvoidUsingCmdletAliasesDescription" xml:space="preserve">
-    <value>An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availability.</value>
+    <value>An alias is an alternate name or nickname for a cmdlet or for a command element, such as a function, script, file, or executable file. An implicit alias is also the omission of the 'Get-' prefix for commands with this prefix. But when writing scripts that will potentially need to be maintained over time, either by the original author or another Windows PowerShell scripter, please consider using full cmdlet name instead of alias. Aliases can introduce these problems, readability, understandability and availability.</value>
   </data>
   <data name="AvoidUsingCmdletAliasesCommonName" xml:space="preserve">
-    <value>Avoid Using Cmdlet Aliases</value>
+    <value>Avoid Using Cmdlet Aliases or omitting the 'Get-' prefix.</value>
   </data>
   <data name="AvoidUsingEmptyCatchBlockDescription" xml:space="preserve">
     <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, using Write-Error or throw statements in catch blocks.</value>
@@ -168,12 +168,6 @@
   <data name="UseDeclaredVarsMoreThanAssignmentsCommonName" xml:space="preserve">
     <value>Extra Variables</value>
   </data>
-  <data name="AvoidUninitializedVariableDescription" xml:space="preserve">
-    <value>Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables.</value>
-  </data>
-  <data name="AvoidUninitializedVariableCommonName" xml:space="preserve">
-    <value>Initializing non-global variables</value>
-  </data>
   <data name="AvoidGlobalVarsDescription" xml:space="preserve">
     <value>Checks that global variables are not used. Global variables are strongly discouraged as they can cause errors across different systems.</value>
   </data>
@@ -182,15 +176,6 @@
   </data>
   <data name="AvoidGlobalVarsCommonName" xml:space="preserve">
     <value>No Global Variables</value>
-  </data>
-  <data name="AvoidTrapStatementDescription" xml:space="preserve">
-    <value>Avoid using Traps in the script.</value>
-  </data>
-  <data name="AvoidTrapStatementError" xml:space="preserve">
-    <value>Trap found.</value>
-  </data>
-  <data name="AvoidTrapStatementCommonName" xml:space="preserve">
-    <value>No traps in the script.</value>
   </data>
   <data name="PossibleIncorrectComparisonWithNullDescription" xml:space="preserve">
     <value>Checks that $null is on the left side of any equaltiy comparisons (eq, ne, ceq, cne, ieq, ine). When there is an array on the left side of a null equality comparison, PowerShell will check for a $null IN the array rather than if the array is null. If the two sides of the comaprision are switched this is fixed. Therefore, $null should always be on the left side of equality comparisons just in case.</value>
@@ -280,7 +265,7 @@
     <value>It is a best practice to emit informative, verbose messages in DSC resource functions. This helps in debugging issues when a DSC configuration is executed.</value>
   </data>
   <data name="UseVerboseMessageInDSCResourceErrorFunction" xml:space="preserve">
-    <value>There is no call to Write-Verbose in DSC function ‘{0}’. If you are using Write-Verbose in a helper function, suppress this rule application.</value>
+    <value>There is no call to Write-Verbose in DSC function '{0}'. If you are using Write-Verbose in a helper function, suppress this rule application.</value>
   </data>
   <data name="UseVerboseMessageInDSCResourceCommonName" xml:space="preserve">
     <value>Use verbose message in DSC resource</value>
@@ -299,15 +284,6 @@
   </data>
   <data name="AvoidUnloadableModuleCommonName" xml:space="preserve">
     <value>Module Must Be Loadable</value>
-  </data>
-  <data name="AvoidUsingFilePathDescription" xml:space="preserve">
-    <value>If a rooted file path is used in a script that is published online, this may expose information about your computer. Furthermore, the file path may not work on other computer when they try to use the script.</value>
-  </data>
-  <data name="AvoidUsingFilePathError" xml:space="preserve">
-    <value>The file path '{0}' of '{1}' is rooted. This should be avoided if '{1}' is published online.</value>
-  </data>
-  <data name="AvoidUsingFilePathCommonName" xml:space="preserve">
-    <value>Avoid Using File Path</value>
   </data>
   <data name="NullErrorMessage" xml:space="preserve">
     <value>Error Message is Null.</value>
@@ -390,12 +366,6 @@
   <data name="AvoidShouldContinueWithoutForceName" xml:space="preserve">
     <value>AvoidShouldContinueWithoutForce</value>
   </data>
-  <data name="AvoidTrapStatementName" xml:space="preserve">
-    <value>AvoidTrapStatement</value>
-  </data>
-  <data name="AvoidUninitializedVariableName" xml:space="preserve">
-    <value>AvoidUninitializedVariable</value>
-  </data>
   <data name="AvoidUnloadableModuleName" xml:space="preserve">
     <value>AvoidUnloadableModule</value>
   </data>
@@ -407,9 +377,6 @@
   </data>
   <data name="AvoidUsingEmptyCatchBlockName" xml:space="preserve">
     <value>AvoidUsingEmptyCatchBlock</value>
-  </data>
-  <data name="AvoidUsingFilePathName" xml:space="preserve">
-    <value>AvoidUsingFilePath</value>
   </data>
   <data name="AvoidUsingInvokeExpressionRuleName" xml:space="preserve">
     <value>AvoidUsingInvokeExpression</value>
@@ -609,9 +576,6 @@
   <data name="UseStandardDSCFunctionsInClassError" xml:space="preserve">
     <value>Missing '{0}' function. DSC Class must implement Get, Set and Test functions.</value>
   </data>
-  <data name="AvoidUninitializedVariableError" xml:space="preserve">
-    <value>Variable '{0}' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables.</value>
-  </data>
   <data name="UseIdenticalMandatoryParametersDSCCommonName" xml:space="preserve">
     <value>Use identical mandatory parameters for DSC Get/Test/Set TargetResource functions</value>
   </data>
@@ -658,7 +622,7 @@
     <value>Functions that have verbs like New, Start, Stop, Set, Reset, Restart that change system state should support 'ShouldProcess'.</value>
   </data>
   <data name="UseShouldProcessForStateChangingFunctionsError" xml:space="preserve">
-    <value>Function ’{0}’ has verb that could change system state. Therefore, the function has to support 'ShouldProcess'.</value>
+    <value>Function '{0}' has verb that could change system state. Therefore, the function has to support 'ShouldProcess'.</value>
   </data>
   <data name="UseShouldProcessForStateChangingFunctionsName" xml:space="preserve">
     <value>UseShouldProcessForStateChangingFunctions</value>
@@ -870,6 +834,18 @@
   <data name="AvoidGlobalAliasesName" xml:space="preserve">
     <value>AvoidGlobalAliases</value>
   </data>
+  <data name="AvoidTrailingWhitespaceName" xml:space="preserve">
+    <value>AvoidTrailingWhitespace</value>
+  </data>
+  <data name="AvoidTrailingWhitespaceCommonName" xml:space="preserve">
+    <value>Avoid trailing whitespace</value>
+  </data>
+  <data name="AvoidTrailingWhitespaceDescription" xml:space="preserve">
+    <value>Each line should have no trailing whitespace.</value>
+  </data>
+  <data name="AvoidTrailingWhitespaceError" xml:space="preserve">
+    <value>Line has trailing whitespace</value>
+  </data>
   <data name="PlaceOpenBraceName" xml:space="preserve">
     <value>PlaceOpenBrace</value>
   </data>
@@ -945,7 +921,6 @@
   <data name="UseConsistentWhitespaceErrorSeparatorSemi" xml:space="preserve">
     <value>Use space after a semicolon.</value>
   </data>
-
   <data name="UseSupportsShouldProcessName" xml:space="preserve">
     <value>UseSupportsShouldProcess</value>
   </data>
@@ -969,5 +944,50 @@
   </data>
   <data name="AlignAssignmentStatementError" xml:space="preserve">
     <value>Assignment statements are not aligned</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorCommonName" xml:space="preserve">
+    <value>'=' is not an assignment operator. Did you mean the equality operator '-eq'?</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorName" xml:space="preserve">
+    <value>PossibleIncorrectUsageOfAssignmentOperator</value>
+  </data>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariable" xml:space="preserve">
+    <value>Use a different variable name</value>
+  </data>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableCommonName" xml:space="preserve">
+    <value>Changing automtic variables might have undesired side effects</value>
+  </data>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableDescription" xml:space="preserve">
+    <value>This automatic variables is built into PowerShell and readonly.</value>
+  </data>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableError" xml:space="preserve">
+    <value>The Variable '{0}' cannot be assigned since it is a readonly automatic variable that is built into PowerShell, please use a different name.</value>
+  </data>
+  <data name="AvoidAssignmentToAutomaticVariableName" xml:space="preserve">
+    <value>AvoidAssignmentToAutomaticVariable</value>
+  </data>
+  <data name="AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error" xml:space="preserve">
+    <value>Starting from PowerShell 6.0, the Variable '{0}' cannot be assigned any more since it is a readonly automatic variable that is built into PowerShell, please use a different name.</value>
+  </data>
+  <data name="AvoidUsingCmdletAliasesMissingGetPrefixError" xml:space="preserve">
+    <value>'{0}' is implicitly aliasing '{1}' because it is missing the 'Get-' prefix. This can introduce possible problems and make scripts hard to maintain. Please consider changing command to its full name.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorDescription" xml:space="preserve">
+    <value>'=' or '==' are not comparison operators in the PowerShell language and rarely needed inside conditional statements.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfAssignmentOperatorError" xml:space="preserve">
+    <value>Did you mean to use the assignment operator '='? The equality operator in PowerShell is 'eq'.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfRedirectionOperatorCommonName" xml:space="preserve">
+    <value>'&gt;' is not a comparison operator. Use  '-gt' (greater than) or '-ge' (greater or equal).</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfRedirectionOperatorDescription" xml:space="preserve">
+    <value>When switching between different languages it is easy to forget that '&gt;' does not mean 'great than' in PowerShell.</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfRedirectionOperatorError" xml:space="preserve">
+    <value>Did you mean to use the redirection operator '&gt;'? The comparison operators in PowerShell are '-gt' (greater than) or '-ge' (greater or equal).</value>
+  </data>
+  <data name="PossibleIncorrectUsageOfRedirectionOperatorName" xml:space="preserve">
+    <value>PossibleIncorrectUsageOfRedirectionOperator</value>
   </data>
 </root>

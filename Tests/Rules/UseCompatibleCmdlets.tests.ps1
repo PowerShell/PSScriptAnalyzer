@@ -3,7 +3,6 @@ $directory = Split-Path $MyInvocation.MyCommand.Path -Parent
 $testRootDirectory = Split-Path -Parent $directory
 $ruleTestDirectory = Join-Path $directory 'UseCompatibleCmdlets'
 
-Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
 Describe "UseCompatibleCmdlets" {
@@ -12,7 +11,7 @@ Describe "UseCompatibleCmdlets" {
             $violationFilePath = Join-Path $ruleTestDirectory 'ScriptWithViolation.ps1'
             $settingsFilePath =  [System.IO.Path]::Combine($ruleTestDirectory, 'PSScriptAnalyzerSettings.psd1');
             $diagnosticRecords = Invoke-ScriptAnalyzer -Path $violationFilePath -IncludeRule $ruleName -Settings $settingsFilePath
-            $diagnosticRecords.Count | Should Be 1
+            $diagnosticRecords.Count | Should -Be 1
         }
     }
 
@@ -29,12 +28,12 @@ Describe "UseCompatibleCmdlets" {
             It ("found {0} violations for '{1}'" -f $expectedViolations, $command) {
                 Invoke-ScriptAnalyzer -ScriptDefinition $command -IncludeRule $ruleName -Settings $settings | `
                     Get-Count | `
-                    Should Be $expectedViolations
+                    Should -Be $expectedViolations
             }
         }
     }
 
-    $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("core-6.0.0-alpha-windows")}}}
+    $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("core-6.0.2-windows")}}}
 
     Context "Microsoft.PowerShell.Core" {
          @('Enter-PSSession', 'Foreach-Object', 'Get-Command') | `

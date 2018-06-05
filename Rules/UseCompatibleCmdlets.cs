@@ -1,12 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +10,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
@@ -28,7 +20,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// <summary>
     /// A class to check if a script uses Cmdlets compatible with a given version and edition of PowerShell.
     /// </summary>
-    #if !CORECLR
+#if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
     public class UseCompatibleCmdlets : AstVisitor, IScriptRule
@@ -403,7 +395,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             psedition = null;
             psversion = null;
             os = null;
-            const string pattern = @"^(?<psedition>core|desktop)-(?<psversion>[\S]+)-(?<os>windows|linux|osx)$";
+            const string pattern = @"^(?<psedition>core|desktop)-(?<psversion>[\S]+)-(?<os>windows|linux|macos)$";
             var match = Regex.Match(fileName, pattern, RegexOptions.IgnoreCase);
             if (match == Match.Empty)
             {

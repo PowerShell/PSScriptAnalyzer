@@ -1,6 +1,5 @@
 ﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
-Import-Module PSScriptAnalyzer
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
 $missingMessage = "The member 'ModuleVersion' is not present in the module manifest."
@@ -21,70 +20,70 @@ Describe "MissingRequiredFieldModuleManifest" {
 
     Context "When there are violations" {
         It "has 1 missing required field module manifest violation" {
-            $violations.Count | Should Be 1
+            $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
-            $violations.Message | Should Match $missingMessage
+            $violations.Message | Should -Match $missingMessage
         }
 
         $numExpectedCorrections = 1
         It "has $numExpectedCorrections suggested corrections" {
-            $violations.SuggestedCorrections.Count | Should Be $numExpectedCorrections
+            $violations.SuggestedCorrections.Count | Should -Be $numExpectedCorrections
         }
 
     # On Linux, mismatch in line endings cause this to fail
-	It "has the right suggested correction" -Skip:(Test-PSEditionCoreCLRLinux) {
+	It "has the right suggested correction" -Skip:($IsLinux) {
 	   $expectedText = @'
 # Version number of this module.
 ModuleVersion = '1.0.0.0'
 '@
-            $violations[0].SuggestedCorrections[0].Text | Should Match $expectedText
-            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should Match ""
+            $violations[0].SuggestedCorrections[0].Text | Should -Match $expectedText
+            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -BeNullOrEmpty
     }
 }
 
     Context "When there are no violations" {
         It "returns no violations" {
-            $noViolations.Count | Should Be 0
+            $noViolations.Count | Should -Be 0
         }
     }
 
     Context "When an .psd1 file doesn't contain a hashtable" {
         It "does not throw exception" {
-            {Invoke-ScriptAnalyzer -Path $noHashtableFilepath -IncludeRule $missingMemberRuleName} | Should Not Throw
+            Invoke-ScriptAnalyzer -Path $noHashtableFilepath -IncludeRule $missingMemberRuleName
         }
     }
 
     Context "Validate the contents of a .psd1 file" {
         It "detects a valid module manifest file" {
             $filepath = Join-Path $directory "TestManifest/ManifestGood.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should Be $true
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should -BeTrue
         }
 
         It "detects a .psd1 file which is not module manifest" {
             $filepath = Join-Path $directory "TestManifest/PowerShellDataFile.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should Be $false
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should -BeFalse
         }
 
         It "detects valid module manifest file for PSv5" {
             $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv5.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should Be $true
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should -BeTrue
         }
 
         It "does not validate PSv5 module manifest file for PSv3 check" {
             $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv5.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0.0") | Should Be $false
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0.0") | Should -BeFalse
         }
 
         It "detects valid module manifest file for PSv4" {
             $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv4.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"4.0.0") | Should Be $true
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"4.0.0") | Should -BeTrue
         }
 
         It "detects valid module manifest file for PSv3" {
             $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv3.psd1"
-            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0.0") | Should Be $true
+            [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0.0") | Should -BeTrue
         }
     }
 
@@ -94,7 +93,7 @@ ModuleVersion = '1.0.0.0'
                 -Path "$directory/TestManifest/PowerShellDataFile.psd1" `
                 -IncludeRule "PSMissingModuleManifestField" `
                 -OutVariable ruleViolation
-            $ruleViolation.Count | Should Be 0
+            $ruleViolation.Count | Should -Be 0
         }
     }
 }

@@ -1,4 +1,3 @@
-Import-Module PSScriptAnalyzer
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
@@ -31,28 +30,28 @@ Describe "UseManifestExportFields" {
     Context "Invalid manifest file" {
         It "does not process the manifest" {
             $results = Run-PSScriptAnalyzerRule $testManifestInvalidPath
-            $results | Should BeNullOrEmpty
+            $results | Should -BeNullOrEmpty
         }
     }
 
     Context "Manifest contains violations" {
         It "detects FunctionsToExport with wildcard" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardPath
-            $results.Count | Should be 1
-            $results[0].Extent.Text | Should be "'*'"
+            $results.Count | Should -Be 1
+            $results[0].Extent.Text | Should -Be "'*'"
         }
 
         It "suggests corrections for FunctionsToExport with wildcard" {
             $violations = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardPath
             $violationFilepath = Join-path $testManifestPath $testManifestBadFunctionsWildcardPath
             Test-CorrectionExtent $violationFilepath $violations[0] 1 "'*'" "@('Get-Bar', 'Get-Foo')"
-            $violations[0].SuggestedCorrections[0].Description | Should Be "Replace '*' with @('Get-Bar', 'Get-Foo')"
+            $violations[0].SuggestedCorrections[0].Description | Should -Be "Replace '*' with @('Get-Bar', 'Get-Foo')"
         }
 
         It "detects FunctionsToExport with null" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsNullPath
-            $results.Count | Should be 1
-            $results[0].Extent.Text | Should be '$null'
+            $results.Count | Should -Be 1
+            $results[0].Extent.Text | Should -Be '$null'
         }
 
         It "suggests corrections for FunctionsToExport with null and line wrapping" {
@@ -65,25 +64,25 @@ Describe "UseManifestExportFields" {
         It "detects array element containing wildcard" {
 	    # if more than two elements contain wildcard we can show only the first one as of now.
             $results = Run-PSScriptAnalyzerRule $testManifestBadFunctionsWildcardInArrayPath
-            $results.Count | Should be 2
-			($results | Where-Object {$_.Message -match "FunctionsToExport"}).Extent.Text | Should be "'Get-*'"
-            ($results | Where-Object {$_.Message -match "CmdletsToExport"}).Extent.Text | Should be "'Update-*'"
+            $results.Count | Should -Be 2
+			($results | Where-Object {$_.Message -match "FunctionsToExport"}).Extent.Text | Should -Be "'Get-*'"
+            ($results | Where-Object {$_.Message -match "CmdletsToExport"}).Extent.Text | Should -Be "'Update-*'"
 
         }
 
         It "detects CmdletsToExport with wildcard" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadCmdletsWildcardPath
-            $results.Count | Should be 1
-            $results[0].Extent.Text | Should be "'*'"
+            $results.Count | Should -Be 1
+            $results[0].Extent.Text | Should -Be "'*'"
         }
 
         It "detects AliasesToExport with wildcard" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadAliasesWildcardPath
-            $results.Count | Should be 1
-            $results[0].Extent.Text | Should be "'*'"
+            $results.Count | Should -Be 1
+            $results[0].Extent.Text | Should -Be "'*'"
         }
 
-        It "suggests corrections for AliasesToExport with wildcard" {
+        It "suggests corrections for AliasesToExport with wildcard" -pending:($IsCoreClr) {
             $violations = Run-PSScriptAnalyzerRule $testManifestBadAliasesWildcardPath
             $violationFilepath = Join-path $testManifestPath $testManifestBadAliasesWildcardPath
             Test-CorrectionExtent $violationFilepath $violations[0] 1  "'*'" "@('gbar', 'gfoo')"
@@ -91,14 +90,14 @@ Describe "UseManifestExportFields" {
 
         It "detects all the *ToExport violations" {
             $results = Run-PSScriptAnalyzerRule $testManifestBadAllPath
-            $results.Count | Should be 3
+            $results.Count | Should -Be 3
         }
     }
 
     Context "Manifest contains no violations" {
         It "detects all the *ToExport fields explicitly stating lists" {
             $results = Run-PSScriptAnalyzerRule $testManifestGoodPath
-            $results.Count | Should be 0
+            $results.Count | Should -Be 0
         }
     }
 
@@ -108,7 +107,7 @@ Describe "UseManifestExportFields" {
                 -Path "$directory/TestManifest/PowerShellDataFile.psd1" `
                 -IncludeRule "PSUseToExportFieldsInManifest" `
                 -OutVariable ruleViolation
-            $ruleViolation.Count | Should Be 0
+            $ruleViolation.Count | Should -Be 0
         }
     }
 }

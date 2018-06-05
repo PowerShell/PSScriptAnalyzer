@@ -1,12 +1,4 @@
-﻿# Check if PSScriptAnalyzer is already loaded so we don't
-# overwrite a test version of Invoke-ScriptAnalyzer by
-# accident
-if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
-{
-	Import-Module -Verbose PSScriptAnalyzer
-}
-
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
+﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
@@ -52,9 +44,9 @@ Describe "RuleSuppressionWithoutScope" {
     Context "Function" {
         It "Does not raise violations" {
             $suppression = $violations | Where-Object { $_.RuleName -eq "PSProvideCommentHelp" }
-            $suppression.Count | Should Be 0
+            $suppression.Count | Should -Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSProvideCommentHelp" }
-            $suppression.Count | Should Be 0
+            $suppression.Count | Should -Be 0
         }
 
         It "Suppresses rule with extent created using ScriptExtent constructor" {
@@ -63,7 +55,7 @@ Describe "RuleSuppressionWithoutScope" {
               -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" `
               -OutVariable ruleViolations `
               -SuppressedOnly
-            $ruleViolations.Count | Should Be 1
+            $ruleViolations.Count | Should -Be 1
 	    }
 
     }
@@ -71,18 +63,18 @@ Describe "RuleSuppressionWithoutScope" {
     Context "Script" {
         It "Does not raise violations" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSProvideCommentHelp" }
-            $suppression.Count | Should Be 0
+            $suppression.Count | Should -Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSProvideCommentHelp" }
-            $suppression.Count | Should Be 0
+            $suppression.Count | Should -Be 0
         }
     }
 
     Context "RuleSuppressionID" {
         It "Only suppress violations for that ID" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
-            $suppression.Count | Should Be 1
+            $suppression.Count | Should -Be 1
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidDefaultValueForMandatoryParameter" }
-            $suppression.Count | Should Be 1
+            $suppression.Count | Should -Be 1
         }
 
         It "Suppresses PSAvoidUsingPlainTextForPassword violation for the given ID" {
@@ -101,14 +93,14 @@ function SuppressPwdParam()
               -IncludeRule "PSAvoidUsingPlainTextForPassword" `
               -OutVariable ruleViolations `
               -SuppressedOnly
-            $ruleViolations.Count | Should Be 1
+            $ruleViolations.Count | Should -Be 1
         }
     }
 
     Context "Rule suppression within DSC Configuration definition" {
-        It "Suppresses rule" -skip:((Test-PSEditionCoreCLRLinux) -or ($PSVersionTable.PSVersion -lt [Version]'5.0.0')) {
+        It "Suppresses rule" -skip:($IsLinux -or $IsMacOS -or ($PSVersionTable.PSVersion.Major -lt 5)) {
             $suppressedRule = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -SuppressedOnly
-            $suppressedRule.Count | Should Be 1
+            $suppressedRule.Count | Should -Be 1
         }
     }
 
@@ -117,8 +109,8 @@ function SuppressPwdParam()
         Context "Bad Rule Suppression" {
             It "Throws a non-terminating error" {
                 Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionBad -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -ErrorVariable errorRecord -ErrorAction SilentlyContinue
-                $errorRecord.Count | Should Be 1
-                $errorRecord.FullyQualifiedErrorId | Should match "suppression message attribute error"
+                $errorRecord.Count | Should -Be 1
+                $errorRecord.FullyQualifiedErrorId | Should -Match "suppression message attribute error"
             }
         }
 
@@ -134,7 +126,7 @@ Write-Host "write-host"
                     -CustomRulePath (Join-Path $directory "CommunityAnalyzerRules") `
                     -OutVariable ruleViolations `
                     -SuppressedOnly
-                $ruleViolations.Count | Should Be 1
+                $ruleViolations.Count | Should -Be 1
             }
         }
     }
@@ -144,9 +136,9 @@ Describe "RuleSuppressionWithScope" {
     Context "FunctionScope" {
         It "Does not raise violations" {
             $suppression = $violations | Where-Object {$_.RuleName -eq "PSAvoidUsingPositionalParameters" }
-            $suppression.Count | Should Be 0
+            $suppression.Count | Should -Be 0
             $suppression = $violationsUsingScriptDefinition | Where-Object {$_.RuleName -eq "PSAvoidUsingPositionalParameters" }
-            $suppression.Count | Should Be 0
+            $suppression.Count | Should -Be 0
         }
     }
 
@@ -172,7 +164,7 @@ Describe "RuleSuppressionWithScope" {
             }
 '@
             $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
-            $suppressed.Count | Should Be 2
+            $suppressed.Count | Should -Be 2
         }
 
         It "suppresses objects that match glob pattern with glob in the end" {
@@ -192,7 +184,7 @@ Describe "RuleSuppressionWithScope" {
             }
 '@
             $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
-            $suppressed.Count | Should Be 2
+            $suppressed.Count | Should -Be 2
         }
 
         It "suppresses objects that match glob pattern with glob in the begining" {
@@ -212,7 +204,7 @@ Describe "RuleSuppressionWithScope" {
             }
 '@
             $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
-            $suppressed.Count | Should Be 1
+            $suppressed.Count | Should -Be 1
         }
     }
  }

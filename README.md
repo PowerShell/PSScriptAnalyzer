@@ -13,13 +13,12 @@ Table of Contents
 - [Usage](#usage)
 - [Installation](#installation)
     + [From PowerShell Gallery](#from-powershell-gallery)
-      - [Requirements](#requirements)
-        * [Windows](#windows)
-        * [Linux (*Tested only on Ubuntu 14.04*)](#linux-tested-only-on-ubuntu-1404)
+      - [Supported PowerShell Versions and Platforms](#supported-powerShell-versions-and-platforms)
     + [From Source](#from-source)
-      - [Requirements](#requirements-1)
+      - [Requirements](#requirements)
       - [Steps](#steps)
       - [Tests](#tests)
+    + [From Chocolatey](#from-chocolatey)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
   * [Built-in Presets](#built-in-presets)
@@ -28,7 +27,8 @@ Table of Contents
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
 - [Violation Correction](#violation-correction)
 - [Project Management Dashboard](#project-management-dashboard)
-- [Contributing to ScriptAnalyzer](#contributing-to-scriptanalyzer)
+- [Contributions are welcome](#contributions-are-welcome)
+- [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
 
 <!-- tocstop -->
@@ -48,9 +48,13 @@ Usage
 ======================
 
 ``` PowerShell
-Get-ScriptAnalyzerRule [-CustomizedRulePath <string[]>] [-Name <string[]>] [<CommonParameters>] [-Severity <string[]>]
+Get-ScriptAnalyzerRule [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-Name <String[]>] [-Severity <String[]>] [<CommonParameters>]
 
-Invoke-ScriptAnalyzer [-Path] <string> [-CustomizedRulePath <string[]>] [-ExcludeRule <string[]>] [-IncludeRule <string[]>] [-Severity <string[]>] [-Recurse] [<CommonParameters>]
+Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-ExcludeRule <String[]>] [-IncludeDefaultRules] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix] [-EnableExit] [-ReportSummary] [-Settings <Object>] [-SaveDscDependency] [<CommonParameters>]
+
+Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-ExcludeRule <String[]>] [-IncludeDefaultRules] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-EnableExit] [-ReportSummary] [-Settings <Object>] [-SaveDscDependency] [<CommonParameters>]
+
+Invoke-Formatter [-ScriptDefinition] <String> [[-Settings] <Object>] [[-Range] <Int32[]>] [<CommonParameters>]
 ```
 
 [Back to ToC](#table-of-contents)
@@ -65,28 +69,49 @@ Install-Module -Name PSScriptAnalyzer
 
 **Note**: For PowerShell version `5.1.14393.206` or newer, before installing PSScriptAnalyzer, please install the latest Nuget provider by running the following in an elevated PowerShell session.
 ```powershell
-Install-PackageProvider Nuget –force –verbose
+Install-PackageProvider Nuget -MinimumVersion 2.8.5.201 –Force
 Exit
 ```
 
-#### Requirements
+#### Supported PowerShell Versions and Platforms
 
-##### Windows
 - Windows PowerShell 3.0 or greater
-- PowerShell Core
+- PowerShell Core on Windows/Linux/macOS
+- Docker (tested only using Docker CE on Windows 10 1803
+  - PowerShell 6 Windows Image tags using  from [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `nanoserver`, `6.0.2-nanoserver`, `6.0.2-nanoserver-1709`, `windowsservercore` and `6.0.2-windowsservercore`. Example (1 warning gets produced by `Save-Module` but can be ignored):
 
-##### Linux (*Tested only on Ubuntu 14.04*)
-- PowerShell Core
+    ```docker run -it microsoft/powershell:nanoserver pwsh -command "Save-Module -Name PSScriptAnalyzer -Path .; Import-Module .\PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - PowerShell 5.1 (Windows): Only the [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) images work but not the [microsoft/nanoserver](https://hub.docker.com/r/microsoft/windowsservercore/) images because they contain a Core version of it. Example:
+
+    ```docker run -it microsoft/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - Linux tags from  [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `latest`, `ubuntu16.04`, `ubuntu14.04` and `centos7`. - Example:
+
+     ```docker run -it microsoft/powershell:latest pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+
+### From Chocolatey
+
+If you prefer to manage PSScriptAnalyzer as a Windows package, you can use [Chocolatey](https://chocolatey.org) to install it.
+
+If you don't have Chocolatey, you can install it from the [Chocolately Install page](https://chocolatey.org/install).
+With Chocolatey installed, execute the following command to install PSScriptAnalyzer:
+
+```powershell
+choco install psscriptanalyzer
+```
+
+Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the community.
 
 ### From Source
 
 #### Requirements
-* [.NET Core 1.0 SDK Preview 2](https://github.com/dotnet/core/blob/master/release-notes/download-archives/1.0-preview2-download.md)
-* [PlatyPS 0.5.0 or greater](https://github.com/PowerShell/platyPS)
+
+* [.NET Core 2.1.101 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.101) or newer
+* [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
+* Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
 
 #### Steps
 * Obtain the source
-    - Download the latest source code from the release page (https://github.com/PowerShell/PSScriptAnalyzer/releases) OR
+    - Download the latest source code from the [release page](https://github.com/PowerShell/PSScriptAnalyzer/releases) OR
     - Clone the repository (needs git)
     ```powershell
     git clone https://github.com/PowerShell/PSScriptAnalyzer
@@ -95,22 +120,24 @@ Exit
     ```powershell
     cd path/to/PSScriptAnalyzer
     ```
-* Restore packages
-    ```powershell
-    dotnet restore
-    ```
-* Build for your platform
+* Building
+
+    You can either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build using `PowerShell` specifically for your platform as follows:
     * Windows PowerShell version 5.0 and greater
     ```powershell
     .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
     ```
-    * Windows PowerShell version 3.0 and 4.0
+    * Windows PowerShell version 4.0
+    ```powershell
+    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV4Release -Build
+    ```
+    * Windows PowerShell version 3.0
     ```powershell
     .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
     ```
     * PowerShell Core
     ```powershell
-    .\buildCoreClr.ps1 -Framework netstandard1.6 -Configuration Release -Build
+    .\buildCoreClr.ps1 -Framework netstandard2.0 -Configuration Release -Build
     ```
 * Build documenatation
     ```powershell
@@ -118,26 +145,24 @@ Exit
     ```
 * Import the module
 ```powershell
-Import-Module /path/to/PSScriptAnalyzer/out/PSScriptAnalyzer
+Import-Module .\out\PSScriptAnalyzer\PSScriptAnalyzer.psd1
 ```
 
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the built-in rules
 
+* Adding/Removing resource strings
+
+For adding/removing resource strings in the `*.resx` files, it is recommended to use `Visual Studio` since it automatically updates the strongly typed `*.Designer.cs` files. The `Visual Studio 2017 Community Edition` is free to use but should you not have/want to use `Visual Studio` then you can either manually adapt the `*.Designer.cs` files or use the `New-StronglyTypedCsFileForResx.ps1` script although the latter is discouraged since it leads to a bad diff of the `*.Designer.cs` files.
+
 #### Tests
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
-* Ensure Pester is installed on the machine
+* Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) is installed
 * Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
-* Go the Tests folder in your local repository
-* Run Engine Tests:
+* In the root folder of your local repository, run:
 ``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Engine
-Invoke-Pester
-```
-* Run Tests for Built-in rules:
-``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Rules
-Invoke-Pester
+$testScripts = ".\Tests\Engine",".\Tests\Rules",".\Tests\Documentation"
+Invoke-Pester -Script $testScripts
 ```
 
 [Back to ToC](#table-of-contents)
@@ -146,12 +171,12 @@ Suppressing Rules
 =================
 
 You can suppress a rule by decorating a script/function or script/function parameter with .NET's [SuppressMessageAttribute](https://msdn.microsoft.com/en-us/library/system.diagnostics.codeanalysis.suppressmessageattribute.aspx).
-`SuppressMessageAttribute`'s constructor takes two parameters: a category and a check ID. Set the `categoryID` parameter to the name of the rule you want to suppress and set the `checkID` parameter to a null or empty string:
+`SuppressMessageAttribute`'s constructor takes two parameters: a category and a check ID. Set the `categoryID` parameter to the name of the rule you want to suppress and set the `checkID` parameter to a null or empty string. You can optionally add a third named parameter with a justification for suppressing the message:
 
 ``` PowerShell
 function SuppressMe()
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp", "", Justification="Just an example")]
     param()
 
     Write-Verbose -Message "I'm making a difference!"
@@ -260,7 +285,7 @@ that does not output an Error or Warning diagnostic record.
 Then invoke that settings file when using `Invoke-ScriptAnalyzer`:
 
 ``` PowerShell
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting ScriptAnalyzerSettings.psd1
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting PSScriptAnalyzerSettings.psd1
 ```
 
 The next example selects a few rules to execute instead of all the default rules.
@@ -317,49 +342,16 @@ public System.Collections.Generic.IEnumerable<IRule> GetRule(string[] moduleName
 
 Violation Correction
 ====================
-Most violations can be fixed by replacing the violation causing content with the correct alternative.
 
-In an attempt to provide the user with the ability to correct the violation we provide a property, `SuggestedCorrections`, in each DiagnosticRecord instance,
-that contains information needed to rectify the violation.
+Some violations can be fixed by replacing the violation causing content with a suggested alternative. You can use the `-Fix` switch to automatically apply the suggestions. Since `Invoke-ScriptAnalyzer` implements `SupportsShouldProcess`, you can additionally use `-WhatIf` or `-Confirm` to find out which corrections would be applied. It goes without saying that you should use source control when applying those corrections since some some of them such as the one for `AvoidUsingPlainTextForPassword` might require additional script modifications that cannot be made automatically. Should your scripts be sensitive to encoding you should also check that because the initial encoding can not be preserved in all cases.
 
-For example, consider a script `C:\tmp\test.ps1` with the following content:
-``` PowerShell
-PS> Get-Content C:\tmp\test.ps1
-gci C:\
-```
+The initial motivation behind having the `SuggestedCorrections` property on the `ErrorRecord` (which is how the `-Fix` switch works under the hood) was to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid `SuggestedCorrection` only for the following rules, while gradually adding this feature to more rules.
 
-Invoking PSScriptAnalyzer on the file gives the following output.
-``` PowerShell
-PS>$diagnosticRecord = Invoke-ScriptAnalyzer -Path C:\tmp\test.p1
-PS>$diagnosticRecord | select SuggestedCorrections | Format-Custom
-
-class DiagnosticRecord
-{
-  SuggestedCorrections =
-    [
-    class CorrectionExtent
-    {
-        EndColumnNumber = 4
-        EndLineNumber = 1
-        File = C:\Users\kabawany\tmp\test3.ps1
-        StartColumnNumber = 1
-        StartLineNumber = 1
-        Text = Get-ChildItem
-        Description = Replace gci with Get-ChildItem
-    }
-  ]
-}
-```
-
-The `*LineNumber` and `*ColumnNumber` properties give the region of the script that can be replaced by the contents of `Text` property, i.e., replace gci with Get-ChildItem.
-
-The main motivation behind having `SuggestedCorrections` is to enable quick-fix like scenarios in editors like VSCode, Sublime, etc. At present, we provide valid `SuggestedCorrection` only for the following rules, while gradually adding this feature to more rules.
-
-* AvoidAlias.cs
-* AvoidUsingPlainTextForPassword.cs
-* MisleadingBacktick.cs
-* MissingModuleManifestField.cs
-* UseToExportFieldsInManifest.cs
+- AvoidAlias.cs
+- AvoidUsingPlainTextForPassword.cs
+- MisleadingBacktick.cs
+- MissingModuleManifestField.cs
+- UseToExportFieldsInManifest.cs
 
 [Back to ToC](#table-of-contents)
 
@@ -379,26 +371,36 @@ Throughput Graph
 
 [Back to ToC](#table-of-contents)
 
-Contributing to ScriptAnalyzer
+Contributions are welcome
 ==============================
-You are welcome to contribute to this project. There are many ways to contribute:
 
-1. Submit a bug report via [Issues]( https://github.com/PowerShell/PSScriptAnalyzer/issues). For a guide to submitting good bug reports, please read [Painless Bug Tracking](http://www.joelonsoftware.com/articles/fog0000000029.html).
-2. Verify fixes for bugs.
-3. Submit your fixes for a bug. Before submitting, please make sure you have:
-  * Performed code reviews of your own
-  * Updated the test cases if needed
-  * Run the test cases to ensure no feature breaks or test breaks
-  * Added the test cases for new code
-4. Submit a feature request.
-5. Help answer questions in the discussions list.
-6. Submit test cases.
-7. Tell others about the project.
-8. Tell the developers how much you appreciate the product!
+There are many ways to contribute:
 
-You might also read these two blog posts about contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza, and [Don’t “Push” Your Pull Requests](http://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik.
+1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new/choose).
+2. Participate in the discussions of [issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), [pull requests](https://github.com/PowerShell/PSScriptAnalyzer/pulls) and verify/test fixes or new features.
+3. Submit your own fixes or features as a pull request but please discuss it beforehand in an issue if the change is substantial.
+4. Submit test cases.
 
-Before submitting a feature or substantial code contribution, please discuss it with the Windows PowerShell team via [Issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), and ensure it follows the product roadmap. Note that all code submissions will be rigorously reviewed by the Windows PowerShell Team. Only those that meet a high bar for both quality and roadmap fit will be merged into the source.
+[Back to ToC](#table-of-contents)
+
+Creating a Release
+================
+
+- Update changelog (`changelog.md`) with the new version number and change set. When updating the changelog please follow the same pattern as that of previous change sets (otherwise this may break the next step).
+- Import the ReleaseMaker module and execute `New-Release` cmdlet to perform the following actions.
+  - Update module manifest (engine/PSScriptAnalyzer.psd1) with the new version number and change set
+  - Update the version number in `Engine/Engine.csproj` and `Rules/Rules.csproj`
+  - Create a release build in `out/`
+
+```powershell
+    PS> Import-Module .\Utils\ReleaseMaker.psm1
+    PS> New-Release
+```
+
+- Sign the binaries and PowerShell files in the release build and publish the module to [PowerShell Gallery](www.powershellgallery.com).
+- Create a PR on `development` branch, with all the changes made in the previous step.
+- Merge the changes to `development` and then merge `development` to `master` (Note that the `development` to `master` merge should be a `fast-forward` merge).
+- Draft a new release on github and tag `master` with the new version number.
 
 [Back to ToC](#table-of-contents)
 

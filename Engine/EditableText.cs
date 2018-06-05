@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
+using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using System.Management.Automation.Language;
-using System.Text;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -126,7 +125,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return range.Start.Line <= Lines.Count
                 && range.End.Line <= Lines.Count
-                && range.Start.Column <= Lines[range.Start.Line - 1].Length
+                && range.Start.Column <= Lines[range.Start.Line - 1].Length + 1
                 && range.End.Column <= Lines[range.End.Line - 1].Length + 1;
         }
 

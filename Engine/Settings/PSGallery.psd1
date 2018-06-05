@@ -21,7 +21,6 @@
                    'PSAvoidUsingConvertToSecureStringWithPlainText',
                    'PSUsePSCredentialType',
                    'PSAvoidUsingUserNameAndPasswordParams',
-                   'PSAvoidUsingFilePath',
                    'PSDSC*'
                    )
 }

@@ -14,12 +14,12 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
             $violations = Invoke-ScriptAnalyzer -Path $badResourceFilepath -IncludeRule $ruleName
         }
 
-        It "Should find a violations" {
-            $violations.Count | Should Be 5
+        It "Should find a violations" -skip:($IsLinux -or $IsMacOS) {
+            $violations.Count | Should -Be 5
         }
 
-        It "Should mark only the function name" {
-            $violations[0].Extent.Text | Should Be 'Get-TargetResource'
+        It "Should mark only the function name" -skip:($IsLinux -or $IsMacOS) {
+            $violations[0].Extent.Text | Should -Be 'Get-TargetResource'
         }
     }
 
@@ -29,8 +29,8 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
         }
 
         # todo add a test to check one violation per function
-        It "Should find a violations" {
-            $violations.Count | Should Be 0
+        It "Should find a violations" -pending {
+            $violations.Count | Should -Be 0
         }
     }
 }
