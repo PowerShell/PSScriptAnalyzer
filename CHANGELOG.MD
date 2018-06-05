@@ -1,4 +1,12 @@
-﻿## [1.17.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.0) - 2018-05-14
+﻿## [1.17.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.1) - 2018-06-06
+
+### Fixes
+
+- Fix signing so `PSScriptAnalyzer` can be installed without the `-SkipPublisherCheck` switch (#1014)
+- Issues with rule `PSAvoidAssignmentToAutomaticVariable` were fixed (#1007, #1013, #1014)
+- Rule documentation update and cleanup (#988)
+
+## [1.17.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.0) - 2018-06-02
 
 ### New Parameters
 
