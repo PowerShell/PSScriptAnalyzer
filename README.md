@@ -158,16 +158,10 @@ Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests
 
 * Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) is installed
 * Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
-* Go the Tests folder in your local repository
-* Run Engine Tests:
+* In the root folder of your local repository, run:
 ``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Engine
-Invoke-Pester
-```
-* Run Tests for Built-in rules:
-``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Rules
-Invoke-Pester
+$testScripts = ".\Tests\Engine",".\Tests\Rules",".\Tests\Documentation"
+Invoke-Pester -Script $testScripts
 ```
 
 [Back to ToC](#table-of-contents)
