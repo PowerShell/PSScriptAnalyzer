@@ -16,7 +16,6 @@ environment:
 # cache Nuget packages and dotnet CLI cache
 cache:
   - '%USERPROFILE%\.nuget\packages -> appveyor.yml'
-  - '%LocalAppData%\Microsoft\dotnet -> appveyor.yml'
 
 install:
   - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
