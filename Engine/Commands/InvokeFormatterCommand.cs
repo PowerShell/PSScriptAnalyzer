@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Globalization;
 using System.Management.Automation;
@@ -14,7 +13,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// A cmdlet to format a PowerShell script text.
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "Formatter")]
-    [OutputType(typeof(RuleInfo))]
+    [OutputType(typeof(string))]
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
         private const string defaultSettingsPreset = "CodeFormatting";
