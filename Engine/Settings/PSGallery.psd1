@@ -18,9 +18,7 @@
                    'PSAvoidUsingInvokeExpression',
                    'PSAvoidUsingPlainTextForPassword',
                    'PSAvoidUsingComputerNameHardcoded',
-                   'PSAvoidUsingConvertToSecureStringWithPlainText',
                    'PSUsePSCredentialType',
-                   'PSAvoidUsingUserNameAndPasswordParams',
                    'PSDSC*'
                    )
 }
