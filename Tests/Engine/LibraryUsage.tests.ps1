@@ -191,7 +191,7 @@ $testingLibraryUsage = $true
 $null,"Wow6432Node" | ForEach-Object {
 	try
 	{
-		Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+		Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -ErrorAction SilentlyContinue
 	} 
 	catch
 	{
