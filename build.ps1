@@ -1,15 +1,10 @@
+# This function might be a partially out of date and only the -BuildDoc switch is guaranteed to work since it is used and needed for the build process.
 [CmdletBinding()]
 param(
 
     [Parameter(ParameterSetName='Build')]
     [ValidateSet('PSV3 Debug','PSV3 Release','Debug','Release')]
     [string] $Configuration = 'Debug',
-
-    [Parameter(ParameterSetName='Build')]
-    [switch] $BuildSolution = $false,
-
-    [Parameter(ParameterSetName='Build')]
-    [switch] $CleanSolution = $false,
 
     [Parameter(ParameterSetName='Build')]
     [switch] $BuildDocs = $false,
@@ -63,25 +58,9 @@ if (-not (Test-Path $solutionPath))
     throw $errMsg
 }
 
-$buildCmd = Join-Path $projectRoot "build.cmd"
-if (-not (Test-Path $buildCmd))
-{
-    throw "cannot find build.cmd"
-}
-
 if ($CleanOutput)
 {
     Remove-Item -Recurse $outPath\* -Force -Verbose:$verbosity
-}
-
-if ($CleanSolution)
-{
-    & $buildCmd $solutionPath $Configuration 'clean'
-}
-
-if ($BuildSolution)
-{
-    & $buildCmd $solutionPath $Configuration
 }
 
 if ($BuildDocs)
@@ -98,7 +77,7 @@ if ($BuildDocs)
     {
         "Cannot find required minimum version $requiredVersionOfplatyPS of platyPS. Please install it from https://www.powershellgallery.com/packages/platyPS/ using e.g. the following command: Install-Module platyPS"
     }
-    if ((Get-Module platyPS -Verbose:$verbosity) -eq $null)
+    if ($null -eq (Get-Module platyPS -Verbose:$verbosity))
     {
         Import-Module platyPS -Verbose:$verbosity
     }
@@ -111,7 +90,7 @@ if ($BuildDocs)
 
 # Appveyor errors out due to $profile being null. Hence...
 $moduleRootPath = "$HOME/Documents/WindowsPowerShell/Modules"
-if ($profile -ne $null)
+if ($null -ne $profile)
 {
     $moduleRootPath = Join-Path (Split-Path $profile) 'Modules'
 }

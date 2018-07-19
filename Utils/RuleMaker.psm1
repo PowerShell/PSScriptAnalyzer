@@ -33,7 +33,7 @@ Function Get-SolutionRoot
 Function Get-RuleProjectRoot
 {
     $slnRoot = Get-SolutionRoot
-    if ($slnRoot -eq $null)
+    if ($null -eq $slnRoot)
     {
         return $null
     }
@@ -43,7 +43,7 @@ Function Get-RuleProjectRoot
 Function Get-RuleProjectFile
 {
     $prjRoot = Get-RuleProjectRoot
-    if ($prjRoot -eq $null)
+    if ($null -eq $prjRoot)
     {
         return $null
     }
