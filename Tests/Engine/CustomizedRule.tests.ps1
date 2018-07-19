@@ -9,7 +9,7 @@ if (-not (Test-PSEditionCoreCLR))
 	$null,"Wow6432Node" | ForEach-Object {
 		try
 		{
-			Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+			Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -ErrorAction SilentlyContinue
 		}
 		catch
 		{
@@ -66,7 +66,7 @@ Describe "Test importing correct customized rules" {
 				$null,"Wow6432Node" | ForEach-Object {
 					try
 					{
-						Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+						Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -EA SilentlyContinue
 					}
 					catch
 					{

@@ -180,7 +180,22 @@ Describe "Test Path" {
 			Remove-PSDrive $freeDriveName
 			$numFilesResult | Should -Be $numFilesExpected
 			}
-		}
+        }
+        
+        Context "When piping in files" {
+            It "Can be piped in from a string" {
+                $piped = ("$directory\TestScript.ps1" | Invoke-ScriptAnalyzer)
+                $explicit = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1
+    
+                $piped.Count | Should Be $explicit.Count
+            }
+    
+            It "Can be piped from Get-ChildItem" {
+                $piped = ( Get-ChildItem -Path $directory -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
+                $explicit = Invoke-ScriptAnalyzer -Path $directory\TestTestPath*.ps1
+                $piped.Count | Should Be $explicit.Count
+            }
+        }
 	}
 
     Context "When given a directory" {
