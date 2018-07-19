@@ -24,6 +24,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         DefaultParameterSetName = "File",
         SupportsShouldProcess = true,
         HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
+    [OutputType(typeof(DiagnosticRecord))]
+    [OutputType(typeof(SuppressedRecord))]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
         #region Private variables

@@ -13,6 +13,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// A cmdlet to format a PowerShell script text.
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "Formatter")]
+    [OutputType(typeof(string))]
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
         private const string defaultSettingsPreset = "CodeFormatting";
