@@ -326,7 +326,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            var extentedCompatibilityList = compatibilityList.Concat(Enumerable.Repeat(reference, 1));
+            var extentedCompatibilityList = compatibilityList.Union(Enumerable.Repeat(reference, 1));
             foreach (var compat in extentedCompatibilityList)
             {
                 string psedition, psversion, os;
