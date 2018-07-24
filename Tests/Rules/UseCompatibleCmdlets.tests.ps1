@@ -54,4 +54,9 @@ Describe "UseCompatibleCmdlets" {
         @("Start-VM", "New-SmbShare", "Get-Disk") | `
             Test-Command -Settings $settings -ExpectedViolations 1
     }
+
+    Context "Default reference can also be used as target platform" {
+        $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("desktop-5.1.14393.206-windows")}}}
+        @("Remove-Service") | Test-Command -Settings $settings -ExpectedViolations 1
+    }
 }
