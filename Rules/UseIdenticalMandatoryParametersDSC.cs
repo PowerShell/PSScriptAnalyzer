@@ -258,7 +258,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var cimClass = cimClasses?.FirstOrDefault();
             var cimSuperClassProperties = new HashSet<string>(
-                cimClass?.CimSuperClass?.CimClassProperties.Select(p => p.Name) ??
+                cimClass?.CimSuperClass?.CimClassProperties.Select(cimPropertyDeclaration => cimPropertyDeclaration.Name) ??
                 Enumerable.Empty<string>());
 
             return cimClass?
