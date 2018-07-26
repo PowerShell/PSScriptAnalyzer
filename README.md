@@ -18,6 +18,7 @@ Table of Contents
       - [Requirements](#requirements)
       - [Steps](#steps)
       - [Tests](#tests)
+    + [From Chocolatey](#from-chocolatey)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
   * [Built-in Presets](#built-in-presets)
@@ -87,6 +88,19 @@ Exit
 
      ```docker run -it microsoft/powershell:latest pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
 
+### From Chocolatey
+
+If you prefer to manage PSScriptAnalyzer as a Windows package, you can use [Chocolatey](https://chocolatey.org) to install it.
+
+If you don't have Chocolatey, you can install it from the [Chocolately Install page](https://chocolatey.org/install).
+With Chocolatey installed, execute the following command to install PSScriptAnalyzer:
+
+```powershell
+choco install psscriptanalyzer
+```
+
+Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the community.
+
 ### From Source
 
 #### Requirements
@@ -145,16 +159,10 @@ Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests
 
 * Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) is installed
 * Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
-* Go the Tests folder in your local repository
-* Run Engine Tests:
+* In the root folder of your local repository, run:
 ``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Engine
-Invoke-Pester
-```
-* Run Tests for Built-in rules:
-``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Rules
-Invoke-Pester
+$testScripts = ".\Tests\Engine",".\Tests\Rules",".\Tests\Documentation"
+Invoke-Pester -Script $testScripts
 ```
 
 [Back to ToC](#table-of-contents)
@@ -368,7 +376,7 @@ Contributions are welcome
 
 There are many ways to contribute:
 
-1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new).
+1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new/choose).
 2. Participate in the discussions of [issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), [pull requests](https://github.com/PowerShell/PSScriptAnalyzer/pulls) and verify/test fixes or new features.
 3. Submit your own fixes or features as a pull request but please discuss it beforehand in an issue if the change is substantial.
 4. Submit test cases.

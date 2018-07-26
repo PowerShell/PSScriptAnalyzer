@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.16.1'
+ModuleVersion = '1.17.1'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -87,8 +87,11 @@ PrivateData = @{
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
         IconUri = ''
         ReleaseNotes = @'
-### Fixed
-- (#815) Formatter crashes due to invalid extent comparisons
+### Fixes
+
+- Fix signing so `PSScriptAnalyzer` can be installed without the `-SkipPublisherCheck` switch (#1014)
+- Issues with rule `PSAvoidAssignmentToAutomaticVariable` were fixed (#1007, #1013, #1014)
+- Rule documentation update and cleanup (#988)
 '@
     }
 }
@@ -100,6 +103,8 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+
+
 
 
 
