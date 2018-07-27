@@ -30,6 +30,7 @@ function Invoke-AppVeyorInstall {
     $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
     $dotNetCoreSDKVersion = $globalDotJson.sdk.version
     if (-not ((dotnet --version).StartsWith($dotNetCoreSDKVersion))) {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 # https://github.com/dotnet/announcements/issues/77
         Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
         .\dotnet-install.ps1 -Version $dotNetCoreSDKVersion
         Remove-Item .\dotnet-install.ps1
