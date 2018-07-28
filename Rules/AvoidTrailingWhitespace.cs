@@ -42,6 +42,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 var line = lines[lineNumber];
 
+                // Do not flag whitespace only lines (includes tabs)
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
                 var match = Regex.Match(line, @"\s+$");
                 if (match.Success)
                 {
