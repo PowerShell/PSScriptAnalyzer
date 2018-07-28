@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net451' ">
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0-alpha08" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0-alpha*" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net451' AND '$(Configuration)' != 'PSV3Release'">
@@ -64,7 +64,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Management.Automation" Version="6.0.2" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0-alpha*" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
     <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
 
