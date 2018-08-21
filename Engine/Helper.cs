@@ -602,91 +602,52 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Given a commandast, checks whether positional parameters are used or not.
+        /// Given a commandast, checks if the command is a Cmdlet.
         /// </summary>
         /// <param name="cmdAst"></param>
-        /// <param name="moreThanThreePositional">only return true if more than three positional parameters are used</param>
         /// <returns></returns>
-        public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanThreePositional = false)
-        {
+        public bool IsCmdlet(CommandAst cmdAst) {
             if (cmdAst == null)
             {
                 return false;
             }
 
-            var commandInfo = GetCommandInfoLegacy(cmdAst.GetCommandName());
-            if (commandInfo == null || (commandInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
-            {
-                return false;
-            }
+            var commandInfo = GetCommandInfo(cmdAst.GetCommandName());
+            return (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet);
+        }
 
-            IEnumerable<ParameterMetadata> switchParams = null;
-
+        /// <summary>
+        /// Given a commandast, checks whether positional parameters are used or not.
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <param name="moreThanTwoPositional">only return true if more than two positional parameters are used</param>
+        /// <returns></returns>
+        public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanTwoPositional = false)
+        {
             if (HasSplattedVariable(cmdAst))
             {
                 return false;
             }
 
-            if (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet)
-            {
-                try
-                {
-                    switchParams = commandInfo.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter);
-                }
-                catch (Exception)
-                {
-                    switchParams = null;
-                }
-            }
-
-            int parameters = 0;
             // Because of the way we count, we will also count the cmdlet as an argument so we have to -1
-            int arguments = -1;
+            int argumentsWithoutProcedingParameters = 0;
 
-            foreach (CommandElementAst ceAst in cmdAst.CommandElements)
-            {
-                var cmdParamAst = ceAst as CommandParameterAst;
-                if (cmdParamAst != null)
+            var commandElementCollection = cmdAst.CommandElements;
+            for (int i = 1; i < commandElementCollection.Count(); i++) {
+                if (!(commandElementCollection[i] is CommandParameterAst) && !(commandElementCollection[i-1] is CommandParameterAst))
                 {
-                    // Skip if it's a switch parameter
-                    if (switchParams != null &&
-                        switchParams.Any(
-                            pm => String.Equals(
-                                pm.Name,
-                                cmdParamAst.ParameterName, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        continue;
-                    }
-
-                    parameters += 1;
-
-                    if (cmdParamAst.Argument != null)
-                    {
-                        arguments += 1;
-                    }
-
-                }
-                else
-                {
-                    arguments += 1;
+                    argumentsWithoutProcedingParameters++;
                 }
             }
 
             // if not the first element in a pipeline, increase the number of arguments by 1
             PipelineAst parent = cmdAst.Parent as PipelineAst;
-
             if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
             {
-                arguments += 1;
+                argumentsWithoutProcedingParameters++;
             }
 
-            // if we are only checking for 3 or more positional parameters, check that arguments < parameters + 3
-            if (moreThanThreePositional && (arguments - parameters) < 3)
-            {
-                return false;
-            }
-
-            return arguments > parameters;
+            return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
         }
 
 

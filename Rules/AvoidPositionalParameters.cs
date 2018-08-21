@@ -27,6 +27,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
+            // Find all function definitions in the script and add them to the set.
+            IEnumerable<Ast> functionDefinitionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
+            HashSet<String> declaredFunctionNames = new HashSet<String>();
+
+            foreach (FunctionDefinitionAst functionDefinitionAst in functionDefinitionAsts)
+            {
+                if (string.IsNullOrEmpty(functionDefinitionAst.Name))
+                {
+                    continue;
+                }
+                declaredFunctionNames.Add(functionDefinitionAst.Name);
+            }
+
             // Finds all CommandAsts.
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
@@ -39,8 +52,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // MSDN: CommandAst.GetCommandName Method
                 if (cmdAst.GetCommandName() == null) continue;
                 
-                if (Helper.Instance.GetCommandInfoLegacy(cmdAst.GetCommandName()) != null
-                    && Helper.Instance.PositionalParameterUsed(cmdAst, true))
+                if ((Helper.Instance.IsCmdlet(cmdAst) || declaredFunctionNames.Contains(cmdAst.GetCommandName())) &&
+                    (Helper.Instance.PositionalParameterUsed(cmdAst, true)))
                 {
                     PipelineAst parent = cmdAst.Parent as PipelineAst;
 
