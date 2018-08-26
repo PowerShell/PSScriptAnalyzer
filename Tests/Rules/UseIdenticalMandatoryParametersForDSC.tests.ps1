@@ -7,6 +7,7 @@ $badResourceFilepath = [System.IO.Path]::Combine(
     'MSFT_WaitForAnyNoIdenticalMandatoryParameter.psm1');
 $goodResourceFilepath = [System.IO.Path]::Combine($resourceBasepath,'MSFT_WaitForAny','MSFT_WaitForAny.psm1');
 
+$noparentClassFilepath = [System.IO.Path]::Combine($resourceBasepath,'ClassWithNoParent','ClassWithNoParent.psm1');
 
 Describe "UseIdenticalMandatoryParametersForDSC" {
     Context "When a mandatory parameters are not present" {
@@ -30,6 +31,14 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
 
         # todo add a test to check one violation per function
         It "Should find a violations" -pending {
+            $violations.Count | Should -Be 0
+        }
+    }
+
+    Context "When a CIM class has no parent" {
+        # regression test for #982 - just check no uncaught exception
+        It "Should find no violations, and throw no exceptions" {
+            $violations = Invoke-ScriptAnalyzer -Path $noParentClassFilepath -IncludeRule $ruleName
             $violations.Count | Should -Be 0
         }
     }
