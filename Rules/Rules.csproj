@@ -46,7 +46,7 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0-alpha*" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
     <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
