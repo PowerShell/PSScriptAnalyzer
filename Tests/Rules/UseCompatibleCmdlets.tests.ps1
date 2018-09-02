@@ -26,9 +26,11 @@ Describe "UseCompatibleCmdlets" {
         process
         {
             It ("found {0} violations for '{1}'" -f $expectedViolations, $command) {
-                Invoke-ScriptAnalyzer -ScriptDefinition $command -IncludeRule $ruleName -Settings $settings | `
-                    Get-Count | `
-                    Should -Be $expectedViolations
+                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $command -IncludeRule $ruleName -Settings $settings
+                $warnings.Count | Should -Be  $expectedViolations
+                $warnings | ForEach-Object {
+                    $_.RuleName | Should -Be 'PSUseCompatibleCmdlets'
+                }
             }
         }
     }
