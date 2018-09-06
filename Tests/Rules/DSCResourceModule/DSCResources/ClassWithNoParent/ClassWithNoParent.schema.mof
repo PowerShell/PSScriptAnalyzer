@@ -1,6 +1,0 @@
-[ClassVersion("1.0.0")]
-class ClassWithNoParent
-{
-    [Write] Boolean Anonymous;
-};
-

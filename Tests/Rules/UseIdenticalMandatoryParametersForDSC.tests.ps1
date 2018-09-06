@@ -7,7 +7,6 @@ $badResourceFilepath = [System.IO.Path]::Combine(
     'MSFT_WaitForAnyNoIdenticalMandatoryParameter.psm1');
 $goodResourceFilepath = [System.IO.Path]::Combine($resourceBasepath,'MSFT_WaitForAny','MSFT_WaitForAny.psm1');
 
-$noparentClassFilepath = [System.IO.Path]::Combine($resourceBasepath,'ClassWithNoParent','ClassWithNoParent.psm1');
 
 Describe "UseIdenticalMandatoryParametersForDSC" {
     Context "When a mandatory parameters are not present" {
@@ -38,7 +37,46 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
     Context "When a CIM class has no parent" {
         # regression test for #982 - just check no uncaught exception
         It "Should find no violations, and throw no exceptions" {
-            $violations = Invoke-ScriptAnalyzer -Path $noParentClassFilepath -IncludeRule $ruleName
+
+            # Arrange test content in testdrive
+            $noparentClassDir = [System.IO.Path]::Combine("TestDrive:\",'DSCResources\ClassWithNoParent');
+
+            # need a fake module
+            Set-Content -Path "TestDrive:\test.psd1" -Value @"
+@{
+    ModuleVersion = '1.0'
+    GUID = 'f5e6cc2a-5500-4592-bbe2-ef033754b56f'
+    Author = 'test'
+
+    FunctionsToExport = @()
+    CmdletsToExport = @()
+    VariablesToExport = '*'
+    AliasesToExport = @()
+
+    # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
+    PrivateData = @{
+        PSData = @{
+        } # End of PSData hashtable
+    } # End of PrivateData hashtable
+}
+"@
+            # and under it a directory called dscresources\something
+            New-Item -ItemType Directory -Path $noParentClassDir
+            $noparentClassFilepath = [System.IO.Path]::Combine($noParentClassDir,'ClassWithNoParent.psm1');
+            $noparentClassMofFilepath = [System.IO.Path]::Combine($noParentClassDir,'ClassWithNoParent.schema.mof');
+
+            # containing a .psm1 file and a .schema.mof file with same base name
+            Set-Content -Path $noParentClassFilepath -Value "#requires -Version 4.0 -Modules CimCmdlets" # the file content doesn't much matter
+
+            Set-Content -Path $noParentClassMofFilePath -Value @"
+[ClassVersion("1.0.0")]
+class ClassWithNoParent
+{
+    [Write] Boolean Anonymous;
+};
+"@
+            # Act - run scriptanalyzer
+            $violations = Invoke-ScriptAnalyzer -Path $noParentClassFilepath -IncludeRule $ruleName -ErrorAction Stop
             $violations.Count | Should -Be 0
         }
     }
