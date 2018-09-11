@@ -54,6 +54,16 @@ $hashtable = @{
             $violations.Count | Should -Be 1
             Test-CorrectionExtentFromContent $def $violations 1 '              ' '       '
         }
+        
+        It "Should not crash if property name reaches further to the right than the longest property name (regression test for issue 1067)" {
+            $def = @'
+$hashtable = @{ property1 = "value"
+    anotherProperty = "another value"
+}
+'@
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction Stop | Get-Count | Should -Be 0
+        }
 
         It "Should ignore if a hashtable is empty" {
             $def = @'
