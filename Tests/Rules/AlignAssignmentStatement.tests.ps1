@@ -54,11 +54,11 @@ $hashtable = @{
             $violations.Count | Should -Be 1
             Test-CorrectionExtentFromContent $def $violations 1 '              ' '       '
         }
-        
+
         It "Should not crash if property name reaches further to the right than the longest property name (regression test for issue 1067)" {
             $def = @'
 $hashtable = @{ property1 = "value"
-    anotherProperty = "another value"
+    anotherProperty       = "another value"
 }
 '@
 
