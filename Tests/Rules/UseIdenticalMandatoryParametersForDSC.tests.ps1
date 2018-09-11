@@ -36,13 +36,14 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
 
     Context "When a CIM class has no parent" {
         # regression test for #982 - just check no uncaught exception
-        It "Should find no violations, and throw no exceptions" {
+        It "Should find no violations, and throw no exceptions" -skip:($IsLinux -or $IsMacOS) {
 
             # Arrange test content in testdrive
-            $noparentClassDir = [System.IO.Path]::Combine("TestDrive:\",'DSCResources\ClassWithNoParent');
+            $noparentClassDir = Join-Path "TestDrive:" "DSCResources" "ClassWithNoParent"
 
             # need a fake module
-            Set-Content -Path "TestDrive:\test.psd1" -Value @"
+	    $fakeModulePath = Join-Path "TestDrive:" "test.psd1"	  
+            Set-Content -Path $fakeModulePath -Value @"
 @{
     ModuleVersion = '1.0'
     GUID = 'f5e6cc2a-5500-4592-bbe2-ef033754b56f'
@@ -62,8 +63,8 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
 "@
             # and under it a directory called dscresources\something
             New-Item -ItemType Directory -Path $noParentClassDir
-            $noparentClassFilepath = [System.IO.Path]::Combine($noParentClassDir,'ClassWithNoParent.psm1');
-            $noparentClassMofFilepath = [System.IO.Path]::Combine($noParentClassDir,'ClassWithNoParent.schema.mof');
+            $noparentClassFilepath = Join-Path $noParentClassDir 'ClassWithNoParent.psm1' 
+            $noparentClassMofFilepath = Join-Path $noParentClassDir 'ClassWithNoParent.schema.mof'
 
             # containing a .psm1 file and a .schema.mof file with same base name
             Set-Content -Path $noParentClassFilepath -Value "#requires -Version 4.0 -Modules CimCmdlets" # the file content doesn't much matter
