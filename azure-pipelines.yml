@@ -1,0 +1,24 @@
+steps:
+- powershell: |
+   Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall
+   if ($IsCoreClr) {
+     Invoke-AppveyorBuild -CheckoutPath $env:BUILD_SOURCESDIRECTORY -BuildConfiguration Release -BuildType 'NetStandard'
+   }
+   else {
+     Invoke-AppveyorBuild -CheckoutPath $env:BUILD_SOURCESDIRECTORY -BuildConfiguration Release -BuildType 'FullCLR'
+   }
+   $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
+   Copy-Item "$env:BUILD_SOURCESDIRECTORY\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
+   $testScripts = "$env:BUILD_SOURCESDIRECTORY\Tests\Engine","$env:BUILD_SOURCESDIRECTORY\Tests\Rules"
+   $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile "TestResults.xml" -PassThru 
+  displayName: 'Install, Build and Test'
+- task: PublishTestResults@2
+  displayName: 'Publish Test Results TestResults.xml'
+  inputs:
+    testRunner: NUnit
+    testResultsFiles: TestResults.xml
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: PSScriptAnalyzer'
+  inputs:
+    PathtoPublish: out/PSScriptAnalyzer
+    ArtifactName: PSScriptAnalyzer
