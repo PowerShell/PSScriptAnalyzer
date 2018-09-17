@@ -22,3 +22,4 @@ steps:
   inputs:
     PathtoPublish: out/PSScriptAnalyzer
     ArtifactName: PSScriptAnalyzer
+  condition: ne(variables['Build.Reason'], 'PullRequest')
