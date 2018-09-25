@@ -51,9 +51,10 @@ Describe "Settings Class" {
                 ${settings}.${Name}.Count | Should -Be 0
         }
 
-        It "Should be able to parse empty settings hashtable" {
-            Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings @{ ExcludeRules = @()}   | Should -Not -BeNullOrEmpty
-            Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings '@{ ExcludeRules = @()}' | Should -Not -BeNullOrEmpty
+        It "Should be able to parse empty settings hashtable from settings file" {
+            $testPSSASettingsFilePath = "TestDrive:\PSSASettings.psd1"
+            Set-Content $testPSSASettingsFilePath -Value '@{ExcludeRules = @()}'
+            Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings $testPSSASettingsFilePath | Should -Not -BeNullOrEmpty
         }
     }
 
