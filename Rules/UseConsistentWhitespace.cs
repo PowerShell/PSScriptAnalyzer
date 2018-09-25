@@ -42,6 +42,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public bool CheckOpenBrace { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckInnerBrace { get; protected set; }
+
+        [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckOpenParen { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
@@ -56,6 +59,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (CheckOpenBrace)
             {
                 violationFinders.Add(FindOpenBraceViolations);
+            }
+
+            if (CheckInnerBrace)
+            {
+                violationFinders.Add(FindInnerBraceViolations);
             }
 
             if (CheckOpenParen)
@@ -233,6 +241,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+        private IEnumerable<DiagnosticRecord> FindInnerBraceViolations(TokenOperations tokenOperations)
+        {
+            foreach (var lcurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
+            {
+                if (lcurly.Next == null
+                    || !IsPreviousTokenOnSameLine(lcurly)
+                    || lcurly.Next.Value.Kind == TokenKind.LCurly
+                    || ((lcurly.Next.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                {
+                    continue;
+                }
+
+                if (!IsNextTokenApartByWhitespace(lcurly))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.Brace),
+                        lcurly.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, true, false).ToList());
+                }
+            }
+        }
+
         private bool IsSeparator(Token token)
         {
             return token.Kind == TokenKind.Comma || token.Kind == TokenKind.Semi;
@@ -289,6 +323,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return whiteSpaceSize ==
                 (tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber);
+        }
+
+        private bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
+        {
+            return whiteSpaceSize ==
+                (tokenNode.Next.Value.Extent.StartColumnNumber - tokenNode.Value.Extent.EndColumnNumber);
         }
 
         private bool IsPreviousTokenOnSameLineAndApartByWhitespace(LinkedListNode<Token> tokenNode)
