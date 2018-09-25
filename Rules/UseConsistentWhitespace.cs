@@ -45,6 +45,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public bool CheckInnerBrace { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckPipe { get; protected set; }
+
+        [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckOpenParen { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
@@ -64,6 +67,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (CheckInnerBrace)
             {
                 violationFinders.Add(FindInnerBraceViolations);
+            }
+
+            if (CheckPipe)
+            {
+                violationFinders.Add(FindPipeViolations);
             }
 
             if (CheckOpenParen)
@@ -264,6 +272,55 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         tokenOperations.Ast.Extent.File,
                         null,
                         GetCorrections(rCurly.Previous.Value, rCurly.Value, rCurly.Next.Value, true, false).ToList());
+                }
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> FindPipeViolations(TokenOperations tokenOperations)
+        {
+            foreach (var pipe in tokenOperations.GetTokenNodes(TokenKind.Pipe))
+            {
+                if (pipe.Next == null
+                    || !IsPreviousTokenOnSameLine(pipe)
+                    || pipe.Next.Value.Kind == TokenKind.Pipe
+                    || ((pipe.Next.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                {
+                    continue;
+                }
+
+                if (!IsNextTokenApartByWhitespace(pipe))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.Brace),
+                        pipe.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, false, true).ToList());
+                }
+            }
+
+            foreach (var pipe in tokenOperations.GetTokenNodes(TokenKind.Pipe))
+            {
+                if (pipe.Previous == null
+                    || !IsPreviousTokenOnSameLine(pipe)
+                    || pipe.Previous.Value.Kind == TokenKind.Pipe
+                    || ((pipe.Previous.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                {
+                    continue;
+                }
+
+                if (!IsPreviousTokenApartByWhitespace(pipe))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.Brace),
+                        pipe.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, true, false).ToList());
                 }
             }
         }
