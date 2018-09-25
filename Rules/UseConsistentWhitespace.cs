@@ -219,6 +219,55 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+        private IEnumerable<DiagnosticRecord> FindInnerBraceViolations(TokenOperations tokenOperations)
+        {
+            foreach (var lCurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
+            {
+                if (lCurly.Next == null
+                    || !IsPreviousTokenOnSameLine(lCurly)
+                    || lCurly.Next.Value.Kind == TokenKind.LCurly
+                    || ((lCurly.Next.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                {
+                    continue;
+                }
+
+                if (!IsNextTokenApartByWhitespace(lCurly))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.Brace),
+                        lCurly.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(lCurly.Previous.Value, lCurly.Value, lCurly.Next.Value, false, true).ToList());
+                }
+            }
+
+            foreach (var rCurly in tokenOperations.GetTokenNodes(TokenKind.RCurly))
+            {
+                if (rCurly.Previous == null
+                    || !IsPreviousTokenOnSameLine(rCurly)
+                    || rCurly.Previous.Value.Kind == TokenKind.LCurly
+                    || ((rCurly.Previous.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                {
+                    continue;
+                }
+
+                if (!IsPreviousTokenApartByWhitespace(rCurly))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.Brace),
+                        rCurly.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(rCurly.Previous.Value, rCurly.Value, rCurly.Next.Value, true, false).ToList());
+                }
+            }
+        }
+
         private IEnumerable<DiagnosticRecord> FindOpenParenViolations(TokenOperations tokenOperations)
         {
             foreach (var lparen in tokenOperations.GetTokenNodes(TokenKind.LParen))
@@ -237,32 +286,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         tokenOperations.Ast.Extent.File,
                         null,
                         GetCorrections(lparen.Previous.Value, lparen.Value, lparen.Next.Value, false, true).ToList());
-                }
-            }
-        }
-
-        private IEnumerable<DiagnosticRecord> FindInnerBraceViolations(TokenOperations tokenOperations)
-        {
-            foreach (var lcurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
-            {
-                if (lcurly.Next == null
-                    || !IsPreviousTokenOnSameLine(lcurly)
-                    || lcurly.Next.Value.Kind == TokenKind.LCurly
-                    || ((lcurly.Next.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
-                {
-                    continue;
-                }
-
-                if (!IsNextTokenApartByWhitespace(lcurly))
-                {
-                    yield return new DiagnosticRecord(
-                        GetError(ErrorKind.Brace),
-                        lcurly.Value.Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        tokenOperations.Ast.Extent.File,
-                        null,
-                        GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, true, false).ToList());
                 }
             }
         }
