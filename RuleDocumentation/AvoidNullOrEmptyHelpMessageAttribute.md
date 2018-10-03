@@ -1,4 +1,4 @@
-# AvoidNullOrEmtpyHelpMessageAttribute
+# AvoidNullOrEmptyHelpMessageAttribute
 
 **Severity Level: Warning**
 

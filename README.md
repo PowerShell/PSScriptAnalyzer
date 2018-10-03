@@ -76,7 +76,7 @@ Exit
 #### Supported PowerShell Versions and Platforms
 
 - Windows PowerShell 3.0 or greater
-- PowerShell Core on Windows/Linux/macOS
+- PowerShell Core 6.0.2 or greater on Windows/Linux/macOS
 - Docker (tested only using Docker CE on Windows 10 1803
   - PowerShell 6 Windows Image tags using  from [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `nanoserver`, `6.0.2-nanoserver`, `6.0.2-nanoserver-1709`, `windowsservercore` and `6.0.2-windowsservercore`. Example (1 warning gets produced by `Save-Module` but can be ignored):
 

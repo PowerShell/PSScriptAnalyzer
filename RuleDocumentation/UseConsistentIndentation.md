@@ -15,6 +15,7 @@ Indentation should be consistent throughout the source file.
         PSUseConsistentIndentation = @{
             Enable = $true
             IndentationSize = 4
+            Kind = 'space'
         }
     }
 ```
@@ -25,7 +26,7 @@ Indentation should be consistent throughout the source file.
 
 Enable or disable the rule during ScriptAnalyzer invocation.
 
-#### IndentationSize: bool (Default value is `4`)
+#### IndentationSize: int (Default value is `4`)
 
 Indentation size in the number of space characters.
 

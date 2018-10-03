@@ -43,6 +43,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool hasInitializationError;
         private string reference;
         private readonly string defaultReference = "desktop-5.1.14393.206-windows";
+        private readonly string alternativeDefaultReference = "core-6.0.2-windows";
         private RuleParameters ruleParameters;
 
         public UseCompatibleCmdlets()
@@ -274,6 +275,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             ruleParameters.compatibility = compatibilityList.ToArray();
             reference = defaultReference;
+            if (compatibilityList.Count == 1 && compatibilityList[0] == defaultReference)
+            {
+                reference = alternativeDefaultReference;
+            }
 #if DEBUG
             // Setup reference file
             object referenceObject;
@@ -326,7 +331,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return;
             }
 
-            var extentedCompatibilityList = compatibilityList.Concat(Enumerable.Repeat(reference, 1));
+            var extentedCompatibilityList = compatibilityList.Union(Enumerable.Repeat(reference, 1));
             foreach (var compat in extentedCompatibilityList)
             {
                 string psedition, psversion, os;
