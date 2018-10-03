@@ -560,11 +560,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-                if (rhsList.Count == 0)
-                {
-                    ThrowInvalidDataException(kvp.Item2);
-                }
-
                 output[key] = rhsList.ToArray();
             }
 
@@ -629,7 +624,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            return null;
+            return result;
         }
 
         private void ThrowInvalidDataException(Ast ast)
