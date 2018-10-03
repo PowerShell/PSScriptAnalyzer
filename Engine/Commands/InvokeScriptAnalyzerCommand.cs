@@ -24,6 +24,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         DefaultParameterSetName = "File",
         SupportsShouldProcess = true,
         HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
+    [OutputType(typeof(DiagnosticRecord))]
+    [OutputType(typeof(SuppressedRecord))]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
         #region Private variables
@@ -279,8 +281,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.SessionState,
                 recurseCustomRulePath);
 
-            if (IsFileParameterSet())
+            if (IsFileParameterSet() && Path != null)
             {
+                // just used to obtain the directory to use to find settings below
                 ProcessPath();
             }
 
@@ -291,7 +294,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 var settingsObj = PSSASettings.Create(
                     settings,
-                    processedPaths == null || processedPaths.Count == 0 ? null : processedPaths[0],
+                    processedPaths == null || processedPaths.Count == 0 ? CurrentProviderLocation("FileSystem").ProviderPath : processedPaths[0],
                     this,
                     GetResolvedProviderPathFromPSPath);
                 if (settingsObj != null)
@@ -350,6 +353,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 return;
             }
 
+            if (IsFileParameterSet())
+            {
+                ProcessPath();
+            }
+            
 #if !PSV3
             // TODO Support dependency resolution for analyzing script definitions
             if (saveDscDependency)

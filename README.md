@@ -14,12 +14,11 @@ Table of Contents
 - [Installation](#installation)
     + [From PowerShell Gallery](#from-powershell-gallery)
       - [Supported PowerShell Versions and Platforms](#supported-powerShell-versions-and-platforms)
-        * [Windows](#windows)
-        * [Linux (*Tested only on Ubuntu 14.04*)](#linux-tested-only-on-ubuntu-1404)
     + [From Source](#from-source)
-      - [Requirements](#requirements-1)
+      - [Requirements](#requirements)
       - [Steps](#steps)
       - [Tests](#tests)
+    + [From Chocolatey](#from-chocolatey)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
   * [Built-in Presets](#built-in-presets)
@@ -77,14 +76,34 @@ Exit
 #### Supported PowerShell Versions and Platforms
 
 - Windows PowerShell 3.0 or greater
-- PowerShell Core on Windows/Linux/macOS
-- Docker (tested only using Docker CE on Windows 10 1803):
-  - [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) for Windows. Example:
-  ```docker run -it microsoft/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
-  - [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/) for Linux. Example:
-  ```docker run -it microsoft/powershell pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+- PowerShell Core 6.0.2 or greater on Windows/Linux/macOS
+- Docker (tested only using Docker CE on Windows 10 1803
+  - PowerShell 6 Windows Image tags using  from [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `nanoserver`, `6.0.2-nanoserver`, `6.0.2-nanoserver-1709`, `windowsservercore` and `6.0.2-windowsservercore`. Example (1 warning gets produced by `Save-Module` but can be ignored):
+
+    ```docker run -it microsoft/powershell:nanoserver pwsh -command "Save-Module -Name PSScriptAnalyzer -Path .; Import-Module .\PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - PowerShell 5.1 (Windows): Only the [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) images work but not the [microsoft/nanoserver](https://hub.docker.com/r/microsoft/windowsservercore/) images because they contain a Core version of it. Example:
+
+    ```docker run -it microsoft/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - Linux tags from  [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `latest`, `ubuntu16.04`, `ubuntu14.04` and `centos7`. - Example:
+
+     ```docker run -it microsoft/powershell:latest pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+
+### From Chocolatey
+
+If you prefer to manage PSScriptAnalyzer as a Windows package, you can use [Chocolatey](https://chocolatey.org) to install it.
+
+If you don't have Chocolatey, you can install it from the [Chocolately Install page](https://chocolatey.org/install).
+With Chocolatey installed, execute the following command to install PSScriptAnalyzer:
+
+```powershell
+choco install psscriptanalyzer
+```
+
+Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the community.
 
 ### From Source
+
+#### Requirements
 
 * [.NET Core 2.1.101 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.101) or newer
 * [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
@@ -140,16 +159,10 @@ Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests
 
 * Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) is installed
 * Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
-* Go the Tests folder in your local repository
-* Run Engine Tests:
+* In the root folder of your local repository, run:
 ``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Engine
-Invoke-Pester
-```
-* Run Tests for Built-in rules:
-``` PowerShell
-cd /path/to/PSScriptAnalyzer/Tests/Rules
-Invoke-Pester
+$testScripts = ".\Tests\Engine",".\Tests\Rules",".\Tests\Documentation"
+Invoke-Pester -Script $testScripts
 ```
 
 [Back to ToC](#table-of-contents)
@@ -363,7 +376,7 @@ Contributions are welcome
 
 There are many ways to contribute:
 
-1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new).
+1. Open a new bug report, feature request or just ask a question by opening a new issue [here]( https://github.com/PowerShell/PSScriptAnalyzer/issues/new/choose).
 2. Participate in the discussions of [issues](https://github.com/PowerShell/PSScriptAnalyzer/issues), [pull requests](https://github.com/PowerShell/PSScriptAnalyzer/pulls) and verify/test fixes or new features.
 3. Submit your own fixes or features as a pull request but please discuss it beforehand in an issue if the change is substantial.
 4. Submit test cases.

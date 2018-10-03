@@ -26,5 +26,9 @@
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv3" approvers="vigarg;gstolt">
     <file src="__INPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
     <file src="__INPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
-  </job>
+ </job>
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv4" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+ </job>
 </SignConfigXML>

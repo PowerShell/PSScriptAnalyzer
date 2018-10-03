@@ -63,6 +63,20 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             $warnings.Count | Should -Be 0
         }
 
+        It "Does not throw a NullReferenceException when using assigning a .Net property to a .Net property (Bug in 1.17.0 - issue 1007)" {
+            Invoke-ScriptAnalyzer -ScriptDefinition '[foo]::bar = [baz]::qux' -ErrorAction Stop
+        }
+
+        It "Does not flag properties of a readonly variable (issue 1012)" {
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition '$Host.PrivateData["ErrorBackgroundColor"] = "Black"'
+            $warnings.Count | Should -Be 0
+        }
+
+        It "Does not flag RHS of variable assignment (Bug in 1.17.0, issue 1013)" {
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition '[foo]::bar = $true'
+            $warnings.Count | Should -Be 0
+        }
+
         It "Setting Variable <VariableName> throws exception in applicable PowerShell version to verify the variables is read-only" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity, $OnlyPresentInCoreClr)
 

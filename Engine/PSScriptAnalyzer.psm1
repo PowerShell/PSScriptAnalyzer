@@ -13,6 +13,9 @@ $binaryModuleRoot = $PSModuleRoot
 
 if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')) {
     $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'coreclr'
+    if ($PSVersionTable.PSVersion -lt [version]'6.0.2') {
+        throw "Minimum supported version of PSScriptAnalyzer for PowerShell Core is 6.0.2 but current version is '$($PSVersionTable.PSVersion)'. Please update PowerShell Core."
+    }
 }
 else {
     if ($PSVersionTable.PSVersion.Major -eq 3) {

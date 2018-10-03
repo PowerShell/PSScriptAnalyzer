@@ -2,8 +2,7 @@
     Severity='Warning'
     IncludeRules=@('PSAvoidUsingCmdletAliases',
                     'PSAvoidUsingPositionalParameters',
-                    'PSAvoidUsingInternalURLs'
-                    'PSAvoidUninitializedVariable')
+                    'PSAvoidUsingInternalURLs')
     ExcludeRules=@(1)
     Exclude=@('blah')
 }

@@ -9,7 +9,7 @@ if (-not (Test-PSEditionCoreCLR))
 	$null,"Wow6432Node" | ForEach-Object {
 		try
 		{
-			Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+			Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -ErrorAction SilentlyContinue
 		}
 		catch
 		{
@@ -66,7 +66,7 @@ Describe "Test importing correct customized rules" {
 				$null,"Wow6432Node" | ForEach-Object {
 					try
 					{
-						Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+						Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -EA SilentlyContinue
 					}
 					catch
 					{
@@ -148,6 +148,19 @@ Describe "Test importing correct customized rules" {
 			$expectedScriptPath = Join-Path $directory 'TestScript.ps1'
 			$violations[0].ScriptPath | Should -Be $expectedScriptPath
 		}
+
+        It "will set SuggestedCorrections" {
+            $violations = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule
+            $expectedScriptPath = Join-Path $directory 'TestScript.ps1'
+            $violations[0].SuggestedCorrections | Should -Not -BeNullOrEmpty
+            $violations[0].SuggestedCorrections.StartLineNumber   | Should -Be 1
+            $violations[0].SuggestedCorrections.EndLineNumber     | Should -Be 2
+            $violations[0].SuggestedCorrections.StartColumnNumber | Should -Be 3
+            $violations[0].SuggestedCorrections.EndColumnNumber   | Should -Be 4
+            $violations[0].SuggestedCorrections.Text   | Should -Be 'text'
+            $violations[0].SuggestedCorrections.File   | Should -Be 'filePath'
+            $violations[0].SuggestedCorrections.Description   | Should -Be 'description'
+        }
 
         if (!$testingLibraryUsage)
 		{
