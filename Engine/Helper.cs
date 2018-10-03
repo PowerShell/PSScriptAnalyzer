@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
-        private Dictionary<string, CommandInfo> commandInfoCache;
+        private Dictionary<CommandLookupKey, CommandInfo> commandInfoCache;
 
         #endregion
 
@@ -142,7 +142,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
             if (commandInfoCache == null)
             {
-                commandInfoCache = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
+                commandInfoCache = new Dictionary<CommandLookupKey, CommandInfo>();
             }
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
@@ -700,15 +700,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 cmdletName = name;
             }
 
+            var key = new CommandLookupKey(name, commandType);
             lock (getCommandLock)
             {
-                if (commandInfoCache.ContainsKey(cmdletName))
+                if (commandInfoCache.ContainsKey(key))
                 {
-                    return commandInfoCache[cmdletName];
+                    return commandInfoCache[key];
                 }
 
                 var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
-                commandInfoCache.Add(cmdletName, commandInfo);
+                commandInfoCache.Add(key, commandInfo);
                 return commandInfo;
             }
         }
@@ -726,15 +727,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
+            var key = new CommandLookupKey(name, commandType);
             lock (getCommandLock)
             {
-                if (commandInfoCache.ContainsKey(name))
+                if (commandInfoCache.ContainsKey(key))
                 {
-                    return commandInfoCache[name];
+                    return commandInfoCache[key];
                 }
 
                 var commandInfo = GetCommandInfoInternal(name, commandType);
-
+                commandInfoCache.Add(key, commandInfo);
                 return commandInfo;
             }
         }
