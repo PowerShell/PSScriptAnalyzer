@@ -43,7 +43,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool hasInitializationError;
         private string reference;
         private readonly string defaultReference = "desktop-5.1.14393.206-windows";
-        private readonly string alternativeDefaultReference = "core-6.0.2-windows";
+        private readonly string alternativeDefaultReference = "core-6.1.0-windows";
         private RuleParameters ruleParameters;
 
         public UseCompatibleCmdlets()
