@@ -4,6 +4,10 @@ environment:
     PowerShellEdition: PowerShellCore
     BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    PowerShellEdition: PowerShellCore
+    Preview: true
+    BuildConfiguration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: WindowsPowerShell
     BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
@@ -23,12 +27,21 @@ install:
   - ps:   |
             # Windows image still has version 6.0.0 of pwsh but 6.0.2 is required due to System.Management.Automation package https://github.com/appveyor/ci/issues/2230
             if ($env:PowerShellEdition -eq 'PowerShellCore' -and $PSVersionTable.PSVersion -lt [version]'6.0.2' -and $IsWindows) {
-                $msiPath = "$env:TEMP\PowerShell-6.0.2-win-x64.msi"
-                (New-Object Net.WebClient).DownloadFile('https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.msi', $msiPath)
-                Write-Verbose 'Installing pwsh 6.0.2' -Verbose
+                $msiPath = "$env:TEMP\PowerShell.msi"
+                $downloadPath = 'https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.msi'
+                if ($env:Preview -eq 'true') {
+                  $downloadPath = 'https://github.com/PowerShell/PowerShell/releases/download/v6.1.0-preview.1/PowerShell-6.1.0-preview.1-win-x64.msi'
+                }
+                (New-Object Net.WebClient).DownloadFile($downloadPath, $msiPath)
+                Write-Verbose 'Installing pwsh' -Verbose
                 Start-Process 'msiexec.exe' -Wait -ArgumentList "/i $msiPath /quiet"
                 Remove-Item $msiPath
-                $env:Path = "$env:ProgramFiles\PowerShell\6.0.2;$env:Path"
+                if ($env:Preview -eq 'true') {
+                  $env:Path = "$env:ProgramFiles\PowerShell\6.1.0-preview.1;$env:Path"
+                }
+                else {
+                  $env:Path = "$env:ProgramFiles\PowerShell\6.0.2;$env:Path"
+                }
             }
 
 build_script:
