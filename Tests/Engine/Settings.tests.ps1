@@ -14,10 +14,19 @@ Describe "Settings Precedence" {
     }
 
     Context "settings file is implicit" {
-        It "runs rules from the implicit setting file" {
+        It "runs rules from the implicit setting file using the -Path parameter set" {
             $violations = Invoke-ScriptAnalyzer -Path $project1Root -Recurse
             $violations.Count | Should -Be 1
             $violations[0].RuleName | Should -Be "PSAvoidUsingCmdletAliases"
+        }
+
+        It "runs rules from the implicit setting file using the -ScriptDefinition parameter set" {
+            Push-Location $project1Root
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'gci; Write-Host' -Recurse
+            Pop-Location
+            $violations.Count | Should -Be 1
+            $violations[0].RuleName | Should -Be "PSAvoidUsingCmdletAliases" `
+                -Because 'the implicit settings file should have run only the PSAvoidUsingCmdletAliases rule but not PSAvoidUsingWriteHost'
         }
 
         It "cannot find file if not named PSScriptAnalyzerSettings.psd1" {
@@ -29,19 +38,23 @@ Describe "Settings Precedence" {
 
 Describe "Settings Class" {
     Context "When an empty hashtable is provided" {
-        BeforeAll {
-            $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{}
-        }
 
         It "Should return empty <name> property" -TestCases @(
             @{ Name = "IncludeRules" }
             @{ Name = "ExcludeRules" }
             @{ Name = "Severity" }
             @{ Name = "RuleArguments" }
-        ) {
-            Param($Name)
+            ) {
+                Param($Name)
 
-            ${settings}.${Name}.Count | Should -Be 0
+                $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{}
+                ${settings}.${Name}.Count | Should -Be 0
+        }
+
+        It "Should be able to parse empty settings hashtable from settings file" {
+            $testPSSASettingsFilePath = "TestDrive:\PSSASettings.psd1"
+            Set-Content $testPSSASettingsFilePath -Value '@{ExcludeRules = @()}'
+            Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings $testPSSASettingsFilePath | Should -Not -BeNullOrEmpty
         }
     }
 
@@ -95,7 +108,7 @@ Describe "Settings Class" {
         It "Should return $expectedNumberOfIncludeRules IncludeRules" {
             $settings.IncludeRules.Count | Should -Be $expectedNumberOfIncludeRules
         }
-        
+
         $expectedNumberOfExcludeRules = 3
         It "Should return $expectedNumberOfExcludeRules ExcludeRules" {
             $settings.ExcludeRules.Count | Should -Be $expectedNumberOfExcludeRules

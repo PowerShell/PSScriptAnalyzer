@@ -9,6 +9,7 @@ using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -113,7 +114,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> varAsts = scriptBlockAst.FindAll(testAst => testAst is VariableExpressionAst, true);
             IEnumerable<Ast> varsInAssignment;
 
-            Dictionary<string, AssignmentStatementAst> assignments = new Dictionary<string, AssignmentStatementAst>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, AssignmentStatementAst> assignmentsDictionary_OrdinalIgnoreCase = new Dictionary<string, AssignmentStatementAst>(StringComparer.OrdinalIgnoreCase);
 
             string varKey;
             bool inAssignment;
@@ -148,9 +149,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         string variableName = Helper.Instance.VariableNameWithoutScope(assignmentVarAst.VariablePath);
 
-                        if (!assignments.ContainsKey(variableName))
+                        if (!assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
                         {
-                            assignments.Add(variableName, assignmentAst);
+                            assignmentsDictionary_OrdinalIgnoreCase.Add(variableName, assignmentAst);
                         }
                     }
                 }
@@ -163,9 +164,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     varKey = Helper.Instance.VariableNameWithoutScope(varAst.VariablePath);
                     inAssignment = false;
 
-                    if (assignments.ContainsKey(varKey))
+                    if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(varKey))
                     {
-                        varsInAssignment = assignments[varKey].Left.FindAll(testAst => testAst is VariableExpressionAst, true);
+                        varsInAssignment = assignmentsDictionary_OrdinalIgnoreCase[varKey].Left.FindAll(testAst => testAst is VariableExpressionAst, true);
 
                         // Checks if this variableAst is part of the logged assignment
                         foreach (VariableExpressionAst varInAssignment in varsInAssignment)
@@ -195,23 +196,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                         if (!inAssignment)
                         {
-                            assignments.Remove(varKey);
+                            assignmentsDictionary_OrdinalIgnoreCase.Remove(varKey);
                         }
 
                         // Check if variable belongs to PowerShell built-in variables
                         if (Helper.Instance.HasSpecialVars(varKey))
                         {
-                            assignments.Remove(varKey);
+                            assignmentsDictionary_OrdinalIgnoreCase.Remove(varKey);
                         }
                     }
                 }
             }
 
-            foreach (string key in assignments.Keys)
+            // Detect usages of Get-Variable
+            var getVariableCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Get-Variable");
+            IEnumerable<Ast> getVariableCommandAsts = scriptBlockAst.FindAll(testAst => testAst is CommandAst commandAst &&
+                getVariableCmdletNamesAndAliases.Contains(commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
+            foreach (CommandAst getVariableCommandAst in getVariableCommandAsts)
+            {
+                var commandElements = getVariableCommandAst.CommandElements.ToList();
+                // The following extracts the variable name only in the simplest possibe case 'Get-Variable variableName'
+                if (commandElements.Count == 2 && commandElements[1] is StringConstantExpressionAst constantExpressionAst)
+                {
+                    var variableName = constantExpressionAst.Value;
+                    if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
+                    {
+                        assignmentsDictionary_OrdinalIgnoreCase.Remove(variableName);
+                    }
+                }
+            }
+
+            foreach (string key in assignmentsDictionary_OrdinalIgnoreCase.Keys)
             {
                 yield return new DiagnosticRecord(
                     string.Format(CultureInfo.CurrentCulture, Strings.UseDeclaredVarsMoreThanAssignmentsError, key),
-                    assignments[key].Left.Extent,
+                    assignmentsDictionary_OrdinalIgnoreCase[key].Left.Extent,
                     GetName(),
                     DiagnosticSeverity.Warning,
                     fileName,

@@ -168,12 +168,6 @@
   <data name="UseDeclaredVarsMoreThanAssignmentsCommonName" xml:space="preserve">
     <value>Extra Variables</value>
   </data>
-  <data name="AvoidUninitializedVariableDescription" xml:space="preserve">
-    <value>Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables.</value>
-  </data>
-  <data name="AvoidUninitializedVariableCommonName" xml:space="preserve">
-    <value>Initializing non-global variables</value>
-  </data>
   <data name="AvoidGlobalVarsDescription" xml:space="preserve">
     <value>Checks that global variables are not used. Global variables are strongly discouraged as they can cause errors across different systems.</value>
   </data>
@@ -182,15 +176,6 @@
   </data>
   <data name="AvoidGlobalVarsCommonName" xml:space="preserve">
     <value>No Global Variables</value>
-  </data>
-  <data name="AvoidTrapStatementDescription" xml:space="preserve">
-    <value>Avoid using Traps in the script.</value>
-  </data>
-  <data name="AvoidTrapStatementError" xml:space="preserve">
-    <value>Trap found.</value>
-  </data>
-  <data name="AvoidTrapStatementCommonName" xml:space="preserve">
-    <value>No traps in the script.</value>
   </data>
   <data name="PossibleIncorrectComparisonWithNullDescription" xml:space="preserve">
     <value>Checks that $null is on the left side of any equaltiy comparisons (eq, ne, ceq, cne, ieq, ine). When there is an array on the left side of a null equality comparison, PowerShell will check for a $null IN the array rather than if the array is null. If the two sides of the comaprision are switched this is fixed. Therefore, $null should always be on the left side of equality comparisons just in case.</value>
@@ -300,15 +285,6 @@
   <data name="AvoidUnloadableModuleCommonName" xml:space="preserve">
     <value>Module Must Be Loadable</value>
   </data>
-  <data name="AvoidUsingFilePathDescription" xml:space="preserve">
-    <value>If a rooted file path is used in a script that is published online, this may expose information about your computer. Furthermore, the file path may not work on other computer when they try to use the script.</value>
-  </data>
-  <data name="AvoidUsingFilePathError" xml:space="preserve">
-    <value>The file path '{0}' of '{1}' is rooted. This should be avoided if '{1}' is published online.</value>
-  </data>
-  <data name="AvoidUsingFilePathCommonName" xml:space="preserve">
-    <value>Avoid Using File Path</value>
-  </data>
   <data name="NullErrorMessage" xml:space="preserve">
     <value>Error Message is Null.</value>
   </data>
@@ -390,12 +366,6 @@
   <data name="AvoidShouldContinueWithoutForceName" xml:space="preserve">
     <value>AvoidShouldContinueWithoutForce</value>
   </data>
-  <data name="AvoidTrapStatementName" xml:space="preserve">
-    <value>AvoidTrapStatement</value>
-  </data>
-  <data name="AvoidUninitializedVariableName" xml:space="preserve">
-    <value>AvoidUninitializedVariable</value>
-  </data>
   <data name="AvoidUnloadableModuleName" xml:space="preserve">
     <value>AvoidUnloadableModule</value>
   </data>
@@ -407,9 +377,6 @@
   </data>
   <data name="AvoidUsingEmptyCatchBlockName" xml:space="preserve">
     <value>AvoidUsingEmptyCatchBlock</value>
-  </data>
-  <data name="AvoidUsingFilePathName" xml:space="preserve">
-    <value>AvoidUsingFilePath</value>
   </data>
   <data name="AvoidUsingInvokeExpressionRuleName" xml:space="preserve">
     <value>AvoidUsingInvokeExpression</value>
@@ -608,9 +575,6 @@
   </data>
   <data name="UseStandardDSCFunctionsInClassError" xml:space="preserve">
     <value>Missing '{0}' function. DSC Class must implement Get, Set and Test functions.</value>
-  </data>
-  <data name="AvoidUninitializedVariableError" xml:space="preserve">
-    <value>Variable '{0}' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables.</value>
   </data>
   <data name="UseIdenticalMandatoryParametersDSCCommonName" xml:space="preserve">
     <value>Use identical mandatory parameters for DSC Get/Test/Set TargetResource functions</value>
