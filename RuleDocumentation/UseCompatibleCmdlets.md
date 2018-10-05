@@ -19,10 +19,10 @@ This rule flags cmdlets that are not available in a given Edition/Version of Pow
 The parameter `compatibility` is a list that contain any of the following
 
 - desktop-3.0-windows
-- desktop-4.0-windows
+- desktop-4.0-windows (taken from Windows Server 2012R2)
 - desktop-5.1.14393.206-windows
-- core-6.0.2-windows
-- core-6.0.2-linux
+- core-6.0.2-windows (taken from Windows 10 - 1709)
+- core-6.0.2-linux (taken from Ubuntu 16.04)
 - core-6.0.2-macos
-- core-6.1.0-windows
-- core-6.1.0-linux
+- core-6.1.0-windows (taken from Windows 10 - 1803)
+- core-6.1.0-linux (taken from Ubuntu 18.04)
