@@ -26,3 +26,4 @@ The parameter `compatibility` is a list that contain any of the following
 - core-6.0.2-macos
 - core-6.1.0-windows (taken from Windows 10 - 1803)
 - core-6.1.0-linux (taken from Ubuntu 18.04)
+- core-6.1.0-macos
