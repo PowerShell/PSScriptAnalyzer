@@ -8,10 +8,11 @@ param(
     [string]$Framework = "core",
 
     [Parameter(ParameterSetName="BuildOne")]
-    [ValidateSet("PSv3","PSv4","PSv5")]
-    [string]$AnalyzerVersion = "PSv5",
+    [ValidateSet("3","4","5")]
+    [string]$PSVersion = "5",
 
     [Parameter(ParameterSetName="BuildOne")]
+    [Parameter(ParameterSetName="BuildAll")]
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
@@ -44,7 +45,7 @@ END {
     $setName = $PSCmdlet.ParameterSetName
     switch ( $setName ) {
         "BuildAll" {
-            Build-ScriptAnalyzer -All
+            Build-ScriptAnalyzer -All -Configuration $Configuration
         }
         "BuildDoc" {
             Build-ScriptAnalyzer -Documentation
@@ -52,7 +53,7 @@ END {
         "BuildOne" {
             $buildArgs = @{
                 Framework = $Framework
-                AnalyzerVersion = $AnalyzerVersion
+                PSVersion = $PSVersion
                 Configuration = $Configuration
             }
             Build-ScriptAnalyzer @buildArgs

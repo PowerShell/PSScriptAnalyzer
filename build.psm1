@@ -121,10 +121,11 @@ function Build-ScriptAnalyzer
         [string]$Framework = "core",
 
         [Parameter(ParameterSetName="BuildOne")]
-        [ValidateSet("PSv3","PSv4","PSv5")]
-        [string]$AnalyzerVersion = "PSv5",
+        [ValidateSet("3","4","5")]
+        [string]$PSVersion = "5",
 
         [Parameter(ParameterSetName="BuildOne")]
+        [Parameter(ParameterSetName="BuildAll")]
         [ValidateSet("Debug", "Release")]
         [string]$Configuration = "Debug",
 
@@ -132,14 +133,19 @@ function Build-ScriptAnalyzer
         [switch]$Documentation
         )
 
+    BEGIN {
+        if ( $PSVersion -match "[34]" -and $Framework -eq "core" ) {
+            throw "Script Analyzer for PowerShell 3/4 cannot be built for framework 'core'"
+        }
+    }
     END {
         if ( $All )
         {
             # Build all the versions of the analyzer
-            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -AnalyzerVersion "PSv3"
-            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -AnalyzerVersion "PSv4"
-            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -AnalyzerVersion "PSv5"
-            Build-ScriptAnalyzer -Framework core -Configuration $Configuration -AnalyzerVersion "PSv5"
+            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -PSVersion "3"
+            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -PSVersion "4"
+            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -PSVersion "5"
+            Build-ScriptAnalyzer -Framework core -Configuration $Configuration -PSVersion "5"
             Build-ScriptAnalyzer -Documentation
             return
         }
@@ -160,9 +166,9 @@ function Build-ScriptAnalyzer
         }
 
         # build the appropriate assembly
-        if ($AnalyzerVersion -match "PSv3|PSv4" -and $Framework -eq "core")
+        if ($PSVersion -match "[34]" -and $Framework -eq "core")
         {
-            throw ("ScriptAnalyzer Version '{0}' is not applicable to {1} framework" -f $AnalyzerVersion,$Framework)
+            throw ("ScriptAnalyzer for PS version '{0}' is not applicable to {1} framework" -f $PSVersion,$Framework)
         }
 
         #Write-Progress "Building ScriptAnalyzer"
@@ -183,10 +189,10 @@ function Build-ScriptAnalyzer
         if ( $Framework -eq "core" ) {
             $destinationDirBinaries = "$destinationDir\coreclr"
         }
-        elseif ($AnalyzerVersion -eq 'PSv3') {
+        elseif ($PSVersion -eq '3') {
             $destinationDirBinaries = "$destinationDir\PSv3"
         }
-        elseif ($AnalyzerVersion -eq 'PSv4') {
+        elseif ($PSVersion -eq '4') {
             $destinationDirBinaries = "$destinationDir\PSv4"
         }
         else {
@@ -198,12 +204,12 @@ function Build-ScriptAnalyzer
         # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
         try {
             Push-Location $projectRoot/Rules
-            Write-Progress "Building ScriptAnalyzer '$framework' version '${AnalyzerVersion}' configuration '${Configuration}'"
-            $buildOutput = dotnet build Rules.csproj --framework $frameworkName --configuration "${AnalyzerVersion}${Configuration}"
+            Write-Progress "Building ScriptAnalyzer '$framework' version '${PSVersion}' configuration '${Configuration}'"
+            $buildOutput = dotnet build Rules.csproj --framework $frameworkName --configuration "${PSVersion}${Configuration}"
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
-            Write-Error "Failure to build $framework ${AnalyzerVersion}${Configuration}"
+            Write-Error "Failure to build $framework ${PSVersion}${Configuration}"
             return
         }
         finally {
@@ -214,8 +220,8 @@ function Build-ScriptAnalyzer
         Publish-File $itemsToCopyCommon $destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${AnalyzerVersion}${Configuration}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${AnalyzerVersion}${Configuration}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\Engine\bin\${PSVersion}${Configuration}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot\Rules\bin\${PSVersion}${Configuration}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
@@ -223,7 +229,7 @@ function Build-ScriptAnalyzer
 
         # copy newtonsoft dll if net451 framework
         if ($Framework -eq "full") {
-            Copy-Item -path "$projectRoot\Rules\bin\${AnalyzerVersion}${Configuration}\${frameworkName}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            Copy-Item -path "$projectRoot\Rules\bin\${PSVersion}${Configuration}\${frameworkName}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
 
         Pop-Location
