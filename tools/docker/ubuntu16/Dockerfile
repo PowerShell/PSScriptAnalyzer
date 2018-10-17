@@ -7,6 +7,6 @@ RUN wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsof
 
 RUN apt update -qq && \
     cd / && \
-    git clone https://github.com/JamesWTruher/PSScriptAnalyzer
+    git clone https://github.com/PowerShell/PSScriptAnalyzer
 
 RUN pwsh -c 'save-module -name platyps,pester -path $PSHOME/Modules'
