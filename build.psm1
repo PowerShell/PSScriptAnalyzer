@@ -87,7 +87,6 @@ function Remove-Build
     }
 }
 
-
 # Build documentation using platyPS
 function Build-Documentation
 {
@@ -95,8 +94,9 @@ function Build-Documentation
     $markdownDocsPath = Join-Path $docsPath markdown
     $outputDocsPath = Join-Path $destinationDir en-US
     $requiredVersionOfplatyPS = 0.9
-    $modInfo = new-object Microsoft.PowerShell.Commands.ModuleSpecification -ArgumentList @{ ModuleName = "platyps"; ModuleVersion = $requiredVersionOfplatyPS}
-    if ( $null -eq (Get-Module -ListAvailable -FullyQualifiedName $modInfo))
+    #$modInfo = new-object Microsoft.PowerShell.Commands.ModuleSpecification -ArgumentList @{ ModuleName = "platyps"; ModuleVersion = $requiredVersionOfplatyPS}
+    #if ( $null -eq (Get-Module -ListAvailable -FullyQualifiedName $modInfo))
+    if ( $null -eq (Get-Module -ListAvailable platyPS))
     {
         throw "Cannot find required minimum version $requiredVersionOfplatyPS of platyPS. Install via 'Install-Module platyPS'"
     }
