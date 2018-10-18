@@ -65,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        #if !PSV3
+        #if !(PSV3||PSV4)
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes given DSC class
