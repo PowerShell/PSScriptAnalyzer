@@ -58,4 +58,4 @@ test_script:
 
 # Upload the project along with test results as a zip archive
 on_finish:
-  - ps: Import-Module .\tools\appveyor.psm1; Invoke-AppveyorFinish
+  - ps: Import-Module "${env:BuildConfiguration}\tools\appveyor.psm1"; Invoke-AppveyorFinish

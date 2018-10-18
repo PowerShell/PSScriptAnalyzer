@@ -98,7 +98,9 @@ function Build-Documentation
     #if ( $null -eq (Get-Module -ListAvailable -FullyQualifiedName $modInfo))
     if ( $null -eq (Get-Module -ListAvailable platyPS))
     {
-        throw "Cannot find required minimum version $requiredVersionOfplatyPS of platyPS. Install via 'Install-Module platyPS'"
+        Write-Verbose -verbose "platyPS not found, installing"
+        Install-Module -Force -Name platyPS -Scope CurrentUser
+        # throw "Cannot find required minimum version $requiredVersionOfplatyPS of platyPS. Install via 'Install-Module platyPS'"
     }
     if (-not (Test-Path $markdownDocsPath))
     {
