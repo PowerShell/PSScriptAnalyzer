@@ -50,6 +50,8 @@ function Invoke-AppveyorTest {
         $CheckoutPath
     )
 
+    Write-Verbose -Verbose ("Running tests on PowerShell version " + $PSVersionTable.PSVersion)
+
     $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
     $testResultsFile = ".\TestResults.xml"

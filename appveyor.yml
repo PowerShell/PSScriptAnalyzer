@@ -32,12 +32,14 @@ install:
 
 build_script:
   - ps:   |
-      Set-Location $env:APPVEYOR_BUILD_FOLDER
-      ./build.ps1 -Documentation
-      if ( $env:PSVersion -eq "4" ) { # On WMF4: Also build for v3 to check it builds at least since we do not have a WMF3 image
-         ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 3 -Framework full
+      if ( $env:PowerShellEdition -eq 'WindowsPowerShell' ) {
+          Set-Location $env:APPVEYOR_BUILD_FOLDER
+          ./build.ps1 -Documentation
+          if ( $env:PSVersion -eq "4" ) { # On WMF4: Also build for v3 to check it builds at least since we do not have a WMF3 image
+             ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 3 -Framework full
+          }
+          ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion "$env:PSVersion" -Framework full
       }
-      ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion "$env:PSVersion" -Framework full
   - pwsh: |
       if ($env:PowerShellEdition -eq 'PowerShellCore') {
           Set-Location $env:APPVEYOR_BUILD_FOLDER
@@ -58,4 +60,4 @@ test_script:
 
 # Upload the project along with test results as a zip archive
 on_finish:
-  - ps: Import-Module "${env:BuildConfiguration}\tools\appveyor.psm1"; Invoke-AppveyorFinish
+  - ps: Import-Module "${env:APPVEYOR_BUILD_FOLDER}\tools\appveyor.psm1"; Invoke-AppveyorFinish
