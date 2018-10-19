@@ -48,10 +48,10 @@ END {
     $setName = $PSCmdlet.ParameterSetName
     switch ( $setName ) {
         "BuildAll" {
-            Build-ScriptAnalyzer -All -Configuration $Configuration
+            Start-ScriptAnalyzerBuild -All -Configuration $Configuration
         }
         "BuildDoc" {
-            Build-ScriptAnalyzer -Documentation
+            Start-ScriptAnalyzerBuild -Documentation
         }
         "BuildOne" {
             $buildArgs = @{
@@ -59,7 +59,7 @@ END {
                 PSVersion = $PSVersion
                 Configuration = $Configuration
             }
-            Build-ScriptAnalyzer @buildArgs
+            Start-ScriptAnalyzerBuild @buildArgs
         }
         "Test" {
             Test-ScriptAnalyzer -InProcess:$InProcess

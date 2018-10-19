@@ -88,7 +88,7 @@ function Remove-Build
 }
 
 # Build documentation using platyPS
-function Build-Documentation
+function Start-DocumentationBuild
 {
     $docsPath = Join-Path $projectRoot docs
     $markdownDocsPath = Join-Path $docsPath markdown
@@ -114,7 +114,7 @@ function Build-Documentation
 }
 
 # build script analyzer (and optionally build everything with -All)
-function Build-ScriptAnalyzer
+function Start-ScriptAnalyzerBuild
 {
     [CmdletBinding(DefaultParameterSetName="BuildOne")]
     param (
@@ -147,17 +147,17 @@ function Build-ScriptAnalyzer
         if ( $All )
         {
             # Build all the versions of the analyzer
-            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -PSVersion "3"
-            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -PSVersion "4"
-            Build-ScriptAnalyzer -Framework full -Configuration $Configuration -PSVersion "5"
-            Build-ScriptAnalyzer -Framework core -Configuration $Configuration -PSVersion "5"
-            Build-ScriptAnalyzer -Documentation
+            Start-ScriptAnalyzerBuild -Framework full -Configuration $Configuration -PSVersion "3"
+            Start-ScriptAnalyzerBuild -Framework full -Configuration $Configuration -PSVersion "4"
+            Start-ScriptAnalyzerBuild -Framework full -Configuration $Configuration -PSVersion "5"
+            Start-ScriptAnalyzerBuild -Framework core -Configuration $Configuration -PSVersion "5"
+            Start-ScriptAnalyzerBuild -Documentation
             return
         }
 
         if ( $Documentation )
         {
-            Build-Documentation
+            Start-DocumentationBuild
             return
         }
 
@@ -207,14 +207,15 @@ function Build-ScriptAnalyzer
         # build the analyzer
         #Write-Progress "Building for framework $Framework, configuration $Configuration"
         # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
+        $config = "PSV${PSVersion}${Configuration}"
         try {
             Push-Location $projectRoot/Rules
             Write-Progress "Building ScriptAnalyzer '$framework' version '${PSVersion}' configuration '${Configuration}'"
-            $buildOutput = dotnet build Rules.csproj --framework $frameworkName --configuration "${PSVersion}${Configuration}"
+            $buildOutput = dotnet build Rules.csproj --framework $frameworkName --configuration "${config}"
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
-            Write-Error "Failure to build $framework ${PSVersion}${Configuration}"
+            Write-Error "Failure to build $framework ${config}"
             return
         }
         finally {
@@ -225,8 +226,8 @@ function Build-ScriptAnalyzer
         Publish-File $itemsToCopyCommon $destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${PSVersion}${Configuration}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${PSVersion}${Configuration}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\Engine\bin\${config}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot\Rules\bin\${config}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
@@ -234,7 +235,7 @@ function Build-ScriptAnalyzer
 
         # copy newtonsoft dll if net451 framework
         if ($Framework -eq "full") {
-            Copy-Item -path "$projectRoot\Rules\bin\${PSVersion}${Configuration}\${frameworkName}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            Copy-Item -path "$projectRoot\Rules\bin\${config}\${frameworkName}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
 
         Pop-Location
