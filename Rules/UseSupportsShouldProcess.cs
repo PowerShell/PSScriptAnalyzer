@@ -15,7 +15,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to that implements the UseSupportsShouldProcess rule.
+    /// UseSupportsShouldProcess: Checks if a function defines Confirm and/or WhatIf parameters manually instead of using SupportShouldProcess attribute.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]

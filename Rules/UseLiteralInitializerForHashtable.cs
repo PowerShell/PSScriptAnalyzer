@@ -15,7 +15,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check if hashtable is not initialized using [hashtable]::new or new-object hashtable
+    /// UseLiteralInitializerForHashtable: Checks if hashtable is not initialized using [hashtable]::new or new-object hashtable
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
