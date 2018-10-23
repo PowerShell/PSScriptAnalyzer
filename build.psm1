@@ -93,9 +93,9 @@ function Start-DocumentationBuild
     $docsPath = Join-Path $projectRoot docs
     $markdownDocsPath = Join-Path $docsPath markdown
     $outputDocsPath = Join-Path $destinationDir en-US
-    if ( $null -eq (Get-Module -ListAvailable platyPS))
+    if ( $null -eq (Get-Module -ListAvailable platyPS) -or ((Get-Module -ListAvailable platyPS | Select-Object -First 1).Version -lt [version]0.12))
     {
-        Write-Verbose -verbose "platyPS not found, installing"
+        Write-Verbose -verbose "platyPS module not found or below required version of 0.12, installing the latest version."
         Install-Module -Force -Name platyPS -Scope CurrentUser
     }
     if (-not (Test-Path $markdownDocsPath))
