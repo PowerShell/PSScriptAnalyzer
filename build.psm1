@@ -207,8 +207,7 @@ function Start-ScriptAnalyzerBuild
 
         Publish-File $settingsFiles (Join-Path -Path $destinationDir -ChildPath Settings)
 
-        # copy newtonsoft dll if net451 framework
-        if ($framework -eq "full") {
+        if ($framework -eq net451) {
             Copy-Item -path "$projectRoot\Rules\bin\${config}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
 
