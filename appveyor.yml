@@ -44,7 +44,7 @@ build_script:
       if ($env:PowerShellEdition -eq 'PowerShellCore') {
           Set-Location $env:APPVEYOR_BUILD_FOLDER
           ./build.ps1 -Documentation
-          ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 5
+          ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 6
       }
 
 test_script:
