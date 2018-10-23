@@ -165,7 +165,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             _variables.Add("true", new VariableAnalysisDetails { Name = "true", RealName = "true", Type = typeof(bool) });
             _variables.Add("false", new VariableAnalysisDetails { Name = "false", RealName = "true", Type = typeof(bool) });
 
-            #if !PSV3
+            #if !(PSV3||PSV4)
 
             if (ast is FunctionMemberAst)
             {
@@ -808,7 +808,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="Entry"></param>
         /// <param name="Classes"></param>
         /// <returns></returns>        
-        #if PSV3
+        #if (PSV3||PSV4)
 
         internal static Tuple<Dictionary<string, VariableAnalysisDetails>, Dictionary<string, VariableAnalysisDetails>> SparseSimpleConstants(
              Dictionary<string, VariableAnalysisDetails> Variables, Block Entry)
@@ -989,7 +989,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             {
                                 VariableAnalysisDetails analysis = VariablesDictionary[VariableAnalysis.AnalysisDictionaryKey(memAst.Expression as VariableExpressionAst)];
 
-                                #if PSV3
+                                #if (PSV3||PSV4)
 
                                 Type possibleType = AssignmentTarget.GetTypeFromMemberExpressionAst(memAst, analysis);
 
@@ -1371,7 +1371,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="psClass"></param>
         /// <returns></returns>
         
-        #if PSV3
+        #if (PSV3||PSV4)
 
         internal static Type GetTypeFromMemberExpressionAst(MemberExpressionAst memAst, VariableAnalysisDetails analysis)
 
@@ -1460,7 +1460,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         // isStatic is true
                         result = GetTypeFromInvokeMemberAst(type, imeAst, methodName, true);
                     }
-                    #if !PSV3
+                    #if !(PSV3||PSV4)
                     else
                     {
                         // Check for classes
@@ -1498,7 +1498,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         result = GetPropertyOrFieldTypeFromMemberExpressionAst(expressionType, fieldName);
                     }
-                    #if !PSV3
+                    #if !(PSV3||PSV4)
                     else
                     {
                         // check for class type
@@ -1531,7 +1531,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (memberAst.Expression is VariableExpressionAst
                 && String.Equals((memberAst.Expression as VariableExpressionAst).VariablePath.UserPath, "this", StringComparison.OrdinalIgnoreCase))
             {
-                #if !PSV3
+                #if !(PSV3||PSV4)
 
                 // Check that we are in a class
                 TypeDefinitionAst psClass = FindClassAncestor(memberAst);
@@ -1598,7 +1598,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-#if !PSV3
+#if !(PSV3||PSV4)
         /// <summary>
         /// Checks whether a class with the name name exists in the script that contains ast
         /// </summary>

@@ -64,7 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            #if PSV3
+            #if (PSV3||PSV4)
 
             return null;
 

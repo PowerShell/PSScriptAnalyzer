@@ -123,25 +123,33 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 * Building
 
     You can either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build using `PowerShell` specifically for your platform as follows:
-    * Windows PowerShell version 5.0 and greater
+    * The default build is for PowerShell Core
     ```powershell
-    .\buildCoreClr.ps1 -Framework net451 -Configuration Release -Build
+    .\build.ps1
+    ```
+    * Windows PowerShell version 5.0
+    ```powershell
+    .\build.ps1 -Framework full -PSVersion 5 -Configuration Release
     ```
     * Windows PowerShell version 4.0
     ```powershell
-    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV4Release -Build
+    .\build.ps1 -Framework full -PSVersion 4 -Configuration Release
     ```
     * Windows PowerShell version 3.0
     ```powershell
-    .\buildCoreClr.ps1 -Framework net451 -Configuration PSV3Release -Build
+    .\build.ps1 -Framework full -PSVersion 3 -Configuration Release
     ```
     * PowerShell Core
     ```powershell
-    .\buildCoreClr.ps1 -Framework netstandard2.0 -Configuration Release -Build
+    .\buildCoreClr.ps1 -Framework core -Configuration Release -Build
     ```
-* Build documenatation
+* Build documentation
     ```powershell
-    .\build.ps1 -BuildDocs
+    .\build.ps1 -Documentation
+    ```
+* Build all versions (PowerShell v3, v4, v5, and Core) and documentation
+    ```powershell
+    .\build.ps1 -All
     ```
 * Import the module
 ```powershell
@@ -157,12 +165,25 @@ For adding/removing resource strings in the `*.resx` files, it is recommended to
 #### Tests
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
-* Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) is installed
-* Copy `path/to/PSScriptAnalyzer/out/PSScriptAnalyzer` to a folder in `PSModulePath`
+* Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) or higher is installed
+* Ensure that the documentation has been built (`./build.ps1 -Documentation`) 
 * In the root folder of your local repository, run:
 ``` PowerShell
-$testScripts = ".\Tests\Engine",".\Tests\Rules",".\Tests\Documentation"
-Invoke-Pester -Script $testScripts
+./build -Test
+```
+
+To retrieve the results of the run, you can use the tools which are part of the build module (`build.psm1`)
+
+```powershell
+Import-Module ./build.psm1
+Get-TestResults
+```
+
+To retrieve only the errors, you can use the following:
+
+```powershell
+Import-Module ./build.psm1
+Get-TestFailures
 ```
 
 [Back to ToC](#table-of-contents)

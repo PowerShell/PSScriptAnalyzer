@@ -206,3 +206,9 @@ FakesAssemblies/
 
 ##Our project binplace location
 PSScriptAnalyzer/
+
+# Vim swap files
+*.swp
+
+# Test result file
+TestResults.xml
