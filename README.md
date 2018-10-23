@@ -129,19 +129,19 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
     ```
     * Windows PowerShell version 5.0
     ```powershell
-    .\build.ps1 -PSVersion 5 -Configuration Release
+    .\build.ps1 -PSVersion 5
     ```
     * Windows PowerShell version 4.0
     ```powershell
-    .\build.ps1 -PSVersion 4 -Configuration Release
+    .\build.ps1 -PSVersion 4
     ```
     * Windows PowerShell version 3.0
     ```powershell
-    .\build.ps1 -PSVersion 3 -Configuration Release
+    .\build.ps1 -PSVersion 3
     ```
     * PowerShell Core
     ```powershell
-    .\buildCoreClr.ps1 -Configuration Release -Build
+    .\build.ps1 -PSVersion 6
     ```
 * Build documentation (required for using the module)
     ```powershell
