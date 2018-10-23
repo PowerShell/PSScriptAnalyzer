@@ -7,12 +7,8 @@ param(
     [switch]$All,
 
     [Parameter(ParameterSetName="BuildOne")]
-    [ValidateSet("full", "core")]
-    [string]$Framework = "core",
-
-    [Parameter(ParameterSetName="BuildOne")]
-    [ValidateSet("3","4","5")]
-    [string]$PSVersion = "5",
+    [ValidateRange(3, 6)]
+    [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
     [Parameter(ParameterSetName="BuildOne")]
     [Parameter(ParameterSetName="BuildAll")]
@@ -55,7 +51,6 @@ END {
         }
         "BuildOne" {
             $buildArgs = @{
-                Framework = $Framework
                 PSVersion = $PSVersion
                 Configuration = $Configuration
             }

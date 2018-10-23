@@ -123,31 +123,31 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 * Building
 
     You can either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build using `PowerShell` specifically for your platform as follows:
-    * The default build is for PowerShell Core
+    * The default build is for the currently used version of PowerShell
     ```powershell
     .\build.ps1
     ```
     * Windows PowerShell version 5.0
     ```powershell
-    .\build.ps1 -Framework full -PSVersion 5 -Configuration Release
+    .\build.ps1 -PSVersion 5 -Configuration Release
     ```
     * Windows PowerShell version 4.0
     ```powershell
-    .\build.ps1 -Framework full -PSVersion 4 -Configuration Release
+    .\build.ps1 -PSVersion 4 -Configuration Release
     ```
     * Windows PowerShell version 3.0
     ```powershell
-    .\build.ps1 -Framework full -PSVersion 3 -Configuration Release
+    .\build.ps1 -PSVersion 3 -Configuration Release
     ```
     * PowerShell Core
     ```powershell
-    .\buildCoreClr.ps1 -Framework core -Configuration Release -Build
+    .\buildCoreClr.ps1 -Configuration Release -Build
     ```
-* Build documentation
+* Build documentation (required for using the module)
     ```powershell
     .\build.ps1 -Documentation
     ```
-* Build all versions (PowerShell v3, v4, v5, and Core) and documentation
+* Build all versions (PowerShell v3, v4, v5, and v6) and documentation
     ```powershell
     .\build.ps1 -All
     ```
