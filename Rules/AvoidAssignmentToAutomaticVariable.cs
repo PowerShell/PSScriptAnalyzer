@@ -14,7 +14,7 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidAssignmentToAutomaticVariable: Checks for assignment to automatic variables
+    /// AvoidAssignmentToAutomaticVariable: Checks for assignment to automatic variables.
     /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
