@@ -14,7 +14,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check for violation.
+    /// PlaceCloseBrace: Indicates if there should or should not be an empty line before a close brace.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
