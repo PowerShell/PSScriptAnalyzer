@@ -35,7 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
-            #if !PSV3
+            #if !(PSV3||PSV4)
 
             IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
                 item is TypeDefinitionAst
@@ -46,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (FunctionDefinitionAst func in functionDefinitionAsts)
             {
 
-                #if PSV3
+                #if PSV3 || PSV4
 
                 List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func);
 
@@ -93,7 +93,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        #if !PSV3
+        #if !(PSV3||PSV4)
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes given DSC Resource
