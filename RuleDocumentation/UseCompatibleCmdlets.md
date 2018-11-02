@@ -16,4 +16,4 @@ This rule flags cmdlets that are not available in a given Edition/Version of Pow
 }
 ```
 
-The parameter `compatibility` is a list that contain any of the following `{desktop-3.0-windows, desktop-4.0-windows, desktop-5.1.14393.206-windows, core-6.0.2-windows, core-6.0.2-linux, core-6.0.2-macos}`.
+The parameter `compatibility` is a list that contain any of the following `{desktop-2.0-windows, desktop-3.0-windows, desktop-4.0-windows, desktop-5.1.14393.206-windows, core-6.0.2-windows, core-6.0.2-linux, core-6.0.2-macos}`.
