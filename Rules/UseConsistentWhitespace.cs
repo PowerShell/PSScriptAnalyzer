@@ -305,7 +305,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!IsNextTokenApartByWhitespace(pipe))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(ErrorKind.BeforePipe),
+                        GetError(ErrorKind.AfterPipe),
                         pipe.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
@@ -330,7 +330,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!IsPreviousTokenApartByWhitespace(pipe))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(ErrorKind.AfterPipe),
+                        GetError(ErrorKind.BeforePipe),
                         pipe.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
