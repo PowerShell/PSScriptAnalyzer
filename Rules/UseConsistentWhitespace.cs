@@ -249,7 +249,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetCorrections(lCurly.Previous.Value, lCurly.Value, lCurly.Next.Value, false, true).ToList());
+                        GetCorrections(lCurly.Previous.Value, lCurly.Value, lCurly.Next.Value, true, false).ToList());
                 }
             }
 
@@ -273,7 +273,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetCorrections(rCurly.Previous.Value, rCurly.Value, rCurly.Next.Value, true, false).ToList());
+                        GetCorrections(rCurly.Previous.Value, rCurly.Value, rCurly.Next.Value, false, true).ToList());
                 }
             }
         }
@@ -464,8 +464,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             Token prevToken,
             Token token,
             Token nextToken,
-            bool hasWhitespaceBefore,
-            bool hasWhitespaceAfter)
+            bool hasWhitespaceBefore, // if this is false, then the returned correction extent will add a whitespace before the token
+            bool hasWhitespaceAfter   // if this is false, then the returned correction extent will add a whitespace after the token
+            )
         {
             var sb = new StringBuilder();
             IScriptExtent e1 = token.Extent;

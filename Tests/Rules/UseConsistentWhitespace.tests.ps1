@@ -280,6 +280,13 @@ if($true) { Get-Item }
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
+        It "Should not find a violation if there is 1 space inside empty curly braces" {
+            $def = @'
+if($true) { }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
         It "Should not find a violation if a new-line is after the opening brace" {
             $def = @'
 if ($true) {
