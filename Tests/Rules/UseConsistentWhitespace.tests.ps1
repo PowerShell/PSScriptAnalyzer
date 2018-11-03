@@ -6,12 +6,12 @@ Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 $ruleName = "PSUseConsistentWhitespace"
 $ruleConfiguration = @{
     Enable = $true
+    CheckInnerBrace = $false
     CheckOpenBrace = $false
     CheckOpenParen = $false
     CheckOperator = $false
-    CheckSeparator = $false
-    CheckInnerBrace = $false
     CheckPipe = $false
+    CheckSeparator = $false
 }
 
 $settings = @{
@@ -24,9 +24,11 @@ $settings = @{
 Describe "UseWhitespace" {
     Context "When an open brace follows a keyword" {
         BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
             $ruleConfiguration.CheckOpenBrace = $true
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
             $ruleConfiguration.CheckSeparator = $false
         }
 
@@ -63,9 +65,11 @@ if($true) {}
 
     Context "When a parenthesis follows a keyword" {
         BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
             $ruleConfiguration.CheckOpenBrace = $false
             $ruleConfiguration.CheckOpenParen = $true
             $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
             $ruleConfiguration.CheckSeparator = $false
         }
 
@@ -114,9 +118,11 @@ $x.foo("bar")
 
     Context "When there is whitespace around assignment and binary operators" {
         BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOpenBrace = $false
             $ruleConfiguration.CheckOperator = $true
+            $ruleConfiguration.CheckPipe = $false
             $ruleConfiguration.CheckSeparator = $false
         }
 
@@ -187,9 +193,11 @@ $x = $true -and
 
     Context "When a comma is not followed by a space" {
         BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
             $ruleConfiguration.CheckOpenBrace = $false
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
             $ruleConfiguration.CheckSeparator = $true
         }
 
@@ -211,9 +219,11 @@ $x = @(1, 2)
 
     Context "When a semi-colon is not followed by a space" {
         BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
             $ruleConfiguration.CheckOpenBrace = $false
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
             $ruleConfiguration.CheckSeparator = $true
         }
 
@@ -251,14 +261,67 @@ $x = "abc";
     }
 
 
-    Context "CheckInnerBrace" {
+    Context "CheckPipe" {
         BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
             $ruleConfiguration.CheckOpenBrace = $false
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $true
             $ruleConfiguration.CheckSeparator = $false
+        }
+
+        It "Should find a violation if there is no space after pipe" {
+            $def = 'Get-Item |foo'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should find a violation if there is no space before pipe" {
+            $def = 'Get-Item| foo'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should not find a violation if there is 1 space before and after a pipe" {
+            $def = 'Get-Item | foo'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if a new-line is before the pipe" {
+            $def = @'
+Get-Item `
+| foo
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if a new-line is after the pipe" {
+            $def = @'
+Get-Item |
+    foo
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if a backtick after the pipe" {
+            $def = @'
+Get-Item |`
+foo
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+    }
+
+
+    Context "CheckInnerBrace" {
+        BeforeAll {
             $ruleConfiguration.CheckInnerBrace = $true
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
             $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $false
         }
 
         It "Should find a violation if there is no space after opening brace" {
