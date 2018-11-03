@@ -181,15 +181,15 @@ Describe "Test Path" {
 			$numFilesResult | Should -Be $numFilesExpected
 			}
         }
-        
+
         Context "When piping in files" {
             It "Can be piped in from a string" {
                 $piped = ("$directory\TestScript.ps1" | Invoke-ScriptAnalyzer)
                 $explicit = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1
-    
+
                 $piped.Count | Should Be $explicit.Count
             }
-    
+
             It "Can be piped from Get-ChildItem" {
                 $piped = ( Get-ChildItem -Path $directory -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
                 $explicit = Invoke-ScriptAnalyzer -Path $directory\TestTestPath*.ps1
@@ -410,10 +410,10 @@ Describe "Test CustomizedRulePath" {
                     Pop-Location
                 }
             }
-            
+
             It "resolves rule preset when passed in via pipeline" {
                 $warnings = 'CodeFormattingStroustrup' | ForEach-Object {
-                    Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){}' -Settings $_}
+                    Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){ }' -Settings $_}
                 $warnings.Count | Should -Be 1
                 $warnings.RuleName | Should -Be 'PSUseConsistentWhitespace'
             }
@@ -552,8 +552,8 @@ Describe "Test -EnableExit Switch" {
             else {
                 $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
             }
-            
-            "$result" | Should -BeLike $reportSummaryFor1Warning 
+
+            "$result" | Should -BeLike $reportSummaryFor1Warning
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
             if ($IsCoreCLR) {
@@ -562,8 +562,8 @@ Describe "Test -EnableExit Switch" {
             else {
                 $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
             }
-            
-            "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
+
+            "$result" | Should -Not -BeLike $reportSummaryFor1Warning
         }
     }
 
