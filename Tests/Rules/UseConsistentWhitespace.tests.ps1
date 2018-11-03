@@ -10,6 +10,8 @@ $ruleConfiguration = @{
     CheckOpenParen = $false
     CheckOperator = $false
     CheckSeparator = $false
+    CheckInnerBrace = $false
+    CheckPipe = $false
 }
 
 $settings = @{
@@ -246,7 +248,49 @@ $x = "abc";
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
-
-
     }
+
+
+    Context "CheckInnerBrace" {
+        BeforeAll {
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckSeparator = $false
+            $ruleConfiguration.CheckInnerBrace = $true
+            $ruleConfiguration.CheckPipe = $false
+        }
+
+        It "Should find a violation" {
+            $def = @'
+if ($true) {Get-Item}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should not find a violation if there is 1 space after the opening brace and 1 before the closing brace" {
+            $def = @'
+if($true) { Get-Item }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if a new-line is after the opening brace" {
+            $def = @'
+if ($true) {
+    Get-Item }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if a new-line is before the closing brace" {
+            $def = @'
+if ($true) { Get-Item
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+    }
+
 }

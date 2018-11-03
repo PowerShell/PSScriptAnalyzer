@@ -30,11 +30,13 @@
         }
 
         PSUseConsistentWhitespace = @{
-            Enable         = $true
-            CheckOpenBrace = $true
-            CheckOpenParen = $true
-            CheckOperator  = $true
-            CheckSeparator = $true
+            Enable          = $true
+            CheckOpenBrace  = $true
+            CheckOpenParen  = $true
+            CheckOperator   = $true
+            CheckSeparator  = $true
+            CheckInnerBrace = $true
+            CheckPipe       = $true
         }
 
         PSAlignAssignmentStatement = @{

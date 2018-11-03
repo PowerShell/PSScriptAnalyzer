@@ -34,6 +34,8 @@
             CheckOpenParen = $true
             CheckOperator  = $true
             CheckSeparator = $true
+            CheckInnerBrace = $true
+            CheckPipe       = $true
         }
 
         PSAlignAssignmentStatement = @{
