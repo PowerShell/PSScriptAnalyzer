@@ -288,7 +288,7 @@ $x = "abc";
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
-        It "Should not find a violation if a new-line is before the pipe" {
+        It "Should not find a violation if a backtick is before the pipe" {
             $def = @'
 Get-Item `
 | foo
@@ -304,7 +304,7 @@ Get-Item |
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
-        It "Should not find a violation if a backtick after the pipe" {
+        It "Should not find a violation if a backtick is after the pipe" {
             $def = @'
 Get-Item |`
 foo
@@ -358,9 +358,25 @@ if ($true) {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
+        It "Should not find a violation if a backtick is after the opening brace" {
+            $def = @'
+if ($true) {`
+    Get-Item }
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
         It "Should not find a violation if a new-line is before the closing brace" {
             $def = @'
 if ($true) { Get-Item
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if a backtick is before the closing brace" {
+            $def = @'
+if ($true) { Get-Item`
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null

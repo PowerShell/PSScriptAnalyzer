@@ -235,6 +235,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || !IsPreviousTokenOnSameLine(lCurly)
                     || lCurly.Next.Value.Kind == TokenKind.LCurly
                     || lCurly.Next.Value.Kind == TokenKind.NewLine
+                    || lCurly.Next.Value.Kind == TokenKind.LineContinuation
                     || ((lCurly.Next.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
                 {
                     continue;
