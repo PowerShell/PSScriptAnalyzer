@@ -22,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseConsistentWhitespace : ConfigurableRule
     {
-        private enum ErrorKind { Brace, Paren, Operator, SeparatorComma, SeparatorSemi };
+        private enum ErrorKind { BeforeOpeningBrace, Paren, Operator, SeparatorComma, SeparatorSemi, AfterOpeningBrace, BeforeClosingBrace, BeforePipe, AfterPipe };
         private const int whiteSpaceSize = 1;
         private const string whiteSpace = " ";
         private readonly SortedSet<TokenKind> openParenKeywordWhitelist = new SortedSet<TokenKind>()
@@ -187,10 +187,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             switch (kind)
             {
-                case ErrorKind.Brace:
-                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeBrace);
+                case ErrorKind.BeforeOpeningBrace:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeOpeningBrace);
+                case ErrorKind.AfterOpeningBrace:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorAfterOpeningBrace);
+                case ErrorKind.BeforeClosingBrace:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeClosingInnerBrace);
                 case ErrorKind.Operator:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorOperator);
+                case ErrorKind.BeforePipe:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSpaceBeforePipe);
+                case ErrorKind.AfterPipe:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSpaceAfterPipe);
                 case ErrorKind.SeparatorComma:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSeparatorComma);
                 case ErrorKind.SeparatorSemi:
@@ -216,7 +224,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!IsPreviousTokenApartByWhitespace(lcurly))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(ErrorKind.Brace),
+                        GetError(ErrorKind.BeforeOpeningBrace),
                         lcurly.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
@@ -244,7 +252,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!IsNextTokenApartByWhitespace(lCurly))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(ErrorKind.Brace),
+                        GetError(ErrorKind.AfterOpeningBrace),
                         lCurly.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
@@ -269,7 +277,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!IsPreviousTokenApartByWhitespace(rCurly))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(ErrorKind.Brace),
+                        GetError(ErrorKind.BeforeClosingBrace),
                         rCurly.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
@@ -297,7 +305,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!IsNextTokenApartByWhitespace(pipe))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(ErrorKind.Brace),
+                        GetError(ErrorKind.BeforePipe),
                         pipe.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
@@ -322,7 +330,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!IsPreviousTokenApartByWhitespace(pipe))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(ErrorKind.Brace),
+                        GetError(ErrorKind.AfterPipe),
                         pipe.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),

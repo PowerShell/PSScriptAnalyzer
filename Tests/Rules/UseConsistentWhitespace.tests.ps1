@@ -376,7 +376,7 @@ if ($true) { Get-Item
 
         It "Should not find a violation if a backtick is before the closing brace" {
             $def = @'
-if ($true) { Get-Item`
+if ($true) { Get-Item `
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
