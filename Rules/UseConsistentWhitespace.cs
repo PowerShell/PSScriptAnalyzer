@@ -285,6 +285,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (pipe.Next == null
                     || !IsPreviousTokenOnSameLine(pipe)
                     || pipe.Next.Value.Kind == TokenKind.Pipe
+                    || pipe.Next.Value.Kind == TokenKind.NewLine
+                    || pipe.Next.Value.Kind == TokenKind.LineContinuation
                     || ((pipe.Next.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
                 {
                     continue;
@@ -299,7 +301,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, false, true).ToList());
+                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, true, false).ToList());
                 }
             }
 
@@ -308,6 +310,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (pipe.Previous == null
                     || !IsPreviousTokenOnSameLine(pipe)
                     || pipe.Previous.Value.Kind == TokenKind.Pipe
+                    || pipe.Previous.Value.Kind == TokenKind.NewLine
+                    || pipe.Previous.Value.Kind == TokenKind.LineContinuation
                     || ((pipe.Previous.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
                 {
                     continue;
@@ -322,7 +326,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
-                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, true, false).ToList());
+                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, false, true).ToList());
                 }
             }
         }
