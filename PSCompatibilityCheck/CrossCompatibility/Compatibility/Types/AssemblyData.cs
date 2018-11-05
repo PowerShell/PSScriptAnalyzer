@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Compatibility
+namespace Microsoft.PowerShell.CrossCompatibility.Types
 {
     /// <summary>
     /// Describes a .NET assembly available in PowerShell.

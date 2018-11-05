@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Compatibility
+namespace Microsoft.PowerShell.CrossCompatibility.Modules
 {
     /// <summary>
     /// Describes a PowerShell function

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Compatibility
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     /// <summary>
     /// Describes what commands and types are available on

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Compatibility
+namespace Microsoft.PowerShell.CrossCompatibility.Types
 {
     /// <summary>
     /// Describes all the members on a .NET type,

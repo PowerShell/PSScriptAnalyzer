@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Compatibility
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     /// <summary>
     /// A report generated on a particular PowerShell platform

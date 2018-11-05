@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Compatibility
+namespace Microsoft.PowerShell.CrossCompatibility.Platform
 {
     /// <summary>
     /// Describes the platform PowerShell runs on.

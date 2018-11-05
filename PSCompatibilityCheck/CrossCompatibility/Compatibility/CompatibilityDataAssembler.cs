@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 
-namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.Compatibility
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     public static class CompatibilityDataAssembler
     {
