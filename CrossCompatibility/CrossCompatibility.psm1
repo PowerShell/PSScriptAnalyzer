@@ -1,10 +1,10 @@
 if ($PSVersionTable.PSVersion.Major -ge 5)
 {
-    Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'netstandard2.0'))
+    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'netstandard2.0', 'CrossCompatibility.dll'))
 }
 else
 {
-    Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'net451'))
+    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'net451', 'CrossCompatibility.dll'))
 }
 
 $ErrorActionPreference = 'Stop'
@@ -257,9 +257,9 @@ function Get-OSData
         $lsbInfo = Get-LinuxLsbInfo
         if ($lsbInfo)
         {
-            $osData['Distribution'] = $lsbInfo['DISTRIB_ID']
+            $osData['DistributionId'] = $lsbInfo['ID']
             $osData['DistributionVersion'] = $lsbInfo['VERSION_ID']
-            $osData['DistributionVersionName'] = $lsbInfo['VERSION']
+            $osData['DistributionPrettyName'] = $lsbInfo['PRETTY_NAME']
         }
     }
 
@@ -268,17 +268,9 @@ function Get-OSData
 
 function Get-LinuxLsbInfo
 {
-    try
-    {
-        $fileContent = Get-Content '/etc/*-release'
-    }
-    catch
-    {
-        # If something goes wrong, just assume the file isn't there
-        return $null
-    }
-
-    return $fileContent | ForEach-Object { $acc = @{} } { $k,$v = $_ -split '='; $acc[$k]=$v } { $acc }
+    return Get-Content -Raw -Path '/etc/*-release' -ErrorAction SilentlyContinue `
+        | ConvertFrom-Csv -Delimiter '=' -Header 'Key','Value' `
+        | ForEach-Object { $acc = @{} } { $acc[$_.Key] = $_.Value } { [psobject]$acc }
 }
 
 function Get-DotNetData

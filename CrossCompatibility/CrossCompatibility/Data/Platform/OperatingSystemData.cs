@@ -78,10 +78,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
 	/// <summary>
 	/// On Linux, the name of the distribution
 	/// family (e.g. "Ubuntu"). Taken from
-	/// "DISTRIB_ID" in /etc/*-release
+	/// "ID" in /etc/*-release
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public string Distribution { get; set; }
+        public string DistributionId { get; set; }
 
 	/// <summary>
 	/// On Linux, the version of the particular
@@ -93,9 +93,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
 
 	/// <summary>
 	/// On Linux, the full name of the distribution
-	/// version. Taken from "VERSION" in /etc/*-release.
+	/// version. Taken from "PRETTY_NAME" in /etc/*-release.
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public string DistributionVersionName { get; set; }
+        public string DistributionPrettyName { get; set; }
     }
 }
