@@ -395,7 +395,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var settings = GetDictionaryFromHashtable(settingsHashtable);
             foreach (var settingKey in settings.Keys)
             {
-                var key = settingKey.ToLower();
+                var key = settingKey.ToLowerInvariant();
                 object val = settings[key];
                 switch (key)
                 {
