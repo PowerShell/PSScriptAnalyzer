@@ -85,6 +85,17 @@ function foo {
 
             Invoke-Formatter -ScriptDefinition $def | Should -Be $expected
         }
+
+        It "Does not throw when using turkish culture - https://github.com/PowerShell/PSScriptAnalyzer/issues/1095" {
+            $initialCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
+            try {
+                [System.Threading.Thread]::CurrentThread.CurrentCulture = [cultureinfo]::CreateSpecificCulture('tr-TR')
+                Invoke-Formatter ' foo' | Should -Be 'foo'
+            }
+            finally {
+                [System.Threading.Thread]::CurrentThread.CurrentCulture = $initialCulture
+            }
+        }
     }
 
 }
