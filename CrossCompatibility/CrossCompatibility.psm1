@@ -102,7 +102,7 @@ function New-PowerShellCompatibilityProfile
 
     if ($PassThru)
     {
-        return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityJson
+        return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityProfileJson
     }
 
     if ($OutFile -and -not [System.IO.Path]::IsPathRooted($OutFile))
@@ -124,7 +124,8 @@ function New-PowerShellCompatibilityProfile
         $OutFile = Join-Path $script:CompatibilityProfileDir "$platformName.json"
     }
 
-    $reportData | ConvertTo-CompatibilityJson | Out-File -FilePath $OutFile -Force
+    $json = ConvertTo-CompatibilityProfileJson -Item $reportData -NoWhitespace
+    return New-Item -Path $OutFile -Value $json -Force
 }
 
 function Get-PlatformName
@@ -157,16 +158,12 @@ If set, serializes enums as numbers rather than strings.
 .PARAMETER NoWhitespace
 If set, does not add any whitespace to the JSON.
 #>
-function ConvertTo-CompatibilityJson
+function ConvertTo-CompatibilityProfileJson
 {
     param(
-        [Parameter(ValueFromPipeline=$true)]
-        [object]
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]
         $Item,
-
-        [Parameter()]
-        [switch]
-        $EnumsAsValues=$false,
 
         [Parameter()]
         [Alias('Compress')]
@@ -176,27 +173,50 @@ function ConvertTo-CompatibilityJson
 
     begin
     {
-        $settings = New-Object Newtonsoft.Json.JsonSerializerSettings
-
-        $versionConverter = New-Object Newtonsoft.Json.Converters.VersionConverter
-        $settings.Converters.Add($versionConverter)
-
-        if (-not $EnumsAsValues)
+        if ($NoWhitespace)
         {
-            $enumConverter = New-Object Newtonsoft.Json.Converters.StringEnumConverter
-            $settings.Converters.Add($enumConverter)
+            $serializer = [Microsoft.PowerShell.CrossCompatibility.Utility.JsonProfileSerializer]::Create()
+        }
+        else
+        {
+            $serializer = [Microsoft.PowerShell.CrossCompatibility.Utility.JsonProfileSerializer]::Create([Newtonsoft.Json.Formatting]::Indented)
         }
 
-        if (-not $NoWhitespace)
-        {
-            $settings.Formatting = [Newtonsoft.Json.Formatting]::Indented
-        }
+        return $serializer.Serialize($Item)
     }
 
     process
     {
         return [Newtonsoft.Json.JsonConvert]::SerializeObject($Item, $settings)
     }
+}
+
+function ConvertFrom-CompatibilityJson
+{
+    [CmdletBinding(DefaultParameterSetName='Input')]
+    param(
+        [Parameter(ParameterSetName='Input', Mandatory=$true, ValueFromPipeline=$true)]
+        $JsonSource,
+
+        [Parameter(ParameterSetName='File', Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Path
+    )
+
+    $deserializer = [Microsoft.PowerShell.CrossCompatibility.Utility.JsonProfileSerializer]::Create()
+
+    if ($Path)
+    {
+        if (-not [System.IO.Path]::IsPathRooted($Path))
+        {
+            $Path = Join-Path (Get-Location) $Path
+        }
+
+        return $deserializer.DeserializeFromFile($Path)
+    }
+
+    return $deserializer.Deserialize($JsonSource)
 }
 
 <#

@@ -17,8 +17,8 @@ $script:BinModDir = Join-Path $PSScriptRoot 'CrossCompatibilityBinary'
 $script:BinModSrcDir = Join-Path $PSScriptRoot 'CrossCompatibility'
 
 $script:PublishDlls = @{
-    'net451' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb')
-    'netstandard2.0' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb')
+    'net451' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
+    'netstandard2.0' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
 }
 
 function Invoke-BinaryModuleBuild
