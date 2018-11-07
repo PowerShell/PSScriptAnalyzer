@@ -124,8 +124,6 @@ function New-PowerShellCompatibilityProfile
         $OutFile = Join-Path $script:CompatibilityProfileDir "$platformName.json"
     }
 
-    Wait-Debugger
-
     $reportData | ConvertTo-CompatibilityJson | Out-File -FilePath $OutFile -Force
 }
 
