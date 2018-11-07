@@ -57,6 +57,12 @@ function New-CommonParameterSet
 # Set of the common cmdlet parameters to exclude from cmdlet data
 [System.Collections.Generic.HashSet[string]]$script:CommonParameters = New-CommonParameterSet
 
+# User module path location
+[string]$script:UserModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetPersonalModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
+
+# Shared module path location
+[string]$script:SharedModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetSharedModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
+
 <#
 .SYNOPSIS
 True if the given parameter name is a common cmdlet parameter, false otherwise.
@@ -128,6 +134,10 @@ function New-PowerShellCompatibilityProfile
     return New-Item -Path $OutFile -Value $json -Force
 }
 
+<#
+.SYNOPSIS
+Get the unique platform name of a given PowerShell platform.
+#>
 function Get-PlatformName
 {
     param(
@@ -139,6 +149,11 @@ function Get-PlatformName
     [Microsoft.PowerShell.CrossCompatibility.Utility.PlatformNaming]::GetPlatformName($PlatformData)
 }
 
+<#
+.SYNOPSIS
+Get the unique name for the current PowerShell platform
+this cmdlet is executed on.
+#>
 function Get-CurrentPlatformName
 {
     return Get-PlatformData | Get-PlatformName
@@ -191,6 +206,17 @@ function ConvertTo-CompatibilityProfileJson
     }
 }
 
+<#
+.SYNOPSIS
+Converts from JSON to a compatibility profile data type.
+
+.PARAMETER JsonSource
+A string, FileInfo or TextReader object
+from which to deserialize the contents.
+
+.PARAMETER Path
+Path to a file to deserialize from.
+#>
 function ConvertFrom-CompatibilityJson
 {
     [CmdletBinding(DefaultParameterSetName='Input')]
@@ -384,11 +410,22 @@ function Get-DotNetData
     }
 }
 
+<#
+.SYNOPSIS
+Get the compatibility profile of the current
+PowerShell runtime.
+#>
 function Get-PowerShellCompatibilityData
 {
-    $modules = Get-BuiltinModules
+    param(
+        [Parameter()]
+        [switch]
+        $IncludeUserModules
+    )
+
+    $modules = Get-AvailableModules -IncludeUserModules:$IncludeUserModules
     $typeAccelerators = Get-TypeAccelerators
-    $asms = Get-AvailableTypes
+    $asms = Get-AvailableTypes -IncludeUserModules:$IncludeUserModules
 
     $coreModule = Get-CoreModuleData
 
@@ -399,29 +436,39 @@ function Get-PowerShellCompatibilityData
     return $compatibilityData
 }
 
+<#
+.SYNOPSIS
+Gets all assemblies publicly available in
+the current PowerShell session.
+Skips assemblies from user modules by default.
+
+.PARAMETER IncludeUserModules
+Include loaded assemblies located on the module installation path.
+#>
 function Get-AvailableTypes
 {
+    param(
+        [Parameter()]
+        [switch]
+        $IncludeUserModules
+    )
+
     $asms = New-Object 'System.Collections.Generic.List[System.Reflection.Assembly]'
+
     foreach ($asm in [System.AppDomain]::CurrentDomain.GetAssemblies())
     {
-        [System.Reflection.Assembly]$asm = $asm
-        if ($asm.IsDynamic)
+        if ($asm.IsDynamic -or -not $asm.Location)
         {
             continue
         }
 
-        # We only want assemblies that are in the GAC or come shipped with PowerShell
-        if ($asm.GlobalAssemblyCache)
+        if (-not $IncludeUserModules -and
+            (Test-HasAnyPrefix $asm.Location -Prefix $script:UserModulePath,$script:SharedModulePath -IgnoreCase:$script:IsWindows))
         {
-            $asms.Add($asm)
             continue
         }
 
-        if ($asm.Location -and ($asm.Location.StartsWith($PSHOME)))
-        {
-            $asms.Add($asm)
-            continue
-        }
+        $asms.Add($asm)
     }
 
     return $asms
@@ -475,17 +522,23 @@ function Get-CoreModuleData
     return [Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]$coreModuleData
 }
 
-function Get-BuiltinModules
+function Get-AvailableModules
 {
-    $modMatch = [regex]::Escape($PSHOME)
+    param(
+        [Parameter()]
+        [switch]
+        $IncludeUserModules
+    )
 
-    if ($script:IsWindows)
+    if ($IncludeUserModules)
     {
-        $windowsModulePath = [regex]::Escape("$env:windir\System32\WindowsPowerShell\v1.0\Modules\")
-        $modMatch = "^($modMatch|$windowsModulePath)"
+        $modsToLoad = Get-Module -ListAvailable
     }
-
-    $modsToLoad = Get-Module -ListAvailable | Where-Object { $_.Path -match $modMatch }
+    else
+    {
+        $modsToLoad = Get-Module -ListAvailable `
+            | Where-Object { -not (Test-HasAnyPrefix $_.Path $script:UserModulePath,$script:SharedModulePath -IgnoreCase:$script:IsWindows) }
+    }
 
     $mods = New-Object 'System.Collections.Generic.List[psmoduleinfo]'
 
@@ -895,4 +948,40 @@ function Get-FullTypeName
     )
 
     return [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::GetFullTypeName($Type)
+}
+
+function Test-HasAnyPrefix
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        $String,
+
+        [Parameter(Mandatory=$true)]
+        [string[]]
+        $Prefix,
+
+        [Parameter()]
+        [switch]
+        $IgnoreCase
+    )
+
+    if ($IgnoreCase)
+    {
+        $strcmp = [System.StringComparison]::OrdinalIgnoreCase
+    }
+    else
+    {
+        $strcmp = [System.StringComparison]::Ordinal
+    }
+
+    foreach ($p in $Prefix)
+    {
+        if ($String.StartsWith($p, $strcmp))
+        {
+            return $true
+        }
+    }
+
+    return $false
 }
