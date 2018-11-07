@@ -23,12 +23,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         public PowerShellData PowerShell { get; set; }
 
 	/// <summary>
-	/// Host machine information.
-	/// </summary>
-        [DataMember]
-        public MachineData Machine { get; set; }
-
-	/// <summary>
 	/// .NET/CLR host runtime information.
 	/// </summary>
         [DataMember(Name = ".NET")]

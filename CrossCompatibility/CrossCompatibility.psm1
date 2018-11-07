@@ -206,7 +206,7 @@ Generate a new compatibility report object for the current PowerShell session.
 function Get-PowerShellCompatibilityProfileData
 {
     return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]@{
-        Compatibility = Get-PowerShellRuntimeData
+        Compatibility = Get-PowerShellCompatibilityData
         Platform = Get-PlatformData
     }
 }
@@ -218,8 +218,7 @@ Get all information on the current platform running PowerShell.
 function Get-PlatformData
 {
     return [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData]@{
-        Machine = Get-MachineData
-        PowerShell = Get-PowerShellData
+        PowerShell = Get-PowerShellRuntimeData
         OperatingSystem = Get-OSData
         DotNet = Get-DotNetData
     }
@@ -227,44 +226,23 @@ function Get-PlatformData
 
 <#
 .SYNOPSIS
-Get information about the machine this PowerShell session is running on.
-#>
-function Get-MachineData
-{
-    if ([System.Environment]::Is64BitProcess)
-    {
-        $bits = 64
-    }
-    else
-    {
-        $bits = 32
-    }
-
-    if ($script:IsWindows)
-    {
-        $arch = $env:PROCESSOR_ARCHITECTURE
-    }
-    else
-    {
-        $arch = uname -m
-        if ($arch -eq 'x86_64')
-        {
-            $arch = 'AMD64'
-        }
-    }
-
-    return [Microsoft.PowerShell.CrossCompatibility.Data.Platform.MachineData]@{
-        Bitness = $bits
-        Architecture = $arch
-    }
-}
-
-<#
-.SYNOPSIS
 Get information about the PowerShell runtime this PowerShell session is using.
 #>
-function Get-PowerShellData
+function Get-PowerShellRuntimeData
 {
+    if ($PSVersionTable.PSVersion.Major -ge 6)
+    {
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
+    }
+    elseif ([System.Environment]::Is64BitProcess)
+    {
+        $arch = 'X64'
+    }
+    else
+    {
+        $arch = 'X86'
+    }
+
     $psData = @{
         Version = $PSVersionTable.PSVersion
         Edition = $PSVersionTable.PSEdition
@@ -272,6 +250,7 @@ function Get-PowerShellData
         RemotingProtocolVersion = $PSVersionTable.PSRemotingProtocolVersion
         SerializationVersion = $PSVersionTable.SerializationVersion
         WSManStackVersion = $PSVersionTable.WSManStackVersion
+        ProcessArchitecture = $arch
     }
 
     if ($PSVersionTable.GitCommitId -ne $PSVersionTable.PSVersion)
@@ -305,10 +284,24 @@ function Get-OSData
         $osFamily = 'Other'
     }
 
+    if ($PSVersionTable.PSVersion.Major -ge 6)
+    {
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+    }
+    elseif ([System.Environment]::Is64BitOperatingSystem)
+    {
+        $arch = 'X64'
+    }
+    else
+    {
+        $arch = 'X86'
+    }
+
     $osData = @{
         Name = $PSVersionTable.OS
         Platform = $PSVersionTable.Platform
         Family = $osFamily
+        Architecture = $arch
     }
 
     if ($script:IsWindows -or $IsMacOS)
@@ -371,7 +364,7 @@ function Get-DotNetData
     }
 }
 
-function Get-PowerShellRuntimeData
+function Get-PowerShellCompatibilityData
 {
     $modules = Get-BuiltinModules
     $typeAccelerators = Get-TypeAccelerators
@@ -870,7 +863,7 @@ function New-AvailableTypeData
         $TypeAccelerators = Get-TypeAccelerators
     }
 
-    return [Microsoft.PowerShell.CrossCompatibility.Utility.RuntimeDataAssembler]::AssembleAvailableTypes($Assemblies, $TypeAccelerators)
+    return [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::AssembleAvailableTypes($Assemblies, $TypeAccelerators)
 }
 
 function Get-FullTypeName
@@ -881,5 +874,5 @@ function Get-FullTypeName
         $Type
     )
 
-    return [Microsoft.PowerShell.CrossCompatibility.Utility.RuntimeDataAssembler]::GetFullTypeName($Type)
+    return [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::GetFullTypeName($Type)
 }

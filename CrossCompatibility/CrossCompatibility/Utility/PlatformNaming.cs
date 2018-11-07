@@ -8,24 +8,26 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             string psVersion = platform.PowerShell.Version?.ToString();
             string osVersion = platform.OperatingSystem.Version;
-            string arch = platform.Machine.Architecture;
+            string osArch = platform.OperatingSystem.Architecture.ToString().ToLower();
+            string pArch = platform.PowerShell.ProcessArchitecture.ToString().ToLower();
             switch (platform.OperatingSystem.Family)
             {
                 case OSFamily.Windows:
 
-                    return $"win.{osVersion}-{psVersion}-{arch}";
+                    return $"win-{osArch}-{osVersion}-{psVersion}-{pArch}";
 
                 case OSFamily.MacOS:
-                    return $"macos.{osVersion}-{psVersion}-{arch}";
+                    return $"macos-{osArch}-{osVersion}-{psVersion}-{pArch}";
 
                 case OSFamily.Linux:
                     string distroId = platform.OperatingSystem.DistributionId;
                     string distroVersion = platform.OperatingSystem.DistributionVersion;
 
-                    return $"linux_{distroId}.{distroVersion}-{psVersion}-{arch}";
+                    return $"linux_{distroId}-{osArch}-{distroVersion}-{psVersion}-{pArch}";
 
                 default:
-                    return $"unknown.{osVersion ?? "?"}-{psVersion}-{arch}";
+                    // We shouldn't ever see anything like this
+                    return $"unknown-{osArch}-{osVersion ?? "?"}-{psVersion}-{pArch}";
             }
         }
     }

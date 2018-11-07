@@ -15,7 +15,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
     /// <summary>
     /// Assembles loaded type data from a list of assemblies.
     /// </summary>
-    public static class RuntimeDataAssembler
+    public static class TypeDataConversion
     {
         // Binding flags for static type members
         private const BindingFlags StaticBinding = BindingFlags.Public | BindingFlags.Static;

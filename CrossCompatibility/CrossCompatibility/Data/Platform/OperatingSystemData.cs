@@ -51,6 +51,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember]
         public string Platform { get; set; }
 
+        /// <summary>
+        /// The OS machine architecture.
+        /// From System.Runtime.InteropServices.RuntimeInformation.OSArchitecture
+        /// in .NET Core. Either X64 or X86 in .NET Framework.
+        /// </summary>
+        [DataMember]
+        public Architecture Architecture { get; set; }
+
 	/// <summary>
 	/// The broad kind of operating system
 	/// the target PowerShell runtime runs on.

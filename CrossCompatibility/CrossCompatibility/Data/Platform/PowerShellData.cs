@@ -60,5 +60,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string GitCommitId { get; set; }
+
+	/// <summary>
+	/// The machine architecture of the
+	/// PowerShell runtime process.
+	/// From System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
+	/// in .NET Core. Either X64 or X86 in .NET Framework.
+	/// </summary>
+	[DataMember]
+	public Architecture ProcessArchitecture { get; set; }
     }
 }
