@@ -1,17 +1,13 @@
-[CmdletBinding(DefaultParameterSetName='Framework')]
+[CmdletBinding(DefaultParameterSetName='AllFrameworks')]
 param(
     [Parameter()]
     [ValidateSet('Debug', 'Release')]
     $Configuration = 'Debug',
 
-    [Parameter(ParameterSetName='Framework')]
+    [Parameter()]
     [ValidateSet('netstandard2.0', 'net451')]
     [string]
-    $Framework,
-
-    [Parameter(ParameterSetName='AllFrameworks')]
-    [switch]
-    $All
+    $Framework
 )
 
 $ErrorActionPreference = 'Stop'
@@ -94,7 +90,7 @@ function Restore-BinaryModule
     }
 }
 
-if ($All)
+if (-not $Framework)
 {
     foreach ($f in $script:TargetFrameworks)
     {

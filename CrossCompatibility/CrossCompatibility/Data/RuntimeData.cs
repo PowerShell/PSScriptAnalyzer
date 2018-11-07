@@ -12,7 +12,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     /// </summary>
     [Serializable]
     [DataContract]
-    public class CompatibilityData
+    public class RuntimeData
     {
         /// <summary>
         /// Describes the types available on a particular

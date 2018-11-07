@@ -1,3 +1,4 @@
+# Add the relevant binary module
 if ($PSVersionTable.PSVersion.Major -ge 5)
 {
     Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'netstandard2.0', 'CrossCompatibility.dll'))
@@ -7,24 +8,22 @@ else
     Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'net451', 'CrossCompatibility.dll'))
 }
 
-$ErrorActionPreference = 'Stop'
+# Location of directory where compatibility reports should be put
+[string]$script:CompatibilityProfileDir = Join-Path $PSScriptRoot 'profiles'
 
+# Workaround for lower PowerShell versions
 [bool]$script:IsWindows = -not ($IsLinux -or $IsMacOS)
 
+# The default parameter set name
 [string]$script:DefaultParameterSet = '__AllParameterSets'
 
+# Binding flags for static fields
 [System.Reflection.BindingFlags]$script:StaticBindingFlags = [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static
 
+# Binding flags for instance fields -- note the 'FlattenHierarchy'
 [System.Reflection.BindingFlags]$script:InstanceBindingFlags = [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::FlattenHierarchy
 
-[string[]]$script:SpecialMethodPrefixes = @(
-    'get_'
-    'set_'
-    'add_'
-    'remove_'
-    'op_'
-)
-
+# Common/ubiquitous cmdlet parameters which we don't want to repeat over and over
 [string[]]$script:commonParams = @(
     'Verbose'
     'Debug'
@@ -39,6 +38,10 @@ $ErrorActionPreference = 'Stop'
     'PipelineVariable'
 )
 
+<#
+.SYNOPSIS
+Turn the common parameters into a hashset for faster matching.
+#>
 function New-CommonParameterSet
 {
     $set = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
@@ -51,26 +54,16 @@ function New-CommonParameterSet
     return $set
 }
 
+# Set of the common cmdlet parameters to exclude from cmdlet data
 [System.Collections.Generic.HashSet[string]]$script:CommonParameters = New-CommonParameterSet
 
-function Test-HasSpecialPrefix
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [string]
-        $MethodName)
+<#
+.SYNOPSIS
+True if the given parameter name is a common cmdlet parameter, false otherwise.
 
-    foreach ($prefix in $script:SpecialMethodPrefixes)
-    {
-        if ($MethodName.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase))
-        {
-            return $true
-        }
-    }
-
-    return $false
-}
-
+.PARAMETER ParameterName
+The cmdlet parameter name to test.
+#>
 function Test-IsCommonParameter
 {
     param(
@@ -82,7 +75,91 @@ function Test-IsCommonParameter
     return $script:CommonParameters.Contains($ParameterName)
 }
 
-function ConvertTo-TypeJson
+<#
+.SYNOPSIS
+Generate a new compatibility JSON file of the current PowerShell session
+at the specified location.
+
+.PARAMETER OutFile
+The file location where the JSON compatibility file should be generated.
+If this is null or empty, the result will be written to a file with a platform-appropriate name.
+
+.PARAMETER PassThru
+If set, write the report object to output.
+#>
+function New-PowerShellCompatibilityProfile
+{
+    [CmdletBinding(DefaultParameterSetName='OutFile')]
+    param(
+        [Parameter(ParameterSetName='OutFile')]
+        [string]
+        $OutFile,
+
+        [Parameter(ParameterSetName='PassThru')]
+        [switch]
+        $PassThru
+    )
+
+    if ($PassThru)
+    {
+        return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityJson
+    }
+
+    if ($OutFile -and -not [System.IO.Path]::IsPathRooted($OutFile))
+    {
+        $here = Get-Location
+        $OutFile = [System.IO.Path]::Combine($here, $OutFile)
+    }
+
+    $reportData = Get-PowerShellCompatibilityProfileData
+
+    if (-not $OutFile)
+    {
+        if (-not (Test-Path $script:CompatibilityProfileDir))
+        {
+            $null = New-Item -ItemType Directory $script:CompatibilityProfileDir
+        }
+
+        $platformName = Get-PlatformName $reportData.Platform
+        $OutFile = Join-Path $script:CompatibilityProfileDir "$platformName.json"
+    }
+
+    Wait-Debugger
+
+    $reportData | ConvertTo-CompatibilityJson | Out-File -FilePath $OutFile -Force
+}
+
+function Get-PlatformName
+{
+    param(
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData]
+        $PlatformData
+    )
+
+    [Microsoft.PowerShell.CrossCompatibility.Utility.PlatformNaming]::GetPlatformName($PlatformData)
+}
+
+function Get-CurrentPlatformName
+{
+    return Get-PlatformData | Get-PlatformName
+}
+
+<#
+.SYNOPSIS
+Alternative to ConvertTo-Json that converts enums to strings
+and does not display null fields.
+
+.PARAMETER Item
+The object to serialize to JSON.
+
+.PARAMETER EnumsAsValues
+If set, serializes enums as numbers rather than strings.
+
+.PARAMETER NoWhitespace
+If set, does not add any whitespace to the JSON.
+#>
+function ConvertTo-CompatibilityJson
 {
     param(
         [Parameter(ValueFromPipeline=$true)]
@@ -124,36 +201,22 @@ function ConvertTo-TypeJson
     }
 }
 
-function New-PowerShellCompatibilityReport
+<#
+.SYNOPSIS
+Generate a new compatibility report object for the current PowerShell session.
+#>
+function Get-PowerShellCompatibilityProfileData
 {
-    param(
-        [Parameter()]
-        [string]
-        $OutFile
-    )
-
-    if (-not $OutFile)
-    {
-        return Get-PowerShellCompatibilityReportData | ConvertTo-TypeJson
-    }
-
-    if (-not [System.IO.Path]::IsPathRooted($OutFile))
-    {
-        $here = Get-Location
-        $OutFile = [System.IO.Path]::Combine($here, $OutFile)
-    }
-
-    Get-PowerShellCompatibilityReportData | ConvertTo-TypeJson > $OutFile
-}
-
-function Get-PowerShellCompatibilityReportData
-{
-    return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityReportData]@{
-        Compatibility = Get-PowerShellCompatibilityData
+    return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]@{
+        Compatibility = Get-PowerShellRuntimeData
         Platform = Get-PlatformData
     }
 }
 
+<#
+.SYNOPSIS
+Get all information on the current platform running PowerShell.
+#>
 function Get-PlatformData
 {
     return [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData]@{
@@ -164,6 +227,10 @@ function Get-PlatformData
     }
 }
 
+<#
+.SYNOPSIS
+Get information about the machine this PowerShell session is running on.
+#>
 function Get-MachineData
 {
     if ([System.Environment]::Is64BitProcess)
@@ -194,6 +261,10 @@ function Get-MachineData
     }
 }
 
+<#
+.SYNOPSIS
+Get information about the PowerShell runtime this PowerShell session is using.
+#>
 function Get-PowerShellData
 {
     $psData = @{
@@ -213,6 +284,10 @@ function Get-PowerShellData
     return [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PowerShellData]$psData
 }
 
+<#
+.SYNOPSIS
+Get information about the operating system this PowerShell session is using.
+#>
 function Get-OSData
 {
     if ($script:IsWindows)
@@ -266,6 +341,10 @@ function Get-OSData
     return [Microsoft.PowerShell.CrossCompatibility.Data.Platform.OperatingSystemData]$osData
 }
 
+<#
+.SYNOPSIS
+Get Linux platform information from the files in /etc/*-release.
+#>
 function Get-LinuxLsbInfo
 {
     return Get-Content -Raw -Path '/etc/*-release' -ErrorAction SilentlyContinue `
@@ -273,6 +352,10 @@ function Get-LinuxLsbInfo
         | ForEach-Object { $acc = @{} } { $acc[$_.Key] = $_.Value } { [psobject]$acc }
 }
 
+<#
+.SYNOPSIS
+Get information about the .NET runtime this PowerShell session is running on.
+#>
 function Get-DotNetData
 {
     if ($IsLinux -or $IsMacOS -or $PSVersionTable.PSEdition -eq 'Core')
@@ -290,7 +373,7 @@ function Get-DotNetData
     }
 }
 
-function Get-PowerShellCompatibilityData
+function Get-PowerShellRuntimeData
 {
     $modules = Get-BuiltinModules
     $typeAccelerators = Get-TypeAccelerators
@@ -298,9 +381,9 @@ function Get-PowerShellCompatibilityData
 
     $coreModule = Get-CoreModuleData
 
-    $compatibilityData = New-CompatibilityData -Modules $modules -Assemblies $asms -TypeAccelerators $typeAccelerators
+    $compatibilityData = New-RuntimeData -Modules $modules -Assemblies $asms -TypeAccelerators $typeAccelerators
 
-    $compatibilityData['Modules']['Microsoft.PowerShell.Core'] = $coreModule
+    $compatibilityData.Modules['Microsoft.PowerShell.Core'] = $coreModule
 
     return $compatibilityData
 }
@@ -378,7 +461,7 @@ function Get-CoreModuleData
         $coreModuleData['Cmdlets'] = $coreCmdlets
     }
 
-    return [Microsoft.PowerShell.CrossCompatibility.Data.Module.ModuleData]$coreModuleData
+    return [Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]$coreModuleData
 }
 
 function Get-BuiltinModules
@@ -415,7 +498,7 @@ function Get-BuiltinModules
     return @(,$mods)
 }
 
-function New-CompatibilityData
+function New-RuntimeData
 {
     param(
         [Parameter()]
@@ -435,15 +518,15 @@ function New-CompatibilityData
 
     if ($Modules)
     {
-        $compatData['Modules'] = $Modules | New-ModuleData
+        $compatData.Modules = $Modules | New-ModuleData
     }
 
     if ($Assemblies)
     {
-        $compatData['Types'] = New-AvailableTypeData -Assemblies $Assemblies -TypeAccelerators $TypeAccelerators
+        $compatData.Types = New-AvailableTypeData -Assemblies $Assemblies -TypeAccelerators $TypeAccelerators
     }
 
-    return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityData]$compatData
+    return [Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData]$compatData
 }
 
 function New-ModuleData
@@ -542,7 +625,14 @@ function New-CmdletData
 
         if ($Cmdlet.OutputType)
         {
-            $cmdletData['OutputType'] = $Cmdlet.OutputType | ForEach-Object { Get-FullTypeName $_.Type }
+            $cmdletData['OutputType'] = $Cmdlet.OutputType | ForEach-Object {
+                    if ($_.Type -as [type])
+                    {
+                        return Get-FullTypeName $_.Type
+                    }
+
+                    return $_.Name
+                }
         }
 
         if ($Cmdlet.Parameters -and $Cmdlet.Parameters.get_Count() -gt 0)
@@ -782,452 +872,7 @@ function New-AvailableTypeData
         $TypeAccelerators = Get-TypeAccelerators
     }
 
-    return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityDataAssembler]::AssembleAvailableTypes($Assemblies, $TypeAccelerators)
-
-    <#
-    $typeDict = New-Object 'System.Collections.Generic.Dictionary[string, string]'
-
-    if ($TypeAccelerators)
-    {
-        foreach ($type in $TypeAccelerators.Keys)
-        {
-            $typeName = Get-FullTypeName $TypeAccelerators[$type]
-            [void]$typeDict.Add($type, $typeName)
-        }
-    }
-
-    $asms = $Assemblies | New-AssemblyData
-
-    return [Microsoft.PowerShell.CrossCompatibility.Data.Types.AvailableTypeData]@{
-        Assemblies = $asms
-        TypeAccelerators = $typeDict
-    }
-    #>
-}
-
-function New-AssemblyData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Reflection.Assembly]
-        $Assembly
-    )
-
-    begin
-    {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Types.AssemblyData]'
-    }
-
-    process
-    {
-        $asmName = $Assembly.GetName() | New-AssemblyNameData
-        $types = $Assembly.GetTypes() | Where-Object { $_.IsPublic } | New-TypeData
-
-        $asmData = [Microsoft.PowerShell.CrossCompatibility.Data.Types.AssemblyData] @{
-            AssemblyName = $asmName
-            Types = $types
-        }
-
-        $dict.Add($asmName.Name, $asmData)
-    }
-
-    end
-    {
-        return $dict
-    }
-}
-
-function New-AssemblyNameData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Reflection.AssemblyName]
-        $AssemblyName
-    )
-
-    process
-    {
-        if ($AssemblyName.CultureName)
-        {
-            $culture = $AssemblyName.CultureName
-        }
-        else
-        {
-            $culture = "neutral"
-        }
-
-        $publicKeyToken = $AssemblyName.GetPublicKeyToken()
-
-        [Microsoft.PowerShell.CrossCompatibility.Data.Types.AssemblyNameData] @{
-            Name = $AssemblyName.Name
-            Version = $AssemblyName.Version
-            Culture = $culture
-            PublicKeyToken = $publicKeyToken
-        }
-    }
-}
-
-function New-TypeData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [type]
-        $Type
-    )
-
-    begin
-    {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, System.Collections.Generic.IDictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Types.TypeData]]'
-    }
-
-    process
-    {
-        if (-not $dict.ContainsKey($Type.Namespace))
-        {
-            $namespaceDict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Types.TypeData]'
-            $dict.Add($Type.Namespace, $namespaceDict)
-        }
-
-        $typeData = @{}
-
-        $instanceMembers = $Type.GetMembers($script:InstanceBindingFlags)
-        if ($instanceMembers)
-        {
-            $typeData['Instance'] = $instanceMembers | New-MemberData
-        }
-
-        $staticMembers = $Type.GetMembers($script:StaticBindingFlags)
-        if ($staticMembers)
-        {
-            $typeData['Static'] = $staticMembers | New-MemberData
-        }
-
-        $typeData = [Microsoft.PowerShell.CrossCompatibility.Data.Types.TypeData]$typeData
-
-        $dict[$Type.Namespace].Add($Type.Name, $typeData)
-    }
-
-    end
-    {
-        return $dict
-    }
-}
-
-function New-MemberData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Reflection.MemberInfo]
-        $Member
-    )
-
-    begin
-    {
-        $memberDict = New-Object 'System.Collections.Generic.Dictionary[string, System.Reflection.MemberInfo[]]'
-    }
-
-    process
-    {
-        # We need to remember members we have seen to check for overriding
-        if (-not $memberDict.ContainsKey($Member.Name))
-        {
-            $memberDict[$Member.Name] = $Member
-            return
-        }
-
-        # If we see a method, check
-        if ($Member.MemberType -eq [System.Reflection.MemberTypes]::Method)
-        {
-            $method = $Member -as [System.Reflection.MethodInfo]
-            $existingMethods = $memberDict[$Member.Name]
-        }
-    }
-
-    end
-    {
-        # Now build the actual method data
-        $methodDataDict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Types.MethodData]'
-        foreach ($method in $methods.GetEnumerator())
-        {
-            $methodData = $method | New-MethodData
-            $methodDataDict.Add($method.Key, $methodData)
-        }
-
-        $memberData = @{}
-
-        if ($constructors.get_Count() -gt 0)
-        {
-            $memberData['Constructors'] = $constructors
-        }
-
-        if ($events.get_Count() -gt 0)
-        {
-            $memberData['Events'] = $events
-        }
-
-        if ($fields.get_Count() -gt 0)
-        {
-            $memberData['Fields'] = $fields
-        }
-
-        if ($methodDataDict.get_Count() -gt 0)
-        {
-            $memberData['Methods'] = $methodDataDict
-        }
-
-        if ($nestedTypes.get_Count() -gt 0)
-        {
-            $memberData['NestedTypes'] = $nestedTypes
-        }
-
-        if ($properties.get_Count() -gt 0)
-        {
-            $memberData['Properties'] = $properties
-        }
-
-        if ($indexers.get_Count() -gt 0)
-        {
-            $memberData['Indexers'] = $indexers
-        }
-
-        return [Microsoft.PowerShell.CrossCompatibility.Data.Types.MemberData]$memberData
-    }
-}
-
-function Get-OverridingMembers
-{
-    param(
-        [Parameter()]
-        [System.Reflection.MemberInfo]
-        $NewMember,
-
-        [Parameter()]
-        [System.Reflection.MemberInfo[]]
-        $CurrentMembers
-    )
-
-    if (-not $CurrentMembers)
-    {
-        return $NewMember
-    }
-
-    [System.Reflection.MemberTypes]$currType = $CurrentMembers[0].MemberType
-
-    if ($CurrentMembers.Length -gt 1)
-    {
-        if (-not ('Property', 'Method' -contains $currType))
-        {
-            throw "Multiple current members of bad type: $currType"
-        }
-
-        foreach ($m in $CurrentMembers)
-        {
-            if ($m.MemberType -ne $currType)
-            {
-                throw "Multiple members of heterogenous type. Offending member: $m"
-            }
-        }
-
-        switch ($currType)
-        {
-            Property
-            {
-
-            }
-        }
-    }
-}
-
-function Test-MethodMatchesParameters
-{
-    param(
-        [Parameter()]
-        [type[]]
-        $GivenParamTypes,
-
-        [Parameter()]
-        [type[][]]
-        $ExistingParamTypes
-    )
-
-    # If no existing methods are given, then there is no match
-    if (-not $ExistingParamTypes)
-    {
-        return -1
-    }
-
-    # Search through each of the existing methods and find
-    # if any of them has all the same parameter types as the given method.
-    # If so, return the index of the exist method
-    :nextmethod for ($i = 0; $i -lt $ExistingParamTypes.Length; $i++)
-    {
-        $paramsToMatch = $ExistingParamTypes[$i]
-
-        if ($paramsToMatch.Length -ne $GivenParamTypes.Length)
-        {
-            continue nextmethod
-        }
-
-        for ($j = 0; $j -lt $GivenParamTypes.Length; $j++)
-        {
-            if ($GivenParamTypes[$j].ParameterType -ne $paramsToMatch[$j].ParameterType)
-            {
-                continue nextmethod
-            }
-        }
-
-        return $i
-    }
-
-    return -1
-}
-
-function New-FieldData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Reflection.FieldInfo]
-        $Field
-    )
-
-    process
-    {
-        return [Microsoft.PowerShell.CrossCompatibility.Data.Types.FieldData]@{
-            Type = Get-FullTypeName $Field.FieldType
-        }
-    }
-}
-
-function New-ConstructorData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Reflection.ConstructorInfo]
-        $Ctor
-    )
-
-    process
-    {
-        $ctorParameters = $Ctor.GetParameters()
-        if ($ctorParameters)
-        {
-            $parameters = $Ctor.GetParameters() | ForEach-Object { Get-FullTypeName $_.ParameterType }
-        }
-        else
-        {
-            $parameters = @()
-        }
-
-        return $parameters
-    }
-}
-
-function New-EventData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Reflection.EventInfo]
-        $EventInfo
-    )
-
-    process
-    {
-        return [Microsoft.PowerShell.CrossCompatibility.Data.Types.EventData]@{
-            HandlerType = Get-FullTypeName $EventInfo.EventHandlerType
-            IsMulticast = $EventInfo.IsMulticast
-        }
-    }
-}
-
-function New-IndexerData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Reflection.PropertyInfo]
-        $Indexer
-    )
-
-    process
-    {
-        $accessors = @()
-
-        if ($Indexer.GetMethod -and $Indexer.GetMethod.IsPublic)
-        {
-            $accessors += 'Get'
-        }
-
-        if ($Indexer.SetMethod -and $Indexer.SetMethod.IsPublic)
-        {
-            $accessors += 'Set'
-        }
-
-        return [Microsoft.PowerShell.CrossCompatibility.Data.Types.IndexerData]@{
-            ItemType = Get-FullTypeName $Indexer.PropertyType
-            Parameters = $Indexer.GetIndexParameters() | ForEach-Object { Get-FullTypeName $_.ParameterType }
-            Accessors = $accessors
-        }
-    }
-}
-
-function New-PropertyData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Reflection.PropertyInfo]
-        $Property
-    )
-
-    process
-    {
-        $accessors = @()
-
-        if ($Property.GetMethod -and $Property.GetMethod.IsPublic)
-        {
-            $accessors += 'Get'
-        }
-
-        if ($Property.SetMethod -and $Property.SetMethod.IsPublic)
-        {
-            $accessors += 'Set'
-        }
-
-        return [Microsoft.PowerShell.CrossCompatibility.Data.Types.PropertyData]@{
-            Type = Get-FullTypeName $Property.PropertyType
-            Accessors = $accessors
-        }
-    }
-}
-
-function New-MethodData
-{
-    param(
-        [Parameter(ValueFromPipeline=$true)]
-        [System.Collections.Generic.KeyValuePair[string, System.Collections.Generic.List[System.Reflection.MethodInfo]]]
-        $Method
-    )
-
-    process
-    {
-        $overloads = New-Object 'System.Collections.Generic.List[string[]]'
-        foreach ($methodOverload in $Method.Value)
-        {
-            [System.Reflection.MethodInfo]$methodOverload = $methodOverload
-            $overload = $methodOverload.GetParameters() | ForEach-Object { Get-FullTypeName $_.ParameterType }
-            if ($overload)
-            {
-                $overloads.Add($overload)
-            }
-            else
-            {
-                $overloads.Add(@())
-            }
-        }
-
-        return [Microsoft.PowerShell.CrossCompatibility.Data.Types.MethodData]@{
-            ReturnType = Get-FullTypeName $Method.Value[0].ReturnType
-            OverloadParameters = $overloads
-        }
-    }
+    return [Microsoft.PowerShell.CrossCompatibility.Utility.RuntimeDataAssembler]::AssembleAvailableTypes($Assemblies, $TypeAccelerators)
 }
 
 function Get-FullTypeName
@@ -1238,8 +883,5 @@ function Get-FullTypeName
         $Type
     )
 
-    process
-    {
-        return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityDataAssembler]::GetFullTypeName($Type)
-    }
+    return [Microsoft.PowerShell.CrossCompatibility.Utility.RuntimeDataAssembler]::GetFullTypeName($Type)
 }

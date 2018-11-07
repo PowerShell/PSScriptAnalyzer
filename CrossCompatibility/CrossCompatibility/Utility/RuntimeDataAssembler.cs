@@ -5,204 +5,30 @@ using System.Management.Automation;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
 using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data
+namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
-    public static class CompatibilityDataAssembler
+    /// <summary>
+    /// Assembles loaded type data from a list of assemblies.
+    /// </summary>
+    public static class RuntimeDataAssembler
     {
+        // Binding flags for static type members
         private const BindingFlags StaticBinding = BindingFlags.Public | BindingFlags.Static;
 
+        // Binding flags for instance type members, note FlattenHierarchy
         private const BindingFlags InstanceBinding = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 
-        private static readonly IEnumerable<string> s_specialMethodPrefixes = new [] {
-            "get_",
-            "set_",
-            "add_",
-            "remove_",
-            "op_"
-        };
-
-        public static CompatibilityData Assemble(
-            IEnumerable<Assembly> assemblies,
-            IEnumerable<PSModuleInfo> modules,
-            IDictionary<string, Type> typeAccelerators)
-        {
-            var moduleDict = new Dictionary<string, ModuleData>();
-            foreach (PSModuleInfo module in modules)
-            {
-                moduleDict.Add(module.Name, AssembleModule(module));
-            }
-
-            return new CompatibilityData()
-            {
-                Types = AssembleAvailableTypes(assemblies, typeAccelerators),
-                Modules = moduleDict
-            };
-        }
-
-        public static ModuleData AssembleModule(PSModuleInfo moduleInfo)
-        {
-            var functions = new Dictionary<string, FunctionData>();
-            foreach (KeyValuePair<string, FunctionInfo> funcEntry in moduleInfo.ExportedFunctions)
-            {
-                functions.Add(funcEntry.Key, AssembleFunction(funcEntry.Value));
-            }
-
-            var cmdlets = new Dictionary<string, CmdletData>();
-            foreach (KeyValuePair<string, CmdletInfo> cmdletEntry in moduleInfo.ExportedCmdlets)
-            {
-                cmdlets.Add(cmdletEntry.Key, AssembleCmdlet(cmdletEntry.Value));
-            }
-
-            var aliases = new Dictionary<string, string>();
-            foreach (AliasInfo alias in moduleInfo.ExportedAliases.Values)
-            {
-                aliases.Add(alias.Name, alias.ReferencedCommand.Name);
-            }
-
-            return new ModuleData()
-            {
-                Functions = functions.Any() ? functions : null,
-                Cmdlets = cmdlets.Any() ? cmdlets : null,
-                Aliases = aliases.Any() ? aliases : null,
-                Variables = moduleInfo.ExportedVariables.Any() ? moduleInfo.ExportedVariables.Keys.ToArray() : null
-            };
-        }
-
-        public static CmdletData AssembleCmdlet(CmdletInfo cmdlet)
-        {
-            List<string> outputTypes = null;
-            if (cmdlet.OutputType != null)
-            {
-                outputTypes = new List<string>();
-                foreach (PSTypeName type in cmdlet.OutputType)
-                {
-                    outputTypes.Add(type.Type.FullName);
-                }
-            }
-
-            var parameterSets = new List<string>();
-            foreach (CommandParameterSetInfo paramSet in cmdlet.ParameterSets)
-            {
-                parameterSets.Add(paramSet.Name);
-            }
-
-            var parameters = new Dictionary<string, ParameterData>();
-            var aliases = new Dictionary<string, string>();
-            if (cmdlet.Parameters != null)
-            {
-                foreach (KeyValuePair<string, ParameterMetadata> param in cmdlet.Parameters)
-                {
-                    parameters.Add(param.Key, AssembleParameter(param.Value));
-                    if (param.Value.Aliases.Any())
-                    {
-                        foreach (string alias in param.Value.Aliases)
-                        {
-                            aliases.Add(alias, param.Key);
-                        }
-                    }
-                }
-            }
-
-            return new CmdletData()
-            {
-                OutputType = outputTypes.ToArray(),
-                ParameterSets = parameterSets.ToArray(),
-                Parameters = parameters.Any() ? parameters : null,
-                ParameterAliases = aliases.Any() ? aliases : null
-            };
-        }
-
-        public static FunctionData AssembleFunction(FunctionInfo function)
-        {
-            List<string> outputTypes = null;
-            if (function.OutputType != null)
-            {
-                outputTypes = new List<string>();
-                foreach (PSTypeName type in function.OutputType)
-                {
-                    outputTypes.Add(type.Type.FullName);
-                }
-            }
-
-            var parameterSets = new List<string>();
-            foreach (CommandParameterSetInfo paramSet in function.ParameterSets)
-            {
-                parameterSets.Add(paramSet.Name);
-            }
-
-            var parameters = new Dictionary<string, ParameterData>();
-            var aliases = new Dictionary<string, string>();
-            foreach (KeyValuePair<string, ParameterMetadata> param in function.Parameters)
-            {
-                parameters.Add(param.Key, AssembleParameter(param.Value));
-                if (param.Value.Aliases.Any())
-                {
-                    foreach (string alias in param.Value.Aliases)
-                    {
-                        aliases.Add(alias, param.Key);
-                    }
-                }
-            }
-
-            return new FunctionData()
-            {
-                OutputType = outputTypes.ToArray(),
-                ParameterSets = parameterSets.ToArray(),
-                Parameters = parameters,
-                ParameterAliases = aliases
-            };
-        }
-
-        public static ParameterData AssembleParameter(ParameterMetadata parameter)
-        {
-            var parameterSets = new Dictionary<string, ParameterSetData>();
-            foreach (KeyValuePair<string, ParameterSetMetadata> parameterSet in parameter.ParameterSets)
-            {
-                parameterSets.Add(parameterSet.Key, AssembleParameterSet(parameterSet.Value));
-            }
-
-            return new ParameterData()
-            {
-                Type = parameter.ParameterType.FullName,
-                ParameterSets = parameterSets
-            };
-        }
-
-        public static ParameterSetData AssembleParameterSet(ParameterSetMetadata paramSet)
-        {
-            var flags = new List<ParameterSetFlag>();
-
-            if (paramSet.IsMandatory)
-            {
-                flags.Add(ParameterSetFlag.Mandatory);
-            }
-
-            if (paramSet.ValueFromPipeline)
-            {
-                flags.Add(ParameterSetFlag.ValueFromPipeline);
-            }
-
-            if (paramSet.ValueFromPipelineByPropertyName)
-            {
-                flags.Add(ParameterSetFlag.ValueFromPipelineByPropertyName);
-            }
-
-            if (paramSet.ValueFromRemainingArguments)
-            {
-                flags.Add(ParameterSetFlag.ValueFromRemainingArguments);
-            }
-
-            return new ParameterSetData()
-            {
-                Position = paramSet.Position,
-                Flags = flags.ToArray()
-            };
-        }
-
+        /// <summary>
+        /// Collate type data from assemblies into an AvailableTypeData object.
+        /// </summary>
+        /// <param name="assemblies">the assemblies to collate data from.</param>
+        /// <param name="typeAccelerators">lookup table of PowerShell type accelerators.</param>
+        /// <returns>an object describing all the available types from the given assemblies.</returns>
         public static AvailableTypeData AssembleAvailableTypes(
             IEnumerable<Assembly> assemblies,
             IDictionary<string, Type> typeAccelerators)
@@ -212,7 +38,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
             {
                 typeAcceleratorDict.Add(typeAccelerator.Key, typeAccelerator.Value.FullName);
             }
-
 
             var asms = new Dictionary<string, AssemblyData>();
             foreach (Assembly asm in assemblies)
@@ -228,6 +53,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
             };
         }
 
+        /// <summary>
+        /// Collate an AssemblyData object for a single assembly.
+        /// </summary>
+        /// <param name="asm">the assembly to collect data on.</param>
+        /// <returns>A pair of the name and data of the given assembly.</returns>
         public static KeyValuePair<string, AssemblyData> AssembleAssembly(Assembly asm)
         {
             AssemblyName asmName = asm.GetName();
@@ -272,6 +102,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
             return new KeyValuePair<string, AssemblyData>(asmName.Name, asmData);
         }
 
+        /// <summary>
+        /// Collate the data around a type.
+        /// </summary>
+        /// <param name="type">The type to assemble data for.</param>
+        /// <returns>An object summarizing the type and its members.</returns>
         public static TypeData AssembleType(Type type)
         {
             MemberData instanceMembers = AssembleMembers(type, InstanceBinding);
@@ -314,7 +149,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
             }
 
             IEnumerable<MemberInfo> typeMembers = type.GetMembers(memberBinding)
-                .Where(m => !HasSpecialMethodPrefix(m.Name));
+                .Where(m => !HasSpecialMethodPrefix(m));
 
             // If we are dealing with instance members, we need to be careful about overrides
             if ((memberBinding & BindingFlags.Instance) != 0)
@@ -600,17 +435,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
             return parameters != null && parameters.Any();
         }
 
-        private static bool HasSpecialMethodPrefix(string methodName)
+        private static bool HasSpecialMethodPrefix(MemberInfo member)
         {
-            foreach (string prefix in s_specialMethodPrefixes)
+            switch (member)
             {
-                if (methodName.StartsWith(prefix))
-                {
-                    return true;
-                }
-            }
+                case MethodInfo method:
+                    return method.IsSpecialName;
 
-            return false;
+                default:
+                    return false;
+            }
         }
 
         public static string GetFullTypeName(Type type)

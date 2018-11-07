@@ -11,14 +11,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     /// </summary>
     [Serializable]
     [DataContract]
-    public class CompatibilityReportData
+    public class CompatibilityProfileData
     {
         /// <summary>
         /// Describes the what types and commands are available
         /// on the target platform.
         /// </summary>
         [DataMember]
-        public CompatibilityData Compatibility { get; set; }
+        public RuntimeData Compatibility { get; set; }
 
         /// <summary>
         /// Describes a target platform on which a PowerShell script

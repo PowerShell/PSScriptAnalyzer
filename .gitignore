@@ -214,4 +214,5 @@ PSScriptAnalyzer/
 TestResults.xml
 
 # CrossCompatibility submodule
-CrossCompatibility/CrossCompatibilityBinary
+CrossCompatibility/CrossCompatibilityBinary/
+CrossCompatibility/profiles/
