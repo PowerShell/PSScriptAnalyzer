@@ -419,7 +419,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 public virtual string ToString(int? tabStop)
                 {
                     var sb = new StringBuilder();
-                    sb.Append(".").AppendLine(Name.ToUpper());
+                    sb.Append(".").AppendLine(Name.ToUpperInvariant());
                     if (!String.IsNullOrWhiteSpace(Description))
                     {
                         sb.Append(Snippetify(tabStop, Description));
