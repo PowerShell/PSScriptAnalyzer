@@ -167,6 +167,7 @@ function Measure-RequiresModules
                     [System.Management.Automation.Language.CommandAst]$cmdAst = $Ast;
                     if ($null -ne $cmdAst.GetCommandName())
                     {
+                        # ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
                         if ($cmdAst.GetCommandName().ToLowerInvariant() -eq "import-module")
                         {
                             $returnValue = $true
@@ -225,8 +226,8 @@ function Measure-RequiresModules
 }
 
 
-# The two rules in the following if block use StaticParameterBinder class. 
-# StaticParameterBinder class was introduced in PSv4. 
+# The two rules in the following if block use StaticParameterBinder class.
+# StaticParameterBinder class was introduced in PSv4.
 if ($PSVersionTable.PSVersion -ge [Version]'4.0.0')
 {
 	<#

@@ -395,7 +395,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var settings = GetDictionaryFromHashtable(settingsHashtable);
             foreach (var settingKey in settings.Keys)
             {
-                var key = settingKey.ToLowerInvariant(); // Invariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
+                var key = settingKey.ToLowerInvariant(); // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
                 object val = settings[key];
                 switch (key)
                 {
