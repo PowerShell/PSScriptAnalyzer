@@ -167,7 +167,7 @@ function Measure-RequiresModules
                     [System.Management.Automation.Language.CommandAst]$cmdAst = $Ast;
                     if ($null -ne $cmdAst.GetCommandName())
                     {
-                        if ($cmdAst.GetCommandName().ToLower() -eq "import-module")
+                        if ($cmdAst.GetCommandName().ToLowerInvariant() -eq "import-module")
                         {
                             $returnValue = $true
                         }
