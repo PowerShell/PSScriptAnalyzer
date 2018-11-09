@@ -1,7 +1,14 @@
 ﻿#Requires -Version 3.0
 
 # Import Localized Data
-Import-LocalizedData -BindingVariable Messages
+if ([System.Threading.Thread]::CurrentThread.CurrentCulture.Name -ne 'en-US')
+{
+    Import-LocalizedData -BindingVariable Messages -UICulture 'en-US'
+}
+else
+{
+    Import-LocalizedData -BindingVariable Messages
+}
 
 <#
 .SYNOPSIS
