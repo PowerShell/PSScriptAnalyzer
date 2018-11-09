@@ -20,7 +20,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// <summary>
         /// The version of the assembly.
         /// </summary>
-        [DataMember]
+        [DataMember(EmitDefaultValue = false)]
         public Version Version { get; set; }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// This should not be null, but null
         /// should be considered the same as "neutral".
         /// </summary>
-        [DataMember]
+        [DataMember(EmitDefaultValue = false)]
         public string Culture { get; set; }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// This may be null if the assembly has no public
         /// key token (i.e. is unsigned).
         /// </summary>
-        [DataMember]
+        [DataMember(EmitDefaultValue = false)]
         public byte[] PublicKeyToken { get; set; }
     }
 }

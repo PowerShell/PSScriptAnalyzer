@@ -101,6 +101,10 @@ function New-PowerShellCompatibilityProfile
         [string]
         $OutFile,
 
+        [Parameter(ParameterSetName='PlatformName', Mandatory=$true)]
+        [string]
+        $PlatformName,
+
         [Parameter(ParameterSetName='PassThru')]
         [switch]
         $PassThru
@@ -111,7 +115,11 @@ function New-PowerShellCompatibilityProfile
         return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityProfileJson
     }
 
-    if ($OutFile -and -not [System.IO.Path]::IsPathRooted($OutFile))
+    if ($PlatformName)
+    {
+
+    }
+    elseif ($OutFile -and -not [System.IO.Path]::IsPathRooted($OutFile))
     {
         $here = Get-Location
         $OutFile = [System.IO.Path]::Combine($here, $OutFile)
@@ -196,13 +204,11 @@ function ConvertTo-CompatibilityProfileJson
         {
             $serializer = [Microsoft.PowerShell.CrossCompatibility.Utility.JsonProfileSerializer]::Create([Newtonsoft.Json.Formatting]::Indented)
         }
-
-        return $serializer.Serialize($Item)
     }
 
     process
     {
-        return [Newtonsoft.Json.JsonConvert]::SerializeObject($Item, $settings)
+        return $serializer.Serialize($Item)
     }
 }
 
@@ -359,9 +365,14 @@ function Get-OSData
         $osData['Version'] = uname -r
     }
 
-    if ($script:IsWindows -and [System.Environment]::OSVersion.ServicePack)
+    if ($script:IsWindows)
     {
-        $osData['ServicePack'] = [System.Environment]::OSVersion.ServicePack
+        $osData['SkuId'] = Get-WindowsSkuId
+
+        if ([System.Environment]::OSVersion.ServicePack)
+        {
+            $osData['ServicePack'] = [System.Environment]::OSVersion.ServicePack
+        }
     }
 
     if ($IsLinux)
@@ -376,6 +387,11 @@ function Get-OSData
     }
 
     return [Microsoft.PowerShell.CrossCompatibility.Data.Platform.OperatingSystemData]$osData
+}
+
+function Get-WindowsSkuId
+{
+    return (Get-CimInstance Win32_OperatingSystem).OperatingSystemSKU
 }
 
 <#

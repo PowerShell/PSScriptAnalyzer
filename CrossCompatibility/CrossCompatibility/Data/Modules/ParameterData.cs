@@ -12,17 +12,23 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     [DataContract]
     public class ParameterData
     {
-	/// <summary>
-	/// The parameter sets to which the parameter belongs,
-	/// keyed by the parameter set names.
-	/// </summary>
+        /// <summary>
+        /// The parameter sets to which the parameter belongs,
+        /// keyed by the parameter set names.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public IDictionary<string, ParameterSetData> ParameterSets { get; set; }
 
-	/// <summary>
-	/// The .NET type of the parameter.
-	/// </summary>
+        /// <summary>
+        /// The .NET type of the parameter.
+        /// </summary>
         [DataMember]
         public string Type { get; set; }
+
+        /// <summary>
+        /// True if the parameter is dynamic, false otherwise.
+        /// </summary>
+        [DataMember(EmitDefaultValue = false)]
+        public bool Dynamic { get; set; }
     }
 }

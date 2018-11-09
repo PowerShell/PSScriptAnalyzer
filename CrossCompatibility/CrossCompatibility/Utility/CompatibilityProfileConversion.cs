@@ -66,7 +66,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 Name = asmName.Name,
                 Version = asmName.Version,
-                Culture = asmName.CultureName ?? "neutral",
+                Culture = asmName.CultureName,
                 PublicKeyToken = asmName.GetPublicKeyToken(),
             };
 

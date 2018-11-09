@@ -58,6 +58,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 	/// the default position of Int.MinValue is assumed.
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public int Position { get; set; }
+        public int Position { get; set; } = int.MinValue;
     }
 }

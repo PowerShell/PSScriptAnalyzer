@@ -83,6 +83,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember(EmitDefaultValue = false)]
         public string ServicePack { get; set; }
 
+        /// <summary>
+        /// The Windows SKU identifier, corresponding to
+        /// the GetProductInfo() sysinfo API:
+        /// https://docs.microsoft.com/en-us/windows/desktop/api/sysinfoapi/nf-sysinfoapi-getproductinfo
+        /// </summary>
+        [DataMember(EmitDefaultValue = false)]
+        public uint SkuId { get; set; }
+
 	/// <summary>
 	/// On Linux, the name of the distribution
 	/// family (e.g. "Ubuntu"). Taken from
