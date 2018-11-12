@@ -282,20 +282,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Debug.Assert(includeRuleList != null);
             Debug.Assert(excludeRuleList != null);
 
-            switch (key.ToLower())
+            if (key.Equals("severity", StringComparison.InvariantCultureIgnoreCase))
             {
-                case "severity":
-                    severityList.AddRange(values);
-                    break;
-                case "includerules":
-                    includeRuleList.AddRange(values);
-                    break;
-                case "excluderules":
-                    excludeRuleList.AddRange(values);
-                    break;
-                default:
-                    return false;
+                severityList.AddRange(values);
             }
+            else if (key.Equals("includerules", StringComparison.InvariantCultureIgnoreCase))
+            {
+                includeRuleList.AddRange(values);
+            }
+            else
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -509,75 +508,70 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             settings.Keys.CopyTo(settingsKeys, 0);
             foreach (var settingKey in settingsKeys)
             {
-                var key = settingKey.ToLower();
-                object value = settings[key];
-                switch (key)
+                object value = settings[settingKey];
+
+                if (settingKey.Equals("severity", StringComparison.InvariantCultureIgnoreCase) ||
+                    settingKey.Equals("includerules", StringComparison.InvariantCultureIgnoreCase) ||
+                    settingKey.Equals("excluderules", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    case "severity":
-                    case "includerules":
-                    case "excluderules":
-                        // value must be either string or collections of string or array
-                        if (value == null
-                            || !(value is string
-                                || value is IEnumerable<string>
-                                || value.GetType().IsArray))
-                        {
-                            writer.WriteError(
-                                new ErrorRecord(
-                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
-                                    Strings.WrongConfigurationKey,
-                                    ErrorCategory.InvalidData,
-                                    profile));
-                            hasError = true;
-                            break;
-                        }
-                        List<string> values = new List<string>();
-                        if (value is string)
-                        {
-                            values.Add(value as string);
-                        }
-                        else if (value is IEnumerable<string>)
-                        {
-                            values.Union(value as IEnumerable<string>);
-                        }
-                        else if (value.GetType().IsArray)
-                        {
-                            // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
-                            foreach (var val in value as IEnumerable)
-                            {
-                                if (val is string)
-                                {
-                                    values.Add(val as string);
-                                }
-                                else
-                                {
-                                    writer.WriteError(
-                                        new ErrorRecord(
-                                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, key)),
-                                            Strings.WrongConfigurationKey,
-                                            ErrorCategory.InvalidData,
-                                            profile));
-                                    hasError = true;
-                                    break;
-                                }
-                            }
-                        }
-                        AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
-                        settings[key] = values;
-                        break;
-
-                    case "rules":
-                        break;
-
-                    default:
+                    // value must be either string or collections of string or array
+                    if (value == null
+                        || !(value is string
+                            || value is IEnumerable<string>
+                            || value.GetType().IsArray))
+                    {
                         writer.WriteError(
                             new ErrorRecord(
-                                new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, key)),
+                                new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, settingKey)),
                                 Strings.WrongConfigurationKey,
                                 ErrorCategory.InvalidData,
                                 profile));
                         hasError = true;
                         break;
+                    }
+                    var values = new List<string>();
+                    if (value is string)
+                    {
+                        values.Add(value as string);
+                    }
+                    else if (value is IEnumerable<string>)
+                    {
+                        values.Union(value as IEnumerable<string>);
+                    }
+                    else if (value.GetType().IsArray)
+                    {
+                        // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
+                        foreach (var val in value as IEnumerable)
+                        {
+                            if (val is string)
+                            {
+                                values.Add(val as string);
+                            }
+                            else
+                            {
+                                writer.WriteError(
+                                    new ErrorRecord(
+                                        new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, settingKey)),
+                                        Strings.WrongConfigurationKey,
+                                        ErrorCategory.InvalidData,
+                                        profile));
+                                hasError = true;
+                                break;
+                            }
+                        }
+                    }
+                    AddProfileItem(settingKey, values, severityList, includeRuleList, excludeRuleList);
+                    settings[settingKey] = values;
+                }
+                else if (settingKey.Equals("excluderules", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, settingKey)),
+                            Strings.WrongConfigurationKey,
+                            ErrorCategory.InvalidData,
+                            profile));
+                    hasError = true;
                 }
             }
             return hasError;
@@ -1843,7 +1837,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (File.Exists(filePath))
             {
                 // processing for non help script
-                if (!(Path.GetFileName(filePath).ToLower().StartsWith("about_") && Path.GetFileName(filePath).ToLower().EndsWith(".help.txt")))
+                if (!(Path.GetFileName(filePath).StartsWith("about_", StringComparison.InvariantCultureIgnoreCase) && Path.GetFileName(filePath).EndsWith(".help.txt", StringComparison.InvariantCultureIgnoreCase)))
                 {
                     try
                     {

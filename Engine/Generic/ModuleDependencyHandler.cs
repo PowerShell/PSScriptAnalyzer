@@ -286,7 +286,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         ? "PSScriptAnalyzer"
                         : pssaAppDataPath);
 
-            modulesFound = new Dictionary<string, PSObject>();            
+            modulesFound = new Dictionary<string, PSObject>(StringComparer.InvariantCultureIgnoreCase);            
 
             // TODO Add PSSA Version in the path
             symLinkPath = Path.Combine(pssaAppDataPath, symLinkName);
@@ -303,7 +303,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public PSObject FindModule(string moduleName)
         {
             ThrowIfNull(moduleName, "moduleName");
-            moduleName = moduleName.ToLower();
             if (modulesFound.ContainsKey(moduleName))
             {
                 return modulesFound[moduleName];

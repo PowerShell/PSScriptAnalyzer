@@ -536,21 +536,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                     else if (pureExp is VariableExpressionAst)
                     {
-                        var varExprAst = (VariableExpressionAst)pureExp;
-                        switch (varExprAst.VariablePath.UserPath.ToLower())
+                        var variableExpressionAst = (VariableExpressionAst)pureExp;
+                        if (!bool.TryParse(variableExpressionAst.VariablePath.UserPath, out bool booleanValue))
                         {
-                            case "true":
-                                output[key] = true;
-                                break;
-
-                            case "false":
-                                output[key] = false;
-                                break;
-
-                            default:
-                                ThrowInvalidDataException(varExprAst.Extent);
-                                break;
+                            ThrowInvalidDataException(variableExpressionAst.Extent);
                         }
+                        output[key] = booleanValue;
 
                         continue;
                     }

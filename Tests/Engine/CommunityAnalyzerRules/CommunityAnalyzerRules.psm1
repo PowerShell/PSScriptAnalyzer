@@ -78,7 +78,7 @@ function Measure-RequiresRunAsAdministrator
                 if ($ast -is [System.Management.Automation.Language.AssignmentStatementAst])
                 {
                     [System.Management.Automation.Language.AssignmentStatementAst]$asAst = $Ast;
-                    if ($asAst.Right.ToString().ToLower() -eq "[system.security.principal.windowsbuiltinrole]::administrator")
+                    if ($asAst.Right.ToString() -eq "[system.security.principal.windowsbuiltinrole]::administrator")
                     {
                         $returnValue = $true
                     }
@@ -174,8 +174,7 @@ function Measure-RequiresModules
                     [System.Management.Automation.Language.CommandAst]$cmdAst = $Ast;
                     if ($null -ne $cmdAst.GetCommandName())
                     {
-                        # ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
-                        if ($cmdAst.GetCommandName().ToLowerInvariant() -eq "import-module")
+                        if ($cmdAst.GetCommandName() -eq "import-module")
                         {
                             $returnValue = $true
                         }
