@@ -1,12 +1,12 @@
-using Types = Microsoft.PowerShell.CrossCompatibility.Data.Types;
+using AssemblyDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.AssemblyData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     public class AssemblyData
     {
-        private readonly Types.AssemblyData _assemblyData;
+        private readonly AssemblyDataMut _assemblyData;
 
-        public AssemblyData(Types.AssemblyData assemblyData)
+        public AssemblyData(AssemblyDataMut assemblyData)
         {
             _assemblyData = assemblyData;
             AssemblyName = new AssemblyNameData(_assemblyData.AssemblyName);

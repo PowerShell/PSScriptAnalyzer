@@ -8,9 +8,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     {
         private readonly Modules.ParameterData _parameter;
 
-        public ParameterData(Modules.ParameterData parameterData, string name)
+        public ParameterData(string name, Modules.ParameterData parameterData)
         {
-            ParameterSets = parameterData.ParameterSets.ToDictionary(p => p.Key, p => new ParameterSetData(p.Value, p.Key));
+            ParameterSets = parameterData.ParameterSets.ToDictionary(p => p.Key, p => new ParameterSetData(p.Key, p.Value));
             Name = name;
         }
 

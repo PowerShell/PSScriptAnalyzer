@@ -5,7 +5,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     public class FunctionData : CommandData
     {
         public FunctionData(Modules.FunctionData functionData, string name)
-            : base(functionData, name)
+            : base(name, functionData)
         {
         }
 

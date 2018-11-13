@@ -7,7 +7,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     {
         private readonly Modules.ParameterSetData _parameterSet;
 
-        public ParameterSetData(Modules.ParameterSetData parameterSetData, string name)
+        public ParameterSetData(string name, Modules.ParameterSetData parameterSetData)
         {
             Name = name;
             _parameterSet = parameterSetData;

@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using Types = Microsoft.PowerShell.CrossCompatibility.Data.Types;
+using AsmNameDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.AssemblyNameData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     public class AssemblyNameData
     {
-        private readonly Types.AssemblyNameData _assemblyNameData;
+        private readonly AsmNameDataMut _assemblyNameData;
 
         private readonly Lazy<string> _fullName;
 
         private readonly Lazy<AssemblyName> _assemblyName;
 
-        public AssemblyNameData(Types.AssemblyNameData assemblyNameData)
+        public AssemblyNameData(AsmNameDataMut assemblyNameData)
         {
             _assemblyNameData = assemblyNameData;
             _fullName = new Lazy<string>(GetFullName);
