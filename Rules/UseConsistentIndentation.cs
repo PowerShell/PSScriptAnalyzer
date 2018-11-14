@@ -170,9 +170,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
                         break;
                 }
+
+                var pipelines = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true);
+                var matchingPipeline = pipelines.FirstOrDefault(pipelineAst =>
+                        PositionIsEqual(pipelineAst.Extent.EndScriptPosition, token.Extent.EndScriptPosition)) as PipelineAst;
+                if (pipelines != null && matchingPipeline != null)
+                {
+                    indentationLevel = ClipNegative(indentationLevel - (matchingPipeline.PipelineElements.Count - 1));
+                }
             }
 
             return diagnosticRecords;
+        }
+
+        private static bool PositionIsEqual(IScriptPosition position1, IScriptPosition position2)
+        {
+            return position1.ColumnNumber == position2.ColumnNumber &&
+                   position1.LineNumber == position2.LineNumber &&
+                   position1.File == position2.File;
         }
 
         /// <summary>
