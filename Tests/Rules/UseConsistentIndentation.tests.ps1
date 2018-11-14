@@ -135,7 +135,9 @@ where-object {$_.Name -match 'powershell'}
         It "Should not find a violation if a pipleline element is indented correctly" {
             $def = @'
 get-process |
-    where-object {$_.Name -match 'powershell'}
+    where-object {
+        $_.Name -match 'powershell'
+    }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should -Be 0

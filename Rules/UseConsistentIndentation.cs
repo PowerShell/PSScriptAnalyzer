@@ -123,6 +123,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
                         break;
 
+                    case TokenKind.Pipe:
+                        if (k < tokens.Length - 1 &&
+                            (tokens[k + 1].Kind == TokenKind.NewLine || tokens[k + 1].Kind == TokenKind.LineContinuation))
+                        {
+                            AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                        }
+                        break;
+
                     case TokenKind.RParen:
                     case TokenKind.RCurly:
                         indentationLevel = ClipNegative(indentationLevel - 1);
@@ -155,11 +163,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 while (j > 0 && tokens[j].Kind == TokenKind.Comment)
                                 {
                                     --j;
-                                }
-
-                                if (j >= 0 && tokens[j].Kind == TokenKind.Pipe)
-                                {
-                                    ++tempIndentationLevel;
                                 }
                             }
 
