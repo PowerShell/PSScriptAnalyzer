@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     /// <summary>
     /// Denotes a machine architecture.

@@ -4,40 +4,6 @@ using System.Runtime.Serialization;
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 {
     /// <summary>
-    /// Denotes attributes or attribute
-    /// flags that may be set on a parameter.
-    /// </summary>
-    [Serializable]
-    [DataContract]
-    public enum ParameterSetFlag
-    {
-	/// <summary>Indicates a mandatory parameter.</summary>
-        [EnumMember]
-        Mandatory,
-
-	/// <summary>
-	/// Indicates the parameter value may be passed
-	/// in from the pipeline.
-	/// </summary>
-        [EnumMember]
-        ValueFromPipeline,
-
-	/// <summary>
-	/// Indicates the parameter value may be passed
-	/// in from the pipeline by property name.
-	/// </summary>
-        [EnumMember]
-        ValueFromPipelineByPropertyName,
-
-	/// <summary>
-	/// Indicates the parameter may take its value
-	/// from remaining arguments.
-	/// </summary>
-        [EnumMember]
-        ValueFromRemainingArguments,
-    }
-
-    /// <summary>
     /// Describes the parameter set information
     /// attributed to a command variable.
     /// </summary>

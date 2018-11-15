@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     /// <summary>
     /// Denotes a .NET property accessor.

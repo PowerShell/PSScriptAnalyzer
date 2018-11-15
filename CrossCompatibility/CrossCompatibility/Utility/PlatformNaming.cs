@@ -1,3 +1,4 @@
+using System;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
@@ -32,7 +33,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             switch (platform.OperatingSystem.Family)
             {
                 case OSFamily.Windows:
-                    uint skuId = platform.OperatingSystem.SkuId;
+                    if (platform.OperatingSystem.SkuId == null)
+                    {
+                        throw new Exception($"SkuId not set for operating system {platform.OperatingSystem.Name}");
+                    }
+
+                    uint skuId = platform.OperatingSystem.SkuId.Value;
 
                     platformNameComponents = new [] { $"win-{skuId}", osArch, osVersion, psVersion, pArch };
                     break;

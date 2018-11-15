@@ -15,7 +15,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         public string Name { get; }
 
-        public IReadOnlyCollection<Modules.ParameterSetFlag> Flags => _parameterSet.Flags;
+        public IReadOnlyCollection<ParameterSetFlag> Flags => _parameterSet.Flags;
 
         public int Position => _parameterSet.Position;
     }

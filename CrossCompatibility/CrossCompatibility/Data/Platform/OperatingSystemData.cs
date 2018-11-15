@@ -4,32 +4,6 @@ using System.Runtime.Serialization;
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
 {
     /// <summary>
-    /// Denotes the broad grouping
-    /// of operating systems a particular
-    /// PowerShell host OS may fall under.
-    /// </summary>
-    [Serializable]
-    [DataContract]
-    public enum OSFamily
-    {
-        /// <summary>An unrecognized operating system.</summary>
-        [EnumMember]
-        Other = 0,
-
-        /// <summary>A Windows operating system.</summary>
-        [EnumMember]
-        Windows,
-
-        /// <summary>A macOS operating system.</summary>
-        [EnumMember]
-        MacOS,
-        
-        /// <summary>A Linux operating system.</summary>
-        [EnumMember]
-        Linux,
-    }
-
-    /// <summary>
     /// Describes an operating system
     /// that hosts a PowerShell runtime.
     /// </summary>
@@ -89,7 +63,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         /// https://docs.microsoft.com/en-us/windows/desktop/api/sysinfoapi/nf-sysinfoapi-getproductinfo
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public uint SkuId { get; set; }
+        public uint? SkuId { get; set; }
 
 	/// <summary>
 	/// On Linux, the name of the distribution

@@ -29,7 +29,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
     /// </summary>
     [Serializable]
     [DataContract]
-    public class DotNetData
+    public class DotnetData
     {
         /// <summary>
         /// The version of the .NET core language runtime

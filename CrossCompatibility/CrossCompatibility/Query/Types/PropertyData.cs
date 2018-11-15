@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using AccessorType = Microsoft.PowerShell.CrossCompatibility.Data.Types.AccessorType;
 using PropertyDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.PropertyData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query

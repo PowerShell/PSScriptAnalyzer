@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using AccessorType = Microsoft.PowerShell.CrossCompatibility.Data.Types.AccessorType;
 using IndexerDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.IndexerData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
