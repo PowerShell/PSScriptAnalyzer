@@ -33,10 +33,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             IEnumerable<Assembly> assemblies,
             IDictionary<string, Type> typeAccelerators)
         {
-            var typeAcceleratorDict = new Dictionary<string, string>(typeAccelerators.Count);
+            var typeAcceleratorDict = new Dictionary<string, TypeAcceleratorData>(typeAccelerators.Count);
             foreach (KeyValuePair<string, Type> typeAccelerator in typeAccelerators)
             {
-                typeAcceleratorDict.Add(typeAccelerator.Key, typeAccelerator.Value.FullName);
+                var ta = new TypeAcceleratorData()
+                {
+                    Assembly = typeAccelerator.Value.Assembly.GetName().Name,
+                    Type = typeAccelerator.Value.FullName
+                };
+
+                typeAcceleratorDict.Add(typeAccelerator.Key, ta);
             }
 
             var asms = new Dictionary<string, AssemblyData>();

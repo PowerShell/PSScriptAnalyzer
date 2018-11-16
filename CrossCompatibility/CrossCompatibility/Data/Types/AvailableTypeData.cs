@@ -17,7 +17,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// as keys and their corresponding full type name as values.
         /// </summary>
         [DataMember]
-        public IDictionary<string, string> TypeAccelerators { get; set; }
+        public IDictionary<string, TypeAcceleratorData> TypeAccelerators { get; set; }
 
         /// <summary>
         /// Table of all assemblies available in the PowerShell runtime,

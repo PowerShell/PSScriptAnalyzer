@@ -8,11 +8,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
     {
         public AvailableTypeData(AvailableTypeDataMut availableTypeData)
         {
-            TypeAccelerators = availableTypeData.TypeAccelerators.ToDictionary(ta => ta.Key, ta => ta.Value);
+            TypeAccelerators = availableTypeData.TypeAccelerators.ToDictionary(ta => ta.Key, ta => new TypeAcceleratorData(ta.Key, ta.Value));
             Assemblies = availableTypeData.Assemblies.ToDictionary(asm => asm.Key, asm => new AssemblyData(asm.Value));
         }
 
-        public IReadOnlyDictionary<string, string> TypeAccelerators { get; }
+        public IReadOnlyDictionary<string, TypeAcceleratorData> TypeAccelerators { get; }
 
         public IReadOnlyDictionary<string, AssemblyData> Assemblies { get; }
     }
