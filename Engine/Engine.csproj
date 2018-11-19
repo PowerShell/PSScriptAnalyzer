@@ -76,6 +76,10 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net452' AND '$(Configuration)' != 'PSV3Release'">
     <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
   </ItemGroup>
+   
+  <ItemGroup>
+    <ProjectReference Include="..\CrossCompatibility\CrossCompatibility\CrossCompatibility.csproj" />
+  </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
     <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
