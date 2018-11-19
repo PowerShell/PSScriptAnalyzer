@@ -57,6 +57,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+
+        [ConfigurableRuleProperty(defaultValue: "IncreaseIndentationForFirstPipeline")]
+        public string PipelineIndentation
+        {
+            get
+            {
+                return pipelineIndentationStyle.ToString();
+            }
+            set
+            {
+                if (String.IsNullOrWhiteSpace(value) ||
+                    !Enum.TryParse(value, true, out pipelineIndentationStyle))
+                {
+                    pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline;
+                }
+            }
+        }
+
         private bool insertSpaces;
         private char indentationChar;
         private int indentationLevelMultiplier;
@@ -68,9 +86,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Auto
         };
 
+        private enum PipelineIndentationStyle
+        {
+            IncreaseIndentationForFirstPipeline,
+            IncreaseIndentationAfterEveryPipeline,
+            NoIndentation
+        }
+
         // TODO make this configurable
         private IndentationKind indentationKind = IndentationKind.Space;
 
+        private PipelineIndentationStyle pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline;
 
         /// <summary>
         /// Analyzes the given ast to find violations.
@@ -104,6 +130,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var diagnosticRecords = new List<DiagnosticRecord>();
             var indentationLevel = 0;
             var onNewLine = true;
+            var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true);
             for (int k = 0; k < tokens.Length; k++)
             {
                 var token = tokens[k];
@@ -124,10 +151,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.Pipe:
-                        if (k < tokens.Length - 1 &&
-                            (tokens[k + 1].Kind == TokenKind.NewLine || tokens[k + 1].Kind == TokenKind.LineContinuation))
+                        var pipelineIsFollowedByNewlineOrLineContinuation = k < tokens.Length - 1 && k > 0 &&
+                              (tokens[k + 1].Kind == TokenKind.NewLine || tokens[k + 1].Kind == TokenKind.LineContinuation);
+                        if (!pipelineIsFollowedByNewlineOrLineContinuation)
+                        {
+                            break;
+                        }
+                        if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
                         {
                             AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                        }
+                        else if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
+                        {
+                            var isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst => PositionIsEqual(((PipelineAst)pipelineAst).PipelineElements[0].Extent.EndScriptPosition, tokens[k - 1].Extent.EndScriptPosition));
+                            if (isFirstPipeInPipeline)
+                            {
+                                AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                            }
                         }
                         break;
 
@@ -171,12 +211,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
                 }
 
-                var pipelines = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true);
-                var matchingPipeline = pipelines.FirstOrDefault(pipelineAst =>
+                // Check if the current token matches the end of a PipelineAst
+                var matchingPipeLineAstEnd = pipelineAsts.FirstOrDefault(pipelineAst =>
                         PositionIsEqual(pipelineAst.Extent.EndScriptPosition, token.Extent.EndScriptPosition)) as PipelineAst;
-                if (pipelines != null && matchingPipeline != null)
+                if (matchingPipeLineAstEnd != null)
                 {
-                    indentationLevel = ClipNegative(indentationLevel - (matchingPipeline.PipelineElements.Count - 1));
+                    if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
+                    {
+                        indentationLevel = ClipNegative(indentationLevel - 1);
+                    }
+                    else if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
+                    {
+                        indentationLevel = ClipNegative(indentationLevel - (matchingPipeLineAstEnd.PipelineElements.Count - 1));
+                    }
                 }
             }
 
