@@ -42,7 +42,7 @@ function Invoke-AppVeyorInstall {
     finally {
         $ErrorActionPreference = $originalErrorActionPreference
     }
-    if ($null -ne $availablerequiredDotNetCoreSDKVersion -or -not $availablerequiredDotNetCoreSDKVersion.StartsWith($requiredDotNetCoreSDKVersion)) {
+    if ([string]::IsNullOrEmpty($availablerequiredDotNetCoreSDKVersion) -or (-not $availablerequiredDotNetCoreSDKVersion.StartsWith($requiredDotNetCoreSDKVersion))) {
         Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
         $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
         try {
