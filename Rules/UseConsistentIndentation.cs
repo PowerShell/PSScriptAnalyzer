@@ -206,7 +206,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 }
                             }
 
-                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine);
+                            var lineHasPipelineBeforeToken = tokens.Any(oneToken =>
+                                oneToken.Kind == TokenKind.Pipe &&
+                                oneToken.Extent.StartLineNumber == token.Extent.StartLineNumber &&
+                                oneToken.Extent.StartColumnNumber < token.Extent.StartColumnNumber);
+
+                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
                         break;
                 }
@@ -302,7 +307,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             Token token,
             int expectedIndentationLevel,
             List<DiagnosticRecord> diagnosticRecords,
-            ref bool onNewLine)
+            ref bool onNewLine,
+            bool lineHasPipelineBeforeToken = false)
         {
             if (onNewLine)
             {
@@ -330,26 +336,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetDiagnosticSeverity(),
                             fileName,
                             null,
-                            GetSuggestedCorrections(token, expectedIndentationLevel)));
+                            GetSuggestedCorrections(token, expectedIndentationLevel, lineHasPipelineBeforeToken)));
                 }
             }
         }
 
         private List<CorrectionExtent> GetSuggestedCorrections(
             Token token,
-            int indentationLevel)
+            int indentationLevel,
+            bool lineHasPipelineBeforeToken = false)
         {
             // TODO Add another constructor for correction extent that takes extent
             // TODO handle param block
             // TODO handle multiline commands
 
             var corrections = new List<CorrectionExtent>();
+            var optionalPipeline = lineHasPipelineBeforeToken ? "| " : string.Empty;
             corrections.Add(new CorrectionExtent(
                 token.Extent.StartLineNumber,
                 token.Extent.EndLineNumber,
                 1,
                 token.Extent.EndColumnNumber,
-                GetIndentationString(indentationLevel) + token.Extent.Text,
+                GetIndentationString(indentationLevel) + optionalPipeline + token.Extent.Text,
                 token.Extent.File));
             return corrections;
         }

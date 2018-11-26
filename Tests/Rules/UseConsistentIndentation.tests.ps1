@@ -170,6 +170,24 @@ $x = "this " + `
             }
             Test-CorrectionExtentFromContent @params
         }
+
+        It "Should indent properly after line continuation (backtick) character with pipeline" {
+            $def = @'
+foo |
+    bar `
+| baz
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            $params = @{
+                RawContent       = $def
+                DiagnosticRecord = $violations[0]
+                CorrectionsCount = 1
+                ViolationText    = "| baz"
+                CorrectionText   = (New-Object -TypeName String -ArgumentList $indentationUnit, $indentationSize) + "| baz"
+            }
+            Test-CorrectionExtentFromContent @params
+        }
     }
 
     Context "When tabs instead of spaces are used for indentation" {
@@ -185,7 +203,7 @@ get-childitem
 $x=1+2
 $hashtable = @{
 property1 = "value"
-    anotherProperty = "another value"
+	anotherProperty = "another value"
 }
 }
 '@
