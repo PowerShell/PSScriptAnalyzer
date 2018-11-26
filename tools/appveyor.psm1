@@ -32,20 +32,22 @@ function Invoke-AppVeyorInstall {
 
     # the legacy WMF4 image only has the old preview SDKs of dotnet
     $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
-    $dotNetCoreSDKVersion = $globalDotJson.sdk.version
-    if (-not ((dotnet --version).StartsWith($dotNetCoreSDKVersion))) {
-        Write-Verbose -Verbose "Installing required .Net CORE SDK $dotNetCoreSDKVersion"
+    $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
+    # dotnet does not return and writes to stderr if required minor version is not available and higher than 1
+    $availablerequiredDotNetCoreSDKVersion = dotnet --version 2> $null
+    if ($null -ne $availablerequiredDotNetCoreSDKVersion -or -not $availablerequiredDotNetCoreSDKVersion.StartsWith($requiredDotNetCoreSDKVersion))) {
+        Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
         $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
         try {
             [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
             if ($IsLinux -or $isMacOS) {
                 Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
-                bash dotnet-install.sh --version $dotNetCoreSDKVersion
+                bash dotnet-install.sh --version $requiredDotNetCoreSDKVersion
                 [System.Environment]::SetEnvironmentVariable('PATH', "/home/appveyor/.dotnet$([System.IO.Path]::PathSeparator)$PATH")
             }
             else {
                 Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
-                .\dotnet-install.ps1 -Version $dotNetCoreSDKVersion
+                .\dotnet-install.ps1 -Version $requiredDotNetCoreSDKVersion
             }
         }
         finally {
