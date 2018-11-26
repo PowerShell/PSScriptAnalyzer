@@ -34,12 +34,21 @@ function Invoke-AppVeyorInstall {
     $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
     $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
     # dotnet does not return and writes to stderr if required minor version is not available and higher than 1
-    $availablerequiredDotNetCoreSDKVersion = dotnet --version 2> $null
+    try {
+        $originalErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        $availablerequiredDotNetCoreSDKVersion = dotnet --version 2> $null
+    }
+    finally {
+        $ErrorActionPreference = $originalErrorActionPreference
+    }
     if ($null -ne $availablerequiredDotNetCoreSDKVersion -or -not $availablerequiredDotNetCoreSDKVersion.StartsWith($requiredDotNetCoreSDKVersion)) {
         Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
         $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
         try {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+            if (-not [Net.ServicePointManager]::SecurityProtocol -match [Net.SecurityProtocolType]::Tls12) {
+                [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+            }
             if ($IsLinux -or $isMacOS) {
                 Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
                 bash dotnet-install.sh --version $requiredDotNetCoreSDKVersion
