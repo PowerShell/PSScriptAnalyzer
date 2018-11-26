@@ -34,6 +34,7 @@ function Invoke-AppVeyorInstall {
     $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
     $dotNetCoreSDKVersion = $globalDotJson.sdk.version
     if (-not ((dotnet --version).StartsWith($dotNetCoreSDKVersion))) {
+        Write-Verbose -Verbose "Installing required .Net CORE SDK $dotNetCoreSDKVersion"
         $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
         try {
             [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
