@@ -35,7 +35,7 @@ function Invoke-AppVeyorInstall {
     $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
     # dotnet does not return and writes to stderr if required minor version is not available and higher than 1
     $availablerequiredDotNetCoreSDKVersion = dotnet --version 2> $null
-    if ($null -ne $availablerequiredDotNetCoreSDKVersion -or -not $availablerequiredDotNetCoreSDKVersion.StartsWith($requiredDotNetCoreSDKVersion))) {
+    if ($null -ne $availablerequiredDotNetCoreSDKVersion -or -not $availablerequiredDotNetCoreSDKVersion.StartsWith($requiredDotNetCoreSDKVersion)) {
         Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
         $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
         try {
