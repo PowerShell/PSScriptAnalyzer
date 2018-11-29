@@ -37,7 +37,7 @@ function Invoke-AppVeyorInstall {
     try {
         $originalErrorActionPreference = $ErrorActionPreference
         $ErrorActionPreference = 'SilentlyContinue'
-        $dotnetSDKs = dotnet --list-sdks
+        $dotnetSDKs = dotnet --list-sdks 2> $null
     }
     finally {
         $ErrorActionPreference = $originalErrorActionPreference
