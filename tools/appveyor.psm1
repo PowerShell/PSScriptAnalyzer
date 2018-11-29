@@ -37,9 +37,7 @@ function Invoke-AppVeyorInstall {
         Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
         $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
         try {
-            if (-not [Net.ServicePointManager]::SecurityProtocol -match [Net.SecurityProtocolType]::Tls12) {
-                [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-            }
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
             if ($IsLinux -or $isMacOS) {
                 Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
                 bash dotnet-install.sh --version $requiredDotNetCoreSDKVersion
