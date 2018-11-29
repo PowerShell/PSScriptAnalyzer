@@ -34,7 +34,15 @@ function Invoke-AppVeyorInstall {
     $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
     $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
     # dotnet --version does not return and writes to stderr if required minor version is not available and higher than 1 -> use --list-sdks
-    if (-not ((dotnet --list-sdks) -match $requiredDotNetCoreSDKVersion)) {
+    try {
+        $originalErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+        $dotnetSDKs = dotnet --list-sdks
+    }
+    finally {
+        $ErrorActionPreference = $originalErrorActionPreference
+    }
+    if (-not ($dotnetSDKs -match $requiredDotNetCoreSDKVersion)) {
         Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
         $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
         try {
