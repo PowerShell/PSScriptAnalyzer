@@ -36,7 +36,7 @@ function Invoke-AppVeyorInstall {
     # dotnet --version does not return and writes to stderr if required minor version is not available and higher than 1 -> use --list-sdks
     try {
         $originalErrorActionPreference = $ErrorActionPreference
-        $ErrorActionPreference = 'SilentlyContinue'
+        $ErrorActionPreference = 'Continue'
         $dotnetSDKs = dotnet --list-sdks 2> $null
     }
     finally {
