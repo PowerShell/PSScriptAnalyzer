@@ -38,7 +38,7 @@ function Invoke-AppVeyorInstall {
     }
     else {
         # WMF 4 image has old SDK that does not have --list-sdks parameter
-        $requiredDotNetCoreSDKVersionPresent = (dotnet --version).StartsWith($dotNetCoreSDKVersion)
+        $requiredDotNetCoreSDKVersionPresent = (dotnet --version).StartsWith($requiredDotNetCoreSDKVersion)
     }
     if (-not $requiredDotNetCoreSDKVersionPresent) {
         Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
