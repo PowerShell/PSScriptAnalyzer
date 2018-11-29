@@ -33,7 +33,8 @@ function Invoke-AppVeyorInstall {
     # the legacy WMF4 image only has the old preview SDKs of dotnet
     $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
     $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
-    if (-not ((dotnet --version).StartsWith($requiredDotNetCoreSDKVersion))) {
+    $dotnetSDKs = dotnet --list-sdks 2> $null
+    if (-not ($dotnetSDKs -match $requiredDotNetCoreSDKVersion)) {
         Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
         $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
         try {
