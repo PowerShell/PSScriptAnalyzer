@@ -21,5 +21,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// </summary>
         [DataMember]
         public string Type { get; set; }
+
+        public PropertyData DeepClone()
+        {
+            return new PropertyData()
+            {
+                Accessors = (AccessorType[])Accessors.Clone(),
+                Type = Type
+            };
+        }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
@@ -23,5 +24,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// </summary>
         [DataMember]
         public string[][] OverloadParameters { get; set; }
+
+        public MethodData DeepCopy()
+        {
+            return new MethodData()
+            {
+                ReturnType = ReturnType,
+                OverloadParameters = OverloadParameters.Select(op => (string[])op.Clone()).ToArray()
+            };
+        }
     }
 }

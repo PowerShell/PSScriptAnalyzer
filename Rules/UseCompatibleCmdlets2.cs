@@ -54,13 +54,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return SourceType.Builtin;
         }
 
+        public DiagnosticSeverity DiagnosticSeverity => DiagnosticSeverity.Warning;
+
         private CmdletCompatibilityVisitor CreateVisitorFromConfiguration(string analyzedFileName)
         {
             IDictionary<string, object> ruleArgs = Helper.Instance.GetRuleArguments(GetName());
             string configPath = ruleArgs["configPath"] as string;
 
             CompatibilityProfileData profile = _profileLoader.GetProfileFromFilePath(configPath);
-            return new CmdletCompatibilityVisitor(analyzedFileName, profile);
+            return new CmdletCompatibilityVisitor(analyzedFileName, profile, this);
         }
 
         private class CmdletCompatibilityVisitor : AstVisitor
@@ -71,13 +73,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             private readonly string _analyzedFileName;
 
+            private readonly UseCompatibleCmdlets2 _rule;
+
             public CmdletCompatibilityVisitor(
                 string analyzedFileName,
-                CompatibilityProfileData compatibilityTarget)
+                CompatibilityProfileData compatibilityTarget,
+                UseCompatibleCmdlets2 rule)
             {
                 _analyzedFileName = analyzedFileName;
                 _compatibilityTarget = compatibilityTarget;
                 _diagnosticAccumulator = new List<DiagnosticRecord>();
+                _rule = rule;
             }
 
             public override AstVisitAction VisitCommand(CommandAst commandAst)
@@ -93,11 +99,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.SkipChildren;
                 }
 
-		// TODO: Perform command lookup here and send
-		//       diagnostics if no such command exists
-		//       in the relevant configuration.
+                if (_compatibilityTarget.Runtime.Modules.ContainsKey(commandName))
+                {
+                    return AstVisitAction.Continue;
+                }
 
-                throw new NotImplementedException();
+                Version targetVersion = _compatibilityTarget.Platform.PowerShell.Version;
+                string platform = _compatibilityTarget.Platform.OperatingSystem.Name;
+                string message = $"The command '{commandName}' is not compatible with PowerShell v{targetVersion} on platform {platform}";
+
+                var diagnostic = new DiagnosticRecord(
+                    message,
+                    commandAst.Extent,
+                    _rule.GetName(),
+                    _rule.DiagnosticSeverity,
+                    _analyzedFileName,
+                    ruleId: null,
+                    suggestedCorrections: null);
+
+                _diagnosticAccumulator.Add(diagnostic);
+
+                return AstVisitAction.Continue;
             }
 
             public IEnumerable<DiagnosticRecord> GetDiagnosticRecords()

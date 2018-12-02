@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
@@ -48,5 +49,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
         public IDictionary<string, string> Aliases { get; set; }
+
+        public ModuleData DeepClone()
+        {
+            return new ModuleData()
+            {
+                Guid = Guid,
+                Version = Version,
+                Variables = (string[])Variables.Clone(),
+                Aliases = Aliases.ToDictionary(a => a.Key, a => a.Value),
+                Cmdlets = Cmdlets.ToDictionary(c => c.Key, c => c.Value.DeepClone()),
+                Functions = Functions.ToDictionary(f => f.Key, f => f.Value.DeepClone())
+            };
+        }
     }
 }

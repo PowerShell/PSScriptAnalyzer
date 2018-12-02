@@ -87,5 +87,22 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string DistributionPrettyName { get; set; }
+
+        public OperatingSystemData DeepClone()
+        {
+            return new OperatingSystemData()
+            {
+                Architecture = Architecture,
+                DistributionId = DistributionId,
+                DistributionPrettyName = DistributionPrettyName,
+                DistributionVersion = DistributionVersion,
+                Family = Family,
+                Name = Name,
+                Platform = Platform,
+                ServicePack = ServicePack,
+                SkuId = SkuId,
+                Version = Version
+            };
+        }
     }
 }

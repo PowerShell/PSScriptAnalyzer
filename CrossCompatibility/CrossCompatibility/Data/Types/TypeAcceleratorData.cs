@@ -12,5 +12,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
 
         [DataMember]
         public string Type { get; set; }
+
+        public TypeAcceleratorData DeepClone()
+        {
+            return new TypeAcceleratorData()
+            {
+                Assembly = Assembly,
+                Type = Type
+            };
+        }
     }
 }

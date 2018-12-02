@@ -11,19 +11,28 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     [DataContract]
     public class ParameterSetData
     {
-	/// <summary>
-	/// The parameter set attributes or
-	/// attribute flags assigned to a parameter
-	/// in the parameter set.
-	/// </summary>
+        /// <summary>
+        /// The parameter set attributes or
+        /// attribute flags assigned to a parameter
+        /// in the parameter set.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public ParameterSetFlag[] Flags { get; set; }
 
-	/// <summary>
-	/// The position of the parameter. If none is given,
-	/// the default position of Int.MinValue is assumed.
-	/// </summary>
+        /// <summary>
+        /// The position of the parameter. If none is given,
+        /// the default position of Int.MinValue is assumed.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public int Position { get; set; } = int.MinValue;
+
+        public ParameterSetData DeepClone()
+        {
+            return new ParameterSetData()
+            {
+                Flags = (ParameterSetFlag[])Flags.Clone(),
+                Position = Position
+            };
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
+using System.Linq;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
@@ -27,5 +28,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// </summary>
         [DataMember]
         public IDictionary<string, ModuleData> Modules { get; set; }
+
+        public RuntimeData DeepClone()
+        {
+            return new RuntimeData()
+            {
+                Types = Types.DeepClone(),
+                Modules = Modules.ToDictionary(m => m.Key, m => m.Value.DeepClone())
+            };
+        }
     }
 }

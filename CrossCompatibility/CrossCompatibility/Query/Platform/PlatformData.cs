@@ -6,7 +6,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
     {
         public PlatformData(PlatformDataMut platformData)
         {
-
+            Dotnet = new DotnetData(platformData.Dotnet);
+            OperatingSystem = new OperatingSystemData(platformData.OperatingSystem);
+            PowerShell = new PowerShellData(platformData.PowerShell);
         }
+
+        public DotnetData Dotnet { get; }
+
+        public OperatingSystemData OperatingSystem { get; }
+
+        public PowerShellData PowerShell { get; }
     }
 }

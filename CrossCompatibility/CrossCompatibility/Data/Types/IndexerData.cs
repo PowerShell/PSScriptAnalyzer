@@ -29,5 +29,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// </summary>
         [DataMember]
         public AccessorType[] Accessors { get; set; }
+
+        public IndexerData DeepClone()
+        {
+            return new IndexerData()
+            {
+                ItemType = ItemType,
+                Parameters = (string[])Parameters.Clone(),
+                Accessors = (AccessorType[])Accessors.Clone()
+            };
+        }
     }
 }

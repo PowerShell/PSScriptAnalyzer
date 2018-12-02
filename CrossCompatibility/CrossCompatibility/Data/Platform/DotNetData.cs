@@ -43,5 +43,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         /// </summary>
         [DataMember]
         public DotnetRuntime Runtime { get; set; }
+
+        public DotnetData DeepClone()
+        {
+            return new DotnetData()
+            {
+                ClrVersion = ClrVersion,
+                Runtime = Runtime
+            };
+        }
     }
 }

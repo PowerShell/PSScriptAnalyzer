@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
@@ -30,5 +31,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public bool Dynamic { get; set; }
+
+        public ParameterData DeepClone()
+        {
+            return new ParameterData()
+            {
+                Type = Type,
+                Dynamic = Dynamic,
+                ParameterSets = ParameterSets.ToDictionary(p => p.Key, p => p.Value.DeepClone())
+            };
+        }
     }
 }

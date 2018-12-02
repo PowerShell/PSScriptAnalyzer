@@ -27,5 +27,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// </summary>
         [DataMember]
         public PlatformData Platform { get; set; }
+
+        public CompatibilityProfileData DeepClone()
+        {
+            return new CompatibilityProfileData()
+            {
+                Compatibility = this.Compatibility.DeepClone(),
+                Platform = this.Platform.DeepClone()
+            };
+        }
     }
 }

@@ -15,5 +15,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// </summary>
         [DataMember]
         public string Type { get; set; }
+
+        public FieldData DeepClone()
+        {
+            return new FieldData()
+            {
+                Type = Type
+            };
+        }
     }
 }

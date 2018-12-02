@@ -21,5 +21,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// </summary>
         [DataMember]
         public string HandlerType { get; set; }
+
+        public EventData DeepClone()
+        {
+            return new EventData()
+            {
+                IsMulticast = IsMulticast,
+                HandlerType = HandlerType
+            };
+        }
     }
 }

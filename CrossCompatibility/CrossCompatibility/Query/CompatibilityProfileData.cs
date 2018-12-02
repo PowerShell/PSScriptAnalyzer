@@ -7,14 +7,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     public class CompatibilityProfileData
     {
-        private readonly RuntimeData _runtimeData;
-
-        private readonly PlatformData _platformData;
-
         public CompatibilityProfileData(CompatibilityProfileDataMut compatibilityProfileData)
         {
-            _runtimeData = new RuntimeData(compatibilityProfileData.Compatibility);
-            _platformData = new PlatformData(compatibilityProfileData.Platform);
+            Runtime = new RuntimeData(compatibilityProfileData.Compatibility);
+            Platform = new PlatformData(compatibilityProfileData.Platform);
         }
+
+        public RuntimeData Runtime { get; }
+
+        public PlatformData Platform { get; }
     }
 }

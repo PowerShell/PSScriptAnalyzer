@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
@@ -54,5 +55,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public IDictionary<string, TypeData> NestedTypes { get; set; }
+
+        public MemberData DeepClone()
+        {
+            return new MemberData()
+            {
+                Constructors = Constructors.Select(c => (string[])c.Clone()).ToArray(),
+                Events = Events.ToDictionary(e => e.Key, e => e.Value.DeepClone()),
+                Fields = Fields.ToDictionary(f => f.Key, f => f.Value.DeepClone()),
+                Indexers = Indexers.Select(i => i.DeepClone()).ToArray(),
+                Methods = Methods.ToDictionary(m => m.Key, m => m.Value.DeepClone()),
+                NestedTypes = NestedTypes.ToDictionary(t => t.Key, t => t.Value.DeepClone()),
+                Properties = Properties.ToDictionary(p => p.Key, p => p.Value.DeepClone())
+            };
+        }
     }
 }

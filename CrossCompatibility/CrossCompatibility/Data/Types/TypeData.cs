@@ -23,5 +23,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public MemberData Instance { get; set; }
+
+        public TypeData DeepClone()
+        {
+            return new TypeData()
+            {
+                Static = Static.DeepClone(),
+                Instance = Instance.DeepClone()
+            };
+        }
     }
 }

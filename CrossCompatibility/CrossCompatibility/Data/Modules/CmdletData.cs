@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
@@ -11,5 +12,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     [DataContract]
     public class CmdletData : CommandData
     {
+        public CmdletData DeepClone()
+        {
+            return new CmdletData()
+            {
+                DefaultParameterSet = DefaultParameterSet,
+                OutputType = (string[])OutputType.Clone(),
+                ParameterAliases = ParameterAliases.ToDictionary(pa => pa.Key, pa => pa.Value),
+                ParameterSets = (string[])ParameterSets.Clone(),
+                Parameters = Parameters.ToDictionary(p => p.Key, p => p.Value.DeepClone())
+            };
+        }
     }
 }

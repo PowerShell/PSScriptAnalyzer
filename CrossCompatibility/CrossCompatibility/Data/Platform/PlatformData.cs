@@ -27,5 +27,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
 	/// </summary>
         [DataMember(Name = ".NET")]
         public DotnetData Dotnet { get; set; }
+
+        public PlatformData DeepClone()
+        {
+            return new PlatformData()
+            {
+                Dotnet = Dotnet.DeepClone(),
+                OperatingSystem = OperatingSystem.DeepClone(),
+                PowerShell = PowerShell.DeepClone()
+            };
+        }
     }
 }

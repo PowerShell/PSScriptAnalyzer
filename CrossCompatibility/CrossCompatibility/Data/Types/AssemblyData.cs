@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
@@ -23,5 +24,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public IDictionary<string, IDictionary<string, TypeData>> Types { get; set; }
+
+        public AssemblyData DeepClone()
+        {
+            return new AssemblyData()
+            {
+                AssemblyName = AssemblyName.DeepClone(),
+                Types = Types.ToDictionary(ns => ns.Key, ns => (IDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key, t => t.Value.DeepClone()))
+            };
+        }
     }
 }
