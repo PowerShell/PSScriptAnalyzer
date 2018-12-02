@@ -10,21 +10,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
     [DataContract]
     public class PlatformData
     {
-	/// <summary>
-	/// Host operating system information.
-	/// </summary>
+        /// <summary>
+        /// Host operating system information.
+        /// </summary>
         [DataMember]
         public OperatingSystemData OperatingSystem { get; set; }
 
-	/// <summary>
-	/// PowerShell version information.
-	/// </summary>
+        /// <summary>
+        /// PowerShell version information.
+        /// </summary>
         [DataMember]
         public PowerShellData PowerShell { get; set; }
 
-	/// <summary>
-	/// .NET/CLR host runtime information.
-	/// </summary>
+        /// <summary>
+        /// .NET/CLR host runtime information.
+        /// </summary>
         [DataMember(Name = ".NET")]
         public DotnetData Dotnet { get; set; }
 

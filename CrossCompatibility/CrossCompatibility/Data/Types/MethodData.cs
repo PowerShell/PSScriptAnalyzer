@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string[][] OverloadParameters { get; set; }
 
-        public MethodData DeepCopy()
+        public MethodData DeepClone()
         {
             return new MethodData()
             {

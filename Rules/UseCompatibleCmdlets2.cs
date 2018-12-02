@@ -104,8 +104,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.Continue;
                 }
 
-                Version targetVersion = _compatibilityTarget.Platform.PowerShell.Version;
-                string platform = _compatibilityTarget.Platform.OperatingSystem.Name;
+                Version targetVersion = _compatibilityTarget.Platform[0].PowerShell.Version;
+                string platform = _compatibilityTarget.Platform[0].OperatingSystem.Name;
                 string message = $"The command '{commandName}' is not compatible with PowerShell v{targetVersion} on platform {platform}";
 
                 var diagnostic = new DiagnosticRecord(

@@ -6,9 +6,5 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
     public static class ProfileCombination
     {
-        public static CompatibilityProfileData Intersect(this CompatibilityProfileData thisProfile, CompatibilityProfileData otherProfile)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

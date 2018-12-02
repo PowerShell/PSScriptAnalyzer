@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 
@@ -21,19 +22,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         public RuntimeData Compatibility { get; set; }
 
         /// <summary>
-        /// Describes a target platform on which a PowerShell script
+        /// Describes the target platforms on which a PowerShell script
         /// will run, including the PowerShell installation,
         /// the .NET runtime and the operating system environment.
         /// </summary>
         [DataMember]
-        public PlatformData Platform { get; set; }
+        public PlatformData[] Platforms { get; set; }
 
         public CompatibilityProfileData DeepClone()
         {
             return new CompatibilityProfileData()
             {
-                Compatibility = this.Compatibility.DeepClone(),
-                Platform = this.Platform.DeepClone()
+                Compatibility = Compatibility.DeepClone(),
+                Platforms = Platforms.Select(p => p.DeepClone()).ToArray()
             };
         }
     }
