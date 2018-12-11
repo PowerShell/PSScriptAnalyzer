@@ -1804,7 +1804,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             foreach (var error in errors.Where(IsModuleNotFoundError))
             {
-                var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst);
+                var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst, out Version moduleVersion);
                 if (moduleNames == null)
                 {
                     continue;
@@ -1815,7 +1815,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         String.Format(
                             "Saving module {0} from PSGallery",
                             moduleName));
-                    var moduleSaved = moduleHandler.TrySaveModule(moduleName);
+                    var moduleSaved = moduleHandler.TrySaveModule(moduleName, moduleVersion);
                     if (!moduleSaved)
                     {
                         this.outputWriter.WriteVerbose(
