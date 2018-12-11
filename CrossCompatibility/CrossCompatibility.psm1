@@ -101,7 +101,8 @@ function New-PowerShellCompatibilityProfile
         [string]
         $OutFile,
 
-        [Parameter(ParameterSetName='PlatformName', Mandatory=$true)]
+        [Parameter(ParameterSetName='PlatformName')]
+        [ValidateNotNullOrEmpty()]
         [string]
         $PlatformName,
 
@@ -117,7 +118,7 @@ function New-PowerShellCompatibilityProfile
 
     if ($PlatformName)
     {
-
+        $OutFile = [System.IO.Path]::Combine($here, "$Platform.json")
     }
     elseif ($OutFile -and -not [System.IO.Path]::IsPathRooted($OutFile))
     {
@@ -259,7 +260,7 @@ function Get-PowerShellCompatibilityProfileData
 {
     return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]@{
         Compatibility = Get-PowerShellCompatibilityData
-        Platform = Get-PlatformData
+        Platforms = Get-PlatformData
     }
 }
 
@@ -894,7 +895,7 @@ function New-ParameterSetData
     {
         $parameterSetData = @{}
 
-        $flags = New-Object 'System.Collections.Generic.List[Microsoft.PowerShell.CrossCompatibility.Data.Modules.ParameterSetFlag]'
+        $flags = New-Object 'System.Collections.Generic.List[Microsoft.PowerShell.CrossCompatibility.ParameterSetFlag]'
 
         if ($ParameterSet.Value.IsMandatory)
         {
