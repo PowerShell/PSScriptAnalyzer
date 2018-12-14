@@ -10,7 +10,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class TypeData
+    public class TypeData : ICloneable
     {
         /// <summary>
         /// The static members on the type.
@@ -24,12 +24,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember(EmitDefaultValue = false)]
         public MemberData Instance { get; set; }
 
-        public TypeData DeepClone()
+        public object Clone()
         {
             return new TypeData()
             {
-                Static = Static.DeepClone(),
-                Instance = Instance.DeepClone()
+                Static = (MemberData)Static.Clone(),
+                Instance = (MemberData)Instance.Clone()
             };
         }
     }

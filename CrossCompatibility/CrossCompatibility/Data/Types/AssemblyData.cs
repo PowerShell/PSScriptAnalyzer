@@ -10,7 +10,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class AssemblyData
+    public class AssemblyData : ICloneable
     {
         /// <summary>
         /// Holds a structured description of the assembly name.
@@ -25,12 +25,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember(EmitDefaultValue = false)]
         public IDictionary<string, IDictionary<string, TypeData>> Types { get; set; }
 
-        public AssemblyData DeepClone()
+        public object Clone()
         {
             return new AssemblyData()
             {
-                AssemblyName = AssemblyName.DeepClone(),
-                Types = Types.ToDictionary(ns => ns.Key, ns => (IDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key, t => t.Value.DeepClone()))
+                AssemblyName = (AssemblyNameData)AssemblyName.Clone(),
+                Types = Types.ToDictionary(ns => ns.Key, ns => (IDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key, t => t.Value.Clone()))
             };
         }
     }

@@ -9,7 +9,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class MethodData
+    public class MethodData : ICloneable
     {
         /// <summary>
         /// The full name of the type returned by the method.
@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string[][] OverloadParameters { get; set; }
 
-        public MethodData DeepClone()
+        public object Clone()
         {
             return new MethodData()
             {

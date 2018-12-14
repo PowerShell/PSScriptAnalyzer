@@ -5,7 +5,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
 {
     [Serializable]
     [DataContract]
-    public class TypeAcceleratorData
+    public class TypeAcceleratorData : ICloneable
     {
         [DataMember]
         public string Assembly { get; set; }
@@ -13,7 +13,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string Type { get; set; }
 
-        public TypeAcceleratorData DeepClone()
+        public object Clone()
         {
             return new TypeAcceleratorData()
             {

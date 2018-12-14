@@ -8,7 +8,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class PropertyData
+    public class PropertyData : ICloneable
     {
         /// <summary>
         /// Lists the accessors available on this property.
@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string Type { get; set; }
 
-        public PropertyData DeepClone()
+        public object Clone()
         {
             return new PropertyData()
             {

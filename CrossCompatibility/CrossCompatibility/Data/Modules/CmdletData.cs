@@ -12,7 +12,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     [DataContract]
     public class CmdletData : CommandData
     {
-        public CmdletData DeepClone()
+        public override object Clone()
         {
             return new CmdletData()
             {
@@ -20,7 +20,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
                 OutputType = (string[])OutputType.Clone(),
                 ParameterAliases = ParameterAliases.ToDictionary(pa => pa.Key, pa => pa.Value),
                 ParameterSets = (string[])ParameterSets.Clone(),
-                Parameters = Parameters.ToDictionary(p => p.Key, p => p.Value.DeepClone())
+                Parameters = Parameters.ToDictionary(p => p.Key, p => (ParameterData)p.Value.Clone())
             };
         }
     }

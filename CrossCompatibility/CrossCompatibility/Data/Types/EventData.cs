@@ -8,7 +8,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class EventData
+    public class EventData : ICloneable
     {
         /// <summary>
         /// True if the event is a multicast event, false otherwise.
@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string HandlerType { get; set; }
 
-        public EventData DeepClone()
+        public object Clone()
         {
             return new EventData()
             {

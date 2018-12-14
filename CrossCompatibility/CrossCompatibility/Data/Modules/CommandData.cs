@@ -9,7 +9,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     /// </summary>
     [Serializable]
     [DataContract]
-    public abstract class CommandData
+    public abstract class CommandData : ICloneable
     {
         /// <summary>
         /// The output types given by the command
@@ -46,5 +46,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public IDictionary<string, string> ParameterAliases { get; set; }
+
+        public abstract object Clone();
     }
 }

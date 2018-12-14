@@ -11,7 +11,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class AvailableTypeData
+    public class AvailableTypeData : ICloneable
     {
         /// <summary>
         /// The type accelerator lookup table, with type accelerators
@@ -27,12 +27,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public IDictionary<string, AssemblyData> Assemblies { get; set; }
 
-        public AvailableTypeData DeepClone()
+        public object Clone()
         {
             return new AvailableTypeData()
             {
-                TypeAccelerators = TypeAccelerators.ToDictionary(ta => ta.Key, ta => ta.Value.DeepClone()),
-                Assemblies = Assemblies.ToDictionary(asm => asm.Key, asm => asm.Value.DeepClone())
+                TypeAccelerators = TypeAccelerators.ToDictionary(ta => ta.Key, ta => (TypeAcceleratorData)ta.Value.Clone()),
+                Assemblies = Assemblies.ToDictionary(asm => asm.Key, asm => (AssemblyData)asm.Value.Clone())
             };
         }
     }

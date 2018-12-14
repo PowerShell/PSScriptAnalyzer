@@ -13,7 +13,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     /// </summary>
     [Serializable]
     [DataContract]
-    public class RuntimeData
+    public class RuntimeData : ICloneable
     {
         /// <summary>
         /// Describes the types available on a particular
@@ -29,12 +29,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         [DataMember]
         public IDictionary<string, ModuleData> Modules { get; set; }
 
-        public RuntimeData DeepClone()
+        public object Clone()
         {
             return new RuntimeData()
             {
-                Types = Types.DeepClone(),
-                Modules = Modules.ToDictionary(m => m.Key, m => m.Value.DeepClone())
+                Types = (AvailableTypeData)Types.Clone(),
+                Modules = Modules.ToDictionary(m => m.Key, m => (ModuleData)m.Value.Clone())
             };
         }
     }

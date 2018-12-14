@@ -10,7 +10,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class MemberData
+    public class MemberData : ICloneable
     {
         /// <summary>
         /// Array of overloads of the constructors
@@ -56,17 +56,17 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember(EmitDefaultValue = false)]
         public IDictionary<string, TypeData> NestedTypes { get; set; }
 
-        public MemberData DeepClone()
+        public object Clone()
         {
             return new MemberData()
             {
                 Constructors = Constructors.Select(c => (string[])c.Clone()).ToArray(),
-                Events = Events.ToDictionary(e => e.Key, e => e.Value.DeepClone()),
-                Fields = Fields.ToDictionary(f => f.Key, f => f.Value.DeepClone()),
-                Indexers = Indexers.Select(i => i.DeepClone()).ToArray(),
-                Methods = Methods.ToDictionary(m => m.Key, m => m.Value.DeepClone()),
-                NestedTypes = NestedTypes.ToDictionary(t => t.Key, t => t.Value.DeepClone()),
-                Properties = Properties.ToDictionary(p => p.Key, p => p.Value.DeepClone())
+                Events = Events.ToDictionary(e => e.Key, e => (EventData)e.Value.Clone()),
+                Fields = Fields.ToDictionary(f => f.Key, f => (FieldData)f.Value.Clone()),
+                Indexers = Indexers.Select(i => (IndexerData)i.Clone()).ToArray(),
+                Methods = Methods.ToDictionary(m => m.Key, m => (MethodData)m.Value.Clone()),
+                NestedTypes = NestedTypes.ToDictionary(t => t.Key, t => (TypeData)t.Value.Clone()),
+                Properties = Properties.ToDictionary(p => p.Key, p => (PropertyData)p.Value.Clone())
             };
         }
     }

@@ -12,7 +12,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     /// </summary>
     [Serializable]
     [DataContract]
-    public class CompatibilityProfileData
+    public class CompatibilityProfileData : ICloneable
     {
         /// <summary>
         /// Describes the what types and commands are available
@@ -29,12 +29,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         [DataMember]
         public PlatformData[] Platforms { get; set; }
 
-        public CompatibilityProfileData DeepClone()
+        public object Clone()
         {
             return new CompatibilityProfileData()
             {
-                Compatibility = Compatibility.DeepClone(),
-                Platforms = Platforms.Select(p => p.DeepClone()).ToArray()
+                Compatibility = (RuntimeData)Compatibility.Clone(),
+                Platforms = Platforms.Select(p => (PlatformData)p.Clone()).ToArray()
             };
         }
     }

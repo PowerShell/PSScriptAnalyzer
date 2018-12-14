@@ -9,7 +9,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class AssemblyNameData
+    public class AssemblyNameData : ICloneable
     {
         /// <summary>
         /// The simple name of the assembly.
@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember(EmitDefaultValue = false)]
         public byte[] PublicKeyToken { get; set; }
 
-        public AssemblyNameData DeepClone()
+        public object Clone()
         {
             return new AssemblyNameData()
             {

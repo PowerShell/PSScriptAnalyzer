@@ -20,7 +20,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public bool CmdletBinding { get; set; }
 
-        public FunctionData DeepClone()
+        public override object Clone()
         {
             return new FunctionData()
             {
@@ -29,7 +29,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
                 OutputType = (string[])OutputType.Clone(),
                 ParameterSets = (string[])ParameterSets.Clone(),
                 ParameterAliases = ParameterAliases.ToDictionary(pa => pa.Key, pa => pa.Value),
-                Parameters = Parameters.ToDictionary(p => p.Key, p => p.Value.DeepClone())
+                Parameters = Parameters.ToDictionary(p => p.Key, p => (ParameterData)p.Value.Clone())
             };
         }
     }

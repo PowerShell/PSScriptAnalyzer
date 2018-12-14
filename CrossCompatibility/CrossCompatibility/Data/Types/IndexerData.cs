@@ -8,7 +8,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class IndexerData
+    public class IndexerData : ICloneable
     {
         /// <summary>
         /// The type of the indexed item itself; the return type of the getter
@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public AccessorType[] Accessors { get; set; }
 
-        public IndexerData DeepClone()
+        public object Clone()
         {
             return new IndexerData()
             {

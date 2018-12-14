@@ -9,7 +9,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     /// </summary>
     [Serializable]
     [DataContract]
-    public class ParameterSetData
+    public class ParameterSetData : ICloneable
     {
         /// <summary>
         /// The parameter set attributes or
@@ -26,7 +26,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public int Position { get; set; } = int.MinValue;
 
-        public ParameterSetData DeepClone()
+        public object Clone()
         {
             return new ParameterSetData()
             {

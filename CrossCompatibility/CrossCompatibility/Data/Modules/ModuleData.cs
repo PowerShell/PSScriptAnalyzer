@@ -11,7 +11,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     /// </summary>
     [Serializable]
     [DataContract]
-    public class ModuleData
+    public class ModuleData : ICloneable
     {
 	/// <summary>
 	/// The version of the module, if specified.
@@ -50,7 +50,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public IDictionary<string, string> Aliases { get; set; }
 
-        public ModuleData DeepClone()
+        public object Clone()
         {
             return new ModuleData()
             {
@@ -58,8 +58,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
                 Version = Version,
                 Variables = (string[])Variables.Clone(),
                 Aliases = Aliases.ToDictionary(a => a.Key, a => a.Value),
-                Cmdlets = Cmdlets.ToDictionary(c => c.Key, c => c.Value.DeepClone()),
-                Functions = Functions.ToDictionary(f => f.Key, f => f.Value.DeepClone())
+                Cmdlets = Cmdlets.ToDictionary(c => c.Key, c => (CmdletData)c.Value.Clone()),
+                Functions = Functions.ToDictionary(f => f.Key, f => (FunctionData)f.Value.Clone())
             };
         }
     }

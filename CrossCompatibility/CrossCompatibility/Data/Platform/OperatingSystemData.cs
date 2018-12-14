@@ -9,7 +9,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
     /// </summary>
     [Serializable]
     [DataContract]
-    public class OperatingSystemData
+    public class OperatingSystemData : ICloneable
     {
 	/// <summary>
 	/// The name of the operating system as
@@ -88,7 +88,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember(EmitDefaultValue = false)]
         public string DistributionPrettyName { get; set; }
 
-        public OperatingSystemData DeepClone()
+        public object Clone()
         {
             return new OperatingSystemData()
             {

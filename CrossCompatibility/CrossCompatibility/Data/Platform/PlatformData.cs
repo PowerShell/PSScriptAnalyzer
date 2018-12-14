@@ -8,7 +8,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
     /// </summary>
     [Serializable]
     [DataContract]
-    public class PlatformData
+    public class PlatformData : ICloneable
     {
         /// <summary>
         /// Host operating system information.
@@ -28,13 +28,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember(Name = ".NET")]
         public DotnetData Dotnet { get; set; }
 
-        public PlatformData DeepClone()
+        public object Clone()
         {
             return new PlatformData()
             {
                 Dotnet = Dotnet.DeepClone(),
-                OperatingSystem = OperatingSystem.DeepClone(),
-                PowerShell = PowerShell.DeepClone()
+                OperatingSystem = (OperatingSystemData)OperatingSystem.Clone(),
+                PowerShell = (PowerShellData)PowerShell.Clone()
             };
         }
     }

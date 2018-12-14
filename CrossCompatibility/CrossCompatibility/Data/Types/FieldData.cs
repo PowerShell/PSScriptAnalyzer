@@ -8,7 +8,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     /// </summary>
     [Serializable]
     [DataContract]
-    public class FieldData
+    public class FieldData : ICloneable
     {
         /// <summary>
         /// The type of the field.
@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string Type { get; set; }
 
-        public FieldData DeepClone()
+        public object Clone()
         {
             return new FieldData()
             {

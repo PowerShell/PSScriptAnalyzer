@@ -10,9 +10,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
     public static class ProfileCombination
     {
-        public static void Intersect(this CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
+        public static void Intersect(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
         {
-            thisProfile.Compatibility.Intersect(thatProfile.Compatibility);
+            Intersect(thisProfile.Compatibility, thatProfile.Compatibility);
 
             // Intersection of platforms is just adding them to the array
             var platforms = new PlatformData[thisProfile.Platforms.Length + thatProfile.Platforms.Length];
@@ -21,35 +21,35 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             thisProfile.Platforms = platforms;
         }
 
-        public static void Intersect(this RuntimeData thisRuntime, RuntimeData thatRuntime)
+        public static void Intersect(RuntimeData thisRuntime, RuntimeData thatRuntime)
         {
-            thisRuntime.Types.Intersect(thatRuntime.Types);
+            Intersect(thisRuntime.Types, thatRuntime.Types);
 
             // Intersect modules first at the whole module level
-            thisRuntime.Modules.Intersect(thatRuntime.Modules, StringComparer.OrdinalIgnoreCase);
+            TryIntersect(thisRuntime.Modules, thatRuntime.Modules, StringComparer.OrdinalIgnoreCase);
 
             // Then strip out parts that are not common
             foreach (KeyValuePair<string, ModuleData> module in thisRuntime.Modules)
             {
-                module.Value.Intersect(thatRuntime.Modules[module.Key]);
+                Intersect(module.Value, thatRuntime.Modules[module.Key]);
             }
         }
 
-        public static void Intersect(this AvailableTypeData thisTypes, AvailableTypeData thatTypes)
+        public static void Intersect(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
         {
-            thisTypes.Assemblies.Intersect(thatTypes.Assemblies);
+            TryIntersect(thisTypes.Assemblies, thatTypes.Assemblies);
 
             foreach (KeyValuePair<string, AssemblyData> assembly in thisTypes.Assemblies)
             {
-                assembly.Value.Intersect(thatTypes.Assemblies[assembly.Key]);
+                Intersect(assembly.Value, thatTypes.Assemblies[assembly.Key]);
             }
 
-            thisTypes.TypeAccelerators?.Intersect(thatTypes.TypeAccelerators);
+            TryIntersect(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
         }
 
-        public static void Intersect(this AssemblyData thisAsm, AssemblyData thatAsm)
+        public static void Intersect(AssemblyData thisAsm, AssemblyData thatAsm)
         {
-            thisAsm.AssemblyName.Intersect(thatAsm.AssemblyName);
+            Intersect(thisAsm.AssemblyName, thatAsm.AssemblyName);
 
             thisAsm.Types.Intersect(thatAsm.Types);
             foreach (KeyValuePair<string, IDictionary<string, TypeData>> typeNamespace in thisAsm.Types)
@@ -58,12 +58,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
                 foreach (KeyValuePair<string, TypeData> type in typeNamespace.Value)
                 {
-                    type.Value.Intersect(thatAsm.Types[typeNamespace.Key][type.Key]);
+                    Intersect(type.Value, thatAsm.Types[typeNamespace.Key][type.Key]);
                 }
             }
         }
 
-        public static void Intersect(this AssemblyNameData thisAsmName, AssemblyNameData thatAsmName)
+        public static void Intersect(AssemblyNameData thisAsmName, AssemblyNameData thatAsmName)
         {
             // Having different cultures downgrades to culture neutral
             if (thisAsmName.Culture != thatAsmName.Culture)
@@ -72,16 +72,23 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
         }
 
-        public static void Intersect(this TypeData thisType, TypeData thatType)
+        public static void Intersect(TypeData thisType, TypeData thatType)
         {
-            thisType.Instance?.Intersect(thatType.Instance);
-            thisType.Static?.Intersect(thatType.Static);
+            Intersect(thisType.Instance, thatType.Instance);
+            Intersect(thisType.Static, thatType.Static);
         }
 
-        public static void Intersect(this MemberData thisMembers, MemberData thatMembers)
+        public static void Intersect(MemberData thisMembers, MemberData thatMembers)
         {
-            thisMembers.Events?.Intersect(thatMembers.Events);
-            thisMembers.Fields?.Intersect(thatMembers.Fields);
+            if (!TryIntersect(thisMembers.Events, thatMembers.Events))
+            {
+                thisMembers.Events = null;
+            }
+
+            if (!TryIntersect(thisMembers.Fields, thatMembers.Fields))
+            {
+                thisMembers.Fields = null;
+            }
 
             // Recollect only constructors that occur in both left and right sets
             var thisConstructors = new List<string[]>();
@@ -105,7 +112,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 {
                     if (AreParametersMatching(thisIndexer.Parameters, thatIndexer.Parameters))
                     {
-                        thisIndexer.Intersect(thatIndexer);
+                        Intersect(thisIndexer, thatIndexer);
                         thisIndexers.Add(thisIndexer);
                     }
                 }
@@ -117,28 +124,28 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 thisMembers.Properties?.Intersect(thatMembers.Properties);
                 foreach (KeyValuePair<string, PropertyData> property in thisMembers.Properties)
                 {
-                    property.Value.Intersect(thatMembers.Properties[property.Key]);
+                    Intersect(property.Value, thatMembers.Properties[property.Key]);
                 }
             }
 
             thisMembers.NestedTypes?.Intersect(thatMembers.NestedTypes);
             foreach (KeyValuePair<string, TypeData> type in thisMembers.NestedTypes)
             {
-                type.Value.Intersect(thatMembers.NestedTypes[type.Key]);
+                Intersect(type.Value, thatMembers.NestedTypes[type.Key]);
             }
         }
 
-        public static void Intersect(this IndexerData thisIndexer, IndexerData thatIndexer)
+        public static void Intersect(IndexerData thisIndexer, IndexerData thatIndexer)
         {
             thisIndexer.Accessors = thisIndexer.Accessors.Intersect(thatIndexer.Accessors).ToArray();
         }
 
-        public static void Intersect(this PropertyData thisProperty, PropertyData thatProperty)
+        public static void Intersect(PropertyData thisProperty, PropertyData thatProperty)
         {
             thisProperty.Accessors = thisProperty.Accessors.Intersect(thatProperty.Accessors).ToArray();
         }
 
-        public static void Intersect(this ModuleData thisModule, ModuleData thatModule)
+        public static void Intersect(ModuleData thisModule, ModuleData thatModule)
         {
             // Take the lower version of the module -- this is a hacky assumption, but better than the alternative
             thisModule.Version = thisModule.Version <= thatModule.Version ? thisModule.Version : thatModule.Version;
@@ -153,7 +160,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
                 foreach (KeyValuePair<string, CmdletData> thisCmdlet in thisModule.Cmdlets)
                 {
-                    thisCmdlet.Value.Intersect(thatModule.Cmdlets[thisCmdlet.Key]);
+                    Intersect(thisCmdlet.Value, thatModule.Cmdlets[thisCmdlet.Key]);
                 }
             }
 
@@ -163,12 +170,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
                 foreach (KeyValuePair<string, FunctionData> thisFunction in thisModule.Functions)
                 {
-                    thisFunction.Value.Intersect(thatModule.Functions[thisFunction.Key]);
+                    if (thisModule.Functions[thisFunction.Key].CmdletBinding)
+                    {
+                        thisFunction.Value.CmdletBinding = true;
+                    }
+                    Intersect(thisFunction.Value, thatModule.Functions[thisFunction.Key]);
                 }
             }
         }
 
-        public static void Intersect(this CommandData thisCommand, CommandData thatCommand)
+        public static void Intersect(CommandData thisCommand, CommandData thatCommand)
         {
             thisCommand.OutputType = thisCommand.OutputType?.Intersect(thatCommand.OutputType ?? Enumerable.Empty<string>()).ToArray();
             thisCommand.ParameterAliases?.Intersect(thatCommand?.ParameterAliases);
@@ -180,30 +191,169 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
                 foreach (KeyValuePair<string, ParameterData> parameter in thisCommand.Parameters)
                 {
-                    parameter.Value.Intersect(thatCommand.Parameters[parameter.Key]);
+                    Intersect(parameter.Value, thatCommand.Parameters[parameter.Key]);
                 }
             }
         }
 
-        public static void Intersect(this ParameterData thisParam, ParameterData thatParam)
+        public static void Intersect(ParameterData thisParam, ParameterData thatParam)
         {
             thisParam.ParameterSets?.Intersect(thatParam.ParameterSets);
         }
 
-        public static void Union(this CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
+        public static void Union(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
         {
-            // There's no simple solution to this
-            // Users need to know what they're doing and add the platform in again manually
+            // There's no simple solution to this currently.
+            // We can revisit, but platform unions don't make much sense out of context
             thisProfile.Platforms = null;
+
+            Union(thisProfile.Compatibility, thatProfile.Compatibility);
         }
 
-        private static void Intersect<K, V>(this IDictionary<K, V> thisDict, IDictionary<K, V> thatDict, IEqualityComparer<K> comparer = null)
+        public static void Union(RuntimeData thisRuntime, RuntimeData thatRuntime)
         {
-            // If the other dictionary is null, the best we can do is clear the current one -- it should also be set to null
+            foreach (KeyValuePair<string, ModuleData> thatModule in thatRuntime.Modules)
+            {
+                // Add whole new modules from RHS
+                if (!thisRuntime.Modules.ContainsKey(thatModule.Key))
+                {
+                    thisRuntime.Modules.Add(thatModule);
+                    continue;
+                }
+
+                // Merge common modules
+                Union(thisRuntime.Modules[thatModule.Key], thatModule.Value);
+            }
+
+            Union(thisRuntime.Types, thatRuntime.Types);
+        }
+
+        public static void Union(ModuleData thisModule, ModuleData thatModule)
+        {
+            if (thatModule.Version > thisModule.Version)
+            {
+                thisModule.Version = thatModule.Version;
+            }
+
+            if (TryNaiveUnion(thisModule.Aliases, thatModule.Aliases, out IDictionary<string, string> aliasDict))
+            {
+                thisModule.Aliases = aliasDict;
+            }
+            else
+            {
+                foreach (KeyValuePair<string, string> alias in thatModule.Aliases)
+                {
+                    thisModule.Aliases[alias.Key] = alias.Value;
+                }
+            }
+
+            thisModule.Variables = ArrayUnion(thisModule.Variables, thatModule.Variables);
+
+            if (TryNaiveUnion(thisModule.Cmdlets, thatModule.Cmdlets, out IDictionary<string, CmdletData> cmdletDictionary))
+            {
+                thisModule.Cmdlets = cmdletDictionary;
+            }
+            else
+            {
+                foreach (KeyValuePair<string, CmdletData> cmdlet in thatModule.Cmdlets)
+                {
+                    if (!thisModule.Cmdlets.ContainsKey(cmdlet.Key))
+                    {
+                        thisModule.Cmdlets.Add(cmdlet);
+                        continue;
+                    }
+
+                    Union(thisModule.Cmdlets[cmdlet.Key], cmdlet.Value);
+                }
+            }
+
+            if (TryNaiveUnion(thisModule.Functions, thatModule.Functions, out IDictionary<string, FunctionData> functionDictionary))
+            {
+                thisModule.Functions = functionDictionary;
+            }
+            else
+            {
+                foreach (KeyValuePair<string, FunctionData> function in thatModule.Functions)
+                {
+                    if (!thisModule.Functions.ContainsKey(function.Key))
+                    {
+                        thisModule.Functions.Add(function);
+                        continue;
+                    }
+
+                    Union(thisModule.Cmdlets[function.Key], function.Value);
+                }
+            }
+
+            if (thatModule.Functions != null)
+            {
+                if (thisModule.Functions == null)
+                {
+                    thisModule.Functions = thatModule.Functions.Clone();
+                }
+                else
+                {
+                    foreach (KeyValuePair<string, FunctionData> function in thatModule.Functions)
+                    {
+                        if (!thisModule.Functions.ContainsKey(function.Key))
+                        {
+                            thisModule.Functions.Add(function);
+                            continue;
+                        }
+
+                        Union(thisModule.Functions[function.Key], function.Value);
+                    }
+                }
+            }
+        }
+
+        public static void Union(CommandData thisCommand, CommandData thatCommand)
+        {
+            thisCommand.OutputType = ArrayUnion(thisCommand.OutputType, thatCommand.OutputType);
+        }
+
+        private static T[] ArrayUnion<T>(T[] thisArray, T[] thatArray)
+        {
+            if (thatArray == null)
+            {
+                return thisArray;
+            }
+
+            if (thisArray == null)
+            {
+                return (T[])thatArray.Clone();
+            }
+
+            return thisArray.Union(thatArray).ToArray();
+        }
+
+        private static bool TryNaiveUnion<K, V>(
+            IDictionary<K, V> thisDict,
+            IDictionary<K, V> thatDict, 
+            out IDictionary<K, V> result)
+            where K : ICloneable where V : ICloneable
+        {
             if (thatDict == null)
             {
-                thisDict.Clear();
-                return;
+                result = thisDict;
+                return true;
+            }
+
+            if (thisDict == null)
+            {
+                result = thatDict.Clone();
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+
+        private static bool TryIntersect<K, V>(IDictionary<K, V> thisDict, IDictionary<K, V> thatDict, IEqualityComparer<K> keyComparer = null)
+        {
+            if (thisDict == null || thatDict == null)
+            {
+                return false;
             }
 
             // Remove all keys in right outer join from this
@@ -218,7 +368,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             // Remove all keys in left outer join from this, being careful not to enumerate while mutating
 
             // Add keys to removal set
-            var keysToRemove = comparer == null ? new HashSet<K>() : new HashSet<K>(comparer);
+            var keysToRemove = keyComparer == null ? new HashSet<K>() : new HashSet<K>(keyComparer);
             foreach (K thisKey in thisDict.Keys)
             {
                 if (!thatDict.ContainsKey(thisKey))
@@ -232,6 +382,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 thisDict.Remove(keyToRemove);
             }
+
+            return true;
         }
 
         private static bool AreParametersMatching(IReadOnlyList<string> thisParams, IReadOnlyList<string> thatParams)
@@ -250,6 +402,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
 
             return true;
+        }
+
+        private static IDictionary<K, V> Clone<K, V>(this IDictionary<K, V> dict, IEqualityComparer<K> keyComparer = null)
+            where K : ICloneable where V : ICloneable
+        {
+            var newDict = keyComparer == null
+                ? new Dictionary<K, V>(dict.Count)
+                : new Dictionary<K, V>(dict.Count, keyComparer);
+
+            foreach (K key in dict.Keys)
+            {
+                newDict.Add((K)key.Clone(), (V)dict[key].Clone());
+            }
+
+            return newDict;
         }
     }
 }

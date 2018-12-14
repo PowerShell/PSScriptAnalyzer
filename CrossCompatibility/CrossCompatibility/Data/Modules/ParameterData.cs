@@ -11,7 +11,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     /// </summary>
     [Serializable]
     [DataContract]
-    public class ParameterData
+    public class ParameterData : ICloneable
     {
         /// <summary>
         /// The parameter sets to which the parameter belongs,
@@ -32,13 +32,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public bool Dynamic { get; set; }
 
-        public ParameterData DeepClone()
+        public object Clone()
         {
             return new ParameterData()
             {
                 Type = Type,
                 Dynamic = Dynamic,
-                ParameterSets = ParameterSets.ToDictionary(p => p.Key, p => p.Value.DeepClone())
+                ParameterSets = ParameterSets.ToDictionary(p => p.Key, p => (ParameterSetData)p.Value.Clone())
             };
         }
     }

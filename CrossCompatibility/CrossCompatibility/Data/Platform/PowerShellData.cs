@@ -9,7 +9,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
     /// </summary>
     [Serializable]
     [DataContract]
-    public class PowerShellData
+    public class PowerShellData : ICloneable
     {
         /// <summary>
         /// The self-reported version of PowerShell.
@@ -70,7 +70,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember]
         public Architecture ProcessArchitecture { get; set; }
 
-        public PowerShellData DeepClone()
+        public object Clone()
         {
             return new PowerShellData()
             {
