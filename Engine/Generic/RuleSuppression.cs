@@ -203,7 +203,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         }
 
                         var argumentName = name.ArgumentName;
-                        if (argumentName.Equals("rulename", StringComparison.InvariantCultureIgnoreCase))
+                        if (argumentName.Equals("rulename", StringComparison.OrdinalIgnoreCase))
                         {
                             if (!String.IsNullOrWhiteSpace(RuleName))
                             {
@@ -212,7 +212,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
                             RuleName = (name.Argument as StringConstantExpressionAst).Value;
                         }
-                        else if (argumentName.Equals("rulesuppressionid", StringComparison.InvariantCultureIgnoreCase))
+                        else if (argumentName.Equals("rulesuppressionid", StringComparison.OrdinalIgnoreCase))
                         {
                             if (!String.IsNullOrWhiteSpace(RuleName))
                             {
@@ -221,7 +221,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
                             RuleName = (name.Argument as StringConstantExpressionAst).Value;
                         }
-                        else if (argumentName.Equals("scope", StringComparison.InvariantCultureIgnoreCase))
+                        else if (argumentName.Equals("scope", StringComparison.OrdinalIgnoreCase))
                         {
                             if (!String.IsNullOrWhiteSpace(Scope))
                             {
@@ -235,7 +235,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                                 Error = Strings.WrongScopeArgumentSuppressionAttributeError;
                             }
                         }
-                        else if (argumentName.Equals("target", StringComparison.InvariantCultureIgnoreCase))
+                        else if (argumentName.Equals("target", StringComparison.OrdinalIgnoreCase))
                         {
                             if (!String.IsNullOrWhiteSpace(Target))
                             {
@@ -244,7 +244,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
                             Target = (name.Argument as StringConstantExpressionAst).Value;
                         }
-                        else if (argumentName.Equals("justification", StringComparison.InvariantCultureIgnoreCase))
+                        else if (argumentName.Equals("justification", StringComparison.OrdinalIgnoreCase))
                         {
                             if (!String.IsNullOrWhiteSpace(Justification))
                             {
@@ -350,12 +350,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     IEnumerable<Ast> targetAsts = null;
 
                     var scope = ruleSupp.Scope;
-                    if (scope.Equals("function", StringComparison.InvariantCultureIgnoreCase))
+                    if (scope.Equals("function", StringComparison.OrdinalIgnoreCase))
                     {
                         targetAsts = scopeAst.FindAll(ast => ast is FunctionDefinitionAst && reg.IsMatch((ast as FunctionDefinitionAst).Name), true);
                     }
                     #if !(PSV3 || PSV4)
-                    else if (scope.Equals("class", StringComparison.InvariantCultureIgnoreCase))
+                    else if (scope.Equals("class", StringComparison.OrdinalIgnoreCase))
                     {
                         targetAsts = scopeAst.FindAll(ast => ast is TypeDefinitionAst && reg.IsMatch((ast as TypeDefinitionAst).Name), true);
                     }

@@ -282,11 +282,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Debug.Assert(includeRuleList != null);
             Debug.Assert(excludeRuleList != null);
 
-            if (key.Equals("severity", StringComparison.InvariantCultureIgnoreCase))
+            if (key.Equals("severity", StringComparison.OrdinalIgnoreCase))
             {
                 severityList.AddRange(values);
             }
-            else if (key.Equals("includerules", StringComparison.InvariantCultureIgnoreCase))
+            else if (key.Equals("includerules", StringComparison.OrdinalIgnoreCase))
             {
                 includeRuleList.AddRange(values);
             }
@@ -510,9 +510,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 object value = settings[settingKey];
 
-                if (settingKey.Equals("severity", StringComparison.InvariantCultureIgnoreCase) ||
-                    settingKey.Equals("includerules", StringComparison.InvariantCultureIgnoreCase) ||
-                    settingKey.Equals("excluderules", StringComparison.InvariantCultureIgnoreCase))
+                if (settingKey.Equals("severity", StringComparison.OrdinalIgnoreCase) ||
+                    settingKey.Equals("includerules", StringComparison.OrdinalIgnoreCase) ||
+                    settingKey.Equals("excluderules", StringComparison.OrdinalIgnoreCase))
                 {
                     // value must be either string or collections of string or array
                     if (value == null
@@ -563,7 +563,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     AddProfileItem(settingKey, values, severityList, includeRuleList, excludeRuleList);
                     settings[settingKey] = values;
                 }
-                else if (settingKey.Equals("excluderules", StringComparison.InvariantCultureIgnoreCase))
+                else if (settingKey.Equals("excluderules", StringComparison.OrdinalIgnoreCase))
                 {
                     writer.WriteError(
                         new ErrorRecord(
@@ -1837,7 +1837,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (File.Exists(filePath))
             {
                 // processing for non help script
-                if (!(Path.GetFileName(filePath).StartsWith("about_", StringComparison.InvariantCultureIgnoreCase) && Path.GetFileName(filePath).EndsWith(".help.txt", StringComparison.InvariantCultureIgnoreCase)))
+                if (!(Path.GetFileName(filePath).StartsWith("about_", StringComparison.OrdinalIgnoreCase) && Path.GetFileName(filePath).EndsWith(".help.txt", StringComparison.OrdinalIgnoreCase)))
                 {
                     try
                     {
