@@ -85,8 +85,24 @@ Describe "Resolve DSC Resource Dependency" {
             $tokens = $null
             $parseError = $null
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
-            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast).ToArray()
+            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast, [ref]$null).ToArray()
             $resultModuleNames[0] | Should -Be 'SomeDscModule1'
+        }
+
+        It "Extracts 1 module name with version" -skip:$skipTest {
+            $sb = @"
+{Configuration SomeConfiguration
+{
+    Import-DscResource -ModuleName SomeDscModule1 -ModuleVersion 1.2.3.4
+}}
+"@
+            $tokens = $null
+            $parseError = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
+            $moduleVersion = $null
+            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast, [ref]$moduleVersion).ToArray()
+            $resultModuleNames[0] | Should -Be 'SomeDscModule1'
+            $moduleVersion | Should -Be ([version]'1.2.3.4')
         }
 
         It "Extracts more than 1 module names" -skip:$skipTest {
@@ -99,7 +115,7 @@ Describe "Resolve DSC Resource Dependency" {
             $tokens = $null
             $parseError = $null
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
-            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast).ToArray()
+            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast, [ref]$null).ToArray()
             $resultModuleNames[0] | Should -Be 'SomeDscModule1'
             $resultModuleNames[1] | Should -Be 'SomeDscModule2'
             $resultModuleNames[2] | Should -Be 'SomeDscModule3'
@@ -116,7 +132,7 @@ Describe "Resolve DSC Resource Dependency" {
             $tokens = $null
             $parseError = $null
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
-            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast).ToArray()
+            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast, [ref]$null).ToArray()
             $resultModuleNames[0] | Should -Be 'SomeDscModule1'
         }
     }

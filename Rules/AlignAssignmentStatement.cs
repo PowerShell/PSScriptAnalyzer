@@ -135,6 +135,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return SourceType.Builtin;
         }
+
+        #region AllignAssignment statement
         private IEnumerable<DiagnosticRecord> FindHashtableViolations(TokenOperations tokenOps)
         {
             var hashtableAsts = tokenOps.Ast.FindAll(ast => ast is HashtableAst, true);
@@ -329,5 +331,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             return true;
         }
+
+        #endregion
     }
 }
