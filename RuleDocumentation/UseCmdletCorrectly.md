@@ -27,7 +27,7 @@ Function Set-TodaysDate ()
 ``` PowerShell
 Function Set-TodaysDate ()
 {
-	$date= Get-Date
+	$date = Get-Date
 	Set-Date -Date $date
 	...
 }
