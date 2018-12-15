@@ -88,9 +88,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             var tokenOperations = new TokenOperations(Helper.Instance.Tokens, ast);
-            var tokenOperationsWithoutHashtable = new TokenOperations(Helper.Instance.Tokens, ast);
-
-
             var diagnosticRecords = Enumerable.Empty<DiagnosticRecord>();
             foreach (var violationFinder in violationFinders)
             {
