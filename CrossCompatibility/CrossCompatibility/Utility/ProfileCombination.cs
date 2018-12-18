@@ -201,152 +201,128 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             thisParam.ParameterSets?.Intersect(thatParam.ParameterSets);
         }
 
-        public static void Union(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
+        public static object Union(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
         {
             // There's no simple solution to this currently.
             // We can revisit, but platform unions don't make much sense out of context
             thisProfile.Platforms = null;
 
             Union(thisProfile.Compatibility, thatProfile.Compatibility);
+
+            return thisProfile;
         }
 
-        public static void Union(RuntimeData thisRuntime, RuntimeData thatRuntime)
+        public static object Union(RuntimeData thisRuntime, RuntimeData thatRuntime)
         {
-            foreach (KeyValuePair<string, ModuleData> thatModule in thatRuntime.Modules)
-            {
-                // Add whole new modules from RHS
-                if (!thisRuntime.Modules.ContainsKey(thatModule.Key))
-                {
-                    thisRuntime.Modules.Add(thatModule);
-                    continue;
-                }
-
-                // Merge common modules
-                Union(thisRuntime.Modules[thatModule.Key], thatModule.Value);
-            }
+            thisRuntime.Modules = DictionaryUnion(thisRuntime.Modules, thatRuntime.Modules, Union);
 
             Union(thisRuntime.Types, thatRuntime.Types);
+
+            return thisRuntime;
         }
 
-        public static void Union(ModuleData thisModule, ModuleData thatModule)
+        public static object Union(ModuleData thisModule, ModuleData thatModule)
         {
             if (thatModule.Version > thisModule.Version)
             {
                 thisModule.Version = thatModule.Version;
             }
 
-            if (TryNaiveUnion(thisModule.Aliases, thatModule.Aliases, out IDictionary<string, string> aliasDict))
-            {
-                thisModule.Aliases = aliasDict;
-            }
-            else
-            {
-                foreach (KeyValuePair<string, string> alias in thatModule.Aliases)
-                {
-                    thisModule.Aliases[alias.Key] = alias.Value;
-                }
-            }
+            thisModule.Aliases = DictionaryUnion(thisModule.Aliases, thatModule.Aliases);
 
             thisModule.Variables = ArrayUnion(thisModule.Variables, thatModule.Variables);
 
-            if (TryNaiveUnion(thisModule.Cmdlets, thatModule.Cmdlets, out IDictionary<string, CmdletData> cmdletDictionary))
-            {
-                thisModule.Cmdlets = cmdletDictionary;
-            }
-            else
-            {
-                foreach (KeyValuePair<string, CmdletData> cmdlet in thatModule.Cmdlets)
-                {
-                    if (!thisModule.Cmdlets.ContainsKey(cmdlet.Key))
-                    {
-                        thisModule.Cmdlets.Add(cmdlet);
-                        continue;
-                    }
+            thisModule.Cmdlets = DictionaryUnion(thisModule.Cmdlets, thatModule.Cmdlets, Union);
 
-                    Union(thisModule.Cmdlets[cmdlet.Key], cmdlet.Value);
-                }
-            }
+            thisModule.Functions = DictionaryUnion(thisModule.Functions, thatModule.Functions, Union);
 
-            if (TryNaiveUnion(thisModule.Functions, thatModule.Functions, out IDictionary<string, FunctionData> functionDictionary))
-            {
-                thisModule.Functions = functionDictionary;
-            }
-            else
-            {
-                foreach (KeyValuePair<string, FunctionData> function in thatModule.Functions)
-                {
-                    if (!thisModule.Functions.ContainsKey(function.Key))
-                    {
-                        thisModule.Functions.Add(function);
-                        continue;
-                    }
-
-                    Union(thisModule.Cmdlets[function.Key], function.Value);
-                }
-            }
-
-            if (thatModule.Functions != null)
-            {
-                if (thisModule.Functions == null)
-                {
-                    thisModule.Functions = thatModule.Functions.Clone();
-                }
-                else
-                {
-                    foreach (KeyValuePair<string, FunctionData> function in thatModule.Functions)
-                    {
-                        if (!thisModule.Functions.ContainsKey(function.Key))
-                        {
-                            thisModule.Functions.Add(function);
-                            continue;
-                        }
-
-                        Union(thisModule.Functions[function.Key], function.Value);
-                    }
-                }
-            }
+            return thisModule;
         }
 
-        public static void Union(CommandData thisCommand, CommandData thatCommand)
+        public static object Union(CommandData thisCommand, CommandData thatCommand)
         {
             thisCommand.OutputType = ArrayUnion(thisCommand.OutputType, thatCommand.OutputType);
+            thisCommand.ParameterSets = ArrayUnion(thisCommand.ParameterSets, thatCommand.ParameterSets);
+
+            thisCommand.ParameterAliases = DictionaryUnion(thisCommand.ParameterAliases, thatCommand.ParameterAliases);
+            thisCommand.Parameters = DictionaryUnion(thisCommand.Parameters, thatCommand.Parameters, Union);
+
+            return thisCommand;
         }
 
-        private static T[] ArrayUnion<T>(T[] thisArray, T[] thatArray)
+        public static object Union(ParameterData thisParameter, ParameterData thatParameter)
         {
-            if (thatArray == null)
-            {
-                return thisArray;
-            }
+            thisParameter.ParameterSets = DictionaryUnion(thisParameter.ParameterSets, thatParameter.ParameterSets, Union);
 
-            if (thisArray == null)
-            {
-                return (T[])thatArray.Clone();
-            }
-
-            return thisArray.Union(thatArray).ToArray();
+            return thisParameter;
         }
 
-        private static bool TryNaiveUnion<K, V>(
-            IDictionary<K, V> thisDict,
-            IDictionary<K, V> thatDict, 
-            out IDictionary<K, V> result)
-            where K : ICloneable where V : ICloneable
+        public static object Union(ParameterSetData thisParameterSet, ParameterSetData thatParameterSet)
         {
-            if (thatDict == null)
+            thisParameterSet.Flags = ArrayUnion(thisParameterSet.Flags, thatParameterSet.Flags);
+
+            return thisParameterSet;
+        }
+
+        public static object Union(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
+        {
+            thisTypes.Assemblies = DictionaryUnion(thisTypes.Assemblies, thatTypes.Assemblies, Union);
+            thisTypes.TypeAccelerators = DictionaryUnion(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
+
+            return thisTypes;
+        }
+
+        public static object Union(AssemblyData thisAssembly, AssemblyData thatAssembly)
+        {
+            Union(thisAssembly.AssemblyName, thatAssembly.AssemblyName);
+
+            foreach (KeyValuePair<string, IDictionary<string, TypeData>> nspace in thatAssembly.Types)
             {
-                result = thisDict;
-                return true;
+                if (!thisAssembly.Types.ContainsKey(nspace.Key))
+                {
+                    thisAssembly.Types.Add(nspace);
+                    continue;
+                }
+
+                thisAssembly.Types[nspace.Key] = DictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
             }
 
-            if (thisDict == null)
+            return thisAssembly;
+        }
+
+        public static object Union(AssemblyNameData thisAsmName, AssemblyNameData thatAsmName)
+        {
+            if (thatAsmName.Version > thisAsmName.Version)
             {
-                result = thatDict.Clone();
-                return true;
+                thisAsmName.Version = thatAsmName.Version;
             }
 
-            result = null;
-            return false;
+            if (thisAsmName.PublicKeyToken == null && thatAsmName.PublicKeyToken != null)
+            {
+                thisAsmName.PublicKeyToken = thatAsmName.PublicKeyToken;
+            }
+
+            return thisAsmName;
+        }
+
+        public static object Union(TypeData thisType, TypeData thatType)
+        {
+            thisType.Instance = (MemberData)Union(thisType.Instance, thatType.Instance);
+            thisType.Static = (MemberData)Union(thisType.Instance, thatType.Instance);
+            return thisType;
+        }
+
+        public static object Union(MemberData thisMembers, MemberData thatMembers)
+        {
+            thisMembers.Indexers = ArrayUnion(thisMembers.Indexers, thatMembers.Indexers);
+
+            thisMembers.Events = DictionaryUnion(thisMembers.Events, thatMembers.Events, Union);
+            thisMembers.Fields = DictionaryUnion(thisMembers.Fields, thatMembers.Fields, Union);
+            thisMembers.Methods = DictionaryUnion(thisMembers.Methods, thatMembers.Methods, Union);
+            thisMembers.NestedTypes = DictionaryUnion(thisMembers.NestedTypes, thatMembers.NestedTypes, Union);
+            thisMembers.Properties = DictionaryUnion(thisMembers.Properties, thatMembers.Properties, Union);
+
+            // TODO Constructors union
         }
 
         private static bool TryIntersect<K, V>(IDictionary<K, V> thisDict, IDictionary<K, V> thatDict, IEqualityComparer<K> keyComparer = null)
@@ -384,6 +360,54 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
 
             return true;
+        }
+
+        private static T[] ArrayUnion<T>(T[] thisArray, T[] thatArray)
+        {
+            if (thatArray == null)
+            {
+                return thisArray;
+            }
+
+            if (thisArray == null)
+            {
+                return (T[])thatArray.Clone();
+            }
+
+            return thisArray.Union(thatArray).ToArray();
+        }
+
+        private static IDictionary<K, V> DictionaryUnion<K, V>(
+            IDictionary<K, V> thisDict,
+            IDictionary<K, V> thatDict, 
+            Func<V, V, object> valueUnionizer = null)
+            where K : ICloneable where V : ICloneable
+        {
+            if (thatDict == null)
+            {
+                return thisDict;
+            }
+
+            if (thisDict == null)
+            {
+                return thatDict.Clone();
+            }
+
+            foreach (KeyValuePair<K, V> item in thatDict)
+            {
+                if (!thisDict.ContainsKey(item.Key))
+                {
+                    thisDict.Add(item);
+                    continue;
+                }
+
+                if (valueUnionizer != null)
+                {
+                    thisDict[item.Key] = (V)valueUnionizer(thisDict[item.Key], item.Value);
+                }
+            }
+
+            return thisDict;
         }
 
         private static bool AreParametersMatching(IReadOnlyList<string> thisParams, IReadOnlyList<string> thatParams)
