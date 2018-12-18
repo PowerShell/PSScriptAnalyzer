@@ -491,6 +491,13 @@ function Get-AvailableTypes
     return $asms
 }
 
+<#
+.SYNOPSIS
+Get the type accelerators in the current PowerShell session.
+
+.DESCRIPTION
+Builds a dictionary of all the type accelerators defined in the current PowerShell session.
+#>
 function Get-TypeAccelerators
 {
     $typeAccelerators = [psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::Get.GetEnumerator()
@@ -505,6 +512,13 @@ function Get-TypeAccelerators
     return $taTable
 }
 
+<#
+.SYNOPSIS
+Get module data about core PowerShell cmdlets.
+
+.DESCRIPTION
+Get module data about the Microsoft.PowerShell.Core pseudomodule.
+#>
 function Get-CoreModuleData
 {
     $coreCommands = Get-Command -Module 'Microsoft.PowerShell.Core'
@@ -538,6 +552,7 @@ function Get-CoreModuleData
 
     return [Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]$coreModuleData
 }
+
 
 function Get-AvailableModules
 {

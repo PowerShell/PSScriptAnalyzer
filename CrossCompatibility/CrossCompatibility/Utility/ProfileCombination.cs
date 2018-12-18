@@ -96,7 +96,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 foreach (string[] thatParams in thatMembers.Constructors)
                 {
-                    if (AreParametersMatching(thisParams, thatParams))
+                    if (new ParameterListComparer().Equals(thisParams, thatParams))
                     {
                         thisConstructors.Add(thisParams);
                     }
@@ -110,7 +110,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 foreach (IndexerData thatIndexer in thatMembers.Indexers)
                 {
-                    if (AreParametersMatching(thisIndexer.Parameters, thatIndexer.Parameters))
+                    if (new ParameterListComparer().Equals(thisIndexer.Parameters, thatIndexer.Parameters))
                     {
                         Intersect(thisIndexer, thatIndexer);
                         thisIndexers.Add(thisIndexer);
@@ -314,15 +314,39 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Union(MemberData thisMembers, MemberData thatMembers)
         {
+            if (thatMembers == null)
+            {
+                return thisMembers;
+            }
+
+            if (thisMembers == null)
+            {
+                return thatMembers.Clone();
+            }
+
             thisMembers.Indexers = ArrayUnion(thisMembers.Indexers, thatMembers.Indexers);
 
-            thisMembers.Events = DictionaryUnion(thisMembers.Events, thatMembers.Events, Union);
-            thisMembers.Fields = DictionaryUnion(thisMembers.Fields, thatMembers.Fields, Union);
+            thisMembers.Constructors = ParameterUnion(thisMembers.Constructors, thatMembers.Constructors);
+
+            thisMembers.Events = DictionaryUnion(thisMembers.Events, thatMembers.Events);
+            thisMembers.Fields = DictionaryUnion(thisMembers.Fields, thatMembers.Fields);
             thisMembers.Methods = DictionaryUnion(thisMembers.Methods, thatMembers.Methods, Union);
             thisMembers.NestedTypes = DictionaryUnion(thisMembers.NestedTypes, thatMembers.NestedTypes, Union);
             thisMembers.Properties = DictionaryUnion(thisMembers.Properties, thatMembers.Properties, Union);
 
-            // TODO Constructors union
+            return thisMembers;
+        }
+
+        public static object Union(PropertyData thisProperty, PropertyData thatProperty)
+        {
+            thisProperty.Accessors = ArrayUnion(thisProperty.Accessors, thatProperty.Accessors);
+            return thisProperty;
+        }
+
+        public static object Union(MethodData thisMethod, MethodData thatMethod)
+        {
+            thisMethod.OverloadParameters = ParameterUnion(thisMethod.OverloadParameters, thatMethod.OverloadParameters);
+            return thisMethod;
         }
 
         private static bool TryIntersect<K, V>(IDictionary<K, V> thisDict, IDictionary<K, V> thatDict, IEqualityComparer<K> keyComparer = null)
@@ -377,6 +401,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisArray.Union(thatArray).ToArray();
         }
 
+        private static string[][] ParameterUnion(string[][] thisParameters, string[][] thatParameters)
+        {
+            var parameters = new HashSet<string[]>(thisParameters, new ParameterListComparer());
+
+            foreach (string[] thatParameter in thatParameters)
+            {
+                parameters.Add(thatParameter);
+            }
+
+            return parameters.ToArray();
+        }
+
         private static IDictionary<K, V> DictionaryUnion<K, V>(
             IDictionary<K, V> thisDict,
             IDictionary<K, V> thatDict, 
@@ -410,24 +446,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisDict;
         }
 
-        private static bool AreParametersMatching(IReadOnlyList<string> thisParams, IReadOnlyList<string> thatParams)
-        {
-            if (thisParams.Count != thatParams.Count)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < thisParams.Count; i++)
-            {
-                if (thisParams[i] != thatParams[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         private static IDictionary<K, V> Clone<K, V>(this IDictionary<K, V> dict, IEqualityComparer<K> keyComparer = null)
             where K : ICloneable where V : ICloneable
         {
@@ -441,6 +459,50 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
 
             return newDict;
+        }
+
+        private struct ParameterListComparer : IEqualityComparer<string[]>
+        {
+            public bool Equals(string[] x, string[] y)
+            {
+                if (x == y)
+                {
+                    return true;
+                }
+
+                if (x == null || y == null)
+                {
+                    return false;
+                }
+
+                if (x.Length != y.Length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < x.Length; i++)
+                {
+                    if (x[i] != y[i])
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public int GetHashCode(string[] obj)
+            {
+                unsafe
+                {
+                    int hc = 1;
+                    foreach (string s in obj)
+                    {
+                        hc = 31 * hc + s.GetHashCode();
+                    }
+                    return hc;
+                }
+            }
         }
     }
 }
