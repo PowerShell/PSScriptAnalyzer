@@ -5,18 +5,18 @@ Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $ruleName = "PSUseConsistentWhitespace"
 $ruleConfiguration = @{
-    Enable = $true
+    Enable          = $true
     CheckInnerBrace = $false
-    CheckOpenBrace = $false
-    CheckOpenParen = $false
-    CheckOperator = $false
-    CheckPipe = $false
-    CheckSeparator = $false
+    CheckOpenBrace  = $false
+    CheckOpenParen  = $false
+    CheckOperator   = $false
+    CheckPipe       = $false
+    CheckSeparator  = $false
 }
 
 $settings = @{
     IncludeRules = @($ruleName)
-    Rules = @{
+    Rules        = @{
         PSUseConsistentWhitespace = $ruleConfiguration
     }
 }
@@ -33,31 +33,23 @@ Describe "UseWhitespace" {
         }
 
         It "Should find a violation if an open brace does not follow whitespace" {
-            $def = @'
-if ($true){}
-'@
+            $def = 'if ($true){}'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should not find violation if an open brace follows a whitespace" {
-            $def = @'
-if($true) {}
-'@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            $def = 'if($true) {}'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if an open brace follows a foreach member invocation" {
-            $def = @'
-(1..5).foreach{$_}
-'@
+            $def = '(1..5).foreach{$_}'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if an open brace follows a where member invocation" {
-            $def = @'
-(1..5).where{$_}
-'@
+            $def = '(1..5).where{$_}'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
@@ -74,9 +66,7 @@ if($true) {}
         }
 
         It "Should find violation in an if statement" {
-            $def = @'
-if($true) {}
-'@
+            $def = 'if($true) {}'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
@@ -87,7 +77,7 @@ function foo($param1) {
 
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation in a param block" {
@@ -96,7 +86,7 @@ function foo() {
     param( )
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation in a nested open paren" {
@@ -105,14 +95,12 @@ function foo($param) {
     ((Get-Process))
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation on a method call" {
-            $def = @'
-$x.foo("bar")
-'@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            $def = '$x.foo("bar")'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
     }
 
@@ -127,33 +115,25 @@ $x.foo("bar")
         }
 
         It "Should find a violation if no whitespace around an assignment operator" {
-            $def = @'
-$x=1
-'@
+            $def = '$x=1'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '=' ' = '
         }
 
         It "Should find a violation if no whitespace before an assignment operator" {
-            $def = @'
-$x= 1
-'@
+            $def = '$x= 1'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should find a violation if no whitespace after an assignment operator" {
-            $def = @'
-$x =1
-'@
+            $def = '$x =1'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should find a violation if there is a whitespaces not of size 1 around an assignment operator" {
-            $def = @'
-$x  =  1
-'@
+            $def = '$x  =  1'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '  =  ' ' = '
         }
@@ -164,20 +144,16 @@ $x = @"
 "abc"
 "@
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if there are whitespaces of size 1 around an assignment operator for here string" {
-            $def = @'
-$x = 1
-'@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            $def = '$x = 1'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find violation if there are no whitespaces around DotDot operator" {
-            $def = @'
-1..5
-'@
+            $def = '1..5'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
@@ -202,18 +178,14 @@ $x = $true -and
         }
 
         It "Should find a violation" {
-            $def = @'
-$x = @(1,2)
-'@
+            $def = '$x = @(1,2)'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should not find a violation if a space follows a comma" {
-            $def = @'
-$x = @(1, 2)
-'@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            $def = '$x = @(1, 2)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
     }
 
@@ -228,18 +200,14 @@ $x = @(1, 2)
         }
 
         It "Should find a violation" {
-            $def = @'
-$x = @{a=1;b=2}
-'@
+            $def = '$x = @{a=1;b=2}'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
         It "Should not find a violation if a space follows a semi-colon" {
-            $def = @'
-$x = @{a=1; b=2}
-'@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            $def = '$x = @{a=1; b=2}'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a new-line follows a semi-colon" {
@@ -249,14 +217,14 @@ $x = @{
     b=2
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a end of input follows a semi-colon" {
             $def = @'
 $x = "abc";
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
     }
 
@@ -297,7 +265,7 @@ $x = "abc";
 
         It "Should not find a violation if there is 1 space before and after a pipe" {
             $def = 'Get-Item | foo'
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a backtick is before the pipe" {
@@ -305,7 +273,7 @@ $x = "abc";
 Get-Item `
 | foo
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a new-line is after the pipe" {
@@ -313,7 +281,7 @@ Get-Item `
 Get-Item |
     foo
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a backtick is after the pipe" {
@@ -321,7 +289,7 @@ Get-Item |
 Get-Item |`
 foo
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
     }
 
@@ -359,19 +327,21 @@ foo
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
+        
+        It "Should find a violation if there is more than 1 space inside empty curly braces" {
+            $def = 'if($true) {  }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+        }
 
         It "Should not find a violation if there is 1 space after the opening brace and 1 before the closing brace" {
-            $def = @'
-if($true) { Get-Item }
-'@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            $def = 'if($true) { Get-Item }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if there is 1 space inside empty curly braces" {
-            $def = @'
-if($true) { }
-'@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            $def = 'if($true) { }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a new-line is after the opening brace" {
@@ -379,7 +349,7 @@ if($true) { }
 if ($true) {
     Get-Item }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a backtick is after the opening brace" {
@@ -387,7 +357,7 @@ if ($true) {
 if ($true) {`
     Get-Item }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a new-line is before the closing brace" {
@@ -395,7 +365,7 @@ if ($true) {`
 if ($true) { Get-Item
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
         It "Should not find a violation if a backtick is before the closing brace" {
@@ -403,7 +373,7 @@ if ($true) { Get-Item
 if ($true) { Get-Item `
 }
 '@
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
     }
 
