@@ -115,19 +115,14 @@ function Start-ScriptAnalyzerBuild
 {
     [CmdletBinding(DefaultParameterSetName="BuildOne")]
     param (
-        [Parameter(ParameterSetName="BuildAll")]
         [switch]$All,
 
-        [Parameter(ParameterSetName="BuildOne")]
         [ValidateRange(3, 6)]
         [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
-        [Parameter(ParameterSetName="BuildOne")]
-        [Parameter(ParameterSetName="BuildAll")]
         [ValidateSet("Debug", "Release")]
         [string]$Configuration = "Debug",
 
-        [Parameter(ParameterSetName="BuildDoc")]
         [switch]$Documentation
         )
 
@@ -138,14 +133,14 @@ function Start-ScriptAnalyzerBuild
             foreach($psVersion in 3..6) {
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
             }
-            Start-ScriptAnalyzerBuild -Documentation
             return
         }
 
-        if ( $Documentation )
+        $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out\PSScriptAnalyzer\en-us\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
+        # Build docs either when -Documentation switch is being specified or the first time in a clean repo
+        if ( $Documentation -or -not $documentationFileExists )
         {
             Start-DocumentationBuild
-            return
         }
 
         $framework = 'net451'

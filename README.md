@@ -143,7 +143,7 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
     ```powershell
     .\build.ps1 -PSVersion 6
     ```
-* Build documentation (required for using the module)
+* Rebuild documentation since it gets built automatically only the first time
     ```powershell
     .\build.ps1 -Documentation
     ```
@@ -166,7 +166,6 @@ For adding/removing resource strings in the `*.resx` files, it is recommended to
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
 * Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) or higher is installed
-* Ensure that the documentation has been built (`./build.ps1 -Documentation`) 
 * In the root folder of your local repository, run:
 ``` PowerShell
 ./build -Test

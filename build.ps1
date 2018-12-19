@@ -15,7 +15,9 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
-    [Parameter(ParameterSetName="BuildDoc")]
+    # For building documentation only
+    # or re-building it since docs gets built automatically only the first time
+    [Parameter(ParameterSetName="BuildDocumentation")]
     [switch]$Documentation,
 
     [Parameter(ParameterSetName='BuildAll')]
@@ -46,7 +48,7 @@ END {
         "BuildAll" {
             Start-ScriptAnalyzerBuild -All -Configuration $Configuration
         }
-        "BuildDoc" {
+        "BuildDocumentation" {
             Start-ScriptAnalyzerBuild -Documentation
         }
         "BuildOne" {

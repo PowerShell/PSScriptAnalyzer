@@ -24,7 +24,6 @@ build_script:
   - ps:   |
       if ( $env:PowerShellEdition -eq 'WindowsPowerShell' ) {
           Set-Location $env:APPVEYOR_BUILD_FOLDER
-          ./build.ps1 -Documentation
           if ( $env:PSVersion -eq "4" ) { # On WMF4: Also build for v3 to check it builds at least since we do not have a WMF3 image
              ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 3
           }
@@ -33,7 +32,6 @@ build_script:
   - pwsh: |
       if ($env:PowerShellEdition -eq 'PowerShellCore') {
           Set-Location $env:APPVEYOR_BUILD_FOLDER
-          ./build.ps1 -Documentation
           ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 6
       }
 
