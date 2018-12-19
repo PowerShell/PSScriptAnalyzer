@@ -48,8 +48,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             var asms = new Dictionary<string, AssemblyData>();
             foreach (Assembly asm in assemblies)
             {
-                KeyValuePair<string, AssemblyData> asmData = AssembleAssembly(asm);
-                asms.Add(asmData.Key, asmData.Value);
+                try
+                {
+                    KeyValuePair<string, AssemblyData> asmData = AssembleAssembly(asm);
+                    asms.Add(asmData.Key, asmData.Value);
+                }
+                catch (ReflectionTypeLoadException e)
+                {
+                    Console.Error.WriteLine($"Failed to load types from module {asm.GetName().FullName}");
+                }
             }
 
             return new AvailableTypeData()

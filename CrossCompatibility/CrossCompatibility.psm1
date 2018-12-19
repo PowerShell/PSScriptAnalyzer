@@ -83,6 +83,65 @@ function Test-IsCommonParameter
 
 <#
 .SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER InputFile
+Parameter description
+
+.PARAMETER ProfileObject
+Parameter description
+
+.PARAMETER Union
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
+function Join-CompatibilityProfile
+{
+    [CmdletBinding(DefaultParameterSetName='File')]
+    param(
+        [Parameter(ParameterSetName='File', Position=0, ValueFromPipeline=$true)]
+        [string[]]
+        $InputFile,
+
+        [Parameter(ParameterSetName='Object', Position=0, ValueFromPipeline=$true)]
+        [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData[]]
+        $ProfileObject,
+
+        [switch]
+        $Union
+    )
+
+    if ($PSCmdlet.ParameterSetName -eq 'File')
+    {
+        $profiles = New-Object 'System.Collections.Generic.List[Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]]'
+        foreach ($path in $InputFile)
+        {
+            $resolvedPath = Resolve-Path $path
+            $loadedProfile = ConvertFrom-CompatibilityJson -Path $resolvedPath
+            $profiles.Add($loadedProfile)
+        }
+
+        $ProfileObject = $profiles
+    }
+
+    if ($Union)
+    {
+        return [Microsoft.PowerShell.CrossCompatibility.Utility.ProfileCombination]::UnionMany($ProfileObject)
+    }
+
+    return [Microsoft.PowerShell.CrossCompatibility.Utility.ProfileCombination]::IntersectMany($ProfileObject)
+}
+
+<#
+.SYNOPSIS
 Generate a new compatibility JSON file of the current PowerShell session
 at the specified location.
 
@@ -135,7 +194,7 @@ function New-PowerShellCompatibilityProfile
             $null = New-Item -ItemType Directory $script:CompatibilityProfileDir
         }
 
-        $platformName = Get-PlatformName $reportData.Platform
+        $platformName = Get-PlatformName $reportData.Platforms
         $OutFile = Join-Path $script:CompatibilityProfileDir "$platformName.json"
     }
 
@@ -151,11 +210,14 @@ function Get-PlatformName
 {
     param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
-        [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData]
+        [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData[]]
         $PlatformData
     )
 
-    [Microsoft.PowerShell.CrossCompatibility.Utility.PlatformNaming]::GetPlatformName($PlatformData)
+    foreach ($platform in $PlatformData)
+    {
+        [Microsoft.PowerShell.CrossCompatibility.Utility.PlatformNaming]::GetPlatformName($platform)
+    }
 }
 
 <#
