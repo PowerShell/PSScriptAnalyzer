@@ -93,7 +93,8 @@ function Start-DocumentationBuild
     $docsPath = Join-Path $projectRoot docs
     $markdownDocsPath = Join-Path $docsPath markdown
     $outputDocsPath = Join-Path $destinationDir en-US
-    if ( $null -eq (Get-Module -ListAvailable platyPS) -or ((Get-Module -ListAvailable platyPS | Select-Object -First 1).Version -lt [version]0.12))
+    $platyPS = Get-Module -ListAvailable platyPS
+    if ($null -eq $platyPS -or ($platyPS | Sort-Object Version -Descending | Select-Object -First 1).Version -lt [version]0.12)
     {
         Write-Verbose -verbose "platyPS module not found or below required version of 0.12, installing the latest version."
         Install-Module -Force -Name platyPS -Scope CurrentUser
@@ -166,27 +167,38 @@ function Start-ScriptAnalyzerBuild
         $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
 
         $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
-        # this is normalizing case as well as selecting the proper location
-        if ($PSVersion -eq '3') {
-            $destinationDirBinaries = "$destinationDir\PSv3"
-        }
-        elseif ($PSVersion -eq '4') {
-            $destinationDirBinaries = "$destinationDir\PSv4"
-        }
-        elseif ($PSVersion -eq '5') {
-            $destinationDirBinaries = $destinationDir
-        }
-        else {
-            $destinationDirBinaries = "$destinationDir\coreclr"
+        switch ($PSVersion)
+        {
+            3
+            {
+                $destinationDirBinaries = "$destinationDir\PSv3"
+            }
+            4
+            {
+                $destinationDirBinaries = "$destinationDir\PSv4"
+            }
+            5
+            {
+                $destinationDirBinaries = "$destinationDir"
+            }
+            6
+            {
+                $destinationDirBinaries = "$destinationDir\coreclr"
+            }
+            default
+            {
+                throw "Unsupported PSVersion: '$PSVersion'"
+            }
         }
 
-        # build the analyzer
-        # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
         $config = "PSV${PSVersion}${Configuration}"
+
+        # Build ScriptAnalyzer
+        # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
         try {
             Push-Location $projectRoot/Rules
-            Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$config'"
-            $buildOutput = dotnet build --framework $framework --configuration "${config}"
+            Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            $buildOutput = dotnet build --framework $framework --configuration "$config"
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
