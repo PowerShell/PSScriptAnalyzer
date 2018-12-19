@@ -342,8 +342,20 @@ foo
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
+        It "Should find a violation if there is no space after opening brace when there are 2 braces" {
+            $def = 'if ($true) {{ Get-Item } }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
         It "Should find a violation if there is no space before closing brace" {
             $def = 'if ($true) { Get-Item}'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should find a violation if there is no space before closing brace when there are 2 braces" {
+            $def = 'if ($true) { { Get-Item }}'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }

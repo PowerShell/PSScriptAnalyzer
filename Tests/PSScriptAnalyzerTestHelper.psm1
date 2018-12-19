@@ -39,7 +39,8 @@ Function Test-CorrectionExtentFromContent {
     param(
         [string] $rawContent,
         [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord] $diagnosticRecord,
-		[int] $correctionsCount,
+        [ValidateRange(0, 1)]
+        [int] $correctionsCount,
         [string] $violationText,
         [string] $correctionText
     )
