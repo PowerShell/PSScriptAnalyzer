@@ -283,6 +283,18 @@ $x = "abc";
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
+        It "Should find a violation if there is one space too much before pipe" {
+            $def = 'Get-Item  | foo'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+        }
+
+        It "Should find a violation if there is one space too much after pipe" {
+            $def = 'Get-Item |  foo'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+        }
+
         It "Should not find a violation if there is 1 space before and after a pipe" {
             $def = 'Get-Item | foo'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null

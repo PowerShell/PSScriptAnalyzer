@@ -244,7 +244,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || lCurly.Next.Value.Kind == TokenKind.LCurly
                     || lCurly.Next.Value.Kind == TokenKind.NewLine
                     || lCurly.Next.Value.Kind == TokenKind.LineContinuation
-                    || ((lCurly.Next.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                    )
                 {
                     continue;
                 }
@@ -269,7 +269,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || rCurly.Previous.Value.Kind == TokenKind.LCurly
                     || rCurly.Previous.Value.Kind == TokenKind.NewLine
                     || rCurly.Previous.Value.Kind == TokenKind.LineContinuation
-                    || ((rCurly.Previous.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                    )
                 {
                     continue;
                 }
@@ -297,7 +297,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || pipe.Next.Value.Kind == TokenKind.Pipe
                     || pipe.Next.Value.Kind == TokenKind.NewLine
                     || pipe.Next.Value.Kind == TokenKind.LineContinuation
-                    || ((pipe.Next.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                    )
                 {
                     continue;
                 }
@@ -322,7 +322,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || pipe.Previous.Value.Kind == TokenKind.Pipe
                     || pipe.Previous.Value.Kind == TokenKind.NewLine
                     || pipe.Previous.Value.Kind == TokenKind.LineContinuation
-                    || ((pipe.Previous.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
+                    )
                 {
                     continue;
                 }
