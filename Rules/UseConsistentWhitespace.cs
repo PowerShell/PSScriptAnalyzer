@@ -241,7 +241,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (lCurly.Next == null
                     || !IsPreviousTokenOnSameLine(lCurly)
-                    || lCurly.Next.Value.Kind == TokenKind.LCurly
                     || lCurly.Next.Value.Kind == TokenKind.NewLine
                     || lCurly.Next.Value.Kind == TokenKind.LineContinuation
                     )
