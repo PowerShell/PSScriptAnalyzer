@@ -14,7 +14,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check if consecutive assignment statements are aligned.
+    /// AlignAssignmentStatement: Checks if consecutive assignment statements are aligned.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
