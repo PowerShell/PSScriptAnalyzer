@@ -27,14 +27,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// on a particular PowerShell platform.
         /// </summary>
         [DataMember]
-        public IDictionary<string, ModuleData> Modules { get; set; }
+        public IDictionary<string, IDictionary<Version, ModuleData>> Modules { get; set; }
 
         public object Clone()
         {
             return new RuntimeData()
             {
                 Types = (AvailableTypeData)Types.Clone(),
-                Modules = Modules.ToDictionary(m => m.Key, m => (ModuleData)m.Value.Clone())
+                Modules = Modules.ToDictionary(m => m.Key, m => (IDictionary<Version, ModuleData>)m.Value.ToDictionary(mv => mv.Key, mv => (ModuleData)mv.Value.Clone()))
             };
         }
     }

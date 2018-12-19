@@ -9,11 +9,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     {
         private readonly Modules.ModuleData _moduleData;
 
-        public ModuleData(string name, Modules.ModuleData moduleData)
+        public ModuleData(string name, Version version, Modules.ModuleData moduleData)
         {
             _moduleData = moduleData;
 
             Name = name;
+            Version = version;
             Functions = moduleData.Functions.ToDictionary(f => f.Key, f => new FunctionData(f.Value, f.Key));
             Cmdlets = moduleData.Cmdlets.ToDictionary(c => c.Key, c => new CmdletData(c.Key, c.Value));
             Aliases = moduleData.Aliases.ToDictionary(a => a.Key, a => a.Value);
@@ -21,7 +22,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         public string Name { get; }
 
-        public Version Version => _moduleData.Version;
+        public Version Version { get; }
 
         public Guid Guid => _moduleData.Guid;
 

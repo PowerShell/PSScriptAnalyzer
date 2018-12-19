@@ -12,15 +12,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         public RuntimeData(RuntimeDataMut runtimeData)
         {
-            Modules = runtimeData.Modules.ToDictionary(m => m.Key, m => new ModuleData(m.Key, m.Value), StringComparer.OrdinalIgnoreCase);
+            Modules = runtimeData.Modules.ToDictionary(m => m.Key, m => (IReadOnlyDictionary<Version, ModuleData>)m.Value.ToDictionary(mv => mv.Key, mv => new ModuleData(m.Key, mv.Key, mv.Value)), StringComparer.OrdinalIgnoreCase);
             Types = new AvailableTypeData(runtimeData.Types);
 
-            _commands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateCommandLookupTable(Modules.Values));
+            _commands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateCommandLookupTable(Modules.Values.SelectMany(mv => mv.Values)));
         }
 
         public AvailableTypeData Types { get; }
 
-        public IReadOnlyDictionary<string, ModuleData> Modules { get; }
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> Modules { get; }
 
         public IReadOnlyDictionary<string, IReadOnlyList<CommandData>> Commands => _commands.Value;
 

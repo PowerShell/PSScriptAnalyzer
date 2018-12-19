@@ -14,12 +14,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     public class ModuleData : ICloneable
     {
 	/// <summary>
-	/// The version of the module, if specified.
-	/// </summary>
-        [DataMember]
-        public Version Version { get; set; }
-
-	/// <summary>
 	/// The GUID of the module.
 	/// </summary>
         [DataMember]
@@ -55,7 +49,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
             return new ModuleData()
             {
                 Guid = Guid,
-                Version = Version,
                 Variables = (string[])Variables.Clone(),
                 Aliases = Aliases.ToDictionary(a => a.Key, a => a.Value),
                 Cmdlets = Cmdlets.ToDictionary(c => c.Key, c => (CmdletData)c.Value.Clone()),

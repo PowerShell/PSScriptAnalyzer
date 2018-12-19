@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
         {
-            Intersect(thisProfile.Compatibility, thatProfile.Compatibility);
+            thisProfile.Compatibility = (RuntimeData)Intersect(thisProfile.Compatibility, thatProfile.Compatibility);
 
             // Intersection of platforms is just adding them to the array
             var platforms = new PlatformData[thisProfile.Platforms.Length + thatProfile.Platforms.Length];
@@ -35,15 +35,22 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(RuntimeData thisRuntime, RuntimeData thatRuntime)
         {
-            Intersect(thisRuntime.Types, thatRuntime.Types);
+            thisRuntime.Types = (AvailableTypeData)Intersect(thisRuntime.Types, thatRuntime.Types);
 
             // Intersect modules first at the whole module level
-            Intersect(thisRuntime.Modules, thatRuntime.Modules, StringComparer.OrdinalIgnoreCase);
+            thisRuntime.Modules = (IDictionary<string, IDictionary<Version, ModuleData>>)Intersect(thisRuntime.Modules, thatRuntime.Modules, keyComparer: StringComparer.OrdinalIgnoreCase);
 
-            // Then strip out parts that are not common
-            foreach (KeyValuePair<string, ModuleData> module in thisRuntime.Modules)
+            // Then intersect versions
+            foreach (KeyValuePair<string, IDictionary<Version, ModuleData>> moduleVersions in thatRuntime.Modules)
             {
-                Intersect(module.Value, thatRuntime.Modules[module.Key]);
+                string name = moduleVersions.Key;
+
+                if (!thisRuntime.Modules.ContainsKey(name))
+                {
+                    continue;
+                }
+
+                thisRuntime.Modules[name] = (IDictionary<Version, ModuleData>)Intersect(thisRuntime.Modules[name], thatRuntime.Modules[name], Intersect);
             }
 
             return thisRuntime;
@@ -51,31 +58,26 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
         {
-            Intersect(thisTypes.Assemblies, thatTypes.Assemblies);
+            thisTypes.Assemblies = (IDictionary<string, AssemblyData>)Intersect(thisTypes.Assemblies, thatTypes.Assemblies, Intersect);
 
-            foreach (KeyValuePair<string, AssemblyData> assembly in thisTypes.Assemblies)
-            {
-                Intersect(assembly.Value, thatTypes.Assemblies[assembly.Key]);
-            }
-
-            Intersect(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
+            thisTypes.TypeAccelerators = (IDictionary<string, TypeAcceleratorData>)Intersect(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
             
             return thisTypes;
         }
 
         public static object Intersect(AssemblyData thisAsm, AssemblyData thatAsm)
         {
-            Intersect(thisAsm.AssemblyName, thatAsm.AssemblyName);
+            thisAsm.AssemblyName = (AssemblyNameData)Intersect(thisAsm.AssemblyName, thatAsm.AssemblyName);
 
-            thisAsm.Types.Intersect(thatAsm.Types);
-            foreach (KeyValuePair<string, IDictionary<string, TypeData>> typeNamespace in thisAsm.Types)
+            thisAsm.Types = (IDictionary<string, IDictionary<string, TypeData>>)Intersect(thisAsm.Types, thatAsm.Types);
+            foreach (KeyValuePair<string, IDictionary<string, TypeData>> typeNamespace in thatAsm.Types)
             {
-                typeNamespace.Value.Intersect(thatAsm.Types[typeNamespace.Key]);
-
-                foreach (KeyValuePair<string, TypeData> type in typeNamespace.Value)
+                if (!thisAsm.Types.ContainsKey(typeNamespace.Key))
                 {
-                    Intersect(type.Value, thatAsm.Types[typeNamespace.Key][type.Key]);
+                    continue;
                 }
+
+                thisAsm.Types[typeNamespace.Key] = (IDictionary<string, TypeData>)Intersect(thisAsm.Types[typeNamespace.Key], typeNamespace.Value);
             }
 
             return thisAsm;
@@ -94,8 +96,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(TypeData thisType, TypeData thatType)
         {
-            Intersect(thisType.Instance, thatType.Instance);
-            Intersect(thisType.Static, thatType.Static);
+            thisType.Instance = (MemberData)Intersect(thisType.Instance, thatType.Instance);
+            thisType.Static = (MemberData)Intersect(thisType.Static, thatType.Static);
 
             return thisType;
         }
@@ -104,6 +106,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             thisMembers.Events = (IDictionary<string, EventData>)Intersect(thisMembers.Events, thatMembers.Events);
             thisMembers.Fields = (IDictionary<string, FieldData>)Intersect(thisMembers.Fields, thatMembers.Fields);
+            thisMembers.Properties = (IDictionary<string, PropertyData>)Intersect(thisMembers.Properties, thatMembers.Properties, Intersect);
+            thisMembers.NestedTypes = (IDictionary<string, TypeData>)Intersect(thisMembers.NestedTypes, thatMembers.NestedTypes, Intersect);
+            thisMembers.Methods = (IDictionary<string, MethodData>)Intersect(thisMembers.Methods, thatMembers.Methods);
 
             // Recollect only constructors that occur in both left and right sets
             var thisConstructors = new List<string[]>();
@@ -127,27 +132,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 {
                     if (new ParameterListComparer().Equals(thisIndexer.Parameters, thatIndexer.Parameters))
                     {
-                        Intersect(thisIndexer, thatIndexer);
-                        thisIndexers.Add(thisIndexer);
+                        IndexerData indexer = (IndexerData)Intersect(thisIndexer, thatIndexer);
+                        thisIndexers.Add(indexer);
                     }
                 }
             }
             thisMembers.Indexers = thisIndexers.ToArray();
-
-            if (thisMembers.Properties != null)
-            {
-                thisMembers.Properties?.Intersect(thatMembers.Properties);
-                foreach (KeyValuePair<string, PropertyData> property in thisMembers.Properties)
-                {
-                    Intersect(property.Value, thatMembers.Properties[property.Key]);
-                }
-            }
-
-            thisMembers.NestedTypes?.Intersect(thatMembers.NestedTypes);
-            foreach (KeyValuePair<string, TypeData> type in thisMembers.NestedTypes)
-            {
-                Intersect(type.Value, thatMembers.NestedTypes[type.Key]);
-            }
 
             return thisMembers;
         }
@@ -166,36 +156,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(ModuleData thisModule, ModuleData thatModule)
         {
-            // Take the lower version of the module -- this is a hacky assumption, but better than the alternative
-            thisModule.Version = thisModule.Version <= thatModule.Version ? thisModule.Version : thatModule.Version;
-
-            thisModule.Aliases?.Intersect(thatModule.Aliases);
-
-            thisModule.Variables?.Intersect(thatModule.Variables ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase).ToArray();
-
-            if (thisModule.Cmdlets != null)
-            {
-                thisModule.Cmdlets.Intersect(thatModule.Cmdlets);
-
-                foreach (KeyValuePair<string, CmdletData> thisCmdlet in thisModule.Cmdlets)
-                {
-                    Intersect(thisCmdlet.Value, thatModule.Cmdlets[thisCmdlet.Key]);
-                }
-            }
-
-            if (thisModule.Functions != null)
-            {
-                thisModule.Functions.Intersect(thatModule.Functions);
-
-                foreach (KeyValuePair<string, FunctionData> thisFunction in thisModule.Functions)
-                {
-                    if (thisModule.Functions[thisFunction.Key].CmdletBinding)
-                    {
-                        thisFunction.Value.CmdletBinding = true;
-                    }
-                    Intersect(thisFunction.Value, thatModule.Functions[thisFunction.Key]);
-                }
-            }
+            thisModule.Aliases = (IDictionary<string, string>)Intersect(thisModule.Aliases, thatModule.Aliases);
+            thisModule.Variables = thisModule.Variables?.Intersect(thatModule.Variables ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase).ToArray();
+            thisModule.Cmdlets = (IDictionary<string, CmdletData>)Intersect(thisModule.Cmdlets, thatModule.Cmdlets, Intersect);
+            thisModule.Functions = (IDictionary<string, FunctionData>)Intersect(thisModule.Functions, thatModule.Functions, Intersect);
 
             return thisModule;
         }
@@ -203,25 +167,17 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         public static object Intersect(CommandData thisCommand, CommandData thatCommand)
         {
             thisCommand.OutputType = thisCommand.OutputType?.Intersect(thatCommand.OutputType ?? Enumerable.Empty<string>()).ToArray();
-            thisCommand.ParameterAliases?.Intersect(thatCommand?.ParameterAliases);
             thisCommand.ParameterSets = thisCommand.ParameterSets?.Intersect(thatCommand.ParameterSets ?? Enumerable.Empty<string>()).ToArray();
 
-            if (thisCommand.Parameters != null)
-            {
-                thisCommand.Parameters?.Intersect(thatCommand.Parameters);
-
-                foreach (KeyValuePair<string, ParameterData> parameter in thisCommand.Parameters)
-                {
-                    Intersect(parameter.Value, thatCommand.Parameters[parameter.Key]);
-                }
-            }
+            thisCommand.ParameterAliases = (IDictionary<string, string>)Intersect(thisCommand.ParameterAliases, thatCommand.ParameterAliases);
+            thisCommand.Parameters = (IDictionary<string, ParameterData>)Intersect(thisCommand.Parameters, thatCommand.Parameters, Intersect);
 
             return thisCommand;
         }
 
         public static object Intersect(ParameterData thisParam, ParameterData thatParam)
         {
-            thisParam.ParameterSets?.Intersect(thatParam.ParameterSets);
+            thisParam.ParameterSets = (IDictionary<string, ParameterSetData>)Intersect(thisParam.ParameterSets, thatParam.ParameterSets);
             return thisParam;
         }
 
@@ -238,7 +194,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Union(RuntimeData thisRuntime, RuntimeData thatRuntime)
         {
-            thisRuntime.Modules = DictionaryUnion(thisRuntime.Modules, thatRuntime.Modules, Union);
+            foreach (KeyValuePair<string, IDictionary<Version, ModuleData>> moduleVersions in thatRuntime.Modules)
+            {
+                if (!thisRuntime.Modules.ContainsKey(moduleVersions.Key))
+                {
+                    thisRuntime.Modules.Add(moduleVersions);
+                    continue;
+                }
+
+                thisRuntime.Modules[moduleVersions.Key] = DictionaryUnion(thisRuntime.Modules[moduleVersions.Key], moduleVersions.Value);
+            }
 
             Union(thisRuntime.Types, thatRuntime.Types);
 
@@ -247,11 +212,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Union(ModuleData thisModule, ModuleData thatModule)
         {
-            if (thatModule.Version > thisModule.Version)
-            {
-                thisModule.Version = thatModule.Version;
-            }
-
             thisModule.Aliases = DictionaryUnion(thisModule.Aliases, thatModule.Aliases);
 
             thisModule.Variables = ArrayUnion(thisModule.Variables, thatModule.Variables);
@@ -373,7 +333,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisMethod;
         }
 
-        private static object Intersect<K, V>(IDictionary<K, V> thisDict, IDictionary<K, V> thatDict, IEqualityComparer<K> keyComparer = null)
+        private static object Intersect<K, V>(
+            IDictionary<K, V> thisDict,
+            IDictionary<K, V> thatDict,
+            Func<V, V, object> intersector = null,
+            IEqualityComparer<K> keyComparer = null)
         {
             if (thatDict == null)
             {
@@ -385,31 +349,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 return thatDict;
             }
 
-            // Remove all keys in right outer join from this
-            foreach (K thatKey in thatDict.Keys)
-            {
-                if (!thisDict.ContainsKey(thatKey))
-                {
-                    thisDict.Remove(thatKey);
-                }
-            }
-
-            // Remove all keys in left outer join from this, being careful not to enumerate while mutating
-
-            // Add keys to removal set
-            var keysToRemove = keyComparer == null ? new HashSet<K>() : new HashSet<K>(keyComparer);
-            foreach (K thisKey in thisDict.Keys)
+            // Remove all the keys from left that aren't in right (and rest easy that we never added keys from right into left)
+            foreach (K thisKey in thisDict.Keys.ToArray())
             {
                 if (!thatDict.ContainsKey(thisKey))
                 {
-                    keysToRemove.Add(thisKey);
+                    thisDict.Remove(thisKey);
                 }
-            }
 
-            // Remove keys
-            foreach (K keyToRemove in keysToRemove)
-            {
-                thisDict.Remove(keyToRemove);
+                if (intersector != null)
+                {
+                    thisDict[thisKey] = (V)intersector(thisDict[thisKey], thatDict[thisKey]);
+                }
             }
 
             return thisDict;

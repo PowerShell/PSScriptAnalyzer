@@ -640,12 +640,13 @@ function Get-AvailableModules
     {
         try
         {
-            $mi = Import-Module $m -PassThru
+            $mi = Import-Module $m -PassThru -ErrorAction Stop
             [void]$mods.Add($mi)
         }
         catch
         {
             # Ignore errors -- assume we just can't import the module
+            Write-Warning "Ignoring module '$m' after encountering problem. Error is:`n$_"
         }
         finally
         {
@@ -697,7 +698,7 @@ function New-ModuleData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, System.Collections.Generic.IDictionary[System.Version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]]'
     }
 
     process
@@ -724,7 +725,13 @@ function New-ModuleData
             $modData['Variables'] = $Module.ExportedVariables.Keys
         }
 
-        $dict[$Module.Name] = [Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]$modData
+        if (-not $dict.ContainsKey($Module.Name))
+        {
+            $versionDict = New-Object 'System.Collections.Generic.Dictionary[System.Version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]'
+            $dict[$Module.Name] = $versionDict
+        }
+
+        $dict[$Module.Name][$Module.Version] = [Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]$modData
     }
 
     end
@@ -1030,7 +1037,15 @@ function New-AvailableTypeData
         $TypeAccelerators = Get-TypeAccelerators
     }
 
-    return [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::AssembleAvailableTypes($Assemblies, $TypeAccelerators)
+    $errors = $null
+    $result = [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::AssembleAvailableTypes($Assemblies, $TypeAccelerators, [ref]$errors)
+
+    if ($errors)
+    {
+        $errors | Write-Warning
+    }
+
+    return $result
 }
 
 function Get-FullTypeName

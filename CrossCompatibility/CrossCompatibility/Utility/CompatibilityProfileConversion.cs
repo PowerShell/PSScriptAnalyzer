@@ -12,6 +12,18 @@ using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
+    public class CompatibilityAnalysisException : Exception
+    {
+        public CompatibilityAnalysisException(string message) : base(message)
+        {
+        }
+
+        public CompatibilityAnalysisException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+    }
+
     /// <summary>
     /// Assembles loaded type data from a list of assemblies.
     /// </summary>
@@ -31,8 +43,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// <returns>an object describing all the available types from the given assemblies.</returns>
         public static AvailableTypeData AssembleAvailableTypes(
             IEnumerable<Assembly> assemblies,
-            IDictionary<string, Type> typeAccelerators)
+            IDictionary<string, Type> typeAccelerators,
+            out IEnumerable<CompatibilityAnalysisException> errors)
         {
+            var errAcc = new List<CompatibilityAnalysisException>();
             var typeAcceleratorDict = new Dictionary<string, TypeAcceleratorData>(typeAccelerators.Count);
             foreach (KeyValuePair<string, Type> typeAccelerator in typeAccelerators)
             {
@@ -55,10 +69,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 }
                 catch (ReflectionTypeLoadException e)
                 {
-                    Console.Error.WriteLine($"Failed to load types from module {asm.GetName().FullName}");
+                    errAcc.Add(new CompatibilityAnalysisException($"Failed to assembly '{asm.GetName().FullName}'", e));
                 }
             }
 
+            errors = errAcc;
             return new AvailableTypeData()
             {
                 TypeAccelerators = typeAcceleratorDict,
