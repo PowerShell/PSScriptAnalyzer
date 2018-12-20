@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 {
@@ -18,7 +18,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         /// keyed by the parameter set names.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public IDictionary<string, ParameterSetData> ParameterSets { get; set; }
+        public JsonDictionary<string, ParameterSetData> ParameterSets { get; set; }
 
         /// <summary>
         /// The .NET type of the parameter.
@@ -38,7 +38,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
             {
                 Type = Type,
                 Dynamic = Dynamic,
-                ParameterSets = ParameterSets?.ToDictionary(p => p.Key, p => (ParameterSetData)p.Value.Clone())
+                ParameterSets = (JsonDictionary<string, ParameterSetData>)ParameterSets?.Clone()
             };
         }
     }

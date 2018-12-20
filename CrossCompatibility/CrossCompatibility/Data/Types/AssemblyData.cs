@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
 {
@@ -23,14 +23,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// and then type name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public IDictionary<string, IDictionary<string, TypeData>> Types { get; set; }
+        public JsonDictionary<string, JsonDictionary<string, TypeData>> Types { get; set; }
 
         public object Clone()
         {
             return new AssemblyData()
             {
                 AssemblyName = (AssemblyNameData)AssemblyName.Clone(),
-                Types = Types?.ToDictionary(ns => ns.Key, ns => (IDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key ?? throw new Exception ($"Null typename for {t}"), t => (TypeData)t.Value.Clone()))
+                Types = (JsonDictionary<string, JsonDictionary<string, TypeData>>)Types?.Clone()
             };
         }
     }

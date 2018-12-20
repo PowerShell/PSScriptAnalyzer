@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
 using System.Linq;
+using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
@@ -27,14 +27,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// on a particular PowerShell platform.
         /// </summary>
         [DataMember]
-        public IDictionary<string, IDictionary<Version, ModuleData>> Modules { get; set; }
+        public JsonDictionary<string, JsonDictionary<Version, ModuleData>> Modules { get; set; }
 
         public object Clone()
         {
             return new RuntimeData()
             {
                 Types = (AvailableTypeData)Types.Clone(),
-                Modules = Modules.ToDictionary(m => m.Key, m => (IDictionary<Version, ModuleData>)m.Value.ToDictionary(mv => mv.Key, mv => (ModuleData)mv.Value.Clone()))
+                Modules = (JsonDictionary<string, JsonDictionary<Version, ModuleData>>)Modules.Clone()
             };
         }
     }

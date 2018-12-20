@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 {
@@ -23,13 +23,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 	/// Cmdlets exported by the module, keyed by name.
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public IDictionary<string, CmdletData> Cmdlets { get; set; }
+        public JsonDictionary<string, CmdletData> Cmdlets { get; set; }
 
 	/// <summary>
 	/// Functions exported by the module, keyed by name.
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public IDictionary<string, FunctionData> Functions { get; set; }
+        public JsonDictionary<string, FunctionData> Functions { get; set; }
 
 	/// <summary>
 	/// Variables exported by the module.
@@ -42,7 +42,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 	/// name, with values being the resolved commands.
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public IDictionary<string, string> Aliases { get; set; }
+        public JsonDictionary<string, string> Aliases { get; set; }
 
         public object Clone()
         {
@@ -50,9 +50,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
             {
                 Guid = Guid,
                 Variables = (string[])Variables?.Clone(),
-                Aliases = Aliases?.ToDictionary(a => a.Key, a => a.Value),
-                Cmdlets = Cmdlets?.ToDictionary(c => c.Key, c => (CmdletData)c.Value.Clone()),
-                Functions = Functions?.ToDictionary(f => f.Key, f => (FunctionData)f.Value.Clone())
+                Aliases = (JsonDictionary<string, string>)Aliases?.Clone(),
+                Cmdlets = (JsonDictionary<string, CmdletData>)Cmdlets?.Clone(),
+                Functions = (JsonDictionary<string, FunctionData>)Functions?.Clone(),
             };
         }
     }

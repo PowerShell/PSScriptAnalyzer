@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
+using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 {
@@ -37,7 +37,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         /// The parameters of the command, if any, keyed by name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public IDictionary<string, ParameterData> Parameters { get; set; }
+        public JsonDictionary<string, ParameterData> Parameters { get; set; }
 
         /// <summary>
         /// Lookup table of parameter aliases to their corresponding
@@ -45,7 +45,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         /// parameter aliases, values are parameter names.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public IDictionary<string, string> ParameterAliases { get; set; }
+        public JsonDictionary<string, string> ParameterAliases { get; set; }
 
         public abstract object Clone();
     }

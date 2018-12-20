@@ -2,8 +2,8 @@ using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data
 using RuntimeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData;
 using PlatformDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData;
 using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

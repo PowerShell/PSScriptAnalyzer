@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
 {
@@ -18,21 +18,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// as keys and their corresponding full type name as values.
         /// </summary>
         [DataMember]
-        public IDictionary<string, TypeAcceleratorData> TypeAccelerators { get; set; }
+        public JsonDictionary<string, TypeAcceleratorData> TypeAccelerators { get; set; }
 
         /// <summary>
         /// Table of all assemblies available in the PowerShell runtime,
         /// keyed by simple assembly name.
         /// </summary>
         [DataMember]
-        public IDictionary<string, AssemblyData> Assemblies { get; set; }
+        public JsonDictionary<string, AssemblyData> Assemblies { get; set; }
 
         public object Clone()
         {
             return new AvailableTypeData()
             {
-                TypeAccelerators = TypeAccelerators.ToDictionary(ta => ta.Key, ta => (TypeAcceleratorData)ta.Value.Clone()),
-                Assemblies = Assemblies.ToDictionary(asm => asm.Key, asm => (AssemblyData)asm.Value.Clone())
+                TypeAccelerators = (JsonDictionary<string, TypeAcceleratorData>)TypeAccelerators.Clone(),
+                Assemblies = (JsonDictionary<string, AssemblyData>)Assemblies.Clone()
             };
         }
     }

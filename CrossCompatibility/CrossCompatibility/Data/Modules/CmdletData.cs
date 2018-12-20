@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 {
@@ -18,9 +18,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
             {
                 DefaultParameterSet = DefaultParameterSet,
                 OutputType = (string[])OutputType?.Clone(),
-                ParameterAliases = ParameterAliases?.ToDictionary(pa => pa.Key, pa => pa.Value),
+                ParameterAliases = (JsonDictionary<string, string>)ParameterAliases?.Clone(),
                 ParameterSets = (string[])ParameterSets?.Clone(),
-                Parameters = Parameters?.ToDictionary(p => p.Key, p => (ParameterData)p.Value.Clone())
+                Parameters = (JsonDictionary<string, ParameterData>)Parameters?.Clone()
             };
         }
     }
