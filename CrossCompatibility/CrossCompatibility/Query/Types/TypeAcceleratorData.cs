@@ -6,9 +6,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
     {
         private readonly TypeAcceleratorDataMut _typeAcceleratorData;
 
-        public TypeAcceleratorData(string name, TypeAcceleratorDataMut TypeAcceleratorData)
+        public TypeAcceleratorData(string name, TypeAcceleratorDataMut typeAcceleratorData)
         {
             Name = name;
+            _typeAcceleratorData = typeAcceleratorData;
         }
 
         public string Name { get; }

@@ -67,17 +67,33 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(AssemblyData thisAsm, AssemblyData thatAsm)
         {
+            if (thisAsm == thatAsm)
+            {
+
+            }
+
             thisAsm.AssemblyName = (AssemblyNameData)Intersect(thisAsm.AssemblyName, thatAsm.AssemblyName);
 
             thisAsm.Types = (IDictionary<string, IDictionary<string, TypeData>>)Intersect(thisAsm.Types, thatAsm.Types);
-            foreach (KeyValuePair<string, IDictionary<string, TypeData>> typeNamespace in thatAsm.Types)
+            
+            if (thisAsm.Types != null)
             {
-                if (!thisAsm.Types.ContainsKey(typeNamespace.Key))
+                if (thatAsm.Types == null)
                 {
-                    continue;
+                    thisAsm.Types = null;
                 }
+                else
+                {
+                    foreach (KeyValuePair<string, IDictionary<string, TypeData>> typeNamespace in thatAsm.Types)
+                    {
+                        if (!thisAsm.Types.ContainsKey(typeNamespace.Key))
+                        {
+                            continue;
+                        }
 
-                thisAsm.Types[typeNamespace.Key] = (IDictionary<string, TypeData>)Intersect(thisAsm.Types[typeNamespace.Key], typeNamespace.Value);
+                        thisAsm.Types[typeNamespace.Key] = (IDictionary<string, TypeData>)Intersect(thisAsm.Types[typeNamespace.Key], typeNamespace.Value);
+                    }
+                }
             }
 
             return thisAsm;
@@ -124,20 +140,30 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
             thisMembers.Constructors = thisConstructors.ToArray();
 
-            // Recollect indexers that occur in both left and right sets
-            var thisIndexers = new List<IndexerData>();
-            foreach (IndexerData thisIndexer in thisMembers.Indexers)
+            if (thisMembers.Indexers != null)
             {
-                foreach (IndexerData thatIndexer in thatMembers.Indexers)
+                if (thatMembers.Indexers == null)
                 {
-                    if (new ParameterListComparer().Equals(thisIndexer.Parameters, thatIndexer.Parameters))
+                    thisMembers.Indexers = null;
+                }
+                else
+                {
+                    // Recollect indexers that occur in both left and right sets
+                    var thisIndexers = new List<IndexerData>();
+                    foreach (IndexerData thisIndexer in thisMembers.Indexers)
                     {
-                        IndexerData indexer = (IndexerData)Intersect(thisIndexer, thatIndexer);
-                        thisIndexers.Add(indexer);
+                        foreach (IndexerData thatIndexer in thatMembers.Indexers)
+                        {
+                            if (new ParameterListComparer().Equals(thisIndexer.Parameters, thatIndexer.Parameters))
+                            {
+                                IndexerData indexer = (IndexerData)Intersect(thisIndexer, thatIndexer);
+                                thisIndexers.Add(indexer);
+                            }
+                        }
                     }
+                    thisMembers.Indexers = thisIndexers.ToArray();
                 }
             }
-            thisMembers.Indexers = thisIndexers.ToArray();
 
             return thisMembers;
         }
@@ -260,15 +286,23 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             Union(thisAssembly.AssemblyName, thatAssembly.AssemblyName);
 
-            foreach (KeyValuePair<string, IDictionary<string, TypeData>> nspace in thatAssembly.Types)
+            if (thatAssembly.Types != null)
             {
-                if (!thisAssembly.Types.ContainsKey(nspace.Key))
+                if (thisAssembly.Types == null)
                 {
-                    thisAssembly.Types.Add(nspace);
-                    continue;
+                    thisAssembly.Types = new Dictionary<string, IDictionary<string, TypeData>>();
                 }
 
-                thisAssembly.Types[nspace.Key] = DictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
+                foreach (KeyValuePair<string, IDictionary<string, TypeData>> nspace in thatAssembly.Types)
+                {
+                    if (!thisAssembly.Types.ContainsKey(nspace.Key))
+                    {
+                        thisAssembly.Types.Add(nspace);
+                        continue;
+                    }
+
+                    thisAssembly.Types[nspace.Key] = DictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
+                }
             }
 
             return thisAssembly;
@@ -338,6 +372,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             IDictionary<K, V> thatDict,
             Func<V, V, object> intersector = null,
             IEqualityComparer<K> keyComparer = null)
+            where K : ICloneable where V : ICloneable
         {
             if (thatDict == null)
             {
@@ -346,7 +381,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             if (thisDict == null)
             {
-                return thatDict;
+                return thatDict.Clone();
             }
 
             // Remove all the keys from left that aren't in right (and rest easy that we never added keys from right into left)
@@ -355,6 +390,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 if (!thatDict.ContainsKey(thisKey))
                 {
                     thisDict.Remove(thisKey);
+                    continue;
                 }
 
                 if (intersector != null)
@@ -445,9 +481,39 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisDict;
         }
 
+        private static IDictionary<K1, IDictionary<K2, V>> Clone<K1, K2, V>(
+            this IDictionary<K1, IDictionary<K2, V>> dict,
+            IEqualityComparer<K1> fstKeyComparer = null,
+            IEqualityComparer<K2> sndKeyComparer = null)
+            where K1 : ICloneable
+            where K2 : ICloneable
+            where V : ICloneable
+        {
+            if (dict == null)
+            {
+                return null;
+            }
+
+            var outDict = fstKeyComparer == null
+                ? new Dictionary<K1, IDictionary<K2, V>>(dict.Count)
+                : new Dictionary<K1, IDictionary<K2, V>>(dict.Count, fstKeyComparer);
+
+            foreach (KeyValuePair<K1, IDictionary<K2, V>> subDict in dict)
+            {
+                outDict.Add((K1)subDict.Key.Clone(), subDict.Value.Clone());
+            }
+
+            return outDict;
+        }
+
         private static IDictionary<K, V> Clone<K, V>(this IDictionary<K, V> dict, IEqualityComparer<K> keyComparer = null)
             where K : ICloneable where V : ICloneable
         {
+            if (dict == null)
+            {
+                return null;
+            }
+
             var newDict = keyComparer == null
                 ? new Dictionary<K, V>(dict.Count)
                 : new Dictionary<K, V>(dict.Count, keyComparer);

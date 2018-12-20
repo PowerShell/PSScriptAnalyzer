@@ -46,7 +46,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
                 Name = Name,
                 Version = Version,
                 Culture = Culture,
-                PublicKeyToken = (byte[])PublicKeyToken.Clone()
+                PublicKeyToken = (byte[])PublicKeyToken?.Clone()
             };
         }
     }

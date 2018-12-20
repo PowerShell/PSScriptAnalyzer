@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
             return new AssemblyData()
             {
                 AssemblyName = (AssemblyNameData)AssemblyName.Clone(),
-                Types = Types.ToDictionary(ns => ns.Key, ns => (IDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key, t => t.Value.Clone()))
+                Types = Types?.ToDictionary(ns => ns.Key, ns => (IDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key ?? throw new Exception ($"Null typename for {t}"), t => (TypeData)t.Value.Clone()))
             };
         }
     }

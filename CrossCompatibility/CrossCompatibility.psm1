@@ -61,7 +61,14 @@ function New-CommonParameterSet
 [string]$script:UserModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetPersonalModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
 
 # Shared module path location
-[string]$script:SharedModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetSharedModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
+if ($PSVersionTable.PSVersion.Major -ge 6)
+{
+    [string]$script:SharedModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetSharedModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
+}
+else
+{
+    [string]$script:SharedModulePath = "$env:ProgramFiles\WindowsPowerShell\Modules"
+}
 
 <#
 .SYNOPSIS
@@ -122,9 +129,20 @@ function Join-CompatibilityProfile
     if ($PSCmdlet.ParameterSetName -eq 'File')
     {
         $profiles = New-Object 'System.Collections.Generic.List[Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]]'
+
         foreach ($path in $InputFile)
         {
             $resolvedPath = Resolve-Path $path
+
+            if (Test-Path $resolvedPath -PathType Container)
+            {
+                Get-ChildItem -Path $resolvedPath -Filter "*.json" `
+                    | ForEach-Object { ConvertFrom-CompatibilityJson -Path $_ } `
+                    | ForEach-Object { $profiles.Add($_) }
+
+                continue
+            }
+
             $loadedProfile = ConvertFrom-CompatibilityJson -Path $resolvedPath
             $profiles.Add($loadedProfile)
         }
@@ -167,12 +185,15 @@ function New-PowerShellCompatibilityProfile
 
         [Parameter(ParameterSetName='PassThru')]
         [switch]
-        $PassThru
+        $PassThru,
+
+        [switch]
+        $Readable
     )
 
     if ($PassThru)
     {
-        return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityProfileJson
+        return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityProfileJson -NoWhitespace:(-not $Readable)
     }
 
     if ($PlatformName)
@@ -198,7 +219,7 @@ function New-PowerShellCompatibilityProfile
         $OutFile = Join-Path $script:CompatibilityProfileDir "$platformName.json"
     }
 
-    $json = ConvertTo-CompatibilityProfileJson -Item $reportData -NoWhitespace
+    $json = ConvertTo-CompatibilityProfileJson -Item $reportData -NoWhitespace:(-not $Readable)
     return New-Item -Path $OutFile -Value $json -Force
 }
 
@@ -254,7 +275,7 @@ function ConvertTo-CompatibilityProfileJson
         [Parameter()]
         [Alias('Compress')]
         [switch]
-        $NoWhitespace=$false
+        $NoWhitespace
     )
 
     begin
@@ -510,7 +531,12 @@ function Get-PowerShellCompatibilityData
 
     $compatibilityData = New-RuntimeData -Modules $modules -Assemblies $asms -TypeAccelerators $typeAccelerators
 
-    $compatibilityData.Modules['Microsoft.PowerShell.Core'] = $coreModule
+    $psVersion = New-Object 'System.Version' $PSVersionTable.PSVersion.Major,$PSVersionTable.PSVersion.Minor,$PSVersionTable.PSVersion.Patch
+
+    $coreDict = New-Object 'System.Collections.Generic.Dictionary[version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]'
+    $coreDict[$psVersion] = $coreModule
+
+    $compatibilityData.Modules['Microsoft.PowerShell.Core'] = $coreDict
 
     return $compatibilityData
 }
@@ -634,6 +660,9 @@ function Get-AvailableModules
             | Where-Object { -not (Test-HasAnyPrefix $_.Path $script:UserModulePath,$script:SharedModulePath -IgnoreCase:$script:IsWindows) }
     }
 
+    # Filter out this module
+    $modsToLoad = $modsToLoad | Where-Object { -not ( $_.Name -eq 'CrossCompatibility' ) }
+
     $mods = New-Object 'System.Collections.Generic.List[psmoduleinfo]'
 
     foreach ($m in $modsToLoad)
@@ -645,8 +674,15 @@ function Get-AvailableModules
         }
         catch
         {
-            # Ignore errors -- assume we just can't import the module
-            Write-Warning "Ignoring module '$m' after encountering problem. Error is:`n$_"
+            try
+            {
+                $mi = Get-ModuleInfoFromNewProcess $m
+            }
+            catch
+            {
+                # Ignore errors -- assume we just can't import the module
+                Write-Warning "Ignoring module '$m' after encountering problem. Error is:`n$_"
+            }
         }
         finally
         {
@@ -698,7 +734,7 @@ function New-ModuleData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, System.Collections.Generic.IDictionary[System.Version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, System.Collections.Generic.IDictionary[version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]]'
     }
 
     process
@@ -1093,4 +1129,40 @@ function Test-HasAnyPrefix
     }
 
     return $false
+}
+
+function Get-ModuleInfoFromNewProcess
+{
+    [CmdletBinding(DefaultParameterSetName='ModuleInfo')]
+    param(
+        [Parameter(ParameterSetName='ModuleInfo', Position=0, ValueFromPipeline=$true)]
+        [ValidateNotNull()]
+        [psmoduleinfo]
+        $ModuleInfo,
+
+        [Parameter(ParameterSetName='ModuleSpec', Position=0, ValueFromPipeline=$true)]
+        [ValidateNotNull()]
+        [Microsoft.PowerShell.Commands.ModuleSpecification]
+        $ModuleSpecification,
+
+        [Parameter(ParameterSetName='Path', Position=0, ValueFromPipeline=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Path
+    )
+
+    if ($ModuleInfo)
+    {
+        $modSpec = $ModuleInfo
+    }
+    elseif ($ModuleSpecification)
+    {
+        $modSpec = $ModuleSpecification
+    }
+    else
+    {
+        $modSpec = $Path
+    }
+
+    return Start-Job { Import-Module $using:modSpec -PassThru } | Wait-Job | Receive-Job
 }

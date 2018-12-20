@@ -38,7 +38,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
             {
                 Type = Type,
                 Dynamic = Dynamic,
-                ParameterSets = ParameterSets.ToDictionary(p => p.Key, p => (ParameterSetData)p.Value.Clone())
+                ParameterSets = ParameterSets?.ToDictionary(p => p.Key, p => (ParameterSetData)p.Value.Clone())
             };
         }
     }

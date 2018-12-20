@@ -62,6 +62,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             var asms = new Dictionary<string, AssemblyData>();
             foreach (Assembly asm in assemblies)
             {
+                // Don't want to include this module or assembly in the output
+                if (Assembly.GetCallingAssembly() == asm)
+                {
+                    continue;
+                }
+
                 try
                 {
                     KeyValuePair<string, AssemblyData> asmData = AssembleAssembly(asm);
@@ -69,7 +75,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 }
                 catch (ReflectionTypeLoadException e)
                 {
-                    errAcc.Add(new CompatibilityAnalysisException($"Failed to assembly '{asm.GetName().FullName}'", e));
+                    errAcc.Add(new CompatibilityAnalysisException($"Failed to load assembly '{asm.GetName().FullName}'", e));
                 }
             }
 
@@ -110,14 +116,17 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                         continue;
                     }
 
-                    if (!namespacedTypes.ContainsKey(type.Namespace))
+                    // Some types don't have a namespace, but we still want to file them
+                    string typeNamespace = type.Namespace ?? "";
+
+                    if (!namespacedTypes.ContainsKey(typeNamespace))
                     {
-                        namespacedTypes.Add(type.Namespace, new Dictionary<string, TypeData>());
+                        namespacedTypes.Add(typeNamespace, new Dictionary<string, TypeData>());
                     }
 
                     TypeData typeData = AssembleType(type);
 
-                    namespacedTypes[type.Namespace][type.Name] = typeData;
+                    namespacedTypes[typeNamespace][type.Name] = typeData;
                 }
             }
 

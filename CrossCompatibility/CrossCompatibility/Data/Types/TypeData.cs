@@ -28,8 +28,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         {
             return new TypeData()
             {
-                Static = (MemberData)Static.Clone(),
-                Instance = (MemberData)Instance.Clone()
+                Static = (MemberData)Static?.Clone(),
+                Instance = (MemberData)Instance?.Clone()
             };
         }
     }

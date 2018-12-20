@@ -60,13 +60,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         {
             return new MemberData()
             {
-                Constructors = Constructors.Select(c => (string[])c.Clone()).ToArray(),
-                Events = Events.ToDictionary(e => e.Key, e => (EventData)e.Value.Clone()),
-                Fields = Fields.ToDictionary(f => f.Key, f => (FieldData)f.Value.Clone()),
-                Indexers = Indexers.Select(i => (IndexerData)i.Clone()).ToArray(),
-                Methods = Methods.ToDictionary(m => m.Key, m => (MethodData)m.Value.Clone()),
-                NestedTypes = NestedTypes.ToDictionary(t => t.Key, t => (TypeData)t.Value.Clone()),
-                Properties = Properties.ToDictionary(p => p.Key, p => (PropertyData)p.Value.Clone())
+                Constructors = Constructors?.Select(c => (string[])c.Clone()).ToArray(),
+                Events = Events?.ToDictionary(e => e.Key, e => (EventData)e.Value.Clone()),
+                Fields = Fields?.ToDictionary(f => f.Key, f => (FieldData)f.Value.Clone()),
+                Indexers = Indexers?.Select(i => (IndexerData)i.Clone()).ToArray(),
+                Methods = Methods?.ToDictionary(m => m.Key, m => (MethodData)m.Value.Clone()),
+                NestedTypes = NestedTypes?.ToDictionary(t => t.Key, t => (TypeData)t.Value.Clone()),
+                Properties = Properties?.ToDictionary(p => p.Key, p => (PropertyData)p.Value.Clone())
             };
         }
     }

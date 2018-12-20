@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         {
             return new ParameterSetData()
             {
-                Flags = (ParameterSetFlag[])Flags.Clone(),
+                Flags = (ParameterSetFlag[])Flags?.Clone(),
                 Position = Position
             };
         }

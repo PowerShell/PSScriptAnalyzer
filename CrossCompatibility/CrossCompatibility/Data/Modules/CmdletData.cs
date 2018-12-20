@@ -17,10 +17,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
             return new CmdletData()
             {
                 DefaultParameterSet = DefaultParameterSet,
-                OutputType = (string[])OutputType.Clone(),
-                ParameterAliases = ParameterAliases.ToDictionary(pa => pa.Key, pa => pa.Value),
-                ParameterSets = (string[])ParameterSets.Clone(),
-                Parameters = Parameters.ToDictionary(p => p.Key, p => (ParameterData)p.Value.Clone())
+                OutputType = (string[])OutputType?.Clone(),
+                ParameterAliases = ParameterAliases?.ToDictionary(pa => pa.Key, pa => pa.Value),
+                ParameterSets = (string[])ParameterSets?.Clone(),
+                Parameters = Parameters?.ToDictionary(p => p.Key, p => (ParameterData)p.Value.Clone())
             };
         }
     }
