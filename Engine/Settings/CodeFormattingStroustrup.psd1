@@ -5,7 +5,8 @@
         'PSPlaceCloseBrace',
         'PSUseConsistentWhitespace',
         'PSUseConsistentIndentation',
-        'PSAlignAssignmentStatement'
+        'PSAlignAssignmentStatement',
+        'PSUseCorrectCasing'
     )
 
     Rules = @{
@@ -40,6 +41,10 @@
         PSAlignAssignmentStatement = @{
             Enable         = $true
             CheckHashtable = $true
+        }
+
+        PSUseCorrectCasing     = @{
+            Enable             = $true
         }
     }
 }
