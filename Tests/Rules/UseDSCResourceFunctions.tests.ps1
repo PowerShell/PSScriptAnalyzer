@@ -24,7 +24,7 @@ Describe "StandardDSCFunctionsInResource" {
     }
 
     Context "When there are no violations" {
-        It "returns no violations" {
+        It "returns no violations" -Skip:($env:APPVEYOR -and $IsLinux) {
             $noViolations.Count | Should -Be 0
         }
     }
