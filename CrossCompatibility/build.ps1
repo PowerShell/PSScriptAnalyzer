@@ -5,19 +5,19 @@ param(
     $Configuration = 'Debug',
 
     [Parameter()]
-    [ValidateSet('netstandard2.0', 'net451')]
+    [ValidateSet('netstandard2.0', 'net452')]
     [string]
     $Framework
 )
 
 $ErrorActionPreference = 'Stop'
 
-$script:TargetFrameworks = 'netstandard2.0','net451'
+$script:TargetFrameworks = 'netstandard2.0','net452'
 $script:BinModDir = Join-Path $PSScriptRoot 'CrossCompatibilityBinary'
 $script:BinModSrcDir = Join-Path $PSScriptRoot 'CrossCompatibility'
 
 $script:PublishDlls = @{
-    'net451' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
+    'net452' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
     'netstandard2.0' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
 }
 
@@ -25,7 +25,7 @@ function Invoke-BinaryModuleBuild
 {
     param(
         [Parameter()]
-        [ValidateSet('netstandard2.0', 'net451')]
+        [ValidateSet('netstandard2.0', 'net452')]
         [string]
         $Framework = 'netstandard2.0',
 

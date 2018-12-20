@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace CrossCompatibility.Common
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     [DataContract]
     public class JsonDictionary<K, V> : IDictionary<K, V>, ICloneable

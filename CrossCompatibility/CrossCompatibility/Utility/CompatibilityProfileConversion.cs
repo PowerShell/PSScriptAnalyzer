@@ -9,7 +9,6 @@ using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
 using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
-using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {

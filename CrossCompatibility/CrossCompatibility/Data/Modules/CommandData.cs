@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 {

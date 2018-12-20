@@ -3,7 +3,6 @@ using System.Runtime.Serialization;
 using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
 using System.Linq;
-using CrossCompatibility.Common;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Data
 {

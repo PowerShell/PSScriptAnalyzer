@@ -734,7 +734,7 @@ function New-ModuleData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, System.Collections.Generic.IDictionary[version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.JsonDictionary[version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]]'
     }
 
     process
