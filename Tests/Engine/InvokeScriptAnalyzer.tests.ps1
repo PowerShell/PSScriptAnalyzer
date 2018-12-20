@@ -533,7 +533,7 @@ Describe "Test -Fix Switch" {
 }
 
 Describe "Test -EnableExit Switch" {
-    It "Returns exit code equivalent to number of warnings" {
+    It "Returns exit code equivalent to number of warnings" -Skip:($env:APPVEYOR -and $IsLinux) {
         if ($IsCoreCLR) {
             pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
         }

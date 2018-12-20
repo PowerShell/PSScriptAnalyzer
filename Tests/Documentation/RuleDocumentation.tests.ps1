@@ -35,29 +35,29 @@ Describe "Validate rule documentation files" {
         $rulesReadmeDiff = Compare-Object -ReferenceObject $rules -DifferenceObject $readmeRules -SyncWindow 25
     }
 
-    It "Every rule must have a rule documentation file" {
+    It "Every rule must have a rule documentation file" -Skip:($env:APPVEYOR -and $IsLinux) {
         $rulesDocsDiff | Where-Object SideIndicator -eq "<=" | Foreach-Object InputObject | Should -BeNullOrEmpty
     }
-    It "Every rule documentation file must have a corresponding rule" {
+    It "Every rule documentation file must have a corresponding rule" -Skip:($env:APPVEYOR -and $IsLinux) {
         $rulesDocsDiff | Where-Object SideIndicator -eq "=>" | Foreach-Object InputObject | Should -BeNullOrEmpty
     }
 
-    It "Every rule must have an entry in the rule documentation README.md file" {
+    It "Every rule must have an entry in the rule documentation README.md file" -Skip:($env:APPVEYOR -and $IsLinux) {
         $rulesReadmeDiff | Where-Object SideIndicator -eq "<=" | Foreach-Object InputObject | Should -BeNullOrEmpty
     }
-    It "Every entry in the rule documentation README.md file must correspond to a rule" {
+    It "Every entry in the rule documentation README.md file must correspond to a rule" -Skip:($env:APPVEYOR -and $IsLinux) {
         $rulesReadmeDiff | Where-Object SideIndicator -eq "=>" | Foreach-Object InputObject | Should -BeNullOrEmpty
     }
 
-    It "Every entry in the rule documentation README.md file must have a valid link to the documentation file" {
+    It "Every entry in the rule documentation README.md file must have a valid link to the documentation file" -Skip:($env:APPVEYOR -and $IsLinux) {
         foreach ($key in $readmeLinks.Keys) {
             $link = $readmeLinks[$key]
             $filePath = Join-Path $ruleDocDirectory $link
             $filePath | Should -Exist
         }
     }
-    
-    It "Every rule name in the rule documentation README.md file must match the documentation file's basename" {
+
+    It "Every rule name in the rule documentation README.md file must match the documentation file's basename" --Skip:($env:APPVEYOR -and $IsLinux) {
         foreach ($key in $readmeLinks.Keys) {
             $link = $readmeLinks[$key]
             $filePath = Join-Path $ruleDocDirectory $link
