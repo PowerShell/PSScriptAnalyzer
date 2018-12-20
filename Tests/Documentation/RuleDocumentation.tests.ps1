@@ -57,7 +57,7 @@ Describe "Validate rule documentation files" {
         }
     }
 
-    It "Every rule name in the rule documentation README.md file must match the documentation file's basename" --Skip:($env:APPVEYOR -and $IsLinux) {
+    It "Every rule name in the rule documentation README.md file must match the documentation file's basename" -Skip:($env:APPVEYOR -and $IsLinux) {
         foreach ($key in $readmeLinks.Keys) {
             $link = $readmeLinks[$key]
             $filePath = Join-Path $ruleDocDirectory $link
