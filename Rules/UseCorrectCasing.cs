@@ -29,18 +29,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Finds all CommandAsts.
-            IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
+            IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
             // Iterates all CommandAsts and check the command name.
-            foreach (CommandAst commandAst in foundAsts)
+            foreach (CommandAst commandAst in commandAsts)
             {
-                // Check if the command ast should be ignored
-                if (IgnoreCommandast(commandAst))
-                {
-                    continue;
-                }
-
                 string commandName = commandAst.GetCommandName();
 
                 // Handles the exception caused by commands like, {& $PLINK $args 2> $TempErrorFile}.
@@ -53,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 using (var powershell = System.Management.Automation.PowerShell.Create())
                 {
-                    var psCommand = powershell.AddCommand("Get-Command")
+                    var getCommand = powershell.AddCommand("Get-Command")
                         .AddParameter("Name", commandName)
                         .AddParameter("ErrorAction", "SilentlyContinue");
 
@@ -62,43 +55,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     //    psCommand.AddParameter("CommandType", commandType);
                     //}
 
-                    var commandInfo = psCommand.Invoke<CommandInfo>()
-                             .FirstOrDefault();
-                    var name = commandInfo.Name;
-                    var modulename = commandInfo.ModuleName;
-                    var fullyqual = $"{modulename}\\{name}";
-
-                    if (!name.Equals(commandName, StringComparison.Ordinal))
+                    var commandInfo = getCommand.Invoke<CommandInfo>().FirstOrDefault();
+                    if (commandInfo != null)
                     {
-                        yield return new DiagnosticRecord(
-                            string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, commandName, name),
-                            GetCommandExtent(commandAst),
-                            GetName(),
-                            DiagnosticSeverity.Warning,
-                            fileName,
-                            commandName,
-                            suggestedCorrections: GetCorrectionExtent(commandAst, name));
+                        var shortName = commandInfo.Name;
+                        var fullyqualifiedName = $"{commandInfo.ModuleName}\\{shortName}";
+
+                        var isFullyQualified = commandName.Equals(fullyqualifiedName, StringComparison.OrdinalIgnoreCase);
+                        var correctlyCasedCommandName = isFullyQualified ? fullyqualifiedName : shortName;
+
+
+                        if (!commandName.Equals(correctlyCasedCommandName, StringComparison.Ordinal))
+                        {
+                            yield return new DiagnosticRecord(
+                                string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, commandName, shortName),
+                                GetCommandExtent(commandAst),
+                                GetName(),
+                                DiagnosticSeverity.Warning,
+                                fileName,
+                                commandName,
+                                suggestedCorrections: GetCorrectionExtent(commandAst, correctlyCasedCommandName));
+                        }
                     }
                 }
 
             }
-        }
-
-        /// <summary>
-        /// Checks commandast of the form "[commandElement0] = [CommandElement2]". This typically occurs in a DSC configuration.
-        /// </summary>
-        private bool IgnoreCommandast(CommandAst cmdAst)
-        {
-            if (cmdAst.CommandElements.Count == 3)
-            {
-                var element = cmdAst.CommandElements[1] as StringConstantExpressionAst;
-                if (element != null && element.Value.Equals("="))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -121,31 +102,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return commandAst.Extent;
         }
 
-        /// <summary>
-        /// Creates a list containing suggested correction
-        /// </summary>
-        /// <param name="cmdAst">Command AST of an alias</param>
-        /// <param name="cmdletName">Full name of the alias</param>
-        /// <returns>Retruns a list of suggested corrections</returns>
-        private List<CorrectionExtent> GetCorrectionExtent(CommandAst cmdAst, string cmdletName)
+        private IEnumerable<CorrectionExtent> GetCorrectionExtent(CommandAst commandAst, string correctlyCaseName)
         {
-            var corrections = new List<CorrectionExtent>();
-            var alias = cmdAst.GetCommandName();
             var description = string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.AvoidUsingCmdletAliasesCorrectionDescription,
-                alias,
-                cmdletName);
-            var cmdExtent = GetCommandExtent(cmdAst);
-            corrections.Add(new CorrectionExtent(
+                correctlyCaseName,
+                correctlyCaseName);
+            var cmdExtent = GetCommandExtent(commandAst);
+            var correction = new CorrectionExtent(
                 cmdExtent.StartLineNumber,
                 cmdExtent.EndLineNumber,
                 cmdExtent.StartColumnNumber,
                 cmdExtent.EndColumnNumber,
-                cmdletName,
-                cmdAst.Extent.File,
-                description));
-            return corrections;
+                correctlyCaseName,
+                commandAst.Extent.File,
+                description);
+            yield return correction;
         }
 
         /// <summary>
