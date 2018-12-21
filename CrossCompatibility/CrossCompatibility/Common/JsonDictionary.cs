@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell.CrossCompatibility
                 clone[(K)item.Key.Clone()] = (V)item.Value.Clone();
             }
 
-            return clone;
+            return new JsonDictionary<K, V>(clone);
         }
 
         public bool Contains(KeyValuePair<K, V> item)

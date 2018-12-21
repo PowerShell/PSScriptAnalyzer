@@ -208,6 +208,11 @@ function New-PowerShellCompatibilityProfile
 
     $reportData = Get-PowerShellCompatibilityProfileData
 
+    if (-not $reportData)
+    {
+        throw "Report generation failed. Please see errors for more information"
+    }
+
     if (-not $OutFile)
     {
         if (-not (Test-Path $script:CompatibilityProfileDir))
@@ -215,8 +220,9 @@ function New-PowerShellCompatibilityProfile
             $null = New-Item -ItemType Directory $script:CompatibilityProfileDir
         }
 
-        $platformName = Get-PlatformName $reportData.Platforms
-        $OutFile = Join-Path $script:CompatibilityProfileDir "$platformName.json"
+        $platformNameStr = Get-PlatformName $reportData.Platforms[0]
+
+        $OutFile = Join-Path $script:CompatibilityProfileDir "$platformNameStr.json"
     }
 
     $json = ConvertTo-CompatibilityProfileJson -Item $reportData -NoWhitespace:(-not $Readable)
