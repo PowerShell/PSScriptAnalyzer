@@ -4,7 +4,7 @@
 
 ## Description
 
-This is a style/formatting rule. PowerShell is case insensitive where applicable. The casing of cmdlet names does not matter but this rule ensures that the casing matches since most cmdlets start with an upper case and using that improves readability to the human eye.
+This is a style/formatting rule. PowerShell is case insensitive where applicable. The casing of cmdlet names does not matter but this rule ensures that the casing matches for consistency and also because most cmdlets start with an upper case and using that improves readability to the human eye.
 
 ## How
 

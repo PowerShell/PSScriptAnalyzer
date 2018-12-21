@@ -68,7 +68,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (!commandName.Equals(correctlyCasedCommandName, StringComparison.Ordinal))
                         {
                             yield return new DiagnosticRecord(
-                                string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesError, commandName, shortName),
+                                string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingError, commandName, shortName),
                                 GetCommandExtent(commandAst),
                                 GetName(),
                                 DiagnosticSeverity.Warning,
@@ -106,7 +106,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             var description = string.Format(
                 CultureInfo.CurrentCulture,
-                Strings.AvoidUsingCmdletAliasesCorrectionDescription,
+                Strings.UseCorrectCasingDescription,
                 correctlyCaseName,
                 correctlyCaseName);
             var cmdExtent = GetCommandExtent(commandAst);
@@ -127,7 +127,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public override string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), "UseCorrectCasing");//Strings.AvoidUsingCmdletAliasesName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseCorrectCasingName);
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public override string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, "UseCorrectCasing");// Strings.AvoidUsingCmdletAliasesCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingCommonName);
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public override string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingDescription);
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public override RuleSeverity GetSeverity()
         {
-            return RuleSeverity.Warning;
+            return RuleSeverity.Information;
         }
 
         /// <summary>
