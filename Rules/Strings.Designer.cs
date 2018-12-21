@@ -2177,7 +2177,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UseCorrectCasingName.
+        ///   Looks up a localized string similar to UseCorrectCasing.
         /// </summary>
         internal static string UseCorrectCasingName {
             get {

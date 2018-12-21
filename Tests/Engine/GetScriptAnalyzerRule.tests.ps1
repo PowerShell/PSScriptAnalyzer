@@ -157,7 +157,7 @@ Describe "TestSeverity" {
 
     It "filters rules based on multiple severity inputs"{
         $rules = Get-ScriptAnalyzerRule -Severity Error,Information
-        $rules.Count | Should -Be 15
+        $rules.Count | Should -Be 16
     }
 
         It "takes lower case inputs" {

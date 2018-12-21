@@ -1000,6 +1000,6 @@
     <value>Cmdlet/Function does not match its exact casing '{0}'.</value>
   </data>
   <data name="UseCorrectCasingName" xml:space="preserve">
-    <value>UseCorrectCasingName</value>
+    <value>UseCorrectCasing</value>
   </data>
 </root>
