@@ -181,15 +181,15 @@ Describe "Test Path" {
 			$numFilesResult | Should -Be $numFilesExpected
 			}
         }
-
+        
         Context "When piping in files" {
             It "Can be piped in from a string" {
                 $piped = ("$directory\TestScript.ps1" | Invoke-ScriptAnalyzer)
                 $explicit = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1
-
+    
                 $piped.Count | Should Be $explicit.Count
             }
-
+    
             It "Can be piped from Get-ChildItem" {
                 $piped = ( Get-ChildItem -Path $directory -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
                 $explicit = Invoke-ScriptAnalyzer -Path $directory\TestTestPath*.ps1
@@ -410,7 +410,7 @@ Describe "Test CustomizedRulePath" {
                     Pop-Location
                 }
             }
-
+            
             It "resolves rule preset when passed in via pipeline" {
                 $warnings = 'CodeFormattingStroustrup' | ForEach-Object {
                     Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){}' -Settings $_}
@@ -545,25 +545,25 @@ Describe "Test -EnableExit Switch" {
 
     Describe "-ReportSummary switch" {
         $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
-        It "prints the correct report summary using the -NoReportSummary switch" -Skip:($env:APPVEYOR -and $IsLinux) {
+        It "prints the correct report summary using the -NoReportSummary switch" {
             if ($IsCoreCLR) {
                 $result = pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
             }
             else {
                 $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
             }
-
-            "$result" | Should -BeLike $reportSummaryFor1Warning
+            
+            "$result" | Should -BeLike $reportSummaryFor1Warning 
         }
-        It "does not print the report summary when not using -NoReportSummary switch" -Skip:($env:APPVEYOR -and $IsLinux) {
+        It "does not print the report summary when not using -NoReportSummary switch" {
             if ($IsCoreCLR) {
                 $result = pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-Scriptanalyzer -ScriptDefinition gci'
             }
             else {
                 $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
             }
-
-            "$result" | Should -Not -BeLike $reportSummaryFor1Warning
+            
+            "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
         }
     }
 
