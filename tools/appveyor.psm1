@@ -76,6 +76,9 @@ function Invoke-AppveyorTest {
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
     $testResultsFile = ".\TestResults.xml"
     $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation"
+    if ($IsLinuc -and $env:APPVEYOR) {
+        LANG = en_US.UTF-8
+    }
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
     (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}", (Resolve-Path $testResultsFile))
     if ($testResults.FailedCount -gt 0) {
