@@ -95,7 +95,7 @@ Configuration MyDscConfiguration {
             $violations.Count | Should -Be 1
         }
 
-        It "honors the whitelist in a case-insensitive manner" -Skip:($env:APPVEYOR -and $IsLinux) {
+        It "honors the whitelist in a case-insensitive manner" {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition "CD" -Settings $settings -IncludeRule $violationName
             $violations.Count | Should -Be 0
         }

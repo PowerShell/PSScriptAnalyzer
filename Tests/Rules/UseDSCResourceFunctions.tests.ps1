@@ -13,12 +13,12 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
 }
 
 Describe "StandardDSCFunctionsInResource" {
-    Context "When there are violations"  {
-        It "has 1 missing standard DSC functions violation" -Skip:($env:APPVEYOR -and $IsLinux) {
+    Context "When there are violations" {
+        It "has 1 missing standard DSC functions violation" {
             $violations.Count | Should -Be 1
         }
 
-        It "has the correct description message" -Skip:($env:APPVEYOR -and $IsLinux)  {
+        It "has the correct description message" {
             $violations[0].Message | Should -Match $violationMessage
         }
     }
