@@ -15,11 +15,16 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
 Describe "StandardDSCFunctionsInResource" {
     Context "When there are violations" {
         It "has 1 missing standard DSC functions violation" {
-            $violations.RuleName
+            Write-Host $violations[0].RuleName
+            Write-Host $violations[1].RuleName
+            Write-Host $violations[2].RuleName
             $violations.Count | Should -Be 1
         }
 
         It "has the correct description message" {
+            Write-Host $violations[0].RuleName
+            Write-Host $violations[1].RuleName
+            Write-Host $violations[2].RuleName
             $violations[0].Message | Should -Match $violationMessage
         }
     }
