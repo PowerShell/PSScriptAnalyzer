@@ -602,7 +602,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to AvoidUsingUserNameAndPasswordParams.
+        ///   Looks up a localized string similar to AvoidUsingUsernameAndPasswordParams.
         /// </summary>
         internal static string AvoidUsernameAndPasswordParamsName {
             get {
