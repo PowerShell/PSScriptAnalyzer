@@ -15,18 +15,6 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0')
 Describe "StandardDSCFunctionsInResource" {
     Context "When there are violations" {
         It "has 1 missing standard DSC functions violation" {
-            Write-Host $violations[0].RuleName
-            Write-Host $violations[0].Message
-            Write-Host $violations[0].Line
-            Write-Host $violations[0].Column
-            Write-Host $violations[1].RuleName
-            Write-Host $violations[1].Message
-            Write-Host $violations[1].Line
-            Write-Host $violations[1].Column
-            Write-Host $violations[2].RuleName
-            Write-Host $violations[2].Message
-            Write-Host $violations[2].Line
-            Write-Host $violations[2].Column
             $violations.Count | Should -Be 1
         }
 
@@ -37,9 +25,6 @@ Describe "StandardDSCFunctionsInResource" {
 
     Context "When there are no violations" {
         It "returns no violations" {
-            Write-Host $noViolations[0].RuleName
-            Write-Host $noViolations[1].RuleName
-            Write-Host $noViolations[2].RuleName
             $noViolations.Count | Should -Be 0
         }
     }
