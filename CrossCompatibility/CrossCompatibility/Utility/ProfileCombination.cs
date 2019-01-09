@@ -41,9 +41,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             // Intersect modules first at the whole module level
             thisRuntime.Modules = (JsonDictionary<string, JsonDictionary<Version, ModuleData>>)Intersect(thisRuntime.Modules, thatRuntime.Modules, keyComparer: StringComparer.OrdinalIgnoreCase);
 
-            // TODO:
-            //  - Don't intersect module versions as with other dictionary keys
-            //  - Instead, union all modules in left and right respectively, then intersect
             foreach (KeyValuePair<string, JsonDictionary<Version, ModuleData>> moduleVersions in thatRuntime.Modules)
             {
                 string name = moduleVersions.Key;
@@ -53,7 +50,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                     continue;
                 }
 
-                thisRuntime.Modules[name] = (JsonDictionary<Version, ModuleData>)Intersect(thisRuntime.Modules[name], thatRuntime.Modules[name], Intersect);
+                // Modules are intersected by:
+                // - Union of all versions on each side, versioned to highest version
+                // - Intersection of both sides, versioned to lowest version
+                KeyValuePair<Version, ModuleData> intersectedModule = IntersectMultiVersionModules(thisRuntime.Modules[name], thatRuntime.Modules[name]);
+                thisRuntime.Modules[name] = new JsonDictionary<Version, ModuleData>()
+                {
+                    { intersectedModule.Key, intersectedModule.Value }
+                };
             }
 
             return thisRuntime;
@@ -484,6 +488,52 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             return thisDict;
         }
+
+        /// <summary>
+        /// Intersect many versions of the same module in two runtimes by
+        /// unioning all the versions in each runtime and intersecting the results.
+        /// </summary>
+        /// <param name="thisModules">The versions of the module in the left hand runtime.</param>
+        /// <param name="thatModules">The versions of the module in the right hand runtime.</param>
+        /// <returns></returns>
+        private static KeyValuePair<Version, ModuleData> IntersectMultiVersionModules(
+            JsonDictionary<Version, ModuleData> thisModules,
+            JsonDictionary<Version, ModuleData> thatModules)
+        {
+            KeyValuePair<Version, ModuleData> thisUnionedModules = UnionVersionedModules(thisModules);
+            KeyValuePair<Version, ModuleData> thatUnionedModules = UnionVersionedModules(thatModules);
+
+            var intersectedModules = (ModuleData)Intersect(thisUnionedModules.Value, thatUnionedModules.Value);
+            // Take the lower version
+            Version version = thisUnionedModules.Key <= thatUnionedModules.Key
+                ? thisUnionedModules.Key
+                : thatUnionedModules.Key;
+
+            return new KeyValuePair<Version, ModuleData>(version, intersectedModules);
+        }
+
+        private static KeyValuePair<Version, ModuleData> UnionVersionedModules(ICollection<KeyValuePair<Version, ModuleData>> modules)
+        {
+            ModuleData unionedModule = null;
+            Version version = null;
+            bool firstModule = true;
+            foreach (KeyValuePair<Version, ModuleData> modVersion in modules)
+            {
+                if (firstModule)
+                {
+                    version = modVersion.Key;
+                    unionedModule = (ModuleData)modVersion.Value.Clone();
+                    firstModule = false;
+                    continue;
+                }
+
+                version = version >= modVersion.Key ? version : modVersion.Key;
+                unionedModule = (ModuleData)Union(unionedModule, modVersion.Value);
+            }
+
+            return new KeyValuePair<Version, ModuleData>(version, unionedModule);
+        }
+
 
         private struct ParameterListComparer : IEqualityComparer<string[]>
         {
