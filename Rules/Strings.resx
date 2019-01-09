@@ -484,7 +484,7 @@
     <value>Function '{0}' has both Username and Password parameters. Either set the type of the Password parameter to SecureString or replace the Username and Password parameters with a Credential parameter of type PSCredential. If using a Credential parameter in PowerShell 4.0 or earlier, please define a credential transformation attribute after the PSCredential type attribute.</value>
   </data>
   <data name="AvoidUsernameAndPasswordParamsName" xml:space="preserve">
-    <value>AvoidUsingUserNameAndPassWordParams</value>
+    <value>AvoidUsingUsernameAndPasswordParams</value>
   </data>
   <data name="AvoidInvokingEmptyMembersCommonName" xml:space="preserve">
     <value>Avoid Invoking Empty Members</value>
