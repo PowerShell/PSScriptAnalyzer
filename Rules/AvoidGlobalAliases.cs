@@ -13,6 +13,9 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
+    /// <summary>
+    /// AvoidGlobalAliases: Checks that global aliases are not used.
+    /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif

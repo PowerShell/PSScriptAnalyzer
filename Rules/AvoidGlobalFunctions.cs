@@ -12,6 +12,9 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
+    /// <summary>
+    /// AvoidGlobalFunctions: Checks that global functions are not used within modules.
+    /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif

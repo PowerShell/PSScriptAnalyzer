@@ -205,7 +205,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 parent = parent.Parent;
             }
 
-            #if !PSV3
+            #if !(PSV3||PSV4)
 
             List<TypeDefinitionAst> classes = parent.FindAll(item =>
                 item is TypeDefinitionAst && (item as TypeDefinitionAst).IsClass, true)

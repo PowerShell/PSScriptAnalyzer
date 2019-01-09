@@ -509,7 +509,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            #if !PSV3
+            #if !(PSV3||PSV4)
 
             List<string> dscResourceFunctionNames = new List<string>(new string[] { "Test", "Get", "Set" });
 
@@ -1018,7 +1018,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="scriptAst"></param>
         /// <returns></returns>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret)
 
@@ -1089,7 +1089,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="classes"></param>
         /// <returns></returns>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst)
 
@@ -1106,7 +1106,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             VariableAnalysisDetails details = null;
 
-#if !PSV3
+#if !(PSV3||PSV4)
 
             TypeDefinitionAst psClass = null;
 
@@ -1149,7 +1149,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="analysisDetails"></param>
         /// <returns></returns>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, VariableAnalysisDetails analysisDetails)
 
@@ -1162,7 +1162,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             //Try to get the type without using psClass first
             Type result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst);
 
-#if !PSV3
+#if !(PSV3||PSV4)
 
             //If we can't get the type, then it may be that the type of the object being invoked on is a powershell class
             if (result == null && psClass != null && analysisDetails != null)
@@ -1270,7 +1270,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
             }
 
-#if !PSV3
+#if !(PSV3||PSV4)
             // Get rule suppression from classes
             IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
 
@@ -1322,7 +1322,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-#if !PSV3
+#if !(PSV3||PSV4)
         /// <summary>
         /// Returns a list of rule suppression from the class
         /// </summary>
@@ -2039,7 +2039,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-#if PSV3
+#if (PSV3||PSV4)
 
             statementAst.Visit(this);
 
@@ -2755,7 +2755,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     {
         List<Tuple<string, StatementAst>> outputTypes;
 
-#if !PSV3
+#if !(PSV3||PSV4)
 
         IEnumerable<TypeDefinitionAst> classes;
 
@@ -2797,7 +2797,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="ast"></param>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         public FindPipelineOutput(FunctionDefinitionAst ast)
 
@@ -2828,7 +2828,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <returns></returns>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst)
         {
