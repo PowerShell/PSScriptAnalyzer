@@ -41,7 +41,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             // Intersect modules first at the whole module level
             thisRuntime.Modules = (JsonDictionary<string, JsonDictionary<Version, ModuleData>>)Intersect(thisRuntime.Modules, thatRuntime.Modules, keyComparer: StringComparer.OrdinalIgnoreCase);
 
-            // Then intersect versions
+            // TODO:
+            //  - Don't intersect module versions as with other dictionary keys
+            //  - Instead, union all modules in left and right respectively, then intersect
             foreach (KeyValuePair<string, JsonDictionary<Version, ModuleData>> moduleVersions in thatRuntime.Modules)
             {
                 string name = moduleVersions.Key;
