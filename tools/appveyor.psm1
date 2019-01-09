@@ -32,13 +32,33 @@ function Invoke-AppVeyorInstall {
 
     # the legacy WMF4 image only has the old preview SDKs of dotnet
     $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
-    $dotNetCoreSDKVersion = $globalDotJson.sdk.version
-    # don't try to run this script on linux - we have to do the negative check because IsLinux will be defined in core, but not windows
-    if (-not ((dotnet --version).StartsWith($dotNetCoreSDKVersion)) -and ! $IsLinux ) {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 # https://github.com/dotnet/announcements/issues/77
-        Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
-        .\dotnet-install.ps1 -Version $dotNetCoreSDKVersion
-        Remove-Item .\dotnet-install.ps1
+    $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
+    if ($PSVersionTable.PSVersion.Major -gt 4) {
+        $requiredDotNetCoreSDKVersionPresent = (dotnet --list-sdks) -match $requiredDotNetCoreSDKVersion
+    }
+    else {
+        # WMF 4 image has old SDK that does not have --list-sdks parameter
+        $requiredDotNetCoreSDKVersionPresent = (dotnet --version).StartsWith($requiredDotNetCoreSDKVersion)
+    }
+    if (-not $requiredDotNetCoreSDKVersionPresent) {
+        Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
+        $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+            if ($IsLinux -or $isMacOS) {
+                Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
+                bash dotnet-install.sh --version $requiredDotNetCoreSDKVersion
+                [System.Environment]::SetEnvironmentVariable('PATH', "/home/appveyor/.dotnet$([System.IO.Path]::PathSeparator)$PATH")
+            }
+            else {
+                Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
+                .\dotnet-install.ps1 -Version $requiredDotNetCoreSDKVersion
+            }
+        }
+        finally {
+            [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
+            Remove-Item .\dotnet-install.*
+        }
     }
 }
 
