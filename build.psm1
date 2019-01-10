@@ -187,8 +187,6 @@ function Start-ScriptAnalyzerBuild
             "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
 
-        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
-
         $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
         # this is normalizing case as well as selecting the proper location
         if ( $Framework -eq "core" ) {
@@ -231,6 +229,7 @@ function Start-ScriptAnalyzerBuild
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
+        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $destinationDir -ChildPath Settings)
 
         # copy newtonsoft dll if net452 framework
