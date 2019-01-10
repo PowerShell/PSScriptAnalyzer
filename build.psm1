@@ -167,7 +167,7 @@ function Start-ScriptAnalyzerBuild
             $frameworkName = "netstandard2.0"
         }
         else {
-            $frameworkName = "net451"
+            $frameworkName = "net452"
         }
 
         # build the appropriate assembly
@@ -233,7 +233,7 @@ function Start-ScriptAnalyzerBuild
 
         Publish-File $settingsFiles (Join-Path -Path $destinationDir -ChildPath Settings)
 
-        # copy newtonsoft dll if net451 framework
+        # copy newtonsoft dll if net452 framework
         if ($Framework -eq "full") {
             Copy-Item -path "$projectRoot\Rules\bin\${config}\${frameworkName}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
