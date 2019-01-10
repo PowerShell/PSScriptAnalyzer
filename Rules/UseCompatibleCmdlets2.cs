@@ -5,6 +5,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using Microsoft.PowerShell.CrossCompatibility.Query;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using System;
+using System.IO;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -19,6 +20,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
+            string cwd = Directory.GetCurrentDirectory();
             CmdletCompatibilityVisitor compatibilityVisitor = CreateVisitorFromConfiguration(fileName);
             ast.Visit(compatibilityVisitor);
             return compatibilityVisitor.GetDiagnosticRecords();

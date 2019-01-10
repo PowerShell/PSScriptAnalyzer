@@ -24,7 +24,7 @@ else
 [System.Reflection.BindingFlags]$script:InstanceBindingFlags = [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::FlattenHierarchy
 
 # Common/ubiquitous cmdlet parameters which we don't want to repeat over and over
-[string[]]$script:commonParams = @(
+[string[]]$script:CommonParams = @(
     'Verbose'
     'Debug'
     'ErrorAction'
@@ -37,6 +37,9 @@ else
     'OutBuffer'
     'PipelineVariable'
 )
+
+# The file name for the any-platform reference generated from the union of all other platforms
+[string]$script:AnyPlatformReferenceProfileFilePath = [System.IO.Path]::Combine($script:CompatibilityProfileDir, 'anyplatforms_union.json')
 
 <#
 .SYNOPSIS
@@ -227,6 +230,16 @@ function New-PowerShellCompatibilityProfile
 
     $json = ConvertTo-CompatibilityProfileJson -Item $reportData -NoWhitespace:(-not $Readable)
     return New-Item -Path $OutFile -Value $json -Force
+}
+
+function New-AllPlatformReferenceProfile
+{
+    if (Test-Path -Path $script:AnyPlatformReferenceProfileFilePath)
+    {
+        Remove-Item -Path $script:AnyPlatformReferenceProfileFilePath -Force
+    }
+
+    Join-CompatibilityProfile -Path $script:CompatibilityProfileDir | ConvertFrom-CompatibilityJson > $script:AnyPlatformReferenceProfileFilePath
 }
 
 <#
