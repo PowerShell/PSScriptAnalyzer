@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net451</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -13,7 +13,7 @@
     <PackageReference Include="PowerShellStandard.Library" Version="3.0.0-preview-02" />
   </ItemGroup>
 
-<ItemGroup Condition="'$(TargetFramework)' == 'net452'">
+<ItemGroup Condition="'$(TargetFramework)' == 'net451'">
   <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
 </ItemGroup>
 
