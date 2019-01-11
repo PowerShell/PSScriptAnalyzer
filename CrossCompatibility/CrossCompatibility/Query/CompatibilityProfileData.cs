@@ -12,11 +12,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public CompatibilityProfileData(CompatibilityProfileDataMut compatibilityProfileData)
         {
             Runtime = new RuntimeData(compatibilityProfileData.Compatibility);
-            Platform = compatibilityProfileData.Platforms.Select(p => new PlatformData(p)).ToArray();
+            Platform = new PlatformData(compatibilityProfileData.Platform);
         }
 
         public RuntimeData Runtime { get; }
 
-        public IReadOnlyList<PlatformData> Platform { get; }
+        public PlatformData Platform { get; }
     }
 }

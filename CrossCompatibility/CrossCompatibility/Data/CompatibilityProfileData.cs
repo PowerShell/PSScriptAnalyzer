@@ -22,19 +22,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         public RuntimeData Compatibility { get; set; }
 
         /// <summary>
-        /// Describes the target platforms on which a PowerShell script
+        /// Describes the target platform on which a PowerShell script
         /// will run, including the PowerShell installation,
         /// the .NET runtime and the operating system environment.
         /// </summary>
         [DataMember]
-        public PlatformData[] Platforms { get; set; }
+        public PlatformData Platform { get; set; }
 
         public object Clone()
         {
             return new CompatibilityProfileData()
             {
                 Compatibility = (RuntimeData)Compatibility.Clone(),
-                Platforms = Platforms.Select(p => (PlatformData)p.Clone()).ToArray()
+                Platform = (PlatformData)Platform.Clone()
             };
         }
     }

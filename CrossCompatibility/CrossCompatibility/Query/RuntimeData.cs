@@ -67,7 +67,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
                         if (commandTable.ContainsKey(alias.Value))
                         {
                             // TODO: This isn't quite accurate, but we need more information
-                            // on which command the alias actually targets
+                            // on which command the alias actually targets to do it properly
                             commandTable.Add(alias.Key, commandTable[alias.Value]);
                             continue;
                         }

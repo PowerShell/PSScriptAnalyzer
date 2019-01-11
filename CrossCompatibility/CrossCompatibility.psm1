@@ -223,7 +223,7 @@ function New-PowerShellCompatibilityProfile
             $null = New-Item -ItemType Directory $script:CompatibilityProfileDir
         }
 
-        $platformNameStr = Get-PlatformName $reportData.Platforms[0]
+        $platformNameStr = Get-PlatformName $reportData.Platform
 
         $OutFile = Join-Path $script:CompatibilityProfileDir "$platformNameStr.json"
     }
@@ -362,7 +362,7 @@ function Get-PowerShellCompatibilityProfileData
 {
     return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]@{
         Compatibility = Get-PowerShellCompatibilityData
-        Platforms = Get-PlatformData
+        Platform = Get-PlatformData
     }
 }
 

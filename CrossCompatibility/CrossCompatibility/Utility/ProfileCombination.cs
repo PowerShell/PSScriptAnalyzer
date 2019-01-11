@@ -11,9 +11,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
     public static class ProfileCombination
     {
-        public static CompatibilityProfileData IntersectMany(IEnumerable<CompatibilityProfileData> profiles)
+        public static CompatibilityProfileData IntersectMany(IEnumerable<CompatibilityProfileData> profiles, PlatformData newPlatform)
         {
-            return CombineProfiles(profiles, Intersect);
+            CompatibilityProfileData intersectedProfile = CombineProfiles(profiles, Intersect);
+
+            // It's up to the caller to come up with a new platform descriptor for the intersected platform
+            intersectedProfile.Platform = newPlatform;
+
+            return intersectedProfile;
         }
 
         public static CompatibilityProfileData UnionMany(IEnumerable<CompatibilityProfileData> profiles)
@@ -25,11 +30,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             thisProfile.Compatibility = (RuntimeData)Intersect(thisProfile.Compatibility, thatProfile.Compatibility);
 
-            // Intersection of platforms is just adding them to the array
-            var platforms = new PlatformData[thisProfile.Platforms.Length + thatProfile.Platforms.Length];
-            thisProfile.Platforms.CopyTo(platforms, 0);
-            thatProfile.Platforms.CopyTo(platforms, thisProfile.Platforms.Length);
-            thisProfile.Platforms = platforms;
+            // We have no generic algorithm for generating intersected platform information,
+            // so it's left up to the caller to correct that information
+            thisProfile.Platform = null;
 
             return thisProfile;
         }
@@ -218,7 +221,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             // There's no simple solution to this currently.
             // We can revisit, but platform unions don't make much sense out of context
-            thisProfile.Platforms = null;
+            thisProfile.Platform = null;
 
             Union(thisProfile.Compatibility, thatProfile.Compatibility);
 

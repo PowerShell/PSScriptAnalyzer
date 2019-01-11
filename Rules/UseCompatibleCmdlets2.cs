@@ -6,11 +6,16 @@ using Microsoft.PowerShell.CrossCompatibility.Query;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using System;
 using System.IO;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     public class UseCompatibleCmdlets2 : IScriptRule
     {
+        private const string SETTING_TARGET_PATHS = "targetProfilePaths";
+
+        private const string SETTING_ANY_UNION_PATHS = "anyProfilePath";
+
         private CompatibilityProfileLoader _profileLoader;
 
         public UseCompatibleCmdlets2()
@@ -61,15 +66,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private CmdletCompatibilityVisitor CreateVisitorFromConfiguration(string analyzedFileName)
         {
             IDictionary<string, object> ruleArgs = Helper.Instance.GetRuleArguments(GetName());
-            string configPath = ruleArgs["configPath"] as string;
+            var configPaths = ruleArgs[SETTING_TARGET_PATHS] as string[];
+            var anyProfilePath = ruleArgs[SETTING_ANY_UNION_PATHS] as string;
 
-            CompatibilityProfileData profile = _profileLoader.GetProfileFromFilePath(configPath);
-            return new CmdletCompatibilityVisitor(analyzedFileName, profile, this);
+            var targetProfiles = new List<CompatibilityProfileData>();
+            foreach (string configPath in configPaths)
+            {
+                targetProfiles.Add(_profileLoader.GetProfileFromFilePath(configPath));
+            }
+
+            CompatibilityProfileData anyProfile = _profileLoader.GetProfileFromFilePath(anyProfilePath);
+            return new CmdletCompatibilityVisitor(analyzedFileName, targetProfiles, anyProfile, rule: this);
         }
 
         private class CmdletCompatibilityVisitor : AstVisitor
         {
-            private readonly CompatibilityProfileData _compatibilityTarget;
+            private readonly IList<CompatibilityProfileData> _compatibilityTargets;
+
+            private readonly CompatibilityProfileData _anyProfileCompatibilityList;
 
             private readonly List<DiagnosticRecord> _diagnosticAccumulator;
 
@@ -79,11 +93,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public CmdletCompatibilityVisitor(
                 string analyzedFileName,
-                CompatibilityProfileData compatibilityTarget,
+                IList<CompatibilityProfileData> compatibilityTarget,
+                CompatibilityProfileData anyProfileCompatibilityList,
                 UseCompatibleCmdlets2 rule)
             {
                 _analyzedFileName = analyzedFileName;
-                _compatibilityTarget = compatibilityTarget;
+                _compatibilityTargets = compatibilityTarget;
+                _anyProfileCompatibilityList = anyProfileCompatibilityList;
                 _diagnosticAccumulator = new List<DiagnosticRecord>();
                 _rule = rule;
             }
@@ -101,25 +117,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.SkipChildren;
                 }
 
-                if (_compatibilityTarget.Runtime.Modules.ContainsKey(commandName))
+                // Note:
+                // The "right" way to eliminate user-defined commands would be to build
+                // a list of:
+                //  - all functions defined above this point
+                //  - all modules imported
+                // However, looking for imported modules could prove very expensive
+                // and we would still miss things like assignments to the function: provider.
+                // Instead, we look to see if a command of the given name is present in any
+                // known profile, which is something of a hack.
+
+                // This is not present in any known profiles, so assume it is user defined
+                if (!_anyProfileCompatibilityList.Runtime.Commands.ContainsKey(commandName))
                 {
                     return AstVisitAction.Continue;
                 }
 
-                Version targetVersion = _compatibilityTarget.Platform[0].PowerShell.Version;
-                string platform = _compatibilityTarget.Platform[0].OperatingSystem.Name;
-                string message = $"The command '{commandName}' is not compatible with PowerShell v{targetVersion} on platform {platform}";
+                // Check each target platform
+                foreach (CompatibilityProfileData targetProfile in _compatibilityTargets)
+                {
+                    // If the target has this command, everything is good
+                    if (targetProfile.Runtime.Commands.ContainsKey(commandName))
+                    {
+                        continue;
+                    }
 
-                var diagnostic = new DiagnosticRecord(
-                    message,
-                    commandAst.Extent,
-                    _rule.GetName(),
-                    _rule.DiagnosticSeverity,
-                    _analyzedFileName,
-                    ruleId: null,
-                    suggestedCorrections: null);
+                    Version targetVersion = targetProfile.Platform.PowerShell.Version;
+                    string platform = targetProfile.Platform.OperatingSystem.Name;
+                    string message = $"The command '{commandName}' is not compatible with PowerShell v{targetVersion} on platform {platform}";
 
-                _diagnosticAccumulator.Add(diagnostic);
+                    var diagnostic = new DiagnosticRecord(
+                        message,
+                        commandAst.Extent,
+                        _rule.GetName(),
+                        _rule.DiagnosticSeverity,
+                        _analyzedFileName,
+                        ruleId: null,
+                        suggestedCorrections: null);
+
+                    _diagnosticAccumulator.Add(diagnostic);
+                }
 
                 return AstVisitAction.Continue;
             }
