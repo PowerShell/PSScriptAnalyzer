@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
-using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -144,20 +143,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (commandInfoCache == null)
             {
                 commandInfoCache = new Dictionary<CommandLookupKey, CommandInfo>();
-
-                using (var ps = System.Management.Automation.PowerShell.Create())
-                {
-                    var psCommand = ps.AddCommand("Get-Command")
-                        .AddParameter("All");
-
-                    var commandInfos = psCommand.Invoke<CommandInfo>();
-                    foreach(var commandInfo in commandInfos)
-                    {
-                        var key = new CommandLookupKey(commandInfo.Name, commandInfo.CommandType);
-                        commandInfoCache.Add(key, commandInfo);
-                    }
-                }
-
             }
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
@@ -664,6 +649,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
         }
+
 
         /// <summary>
         /// Get a CommandInfo object of the given command name
