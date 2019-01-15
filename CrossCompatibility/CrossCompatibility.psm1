@@ -5,7 +5,7 @@ if ($PSVersionTable.PSVersion.Major -ge 5)
 }
 else
 {
-    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'net451', 'CrossCompatibility.dll'))
+    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'net452', 'CrossCompatibility.dll'))
 }
 
 # Location of directory where compatibility reports should be put

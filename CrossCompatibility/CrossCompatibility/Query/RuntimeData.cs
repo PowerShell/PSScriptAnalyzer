@@ -57,22 +57,26 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
                 }
             }
 
+            // Add aliases in a second pass so that all the commands they point to are known
             foreach (ModuleData module in modules)
             {
                 if (module.Aliases != null)
                 {
                     foreach (KeyValuePair<string, string> alias in module.Aliases)
                     {
+                        if (!commandTable.ContainsKey(alias.Key))
+                        {
+                            commandTable.Add(alias.Key, new List<CommandData>());
+                        }
+
                         // Link the alias to the actual command
                         if (commandTable.ContainsKey(alias.Value))
                         {
                             // TODO: This isn't quite accurate, but we need more information
                             // on which command the alias actually targets to do it properly
-                            commandTable.Add(alias.Key, commandTable[alias.Value]);
+                            ((List<CommandData>)commandTable[alias.Key]).AddRange(commandTable[alias.Value]);
                             continue;
                         }
-
-                        commandTable.Add(alias.Key, new List<CommandData>());
                     }
                 }
             }

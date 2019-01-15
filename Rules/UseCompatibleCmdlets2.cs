@@ -10,12 +10,8 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
-    public class UseCompatibleCmdlets2 : IScriptRule
+    public class UseCompatibleCmdlets2 : ConfigurableRule
     {
-        private const string SETTING_TARGET_PATHS = "targetProfilePaths";
-
-        private const string SETTING_ANY_UNION_PATHS = "anyProfilePath";
-
         private CompatibilityProfileLoader _profileLoader;
 
         public UseCompatibleCmdlets2()
@@ -23,7 +19,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             _profileLoader = new CompatibilityProfileLoader();
         }
 
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        [ConfigurableRuleProperty(defaultValue: "")]
+        public string AnyProfilePath { get; set; }
+
+        [ConfigurableRuleProperty(defaultValue: new string[] {})]
+        public string[] TargetProfilePaths { get; set; }
+
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             string cwd = Directory.GetCurrentDirectory();
             CmdletCompatibilityVisitor compatibilityVisitor = CreateVisitorFromConfiguration(fileName);
@@ -31,32 +33,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return compatibilityVisitor.GetDiagnosticRecords();
         }
 
-        public string GetCommonName()
+        public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdlets2Description);
         }
 
-        public string GetDescription()
+        public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdlets2Description);
         }
 
-        public string GetName()
+        public override string GetName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdlets2Name);
         }
 
-        public RuleSeverity GetSeverity()
+        public override RuleSeverity GetSeverity()
         {
             return RuleSeverity.Warning;
         }
 
-        public string GetSourceName()
+        public override string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        public SourceType GetSourceType()
+        public override SourceType GetSourceType()
         {
             return SourceType.Builtin;
         }
@@ -65,17 +67,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private CmdletCompatibilityVisitor CreateVisitorFromConfiguration(string analyzedFileName)
         {
-            IDictionary<string, object> ruleArgs = Helper.Instance.GetRuleArguments(GetName());
-            var configPaths = ruleArgs[SETTING_TARGET_PATHS] as string[];
-            var anyProfilePath = ruleArgs[SETTING_ANY_UNION_PATHS] as string;
+            if (string.IsNullOrEmpty(AnyProfilePath))
+            {
+                throw new InvalidOperationException($"{nameof(AnyProfilePath)} cannot be null or empty");
+            }
+
+            if (TargetProfilePaths == null)
+            {
+                throw new InvalidOperationException($"{nameof(TargetProfilePaths)} cannot be null");
+            }
+
+            if (TargetProfilePaths.Length == 0)
+            {
+                throw new InvalidOperationException($"{nameof(TargetProfilePaths)} cannot be empty");
+            }
 
             var targetProfiles = new List<CompatibilityProfileData>();
-            foreach (string configPath in configPaths)
+            foreach (string configPath in TargetProfilePaths)
             {
                 targetProfiles.Add(_profileLoader.GetProfileFromFilePath(configPath));
             }
 
-            CompatibilityProfileData anyProfile = _profileLoader.GetProfileFromFilePath(anyProfilePath);
+            CompatibilityProfileData anyProfile = _profileLoader.GetProfileFromFilePath(AnyProfilePath);
             return new CmdletCompatibilityVisitor(analyzedFileName, targetProfiles, anyProfile, rule: this);
         }
 

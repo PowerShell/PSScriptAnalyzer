@@ -148,6 +148,9 @@ function Start-ScriptAnalyzerBuild
 
         if ( $All )
         {
+            # Build the CrossCompatibility module
+            & $PSScriptRoot\CrossCompatibility\build.ps1 -Configuration $Configuration
+
             # Build all the versions of the analyzer
             foreach($psVersion in 3..6) {
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
@@ -160,6 +163,15 @@ function Start-ScriptAnalyzerBuild
         }
         else {
             $framework = "net452"
+        }
+
+        # Build CrossCompatibility module
+        & $PSScriptRoot\CrossCompatibility\build.ps1 -Framework $framework -Configuration $Configuration
+
+        # build the appropriate assembly
+        if ($PSVersion -match "[34]" -and $Framework -eq "core")
+        {
+            throw ("ScriptAnalyzer for PS version '{0}' is not applicable to {1} framework" -f $PSVersion,$Framework)
         }
 
         Push-Location -Path $projectRoot

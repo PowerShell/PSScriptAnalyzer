@@ -11,8 +11,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         protected CommandData(string name, Modules.CommandData commandData)
         {
             _commandData = commandData;
-            ParameterAliases = commandData.ParameterAliases.ToDictionary(a => a.Key, a => a.Value);
-            Parameters = _commandData.Parameters.ToDictionary(p => p.Key, p => new ParameterData(p.Key, p.Value));
+            ParameterAliases = commandData.ParameterAliases?.ToDictionary(a => a.Key, a => a.Value);
+            Parameters = _commandData.Parameters?.ToDictionary(p => p.Key, p => new ParameterData(p.Key, p.Value));
             Name = name;
         }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.PowerShell.CrossCompatibility.Query;
@@ -19,6 +20,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public CompatibilityProfileData GetProfileFromFilePath(string path)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             if (_profileCache.ContainsKey(path))
             {
                 return _profileCache[path];

@@ -15,9 +15,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
             Name = name;
             Version = version;
-            Functions = moduleData.Functions.ToDictionary(f => f.Key, f => new FunctionData(f.Value, f.Key));
-            Cmdlets = moduleData.Cmdlets.ToDictionary(c => c.Key, c => new CmdletData(c.Key, c.Value));
-            Aliases = moduleData.Aliases.ToDictionary(a => a.Key, a => a.Value);
+            Functions = moduleData.Functions?.ToDictionary(f => f.Key, f => new FunctionData(f.Value, f.Key));
+            Cmdlets = moduleData.Cmdlets?.ToDictionary(c => c.Key, c => new CmdletData(c.Key, c.Value));
+            Aliases = moduleData.Aliases?.ToDictionary(a => a.Key, a => a.Value);
         }
 
         public string Name { get; }
