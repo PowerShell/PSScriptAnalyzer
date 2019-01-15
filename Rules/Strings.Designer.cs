@@ -10,7 +10,6 @@
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -2011,6 +2010,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseCmdletCorrectlyName {
             get {
                 return ResourceManager.GetString("UseCmdletCorrectlyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use compatible cmdlets.
+        /// </summary>
+        internal static string UseCompatibleCmdlets2CommonName {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdlets2CommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use cmdlets compatible with the given PowerShell version and operating system.
+        /// </summary>
+        internal static string UseCompatibleCmdlets2Description {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdlets2Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleCmdlets2Error {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdlets2Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleCmdlets2.
+        /// </summary>
+        internal static string UseCompatibleCmdlets2Name {
+            get {
+                return ResourceManager.GetString("UseCompatibleCmdlets2Name", resourceCulture);
             }
         }
         

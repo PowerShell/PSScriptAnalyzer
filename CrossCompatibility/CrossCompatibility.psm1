@@ -91,28 +91,6 @@ function Test-IsCommonParameter
     return $script:CommonParameters.Contains($ParameterName)
 }
 
-<#
-.SYNOPSIS
-Short description
-
-.DESCRIPTION
-Long description
-
-.PARAMETER InputFile
-Parameter description
-
-.PARAMETER ProfileObject
-Parameter description
-
-.PARAMETER Union
-Parameter description
-
-.EXAMPLE
-An example
-
-.NOTES
-General notes
-#>
 function Join-CompatibilityProfile
 {
     [CmdletBinding(DefaultParameterSetName='File')]
@@ -196,7 +174,7 @@ function New-PowerShellCompatibilityProfile
 
     if ($PassThru)
     {
-        return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityProfileJson -NoWhitespace:(-not $Readable)
+        return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityJson -NoWhitespace:(-not $Readable)
     }
 
     if ($PlatformName)
@@ -228,18 +206,30 @@ function New-PowerShellCompatibilityProfile
         $OutFile = Join-Path $script:CompatibilityProfileDir "$platformNameStr.json"
     }
 
-    $json = ConvertTo-CompatibilityProfileJson -Item $reportData -NoWhitespace:(-not $Readable)
+    $json = ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $Readable)
     return New-Item -Path $OutFile -Value $json -Force
 }
 
 function New-AllPlatformReferenceProfile
 {
-    if (Test-Path -Path $script:AnyPlatformReferenceProfileFilePath)
+    param(
+        [string]
+        $Path = $script:AnyPlatformReferenceProfileFilePath,
+
+        [string]
+        $ProfileDir = $script:CompatibilityProfileDir
+    )
+
+    if (Test-Path -Path $Path)
     {
-        Remove-Item -Path $script:AnyPlatformReferenceProfileFilePath -Force
+        Remove-Item -Path $Path -Force
     }
 
-    Join-CompatibilityProfile -Path $script:CompatibilityProfileDir | ConvertFrom-CompatibilityJson > $script:AnyPlatformReferenceProfileFilePath
+    $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) 'anyprofile.json'
+
+    Join-CompatibilityProfile -InputFile $ProfileDir -Union | ConvertTo-CompatibilityJson > $tmpPath
+
+    Move-Item -Path $tmpPath -Destination $Path
 }
 
 <#
@@ -284,7 +274,7 @@ If set, serializes enums as numbers rather than strings.
 .PARAMETER NoWhitespace
 If set, does not add any whitespace to the JSON.
 #>
-function ConvertTo-CompatibilityProfileJson
+function ConvertTo-CompatibilityJson
 {
     param(
         [Parameter(Mandatory=$true, ValueFromPipeline=$true)]

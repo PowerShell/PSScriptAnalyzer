@@ -33,17 +33,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdletsDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdlets2Description);
         }
 
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdletsDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdlets2Description);
         }
 
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdletsName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdlets2Name);
         }
 
         public RuleSeverity GetSeverity()
@@ -144,7 +144,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     Version targetVersion = targetProfile.Platform.PowerShell.Version;
                     string platform = targetProfile.Platform.OperatingSystem.Name;
-                    string message = $"The command '{commandName}' is not compatible with PowerShell v{targetVersion} on platform {platform}";
+                    string message = String.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdlets2Error, commandName, targetVersion, platform);
 
                     var diagnostic = new DiagnosticRecord(
                         message,

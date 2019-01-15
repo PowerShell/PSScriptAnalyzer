@@ -449,6 +449,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private static string[][] ParameterUnion(string[][] thisParameters, string[][] thatParameters)
         {
+            if (thatParameters == null)
+            {
+                return thisParameters;
+            }
+
+            if (thisParameters == null)
+            {
+                return thatParameters.Select(arr => (string[])arr.Clone()).ToArray();
+            }
+
             var parameters = new HashSet<string[]>(thisParameters, new ParameterListComparer());
 
             foreach (string[] thatParameter in thatParameters)
@@ -570,12 +580,17 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             public int GetHashCode(string[] obj)
             {
+                if (obj == null)
+                {
+                    return 0;
+                }
+
                 unsafe
                 {
                     int hc = 1;
                     foreach (string s in obj)
                     {
-                        hc = 31 * hc + s.GetHashCode();
+                        hc = 31 * hc + (s?.GetHashCode() ?? 0);
                     }
                     return hc;
                 }

@@ -223,8 +223,9 @@ function Start-ScriptAnalyzerBuild
         Publish-File $itemsToCopyCommon $destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${config}\${framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${config}\${framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\CrossCompatibility\CrossCompatibility\bin\${config}\${frameworkName}\CrossCompatibility.dll"
+            "$projectRoot\Engine\bin\${config}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot\Rules\bin\${config}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
@@ -244,7 +245,7 @@ function Start-ScriptAnalyzerBuild
 function Test-ScriptAnalyzer
 {
     [CmdletBinding()]
-    param ( [Parameter()][switch]$InProcess )
+    param ( [Parameter()][switch]$InProcess, [switch]$ShowAll )
 
     END {
         $testModulePath = Join-Path "${projectRoot}" -ChildPath out
@@ -253,7 +254,14 @@ function Test-ScriptAnalyzer
         try {
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
-            $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary")
+            if ($ShowAll)
+            {
+                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile")
+            }
+            else
+            {
+                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary")
+            }
             if ( $InProcess ) {
                 & $scriptBlock
             }

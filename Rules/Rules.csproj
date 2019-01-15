@@ -50,6 +50,10 @@
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
     <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\CrossCompatibility\CrossCompatibility\CrossCompatibility.csproj" />
+  </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
     <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
