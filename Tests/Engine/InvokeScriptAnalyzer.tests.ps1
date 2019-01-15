@@ -578,7 +578,7 @@ Describe "Test -EnableExit Switch" {
                 class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
 '@
             It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
-                Invoke-ScriptAnalyzer -ScriptDefinition $script -WarningVariable warning | Should -BeNullOrEmpty
+                Invoke-ScriptAnalyzer -ScriptDefinition $script -WarningVariable warning 3> $null | Should -BeNullOrEmpty
                 $warning.Count | Should -Be 1
                 $warning[0] | Should -BeLike $expectedWarning
             }
@@ -586,7 +586,7 @@ Describe "Test -EnableExit Switch" {
             $testFilePath = "TestDrive:\testfile.ps1"
             Set-Content $testFilePath -value $script
             It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
-                Invoke-ScriptAnalyzer -Path $testFilePath -WarningVariable warning | Should -BeNullOrEmpty
+                Invoke-ScriptAnalyzer -Path $testFilePath -WarningVariable warning 3> $null | Should -BeNullOrEmpty
                 $warning.Count | Should -Be 1
                 $warning[0] | Should -BeLike $expectedWarning
             }
