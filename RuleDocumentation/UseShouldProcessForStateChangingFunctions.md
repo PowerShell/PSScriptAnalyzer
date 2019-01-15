@@ -18,7 +18,7 @@ Verbs that should support `ShouldProcess`:
 
 ## How
 
-Include the attribute `SupportsShouldProcess`, in the `CmdletBindingBinding`.
+Include the `SupportsShouldProcess` argument in the `CmdletBinding` attribute.
 
 ## Example
 
