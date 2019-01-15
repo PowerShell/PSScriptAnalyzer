@@ -113,6 +113,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             this.WriteObject(formattedScriptDefinition);
         }
 
+        protected override void EndProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.EndProcessing();
+        }
+
+        protected override void StopProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.StopProcessing();
+        }
+
         private void ValidateInputSettings()
         {
             // todo implement this
