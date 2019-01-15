@@ -1667,8 +1667,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 else
                 {
-                    diagnosticRecords.Add(new DiagnosticRecord(
-                        string.Format(Strings.TypeNotFoundParseErrorFound, parseError.Extent), parseError.Extent, "TypeNotFound", DiagnosticSeverity.Information, parseError.Extent.File));
+                    outputWriter.WriteWarning(string.Format(Strings.TypeNotFoundParseErrorFound, parseError.Extent, parseError.Extent.StartLineNumber, parseError.Extent.File));
                 }
             }
 
