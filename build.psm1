@@ -147,6 +147,9 @@ function Start-ScriptAnalyzerBuild
         if ($PSVersion -ge 6) {
             $framework = 'netstandard2.0'
         }
+        else {
+            $frameworkName = "net452"
+        }
 
         Push-Location -Path $projectRoot
         if (-not (Test-Path "$projectRoot/global.json"))
@@ -158,8 +161,6 @@ function Start-ScriptAnalyzerBuild
             "$projectRoot\Engine\PSScriptAnalyzer.psd1", "$projectRoot\Engine\PSScriptAnalyzer.psm1",
             "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
-
-        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
 
         $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
         switch ($PSVersion)
@@ -212,9 +213,10 @@ function Start-ScriptAnalyzerBuild
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
+        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $destinationDir -ChildPath Settings)
 
-        if ($framework -eq 'net451') {
+        if ($framework -eq 'net452') {
             Copy-Item -path "$projectRoot\Rules\bin\${config}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
 

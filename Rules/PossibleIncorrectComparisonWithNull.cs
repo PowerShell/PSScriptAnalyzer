@@ -38,7 +38,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     if (IncorrectComparisonWithNull(binExpressionAst, ast))
                     {
-                        yield return new DiagnosticRecord(Strings.PossibleIncorrectComparisonWithNullError, binExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        yield return new DiagnosticRecord(Strings.PossibleIncorrectComparisonWithNullError, binExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName,
+                            null, suggestedCorrections: GetCorrectionExtent(binExpressionAst));
                     }
                 }
             }
@@ -60,7 +61,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     if (IncorrectComparisonWithNull(binAst, funcAst))
                     {
-                        yield return new DiagnosticRecord(Strings.PossibleIncorrectComparisonWithNullError, binAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        yield return new DiagnosticRecord(Strings.PossibleIncorrectComparisonWithNullError, binAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName,
+                            null, suggestedCorrections: GetCorrectionExtent(binAst));
                     }
                 }
             }
@@ -99,6 +101,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return false;
+        }
+
+        private IEnumerable<CorrectionExtent> GetCorrectionExtent(BinaryExpressionAst binaryExpressionAst)
+        {
+            var correction = new CorrectionExtent(
+                binaryExpressionAst.Extent.StartLineNumber,
+                binaryExpressionAst.Extent.EndLineNumber,
+                binaryExpressionAst.Extent.StartColumnNumber,
+                binaryExpressionAst.Extent.EndColumnNumber,
+                $"{binaryExpressionAst.Right.Extent.Text} {binaryExpressionAst.ErrorPosition.Text} {binaryExpressionAst.Left.Extent.Text}",
+                binaryExpressionAst.Extent.File,
+                Strings.PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription
+                );
+
+            yield return correction;
         }
 
         /// <summary>
