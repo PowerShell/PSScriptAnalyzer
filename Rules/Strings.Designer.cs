@@ -1492,6 +1492,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use $null on the left hand side for safe comparison with $null..
+        /// </summary>
+        internal static string PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;=&apos; is not an assignment operator. Did you mean the equality operator &apos;-eq&apos;?.
         /// </summary>
         internal static string PossibleIncorrectUsageOfAssignmentOperatorCommonName {

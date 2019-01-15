@@ -990,6 +990,9 @@
   <data name="PossibleIncorrectUsageOfRedirectionOperatorName" xml:space="preserve">
     <value>PossibleIncorrectUsageOfRedirectionOperator</value>
   </data>
+  <data name="PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription" xml:space="preserve">
+    <value>Use $null on the left hand side for safe comparison with $null.</value>
+  </data>
   <data name="UseConsistentWhitespaceErrorAfterOpeningBrace" xml:space="preserve">
     <value>Use space after open brace.</value>
   </data>
