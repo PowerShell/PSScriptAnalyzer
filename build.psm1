@@ -143,7 +143,6 @@ function Start-ScriptAnalyzerBuild
             Start-DocumentationBuild
         }
 
-        $framework = 'net451'
         if ($PSVersion -ge 6) {
             $framework = 'netstandard2.0'
         }
