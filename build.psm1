@@ -167,7 +167,7 @@ function Start-ScriptAnalyzerBuild
             $frameworkName = "netstandard2.0"
         }
         else {
-            $frameworkName = "net451"
+            $frameworkName = "net452"
         }
 
         # build the appropriate assembly
@@ -186,8 +186,6 @@ function Start-ScriptAnalyzerBuild
             "$projectRoot\Engine\PSScriptAnalyzer.psd1", "$projectRoot\Engine\PSScriptAnalyzer.psm1",
             "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
-
-        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
 
         $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
         # this is normalizing case as well as selecting the proper location
@@ -231,9 +229,10 @@ function Start-ScriptAnalyzerBuild
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
+        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $destinationDir -ChildPath Settings)
 
-        # copy newtonsoft dll if net451 framework
+        # copy newtonsoft dll if net452 framework
         if ($Framework -eq "full") {
             Copy-Item -path "$projectRoot\Rules\bin\${config}\${frameworkName}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }

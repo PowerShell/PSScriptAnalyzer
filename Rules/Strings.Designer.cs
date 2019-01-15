@@ -537,7 +537,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidTrailingWhitespaceName", resourceCulture);
             }
         }
-                
+        
         /// <summary>
         ///   Looks up a localized string similar to Module Must Be Loadable.
         /// </summary>
@@ -807,7 +807,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidUsingEmptyCatchBlockName", resourceCulture);
             }
         }
-                
+        
         /// <summary>
         ///   Looks up a localized string similar to Avoid Using Internal URLs.
         /// </summary>
@@ -1489,6 +1489,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string PossibleIncorrectComparisonWithNullName {
             get {
                 return ResourceManager.GetString("PossibleIncorrectComparisonWithNullName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use $null on the left hand side for safe comparison with $null..
+        /// </summary>
+        internal static string PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription {
+            get {
+                return ResourceManager.GetString("PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription", resourceCulture);
             }
         }
         
