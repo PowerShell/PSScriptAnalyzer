@@ -181,15 +181,15 @@ Describe "Test Path" {
 			$numFilesResult | Should -Be $numFilesExpected
 			}
         }
-        
+
         Context "When piping in files" {
             It "Can be piped in from a string" {
                 $piped = ("$directory\TestScript.ps1" | Invoke-ScriptAnalyzer)
                 $explicit = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1
-    
+
                 $piped.Count | Should Be $explicit.Count
             }
-    
+
             It "Can be piped from Get-ChildItem" {
                 $piped = ( Get-ChildItem -Path $directory -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
                 $explicit = Invoke-ScriptAnalyzer -Path $directory\TestTestPath*.ps1
@@ -410,7 +410,7 @@ Describe "Test CustomizedRulePath" {
                     Pop-Location
                 }
             }
-            
+
             It "resolves rule preset when passed in via pipeline" {
                 $warnings = 'CodeFormattingStroustrup' | ForEach-Object {
                     Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){}' -Settings $_}
@@ -552,8 +552,8 @@ Describe "Test -EnableExit Switch" {
             else {
                 $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
             }
-            
-            "$result" | Should -BeLike $reportSummaryFor1Warning 
+
+            "$result" | Should -BeLike $reportSummaryFor1Warning
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
             if ($IsCoreCLR) {
@@ -562,14 +562,15 @@ Describe "Test -EnableExit Switch" {
             else {
                 $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
             }
-            
-            "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
+
+            "$result" | Should -Not -BeLike $reportSummaryFor1Warning
         }
     }
 
     # using statements are only supported in v5+
     if (!$testingLibraryUsage -and ($PSVersionTable.PSVersion -ge [Version]'5.0.0')) {
         Describe "Handles parse errors due to unknown types" {
+            $expectedWarning = "Ignoring 'TypeNotFound' parse error of type 'IStorageContext' in line 4 of file '*"
             $script = @'
                 using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
                 using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
@@ -577,17 +578,17 @@ Describe "Test -EnableExit Switch" {
                 class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
 '@
             It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
-                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
-                $warnings.Count | Should -Be 1
-                $warnings.RuleName | Should -Be 'TypeNotFound'
+                Invoke-ScriptAnalyzer -ScriptDefinition $script -WarningVariable warning | Should -BeNullOrEmpty
+                $warning.Count | Should -Be 1
+                $warning[0] | Should -BeLike $expectedWarning
             }
 
             $testFilePath = "TestDrive:\testfile.ps1"
             Set-Content $testFilePath -value $script
             It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
-                $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
-                $warnings.Count | Should -Be 1
-                $warnings.RuleName | Should -Be 'TypeNotFound'
+                Invoke-ScriptAnalyzer -Path $testFilePath -WarningVariable warning | Should -BeNullOrEmpty
+                $warning.Count | Should -Be 1
+                $warning[0] | Should -BeLike $expectedWarning
             }
         }
     }
