@@ -7,6 +7,7 @@ using Microsoft.PowerShell.CrossCompatibility.Utility;
 using System;
 using System.IO;
 using System.Runtime.Serialization;
+using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -152,21 +153,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     // If the target has this command, everything is good
                     if (targetProfile.Runtime.Commands.ContainsKey(commandName))
                     {
+                        // TODO: Check parameters
                         continue;
                     }
 
-                    Version targetVersion = targetProfile.Platform.PowerShell.Version;
-                    string platform = targetProfile.Platform.OperatingSystem.Name;
-                    string message = String.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCmdlets2Error, commandName, targetVersion, platform);
-
-                    var diagnostic = new DiagnosticRecord(
-                        message,
+                    var diagnostic = IncompatibleCommandDiagnostic.Create(
+                        commandName,
+                        targetProfile.Platform,
                         commandAst.Extent,
-                        _rule.GetName(),
-                        _rule.DiagnosticSeverity,
                         _analyzedFileName,
-                        ruleId: null,
-                        suggestedCorrections: null);
+                        _rule);
 
                     _diagnosticAccumulator.Add(diagnostic);
                 }
@@ -179,5 +175,80 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return _diagnosticAccumulator;
             }
         }
+    }
+
+    public abstract class IncompatibilityDiagnostic : DiagnosticRecord
+    {
+        protected IncompatibilityDiagnostic(
+            string message,
+            IScriptExtent extent,
+            string ruleName,
+            string ruleId,
+            string analyzedFileName,
+            IEnumerable<CorrectionExtent> suggestedCorrections)
+            : base(
+                message,
+                extent,
+                ruleName,
+                DiagnosticSeverity.Warning,
+                analyzedFileName,
+                ruleId: null,
+                suggestedCorrections: suggestedCorrections)
+        {
+        }
+    }
+
+    public class IncompatibleCommandDiagnostic : IncompatibilityDiagnostic
+    {
+        public static IncompatibleCommandDiagnostic Create(
+            string commandName,
+            PlatformData platform,
+            IScriptExtent extent,
+            string analyzedFileName,
+            IRule rule,
+            IEnumerable<CorrectionExtent> suggestedCorrections = null)
+        {
+            string message = String.Format(
+                CultureInfo.CurrentCulture,
+                Strings.UseCompatibleCmdlets2Error,
+                commandName,
+                platform.PowerShell.Version,
+                platform.OperatingSystem.Name);
+
+            return new IncompatibleCommandDiagnostic(
+                commandName,
+                platform,
+                message,
+                extent,
+                rule.GetName(),
+                ruleId: null,
+                analyzedFileName: analyzedFileName,
+                suggestedCorrections: suggestedCorrections);
+        }
+
+        private IncompatibleCommandDiagnostic(
+            string incompatibleCommand,
+            PlatformData targetPlatform,
+            string message,
+            IScriptExtent extent,
+            string ruleName,
+            string ruleId,
+            string analyzedFileName,
+            IEnumerable<CorrectionExtent> suggestedCorrections = null)
+            : base(
+                message,
+                extent,
+                ruleName,
+                ruleId,
+                analyzedFileName,
+                suggestedCorrections)
+        {
+            Command = incompatibleCommand;
+            targetPlatform = TargetPlatform;
+        }
+
+        public string Command { get; }
+
+        public PlatformData TargetPlatform { get; }
     }
 }

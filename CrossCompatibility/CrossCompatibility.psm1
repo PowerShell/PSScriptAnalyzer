@@ -432,19 +432,26 @@ function Get-OSData
     if ($PSVersionTable.PSVersion.Major -ge 6)
     {
         $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-    }
-    elseif ([System.Environment]::Is64BitOperatingSystem)
-    {
-        $arch = 'X64'
+        $osName = $PSVersionTable.OS
+        $osPlatform = $PSVersionTable.Platform
     }
     else
     {
-        $arch = 'X86'
+        $osName = (Get-WmiObject Win32_OperatingSystem).Name.Split('|')[0]
+        $osPlatform = 'Win32NT'
+        if ([System.Environment]::Is64BitOperatingSystem)
+        {
+            $arch = 'X64'
+        }
+        else
+        {
+            $arch = 'X86'
+        }
     }
 
     $osData = @{
-        Name = $PSVersionTable.OS
-        Platform = $PSVersionTable.Platform
+        Name = $osName
+        Platform = $osPlatform
         Family = $osFamily
         Architecture = $arch
     }

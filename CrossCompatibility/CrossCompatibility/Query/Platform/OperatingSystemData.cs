@@ -1,3 +1,4 @@
+using System;
 using OperatingSystemDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Platform.OperatingSystemData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform

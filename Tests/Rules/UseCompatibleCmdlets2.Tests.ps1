@@ -51,14 +51,18 @@ Describe 'UseCompatibleCmdlets2' {
             Import-Module ([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'out', 'PSScriptAnalyzer'))
 
             $settingsPath = Join-Path $TestDrive 'PS5_not_PS6.psd1'
-            $targetPath = Join-Path $script:ProfileDirPath 'win-101_x64_10.0.17134.0_5.1.17134.407_x64.json'
+            $targetPath = @(
+                Join-Path $script:ProfileDirPath 'win-101_x64_10.0.17134.0_5.1.17134.407_x64.json'
+                Join-Path $script:ProfileDirPath 'win-101_x64_10.0.17134.0_5.1.17134.407_x64.json'
+            )
 
             New-CompatibleCmdletsSettings -AnyProfileUnionPath $script:AnyProfilePath -TargetProfilePaths $targetPath > $settingsPath
-
-            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule 'UseCompatibleCmdlets2' -Path (Join-Path $script:AssetDirPath 'PS6_not_PS5.ps1') -Settings $settingsPath
         }
 
         It "Finds the correct number of problems" {
+            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule 'UseCompatibleCmdlets2' -Path (Join-Path $script:AssetDirPath 'PS6_not_PS5.ps1') -Settings $settingsPath
+
+            Wait-Debugger
             $diagnostics.Count | Should -Be 1
         }
     }
