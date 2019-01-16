@@ -147,7 +147,7 @@ function Start-ScriptAnalyzerBuild
             $framework = 'netstandard2.0'
         }
         else {
-            $frameworkName = "net452"
+            $framework = "net452"
         }
 
         Push-Location -Path $projectRoot
