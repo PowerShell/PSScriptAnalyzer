@@ -241,20 +241,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var errors = new System.Collections.ObjectModel.Collection<Exception>();
             var keys = new List<string>();
             List<CimClass> cimClasses = null;
-            try
+            if (!isDSCClassCacheInitialized)
             {
-                if (!isDSCClassCacheInitialized)
-                {
-                    DscClassCache.Initialize();
-                    isDSCClassCacheInitialized = true;
-                }
+                DscClassCache.Initialize();
+                isDSCClassCacheInitialized = true;
+            }
 
-                cimClasses = dscClassImporter(mofFilepath, moduleInfo, errors);
-            }
-            catch
-            {
-                // todo log the error
-            }
+            cimClasses = dscClassImporter(mofFilepath, moduleInfo, errors);
 
             var cimClass = cimClasses?.FirstOrDefault();
             var cimSuperClassProperties = new HashSet<string>(
