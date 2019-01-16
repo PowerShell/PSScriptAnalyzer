@@ -15,7 +15,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check for [violation]
+    /// UseConsistentWhitespace: Checks if whitespace usage is consistent throughout the source file.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]

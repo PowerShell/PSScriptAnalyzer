@@ -35,7 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             List<string> expectedTargetResourceFunctionNames = new List<string>(new string[]  { "Get-TargetResource", "Set-TargetResource", "Test-TargetResource" });
 
             // Retrieve a list of Asts where the function name contains TargetResource            
-            IEnumerable<Ast> functionDefinitionAsts = (ast.FindAll(dscAst => dscAst is FunctionDefinitionAst && ((dscAst as FunctionDefinitionAst).Name.IndexOf("targetResource", StringComparison.CurrentCultureIgnoreCase) != -1), true));
+            IEnumerable<Ast> functionDefinitionAsts = (ast.FindAll(dscAst => dscAst is FunctionDefinitionAst && ((dscAst as FunctionDefinitionAst).Name.IndexOf("targetResource", StringComparison.OrdinalIgnoreCase) != -1), true));
 
             List<string> targetResourceFunctionNamesInAst = new List<string>();
             foreach (FunctionDefinitionAst functionDefinitionAst in functionDefinitionAsts)
@@ -46,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (string expectedTargetResourceFunctionName in expectedTargetResourceFunctionNames)
             {
                 // If the Ast does not contain the expected functions, provide a Rule violation message
-                if (!targetResourceFunctionNamesInAst.Contains(expectedTargetResourceFunctionName, StringComparer.CurrentCultureIgnoreCase))
+                if (!targetResourceFunctionNamesInAst.Contains(expectedTargetResourceFunctionName, StringComparer.OrdinalIgnoreCase))
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInResourceError, expectedTargetResourceFunctionName),
                         ast.Extent, GetName(), DiagnosticSeverity.Error, fileName);      
@@ -64,7 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            #if PSV3
+            #if (PSV3||PSV4)
 
             return null;
 
