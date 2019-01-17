@@ -109,9 +109,11 @@ Describe "Test available parameters" {
 
 Describe "Test ScriptDefinition" {
     Context "When given a script definition" {
-        It "Does not run rules on script with more than 10 parser errors" {
-            $moreThanTenErrors = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue -ScriptDefinition (Get-Content -Raw "$directory\CSharp.ps1")
-            $moreThanTenErrors.Count | Should -Be 0
+        It "Runs rules on script with more than 10 parser errors" {
+            # this is a script with 12 parse errors
+            $script = ');' * 12
+            $moreThanTenErrors = Invoke-ScriptAnalyzer -ScriptDefinition $script
+            $moreThanTenErrors.Count | Should -Be 12
         }
     }
 }
@@ -124,9 +126,11 @@ Describe "Test Path" {
             $withPath.Count -eq $withoutPath.Count | Should -BeTrue
         }
 
-        It "Does not run rules on script with more than 10 parser errors" {
-            $moreThanTenErrors = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\CSharp.ps1
-            $moreThanTenErrors.Count | Should -Be 0
+        It "Runs rules on script with more than 10 parser errors" {
+            # this is a script with 12 parse errors
+            1..12 | Foreach-Object { ')' } | Out-File "TestDrive:\badfile.ps1"
+            $moreThanTenErrors = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue "TestDrive:\badfile.ps1"
+            $moreThanTenErrors.Count | Should -Be 12
         }
     }
 

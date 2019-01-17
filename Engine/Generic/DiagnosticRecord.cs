@@ -142,5 +142,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// ERROR: This diagnostic is likely to cause a problem or does not follow PowerShell's required guidelines.
         /// </summary>
         Error    = 2,
+
+        /// <summary>
+        /// ERROR: This diagnostic is caused by an actual parsing error, and is generated only by the engine.
+        /// </summary>
+        ParseError    = 3,
     };
 }
