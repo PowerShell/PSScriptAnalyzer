@@ -5,6 +5,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using Microsoft.PowerShell.CrossCompatibility.Query;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using System;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Runtime.Serialization;
 using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
@@ -13,14 +14,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     public class UseCompatibleCmdlets2 : ConfigurableRule
     {
-        private CompatibilityProfileLoader _profileLoader;
+        private static readonly Regex s_falseProfileExtensionPattern = new Regex(
+            "\\d+_(x64|x86|arm32|arm64)",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private readonly CompatibilityProfileLoader _profileLoader;
+
+        private readonly string _profileDirPath;
 
         public UseCompatibleCmdlets2()
         {
+            _profileDirPath = Path.Combine(GetModuleRootDirPath(), "CrossCompatibility", "profiles");
             _profileLoader = new CompatibilityProfileLoader();
         }
 
-        [ConfigurableRuleProperty(defaultValue: "")]
+        [ConfigurableRuleProperty(defaultValue: "anyplatform_union")]
         public string AnyProfilePath { get; set; }
 
         [ConfigurableRuleProperty(defaultValue: new string[] {})]
@@ -28,7 +36,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            string cwd = Directory.GetCurrentDirectory();
             CmdletCompatibilityVisitor compatibilityVisitor = CreateVisitorFromConfiguration(fileName);
             ast.Visit(compatibilityVisitor);
             return compatibilityVisitor.GetDiagnosticRecords();
@@ -86,11 +93,59 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var targetProfiles = new List<CompatibilityProfileData>();
             foreach (string configPath in TargetProfilePaths)
             {
-                targetProfiles.Add(_profileLoader.GetProfileFromFilePath(configPath));
+                string normalizedPath = NormalizeConfigurationProfileToAbsolutePath(configPath);
+                targetProfiles.Add(_profileLoader.GetProfileFromFilePath(normalizedPath));
             }
 
-            CompatibilityProfileData anyProfile = _profileLoader.GetProfileFromFilePath(AnyProfilePath);
+            CompatibilityProfileData anyProfile = _profileLoader.GetProfileFromFilePath(NormalizeConfigurationProfileToAbsolutePath(AnyProfilePath));
             return new CmdletCompatibilityVisitor(analyzedFileName, targetProfiles, anyProfile, rule: this);
+        }
+
+        private string NormalizeConfigurationProfileToAbsolutePath(string profileName)
+        {
+            // Reject null or empty paths
+            if (string.IsNullOrEmpty(profileName))
+            {
+                throw new ArgumentException($"{nameof(profileName)} cannot be null or empty");
+            }
+
+            // Accept absolute paths verbatim. There may be issues with paths like "/here" in Windows
+            if (Path.IsPathRooted(profileName))
+            {
+                return profileName;
+            }
+
+            // Reject relative paths
+            if (profileName.Contains("\\")
+                || profileName.Contains("/")
+                || profileName.Equals(".")
+                || profileName.Equals(".."))
+            {
+                throw new ArgumentException($"Compatibility profile specified as '{profileName}'. Compatibility profiles cannot be specified by relative path.");
+            }
+
+            // Profiles might be given by pure name, in which case tack ".json" onto the end
+            string extension = Path.GetExtension(profileName);
+            if (string.IsNullOrEmpty(extension) || s_falseProfileExtensionPattern.IsMatch(extension))
+            {
+                profileName = profileName + ".json";
+            }
+
+            // Names get looked for in the known profile directory
+            return Path.Combine(_profileDirPath, profileName);
+        }
+
+        private static string GetModuleRootDirPath()
+        {
+            string asmDirLocation = Path.GetDirectoryName(typeof(UseCompatibleCmdlets2).Assembly.Location);
+
+            string topDir = Path.GetFileName(asmDirLocation);
+
+            string nonNormalizedRoot = "PSScriptAnalyzer".Equals(topDir, StringComparison.OrdinalIgnoreCase)
+                ? Path.Combine(asmDirLocation)
+                : Path.Combine(asmDirLocation, "..");
+
+            return Path.GetFullPath(nonNormalizedRoot);
         }
 
         private class CmdletCompatibilityVisitor : AstVisitor

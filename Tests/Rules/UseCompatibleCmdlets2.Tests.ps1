@@ -50,6 +50,7 @@ Describe 'UseCompatibleCmdlets2' {
         BeforeAll {
             Import-Module ([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'out', 'PSScriptAnalyzer'))
 
+            <#
             $settingsPath = Join-Path $TestDrive 'PS5_not_PS6.psd1'
             $targetPath = @(
                 Join-Path $script:ProfileDirPath 'win-101_x64_10.0.17134.0_5.1.17134.407_x64.json'
@@ -57,13 +58,29 @@ Describe 'UseCompatibleCmdlets2' {
             )
 
             New-CompatibleCmdletsSettings -AnyProfileUnionPath $script:AnyProfilePath -TargetProfilePaths $targetPath > $settingsPath
+            #>
+
+            $settings = @{
+                Rules = @{
+                    UseCompatibleCmdlets2 = @{
+                        Enable = $true
+                        TargetProfilePaths = @(
+                            'win-4_x64_10.0.18312.0_5.1.18312.1000_x64'
+                            'win-4_x64_10.0.18312.0_6.1.1_x64'
+                            'win-4_x64_10.0.18312.0_6.2.0_x64'
+                        )
+                    }
+                }
+            }
         }
 
         It "Finds the correct number of problems" {
-            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule 'UseCompatibleCmdlets2' -Path (Join-Path $script:AssetDirPath 'PS6_not_PS5.ps1') -Settings $settingsPath
+            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule 'UseCompatibleCmdlets2' -ScriptDefinition "Remove-Alias gcm" -Settings $settings
 
-            Wait-Debugger
             $diagnostics.Count | Should -Be 1
+            $diagnostics[0].Command | Should -BeExactly 'Remove-Alias'
+            $diagnostics[0].TargetPlatform.PowerShell.Version.Major | Should -Be 5
+            $diagnostics[0].TargetPlatform.PowerShell.Version.Minor | Should -Be 1
         }
     }
 }

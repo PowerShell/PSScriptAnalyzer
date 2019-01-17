@@ -7,14 +7,26 @@ using Newtonsoft.Json;
 namespace Microsoft.PowerShell.CrossCompatibility
 {
     [DataContract]
-    public class JsonDictionary<K, V> : IDictionary<K, V>, ICloneable
+    public class JsonDictionary<K, V> : IDictionary<K, V>, ICloneable, IDictionary
         where K : ICloneable
         where V : ICloneable
     {
         private readonly Dictionary<K, V> _dictionary;
 
+        [JsonConstructor]
+        public JsonDictionary()
+            : this(size: null, keyComparer: null)
+        {
+        }
+
         public JsonDictionary(int? size = null, IEqualityComparer<K> keyComparer = null)
         {
+            // We want case-insensitive key comparison as default, so force it here
+            if (typeof(K) == typeof(string) && keyComparer == null)
+            {
+                keyComparer = (IEqualityComparer<K>)StringComparer.OrdinalIgnoreCase;
+            }
+
             if (size == null)
             {
                 if (keyComparer == null)
@@ -36,7 +48,6 @@ namespace Microsoft.PowerShell.CrossCompatibility
             _dictionary = new Dictionary<K, V>(size.Value, keyComparer);
         }
 
-        [JsonConstructor()]
         public JsonDictionary(Dictionary<K, V> dictionary)
         {
             _dictionary = dictionary;
@@ -51,6 +62,18 @@ namespace Microsoft.PowerShell.CrossCompatibility
         public int Count => _dictionary.Count;
 
         public bool IsReadOnly => false;
+
+        public bool IsFixedSize => throw new NotImplementedException();
+
+        ICollection IDictionary.Keys => throw new NotImplementedException();
+
+        ICollection IDictionary.Values => throw new NotImplementedException();
+
+        public bool IsSynchronized => throw new NotImplementedException();
+
+        public object SyncRoot => throw new NotImplementedException();
+
+        public object this[object key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public void Add(K key, V value)
         {
@@ -117,6 +140,31 @@ namespace Microsoft.PowerShell.CrossCompatibility
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable)_dictionary).GetEnumerator();
+        }
+
+        public void Add(object key, object value)
+        {
+            Add((K)key, (V)value);
+        }
+
+        public bool Contains(object key)
+        {
+            return Contains((K)key);
+        }
+
+        IDictionaryEnumerator IDictionary.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Remove(object key)
+        {
+            Remove((K)key);
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
         }
     }
 }

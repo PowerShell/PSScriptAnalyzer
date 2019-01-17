@@ -39,7 +39,7 @@ else
 )
 
 # The file name for the any-platform reference generated from the union of all other platforms
-[string]$script:AnyPlatformReferenceProfileFilePath = [System.IO.Path]::Combine($script:CompatibilityProfileDir, 'anyplatforms_union.json')
+[string]$script:AnyPlatformReferenceProfileFilePath = [System.IO.Path]::Combine($script:CompatibilityProfileDir, 'anyplatform_union.json')
 
 <#
 .SYNOPSIS
@@ -606,7 +606,7 @@ function Get-TypeAccelerators
 {
     $typeAccelerators = [psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::Get.GetEnumerator()
 
-    $taTable = New-Object 'System.Collections.Generic.Dictionary[string, type]'
+    $taTable = New-Object 'System.Collections.Generic.Dictionary[string, type]' ([System.StringComparer]::OrdinalIgnoreCase)
 
     foreach ($taKvp in $typeAccelerators)
     {
@@ -750,7 +750,7 @@ function New-ModuleData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.JsonDictionary[version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.JsonDictionary[version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]]' ([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process
@@ -779,7 +779,7 @@ function New-ModuleData
 
         if (-not $dict.ContainsKey($Module.Name))
         {
-            $versionDict = New-Object 'System.Collections.Generic.Dictionary[System.Version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]'
+            $versionDict = New-Object 'System.Collections.Generic.Dictionary[version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]'
             $dict[$Module.Name] = $versionDict
         }
 
@@ -802,7 +802,7 @@ function New-AliasData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, string]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, string]' ([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process
@@ -826,7 +826,7 @@ function New-CmdletData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.CmdletData]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.CmdletData]' ([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process
@@ -886,7 +886,7 @@ function New-FunctionData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.FunctionData]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.FunctionData]' ([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process
@@ -948,7 +948,7 @@ function New-ParameterAliasData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, string]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, string]' ([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process
@@ -984,7 +984,7 @@ function New-ParameterData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ParameterData]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ParameterData]' ([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process
@@ -1024,7 +1024,7 @@ function New-ParameterSetData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ParameterSetData]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ParameterSetData]' ([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process

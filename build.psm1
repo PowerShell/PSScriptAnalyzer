@@ -146,10 +146,15 @@ function Start-ScriptAnalyzerBuild
             Start-DocumentationBuild
         }
 
+        # Destination for the composed module when built
+        $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
+
         if ( $All )
         {
             # Build the CrossCompatibility module
             & $PSScriptRoot\CrossCompatibility\build.ps1 -Configuration $Configuration
+            Copy-CrossCompatibilityModule -Destination "$destinationDir/CrossCompatibility"
+            $crossCompatibilityAlreadyBuilt = $true
 
             # Build all the versions of the analyzer
             foreach($psVersion in 3..6) {
@@ -165,8 +170,12 @@ function Start-ScriptAnalyzerBuild
             $framework = "net452"
         }
 
-        # Build CrossCompatibility module
-        & $PSScriptRoot\CrossCompatibility\build.ps1 -Framework $framework -Configuration $Configuration
+        # Build CrossCompatibility module, if the caller has not already built it
+        if (-not $crossCompatibilityAlreadyBuilt)
+        {
+            & $PSScriptRoot\CrossCompatibility\build.ps1 -Framework $framework -Configuration $Configuration
+            Copy-CrossCompatibilityModule -Destination "$destinationDir/CrossCompatibility"
+        }
 
         # build the appropriate assembly
         if ($PSVersion -match "[34]" -and $Framework -eq "core")
@@ -185,7 +194,8 @@ function Start-ScriptAnalyzerBuild
             "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
 
-        $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
+        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
+
         switch ($PSVersion)
         {
             3
@@ -235,9 +245,9 @@ function Start-ScriptAnalyzerBuild
         Publish-File $itemsToCopyCommon $destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\CrossCompatibility\CrossCompatibility\bin\${config}\${frameworkName}\CrossCompatibility.dll"
-            "$projectRoot\Engine\bin\${config}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${config}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\CrossCompatibility\CrossCompatibility\bin\${config}\${Framework}\CrossCompatibility.dll"
+            "$projectRoot\Engine\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot\Rules\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
@@ -589,3 +599,37 @@ function Get-DotnetExe
     return [String]::Empty
 }
 $script:DotnetExe = Get-DotnetExe
+
+# Copies the built CrossCompatibility module to the output destination for PSSA
+function Copy-CrossCompatibilityModule
+{
+    param(
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Destination
+    )
+
+    $destInfo = Get-Item -Path $Destination -ErrorAction SilentlyContinue
+
+    # Can't copy to a file
+    if ($destInfo -and -not $destInfo.PSIsContainer)
+    {
+        throw "Destination exists but is not a directory"
+    }
+
+    # Create the destination if it does not exist
+    if (-not $destInfo)
+    {
+        New-Item -Path $Destination -ItemType Directory
+    }
+
+    $outputAssets = @(
+        "$PSScriptRoot/CrossCompatibility/CrossCompatibility.psd1"
+        "$PSScriptRoot/CrossCompatibility/CrossCompatibility.psm1"
+        "$PSScriptRoot/CrossCompatibility/CrossCompatibilityBinary"
+        "$PSScriptRoot/CrossCompatibility/profiles"
+    )
+
+    $outputAssets | Copy-Item -Destination $Destination -Recurse -Force
+}

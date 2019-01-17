@@ -279,12 +279,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return new MemberData()
             {
                 Constructors = constructors.Any() ? constructors.Select(c => AssembleConstructor(c)).ToArray() : null,
-                Events = events.Any() ? new JsonDictionary<string, EventData>(events.ToDictionary(e => e.Name, e => AssembleEvent(e))) : null,
-                Fields = fields.Any() ? new JsonDictionary<string, FieldData>(fields.ToDictionary(f => f.Name, f => AssembleField(f))) : null,
+                Events = events.Any() ? new JsonDictionary<string, EventData>(events.ToDictionary(e => e.Name, e => AssembleEvent(e), StringComparer.OrdinalIgnoreCase)) : null,
+                Fields = fields.Any() ? new JsonDictionary<string, FieldData>(fields.ToDictionary(f => f.Name, f => AssembleField(f), StringComparer.OrdinalIgnoreCase)) : null,
                 Indexers = indexers.Any() ? indexers.Select(i => AssembleIndexer(i)).ToArray() : null,
-                Methods = methods.Any() ? new JsonDictionary<string, MethodData>(methods.ToDictionary(m => m.Key, m => AssembleMethod(m.Value))) : null,
-                NestedTypes = nestedTypes.Any() ? new JsonDictionary<string, TypeData>(nestedTypes.ToDictionary(t => t.Name, t => AssembleType(t))) : null,
-                Properties = properties.Any() ? new JsonDictionary<string, PropertyData>(properties.ToDictionary(p => p.Name, p => AssembleProperty(p))) : null
+                Methods = methods.Any() ? new JsonDictionary<string, MethodData>(methods.ToDictionary(m => m.Key, m => AssembleMethod(m.Value), StringComparer.OrdinalIgnoreCase)) : null,
+                NestedTypes = nestedTypes.Any() ? new JsonDictionary<string, TypeData>(nestedTypes.ToDictionary(t => t.Name, t => AssembleType(t), StringComparer.OrdinalIgnoreCase)) : null,
+                Properties = properties.Any() ? new JsonDictionary<string, PropertyData>(properties.ToDictionary(p => p.Name, p => AssembleProperty(p), StringComparer.OrdinalIgnoreCase)) : null
             };
         }
 
