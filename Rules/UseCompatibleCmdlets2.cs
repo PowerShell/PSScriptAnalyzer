@@ -299,7 +299,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 suggestedCorrections)
         {
             Command = incompatibleCommand;
-            targetPlatform = TargetPlatform;
+            TargetPlatform = targetPlatform;
         }
 
         public string Command { get; }
