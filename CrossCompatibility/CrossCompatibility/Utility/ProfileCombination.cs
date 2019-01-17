@@ -42,7 +42,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             thisRuntime.Types = (AvailableTypeData)Intersect(thisRuntime.Types, thatRuntime.Types);
 
             // Intersect modules first at the whole module level
-            thisRuntime.Modules = (JsonDictionary<string, JsonDictionary<Version, ModuleData>>)Intersect(thisRuntime.Modules, thatRuntime.Modules, keyComparer: StringComparer.OrdinalIgnoreCase);
+            thisRuntime.Modules = (JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>>)Intersect(thisRuntime.Modules, thatRuntime.Modules, keyComparer: StringComparer.OrdinalIgnoreCase);
 
             foreach (KeyValuePair<string, JsonDictionary<Version, ModuleData>> moduleVersions in thatRuntime.Modules)
             {
@@ -68,9 +68,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
         {
-            thisTypes.Assemblies = (JsonDictionary<string, AssemblyData>)Intersect(thisTypes.Assemblies, thatTypes.Assemblies, Intersect);
+            thisTypes.Assemblies = (JsonCaseInsensitiveStringDictionary<AssemblyData>)Intersect(thisTypes.Assemblies, thatTypes.Assemblies, Intersect);
 
-            thisTypes.TypeAccelerators = (JsonDictionary<string, TypeAcceleratorData>)Intersect(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
+            thisTypes.TypeAccelerators = (JsonCaseInsensitiveStringDictionary<TypeAcceleratorData>)Intersect(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
             
             return thisTypes;
         }
@@ -84,7 +84,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             thisAsm.AssemblyName = (AssemblyNameData)Intersect(thisAsm.AssemblyName, thatAsm.AssemblyName);
 
-            thisAsm.Types = (JsonDictionary<string, JsonDictionary<string, TypeData>>)Intersect(thisAsm.Types, thatAsm.Types);
+            thisAsm.Types = (JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>>)Intersect(thisAsm.Types, thatAsm.Types);
             
             if (thisAsm.Types != null)
             {
@@ -94,14 +94,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 }
                 else
                 {
-                    foreach (KeyValuePair<string, JsonDictionary<string, TypeData>> typeNamespace in thatAsm.Types)
+                    foreach (KeyValuePair<string, JsonCaseInsensitiveStringDictionary<TypeData>> typeNamespace in thatAsm.Types)
                     {
                         if (!thisAsm.Types.ContainsKey(typeNamespace.Key))
                         {
                             continue;
                         }
 
-                        thisAsm.Types[typeNamespace.Key] = (JsonDictionary<string, TypeData>)Intersect(thisAsm.Types[typeNamespace.Key], typeNamespace.Value);
+                        thisAsm.Types[typeNamespace.Key] = (JsonCaseInsensitiveStringDictionary<TypeData>)Intersect(thisAsm.Types[typeNamespace.Key], typeNamespace.Value);
                     }
                 }
             }
@@ -130,11 +130,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(MemberData thisMembers, MemberData thatMembers)
         {
-            thisMembers.Events = (JsonDictionary<string, EventData>)Intersect(thisMembers.Events, thatMembers.Events);
-            thisMembers.Fields = (JsonDictionary<string, FieldData>)Intersect(thisMembers.Fields, thatMembers.Fields);
-            thisMembers.Properties = (JsonDictionary<string, PropertyData>)Intersect(thisMembers.Properties, thatMembers.Properties, Intersect);
-            thisMembers.NestedTypes = (JsonDictionary<string, TypeData>)Intersect(thisMembers.NestedTypes, thatMembers.NestedTypes, Intersect);
-            thisMembers.Methods = (JsonDictionary<string, MethodData>)Intersect(thisMembers.Methods, thatMembers.Methods);
+            thisMembers.Events = (JsonCaseInsensitiveStringDictionary<EventData>)Intersect(thisMembers.Events, thatMembers.Events);
+            thisMembers.Fields = (JsonCaseInsensitiveStringDictionary<FieldData>)Intersect(thisMembers.Fields, thatMembers.Fields);
+            thisMembers.Properties = (JsonCaseInsensitiveStringDictionary<PropertyData>)Intersect(thisMembers.Properties, thatMembers.Properties, Intersect);
+            thisMembers.NestedTypes = (JsonCaseInsensitiveStringDictionary<TypeData>)Intersect(thisMembers.NestedTypes, thatMembers.NestedTypes, Intersect);
+            thisMembers.Methods = (JsonCaseInsensitiveStringDictionary<MethodData>)Intersect(thisMembers.Methods, thatMembers.Methods);
 
             // Recollect only constructors that occur in both left and right sets
             var thisConstructors = new List<string[]>();
@@ -192,10 +192,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(ModuleData thisModule, ModuleData thatModule)
         {
-            thisModule.Aliases = (JsonDictionary<string, string>)Intersect(thisModule.Aliases, thatModule.Aliases);
+            thisModule.Aliases = (JsonCaseInsensitiveStringDictionary<string>)Intersect(thisModule.Aliases, thatModule.Aliases);
             thisModule.Variables = thisModule.Variables?.Intersect(thatModule.Variables ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase).ToArray();
-            thisModule.Cmdlets = (JsonDictionary<string, CmdletData>)Intersect(thisModule.Cmdlets, thatModule.Cmdlets, Intersect);
-            thisModule.Functions = (JsonDictionary<string, FunctionData>)Intersect(thisModule.Functions, thatModule.Functions, Intersect);
+            thisModule.Cmdlets = (JsonCaseInsensitiveStringDictionary<CmdletData>)Intersect(thisModule.Cmdlets, thatModule.Cmdlets, Intersect);
+            thisModule.Functions = (JsonCaseInsensitiveStringDictionary<FunctionData>)Intersect(thisModule.Functions, thatModule.Functions, Intersect);
 
             return thisModule;
         }
@@ -205,15 +205,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             thisCommand.OutputType = thisCommand.OutputType?.Intersect(thatCommand.OutputType ?? Enumerable.Empty<string>()).ToArray();
             thisCommand.ParameterSets = thisCommand.ParameterSets?.Intersect(thatCommand.ParameterSets ?? Enumerable.Empty<string>()).ToArray();
 
-            thisCommand.ParameterAliases = (JsonDictionary<string, string>)Intersect(thisCommand.ParameterAliases, thatCommand.ParameterAliases);
-            thisCommand.Parameters = (JsonDictionary<string, ParameterData>)Intersect(thisCommand.Parameters, thatCommand.Parameters, Intersect);
+            thisCommand.ParameterAliases = (JsonCaseInsensitiveStringDictionary<string>)Intersect(thisCommand.ParameterAliases, thatCommand.ParameterAliases);
+            thisCommand.Parameters = (JsonCaseInsensitiveStringDictionary<ParameterData>)Intersect(thisCommand.Parameters, thatCommand.Parameters, Intersect);
 
             return thisCommand;
         }
 
         public static object Intersect(ParameterData thisParam, ParameterData thatParam)
         {
-            thisParam.ParameterSets = (JsonDictionary<string, ParameterSetData>)Intersect(thisParam.ParameterSets, thatParam.ParameterSets);
+            thisParam.ParameterSets = (JsonCaseInsensitiveStringDictionary<ParameterSetData>)Intersect(thisParam.ParameterSets, thatParam.ParameterSets);
             return thisParam;
         }
 
@@ -234,7 +234,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 if (!thisRuntime.Modules.ContainsKey(moduleVersions.Key))
                 {
-                    thisRuntime.Modules.Add(moduleVersions);
+                    thisRuntime.Modules.Add(moduleVersions.Key, moduleVersions.Value);
                     continue;
                 }
 
@@ -248,13 +248,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Union(ModuleData thisModule, ModuleData thatModule)
         {
-            thisModule.Aliases = DictionaryUnion(thisModule.Aliases, thatModule.Aliases);
+            thisModule.Aliases = StringDictionaryUnion(thisModule.Aliases, thatModule.Aliases);
 
             thisModule.Variables = ArrayUnion(thisModule.Variables, thatModule.Variables);
 
-            thisModule.Cmdlets = DictionaryUnion(thisModule.Cmdlets, thatModule.Cmdlets, Union);
+            thisModule.Cmdlets = StringDictionaryUnion(thisModule.Cmdlets, thatModule.Cmdlets, Union);
 
-            thisModule.Functions = DictionaryUnion(thisModule.Functions, thatModule.Functions, Union);
+            thisModule.Functions = StringDictionaryUnion(thisModule.Functions, thatModule.Functions, Union);
 
             return thisModule;
         }
@@ -264,15 +264,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             thisCommand.OutputType = ArrayUnion(thisCommand.OutputType, thatCommand.OutputType);
             thisCommand.ParameterSets = ArrayUnion(thisCommand.ParameterSets, thatCommand.ParameterSets);
 
-            thisCommand.ParameterAliases = DictionaryUnion(thisCommand.ParameterAliases, thatCommand.ParameterAliases);
-            thisCommand.Parameters = DictionaryUnion(thisCommand.Parameters, thatCommand.Parameters, Union);
+            thisCommand.ParameterAliases = StringDictionaryUnion(thisCommand.ParameterAliases, thatCommand.ParameterAliases);
+            thisCommand.Parameters = StringDictionaryUnion(thisCommand.Parameters, thatCommand.Parameters, Union);
 
             return thisCommand;
         }
 
         public static object Union(ParameterData thisParameter, ParameterData thatParameter)
         {
-            thisParameter.ParameterSets = DictionaryUnion(thisParameter.ParameterSets, thatParameter.ParameterSets, Union);
+            thisParameter.ParameterSets = StringDictionaryUnion(thisParameter.ParameterSets, thatParameter.ParameterSets, Union);
 
             return thisParameter;
         }
@@ -286,8 +286,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Union(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
         {
-            thisTypes.Assemblies = DictionaryUnion(thisTypes.Assemblies, thatTypes.Assemblies, Union);
-            thisTypes.TypeAccelerators = DictionaryUnion(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
+            thisTypes.Assemblies = StringDictionaryUnion(thisTypes.Assemblies, thatTypes.Assemblies, Union);
+            thisTypes.TypeAccelerators = StringDictionaryUnion(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
 
             return thisTypes;
         }
@@ -300,18 +300,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 if (thisAssembly.Types == null)
                 {
-                    thisAssembly.Types = new JsonDictionary<string, JsonDictionary<string, TypeData>>();
+                    thisAssembly.Types = new JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>>();
                 }
 
-                foreach (KeyValuePair<string, JsonDictionary<string, TypeData>> nspace in thatAssembly.Types)
+                foreach (KeyValuePair<string, JsonCaseInsensitiveStringDictionary<TypeData>> nspace in thatAssembly.Types)
                 {
                     if (!thisAssembly.Types.ContainsKey(nspace.Key))
                     {
-                        thisAssembly.Types.Add(nspace);
+                        thisAssembly.Types.Add(nspace.Key, nspace.Value);
                         continue;
                     }
 
-                    thisAssembly.Types[nspace.Key] = DictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
+                    thisAssembly.Types[nspace.Key] = StringDictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
                 }
             }
 
@@ -356,11 +356,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             thisMembers.Constructors = ParameterUnion(thisMembers.Constructors, thatMembers.Constructors);
 
-            thisMembers.Events = DictionaryUnion(thisMembers.Events, thatMembers.Events);
-            thisMembers.Fields = DictionaryUnion(thisMembers.Fields, thatMembers.Fields);
-            thisMembers.Methods = DictionaryUnion(thisMembers.Methods, thatMembers.Methods, Union);
-            thisMembers.NestedTypes = DictionaryUnion(thisMembers.NestedTypes, thatMembers.NestedTypes, Union);
-            thisMembers.Properties = DictionaryUnion(thisMembers.Properties, thatMembers.Properties, Union);
+            thisMembers.Events = StringDictionaryUnion(thisMembers.Events, thatMembers.Events);
+            thisMembers.Fields = StringDictionaryUnion(thisMembers.Fields, thatMembers.Fields);
+            thisMembers.Methods = StringDictionaryUnion(thisMembers.Methods, thatMembers.Methods, Union);
+            thisMembers.NestedTypes = StringDictionaryUnion(thisMembers.NestedTypes, thatMembers.NestedTypes, Union);
+            thisMembers.Properties = StringDictionaryUnion(thisMembers.Properties, thatMembers.Properties, Union);
 
             return thisMembers;
         }
@@ -469,6 +469,39 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return parameters.ToArray();
         }
 
+        private static JsonCaseInsensitiveStringDictionary<TValue> StringDictionaryUnion<TValue>(
+            JsonCaseInsensitiveStringDictionary<TValue> thisStringDict,
+            JsonCaseInsensitiveStringDictionary<TValue> thatStringDict,
+            Func<TValue, TValue, object> valueUnionizer = null)
+            where TValue : ICloneable
+        {
+            if (thatStringDict == null)
+            {
+                return thisStringDict;
+            }
+
+            if (thisStringDict == null)
+            {
+                return (JsonCaseInsensitiveStringDictionary<TValue>)thatStringDict.Clone();
+            }
+
+            foreach (KeyValuePair<string, TValue> item in thatStringDict)
+            {
+                if (!thisStringDict.ContainsKey(item.Key))
+                {
+                    thisStringDict.Add(item.Key, item.Value);
+                    continue;
+                }
+
+                if (valueUnionizer != null)
+                {
+                    thisStringDict[item.Key] = (TValue)valueUnionizer(thisStringDict[item.Key], item.Value);
+                }
+            }
+
+            return thisStringDict;
+        }
+
         private static JsonDictionary<K, V> DictionaryUnion<K, V>(
             JsonDictionary<K, V> thisDict,
             JsonDictionary<K, V> thatDict, 
@@ -489,7 +522,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 if (!thisDict.ContainsKey(item.Key))
                 {
-                    thisDict.Add(item);
+                    thisDict.Add(item.Key, item.Value);
                     continue;
                 }
 

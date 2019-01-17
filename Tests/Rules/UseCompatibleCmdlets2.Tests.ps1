@@ -77,6 +77,8 @@ Describe 'UseCompatibleCmdlets2' {
         It "Finds the correct number of problems" {
             $diagnostics = Invoke-ScriptAnalyzer -IncludeRule 'UseCompatibleCmdlets2' -ScriptDefinition "Remove-Alias gcm" -Settings $settings
 
+            Wait-Debugger
+
             $diagnostics.Count | Should -Be 1
             $diagnostics[0].Command | Should -BeExactly 'Remove-Alias'
             $diagnostics[0].TargetPlatform.PowerShell.Version.Major | Should -Be 5

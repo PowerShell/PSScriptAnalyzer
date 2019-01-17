@@ -631,5 +631,16 @@ function Copy-CrossCompatibilityModule
         "$PSScriptRoot/CrossCompatibility/profiles"
     )
 
-    $outputAssets | Copy-Item -Destination $Destination -Recurse -Force
+    foreach ($assetPath in $outputAssets)
+    {
+        try
+        {
+            Copy-Item -Path $assetPath -Destination $Destination -Recurse -Force -ErrorAction Stop
+        }
+        catch
+        {
+            # Display the problem as a warning, but continue
+            Write-Warning $_
+        }
+    }
 }

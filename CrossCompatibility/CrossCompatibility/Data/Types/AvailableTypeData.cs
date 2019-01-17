@@ -17,21 +17,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// as keys and their corresponding full type name as values.
         /// </summary>
         [DataMember]
-        public JsonDictionary<string, TypeAcceleratorData> TypeAccelerators { get; set; }
+        public JsonCaseInsensitiveStringDictionary<TypeAcceleratorData> TypeAccelerators { get; set; }
 
         /// <summary>
         /// Table of all assemblies available in the PowerShell runtime,
         /// keyed by simple assembly name.
         /// </summary>
         [DataMember]
-        public JsonDictionary<string, AssemblyData> Assemblies { get; set; }
+        public JsonCaseInsensitiveStringDictionary<AssemblyData> Assemblies { get; set; }
 
         public object Clone()
         {
             return new AvailableTypeData()
             {
-                TypeAccelerators = (JsonDictionary<string, TypeAcceleratorData>)TypeAccelerators.Clone(),
-                Assemblies = (JsonDictionary<string, AssemblyData>)Assemblies.Clone()
+                TypeAccelerators = (JsonCaseInsensitiveStringDictionary<TypeAcceleratorData>)TypeAccelerators.Clone(),
+                Assemblies = (JsonCaseInsensitiveStringDictionary<AssemblyData>)Assemblies.Clone()
             };
         }
     }

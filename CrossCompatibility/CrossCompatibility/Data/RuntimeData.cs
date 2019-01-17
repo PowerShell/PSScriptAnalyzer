@@ -26,14 +26,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// on a particular PowerShell platform.
         /// </summary>
         [DataMember]
-        public JsonDictionary<string, JsonDictionary<Version, ModuleData>> Modules { get; set; }
+        public JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>> Modules { get; set; }
 
         public object Clone()
         {
             return new RuntimeData()
             {
                 Types = (AvailableTypeData)Types.Clone(),
-                Modules = (JsonDictionary<string, JsonDictionary<Version, ModuleData>>)Modules.Clone()
+                Modules = (JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>>)Modules.Clone()
             };
         }
     }

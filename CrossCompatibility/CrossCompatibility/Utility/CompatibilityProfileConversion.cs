@@ -47,7 +47,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             out IEnumerable<CompatibilityAnalysisException> errors)
         {
             var errAcc = new List<CompatibilityAnalysisException>();
-            var typeAcceleratorDict = new JsonDictionary<string, TypeAcceleratorData>(typeAccelerators.Count);
+            var typeAcceleratorDict = new JsonCaseInsensitiveStringDictionary<TypeAcceleratorData>(typeAccelerators.Count);
             foreach (KeyValuePair<string, Type> typeAccelerator in typeAccelerators)
             {
                 var ta = new TypeAcceleratorData()
@@ -59,7 +59,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 typeAcceleratorDict.Add(typeAccelerator.Key, ta);
             }
 
-            var asms = new JsonDictionary<string, AssemblyData>();
+            var asms = new JsonCaseInsensitiveStringDictionary<AssemblyData>();
             foreach (Assembly asm in assemblies)
             {
                 // Don't want to include this module or assembly in the output
@@ -105,10 +105,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             };
 
             Type[] types = asm.GetTypes();
-            JsonDictionary<string, JsonDictionary<string, TypeData>> namespacedTypes = null;
+            JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>> namespacedTypes = null;
             if (types.Any())
             {
-                namespacedTypes = new JsonDictionary<string, JsonDictionary<string, TypeData>>();
+                namespacedTypes = new JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>>();
                 foreach (Type type in asm.GetTypes())
                 {
                     if (!type.IsPublic)
@@ -121,7 +121,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
                     if (!namespacedTypes.ContainsKey(typeNamespace))
                     {
-                        namespacedTypes.Add(typeNamespace, new JsonDictionary<string, TypeData>());
+                        namespacedTypes.Add(typeNamespace, new JsonCaseInsensitiveStringDictionary<TypeData>());
                     }
 
                     TypeData typeData = AssembleType(type);
@@ -279,12 +279,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return new MemberData()
             {
                 Constructors = constructors.Any() ? constructors.Select(c => AssembleConstructor(c)).ToArray() : null,
-                Events = events.Any() ? new JsonDictionary<string, EventData>(events.ToDictionary(e => e.Name, e => AssembleEvent(e), StringComparer.OrdinalIgnoreCase)) : null,
-                Fields = fields.Any() ? new JsonDictionary<string, FieldData>(fields.ToDictionary(f => f.Name, f => AssembleField(f), StringComparer.OrdinalIgnoreCase)) : null,
+                Events = events.Any() ? new JsonCaseInsensitiveStringDictionary<EventData>(events.ToDictionary(e => e.Name, e => AssembleEvent(e), StringComparer.OrdinalIgnoreCase)) : null,
+                Fields = fields.Any() ? new JsonCaseInsensitiveStringDictionary<FieldData>(fields.ToDictionary(f => f.Name, f => AssembleField(f), StringComparer.OrdinalIgnoreCase)) : null,
                 Indexers = indexers.Any() ? indexers.Select(i => AssembleIndexer(i)).ToArray() : null,
-                Methods = methods.Any() ? new JsonDictionary<string, MethodData>(methods.ToDictionary(m => m.Key, m => AssembleMethod(m.Value), StringComparer.OrdinalIgnoreCase)) : null,
-                NestedTypes = nestedTypes.Any() ? new JsonDictionary<string, TypeData>(nestedTypes.ToDictionary(t => t.Name, t => AssembleType(t), StringComparer.OrdinalIgnoreCase)) : null,
-                Properties = properties.Any() ? new JsonDictionary<string, PropertyData>(properties.ToDictionary(p => p.Name, p => AssembleProperty(p), StringComparer.OrdinalIgnoreCase)) : null
+                Methods = methods.Any() ? new JsonCaseInsensitiveStringDictionary<MethodData>(methods.ToDictionary(m => m.Key, m => AssembleMethod(m.Value), StringComparer.OrdinalIgnoreCase)) : null,
+                NestedTypes = nestedTypes.Any() ? new JsonCaseInsensitiveStringDictionary<TypeData>(nestedTypes.ToDictionary(t => t.Name, t => AssembleType(t), StringComparer.OrdinalIgnoreCase)) : null,
+                Properties = properties.Any() ? new JsonCaseInsensitiveStringDictionary<PropertyData>(properties.ToDictionary(p => p.Name, p => AssembleProperty(p), StringComparer.OrdinalIgnoreCase)) : null
             };
         }
 

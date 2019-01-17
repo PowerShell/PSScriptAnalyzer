@@ -36,7 +36,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         /// The parameters of the command, if any, keyed by name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonDictionary<string, ParameterData> Parameters { get; set; }
+        public JsonCaseInsensitiveStringDictionary<ParameterData> Parameters { get; set; }
 
         /// <summary>
         /// Lookup table of parameter aliases to their corresponding
@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         /// parameter aliases, values are parameter names.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonDictionary<string, string> ParameterAliases { get; set; }
+        public JsonCaseInsensitiveStringDictionary<string> ParameterAliases { get; set; }
 
         public abstract object Clone();
     }

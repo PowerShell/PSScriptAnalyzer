@@ -17,7 +17,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         /// keyed by the parameter set names.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonDictionary<string, ParameterSetData> ParameterSets { get; set; }
+        public JsonCaseInsensitiveStringDictionary<ParameterSetData> ParameterSets { get; set; }
 
         /// <summary>
         /// The .NET type of the parameter.
@@ -37,7 +37,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
             {
                 Type = Type,
                 Dynamic = Dynamic,
-                ParameterSets = (JsonDictionary<string, ParameterSetData>)ParameterSets?.Clone()
+                ParameterSets = (JsonCaseInsensitiveStringDictionary<ParameterSetData>)ParameterSets?.Clone()
             };
         }
     }

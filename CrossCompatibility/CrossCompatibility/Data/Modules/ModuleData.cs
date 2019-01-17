@@ -22,13 +22,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 	/// Cmdlets exported by the module, keyed by name.
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonDictionary<string, CmdletData> Cmdlets { get; set; }
+        public JsonCaseInsensitiveStringDictionary<CmdletData> Cmdlets { get; set; }
 
 	/// <summary>
 	/// Functions exported by the module, keyed by name.
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonDictionary<string, FunctionData> Functions { get; set; }
+        public JsonCaseInsensitiveStringDictionary<FunctionData> Functions { get; set; }
 
 	/// <summary>
 	/// Variables exported by the module.
@@ -41,7 +41,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
 	/// name, with values being the resolved commands.
 	/// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonDictionary<string, string> Aliases { get; set; }
+        public JsonCaseInsensitiveStringDictionary<string> Aliases { get; set; }
 
         public object Clone()
         {
@@ -49,9 +49,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
             {
                 Guid = Guid,
                 Variables = (string[])Variables?.Clone(),
-                Aliases = (JsonDictionary<string, string>)Aliases?.Clone(),
-                Cmdlets = (JsonDictionary<string, CmdletData>)Cmdlets?.Clone(),
-                Functions = (JsonDictionary<string, FunctionData>)Functions?.Clone(),
+                Aliases = (JsonCaseInsensitiveStringDictionary<string>)Aliases?.Clone(),
+                Cmdlets = (JsonCaseInsensitiveStringDictionary<CmdletData>)Cmdlets?.Clone(),
+                Functions = (JsonCaseInsensitiveStringDictionary<FunctionData>)Functions?.Clone(),
             };
         }
     }

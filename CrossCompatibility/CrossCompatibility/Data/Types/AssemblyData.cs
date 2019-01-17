@@ -22,14 +22,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// and then type name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonDictionary<string, JsonDictionary<string, TypeData>> Types { get; set; }
+        public JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>> Types { get; set; }
 
         public object Clone()
         {
             return new AssemblyData()
             {
                 AssemblyName = (AssemblyNameData)AssemblyName.Clone(),
-                Types = (JsonDictionary<string, JsonDictionary<string, TypeData>>)Types?.Clone()
+                Types = (JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>>)Types?.Clone()
             };
         }
     }

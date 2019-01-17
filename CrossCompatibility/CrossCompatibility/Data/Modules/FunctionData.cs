@@ -28,8 +28,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
                 DefaultParameterSet = DefaultParameterSet,
                 OutputType = (string[])OutputType?.Clone(),
                 ParameterSets = (string[])ParameterSets?.Clone(),
-                ParameterAliases = (JsonDictionary<string, string>)ParameterAliases?.Clone(),
-                Parameters = (JsonDictionary<string, ParameterData>)Parameters?.Clone()
+                ParameterAliases = (JsonCaseInsensitiveStringDictionary<string>)ParameterAliases?.Clone(),
+                Parameters = (JsonCaseInsensitiveStringDictionary<ParameterData>)Parameters?.Clone()
             };
         }
     }

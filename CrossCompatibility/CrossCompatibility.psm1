@@ -227,7 +227,7 @@ function New-AllPlatformReferenceProfile
 
     $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) 'anyprofile.json'
 
-    Join-CompatibilityProfile -InputFile $ProfileDir -Union | ConvertTo-CompatibilityJson > $tmpPath
+    Join-CompatibilityProfile -InputFile $ProfileDir -Union | ConvertTo-CompatibilityJson -NoWhitespace | Out-File -Encoding UTF8 -FilePath $tmpPath
 
     Move-Item -Path $tmpPath -Destination $Path
 }
