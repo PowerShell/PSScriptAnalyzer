@@ -197,6 +197,7 @@ function Start-ScriptAnalyzerBuild
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
+            Write-Warning $_
             Write-Error "Failure to build for PSVersion '$PSVersion' using framework '$framework' and configuration '$config'"
             return
         }
