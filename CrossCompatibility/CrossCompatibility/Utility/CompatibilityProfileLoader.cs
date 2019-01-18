@@ -42,5 +42,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             return compatibilityProfile;
         }
+
+        public void ClearCache()
+        {
+            _profileCache.Clear();
+        }
     }
 }
