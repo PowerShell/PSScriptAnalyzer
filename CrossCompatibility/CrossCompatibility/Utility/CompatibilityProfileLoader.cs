@@ -8,6 +8,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
     public class CompatibilityProfileLoader
     {
+        private static Lazy<CompatibilityProfileLoader> s_sharedInstance = new Lazy<CompatibilityProfileLoader>(() => new CompatibilityProfileLoader());
+
+        public static CompatibilityProfileLoader StaticInstance => s_sharedInstance.Value;
+
         private readonly JsonProfileSerializer _jsonSerializer;
 
         private readonly IDictionary<string, CompatibilityProfileData> _profileCache;

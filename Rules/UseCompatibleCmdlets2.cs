@@ -25,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public UseCompatibleCmdlets2()
         {
             _profileDirPath = Path.Combine(GetModuleRootDirPath(), "CrossCompatibility", "profiles");
-            _profileLoader = new CompatibilityProfileLoader();
+            _profileLoader = CompatibilityProfileLoader.StaticInstance;
         }
 
         [ConfigurableRuleProperty(defaultValue: "anyplatform_union")]
