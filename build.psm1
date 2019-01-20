@@ -110,6 +110,45 @@ function Start-DocumentationBuild
     $null = New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force
 }
 
+# this function checks to be sure that the version of dotnet is useable to build analyzer
+function Assert-UsableDotNet
+{
+    if ( ! (Get-Command dotnet)) {
+        throw "dotnet not found"
+    }
+    $globalJson = Get-Content (Join-Path $PSScriptRoot global.json)
+    [System.Version]$neededVersion = ($globalJson | ConvertFrom-Json).sdk.version
+    [System.Version]$dotnetVersion = try {
+        push-location $PSHOME
+        dotnet --version
+        }
+        catch {
+            throw "dotnet execution error"
+        }
+        finally {
+            pop-location
+        }
+    # we can't just do a simple check for the version
+    # see https://docs.microsoft.com/en-us/dotnet/core/tools/global-json
+    if ( $neededVersion.Major -ne $dotnetVersion.Major ) {
+        throw "Incorrect dotnet version: have '$dotnetVersion' need '$neededVersion'"
+    }
+    if ( $neededVersion.Minor -ne $dotnetVersion.Minor ) {
+        throw "Incorrect dotnet version: have '$dotnetVersion' need '$neededVersion'"
+    }
+    # Special logic for the build number
+    $neededBuildVersion = $neededVersion.Build / 100 -as [int]
+    $dotnetBuildVersion = $dotnetVersion.Build / 100 -as [int]
+    if ( $neededBuildVersion -ne $dotnetBuildVersion ) {
+        throw "Incorrect dotnet version: have '$dotnetVersion' need '$neededVersion'"
+    }
+    if ( $neededVersion.Build -gt $dotnetVersion.Build ) {
+        throw "Incorrect dotnet version: have '$dotnetVersion' need '$neededVersion'"
+    }
+    # if we haven't thrown yet, we have a dotnet we can use
+    return
+}
+
 # build script analyzer (and optionally build everything with -All)
 function Start-ScriptAnalyzerBuild
 {
@@ -126,6 +165,11 @@ function Start-ScriptAnalyzerBuild
         [switch]$Documentation
         )
 
+    BEGIN {
+        if ( ! $IsWindows ) {
+            Assert-UsableDotNet
+        }
+    }
     END {
         if ( $All )
         {
