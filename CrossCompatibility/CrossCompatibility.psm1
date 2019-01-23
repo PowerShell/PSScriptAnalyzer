@@ -1,11 +1,15 @@
 # Add the relevant binary module
 if ($PSVersionTable.PSVersion.Major -ge 5)
 {
-    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'netstandard2.0', 'CrossCompatibility.dll'))
+    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'CrossCompatibility.dll'))
 }
 else
 {
+<<<<<<< HEAD
     Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'net452', 'CrossCompatibility.dll'))
+=======
+    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'CrossCompatibility.dll'))
+>>>>>>> Fix dll path issue in psm1
 }
 
 # Location of directory where compatibility reports should be put
