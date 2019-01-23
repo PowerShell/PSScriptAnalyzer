@@ -14,6 +14,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     public class UseCompatibleCmdlets2 : ConfigurableRule
     {
+        private const string PROFILE_DIR_NAME = "compatibility_profiles";
+
+        private const string ANY_PLATFORM_UNION_PROFILE_NAME = "anyplatform_union";
+
         private static readonly Regex s_falseProfileExtensionPattern = new Regex(
             "\\d+_(x64|x86|arm32|arm64)",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -24,11 +28,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public UseCompatibleCmdlets2()
         {
-            _profileDirPath = Path.Combine(GetModuleRootDirPath(), "CrossCompatibility", "profiles");
+            _profileDirPath = Path.Combine(GetModuleRootDirPath(), PROFILE_DIR_NAME);
             _profileLoader = CompatibilityProfileLoader.StaticInstance;
         }
 
-        [ConfigurableRuleProperty(defaultValue: "anyplatform_union")]
+        [ConfigurableRuleProperty(defaultValue: ANY_PLATFORM_UNION_PROFILE_NAME)]
         public string AnyProfilePath { get; set; }
 
         [ConfigurableRuleProperty(defaultValue: new string[] {})]

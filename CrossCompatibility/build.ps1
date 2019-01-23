@@ -18,7 +18,10 @@ if ($IsWindows -eq $false) {
     $script:TargetFrameworks = 'netstandard2.0','net452'
 }
 
-$script:BinModDir = Join-Path $PSScriptRoot 'CrossCompatibilityBinary'
+$script:Psm1Path = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility.psm1')
+$script:Psd1Path = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility.psd1')
+
+$script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'CrossCompatibility')
 $script:BinModSrcDir = Join-Path $PSScriptRoot 'CrossCompatibility'
 
 $script:PublishDlls = @{
@@ -26,7 +29,7 @@ $script:PublishDlls = @{
     'netstandard2.0' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
 }
 
-function Invoke-BinaryModuleBuild
+function Invoke-CrossCompatibilityModuleBuild
 {
     param(
         [Parameter()]
@@ -51,7 +54,7 @@ function Invoke-BinaryModuleBuild
     }
 }
 
-function Restore-BinaryModule
+function Publish-CrossCompatibilityModule
 {
     param(
         [Parameter()]
@@ -76,6 +79,9 @@ function Restore-BinaryModule
         throw "$DestinationDir exists but is not a directory. Aborting."
     }
 
+    Copy-Item -LiteralPath $script:Psd1Path -Destination (Join-Path $DestinationDir 'CrossCompatibility.psd1')
+    Copy-Item -LiteralPath $script:Psm1Path -Destination (Join-Path $DestinationDir 'CrossCompatibility.psm1')
+
     foreach ($framework in $TargetFramework)
     {
         $dest = Join-Path $DestinationDir $framework
@@ -99,11 +105,11 @@ if (-not $Framework)
 {
     foreach ($f in $script:TargetFrameworks)
     {
-        Invoke-BinaryModuleBuild -Framework $f -Configuration $Configuration
+        Invoke-CrossCompatibilityModuleBuild -Framework $f -Configuration $Configuration
     }
-    Restore-BinaryModule
+    Publish-CrossCompatibilityModule
     return
 }
 
-Invoke-BinaryModuleBuild @PSBoundParameters
-Restore-BinaryModule -TargetFramework $Framework
+Invoke-CrossCompatibilityModuleBuild @PSBoundParameters
+Publish-CrossCompatibilityModule -TargetFramework $Framework

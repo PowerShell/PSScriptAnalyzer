@@ -110,6 +110,13 @@ function Start-DocumentationBuild
     $null = New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force
 }
 
+function Copy-CompatibilityProfiles
+{
+    $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility', 'profiles')
+    $destination = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer', 'compatibility_profiles')
+    Copy-Item -Recurse -Force -Path $profileDir -Destination $destination
+}
+
 # build script analyzer (and optionally build everything with -All)
 function Start-ScriptAnalyzerBuild
 {
@@ -151,11 +158,6 @@ function Start-ScriptAnalyzerBuild
 
         if ( $All )
         {
-            # Build the CrossCompatibility module
-            & $PSScriptRoot\CrossCompatibility\build.ps1 -Configuration $Configuration
-            Copy-CrossCompatibilityModule -Destination "$destinationDir/CrossCompatibility"
-            $crossCompatibilityAlreadyBuilt = $true
-
             # Build all the versions of the analyzer
             foreach($psVersion in 3..6) {
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
@@ -163,18 +165,18 @@ function Start-ScriptAnalyzerBuild
             return
         }
 
+        if (-not $profilesCopied)
+        {
+            Copy-CompatibilityProfiles
+            # Set the variable in the caller's scope, so this will only happen once
+            Set-Variable -Name profilesCopied -Value $true -Scope 1
+        }
+
         if ($PSVersion -ge 6) {
             $framework = 'netstandard2.0'
         }
         else {
             $framework = "net452"
-        }
-
-        # Build CrossCompatibility module, if the caller has not already built it
-        if (-not $crossCompatibilityAlreadyBuilt)
-        {
-            & $PSScriptRoot\CrossCompatibility\build.ps1 -Framework $framework -Configuration $Configuration
-            Copy-CrossCompatibilityModule -Destination "$destinationDir/CrossCompatibility"
         }
 
         # build the appropriate assembly
@@ -194,8 +196,7 @@ function Start-ScriptAnalyzerBuild
             "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
 
-        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
-
+        $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
         switch ($PSVersion)
         {
             3
@@ -245,9 +246,9 @@ function Start-ScriptAnalyzerBuild
         Publish-File $itemsToCopyCommon $destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\CrossCompatibility\CrossCompatibility\bin\${config}\${Framework}\CrossCompatibility.dll"
             "$projectRoot\Engine\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
             "$projectRoot\Rules\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\Rules\bin\${config}\${Framework}\CrossCompatibility.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
