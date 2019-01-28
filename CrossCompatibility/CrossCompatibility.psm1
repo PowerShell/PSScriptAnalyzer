@@ -28,7 +28,9 @@ else
 [System.Reflection.BindingFlags]$script:InstanceBindingFlags = [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::FlattenHierarchy
 
 # Common/ubiquitous cmdlet parameters which we don't want to repeat over and over
-[string[]]$script:CommonParams = @(
+[System.Collections.Generic.HashSet[string]]$script:CommonParameters = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+
+$commonParams = @(
     'Verbose'
     'Debug'
     'ErrorAction'
@@ -42,38 +44,24 @@ else
     'PipelineVariable'
 )
 
+foreach ($p in $commonParams)
+{
+    $null = $script:CommonParameters.Add($p)
+}
+
 # The file name for the any-platform reference generated from the union of all other platforms
 [string]$script:AnyPlatformReferenceProfileFilePath = [System.IO.Path]::Combine($script:CompatibilityProfileDir, 'anyplatform_union.json')
 
-<#
-.SYNOPSIS
-Turn the common parameters into a hashset for faster matching.
-#>
-function New-CommonParameterSet
-{
-    $set = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
-
-    foreach ($p in $script:commonParams)
-    {
-        $set.Add($p)
-    }
-
-    return $set
-}
-
-# Set of the common cmdlet parameters to exclude from cmdlet data
-[System.Collections.Generic.HashSet[string]]$script:CommonParameters = New-CommonParameterSet
-
-# User module path location
-[string]$script:UserModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetPersonalModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
-
-# Shared module path location
+# User and Shared module path locations
 if ($PSVersionTable.PSVersion.Major -ge 6)
 {
+    [string]$script:UserModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetPersonalModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
     [string]$script:SharedModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetSharedModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
 }
 else
 {
+    $documentsFolder = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Personal)
+    [string]$script:UserModulePath = "$documentsFolder\PowerShell\Modules"
     [string]$script:SharedModulePath = "$env:ProgramFiles\WindowsPowerShell\Modules"
 }
 
@@ -210,8 +198,10 @@ function New-PowerShellCompatibilityProfile
         $OutFile = Join-Path $script:CompatibilityProfileDir "$platformNameStr.json"
     }
 
-    $json = ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $Readable)
-    return New-Item -Path $OutFile -Value $json -Force
+    ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $Readable) `
+        | Out-File -Force -LiteralPath $OutFile -Encoding Utf8
+
+    return Get-Item -LiteralPath $OutFile
 }
 
 function New-AllPlatformReferenceProfile
@@ -1107,7 +1097,7 @@ function New-AvailableTypeData
 function Get-FullTypeName
 {
     param(
-        [Parameter(ValueFromPipeline=$true)]
+        [Parameter(Position=0,ValueFromPipeline=$true)]
         [type]
         $Type
     )
