@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         /// From $PSVersionTable.PSVersion.
         /// </summary>
         [DataMember]
-        public Version Version { get; set; }
+        public string Version { get; set; }
 
         /// <summary>
         /// The edition of PowerShell, from
