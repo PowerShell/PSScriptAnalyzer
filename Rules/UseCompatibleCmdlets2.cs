@@ -16,8 +16,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     {
         private const string PROFILE_DIR_NAME = "compatibility_profiles";
 
-        private const string ANY_PLATFORM_UNION_PROFILE_NAME = "anyplatform_union";
-
         private static readonly Regex s_falseProfileExtensionPattern = new Regex(
             "\\d+_(x64|x86|arm32|arm64)",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -32,11 +30,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             _profileLoader = CompatibilityProfileLoader.StaticInstance;
         }
 
-        [ConfigurableRuleProperty(defaultValue: ANY_PLATFORM_UNION_PROFILE_NAME)]
+        /// <summary>
+        /// The path to the "anyprofile union" profile.
+        /// If given as a filename, this is presumed to be under the profiles directory.
+        /// If no file extension is given on the filename, ".json" is assumed.
+        /// </summary>
+        /// <remarks>
+        /// The default value for this should be PlatformNaming.AnyPlatformUnionName,
+        /// but a non-constant expression cannot be used as an attribute parameter.
+        /// This is done in the ConfigureRule() override below.
+        /// The ConfigurableRuleProperty should just remove this parameter and use the
+        /// property default value.
+        /// </remarks>
+        [ConfigurableRuleProperty(defaultValue: "")]
         public string AnyProfilePath { get; set; }
 
         [ConfigurableRuleProperty(defaultValue: new string[] {})]
         public string[] TargetProfilePaths { get; set; }
+
+        public DiagnosticSeverity DiagnosticSeverity => DiagnosticSeverity.Warning;
 
         public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
@@ -74,8 +86,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return SourceType.Builtin;
         }
+        
+        public override void ConfigureRule(IDictionary<string, object> paramValueMap)
+        {
+            base.ConfigureRule(paramValueMap);
 
-        public DiagnosticSeverity DiagnosticSeverity => DiagnosticSeverity.Warning;
+            // Default anyprofile path is the one specified in the CrossCompatibility library
+            if (string.IsNullOrEmpty(AnyProfilePath))
+            {
+                AnyProfilePath = PlatformNaming.AnyPlatformUnionName;
+            }
+        }
 
         private CmdletCompatibilityVisitor CreateVisitorFromConfiguration(string analyzedFileName)
         {

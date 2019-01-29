@@ -5,6 +5,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
     public static class PlatformNaming
     {
+        public static string AnyPlatformUnionName => "anyplatform_union";
+
         public static string PlatformNameJoiner
         {
             get

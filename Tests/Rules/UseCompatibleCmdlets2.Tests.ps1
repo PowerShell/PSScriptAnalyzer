@@ -4,6 +4,16 @@ $script:AssetDirPath = Join-Path $PSScriptRoot 'UseCompatibleCmdlets2'
 $script:ProfileDirPath = [System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'CrossCompatibility', 'profiles')
 $script:AnyProfilePath = Join-Path $script:ProfileDirPath 'anyplatforms_union.json'
 
+try
+{
+    $null = [semver]
+    $script:HasSemVer = $true
+}
+catch
+{
+    $script:HasSemVer = $false
+}
+
 $script:CompatibilityTestCases = @(
     @{ Target = 'win-4_x64_10.0.18312.0_5.1.18312.1000_x64'; Script = "Remove-Alias gcm"; Commands = @("Remove-Alias"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = 'win-4_x64_10.0.18312.0_5.1.18312.1000_x64'; Script = "Get-Uptime"; Commands = @("Get-Uptime"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
@@ -64,10 +74,19 @@ Describe 'UseCompatibleCmdlets2' {
 
             for ($i = 0; $i -lt $diagnostics.Count; $i++)
             {
+                try
+                {
+                    $psVersion = [version]$diagnostics[$i].TargetPlatform.PowerShell.Version
+                }
+                catch
+                {
+                    $psVersion = [semver]$diagnostics[$i].TargetPlatform.PowerShell.Version
+                }
+
                 $diagnostics[$i].Command | Should -BeExactly $Commands[$i]
                 $diagnostics[$i].TargetPlatform.OperatingSystem.Family | Should -Be $OS
-                $diagnostics[$i].TargetPlatform.PowerShell.Version.Major | Should -Be $Version.Major
-                $diagnostics[$i].TargetPlatform.PowerShell.Version.Minor | Should -Be $Version.Minor
+                $psVersion.Major | Should -Be $Version.Major
+                $psVersion.Minor | Should -Be $Version.Minor
             }
         }
     }

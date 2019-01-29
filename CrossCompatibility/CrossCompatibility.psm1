@@ -46,23 +46,23 @@ $commonParams = @(
 
 foreach ($p in $commonParams)
 {
-    $null = $script:CommonParameters.Add($p)
+    [void]$script:CommonParameters.Add($p)
 }
 
 # The file name for the any-platform reference generated from the union of all other platforms
-[string]$script:AnyPlatformReferenceProfileFilePath = [System.IO.Path]::Combine($script:CompatibilityProfileDir, 'anyplatform_union.json')
+[string]$script:AnyPlatformUnionPlatformName = [Microsoft.PowerShell.CrossCompatibility.Utility.PlatformNaming]::AnyPlatformUnionName
+[string]$script:AnyPlatformReferenceProfileFilePath = [System.IO.Path]::Combine($script:CompatibilityProfileDir, "$script:AnyPlatformUnionPlatformName.json")
 
-# User and Shared module path locations
+# Module path locations
 if ($PSVersionTable.PSVersion.Major -ge 6)
 {
-    [string]$script:UserModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetPersonalModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
-    [string]$script:SharedModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetSharedModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
+    [string]$script:PSHomeModulePath = [System.Management.Automation.ModuleIntrinsics].GetMethod('GetPSHomeModulePath', [System.Reflection.BindingFlags]'static,nonpublic').Invoke($null, @())
+    [string]$script:WinPSHomeModulePath = "$env:windir\System32\WindowsPowerShell\v1.0\Modules"
 }
 else
 {
-    $documentsFolder = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Personal)
-    [string]$script:UserModulePath = "$documentsFolder\PowerShell\Modules"
-    [string]$script:SharedModulePath = "$env:ProgramFiles\WindowsPowerShell\Modules"
+    [string]$script:PSHomeModulePath = "$PSHOME\Modules"
+    [string]$script:WinPSHomeModulePath = $script:PSHomeModulePath
 }
 
 <#
@@ -219,7 +219,7 @@ function New-AllPlatformReferenceProfile
         Remove-Item -Path $Path -Force
     }
 
-    $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) 'anyprofile.json'
+    $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) "$script:AnyPlatformReferenceProfileFilePath.json"
 
     Join-CompatibilityProfile -InputFile $ProfileDir -Union | ConvertTo-CompatibilityJson -NoWhitespace | Out-File -Encoding UTF8 -FilePath $tmpPath
 
@@ -530,12 +530,12 @@ function Get-PowerShellCompatibilityData
     param(
         [Parameter()]
         [switch]
-        $IncludeUserModules
+        $IncludeAllModules
     )
 
-    $modules = Get-AvailableModules -IncludeUserModules:$IncludeUserModules
+    $modules = Get-AvailableModules -IncludeAll:$IncludeAllModules
     $typeAccelerators = Get-TypeAccelerators
-    $asms = Get-AvailableTypes -IncludeUserModules:$IncludeUserModules
+    $asms = Get-AvailableTypes -All:$IncludeAllModules
 
     $coreModule = Get-CoreModuleData
 
@@ -557,15 +557,15 @@ Gets all assemblies publicly available in
 the current PowerShell session.
 Skips assemblies from user modules by default.
 
-.PARAMETER IncludeUserModules
-Include loaded assemblies located on the module installation path.
+.PARAMETER All
+Include 
 #>
 function Get-AvailableTypes
 {
     param(
         [Parameter()]
         [switch]
-        $IncludeUserModules
+        $All
     )
 
     $asms = New-Object 'System.Collections.Generic.List[System.Reflection.Assembly]'
@@ -577,13 +577,10 @@ function Get-AvailableTypes
             continue
         }
 
-        if (-not $IncludeUserModules -and
-            (Test-HasAnyPrefix $asm.Location -Prefix $script:UserModulePath,$script:SharedModulePath -IgnoreCase:$script:IsWindows))
+        if ($All -or (Test-HasAnyPrefix $asm.Location -Prefix $script:PSHomeModulePath,$script:WinPSHomeModulePath -IgnoreCase:$script:IsWindows))
         {
-            continue
+            $asms.Add($asm)
         }
-
-        $asms.Add($asm)
     }
 
     return $asms
@@ -657,17 +654,17 @@ function Get-AvailableModules
     param(
         [Parameter()]
         [switch]
-        $IncludeUserModules
+        $IncludeAll
     )
 
-    if ($IncludeUserModules)
+    if ($IncludeAll)
     {
         $modsToLoad = Get-Module -ListAvailable
     }
     else
     {
         $modsToLoad = Get-Module -ListAvailable `
-            | Where-Object { -not (Test-HasAnyPrefix $_.Path $script:UserModulePath,$script:SharedModulePath -IgnoreCase:$script:IsWindows) }
+            | Where-Object { Test-HasAnyPrefix $_.Path $script:PSHomeModulePath,$script:WinPSHomeModulePath -IgnoreCase:$script:IsWindows }
     }
 
     # Filter out this module
@@ -1132,6 +1129,11 @@ function Test-HasAnyPrefix
 
     foreach ($p in $Prefix)
     {
+        if ($null -eq $p)
+        {
+            continue
+        }
+
         if ($String.StartsWith($p, $strcmp))
         {
             return $true
