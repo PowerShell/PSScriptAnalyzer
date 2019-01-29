@@ -46,7 +46,7 @@ An example configuration might look like:
 ```PowerShell
 @{
     Rules = @{
-        PSUseCompatibleCmdlets2 = @{
+        UseCompatibleCmdlets2 = @{
             Enabled = $true
             TargetProfilePaths = @(
                 'ubuntu_x64_18.04_6.1.2_x64'
