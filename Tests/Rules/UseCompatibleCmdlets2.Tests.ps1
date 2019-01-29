@@ -74,14 +74,7 @@ Describe 'UseCompatibleCmdlets2' {
 
             for ($i = 0; $i -lt $diagnostics.Count; $i++)
             {
-                try
-                {
-                    $psVersion = [version]$diagnostics[$i].TargetPlatform.PowerShell.Version
-                }
-                catch
-                {
-                    $psVersion = [semver]$diagnostics[$i].TargetPlatform.PowerShell.Version
-                }
+                $psVersion = [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]$diagnostics[$i].TargetPlatform.PowerShell.Version
 
                 $diagnostics[$i].Command | Should -BeExactly $Commands[$i]
                 $diagnostics[$i].TargetPlatform.OperatingSystem.Family | Should -Be $OS
