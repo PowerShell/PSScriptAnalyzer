@@ -54,6 +54,7 @@
 |[UseSupportsShouldProcess](./UseSupportsShouldProcess.md) | Warning | |
 |[UseToExportFieldsInManifest](./UseToExportFieldsInManifest.md) | Warning | |
 |[UseCompatibleCmdlets](./UseCompatibleCmdlets.md) | Warning | Yes |
+|[UseCompatibleCmdlets2](./UseCompatibleCmdlets2.md) | Warning | Yes |
 |[PlaceOpenBrace](./PlaceOpenBrace.md) | Warning | Yes |
 |[PlaceCloseBrace](./PlaceCloseBrace.md) | Warning | Yes |
 |[UseConsistentIndentation](./UseConsistentIndentation.md) | Warning | Yes |

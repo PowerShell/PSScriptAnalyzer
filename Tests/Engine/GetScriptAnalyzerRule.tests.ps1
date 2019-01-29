@@ -59,7 +59,7 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 55
+            $expectedNumRules = 56
             if ((Test-PSEditionCoreClr) -or (Test-PSVersionV3) -or (Test-PSVersionV4))
             {
                 # for PSv3 PSAvoidGlobalAliases is not shipped because
@@ -69,7 +69,7 @@ Describe "Test Name parameters" {
                 # shipped because it uses APIs that are not present
                 # in dotnet core.
 
-                $expectedNumRules--                
+                $expectedNumRules--
             }
 			$defaultRules.Count | Should -Be $expectedNumRules
 		}
