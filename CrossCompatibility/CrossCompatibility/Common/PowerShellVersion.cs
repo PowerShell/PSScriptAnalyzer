@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Utility
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     public class PowerShellVersion
     {
@@ -11,10 +11,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             switch (versionInput)
             {
                 case Version systemVersion:
-                    return new PowerShellVersion(systemVersion);
+                    return (PowerShellVersion)systemVersion;
 
                 case string versionString:
                     return Parse(versionString);
+            }
+
+            if (versionInput.BuildLabel != null)
+            {
+                return new PowerShellVersion(versionInput.Major, versionInput.Minor, versionInput.Patch, $"{versionInput.PreReleaseLabel}+{versionInput.BuildLabel}");
             }
 
             return new PowerShellVersion(versionInput.Major, versionInput.Minor, versionInput.Patch, versionInput.PreReleaseLabel);
@@ -27,7 +32,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 throw new ArgumentNullException(nameof(versionStr));
             }
 
-            int[] versionParts = new int[3];
+            int[] versionParts = new int[3] { -1, -1, -1 };
 
             int sectionStartOffset = 0;
             int dotCount = 0;
@@ -69,7 +74,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             versionParts[dotCount] = int.Parse(versionStr.Substring(sectionStartOffset, i - sectionStartOffset));
 
-            return new PowerShellVersion(versionParts[0], versionParts[1], versionParts[2], preReleaseLabel: null);
+            return new PowerShellVersion(versionParts[0], versionParts[1], versionParts[2], label: null);
         }
 
         public static bool TryParse(string versionStr, out PowerShellVersion version)
@@ -86,6 +91,29 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
         }
 
+        public static void ValidateVersionArguments(int major, int minor, int build, int revision, string preReleaseLabel)
+        {
+            if (major < 0)
+            {
+                throw new ArgumentException();
+            }
+
+            if (minor < 0 && (build >= 0 || revision >= 0))
+            {
+                throw new ArgumentException();
+            }
+
+            if (build < 0 && revision >= 0)
+            {
+                throw new ArgumentException();
+            }
+
+            if (revision >= 0 && preReleaseLabel != null)
+            {
+                throw new ArgumentException();
+            }
+        }
+
         public static explicit operator Version(PowerShellVersion psVersion)
         {
             if (psVersion.PreReleaseLabel != null)
@@ -93,12 +121,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 throw new InvalidCastException($"Cannot convert version '{psVersion}' to System.Version, since there is a pre-release label");
             }
 
-            if (psVersion.Revision != null)
-            {
-                return new Version(psVersion.Major, psVersion.Minor, psVersion.Patch, psVersion.Revision.Value);
-            }
-
-            return new Version(psVersion.Major, psVersion.Minor, psVersion.Patch);
+            return new Version(psVersion.Major, psVersion.Minor, psVersion.Patch, psVersion.Revision);
         }
 
         public static explicit operator PowerShellVersion(string versionString)
@@ -106,25 +129,37 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return PowerShellVersion.Parse(versionString);
         }
 
-        public PowerShellVersion(Version version)
-            : this(version.Major, version.Minor, version.Build, version.Revision)
+        public static explicit operator PowerShellVersion(Version version)
         {
+            return new PowerShellVersion(version.Major, version.Minor, version.Build, version.Revision);
         }
 
         public PowerShellVersion(int major, int minor, int build, int revision)
         {
+            ValidateVersionArguments(major, minor, build, revision, preReleaseLabel: null);
             Major = major;
             Minor = minor;
             Build = build;
             Revision = revision;
         }
 
-        public PowerShellVersion(int major, int minor, int patch, string preReleaseLabel)
+        public PowerShellVersion(int major, int minor, int patch, string label)
         {
+            ValidateVersionArguments(major, minor, patch, -1, label);
             Major = major;
             Minor = minor;
             Build = patch;
-            PreReleaseLabel = preReleaseLabel;
+
+            int plusIdx = label?.IndexOf('+') ?? -1;
+            if (plusIdx < 0)
+            {
+                PreReleaseLabel = label;
+            }
+            else
+            {
+                PreReleaseLabel = label.Substring(0, plusIdx);
+                BuildLabel = label.Substring(plusIdx + 1, label.Length - plusIdx - 1);
+            }
         }
 
         public int Major { get; }
@@ -135,25 +170,37 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public int Patch => Build;
 
-        public int? Revision { get; }
+        public int Revision { get; }
 
         public string PreReleaseLabel { get; }
 
-        public bool IsSemVer => Revision == null;
+        public string BuildLabel { get; }
+
+        public bool IsSemVer => Revision < 0;
 
         public override string ToString()
         {
-            if (!IsSemVer)
+            var sb = new StringBuilder(Major);
+
+            if (Minor < 0)
             {
-                return $"{Major}.{Minor}.{Build}.{Revision}";
+                return sb.ToString();
             }
 
-            var sb = new StringBuilder()
-                .Append(Major).Append('.')
-                .Append(Minor).Append('.')
-                .Append(Patch);
+            sb.Append('.').Append(Minor);
 
-            if (!string.IsNullOrEmpty(PreReleaseLabel))
+            if (Build < 0)
+            {
+                return sb.ToString();
+            }
+
+            sb.Append('.').Append(Build);
+
+            if (Revision >= 0)
+            {
+                sb.Append('.').Append(Revision);
+            }
+            else if (PreReleaseLabel != null)
             {
                 sb.Append('-').Append(PreReleaseLabel);
             }
@@ -167,7 +214,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(PowerShellVersion)
-                || objectType == typeof(Version)
                 || objectType.FullName == "System.Management.Automation.SemanticVersion";
         }
 

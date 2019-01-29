@@ -13,7 +13,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
             _powerShellData = powerShellData;
         }
 
-        public string Version => _powerShellData.Version;
+        public PowerShellVersion Version => _powerShellData.Version;
 
         public string Edition => _powerShellData.Edition;
 

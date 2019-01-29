@@ -33,16 +33,19 @@ Describe "PowerShell version object" {
     Context "Version parsing" {
         BeforeAll {
             $genericVerCases = @(
-                @{ VerStr = '6'; Major = 6; Minor = 0; Patch = 0 }
-                @{ VerStr = '6.1'; Major = 6; Minor = 1; Patch = 0 }
+                @{ VerStr = '6'; Major = 6; Minor = -1; Patch = -1 }
+                @{ VerStr = '6.1'; Major = 6; Minor = 1; Patch = -1 }
                 @{ VerStr = '5.2.7'; Major = 5; Minor = 2; Patch = 7 }
                 @{ VerStr = '512.2124.71'; Major = 512; Minor = 2124; Patch = 71 }
             )
 
             $semVerCases = @(
                 @{ VerStr = '6.1.0-rc.1'; Major = 6; Minor = 1; Patch = 0; Label = 'rc.1' }
-                @{ VerStr = '6-preview.2'; Major = 6; Minor = 0; Patch = 0; Label = 'preview.2' }
-                @{ VerStr = '6.2-preview.2'; Major = 6; Minor = 2; Patch = 0; Label = 'preview.2' }
+                @{ VerStr = '6.2-preview.2'; Major = 6; Minor = 2; Patch = -1; Label = 'preview.2' }
+                @{ VerStr = '6-preview.2'; Major = 6; Minor = -1; Patch = -1; Label = 'preview.2' }
+                @{ VerStr = '6.1.0-rc.1+moo'; Major = 6; Minor = 1; Patch = 0; Label = 'rc.1'; BuildLabel = 'moo' }
+                @{ VerStr = '6.2-preview.2+horse'; Major = 6; Minor = 2; Patch = -1; Label = 'preview.2'; BuildLabel = 'horse' }
+                @{ VerStr = '6-preview.2+veryimportant'; Major = 6; Minor = -1; Patch = -1; Label = 'preview.2'; BuildLabel = 'veryimportant' }
             )
 
             $systemVerCases = @(
@@ -73,8 +76,8 @@ Describe "PowerShell version object" {
             $v.Patch | Should -Be $Patch
         }
 
-        It "Parses version string '<VerStr>' as <Major>.<Minor>.<Patch>-<Label>" -TestCases $semVerCases {
-            param([string]$VerStr, [int]$Major, [int]$Minor, [int]$Patch, [string]$Label)
+        It "Parses version string '<VerStr>' as <Major>.<Minor>.<Patch>-<Label>+<BuildLabel>" -TestCases $semVerCases {
+            param([string]$VerStr, [int]$Major, [int]$Minor, [int]$Patch, [string]$Label, $BuildLabel)
 
             $v = [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]::Parse($VerStr)
 
@@ -82,6 +85,7 @@ Describe "PowerShell version object" {
             $v.Minor | Should -Be $Minor
             $v.Patch | Should -Be $Patch
             $v.PreReleaseLabel | Should -BeExactly $Label
+            $v.BuildLabel | Should -Be $BuildLabel
         }
 
         It "Parses version string '<VerStr>' as <Major>.<Minor>.<Patch>.<Revision>" -TestCases $systemVerCases {
@@ -105,7 +109,7 @@ Describe "PowerShell version object" {
     Context "Version creation from other versions" {
         BeforeAll {
             $versionCreationTests = @(
-                @{ Version = '6.1'; Major = 6; Minor = 1; Patch = 0 }
+                @{ Version = '6.1'; Major = 6; Minor = 1; Patch = -1 }
                 @{ Version = '6.1.4'; Major = 6; Minor = 1; Patch = 4; }
                 @{ Version = '5.1.8-preview.2'; Major = 5; Minor = 1; Patch = 8; Label = 'preview.2' }
                 @{ Version = [version]'4.2'; Major = 4; Minor = 2; Patch = -1; Revision = -1 }
@@ -120,6 +124,9 @@ Describe "PowerShell version object" {
                     @{ Version = [semver]'6.1.2-rc.1'; Major = 6; Minor = 1; Patch = 2; Label = 'rc.1' }
                     @{ Version = [semver]'6.1-rc.1'; Major = 6; Minor = 1; Patch = 0; Label = 'rc.1' }
                     @{ Version = [semver]'6-rc.1'; Major = 6; Minor = 0; Patch = 0; Label = 'rc.1' }
+                    @{ Version = [semver]'6.1.2-rc.1+duck'; Major = 6; Minor = 1; Patch = 2; Label = 'rc.1'; BuildLabel = 'duck' }
+                    @{ Version = [semver]'6.1-rc.1+duck'; Major = 6; Minor = 1; Patch = 0; Label = 'rc.1'; BuildLabel = 'duck' }
+                    @{ Version = [semver]'6-rc.1+duck'; Major = 6; Minor = 0; Patch = 0; Label = 'rc.1'; BuildLabel = 'duck' }
                 )
             }
 
@@ -131,7 +138,7 @@ Describe "PowerShell version object" {
         }
 
         It "Creates a PowerShellVersion from '<Version>'" -TestCases $versionCreationTests {
-            param($Version, [int]$Major, [int]$Minor, [int]$Patch, [int]$Revision, $Label)
+            param($Version, [int]$Major, [int]$Minor, [int]$Patch, [int]$Revision, $Label, $BuildLabel)
 
             $v = [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]::Create($Version)
 
@@ -139,6 +146,7 @@ Describe "PowerShell version object" {
             $v.Minor | Should -Be $Minor
             $v.Patch | Should -Be $Patch
             $v.PreReleaseLabel | Should -Be $Label
+            $v.BuildLabel | Should -Be $BuildLabel
 
             if ($Revision)
             {

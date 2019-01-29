@@ -7,7 +7,10 @@ param(
     [Parameter()]
     [ValidateSet('netstandard2.0', 'net452')]
     [string]
-    $Framework
+    $Framework,
+
+    [switch]
+    $Test
 )
 
 $ErrorActionPreference = 'Stop'
@@ -101,15 +104,22 @@ function Publish-CrossCompatibilityModule
     }
 }
 
-if (-not $Framework)
+if ($Framework)
+{
+    Invoke-CrossCompatibilityModuleBuild -Configuration $Configuration -Framework $Framework
+    Publish-CrossCompatibilityModule -TargetFramework $Framework
+}
+else
 {
     foreach ($f in $script:TargetFrameworks)
     {
         Invoke-CrossCompatibilityModuleBuild -Framework $f -Configuration $Configuration
     }
     Publish-CrossCompatibilityModule
-    return
 }
 
-Invoke-CrossCompatibilityModuleBuild @PSBoundParameters
-Publish-CrossCompatibilityModule -TargetFramework $Framework
+if ($Test)
+{
+    $testPath = "$PSScriptRoot/Tests"
+    Start-Job { Invoke-Pester -Path $using:testPath  } | Wait-Job | Receive-Job
+}
