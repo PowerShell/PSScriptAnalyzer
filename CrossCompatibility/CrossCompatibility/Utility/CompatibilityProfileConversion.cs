@@ -492,7 +492,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
 
             // Non-generic type names give their full names as something PowerShell can recognize
-            if (!type.IsGenericType)
+            if (!IsGeneric(type))
             {
                 return type.FullName;
             }
@@ -550,6 +550,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             sb.Append(typeName.Substring(lastOffset + 1, i - lastOffset - 1));
 
             return sb.ToString();
+        }
+
+        public static bool IsGeneric(Type type)
+        {
+            if (type.IsGenericType)
+            {
+                return true;
+            }
+
+            if (type.IsArray || type.IsByRef || type.IsPointer)
+            {
+                return IsGeneric(type.GetElementType());
+            }
+
+            return false;
         }
     }
 }

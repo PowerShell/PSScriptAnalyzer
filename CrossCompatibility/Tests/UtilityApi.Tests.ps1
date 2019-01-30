@@ -2,8 +2,6 @@ Import-Module "$PSScriptRoot/../out/CrossCompatibility" -Force -ErrorAction Stop
 
 Describe "Type name transformation" {
     BeforeAll {
-        Wait-Debugger
-
         $typeNameTestCases = @(
             @{ InputType = [System.Reflection.Assembly]; ExpectedName = "System.Reflection.Assembly" }
             @{ InputType = [string]; ExpectedName = "System.String" }
