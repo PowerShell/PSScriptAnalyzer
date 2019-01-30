@@ -237,7 +237,7 @@ function Start-ScriptAnalyzerBuild
         catch {
             Write-Warning $_
             Write-Error "Failure to build for PSVersion '$PSVersion' using framework '$framework' and configuration '$config'"
-            return
+            throw
         }
         finally {
             Pop-Location

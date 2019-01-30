@@ -486,7 +486,70 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static string GetFullTypeName(Type type)
         {
-            return type?.ToString();
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            // Non-generic type names give their full names as something PowerShell can recognize
+            if (!type.IsGenericType)
+            {
+                return type.FullName;
+            }
+
+            // Uninstantiated generics also have PowerShell-parseable full names
+            Type[] genericArguments = type.GetGenericArguments();
+            if (genericArguments.All(ga => ga.IsGenericParameter))
+            {
+                if (type.FullName != null)
+                {
+                    return type.FullName;
+                }
+
+                return RemoveGenericParameters(type.ToString());
+            }
+
+            var sb = new StringBuilder(type.GetGenericTypeDefinition().FullName).Append('[');
+
+            int i = 0;
+            for (; i < genericArguments.Length - 1; i++)
+            {
+                Type genericArg = genericArguments[i];
+                if (!genericArg.IsGenericParameter)
+                {
+                    sb.Append(GetFullTypeName(genericArg));
+                }
+                sb.Append(',');
+            }
+            sb.Append(genericArguments[i]).Append(']');
+
+            return sb.ToString();
+        }
+
+        public static string RemoveGenericParameters(string typeName)
+        {
+            var sb = new StringBuilder();
+            int lastOffset = 0;
+            int i = 0;
+            for (; i < typeName.Length; i++)
+            {
+                if (typeName[i] != '[')
+                {
+                    continue;
+                }
+
+                if (typeName[i + 1] == ']')
+                {
+                    continue;
+                }
+
+                sb.Append(typeName.Substring(lastOffset, i - lastOffset));
+                i = typeName.IndexOf(']', lastOffset);
+                lastOffset = i;
+            }
+            sb.Append(typeName.Substring(lastOffset + 1, i - lastOffset - 1));
+
+            return sb.ToString();
         }
     }
 }

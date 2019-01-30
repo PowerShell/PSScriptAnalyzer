@@ -2,18 +2,22 @@ Import-Module "$PSScriptRoot/../out/CrossCompatibility" -Force -ErrorAction Stop
 
 Describe "Type name transformation" {
     BeforeAll {
+        Wait-Debugger
+
         $typeNameTestCases = @(
             @{ InputType = [System.Reflection.Assembly]; ExpectedName = "System.Reflection.Assembly" }
             @{ InputType = [string]; ExpectedName = "System.String" }
             @{ InputType = [datetime]; ExpectedName = "System.DateTime" }
             @{ InputType = [string[]]; ExpectedName = "System.String[]" }
+            @{ InputType = [System.TimeZoneInfo+AdjustmentRule]; ExpectedName = "System.TimeZoneInfo+AdjustmentRule" }
+            @{ InputType = [System.Func`1]; ExpectedName = "System.Func``1" }
+            @{ InputType = [System.Collections.Generic.Dictionary`2]; ExpectedName = "System.Collections.Generic.Dictionary``2" }
+            @{ InputType = [System.Collections.Generic.Dictionary`2+Enumerator]; ExpectedName = "System.Collections.Generic.Dictionary``2+Enumerator" }
+            @{ InputType = [System.Collections.Generic.Dictionary[string,object]].GetNestedType('Enumerator'); ExpectedName = "System.Collections.Generic.Dictionary``2+Enumerator" }
             @{ InputType = [System.Collections.Generic.List[object]]; ExpectedName = "System.Collections.Generic.List``1[System.Object]" }
             @{ InputType = [System.Collections.Generic.Dictionary[string, object]]; ExpectedName = "System.Collections.Generic.Dictionary``2[System.String,System.Object]" }
-            @{ InputType = [System.Func`1]; ExpectedName = "System.Func``1[TResult]" }
-            @{ InputType = [System.Collections.Generic.Dictionary`2]; ExpectedName = "System.Collections.Generic.Dictionary``2[TKey,TValue]" }
-            @{ InputType = [System.Collections.Generic.Dictionary`2+Enumerator]; ExpectedName = "System.Collections.Generic.Dictionary``2+Enumerator[TKey,TValue]" }
-            @{ InputType = [System.Collections.Generic.Dictionary[string,object]].GetNestedType('Enumerator'); ExpectedName = "System.Collections.Generic.Dictionary``2+Enumerator[TKey,TValue]" }
-            @{ InputType = [System.Collections.Concurrent.ConcurrentDictionary`2].GetMethod('ToArray').ReturnType; ExpectedName = "System.Collections.Generic.KeyValuePair``2[TKey,TValue][]"}
+            @{ InputType = [System.Collections.Generic.Dictionary`2+Enumerator[string,object]]; ExpectedName = "System.Collections.Generic.Dictionary``2+Enumerator[System.String,System.Object]" }
+            @{ InputType = [System.Collections.Concurrent.ConcurrentDictionary`2].GetMethod('ToArray').ReturnType; ExpectedName = "System.Collections.Generic.KeyValuePair``2[]"}
         )
     }
 
@@ -24,8 +28,10 @@ Describe "Type name transformation" {
         $name | Should -BeExactly $ExpectedName
     }
 
-    It "Null type gives null type name" {
-        [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::GetFullTypeName($null) | Should -Be $null
+    It "Null type throws exception" {
+        {
+            [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::GetFullTypeName($null)
+        } | Should -Throw -ErrorId "ArgumentNullException"
     }
 }
 
@@ -69,7 +75,7 @@ Describe "PowerShell version object" {
         It "Parses version string '<VerStr>' as <Major>.<Minor>.<Patch>" -TestCases $semVerCases {
             param([string]$VerStr, [int]$Major, [int]$Minor, [int]$Patch)
 
-            $v = [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]::Parse($VerStr)
+            $v = [Microsoft.PowerShell.CrossCompatibility.PowerShellVersion]$VerStr
 
             $v.Major | Should -Be $Major
             $v.Minor | Should -Be $Minor
@@ -79,7 +85,7 @@ Describe "PowerShell version object" {
         It "Parses version string '<VerStr>' as <Major>.<Minor>.<Patch>-<Label>+<BuildLabel>" -TestCases $semVerCases {
             param([string]$VerStr, [int]$Major, [int]$Minor, [int]$Patch, [string]$Label, $BuildLabel)
 
-            $v = [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]::Parse($VerStr)
+            $v = [Microsoft.PowerShell.CrossCompatibility.PowerShellVersion]$VerStr
 
             $v.Major | Should -Be $Major
             $v.Minor | Should -Be $Minor
@@ -91,7 +97,7 @@ Describe "PowerShell version object" {
         It "Parses version string '<VerStr>' as <Major>.<Minor>.<Patch>.<Revision>" -TestCases $systemVerCases {
             param([string]$VerStr, [int]$Major, [int]$Minor, [int]$Patch, [int]$Revision)
 
-            $v = [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]::Parse($VerStr)
+            $v = [Microsoft.PowerShell.CrossCompatibility.PowerShellVersion]$VerStr
 
             $v.Major | Should -Be $Major
             $v.Minor | Should -Be $Minor
@@ -102,7 +108,7 @@ Describe "PowerShell version object" {
         It "Does not parse '<VerStr>' as a version" -TestCases $versionFailCases {
             param([string]$VerStr)
 
-            { [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]::Parse($VerStr) } | Should -Throw
+            { [Microsoft.PowerShell.CrossCompatibility.PowerShellVersion]$VerStr } | Should -Throw
         }
     }
 
@@ -140,7 +146,7 @@ Describe "PowerShell version object" {
         It "Creates a PowerShellVersion from '<Version>'" -TestCases $versionCreationTests {
             param($Version, [int]$Major, [int]$Minor, [int]$Patch, [int]$Revision, $Label, $BuildLabel)
 
-            $v = [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]::Create($Version)
+            $v = [Microsoft.PowerShell.CrossCompatibility.PowerShellVersion]::Create($Version)
 
             $v.Major | Should -Be $Major
             $v.Minor | Should -Be $Minor
@@ -157,7 +163,7 @@ Describe "PowerShell version object" {
         It "Does not create a PowerShellVersion from <Version>" -TestCases $versionCreationFailTests {
             param($Version)
 
-            { [Microsoft.PowerShell.CrossCompatibility.Utility.PowerShellVersion]::Create($Version) } | Should -Throw
+            { [Microsoft.PowerShell.CrossCompatibility.PowerShellVersion]::Create($Version) } | Should -Throw
         }
     }
 }

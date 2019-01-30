@@ -5,11 +5,7 @@ if ($PSVersionTable.PSVersion.Major -ge 5)
 }
 else
 {
-<<<<<<< HEAD
-    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibilityBinary', 'net452', 'CrossCompatibility.dll'))
-=======
     Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'CrossCompatibility.dll'))
->>>>>>> Fix dll path issue in psm1
 }
 
 # Location of directory where compatibility reports should be put
@@ -558,7 +554,7 @@ the current PowerShell session.
 Skips assemblies from user modules by default.
 
 .PARAMETER All
-Include 
+Include
 #>
 function Get-AvailableTypes
 {

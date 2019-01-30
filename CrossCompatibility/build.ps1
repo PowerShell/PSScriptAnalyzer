@@ -121,5 +121,6 @@ else
 if ($Test)
 {
     $testPath = "$PSScriptRoot/Tests"
-    Start-Job { Invoke-Pester -Path $using:testPath  } | Wait-Job | Receive-Job
+    pwsh-preview.cmd -Command "Invoke-Pester -Path '$testPath'"
+    #Start-Job { Invoke-Pester -Path $using:testPath  } | Wait-Job | Receive-Job
 }
