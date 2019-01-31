@@ -26,106 +26,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return ExpandTypeName(typeAccelerators, typeName).FullName;
         }
 
-        public static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, ITypeName typeName)
-        {
-            if (typeName == null)
-            {
-                throw new ArgumentNullException(nameof(typeName));
-            }
-
-            switch (typeName)
-            {
-                case TypeName ordinaryTypeName:
-                    return ExpandTypeName(typeAccelerators, ordinaryTypeName);
-
-                case ArrayTypeName arrayTypeName:
-                    return ExpandTypeName(typeAccelerators, arrayTypeName);
-
-                case GenericTypeName genericTypeName:
-                    return ExpandTypeName(typeAccelerators, genericTypeName);
-
-                case ReflectionTypeName reflectionTypeName:
-                    return ExpandTypeName(typeAccelerators, reflectionTypeName);
-
-                default:
-                    throw new ArgumentException($"{nameof(typeName)} is not a known instantiation of ITypeName. Type: {typeName.GetType()}");
-            }
-        }
-
-        public static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, TypeName typeName, int genericArgCount = 0)
-        {
-            if (genericArgCount > 0 && !typeName.FullName.Contains('`'))
-            {
-                string newTypeName = new StringBuilder(typeName.FullName).Append('`').Append(genericArgCount).ToString();
-                return new TypeName(s_emptyExtent, newTypeName);
-            }
-
-            if (typeName.FullName.Contains('.'))
-            {
-                return typeName;
-            }
-
-            if (s_typeAcceleratorNameCache.TryGetValue(typeName.FullName, out ITypeName expandedName))
-            {
-                return expandedName;
-            }
-
-            if (typeAccelerators.TryGetValue(typeName.FullName, out string expandedTypeName))
-            {
-                var newExpandedName = new TypeName(s_emptyExtent, expandedTypeName);
-                s_typeAcceleratorNameCache[typeName.FullName] = newExpandedName;
-                return newExpandedName;
-            }
-
-            return typeName;
-        }
-
-        public static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, ArrayTypeName typeName)
-        {
-            ITypeName elementTypeName = ExpandTypeName(typeAccelerators, typeName.ElementType);
-
-            if (elementTypeName == typeName.ElementType)
-            {
-                return typeName;
-            }
-
-            return new ArrayTypeName(s_emptyExtent, elementTypeName, typeName.Rank);
-        }
-
-        public static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, GenericTypeName typeName)
-        {
-            var genericArgs = new ITypeName[typeName.GenericArguments.Count];
-            for (int i = 0; i < genericArgs.Length; i++)
-            {
-                genericArgs[i] = ExpandTypeName(typeAccelerators, typeName.GenericArguments[i]);
-            }
-
-            ITypeName expandedTypeName = ExpandTypeName(typeAccelerators, (TypeName)typeName.TypeName, genericArgCount: genericArgs.Length);
-
-            bool canUseOldTypeName = expandedTypeName == typeName.TypeName;
-            for (int i = 0; i < genericArgs.Length; i++)
-            {
-                if (!canUseOldTypeName)
-                {
-                    break;
-                }
-
-                canUseOldTypeName &= genericArgs[i] == typeName.GenericArguments[i];
-            }
-
-            if (canUseOldTypeName)
-            {
-                return typeName;
-            }
-
-            return new GenericTypeName(s_emptyExtent, expandedTypeName, genericArgs);
-        }
-
-        public static ITypeName ExpandTypeName(ReflectionTypeName typeName)
-        {
-            return typeName;
-        }
-
         public static string GetFullTypeName(Type type)
         {
             if (type == null)
@@ -168,6 +68,50 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return sb.ToString();
         }
 
+        public static bool IsGenericName(string typeName)
+        {
+            return typeName.Contains('`');
+        }
+
+        public static string StripGenericQuantifiers(string typeName)
+        {
+            var sb = new StringBuilder();
+            int currSectionStart = 0;
+            int i = 0;
+            for (; i < typeName.Length; i++)
+            {
+                if (typeName[i] != '`')
+                {
+                    continue;
+                }
+
+                sb.Append(typeName.Substring(currSectionStart, i - currSectionStart));
+
+                do
+                {
+                    i++;
+                }
+                while (i < typeName.Length && char.IsDigit(typeName[i]));
+
+                currSectionStart = i;
+            }
+            if (currSectionStart < typeName.Length)
+            {
+                sb.Append(typeName.Substring(currSectionStart, i - currSectionStart));
+            }
+            return sb.ToString();
+        }
+
+        public static string AssembleFullName(string nspace, string typeName)
+        {
+            if (string.IsNullOrEmpty(nspace))
+            {
+                return typeName;
+            }
+
+            return nspace + "." + typeName;
+        }
+
         private static string RemoveGenericParameters(string typeName)
         {
             var sb = new StringBuilder();
@@ -207,6 +151,119 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
 
             return false;
+        }
+
+        private static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, ITypeName typeName)
+        {
+            if (typeName == null)
+            {
+                throw new ArgumentNullException(nameof(typeName));
+            }
+
+            switch (typeName)
+            {
+                case TypeName ordinaryTypeName:
+                    return ExpandTypeName(typeAccelerators, ordinaryTypeName);
+
+                case ArrayTypeName arrayTypeName:
+                    return ExpandTypeName(typeAccelerators, arrayTypeName);
+
+                case GenericTypeName genericTypeName:
+                    return ExpandTypeName(typeAccelerators, genericTypeName);
+
+                case ReflectionTypeName reflectionTypeName:
+                    return ExpandTypeName(typeAccelerators, reflectionTypeName);
+
+                default:
+                    throw new ArgumentException($"{nameof(typeName)} is not a known instantiation of ITypeName. Type: {typeName.GetType()}");
+            }
+        }
+
+        private static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, TypeName typeName, int genericArgCount = 0)
+        {
+            if (genericArgCount > 0 && !typeName.FullName.Contains('`'))
+            {
+                string newTypeName = new StringBuilder(typeName.FullName).Append('`').Append(genericArgCount).ToString();
+                return new TypeName(s_emptyExtent, newTypeName);
+            }
+
+            if (typeName.FullName.Contains('.'))
+            {
+                return typeName;
+            }
+
+            if (s_typeAcceleratorNameCache.TryGetValue(typeName.FullName, out ITypeName expandedName))
+            {
+                return expandedName;
+            }
+
+            if (typeAccelerators.TryGetValue(typeName.FullName, out string expandedTypeName))
+            {
+                var newExpandedName = new TypeName(s_emptyExtent, expandedTypeName);
+                s_typeAcceleratorNameCache[typeName.FullName] = newExpandedName;
+                return newExpandedName;
+            }
+
+            if (Type.GetType(typeName.FullName, throwOnError: false, ignoreCase: true) == null)
+            {
+                string systemExpandedName = "System." + typeName.FullName;
+                Type systemExpandedType = Type.GetType(systemExpandedName, throwOnError: false, ignoreCase: true);
+
+                if (systemExpandedType != null)
+                {
+                    var newExpandedName = new TypeName(s_emptyExtent, GetFullTypeName(systemExpandedType));
+                    s_typeAcceleratorNameCache[typeName.FullName] = newExpandedName;
+                    return newExpandedName;
+                }
+            }
+
+            return typeName;
+        }
+
+        private static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, ArrayTypeName typeName)
+        {
+            ITypeName elementTypeName = ExpandTypeName(typeAccelerators, typeName.ElementType);
+
+            if (elementTypeName == typeName.ElementType)
+            {
+                return typeName;
+            }
+
+            return new ArrayTypeName(s_emptyExtent, elementTypeName, typeName.Rank);
+        }
+
+        private static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, GenericTypeName typeName)
+        {
+            var genericArgs = new ITypeName[typeName.GenericArguments.Count];
+            for (int i = 0; i < genericArgs.Length; i++)
+            {
+                genericArgs[i] = ExpandTypeName(typeAccelerators, typeName.GenericArguments[i]);
+            }
+
+            ITypeName expandedTypeName = ExpandTypeName(typeAccelerators, (TypeName)typeName.TypeName, genericArgCount: genericArgs.Length);
+
+            bool canUseOldTypeName = expandedTypeName == typeName.TypeName;
+            for (int i = 0; i < genericArgs.Length; i++)
+            {
+                if (!canUseOldTypeName)
+                {
+                    break;
+                }
+
+                canUseOldTypeName &= genericArgs[i] == typeName.GenericArguments[i];
+            }
+
+            if (canUseOldTypeName)
+            {
+                return typeName;
+            }
+
+            return new GenericTypeName(s_emptyExtent, expandedTypeName, genericArgs);
+        }
+
+        private static ITypeName ExpandTypeName(ReflectionTypeName typeName)
+        {
+            return typeName;
         }
     }
 }

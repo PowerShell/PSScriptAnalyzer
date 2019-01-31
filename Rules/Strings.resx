@@ -810,17 +810,29 @@
   <data name="UseCompatibleCmdletsError" xml:space="preserve">
     <value>'{0}' is not compatible with PowerShell edition '{1}', version '{2}' and OS '{3}'</value>
   </data>
-  <data name="UseCompatibleCmdlets2Name" xml:space="preserve">
-    <value>UseCompatibleCmdlets2</value>
+  <data name="UseCompatibleCommandsName" xml:space="preserve">
+    <value>UseCompatibleCommands</value>
   </data>
-  <data name="UseCompatibleCmdlets2CommonName" xml:space="preserve">
-    <value>Use compatible cmdlets</value>
+  <data name="UseCompatibleCommandsCommonName" xml:space="preserve">
+    <value>Use compatible commands</value>
   </data>
-  <data name="UseCompatibleCmdlets2Description" xml:space="preserve">
-    <value>Use cmdlets compatible with the given PowerShell version and operating system</value>
+  <data name="UseCompatibleCommandsDescription" xml:space="preserve">
+    <value>Use commands compatible with the given PowerShell version and operating system</value>
   </data>
-  <data name="UseCompatibleCmdlets2Error" xml:space="preserve">
-    <value>'{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
+  <data name="UseCompatibleCommandsError" xml:space="preserve">
+    <value>The command '{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
+  </data>
+  <data name="UseCompatibleTypesName" xml:space="preserve">
+    <value>UseCompatibleTypes</value>
+  </data>
+  <data name="UseCompatibleTypesCommonName" xml:space="preserve">
+    <value>Use compatible types</value>
+  </data>
+  <data name="UseCompatibleTypesDescription" xml:space="preserve">
+    <value>Use types compatible with the given PowerShell version and operating system</value>
+  </data>
+  <data name="UseCompatibleTypesError" xml:space="preserve">
+    <value>The type '{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
   </data>
   <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
     <value>Avoid global functiosn and aliases</value>

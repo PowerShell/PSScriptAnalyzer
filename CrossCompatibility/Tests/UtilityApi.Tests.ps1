@@ -29,6 +29,15 @@ Describe "Type name serialization" {
             @{ InputType = [System.Collections.Generic.Dictionary`2+Enumerator[string,object]]; ExpectedName = "System.Collections.Generic.Dictionary``2+Enumerator[System.String,System.Object]" }
             @{ InputType = [System.Collections.Concurrent.ConcurrentDictionary`2].GetMethod('ToArray').ReturnType; ExpectedName = "System.Collections.Generic.KeyValuePair``2[]"}
         )
+
+        $genericStrippingTests = @(
+            @{ RawTypeName = "String"; StrippedTypeName = "String" }
+            @{ RawTypeName = "Dictionary``2"; StrippedTypeName = "Dictionary" }
+            @{ RawTypeName = "Dictionary``2"; StrippedTypeName = "Dictionary" }
+            @{ RawTypeName = "Dictionary``2+Enumerator"; StrippedTypeName = "Dictionary+Enumerator" }
+        )
+
+        Wait-Debugger
     }
 
     It "Serializes the name of type <InputType> to <ExpectedName>" -TestCases $typeNameTestCases {
@@ -43,24 +52,32 @@ Describe "Type name serialization" {
             [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetFullTypeName($null)
         } | Should -Throw -ErrorId "ArgumentNullException"
     }
+
+    It "Strips generic quantifiers from '<RawTypeName>' to return '<StrippedTypeName>'" -TestCases $genericStrippingTests {
+        param([string]$RawTypeName, [string]$StrippedTypeName)
+
+        $stripped = [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::StripGenericQuantifiers($RawTypeName)
+        $stripped | Should -BeExactly $StrippedTypeName
+    }
 }
 
 Describe "Type accelerator expansion" {
     BeforeAll {
-        $typeAccelerators = Get-TypeAccelerators `
+        $typeAccelerators = (Get-TypeAccelerators).GetEnumerator() `
             | ForEach-Object { $d = New-Object 'System.Collections.Generic.Dictionary[string,string]' } { $d.Add($_.Key, $_.Value.FullName) } { $d }
 
         $typeAcceleratorTestCases = @(
             @{ Raw = "[System.Exception]"; Expanded = "System.Exception" }
             @{ Raw = "[string]"; Expanded = "System.String" }
             @{ Raw = "[psmoduleinfo]"; Expanded = "System.Management.Automation.PSModuleInfo" }
-            @{ Raw = "[System.Collections.Generic.List[object]]"; Expanded = "System.Collections.Generic.List``1[System.Object]" }
+            @{ Raw = "[System.Collections.Generic.List[int]]"; Expanded = "System.Collections.Generic.List``1[System.Int32]" }
             @{ Raw = "[System.Collections.Generic.Dictionary[string,psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
             @{ Raw = "[System.Collections.Generic.Dictionary[string, psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
             @{ Raw = "[System.Collections.Generic.Dictionary  [string,  psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
-            @{ Raw = "[System.Collections.Generic.List``1[object]]"; Expanded = "System.Collections.Generic.List``1[System.Object]" }
+            @{ Raw = "[System.Collections.Generic.List``1[uri]]"; Expanded = "System.Collections.Generic.List``1[System.Uri]" }
             @{ Raw = "[System.Collections.Generic.Dictionary``2[string,psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
             @{ Raw = "[System.Collections.Generic.Dictionary``2  [string, psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
+            @{ Raw = "[object]"; Expanded = "System.Object" }
         )
     }
 
