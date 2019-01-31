@@ -292,7 +292,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             return new FieldData()
             {
-                Type = GetFullTypeName(field.FieldType)
+                Type = TypeNaming.GetFullTypeName(field.FieldType)
             };
         }
 
@@ -301,7 +301,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return new PropertyData()
             {
                 Accessors = GetAccessors(property),
-                Type = GetFullTypeName(property.PropertyType)
+                Type = TypeNaming.GetFullTypeName(property.PropertyType)
             };
         }
 
@@ -310,13 +310,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             var paramTypes = new List<string>();
             foreach (ParameterInfo param in indexer.GetIndexParameters())
             {
-                paramTypes.Add(GetFullTypeName(param.ParameterType));
+                paramTypes.Add(TypeNaming.GetFullTypeName(param.ParameterType));
             }
 
             return new IndexerData()
             {
                 Accessors = GetAccessors(indexer),
-                ItemType = GetFullTypeName(indexer.PropertyType),
+                ItemType = TypeNaming.GetFullTypeName(indexer.PropertyType),
                 Parameters = paramTypes.ToArray()
             };
         }
@@ -325,7 +325,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             return new EventData()
             {
-                HandlerType = GetFullTypeName(e.EventHandlerType),
+                HandlerType = TypeNaming.GetFullTypeName(e.EventHandlerType),
                 IsMulticast = e.IsMulticast
             };
         }
@@ -335,7 +335,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             var parameters = new List<string>();
             foreach (ParameterInfo param in ctor.GetParameters())
             {
-                parameters.Add(GetFullTypeName(param.ParameterType));
+                parameters.Add(TypeNaming.GetFullTypeName(param.ParameterType));
             }
 
             return parameters.ToArray();
@@ -349,14 +349,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 var parameters = new List<string>();
                 foreach (ParameterInfo param in overload.GetParameters())
                 {
-                    parameters.Add(GetFullTypeName(param.ParameterType));
+                    parameters.Add(TypeNaming.GetFullTypeName(param.ParameterType));
                 }
                 overloads.Add(parameters.ToArray());
             }
 
             return new MethodData()
             {
-                ReturnType = GetFullTypeName(methodOverloads[0].ReturnType),
+                ReturnType = TypeNaming.GetFullTypeName(methodOverloads[0].ReturnType),
                 OverloadParameters = overloads.ToArray()
             };
         }
@@ -482,89 +482,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 default:
                     return false;
             }
-        }
-
-        public static string GetFullTypeName(Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            // Non-generic type names give their full names as something PowerShell can recognize
-            if (!IsGeneric(type))
-            {
-                return type.FullName;
-            }
-
-            // Uninstantiated generics also have PowerShell-parseable full names
-            Type[] genericArguments = type.GetGenericArguments();
-            if (genericArguments.All(ga => ga.IsGenericParameter))
-            {
-                if (type.FullName != null)
-                {
-                    return type.FullName;
-                }
-
-                return RemoveGenericParameters(type.ToString());
-            }
-
-            var sb = new StringBuilder(type.GetGenericTypeDefinition().FullName).Append('[');
-
-            int i = 0;
-            for (; i < genericArguments.Length - 1; i++)
-            {
-                Type genericArg = genericArguments[i];
-                if (!genericArg.IsGenericParameter)
-                {
-                    sb.Append(GetFullTypeName(genericArg));
-                }
-                sb.Append(',');
-            }
-            sb.Append(genericArguments[i]).Append(']');
-
-            return sb.ToString();
-        }
-
-        public static string RemoveGenericParameters(string typeName)
-        {
-            var sb = new StringBuilder();
-            int lastOffset = 0;
-            int i = 0;
-            for (; i < typeName.Length; i++)
-            {
-                if (typeName[i] != '[')
-                {
-                    continue;
-                }
-
-                if (typeName[i + 1] == ']')
-                {
-                    continue;
-                }
-
-                sb.Append(typeName.Substring(lastOffset, i - lastOffset));
-                i = typeName.IndexOf(']', lastOffset);
-                lastOffset = i;
-            }
-            sb.Append(typeName.Substring(lastOffset + 1, i - lastOffset - 1));
-
-            return sb.ToString();
-        }
-
-        public static bool IsGeneric(Type type)
-        {
-            if (type.IsGenericType)
-            {
-                return true;
-            }
-
-            if (type.IsArray || type.IsByRef || type.IsPointer)
-            {
-                return IsGeneric(type.GetElementType());
-            }
-
-            return false;
         }
     }
 }

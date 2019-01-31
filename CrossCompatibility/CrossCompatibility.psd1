@@ -70,35 +70,35 @@ PowerShellVersion = '3.0'
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    Join-CompatibilityProfile
-    New-PowerShellCompatibilityProfile
-    New-AllPlatformReferenceProfile
-    Get-PlatformName
-    Get-CurrentPlatformName
-    ConvertTo-CompatibilityJson
-    ConvertFrom-CompatibilityJson
-    Get-PowerShellCompatibilityProfileData
-    Get-PlatformData
-    Get-PowerShellRuntimeData
-    Get-OSData
-    Get-WindowsSkuId
-    Get-LinuxLsbInfo
-    Get-DotNetData
-    Get-PowerShellCompatibilityData
-    Get-AvailableTypes
-    Get-TypeAccelerators
-    Get-CoreModuleData
-    Get-AvailableModules
-    New-RuntimeData
-    New-ModuleData
-    New-AliasData
-    New-CmdletData
-    New-FunctionData
-    New-ParameterAliasData
-    New-ParameterData
-    New-ParameterSetData
-    New-AvailableTypeData
-    Get-FullTypeName
+    'Join-CompatibilityProfile'
+    'New-PowerShellCompatibilityProfile'
+    'New-AllPlatformReferenceProfile'
+    'Get-PlatformName'
+    'Get-CurrentPlatformName'
+    'ConvertTo-CompatibilityJson'
+    'ConvertFrom-CompatibilityJson'
+    'Get-PowerShellCompatibilityProfileData'
+    'Get-PlatformData'
+    'Get-PowerShellRuntimeData'
+    'Get-OSData'
+    'Get-WindowsSkuId'
+    'Get-LinuxLsbInfo'
+    'Get-DotNetData'
+    'Get-PowerShellCompatibilityData'
+    'Get-AvailableTypes'
+    'Get-TypeAccelerators'
+    'Get-CoreModuleData'
+    'Get-AvailableModules'
+    'New-RuntimeData'
+    'New-ModuleData'
+    'New-AliasData'
+    'New-CmdletData'
+    'New-FunctionData'
+    'New-ParameterAliasData'
+    'New-ParameterData'
+    'New-ParameterSetData'
+    'New-AvailableTypeData'
+    'Get-FullTypeName'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

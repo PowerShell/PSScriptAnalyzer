@@ -1,6 +1,18 @@
 Import-Module "$PSScriptRoot/../out/CrossCompatibility" -Force -ErrorAction Stop
 
-Describe "Type name transformation" {
+function Get-TypeNameAstFromScript
+{
+    param([string]$Script)
+
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($Script, [ref]$null, [ref]$null)
+    $typeExpAst = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.TypeExpressionAst]
+    }, $true)
+
+    return $typeExpAst.TypeName
+}
+
+Describe "Type name serialization" {
     BeforeAll {
         $typeNameTestCases = @(
             @{ InputType = [System.Reflection.Assembly]; ExpectedName = "System.Reflection.Assembly" }
@@ -22,14 +34,45 @@ Describe "Type name transformation" {
     It "Serializes the name of type <InputType> to <ExpectedName>" -TestCases $typeNameTestCases {
         param([type]$InputType, [string]$ExpectedName)
 
-        $name = [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::GetFullTypeName($InputType)
+        $name = [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetFullTypeName($InputType)
         $name | Should -BeExactly $ExpectedName
     }
 
     It "Null type throws exception" {
         {
-            [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::GetFullTypeName($null)
+            [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetFullTypeName($null)
         } | Should -Throw -ErrorId "ArgumentNullException"
+    }
+}
+
+Describe "Type accelerator expansion" {
+    BeforeAll {
+        $typeAccelerators = Get-TypeAccelerators `
+            | ForEach-Object { $d = New-Object 'System.Collections.Generic.Dictionary[string,string]' } { $d.Add($_.Key, $_.Value.FullName) } { $d }
+
+        $typeAcceleratorTestCases = @(
+            @{ Raw = "[System.Exception]"; Expanded = "System.Exception" }
+            @{ Raw = "[string]"; Expanded = "System.String" }
+            @{ Raw = "[psmoduleinfo]"; Expanded = "System.Management.Automation.PSModuleInfo" }
+            @{ Raw = "[System.Collections.Generic.List[object]]"; Expanded = "System.Collections.Generic.List``1[System.Object]" }
+            @{ Raw = "[System.Collections.Generic.Dictionary[string,psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
+            @{ Raw = "[System.Collections.Generic.Dictionary[string, psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
+            @{ Raw = "[System.Collections.Generic.Dictionary  [string,  psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
+            @{ Raw = "[System.Collections.Generic.List``1[object]]"; Expanded = "System.Collections.Generic.List``1[System.Object]" }
+            @{ Raw = "[System.Collections.Generic.Dictionary``2[string,psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
+            @{ Raw = "[System.Collections.Generic.Dictionary``2  [string, psmoduleinfo]]"; Expanded = "System.Collections.Generic.Dictionary``2[System.String,System.Management.Automation.PSModuleInfo]" }
+        )
+    }
+
+    It "Expands the typename in <Raw> to <Expanded>" -TestCases $typeAcceleratorTestCases {
+        param([string]$Raw, [string]$Expanded)
+
+        $typeName = Get-TypeNameAstFromScript -Script $Raw
+
+        $canonicalName = [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetCanonicalTypeName($typeAccelerators, $typeName)
+
+        $canonicalName | Should -BeExactly $Expanded
+
     }
 }
 
