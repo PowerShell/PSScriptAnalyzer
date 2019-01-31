@@ -10,7 +10,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public AssemblyData(AssemblyDataMut assemblyData)
         {
             AssemblyName = new AssemblyNameData(assemblyData.AssemblyName);
-            Types = assemblyData.Types.ToDictionary(ns => ns.Key, ns => (IReadOnlyDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key, t => new TypeData(t.Key, t.Value), StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+            Types = assemblyData.Types?.ToDictionary(ns => ns.Key, ns => (IReadOnlyDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key, t => new TypeData(t.Key, t.Value), StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
         }
 
         public AssemblyNameData AssemblyName { get; }

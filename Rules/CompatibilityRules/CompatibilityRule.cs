@@ -171,9 +171,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public abstract IEnumerable<DiagnosticRecord> GetDiagnosticRecords();
     }
 
-    public abstract class IncompatibilityDiagnostic : DiagnosticRecord
+    public abstract class CompatibilityDiagnostic : DiagnosticRecord
     {
-        protected IncompatibilityDiagnostic(
+        protected CompatibilityDiagnostic(
             string message,
             IScriptExtent extent,
             string ruleName,

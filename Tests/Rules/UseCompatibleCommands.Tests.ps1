@@ -1,6 +1,7 @@
+$script:RuleName = 'UseCompatibleCommands'
 $script:AnyProfileConfigKey = 'AnyProfilePath'
 $script:TargetProfileConfigKey = 'TargetProfilePaths'
-$script:AssetDirPath = Join-Path $PSScriptRoot 'UseCompatibleCmdlets2'
+$script:AssetDirPath = Join-Path $PSScriptRoot $script:RuleName
 $script:ProfileDirPath = [System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'CrossCompatibility', 'profiles')
 $script:AnyProfilePath = Join-Path $script:ProfileDirPath 'anyplatforms_union.json'
 
@@ -50,7 +51,7 @@ $script:CompatibilityTestCases = @(
     @{ Target = 'win-4_x64_10.0.18312.0_6.1.1_x64'; Script = 'curl $uri'; Commands = @("curl"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
 )
 
-Describe 'UseCompatibleCmdlets2' {
+Describe 'UseCompatibleCommands' {
     Context 'Targeting all profiles' {
         BeforeAll {
             Import-Module ([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'out', 'PSScriptAnalyzer'))
@@ -61,14 +62,14 @@ Describe 'UseCompatibleCmdlets2' {
 
             $settings = @{
                 Rules = @{
-                    UseCompatibleCmdlets2 = @{
+                    $script:RuleName = @{
                         Enable = $true
                         TargetProfilePaths = @($Target)
                     }
                 }
             }
 
-            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule 'UseCompatibleCmdlets2' -ScriptDefinition $Script -Settings $settings
+            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule $script:RuleName -ScriptDefinition $Script -Settings $settings
 
             $diagnostics.Count | Should -Be $ProblemCount
 

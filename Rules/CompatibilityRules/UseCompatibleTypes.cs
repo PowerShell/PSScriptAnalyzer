@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Globalization;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     public class UseCompatibleTypes : CompatibilityRule
@@ -19,7 +23,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         protected override CompatibilityVisitor CreateVisitor(string fileName)
         {
-            throw new System.NotImplementedException();
+            return new TypeCompatibilityVisitor();
+        }
+
+        private class TypeCompatibilityVisitor : CompatibilityVisitor
+        {
+            public override IEnumerable<DiagnosticRecord> GetDiagnosticRecords()
+            {
+                return new CompatibilityDiagnostic[0];
+            }
         }
     }
 }

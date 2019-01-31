@@ -4,14 +4,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     public class TypeData
     {
-        private readonly TypeDataMut _typeData;
-
         public TypeData(string name, TypeDataMut typeData)
         {
             Name = name;
-            _typeData = typeData;
-            Instance = new MemberData(typeData.Instance);
-            Static = new MemberData(typeData.Static);
+            Instance = typeData.Instance == null ? null : new MemberData(typeData.Instance);
+            Static = typeData.Static == null ? null : new MemberData(typeData.Static);
         }
 
         public string Name { get; }

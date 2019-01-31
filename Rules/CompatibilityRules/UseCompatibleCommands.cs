@@ -119,7 +119,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 
-    public class IncompatibleCommandDiagnostic : IncompatibilityDiagnostic
+    public class IncompatibleCommandDiagnostic : CompatibilityDiagnostic
     {
         public static IncompatibleCommandDiagnostic Create(
             string commandName,
@@ -131,7 +131,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             string message = String.Format(
                 CultureInfo.CurrentCulture,
-                Strings.UseCompatibleCmdlets2Error,
+                Strings.UseCompatibleCommandsError,
                 commandName,
                 platform.PowerShell.Version,
                 platform.OperatingSystem.Name);

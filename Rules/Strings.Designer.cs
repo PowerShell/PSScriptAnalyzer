@@ -2016,42 +2016,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         /// <summary>
         ///   Looks up a localized string similar to Use compatible cmdlets.
         /// </summary>
-        internal static string UseCompatibleCmdlets2CommonName {
-            get {
-                return ResourceManager.GetString("UseCompatibleCmdlets2CommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use cmdlets compatible with the given PowerShell version and operating system.
-        /// </summary>
-        internal static string UseCompatibleCmdlets2Description {
-            get {
-                return ResourceManager.GetString("UseCompatibleCmdlets2Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
-        /// </summary>
-        internal static string UseCompatibleCmdlets2Error {
-            get {
-                return ResourceManager.GetString("UseCompatibleCmdlets2Error", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to UseCompatibleCmdlets2.
-        /// </summary>
-        internal static string UseCompatibleCmdlets2Name {
-            get {
-                return ResourceManager.GetString("UseCompatibleCmdlets2Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use compatible cmdlets.
-        /// </summary>
         internal static string UseCompatibleCmdletsCommonName {
             get {
                 return ResourceManager.GetString("UseCompatibleCmdletsCommonName", resourceCulture);
@@ -2082,6 +2046,78 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseCompatibleCmdletsName {
             get {
                 return ResourceManager.GetString("UseCompatibleCmdletsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use compatible commands.
+        /// </summary>
+        internal static string UseCompatibleCommandsCommonName {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use commands compatible with the given PowerShell version and operating system.
+        /// </summary>
+        internal static string UseCompatibleCommandsDescription {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The command &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleCommandsError {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleCommands.
+        /// </summary>
+        internal static string UseCompatibleCommandsName {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use compatible types.
+        /// </summary>
+        internal static string UseCompatibleTypesCommonName {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use types compatible with the given PowerShell version and operating system.
+        /// </summary>
+        internal static string UseCompatibleTypesDescription {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleTypes.
+        /// </summary>
+        internal static string UseCompatibleTypesName {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesName", resourceCulture);
             }
         }
         
