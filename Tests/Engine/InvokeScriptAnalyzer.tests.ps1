@@ -121,9 +121,10 @@ Describe "Test ScriptDefinition" {
 Describe "Test Path" {
     Context "When given a single file" {
         It "Has the same effect as without Path parameter" {
-            $withPath = Invoke-ScriptAnalyzer $directory\TestScript.ps1
-            $withoutPath = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1
-            $withPath.Count -eq $withoutPath.Count | Should -BeTrue
+            $scriptPath = Join-Path $directory "TestScript.ps1"
+            $withPath = Invoke-ScriptAnalyzer $scriptPath
+            $withoutPath = Invoke-ScriptAnalyzer -Path $scriptPath
+            $withPath.Count | Should -Be $withoutPath.Count
         }
 
         It "Runs rules on script with more than 10 parser errors" {

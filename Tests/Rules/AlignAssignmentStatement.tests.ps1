@@ -127,6 +127,7 @@ Configuration Sample_ChangeDescriptionAndPermissions
                 # SilentlyContinue
                 Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
                     Get-Count |
+                    Where-Object { $_.Severity -ne "ParseError" } |
                     Should -Be 4
             }
         }
