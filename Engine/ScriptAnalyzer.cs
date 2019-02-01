@@ -1526,8 +1526,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
 
-            // Add parse errors first!
-            if ( relevantParseErrors != null )
+            int emitParseErrors = severity == null ? 1 : severity.Count(item => item == "ParseError");
+            // Add parse errors first if requested!
+            if ( relevantParseErrors != null && emitParseErrors == 1)
             {
                 List<DiagnosticRecord> results = new List<DiagnosticRecord>();
                 foreach ( var parseError in relevantParseErrors )
@@ -1878,8 +1879,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 #endif //!PSV3
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
 
-            // First, add all parse errors
-            if ( relevantParseErrors != null )
+            // First, add all parse errors if they've been requested
+            int emitParseErrors = severity == null ? 1 : severity.Count(item => item == "ParseError");
+            if ( relevantParseErrors != null && emitParseErrors == 1 )
             {
                 List<DiagnosticRecord> results = new List<DiagnosticRecord>();
                 foreach ( var parseError in relevantParseErrors )
