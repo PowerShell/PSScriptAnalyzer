@@ -1,19 +1,9 @@
+Import-Module ([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'out', 'PSScriptAnalyzer'))
+
 $script:RuleName = 'UseCompatibleCommands'
 $script:AnyProfileConfigKey = 'AnyProfilePath'
 $script:TargetProfileConfigKey = 'TargetProfilePaths'
 $script:AssetDirPath = Join-Path $PSScriptRoot $script:RuleName
-$script:ProfileDirPath = [System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'CrossCompatibility', 'profiles')
-$script:AnyProfilePath = Join-Path $script:ProfileDirPath 'anyplatforms_union.json'
-
-try
-{
-    $null = [semver]
-    $script:HasSemVer = $true
-}
-catch
-{
-    $script:HasSemVer = $false
-}
 
 $script:CompatibilityTestCases = @(
     @{ Target = 'win-4_x64_10.0.18312.0_5.1.18312.1000_x64'; Script = "Remove-Alias gcm"; Commands = @("Remove-Alias"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
@@ -52,11 +42,7 @@ $script:CompatibilityTestCases = @(
 )
 
 Describe 'UseCompatibleCommands' {
-    Context 'Targeting all profiles' {
-        BeforeAll {
-            Import-Module ([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'out', 'PSScriptAnalyzer'))
-        }
-
+    Context 'Targeting a single profile' {
         It "Reports <ProblemCount> problem(s) with <Script> on <OS> with PowerShell <Version>, targeting <Target>" -TestCases $script:CompatibilityTestCases {
             param($Script, [string]$Target, [string[]]$Commands, [version]$Version, [string]$OS, [int]$ProblemCount)
 

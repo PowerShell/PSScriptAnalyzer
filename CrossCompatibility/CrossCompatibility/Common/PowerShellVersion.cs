@@ -162,15 +162,15 @@ namespace Microsoft.PowerShell.CrossCompatibility
             }
         }
 
-        public int Major { get; }
+        public int Major { get; } = -1;
 
-        public int Minor { get; }
+        public int Minor { get; } = -1;
 
-        public int Build { get; }
+        public int Build { get; } = -1;
 
         public int Patch => Build;
 
-        public int Revision { get; }
+        public int Revision { get; } = -1;
 
         public string PreReleaseLabel { get; }
 
@@ -180,7 +180,7 @@ namespace Microsoft.PowerShell.CrossCompatibility
 
         public override string ToString()
         {
-            var sb = new StringBuilder(Major);
+            var sb = new StringBuilder().Append(Major);
 
             if (Minor < 0)
             {

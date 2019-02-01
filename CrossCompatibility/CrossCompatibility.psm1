@@ -379,7 +379,7 @@ function Get-PowerShellRuntimeData
     }
 
     $psData = @{
-        Version = $PSVersionTable.PSVersion
+        Version = [Microsoft.PowerShell.CrossCompatibility.PowerShellVersion]::Create($PSVersionTable.PSVersion)
         Edition = $PSVersionTable.PSEdition
         CompatibleVersions = $PSVersionTable.PSCompatibleVersions
         RemotingProtocolVersion = $PSVersionTable.PSRemotingProtocolVersion
