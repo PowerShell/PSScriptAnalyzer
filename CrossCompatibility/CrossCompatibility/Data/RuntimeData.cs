@@ -28,6 +28,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         [DataMember]
         public JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>> Modules { get; set; }
 
+        /// <summary>
+        /// Describes native applications available to the PowerShell platform.
+        /// </summary>
+        [DataMember]
+        public JsonDictionary<string, NativeCommandData> NativeCommands { get; set; }
+
         public object Clone()
         {
             return new RuntimeData()

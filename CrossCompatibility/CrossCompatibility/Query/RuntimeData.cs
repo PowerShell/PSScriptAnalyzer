@@ -10,10 +10,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     {
         private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>> _commands;
 
-        public RuntimeData(RuntimeDataMut runtimeData)
+        public RuntimeData(RuntimeDataMut runtimeData, bool isForWindows)
         {
             Modules = runtimeData.Modules.ToDictionary(m => m.Key, m => (IReadOnlyDictionary<Version, ModuleData>)m.Value.ToDictionary(mv => mv.Key, mv => new ModuleData(m.Key, mv.Key, mv.Value)), StringComparer.OrdinalIgnoreCase);
             Types = new AvailableTypeData(runtimeData.Types);
+            NativeCommands = runtimeData.NativeCommands.ToDictionary(nc => nc.Key, nc => new NativeCommandData(nc.Key, nc.Value), isForWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
             _commands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateCommandLookupTable(Modules.Values.SelectMany(mv => mv.Values)));
         }
@@ -21,6 +22,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public AvailableTypeData Types { get; }
 
         public IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> Modules { get; }
+
+        public IReadOnlyDictionary<string, NativeCommandData> NativeCommands { get; }
 
         public IReadOnlyDictionary<string, IReadOnlyList<CommandData>> Commands => _commands.Value;
 

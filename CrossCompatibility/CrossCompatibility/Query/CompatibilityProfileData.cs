@@ -11,8 +11,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     {
         public CompatibilityProfileData(CompatibilityProfileDataMut compatibilityProfileData)
         {
-            Runtime = new RuntimeData(compatibilityProfileData.Compatibility);
             Platform = new PlatformData(compatibilityProfileData.Platform);
+            Runtime = new RuntimeData(compatibilityProfileData.Compatibility, isForWindows: compatibilityProfileData.Platform.OperatingSystem.Family == OSFamily.Windows);
         }
 
         public RuntimeData Runtime { get; }

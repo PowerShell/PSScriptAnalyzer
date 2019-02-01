@@ -532,10 +532,11 @@ function Get-PowerShellCompatibilityData
     $modules = Get-AvailableModules -IncludeAll:$IncludeAllModules
     $typeAccelerators = Get-TypeAccelerators
     $asms = Get-AvailableTypes -All:$IncludeAllModules
+    $nativeCommands = Get-Command -CommandType Application
 
     $coreModule = Get-CoreModuleData
 
-    $compatibilityData = New-RuntimeData -Modules $modules -Assemblies $asms -TypeAccelerators $typeAccelerators
+    $compatibilityData = New-RuntimeData -Modules $modules -Assemblies $asms -TypeAccelerators $typeAccelerators -NativeCommands $nativeCommands
 
     $psVersion = New-Object 'System.Version' $PSVersionTable.PSVersion.Major,$PSVersionTable.PSVersion.Minor,$PSVersionTable.PSVersion.Patch
 
@@ -709,7 +710,11 @@ function New-RuntimeData
 
         [Parameter()]
         [System.Collections.Generic.IDictionary[string, type]]
-        $TypeAccelerators
+        $TypeAccelerators,
+
+        [Parameter()]
+        [System.Management.Automation.CommandInfo[]]
+        $NativeCommands
     )
 
     $compatData = @{}
@@ -724,7 +729,44 @@ function New-RuntimeData
         $compatData.Types = New-AvailableTypeData -Assemblies $Assemblies -TypeAccelerators $TypeAccelerators
     }
 
+    if ($NativeCommands)
+    {
+        $compatData.NativeCommands = $NativeCommands | New-NativeCommandData
+    }
+
     return [Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData]$compatData
+}
+
+function New-NativeCommandData
+{
+    param(
+        [Parameter(ValueFromPipeline=$true)]
+        [System.Management.Automation.CommandInfo]
+        $CommandInfo
+    )
+
+    begin
+    {
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData]'
+    }
+
+    process
+    {
+        if ($CommandInfo.Version)
+        {
+            $version = $CommandInfo.Version
+        }
+
+        $dict[$CommandInfo.Name] = [Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData]@{
+            Version = $version
+            Path = $CommandInfo.Source
+        }
+    }
+
+    end
+    {
+        return $dict
+    }
 }
 
 function New-ModuleData
@@ -794,7 +836,7 @@ function New-AliasData
 
     process
     {
-        $dict[$Alias.Name] = $Alias.ReferencedCommand.Name
+        $dict[$Alias.Name] = $Alias.Definition
     }
 
     end
@@ -1095,7 +1137,7 @@ function Get-FullTypeName
         $Type
     )
 
-    return [Microsoft.PowerShell.CrossCompatibility.Utility.TypeDataConversion]::GetFullTypeName($Type)
+    return [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetFullTypeName($Type)
 }
 
 function Test-HasAnyPrefix

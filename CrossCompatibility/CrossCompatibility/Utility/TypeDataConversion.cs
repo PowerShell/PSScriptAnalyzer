@@ -100,7 +100,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 Name = asmName.Name,
                 Version = asmName.Version,
-                Culture = asmName.CultureName,
+                Culture = string.IsNullOrEmpty(asmName.CultureName) ? null : asmName.CultureName,
                 PublicKeyToken = asmName.GetPublicKeyToken(),
             };
 
