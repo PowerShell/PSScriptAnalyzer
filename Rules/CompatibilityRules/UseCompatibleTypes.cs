@@ -257,7 +257,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             private bool IsTypeUnsupportedByTarget(string typeName, out IReadOnlyList<PlatformData> unsupportedTargets)
             {
-                string canonicalAnyProfileTypeName = TypeNaming.GetCanonicalTypeName(_anyProfile.Runtime.Types.TypeAcceleratorNames, typeName);
+                string canonicalAnyProfileTypeName = TypeNaming.ExpandSimpleTypeName(_anyProfile.Runtime.Types.TypeAcceleratorNames, typeName);
 
                 string systemExtendedTypeName = null;
                 if (!_anyProfile.Runtime.Types.Types.ContainsKey(canonicalAnyProfileTypeName))

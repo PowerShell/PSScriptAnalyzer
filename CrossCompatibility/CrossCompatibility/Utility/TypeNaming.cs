@@ -16,6 +16,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             .GetConstructor(new Type[0])
             .Invoke(new object[0]);
 
+        public static string ExpandSimpleTypeName(IReadOnlyDictionary<string, string> typeAccelerators, string typeName)
+        {
+            if (typeName.Contains('.'))
+            {
+                return typeName;
+            }
+
+            if (typeAccelerators != null && typeAccelerators.TryGetValue(typeName, out string expandedTypeName))
+            {
+                return expandedTypeName;
+            }
+
+            return typeName;
+        }
+
         public static string GetCanonicalTypeName(IReadOnlyDictionary<string, string> typeAccelerators, ITypeName typeName)
         {
             if (typeName is ReflectionTypeName reflectionTypeName)
