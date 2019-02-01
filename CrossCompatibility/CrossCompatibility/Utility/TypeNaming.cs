@@ -16,7 +16,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             .GetConstructor(new Type[0])
             .Invoke(new object[0]);
 
-        public static string GetCanonicalTypeName(IDictionary<string, string> typeAccelerators, ITypeName typeName)
+        public static string GetCanonicalTypeName(IReadOnlyDictionary<string, string> typeAccelerators, ITypeName typeName)
         {
             if (typeName is ReflectionTypeName reflectionTypeName)
             {
@@ -153,7 +153,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return false;
         }
 
-        private static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, ITypeName typeName)
+        private static ITypeName ExpandTypeName(IReadOnlyDictionary<string, string> typeAccelerators, ITypeName typeName)
         {
             if (typeName == null)
             {
@@ -179,7 +179,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
         }
 
-        private static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, TypeName typeName, int genericArgCount = 0)
+        private static ITypeName ExpandTypeName(IReadOnlyDictionary<string, string> typeAccelerators, TypeName typeName, int genericArgCount = 0)
         {
             if (genericArgCount > 0 && !typeName.FullName.Contains('`'))
             {
@@ -220,7 +220,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return typeName;
         }
 
-        private static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, ArrayTypeName typeName)
+        private static ITypeName ExpandTypeName(IReadOnlyDictionary<string, string> typeAccelerators, ArrayTypeName typeName)
         {
             ITypeName elementTypeName = ExpandTypeName(typeAccelerators, typeName.ElementType);
 
@@ -232,7 +232,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return new ArrayTypeName(s_emptyExtent, elementTypeName, typeName.Rank);
         }
 
-        private static ITypeName ExpandTypeName(IDictionary<string, string> typeAccelerators, GenericTypeName typeName)
+        private static ITypeName ExpandTypeName(IReadOnlyDictionary<string, string> typeAccelerators, GenericTypeName typeName)
         {
             var genericArgs = new ITypeName[typeName.GenericArguments.Count];
             for (int i = 0; i < genericArgs.Length; i++)
@@ -261,7 +261,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return new GenericTypeName(s_emptyExtent, expandedTypeName, genericArgs);
         }
 
-        private static ITypeName ExpandTypeName(ReflectionTypeName typeName)
+        private static ITypeName ExpandTypeName(IReadOnlyDictionary<string, string> typeAccelerators, ReflectionTypeName typeName)
         {
             return typeName;
         }

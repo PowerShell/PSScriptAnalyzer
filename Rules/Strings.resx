@@ -831,9 +831,6 @@
   <data name="UseCompatibleTypesDescription" xml:space="preserve">
     <value>Use types compatible with the given PowerShell version and operating system</value>
   </data>
-  <data name="UseCompatibleTypesError" xml:space="preserve">
-    <value>The type '{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
-  </data>
   <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
     <value>Avoid global functiosn and aliases</value>
   </data>
@@ -1016,5 +1013,11 @@
   </data>
   <data name="PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription" xml:space="preserve">
     <value>Use $null on the left hand side for safe comparison with $null.</value>
+  </data>
+  <data name="UseCompatibleTypesAcceleratorError" xml:space="preserve">
+    <value>The type accelerator '{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
+  </data>
+  <data name="UseCompatibleTypesTypeError" xml:space="preserve">
+    <value>The type '{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
   </data>
 </root>

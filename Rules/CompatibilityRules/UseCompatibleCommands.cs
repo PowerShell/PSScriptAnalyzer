@@ -37,9 +37,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private class CmdletCompatibilityVisitor : CompatibilityVisitor
         {
-            private readonly IList<CompatibilityProfileData> _compatibilityTargets;
+            private readonly IReadOnlyList<CompatibilityProfileData> _compatibilityTargets;
 
-            private readonly CompatibilityProfileData _anyProfileCompatibilityList;
+            private readonly CompatibilityProfileData _anyProfile;
 
             private readonly List<DiagnosticRecord> _diagnosticAccumulator;
 
@@ -55,19 +55,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 _analyzedFileName = analyzedFileName;
                 _compatibilityTargets = compatibilityTargets;
-                _anyProfileCompatibilityList = anyProfile;
+                _anyProfile = anyProfile;
                 _diagnosticAccumulator = new List<DiagnosticRecord>();
                 _rule = rule;
             }
 
             public override AstVisitAction VisitCommand(CommandAst commandAst)
             {
-                if (commandAst == null)
-                {
-                    return AstVisitAction.SkipChildren;
-                }
-
-                string commandName = commandAst.GetCommandName();
+                string commandName = commandAst?.GetCommandName();
                 if (commandName == null)
                 {
                     return AstVisitAction.SkipChildren;
@@ -84,7 +79,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // known profile, which is something of a hack.
 
                 // This is not present in any known profiles, so assume it is user defined
-                if (!_anyProfileCompatibilityList.Runtime.Commands.ContainsKey(commandName))
+                if (!_anyProfile.Runtime.Commands.ContainsKey(commandName))
                 {
                     return AstVisitAction.Continue;
                 }
@@ -99,7 +94,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         continue;
                     }
 
-                    var diagnostic = IncompatibleCommandDiagnostic.Create(
+                    var diagnostic = CommandCompatibilityDiagnostic.Create(
                         commandName,
                         targetProfile.Platform,
                         commandAst.Extent,
@@ -119,9 +114,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 
-    public class IncompatibleCommandDiagnostic : CompatibilityDiagnostic
+    public class CommandCompatibilityDiagnostic : CompatibilityDiagnostic
     {
-        public static IncompatibleCommandDiagnostic Create(
+        public static CommandCompatibilityDiagnostic Create(
             string commandName,
             PlatformData platform,
             IScriptExtent extent,
@@ -136,7 +131,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 platform.PowerShell.Version,
                 platform.OperatingSystem.Name);
 
-            return new IncompatibleCommandDiagnostic(
+            return new CommandCompatibilityDiagnostic(
                 commandName,
                 platform,
                 message,
@@ -147,7 +142,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 suggestedCorrections: suggestedCorrections);
         }
 
-        private IncompatibleCommandDiagnostic(
+        private CommandCompatibilityDiagnostic(
             string incompatibleCommand,
             PlatformData targetPlatform,
             string message,

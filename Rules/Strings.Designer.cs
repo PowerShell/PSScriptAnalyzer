@@ -2086,6 +2086,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The type accelerator &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesAcceleratorError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesAcceleratorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use compatible types.
         /// </summary>
         internal static string UseCompatibleTypesCommonName {
@@ -2104,20 +2113,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
-        /// </summary>
-        internal static string UseCompatibleTypesError {
-            get {
-                return ResourceManager.GetString("UseCompatibleTypesError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to UseCompatibleTypes.
         /// </summary>
         internal static string UseCompatibleTypesName {
             get {
                 return ResourceManager.GetString("UseCompatibleTypesName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesTypeError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesTypeError", resourceCulture);
             }
         }
         
