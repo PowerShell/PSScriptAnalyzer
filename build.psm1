@@ -93,14 +93,11 @@ function Start-DocumentationBuild
     $docsPath = Join-Path $projectRoot docs
     $markdownDocsPath = Join-Path $docsPath markdown
     $outputDocsPath = Join-Path $destinationDir en-US
-    $requiredVersionOfplatyPS = 0.9
-    #$modInfo = new-object Microsoft.PowerShell.Commands.ModuleSpecification -ArgumentList @{ ModuleName = "platyps"; ModuleVersion = $requiredVersionOfplatyPS}
-    #if ( $null -eq (Get-Module -ListAvailable -FullyQualifiedName $modInfo))
-    if ( $null -eq (Get-Module -ListAvailable platyPS))
+    $platyPS = Get-Module -ListAvailable platyPS
+    if ($null -eq $platyPS -or ($platyPS | Sort-Object Version -Descending | Select-Object -First 1).Version -lt [version]0.12)
     {
-        Write-Verbose -verbose "platyPS not found, installing"
+        Write-Verbose -verbose "platyPS module not found or below required version of 0.12, installing the latest version."
         Install-Module -Force -Name platyPS -Scope CurrentUser
-        # throw "Cannot find required minimum version $requiredVersionOfplatyPS of platyPS. Install via 'Install-Module platyPS'"
     }
     if (-not (Test-Path $markdownDocsPath))
     {
@@ -118,65 +115,42 @@ function Start-ScriptAnalyzerBuild
 {
     [CmdletBinding(DefaultParameterSetName="BuildOne")]
     param (
-        [Parameter(ParameterSetName="BuildAll")]
         [switch]$All,
 
-        [Parameter(ParameterSetName="BuildOne")]
-        [ValidateSet("full", "core")]
-        [string]$Framework = "core",
+        [ValidateRange(3, 6)]
+        [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
-        [Parameter(ParameterSetName="BuildOne")]
-        [ValidateSet("3","4","5")]
-        [string]$PSVersion = "5",
-
-        [Parameter(ParameterSetName="BuildOne")]
-        [Parameter(ParameterSetName="BuildAll")]
         [ValidateSet("Debug", "Release")]
         [string]$Configuration = "Debug",
 
-        [Parameter(ParameterSetName="BuildDoc")]
         [switch]$Documentation
         )
 
-    BEGIN {
-        if ( $PSVersion -match "[34]" -and $Framework -eq "core" ) {
-            throw "Script Analyzer for PowerShell 3/4 cannot be built for framework 'core'"
-        }
-    }
     END {
         if ( $All )
         {
             # Build all the versions of the analyzer
-            Start-ScriptAnalyzerBuild -Framework full -Configuration $Configuration -PSVersion "3"
-            Start-ScriptAnalyzerBuild -Framework full -Configuration $Configuration -PSVersion "4"
-            Start-ScriptAnalyzerBuild -Framework full -Configuration $Configuration -PSVersion "5"
-            Start-ScriptAnalyzerBuild -Framework core -Configuration $Configuration -PSVersion "5"
-            Start-ScriptAnalyzerBuild -Documentation
+            foreach($psVersion in 3..6) {
+                Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
+            }
             return
         }
 
-        if ( $Documentation )
+        $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out\PSScriptAnalyzer\en-us\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
+        # Build docs either when -Documentation switch is being specified or the first time in a clean repo
+        if ( $Documentation -or -not $documentationFileExists )
         {
             Start-DocumentationBuild
-            return
+        }
+
+        if ($PSVersion -ge 6) {
+            $framework = 'netstandard2.0'
+        }
+        else {
+            $framework = "net452"
         }
 
         Push-Location -Path $projectRoot
-
-        if ( $framework -eq "core" ) {
-            $frameworkName = "netstandard2.0"
-        }
-        else {
-            $frameworkName = "net452"
-        }
-
-        # build the appropriate assembly
-        if ($PSVersion -match "[34]" -and $Framework -eq "core")
-        {
-            throw ("ScriptAnalyzer for PS version '{0}' is not applicable to {1} framework" -f $PSVersion,$Framework)
-        }
-
-        #Write-Progress "Building ScriptAnalyzer"
         if (-not (Test-Path "$projectRoot/global.json"))
         {
             throw "Not in solution root"
@@ -188,53 +162,61 @@ function Start-ScriptAnalyzerBuild
             )
 
         $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
-        # this is normalizing case as well as selecting the proper location
-        if ( $Framework -eq "core" ) {
-            $destinationDirBinaries = "$destinationDir\coreclr"
-        }
-        elseif ($PSVersion -eq '3') {
-            $destinationDirBinaries = "$destinationDir\PSv3"
-        }
-        elseif ($PSVersion -eq '4') {
-            $destinationDirBinaries = "$destinationDir\PSv4"
-        }
-        else {
-            $destinationDirBinaries = $destinationDir
+        switch ($PSVersion)
+        {
+            3
+            {
+                $destinationDirBinaries = "$destinationDir\PSv3"
+            }
+            4
+            {
+                $destinationDirBinaries = "$destinationDir\PSv4"
+            }
+            5
+            {
+                $destinationDirBinaries = "$destinationDir"
+            }
+            6
+            {
+                $destinationDirBinaries = "$destinationDir\coreclr"
+            }
+            default
+            {
+                throw "Unsupported PSVersion: '$PSVersion'"
+            }
         }
 
-        # build the analyzer
-        #Write-Progress "Building for framework $Framework, configuration $Configuration"
-        # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
         $config = "PSV${PSVersion}${Configuration}"
+
+        # Build ScriptAnalyzer
+        # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
         try {
             Push-Location $projectRoot/Rules
-            Write-Progress "Building ScriptAnalyzer '$framework' version '${PSVersion}' configuration '${Configuration}'"
-            $buildOutput = dotnet build Rules.csproj --framework $frameworkName --configuration "${config}"
+            Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            $buildOutput = dotnet build --framework $framework --configuration "$config"
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
-            Write-Error "Failure to build $framework ${config}"
+            Write-Error "Failure to build for PSVersion '$PSVersion' using framework '$framework' and configuration '$config'"
             return
         }
         finally {
             Pop-Location
         }
 
-        #Write-Progress "Copying files to $destinationDir"
         Publish-File $itemsToCopyCommon $destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${config}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${config}\${frameworkName}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\Engine\bin\${config}\${framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot\Rules\bin\${config}\${framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
         $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $destinationDir -ChildPath Settings)
 
-        # copy newtonsoft dll if net452 framework
-        if ($Framework -eq "full") {
-            Copy-Item -path "$projectRoot\Rules\bin\${config}\${frameworkName}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+        if ($framework -eq 'net452') {
+            Copy-Item -path "$projectRoot\Rules\bin\${config}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
 
         Pop-Location
@@ -255,7 +237,7 @@ function Test-ScriptAnalyzer
         try {
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
-            $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe")
+            $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary")
             if ( $InProcess ) {
                 & $scriptBlock
             }

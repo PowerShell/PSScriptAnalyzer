@@ -93,11 +93,7 @@ function New-ReleaseBuild
     try
     {
         if ( test-path out ) { remove-item out/ -recurse -force }
-        .\buildCoreClr.ps1 -Framework net452 -Configuration PSV3Release -Build
-        .\buildCoreClr.ps1 -Framework net452 -Configuration PSV4Release -Build
-        .\buildCoreClr.ps1 -Framework net452 -Configuration Release -Build
-        .\buildCoreClr.ps1 -Framework netstandard2.0 -Configuration Release -Build
-        .\build.ps1 -BuildDocs
+        .\build.ps1 -All -Configuration Release
     }
     finally
     {
