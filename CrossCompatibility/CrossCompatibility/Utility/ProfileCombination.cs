@@ -241,9 +241,22 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 thisRuntime.Modules[moduleVersions.Key] = DictionaryUnion(thisRuntime.Modules[moduleVersions.Key], moduleVersions.Value);
             }
 
+            thisRuntime.NativeCommands = DictionaryUnion(thisRuntime.NativeCommands, thatRuntime.NativeCommands, Union);
+
             Union(thisRuntime.Types, thatRuntime.Types);
 
             return thisRuntime;
+        }
+
+        public static object Union(NativeCommandData thisCommand, NativeCommandData thatCommand)
+        {
+            if (thatCommand.Version != null && (thisCommand.Version == null || thisCommand.Version < thatCommand.Version))
+            {
+                thisCommand.Version = thatCommand.Version;
+                thisCommand.Path = thatCommand.Path;
+            }
+
+            return thisCommand;
         }
 
         public static object Union(ModuleData thisModule, ModuleData thatModule)

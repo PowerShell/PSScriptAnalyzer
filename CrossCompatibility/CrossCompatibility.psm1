@@ -215,7 +215,7 @@ function New-AllPlatformReferenceProfile
         Remove-Item -Path $Path -Force
     }
 
-    $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) "$script:AnyPlatformReferenceProfileFilePath.json"
+    $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) "anyprofile_union.json"
 
     Join-CompatibilityProfile -InputFile $ProfileDir -Union | ConvertTo-CompatibilityJson -NoWhitespace | Out-File -Encoding UTF8 -FilePath $tmpPath
 

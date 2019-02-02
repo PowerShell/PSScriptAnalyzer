@@ -23,6 +23,7 @@ if ($IsWindows -eq $false) {
 
 $script:Psm1Path = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility.psm1')
 $script:Psd1Path = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility.psd1')
+$script:ProfileDirPath = [System.IO.Path]::Combine($PSScriptRoot, 'profiles')
 
 $script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'CrossCompatibility')
 $script:BinModSrcDir = Join-Path $PSScriptRoot 'CrossCompatibility'
@@ -84,6 +85,7 @@ function Publish-CrossCompatibilityModule
 
     Copy-Item -LiteralPath $script:Psd1Path -Destination (Join-Path $DestinationDir 'CrossCompatibility.psd1')
     Copy-Item -LiteralPath $script:Psm1Path -Destination (Join-Path $DestinationDir 'CrossCompatibility.psm1')
+    Copy-Item -Recurse -LiteralPath $script:ProfileDirPath -Destination $DestinationDir
 
     foreach ($framework in $TargetFramework)
     {
