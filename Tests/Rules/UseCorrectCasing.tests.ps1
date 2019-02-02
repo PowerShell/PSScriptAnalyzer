@@ -17,6 +17,5 @@ Describe "UseCorrectCasing" {
 
         }
         Invoke-Formatter 'invoke-dummyFunction' | Should -Be 'Invoke-DummyFunction'
-        Invoke-ScriptAnalyzer -ScriptDefinition 'foo' # Workaround for this bug https://github.com/PowerShell/PSScriptAnalyzer/issues/1116
     }
 }
