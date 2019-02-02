@@ -105,6 +105,22 @@ Describe "Resolve DSC Resource Dependency" {
             $moduleVersion | Should -Be ([version]'1.2.3.4')
         }
 
+        It "Extracts 1 module name with version using HashTable syntax" -skip:$skipTest {
+            $sb = @"
+{Configuration SomeConfiguration
+{
+    Import-DscResource -ModuleName (@{ModuleName="SomeDscModule1";ModuleVersion="1.2.3.4"})
+}}
+"@
+            $tokens = $null
+            $parseError = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($sb, [ref]$tokens, [ref]$parseError)
+            $moduleVersion = $null
+            $resultModuleNames = $moduleHandlerType::GetModuleNameFromErrorExtent($parseError[0], $ast, [ref]$moduleVersion).ToArray()
+            $resultModuleNames[0] | Should -Be 'SomeDscModule1'
+            $moduleVersion | Should -Be ([version]'1.2.3.4')
+        }
+
         It "Extracts more than 1 module names" -skip:$skipTest {
             $sb = @"
 {Configuration SomeConfiguration
