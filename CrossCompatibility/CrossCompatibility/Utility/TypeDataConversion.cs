@@ -12,18 +12,6 @@ using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
-    public class CompatibilityAnalysisException : Exception
-    {
-        public CompatibilityAnalysisException(string message) : base(message)
-        {
-        }
-
-        public CompatibilityAnalysisException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-    }
-
     /// <summary>
     /// Assembles loaded type data from a list of assemblies.
     /// </summary>
