@@ -241,22 +241,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 thisRuntime.Modules[moduleVersions.Key] = DictionaryUnion(thisRuntime.Modules[moduleVersions.Key], moduleVersions.Value);
             }
 
-            thisRuntime.NativeCommands = DictionaryUnion(thisRuntime.NativeCommands, thatRuntime.NativeCommands, Union);
+            thisRuntime.NativeCommands = StringDictionaryUnion(thisRuntime.NativeCommands, thatRuntime.NativeCommands, ArrayUnion);
 
             Union(thisRuntime.Types, thatRuntime.Types);
 
             return thisRuntime;
-        }
-
-        public static object Union(NativeCommandData thisCommand, NativeCommandData thatCommand)
-        {
-            if (thatCommand.Version != null && (thisCommand.Version == null || thisCommand.Version < thatCommand.Version))
-            {
-                thisCommand.Version = thatCommand.Version;
-                thisCommand.Path = thatCommand.Path;
-            }
-
-            return thisCommand;
         }
 
         public static object Union(ModuleData thisModule, ModuleData thatModule)
@@ -452,9 +441,27 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 return thisArray;
             }
 
+            bool canClone = typeof(ICloneable).IsAssignableFrom(typeof(T));
+
+            var clonedThat = new T[thatArray.Length];
+            if (canClone)
+            {
+                for (int i = 0; i < thatArray.Length; i++)
+                {
+                    clonedThat[i] = (T)((dynamic)thatArray[i]).Clone();
+                }
+            }
+            else
+            {
+                for (int i = 0; i < thatArray.Length; i++)
+                {
+                    clonedThat[i] = (T)thatArray[i];
+                }
+            }
+
             if (thisArray == null)
             {
-                return (T[])thatArray.Clone();
+                return clonedThat;
             }
 
             return thisArray.Union(thatArray).ToArray();

@@ -747,7 +747,7 @@ function New-NativeCommandData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData]'
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData[]]' [StringComparer]::OrdinalIgnoreCase
     }
 
     process
@@ -757,10 +757,18 @@ function New-NativeCommandData
             $version = $CommandInfo.Version
         }
 
-        $dict[$CommandInfo.Name] = [Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData]@{
+        $nativeCommandData = [Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData]@{
             Version = $version
             Path = $CommandInfo.Source
         }
+
+        if ($dict.ContainsKey($CommandInfo.Name))
+        {
+            $dict[$CommandInfo.Name] = ($dict[$CommandInfo.Name] + $nativeCommandData)
+            return
+        }
+
+        $dict[$CommandInfo.Name] = $nativeCommandData
     }
 
     end

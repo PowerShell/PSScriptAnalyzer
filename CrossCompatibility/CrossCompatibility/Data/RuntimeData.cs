@@ -32,7 +32,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// Describes native applications available to the PowerShell platform.
         /// </summary>
         [DataMember]
-        public JsonDictionary<string, NativeCommandData> NativeCommands { get; set; }
+        public JsonCaseInsensitiveStringDictionary<NativeCommandData[]> NativeCommands { get; set; }
 
         public object Clone()
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerShell.CrossCompatibility.Query.Types;
 using RuntimeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData;
+using NativeCommandDataMut = Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
@@ -10,22 +11,24 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     {
         private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>> _commands;
 
-        public RuntimeData(RuntimeDataMut runtimeData, bool isForWindows)
+        private readonly Lazy<NativeCommandLookupTable> _nativeCommands;
+
+        public RuntimeData(RuntimeDataMut runtimeData)
         {
             Modules = runtimeData.Modules.ToDictionary(m => m.Key, m => (IReadOnlyDictionary<Version, ModuleData>)m.Value.ToDictionary(mv => mv.Key, mv => new ModuleData(m.Key, mv.Key, mv.Value)), StringComparer.OrdinalIgnoreCase);
             Types = new AvailableTypeData(runtimeData.Types);
-            NativeCommands = runtimeData.NativeCommands.ToDictionary(nc => nc.Key, nc => new NativeCommandData(nc.Key, nc.Value), isForWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
             _commands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateCommandLookupTable(Modules.Values.SelectMany(mv => mv.Values)));
+            _nativeCommands = new Lazy<NativeCommandLookupTable>(() => NativeCommandLookupTable.Create(runtimeData.NativeCommands));
         }
 
         public AvailableTypeData Types { get; }
 
         public IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> Modules { get; }
 
-        public IReadOnlyDictionary<string, NativeCommandData> NativeCommands { get; }
-
         public IReadOnlyDictionary<string, IReadOnlyList<CommandData>> Commands => _commands.Value;
+
+        public NativeCommandLookupTable NativeCommands => _nativeCommands.Value;
 
         private static IReadOnlyDictionary<string, IReadOnlyList<CommandData>> CreateCommandLookupTable(
             IEnumerable<ModuleData> modules)
