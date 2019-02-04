@@ -10,7 +10,10 @@ param(
     $Framework,
 
     [switch]
-    $Test
+    $Test,
+
+    [switch]
+    $Clean
 )
 
 $ErrorActionPreference = 'Stop'
@@ -104,6 +107,11 @@ function Publish-CrossCompatibilityModule
             $null = Copy-Item -LiteralPath $dllPath -Destination $dest
         }
     }
+}
+
+if ($Clean)
+{
+    Remove-Item -Force -Recurse $script:BinModDir
 }
 
 if ($Framework)
