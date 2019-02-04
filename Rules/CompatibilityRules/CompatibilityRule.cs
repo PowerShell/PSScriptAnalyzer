@@ -15,7 +15,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private const string PROFILE_DIR_NAME = "compatibility_profiles";
 
         private static readonly Regex s_falseProfileExtensionPattern = new Regex(
-            "\\d+_(x64|x86|arm32|arm64)",
+            "\\d+_(core|framework)",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private readonly CompatibilityProfileLoader _profileLoader;
