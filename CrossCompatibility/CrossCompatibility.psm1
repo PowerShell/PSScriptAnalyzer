@@ -565,7 +565,15 @@ function Get-AvailableTypes
         $All
     )
 
+    # In PS Core, we need to explicitly force the loading of all assemblies (which normally lazy-load)
+    if ($PSEdition -eq 'Core')
+    {
+        Get-ChildItem $PSHOME -Filter '*.dll' | ForEach-Object { try { Add-Type -Path $_ } catch { } }
+    }
+
     $asms = New-Object 'System.Collections.Generic.List[System.Reflection.Assembly]'
+
+    $asmPaths = Split-Path $script:PSHomeModulePath,$script:WinPSHomeModulePath
 
     foreach ($asm in [System.AppDomain]::CurrentDomain.GetAssemblies())
     {
@@ -574,7 +582,7 @@ function Get-AvailableTypes
             continue
         }
 
-        if ($All -or (Test-HasAnyPrefix $asm.Location -Prefix $script:PSHomeModulePath,$script:WinPSHomeModulePath -IgnoreCase:$script:IsWindows))
+        if ($All -or $asm.GlobalAssemblyCache -or (Test-HasAnyPrefix $asm.Location -Prefix $asmPaths -IgnoreCase:$script:IsWindows))
         {
             $asms.Add($asm)
         }
@@ -1146,6 +1154,18 @@ function Get-FullTypeName
     )
 
     return [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetFullTypeName($Type)
+}
+
+function Assert-CompatibilityProfileIsValid
+{
+    param(
+        [Parameter(Position=0,ValueFromPipeline=$true)]
+        [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]
+        $CompatibilityProfile,
+
+        [switch]
+        $CheckWithCurrentContext
+    )
 }
 
 function Test-HasAnyPrefix
