@@ -29,7 +29,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
     /// </summary>
     [Serializable]
     [DataContract]
-    public class DotnetData
+    public class DotnetData : ICloneable
     {
         /// <summary>
         /// The version of the .NET core language runtime
@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember]
         public DotnetRuntime Runtime { get; set; }
 
-        public DotnetData DeepClone()
+        public object Clone()
         {
             return new DotnetData()
             {

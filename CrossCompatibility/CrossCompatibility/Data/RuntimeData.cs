@@ -39,7 +39,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
             return new RuntimeData()
             {
                 Types = (AvailableTypeData)Types.Clone(),
-                Modules = (JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>>)Modules.Clone()
+                Modules = (JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>>)Modules.Clone(),
+                NativeCommands = (JsonCaseInsensitiveStringDictionary<NativeCommandData[]>)NativeCommands.Clone(),
             };
         }
     }

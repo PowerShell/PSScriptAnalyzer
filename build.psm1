@@ -114,6 +114,8 @@ function Copy-CompatibilityProfiles
 {
     $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility', 'profiles')
     $destination = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer', 'compatibility_profiles')
+
+    Remove-Item -Force -Recurse $destination -ErrorAction Ignore
     Copy-Item -Recurse -Force -Path $profileDir -Destination $destination
 }
 

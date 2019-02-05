@@ -89,10 +89,7 @@ function Join-CompatibilityProfile
 
         [Parameter(ParameterSetName='Object', Position=0, ValueFromPipeline=$true)]
         [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData[]]
-        $ProfileObject,
-
-        [switch]
-        $Union
+        $ProfileObject
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'File')
@@ -119,12 +116,7 @@ function Join-CompatibilityProfile
         $ProfileObject = $profiles
     }
 
-    if ($Union)
-    {
-        return [Microsoft.PowerShell.CrossCompatibility.Utility.ProfileCombination]::UnionMany($ProfileObject)
-    }
-
-    return [Microsoft.PowerShell.CrossCompatibility.Utility.ProfileCombination]::IntersectMany($ProfileObject)
+    return [Microsoft.PowerShell.CrossCompatibility.Utility.ProfileCombination]::UnionMany($ProfileObject)
 }
 
 <#
@@ -225,7 +217,7 @@ function New-AllPlatformReferenceProfile
 
     $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) "anyprofile_union.json"
 
-    Join-CompatibilityProfile -InputFile $ProfileDir -Union | ConvertTo-CompatibilityJson -NoWhitespace | Out-File -Encoding UTF8 -FilePath $tmpPath
+    Join-CompatibilityProfile -InputFile $ProfileDir | ConvertTo-CompatibilityJson -NoWhitespace | Out-File -Encoding UTF8 -FilePath $tmpPath
 
     Move-Item -Path $tmpPath -Destination $Path
 }

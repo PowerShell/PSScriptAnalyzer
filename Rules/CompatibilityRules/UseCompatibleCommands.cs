@@ -68,6 +68,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.SkipChildren;
                 }
 
+                if (commandName.Equals("Protect-CmsMessage") || commandName.Equals("Remove-Service"))
+                {
+                }
+
                 // Note:
                 // The "right" way to eliminate user-defined commands would be to build
                 // a list of:

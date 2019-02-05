@@ -28,20 +28,19 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine -Name ApplicationBase'; Commands = @("Get-ItemPropertyValue"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-FileHash $pshome\powershell.exe | Format-List'; Commands = @("Get-FileHash"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
 
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Write-Information "Information"'; Commands = @("Write-Information"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = '"Hello World" | ConvertFrom-String | Get-Member'; Commands = @("ConvertFrom-String"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Compress-Archive -LiteralPath C:\Reference\Draftdoc.docx, C:\Reference\Images\diagram2.vsd -CompressionLevel Optimal -DestinationPath C:\Archives\Draft.Zip'; Commands = @("Compress-Archive"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Get-Runspace -Id 2'; Commands = @("Get-Runspace"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = '$Protected = "Hello World" | Protect-CmsMessage -To "*youralias@emailaddress.com*"'; Commands = @("Protect-CmsMessage"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Format-Hex -Path "C:\temp\temp.t7f"'; Commands = @("Format-Hex"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Clear-RecycleBin -Force'; Commands = @("Clear-RecycleBin"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = '$TempFile = New-TemporaryFile'; Commands = @("New-TemporaryFile"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'New-Guid | Out-String'; Commands = @("New-Guid"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Enter-PSHostProcess -Name powershell_ise'; Commands = @("Enter-PSHostProcess"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Wait-Debugger'; Commands = @("Wait-Debugger"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Start-Job { Write-Host "Hello" } | Debug-Job'; Commands = @("Debug-Job"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012r2_4_profile; Script = 'Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine -Name ApplicationBase'; Commands = @("Get-ItemPropertyValue"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Write-Information "Information"'; Commands = @("Write-Information"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = '"Hello World" | ConvertFrom-String | Get-Member'; Commands = @("ConvertFrom-String"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Compress-Archive -LiteralPath C:\Reference\Draftdoc.docx, C:\Reference\Images\diagram2.vsd -CompressionLevel Optimal -DestinationPath C:\Archives\Draft.Zip'; Commands = @("Compress-Archive"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Get-Runspace -Id 2'; Commands = @("Get-Runspace"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Format-Hex -Path "C:\temp\temp.t7f"'; Commands = @("Format-Hex"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Clear-RecycleBin -Force'; Commands = @("Clear-RecycleBin"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = '$TempFile = New-TemporaryFile'; Commands = @("New-TemporaryFile"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'New-Guid | Out-String'; Commands = @("New-Guid"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Enter-PSHostProcess -Name powershell_ise'; Commands = @("Enter-PSHostProcess"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Wait-Debugger'; Commands = @("Wait-Debugger"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Start-Job { Write-Host "Hello" } | Debug-Job'; Commands = @("Debug-Job"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine -Name ApplicationBase'; Commands = @("Get-ItemPropertyValue"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
 
     @{ Target = $script:Srv2019_5_profile; Script = "Remove-Alias gcm"; Commands = @("Remove-Alias"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_5_profile; Script = "Get-Uptime"; Commands = @("Get-Uptime"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }

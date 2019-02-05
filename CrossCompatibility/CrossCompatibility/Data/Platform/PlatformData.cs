@@ -32,7 +32,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         {
             return new PlatformData()
             {
-                Dotnet = Dotnet.DeepClone(),
+                Dotnet = (DotnetData)Dotnet.Clone(),
                 OperatingSystem = (OperatingSystemData)OperatingSystem.Clone(),
                 PowerShell = (PowerShellData)PowerShell.Clone()
             };
