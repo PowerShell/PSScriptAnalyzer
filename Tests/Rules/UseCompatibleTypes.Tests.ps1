@@ -17,6 +17,8 @@ $script:TypeCompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = '$kw = New-Object "System.Management.Automation.Language.DynamicKeyword"'; Types = @('System.Management.Automation.Language.DynamicKeyword'); Version = "3.0"; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = '& { param([Parameter(Position=0)][ArgumentCompleter({"Banana"})][string]$Hello) $Hello } "Banana"'; Types = @('ArgumentCompleter'); Version = "3.0"; OS = 'Windows'; ProblemCount = 1 }
 
+    @{ Target = $script:Srv2019_5_profile; Script = '[Microsoft.PowerShell.Commands.WebSslProtocol]::Default -eq "Tls12"'; Types = @('Microsoft.PowerShell.Commands.WebSslProtocol'); Version = "5.1"; OS = 'Windows'; ProblemCount = 1 }
+
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = '[System.Management.Automation.Security.SystemPolicy]::GetSystemLockdownPolicy()'; Types = @('System.Management.Automation.Security.SystemPolicy'); Version = "6.1.2"; OS = 'Linux'; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = '[System.Management.Automation.Security.SystemPolicy]::GetSystemLockdownPolicy()'; Types = @('System.Management.Automation.Security.SystemPolicy'); Version = "6.1.2"; OS = 'Linux'; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = '[System.Management.Automation.Security.SystemEnforcementMode]$enforcementMode = "Audit"'; Types = @('System.Management.Automation.Security.SystemEnforcementMode'); Version = "6.1.2"; OS = 'Linux'; ProblemCount = 1 }
