@@ -31,7 +31,10 @@ param(
     [switch] $Test,
 
     [Parameter(ParameterSetName='Test')]
-    [switch] $InProcess
+    [switch] $InProcess,
+
+    [Parameter(ParameterSetName='Bootstrap')]
+    [switch] $Bootstrap
 )
 
 END {
@@ -57,6 +60,10 @@ END {
                 Configuration = $Configuration
             }
             Start-ScriptAnalyzerBuild @buildArgs
+        }
+        "Bootstrap" {
+            Install-DotNet
+            return
         }
         "Test" {
             Test-ScriptAnalyzer -InProcess:$InProcess

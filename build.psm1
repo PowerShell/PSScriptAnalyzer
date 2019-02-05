@@ -271,3 +271,43 @@ function Get-TestFailures
     $results = [xml](Get-Content $logPath)
     $results.SelectNodes(".//test-case[@result='Failure']")
 }
+
+# BOOTSTRAPPING CODE FOR INSTALLING DOTNET
+# install dotnet cli tools based on the version mentioned in global.json
+function Install-Dotnet
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param ( [Parameter()][Switch]$Force )
+    $json = Get-Content (Join-Path $PSScriptRoot global.json) | ConvertFrom-Json
+    $version = $json.sdk.Version
+    try {
+        Push-Location $PSScriptRoot
+        $installScriptName = Receive-DotnetInstallScript
+        If ( $PSCmdlet.ShouldProcess("$installScriptName for $version")) {
+            $installScriptPath = Join-Path . $installScriptName
+            & "${installScriptPath}" -c release -v $version
+        }
+    }
+    finally {
+        if ( Test-Path $installScriptName ) {
+            Remove-Item $installScriptName
+        }
+        Pop-Location
+    }
+}
+
+function Receive-DotnetInstallScript
+{
+    if ( $IsWindows ) {
+        $installScriptName = "dotnet-install.ps1"
+    }
+    else {
+        $installScriptName = "dotnet-install.sh"
+    }
+    $null = Invoke-WebRequest -Uri "https://dot.net/v1/${installScriptName}" -OutFile "${installScriptName}"
+    if ( ! $IsWindows ) {
+        chmod +x $installScriptName
+    }
+    return $installScriptName
+}
+
