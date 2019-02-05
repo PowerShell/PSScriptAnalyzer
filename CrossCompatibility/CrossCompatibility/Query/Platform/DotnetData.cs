@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using System;
 using DotnetRuntime = Microsoft.PowerShell.CrossCompatibility.Data.Platform.DotnetRuntime;
 using DotnetDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Platform.DotnetData;

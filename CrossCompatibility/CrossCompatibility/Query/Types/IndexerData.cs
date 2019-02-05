@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using System.Collections.Generic;
 using IndexerDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.IndexerData;
 

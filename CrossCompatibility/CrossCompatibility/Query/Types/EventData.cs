@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using EventDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.EventData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query

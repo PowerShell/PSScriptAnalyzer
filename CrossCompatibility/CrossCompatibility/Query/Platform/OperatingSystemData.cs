@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using System;
 using OperatingSystemDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Platform.OperatingSystemData;
 

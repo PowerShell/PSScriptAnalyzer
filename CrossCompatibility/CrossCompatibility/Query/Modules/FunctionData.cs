@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using Modules = Microsoft.PowerShell.CrossCompatibility.Data.Modules;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
