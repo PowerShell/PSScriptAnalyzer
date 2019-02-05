@@ -88,7 +88,7 @@ function Publish-CrossCompatibilityModule
 
     Copy-Item -LiteralPath $script:Psd1Path -Destination (Join-Path $DestinationDir 'CrossCompatibility.psd1')
     Copy-Item -LiteralPath $script:Psm1Path -Destination (Join-Path $DestinationDir 'CrossCompatibility.psm1')
-    Copy-Item -Recurse -LiteralPath $script:ProfileDirPath -Destination $DestinationDir
+    Copy-Item -Recurse -LiteralPath $script:ProfileDirPath -Destination $DestinationDir -ErrorAction Ignore
 
     foreach ($framework in $TargetFramework)
     {
