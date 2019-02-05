@@ -19,7 +19,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// on the target platform.
         /// </summary>
         [DataMember]
-        public RuntimeData Compatibility { get; set; }
+        public RuntimeData Runtime { get; set; }
 
         /// <summary>
         /// Describes the target platform on which a PowerShell script
@@ -33,7 +33,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         {
             return new CompatibilityProfileData()
             {
-                Compatibility = (RuntimeData)Compatibility.Clone(),
+                Runtime = (RuntimeData)Runtime.Clone(),
                 Platform = (PlatformData)Platform.Clone()
             };
         }

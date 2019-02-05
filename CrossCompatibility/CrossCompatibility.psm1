@@ -157,7 +157,10 @@ function New-PowerShellCompatibilityProfile
         $PassThru,
 
         [switch]
-        $Readable
+        $Readable,
+
+        [switch]
+        $Validate
     )
 
     if ($PassThru)
@@ -176,6 +179,11 @@ function New-PowerShellCompatibilityProfile
     }
 
     $reportData = Get-PowerShellCompatibilityProfileData
+
+    if ($Validate)
+    {
+        Assert-CompatibilityProfileIsValid -CompatibilityProfile $reportData
+    }
 
     if (-not $reportData)
     {
@@ -341,7 +349,7 @@ Generate a new compatibility report object for the current PowerShell session.
 function Get-PowerShellCompatibilityProfileData
 {
     return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]@{
-        Compatibility = Get-PowerShellCompatibilityData
+        Runtime = Get-PowerShellCompatibilityData
         Platform = Get-PlatformData
     }
 }
@@ -573,7 +581,7 @@ function Get-AvailableTypes
 
     $asms = New-Object 'System.Collections.Generic.List[System.Reflection.Assembly]'
 
-    $asmPaths = Split-Path $script:PSHomeModulePath,$script:WinPSHomeModulePath
+    $asmPaths = $PSHOME, (Split-Path $script:WinPSHomeModulePath)
 
     foreach ($asm in [System.AppDomain]::CurrentDomain.GetAssemblies())
     {
@@ -755,7 +763,7 @@ function New-NativeCommandData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData[]]' [StringComparer]::OrdinalIgnoreCase
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData[]]' @([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process
@@ -1160,12 +1168,358 @@ function Assert-CompatibilityProfileIsValid
 {
     param(
         [Parameter(Position=0,ValueFromPipeline=$true)]
-        [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]
-        $CompatibilityProfile,
-
-        [switch]
-        $CheckWithCurrentContext
+        $CompatibilityProfile
     )
+
+    $problems = New-Object 'System.Collections.Generic.List[string]'
+
+    $platformProperties = @{
+        PowerShell = @(
+            "Edition",
+            "Version",
+            "ProcessArchitecture"
+        )
+        ".NET" = @(
+            "Runtime",
+            "ClrVersion"
+        )
+        OperatingSystem = @(
+            "Family",
+            "Name",
+            "Version",
+            "Architecture"
+        )
+    }
+
+    foreach ($key in $platformProperties.Keys)
+    {
+        foreach ($subKey in $platformProperties[$key])
+        {
+            if (-not $CompatibilityProfile.Platform.$key.$subKey)
+            {
+                $problems.Add("Platform info missing: Platform.$key.$subKey")
+            }
+        }
+    }
+
+    $modules = @{
+        "Microsoft.PowerShell.Core" = @{
+            "Get-Module" = @(
+                "Name",
+                "ListAvailable"
+            )
+            "Start-Job" = @(
+                "ScriptBlock",
+                "FilePath"
+            )
+            "Where-Object" = @(
+                "FilterScript",
+                "Property"
+            )
+        }
+        "Microsoft.PowerShell.Management" = @{
+            "Get-Process" = @(
+                "Name",
+                "Id",
+                "InputObject"
+            )
+            "Test-Path" = @(
+                "Path",
+                "LiteralPath"
+            )
+            "Get-ChildItem" = @(
+                "Path",
+                "LiteralPath"
+            )
+            "New-Item" = @(
+                "Path",
+                "Name",
+                "Value"
+            )
+        }
+        "Microsoft.PowerShell.Utility" = @{
+            "New-Object" = @(
+                "TypeName",
+                "ArgumentList"
+            )
+            "Write-Host" = @(
+                "Object",
+                "NoNewline"
+            )
+            "Out-File" = @(
+                "FilePath",
+                "Encoding",
+                "Append",
+                "Force"
+            )
+            "Invoke-Expression" = @(
+                "Command"
+            )
+        }
+    }
+
+    if ($CompatibilityProfile.PowerShell.Version.Major -ge 5)
+    {
+        $modules += @{
+            "PSReadLine" = @{
+                "Set-PSReadLineKeyHandler" = @(
+                    "Chord",
+                    "ScriptBlock"
+                )
+                "Set-PSReadLineOption" = @(
+                    "EditMode"
+                    "ContinuationPrompt"
+                )
+            }
+        }
+    }
+
+    foreach ($mKey in $modules.Keys)
+    {
+        $mod = $CompatibilityProfile.Runtime.Modules[$mKey]
+
+        if (-not $mod)
+        {
+            $problems.Add("Missing module: $mod")
+            continue
+        }
+
+        if (-not $mod.Values)
+        {
+            $problems.Add("No versions found for module $mKey")
+            continue
+        }
+
+        $mod = $mod.Values[0]
+
+        foreach ($cKey in $modules[$mod].Keys)
+        {
+            $cmdlet = $mod.Cmdlets[$cKey]
+
+            if (-not $cmdlet)
+            {
+                $problems.Add("Missing cmdlet '$cKey' in module '$mKey'")
+                continue
+            }
+
+            foreach ($param in $modules[$mod][$command])
+            {
+                if (-not $cmdlet.Parameters[$param])
+                {
+                    $problems.Add("Missing parameter '$param' on cmdlet '$cKey' in module '$mKey'")
+                }
+            }
+        }
+    }
+
+    $types = @{
+        "System.Management.Automation" = @{
+            "System.Management.Automation" = @(
+                'AliasInfo',
+                'PSCmdlet',
+                'PSModuleInfo',
+                'SwitchParameter',
+                'ProgressRecord'
+            )
+            "System.Management.Automation.Language" = @(
+                'Parser',
+                'AstVisitor',
+                'ITypeName',
+                'Token',
+                'Ast'
+            )
+            "Microsoft.PowerShell" = @(
+                'ExecutionPolicy'
+            )
+            "Microsoft.PowerShell.Commands" = @(
+                'OutHostCommand',
+                'GetCommandCommand',
+                'GetModuleCommand',
+                'InvokeCommandCommand',
+                'ModuleCmdletBase'
+            )
+        }
+        "Microsoft.PowerShell.Commands.Utility" = @{
+            "Microsoft.PowerShell.Commands" = @(
+                'GetDateCommand',
+                'NewObjectCommand',
+                'SelectObjectCommand',
+                'WriteOutputCommand',
+                'GroupInfo',
+                'GetRandomCommand'
+            )
+        }
+        "Microsoft.PowerShell.Commands.Management" = @{
+            "Microsoft.PowerShell.Commands" = @(
+                'GetContentCommand',
+                'CopyItemCommand',
+                'TestPathCommand',
+                'GetProcessCommand',
+                'SetLocationCommand',
+                'WriteContentCommandBase'
+            )
+        }
+    }
+
+    if ($CompatibilityProfile.Platform.PowerShell.Edition -eq 'Core')
+    {
+        $types += @{
+            'System.Private.CoreLib' = @{
+                'System' = @(
+                    'Object',
+                    'String',
+                    'Array',
+                    'Type'
+                )
+                'System.Reflection' = @(
+                    'Assembly',
+                    'BindingFlags',
+                    'FieldAttributes'
+                )
+                'System.Collections.Generic' = @(
+                    'Dictionary`2',
+                    'IComparer`1',
+                    'List`1',
+                    'IReadOnlyList`1'
+                )
+            }
+            'System.Collections' = @{
+                'System.Collections' = @(
+                    'BitArray'
+                )
+                'System.Collections.Generic' = @(
+                    'Queue`1',
+                    'HashSet`1',
+                    'Stack`1'
+                )
+            }
+        }
+    }
+    else
+    {
+        $types += @{
+            'mscorlib' = @{
+                'System' = @(
+                    'Object',
+                    'String',
+                    'Array',
+                    'Type'
+                )
+                'System.Reflection' = @(
+                    'Assembly',
+                    'BindingFlags',
+                    'FieldAttributes'
+                )
+                'System.Collections.Generic' = @(
+                    'Dictionary`2',
+                    'IComparer`1',
+                    'List`1',
+                    'IReadOnlyList`1',
+                    'Queue`1',
+                    'HashSet`1',
+                    'Stack`1'
+                )
+                'System.Collections' = @(
+                    'BitArray'
+                )
+            }
+        }
+    }
+
+    foreach ($asmName in $types.Keys)
+    {
+        $asm = $CompatibilityProfile.Runtime.Types.Assemblies[$asmName]
+
+        if (-not $asm)
+        {
+            $problems.Add("Assembly not found: '$asmName'")
+            continue
+        }
+
+        foreach ($namespace in $types[$asmName].Keys)
+        {
+            $ns = $asm.Types[$namespace]
+
+            if (-not $ns)
+            {
+                $problems.Add("Namespace '$namespace' not found in assembly '$asmName'")
+                continue
+            }
+
+            foreach ($typeName in $types[$asmName][$namespace])
+            {
+                if (-not $ns[$typeName])
+                {
+                    $problems.Add("Type '$typeName' not found in namespace '$namespace', assembly '$asmName'")
+                }
+            }
+        }
+    }
+
+    $typeAccelerators = @{
+        psmoduleinfo = "System.Management.Automation.PSModuleInfo"
+        scriptblock = "System.Management.Automation.ScriptBlock"
+        datetime = "System.DateTime"
+        int = "System.Int32"
+        regex = "System.Text.RegularExpressions.Regex"
+        ipaddress = "System.Net.IpAddress"
+    }
+
+    foreach ($ta in $typeAccelerators.Keys)
+    {
+        if ($CompatibilityProfile.Runtime.Types.TypeAccelerators[$ta].Type -ne $typeAccelerators[$ta])
+        {
+            $problems.Add("Type accelerator '$ta' does not point to correct type")
+        }
+    }
+
+    if ($CompatibilityProfile.Platform.OperatingSystem.Family -eq 'Windows')
+    {
+        $commands = @(
+            'cmd.exe',
+            'net.exe',
+            'regedit.exe',
+            'resmon.exe',
+            'where.exe'
+        )
+    }
+    else
+    {
+        $commands = @(
+            'ls',
+            'rm',
+            'cat',
+            'sh',
+            'grep'
+        )
+    }
+
+    foreach ($c in $commands)
+    {
+        $command = $CompatibilityProfile.Runtime.NativeCommands[$c]
+
+        if (-not $command)
+        {
+            $problems.Add("Unable to find command '$c'")
+            continue
+        }
+
+        if (-not $command.Path)
+        {
+            $problems.Add("No path given for command '$c'")
+            continue
+        }
+    }
+
+    foreach ($p in $problems)
+    {
+        Write-Error $p
+    }
+
+    if ($problems)
+    {
+        throw "Problems encountered validating profile"
+    }
 }
 
 function Test-HasAnyPrefix

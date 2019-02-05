@@ -28,7 +28,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         public static object Intersect(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
         {
-            thisProfile.Compatibility = (RuntimeData)Intersect(thisProfile.Compatibility, thatProfile.Compatibility);
+            thisProfile.Runtime = (RuntimeData)Intersect(thisProfile.Runtime, thatProfile.Runtime);
 
             // We have no generic algorithm for generating intersected platform information,
             // so it's left up to the caller to correct that information
@@ -223,7 +223,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             // We can revisit, but platform unions don't make much sense out of context
             thisProfile.Platform = null;
 
-            Union(thisProfile.Compatibility, thatProfile.Compatibility);
+            Union(thisProfile.Runtime, thatProfile.Runtime);
 
             return thisProfile;
         }

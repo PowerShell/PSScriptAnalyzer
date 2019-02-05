@@ -11,7 +11,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     {
         public CompatibilityProfileData(CompatibilityProfileDataMut compatibilityProfileData)
         {
-            Runtime = new RuntimeData(compatibilityProfileData.Compatibility);
+            Runtime = new RuntimeData(compatibilityProfileData.Runtime);
 
             // This should only be null in the case of the anyplatform_union profile
             if (compatibilityProfileData.Platform != null)

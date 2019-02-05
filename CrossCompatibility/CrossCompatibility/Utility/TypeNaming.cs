@@ -54,6 +54,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 return type.FullName;
             }
 
+            if (type.IsByRef || type.IsArray)
+            {
+                return type.ToString();
+            }
+
             // Uninstantiated generics also have PowerShell-parseable full names
             Type[] genericArguments = type.GetGenericArguments();
             if (genericArguments.All(ga => ga.IsGenericParameter))
