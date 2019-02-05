@@ -29,7 +29,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         public string Id { get; }
 
-        public IReadOnlyCollection<string> ConstituentProfiles { get; }
+        public HashSet<string> ConstituentProfiles { get; }
 
         public RuntimeData Runtime { get; }
 
