@@ -34,6 +34,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
 
             foreach (AssemblyData asm in assemblies.Values)
             {
+                if (asm.Types == null)
+                {
+                    continue;
+                }
+
                 foreach (KeyValuePair<string, IReadOnlyDictionary<string, TypeData>> nspace in asm.Types)
                 {
                     foreach (TypeData type in nspace.Value.Values)
@@ -46,7 +51,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
                         }
 
                         string typeFullName = TypeNaming.AssembleFullName(nspace.Key, type.Name);
-                        typeDict.Add(typeFullName, type);
+                        typeDict[typeFullName] = type;
                     }
                 }
             }
