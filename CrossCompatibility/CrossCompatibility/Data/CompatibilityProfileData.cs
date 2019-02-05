@@ -14,6 +14,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     [DataContract]
     public class CompatibilityProfileData : ICloneable
     {
+        [DataMember]
+        public string Id { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
+        public string[] ConstituentProfiles { get; set; }
+
         /// <summary>
         /// Describes the what types and commands are available
         /// on the target platform.

@@ -89,7 +89,11 @@ function Join-CompatibilityProfile
 
         [Parameter(ParameterSetName='Object', Position=0, ValueFromPipeline=$true)]
         [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData[]]
-        $ProfileObject
+        $ProfileObject,
+
+        [Parameter()]
+        [string]
+        $ProfileId
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'File')
@@ -116,7 +120,7 @@ function Join-CompatibilityProfile
         $ProfileObject = $profiles
     }
 
-    return [Microsoft.PowerShell.CrossCompatibility.Utility.ProfileCombination]::UnionMany($ProfileObject)
+    return [Microsoft.PowerShell.CrossCompatibility.Utility.ProfileCombination]::UnionMany($ProfileId, $ProfileObject)
 }
 
 <#
@@ -148,6 +152,13 @@ function New-PowerShellCompatibilityProfile
         [switch]
         $PassThru,
 
+        [Parameter(ParameterSetName='OutFile')]
+        [Parameter(ParameterSetName='PassThru')]
+        [string]
+        $PlatformId,
+
+        [Parameter(ParameterSetName='OutFile')]
+        [Parameter(ParameterSetName='PlatformName')]
         [switch]
         $Readable,
 
@@ -155,14 +166,10 @@ function New-PowerShellCompatibilityProfile
         $Validate
     )
 
-    if ($PassThru)
-    {
-        return Get-PowerShellCompatibilityProfileData | ConvertTo-CompatibilityJson -NoWhitespace:(-not $Readable)
-    }
-
     if ($PlatformName)
     {
         $OutFile = [System.IO.Path]::Combine($here, "$Platform.json")
+        $PlatformId = $PlatformName
     }
     elseif ($OutFile -and -not [System.IO.Path]::IsPathRooted($OutFile))
     {
@@ -182,6 +189,17 @@ function New-PowerShellCompatibilityProfile
         throw "Report generation failed. Please see errors for more information"
     }
 
+    if (-not $PlatformId)
+    {
+        $PlatformId = Get-PlatformName $reportData.Platform
+        $reportData.Id = $PlatformId
+    }
+
+    if ($PassThru)
+    {
+        return $reportData
+    }
+
     if (-not $OutFile)
     {
         if (-not (Test-Path $script:CompatibilityProfileDir))
@@ -189,9 +207,7 @@ function New-PowerShellCompatibilityProfile
             $null = New-Item -ItemType Directory $script:CompatibilityProfileDir
         }
 
-        $platformNameStr = Get-PlatformName $reportData.Platform
-
-        $OutFile = Join-Path $script:CompatibilityProfileDir "$platformNameStr.json"
+        $OutFile = Join-Path $script:CompatibilityProfileDir "$PlatformId.json"
     }
 
     ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $Readable) `
@@ -215,9 +231,11 @@ function New-AllPlatformReferenceProfile
         Remove-Item -Path $Path -Force
     }
 
+    $name = $script:AnyPlatformUnionPlatformName
+
     $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) "anyprofile_union.json"
 
-    Join-CompatibilityProfile -InputFile $ProfileDir | ConvertTo-CompatibilityJson -NoWhitespace | Out-File -Encoding UTF8 -FilePath $tmpPath
+    Join-CompatibilityProfile -InputFile $ProfileDir -ProfileId $name | ConvertTo-CompatibilityJson -NoWhitespace | Out-File -Encoding UTF8 -FilePath $tmpPath
 
     Move-Item -Path $tmpPath -Destination $Path
 }

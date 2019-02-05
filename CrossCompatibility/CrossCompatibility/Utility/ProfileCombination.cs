@@ -11,17 +11,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
     public static class ProfileCombination
     {
-        public static CompatibilityProfileData UnionMany(IEnumerable<CompatibilityProfileData> profiles)
+        public static CompatibilityProfileData UnionMany(string profileId, IEnumerable<CompatibilityProfileData> profiles)
         {
-            return CombineProfiles(profiles, Union);
+            CompatibilityProfileData unionProfile = CombineProfiles(profiles, Union);
+
+            unionProfile.Platform = null;
+            unionProfile.Id = profileId;
+            unionProfile.ConstituentProfiles = profiles.Select(p => p.Id).ToArray();
+            return unionProfile;
         }
 
         public static object Union(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
         {
-            // There's no simple solution to this currently.
-            // We can revisit, but platform unions don't make much sense out of context
-            thisProfile.Platform = null;
-
             Union(thisProfile.Runtime, thatProfile.Runtime);
 
             return thisProfile;
