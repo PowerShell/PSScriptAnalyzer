@@ -14,6 +14,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     {
         private const string PROFILE_DIR_NAME = "compatibility_profiles";
 
+        private static readonly string s_defaultProfileDirPath = Path.Combine(GetModuleRootDirPath(), PROFILE_DIR_NAME);
+
         private static readonly Regex s_falseProfileExtensionPattern = new Regex(
             "\\d+_(core|framework)",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -22,9 +24,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private readonly string _profileDirPath;
 
-
         public CompatibilityRule()
-            : this(Path.Combine(GetModuleRootDirPath(), PROFILE_DIR_NAME))
+            : this(s_defaultProfileDirPath)
         {
         }
 

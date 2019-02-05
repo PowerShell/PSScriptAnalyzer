@@ -16,10 +16,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private readonly IDictionary<string, CompatibilityProfileData> _profileCache;
 
+        private readonly object _loaderLock;
+
         public CompatibilityProfileLoader()
         {
             _jsonSerializer = JsonProfileSerializer.Create();
             _profileCache = new Dictionary<string, CompatibilityProfileData>();
+            _loaderLock = new object();
         }
 
         public CompatibilityProfileData GetProfileFromFilePath(string path)
@@ -29,23 +32,29 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (_profileCache.ContainsKey(path))
+            lock (_loaderLock)
             {
-                return _profileCache[path];
+                if (_profileCache.ContainsKey(path))
+                {
+                    return _profileCache[path];
+                }
+
+                CompatibilityProfileDataMut compatibilityProfileMut = _jsonSerializer.DeserializeFromFile(path);
+
+                var compatibilityProfile = new CompatibilityProfileData(compatibilityProfileMut);
+
+                _profileCache[path] = compatibilityProfile;
+
+                return compatibilityProfile;
             }
-
-            CompatibilityProfileDataMut compatibilityProfileMut = _jsonSerializer.DeserializeFromFile(path);
-
-            var compatibilityProfile = new CompatibilityProfileData(compatibilityProfileMut);
-
-            _profileCache.Add(path, compatibilityProfile);
-
-            return compatibilityProfile;
         }
 
         public void ClearCache()
         {
-            _profileCache.Clear();
+            lock (_loaderLock)
+            {
+                _profileCache.Clear();
+            }
         }
     }
 }
