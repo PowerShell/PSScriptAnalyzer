@@ -74,12 +74,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.SkipChildren;
             }
 
+            public override AstVisitAction VisitAttribute(AttributeAst attributeAst)
+            {
+                if (attributeAst.TypeName != null)
+                {
+                    TryFindTypeIncompatibilities(attributeAst.TypeName);
+                }
+
+                return AstVisitAction.SkipChildren;
+            }
+
             public override AstVisitAction VisitCommand(CommandAst commandAst)
             {
                 string commandName = commandAst?.GetCommandName();
                 if (commandName == null)
                 {
-                    return AstVisitAction.SkipChildren;
+                    return AstVisitAction.Continue;
                 }
 
                 if (commandName.Equals("New-Object"))
@@ -103,10 +113,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             private bool TryGetArgument(IReadOnlyList<CommandElementAst> commandElements, int argumentPosition, string argumentParameterName, out CommandElementAst argument)
             {
-                int effectivePosition = 0;
+                argumentPosition++;
+                int effectivePosition = 1;
                 bool sawParameterName = false;
                 bool expectingRequiredArgument = false;
-                for (int i = 0; i < commandElements.Count; i++)
+                for (int i = 1; i < commandElements.Count; i++)
                 {
                     CommandElementAst commandElement = commandElements[i];
 
