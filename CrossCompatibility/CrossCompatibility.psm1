@@ -1176,7 +1176,6 @@ function Assert-CompatibilityProfileIsValid
 
     $platformProperties = @{
         PowerShell = @(
-            "Edition",
             "Version",
             "ProcessArchitecture"
         )

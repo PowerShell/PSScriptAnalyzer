@@ -22,7 +22,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         /// The edition of PowerShell, from
         /// $PSVersionTable.PSEdition.
         /// </summary>
-        [DataMember]
+        [DataMember(EmitDefaultValue = false)]
         public string Edition { get; set; }
 
         /// <summary>
