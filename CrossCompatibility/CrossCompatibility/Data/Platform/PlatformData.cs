@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         /// <summary>
         /// .NET/CLR host runtime information.
         /// </summary>
-        [DataMember(Name = ".NET")]
+        [DataMember]
         public DotnetData Dotnet { get; set; }
 
         public object Clone()

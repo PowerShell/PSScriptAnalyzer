@@ -757,8 +757,8 @@ function New-NativeCommandData
 {
     param(
         [Parameter(ValueFromPipeline=$true)]
-        [System.Management.Automation.CommandInfo]
-        $CommandInfo
+        [System.Management.Automation.ApplicationInfo]
+        $InfoObject
     )
 
     begin
@@ -768,23 +768,24 @@ function New-NativeCommandData
 
     process
     {
-        if ($CommandInfo.Version)
-        {
-            $version = $CommandInfo.Version
+        $nativeCommandData = @{
+            Path = $InfoObject.Path
         }
 
-        $nativeCommandData = [Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData]@{
-            Version = $version
-            Path = $CommandInfo.Source
+        if ($InfoObject.Version)
+        {
+            $nativeCommandData.Version = $InfoObject.Version
         }
 
-        if ($dict.ContainsKey($CommandInfo.Name))
+        $nativeCommandData = [Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData]$nativeCommandData
+
+        if ($dict.ContainsKey($InfoObject.Name))
         {
-            $dict[$CommandInfo.Name] = ($dict[$CommandInfo.Name] + $nativeCommandData)
+            $dict[$InfoObject.Name] = ($dict[$InfoObject.Name] + $nativeCommandData)
             return
         }
 
-        $dict[$CommandInfo.Name] = $nativeCommandData
+        $dict[$InfoObject.Name] = $nativeCommandData
     }
 
     end
@@ -1179,7 +1180,7 @@ function Assert-CompatibilityProfileIsValid
             "Version",
             "ProcessArchitecture"
         )
-        ".NET" = @(
+        DotNet = @(
             "Runtime",
             "ClrVersion"
         )
@@ -1414,10 +1415,7 @@ function Assert-CompatibilityProfileIsValid
                     'Dictionary`2',
                     'IComparer`1',
                     'List`1',
-                    'IReadOnlyList`1',
-                    'Queue`1',
-                    'HashSet`1',
-                    'Stack`1'
+                    'IReadOnlyList`1'
                 )
                 'System.Collections' = @(
                     'BitArray'
