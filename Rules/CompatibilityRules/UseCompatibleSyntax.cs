@@ -127,6 +127,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
+            public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst functionDefinitionAst)
+            {
+                if (!functionDefinitionAst.IsWorkflow)
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                _diagnosticAccumulator.Add(
+                    new DiagnosticRecord(
+                        "Workflows are not compatible with PowerShell v6 and up",
+                        functionDefinitionAst.Extent,
+                        _rule.GetName(),
+                        _rule.Severity,
+                        _analyzedFilePath
+                    ));
+
+                return AstVisitAction.Continue;
+            }
+
+            public override AstVisitAction VisitBlockStatement(BlockStatementAst blockStatementAst)
+            {
+                if (blockStatementAst.Kind.Kind != TokenKind.Parallel && blockStatementAst.Kind.Kind != TokenKind.Sequence)
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                _diagnosticAccumulator.Add(
+                    new DiagnosticRecord(
+                        $"The keyword {blockStatementAst.Kind} can only be used in PowerShell workflows, which are not compatible with PowerShell v6 and up",
+                        blockStatementAst.Extent,
+                        _rule.GetName(),
+                        _rule.Severity,
+                        _analyzedFilePath
+                    ));
+
+                return AstVisitAction.Continue;
+            }
+
 #if !PSV4
             public override AstVisitAction VisitUsingStatement(UsingStatementAst usingStatementAst)
             {
