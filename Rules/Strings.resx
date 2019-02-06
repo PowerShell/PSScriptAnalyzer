@@ -820,7 +820,7 @@
     <value>Use commands compatible with the given PowerShell version and operating system</value>
   </data>
   <data name="UseCompatibleCommandsError" xml:space="preserve">
-    <value>The command '{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
+    <value>The command '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
   </data>
   <data name="UseCompatibleTypesName" xml:space="preserve">
     <value>UseCompatibleTypes</value>
@@ -830,6 +830,27 @@
   </data>
   <data name="UseCompatibleTypesDescription" xml:space="preserve">
     <value>Use types compatible with the given PowerShell version and operating system</value>
+  </data>
+  <data name="UseCompatibleTypesTypeError" xml:space="preserve">
+    <value>The type '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
+  </data>
+  <data name="UseCompatibleSyntaxName" xml:space="preserve">
+    <value>UseCompatibleSyntax</value>
+  </data>
+  <data name="UseCompatibleSyntaxCommonName" xml:space="preserve">
+    <value>Use compatible syntax</value>
+  </data>
+  <data name="UseCompatibleSyntaxDescription" xml:space="preserve">
+    <value>Use script syntax compatible with the given PowerShell versions</value>
+  </data>
+  <data name="UseCompatibleSyntaxError" xml:space="preserve">
+    <value>The {0} syntax '{1}' is not available by default in PowerShell versions {2}</value>
+  </data>
+  <data name="UseCompatibleSyntaxCorrection" xml:space="preserve">
+    <value>Use the '{0}' syntax instead for compatibility with PowerShell versions {1}</value>
+  </data>
+  <data name="UseCompatibleTypesTypeAcceleratorError" xml:space="preserve">
+    <value>The type accelerator '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
   </data>
   <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
     <value>Avoid global functiosn and aliases</value>
@@ -1013,11 +1034,5 @@
   </data>
   <data name="PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription" xml:space="preserve">
     <value>Use $null on the left hand side for safe comparison with $null.</value>
-  </data>
-  <data name="UseCompatibleTypesAcceleratorError" xml:space="preserve">
-    <value>The type accelerator '{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
-  </data>
-  <data name="UseCompatibleTypesTypeError" xml:space="preserve">
-    <value>The type '{0}' is not compatible with PowerShell version '{1}' on platform '{2}'</value>
   </data>
 </root>

@@ -2068,7 +2068,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The command &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        ///   Looks up a localized string similar to The command &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
         /// </summary>
         internal static string UseCompatibleCommandsError {
             get {
@@ -2086,11 +2086,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type accelerator &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        ///   Looks up a localized string similar to Use compatible syntax.
         /// </summary>
-        internal static string UseCompatibleTypesAcceleratorError {
+        internal static string UseCompatibleSyntaxCommonName {
             get {
-                return ResourceManager.GetString("UseCompatibleTypesAcceleratorError", resourceCulture);
+                return ResourceManager.GetString("UseCompatibleSyntaxCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use the &apos;{0}&apos; syntax instead for compatibility with PowerShell versions {1}.
+        /// </summary>
+        internal static string UseCompatibleSyntaxCorrection {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxCorrection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use script syntax compatible with the given PowerShell versions.
+        /// </summary>
+        internal static string UseCompatibleSyntaxDescription {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} syntax &apos;{1}&apos; is not available by default in PowerShell versions {2}.
+        /// </summary>
+        internal static string UseCompatibleSyntaxError {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleSyntax.
+        /// </summary>
+        internal static string UseCompatibleSyntaxName {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxName", resourceCulture);
             }
         }
         
@@ -2122,7 +2158,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type &apos;{0}&apos; is not compatible with PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        ///   Looks up a localized string similar to The type accelerator &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesTypeAcceleratorError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesTypeAcceleratorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
         /// </summary>
         internal static string UseCompatibleTypesTypeError {
             get {

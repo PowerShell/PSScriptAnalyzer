@@ -29,7 +29,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public override string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCommandsName);
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.NameSpaceFormat,
+                GetSourceName(),
+                Strings.UseCompatibleCommandsName);
         }
 
         protected override CompatibilityVisitor CreateVisitor(string analyzedFileName)

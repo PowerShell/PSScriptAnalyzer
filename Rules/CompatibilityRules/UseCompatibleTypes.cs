@@ -26,7 +26,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public override string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleTypesName);
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.NameSpaceFormat,
+                GetSourceName(),
+                Strings.UseCompatibleTypesName);
         }
 
         protected override CompatibilityVisitor CreateVisitor(string fileName)
@@ -321,7 +325,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             string message = String.Format(
                 CultureInfo.CurrentCulture,
-                Strings.UseCompatibleTypesAcceleratorError,
+                Strings.UseCompatibleTypesTypeAcceleratorError,
                 typeAcceleratorName,
                 platform.PowerShell.Version,
                 platform.OperatingSystem.Name);
