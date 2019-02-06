@@ -68,11 +68,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 string commandName = commandAst?.GetCommandName();
                 if (commandName == null)
                 {
-                    return AstVisitAction.SkipChildren;
-                }
-
-                if (commandName.Equals("Protect-CmsMessage") || commandName.Equals("Remove-Service"))
-                {
+                    return AstVisitAction.Continue;
                 }
 
                 // Note:
