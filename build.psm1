@@ -297,16 +297,14 @@ function Install-Dotnet
 
 function Receive-DotnetInstallScript
 {
-    if ( $IsWindows ) {
-        $installScriptName = "dotnet-install.ps1"
-    }
-    else {
+    $installScriptName = "dotnet-install.ps1"
+
+    if ( (Test-Path Variable:IsWindows) -and -not $IsWindows ) {
         $installScriptName = "dotnet-install.sh"
     }
     $null = Invoke-WebRequest -Uri "https://dot.net/v1/${installScriptName}" -OutFile "${installScriptName}"
-    if ( ! $IsWindows ) {
+    if ( (Test-Path Variable:IsWindows) -and -not $IsWindows ) {
         chmod +x $installScriptName
     }
     return $installScriptName
 }
-
