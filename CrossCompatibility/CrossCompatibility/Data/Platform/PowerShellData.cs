@@ -73,6 +73,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember]
         public Architecture ProcessArchitecture { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the PowerShell data object.
+        /// </summary>
         public object Clone()
         {
             return new PowerShellData()

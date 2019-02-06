@@ -26,6 +26,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember(EmitDefaultValue = false)]
         public MemberData Instance { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the type data object.
+        /// </summary>
         public object Clone()
         {
             return new TypeData()

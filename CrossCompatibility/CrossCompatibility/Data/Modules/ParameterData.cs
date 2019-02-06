@@ -34,6 +34,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public bool Dynamic { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the parameter data object.
+        /// </summary>
         public object Clone()
         {
             return new ParameterData()

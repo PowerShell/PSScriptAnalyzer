@@ -46,6 +46,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public JsonCaseInsensitiveStringDictionary<string> Aliases { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the module data object.
+        /// </summary>
         public object Clone()
         {
             return new ModuleData()

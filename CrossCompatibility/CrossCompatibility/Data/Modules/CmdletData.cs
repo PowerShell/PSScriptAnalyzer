@@ -14,6 +14,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
     [DataContract]
     public class CmdletData : CommandData
     {
+        /// <summary>
+        /// Create a deep clone of the cmdlet data object.
+        /// </summary>
         public override object Clone()
         {
             return new CmdletData()

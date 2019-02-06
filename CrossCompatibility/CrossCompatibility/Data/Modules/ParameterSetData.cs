@@ -29,6 +29,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public int Position { get; set; } = int.MinValue;
 
+        /// <summary>
+        /// Create a deep clone of the parameter set data object.
+        /// </summary>
         public object Clone()
         {
             return new ParameterSetData()

@@ -41,6 +41,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember(EmitDefaultValue = false)]
         public byte[] PublicKeyToken { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the assembly name data object.
+        /// </summary>
         public object Clone()
         {
             return new AssemblyNameData()

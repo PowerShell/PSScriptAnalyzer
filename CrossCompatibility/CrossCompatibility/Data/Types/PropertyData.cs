@@ -25,6 +25,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string Type { get; set; }
 
+        /// <summary>
+        /// Create deep clone of the property data object.
+        /// </summary>
         public object Clone()
         {
             return new PropertyData()

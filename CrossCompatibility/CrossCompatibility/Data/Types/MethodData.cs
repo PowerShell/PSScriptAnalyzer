@@ -28,6 +28,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string[][] OverloadParameters { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the method data object.
+        /// </summary>
         public object Clone()
         {
             return new MethodData()

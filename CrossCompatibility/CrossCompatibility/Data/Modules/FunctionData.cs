@@ -23,6 +23,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public bool CmdletBinding { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the function data object.
+        /// </summary>
         public override object Clone()
         {
             return new FunctionData()

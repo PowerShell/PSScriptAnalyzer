@@ -58,6 +58,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember(EmitDefaultValue = false)]
         public JsonCaseInsensitiveStringDictionary<TypeData> NestedTypes { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the member data object.
+        /// </summary>
         public object Clone()
         {
             return new MemberData()

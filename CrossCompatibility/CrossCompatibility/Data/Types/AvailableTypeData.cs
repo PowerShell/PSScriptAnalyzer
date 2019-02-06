@@ -29,6 +29,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public JsonCaseInsensitiveStringDictionary<AssemblyData> Assemblies { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the available type data object.
+        /// </summary>
         public object Clone()
         {
             return new AvailableTypeData()

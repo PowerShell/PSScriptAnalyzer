@@ -25,6 +25,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string HandlerType { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the event data object.
+        /// </summary>
         public object Clone()
         {
             return new EventData()

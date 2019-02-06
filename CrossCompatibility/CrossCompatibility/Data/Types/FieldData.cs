@@ -19,6 +19,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public string Type { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the field data object.
+        /// </summary>
         public object Clone()
         {
             return new FieldData()

@@ -33,6 +33,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         [DataMember]
         public AccessorType[] Accessors { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the indexer data object.
+        /// </summary>
         public object Clone()
         {
             return new IndexerData()

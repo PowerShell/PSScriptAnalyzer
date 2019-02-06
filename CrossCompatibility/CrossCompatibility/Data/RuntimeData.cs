@@ -36,6 +36,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         [DataMember]
         public JsonCaseInsensitiveStringDictionary<NativeCommandData[]> NativeCommands { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the runtime data object.
+        /// </summary>
         public object Clone()
         {
             return new RuntimeData()

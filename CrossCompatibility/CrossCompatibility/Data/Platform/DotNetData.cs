@@ -47,6 +47,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember]
         public DotnetRuntime Runtime { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the dotnet data object.
+        /// </summary>
         public object Clone()
         {
             return new DotnetData()

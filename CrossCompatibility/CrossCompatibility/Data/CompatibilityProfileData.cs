@@ -16,9 +16,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     [DataContract]
     public class CompatibilityProfileData : ICloneable
     {
+        /// <summary>
+        /// The identifying name of this profile, for unique reference.
+        /// </summary>
         [DataMember]
         public string Id { get; set; }
 
+        /// <summary>
+        /// For an aggregate profile, the IDs of all the profiles used to make it.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string[] ConstituentProfiles { get; set; }
 

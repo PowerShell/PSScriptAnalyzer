@@ -7,8 +7,18 @@ using Newtonsoft.Json;
 
 namespace Microsoft.PowerShell.CrossCompatibility
 {
+    /// <summary>
+    /// Class created to bridge the gap between System.Version and System.Management.Automation.SemanticVersion.
+    /// Allows a version encoding either to be deserialized into this type.
+    /// </summary>
     public class PowerShellVersion
     {
+        /// <summary>
+        /// Create a PowerShellVersion from another version object.
+        /// Currently accepts a dynamic input to allow SemanticVersions.
+        /// </summary>
+        /// <param name="versionInput">A version-like object describing a PowerShell version.</param>
+        /// <returns>A PowerShellVersion object.</returns>
         public static PowerShellVersion Create(dynamic versionInput)
         {
             switch (versionInput)
@@ -28,6 +38,11 @@ namespace Microsoft.PowerShell.CrossCompatibility
             return new PowerShellVersion(versionInput.Major, versionInput.Minor, versionInput.Patch, versionInput.PreReleaseLabel);
         }
 
+        /// <summary>
+        /// Parse a PowerShellVersion from a string.
+        /// </summary>
+        /// <param name="versionStr">The version-describing string to parse.</param>
+        /// <returns>A PowerShellVersion, as described by the string.</returns>
         public static PowerShellVersion Parse(string versionStr)
         {
             if (versionStr == null)
@@ -80,6 +95,12 @@ namespace Microsoft.PowerShell.CrossCompatibility
             return new PowerShellVersion(versionParts[0], versionParts[1], versionParts[2], label: null);
         }
 
+        /// <summary>
+        /// Attempt to parse a string as a version.
+        /// </summary>
+        /// <param name="versionStr">The string to parse.</param>
+        /// <param name="version">The parsed version, if successful.</param>
+        /// <returns>True if the string was successfully parsed, false otherwise.</returns>
         public static bool TryParse(string versionStr, out PowerShellVersion version)
         {
             try
@@ -94,6 +115,14 @@ namespace Microsoft.PowerShell.CrossCompatibility
             }
         }
 
+        /// <summary>
+        /// Validates direct version arguments for a PowerShellVersion.
+        /// </summary>
+        /// <param name="major">The major version number.</param>
+        /// <param name="minor">The minor version number.</param>
+        /// <param name="build">The build version number.</param>
+        /// <param name="revision">The revision version number. Cannot be positive when the prerelease label is given.</param>
+        /// <param name="preReleaseLabel">The prerelease label. Cannot be non-null when the revision version number is non-negative.</param>
         public static void ValidateVersionArguments(int major, int minor, int build, int revision, string preReleaseLabel)
         {
             if (major < 0)
@@ -117,6 +146,11 @@ namespace Microsoft.PowerShell.CrossCompatibility
             }
         }
 
+        /// <summary>
+        /// Explicit conversion from a PowerShellVersion to a System.Version.
+        /// Will fail if the PowerShellVersion has a pre-release label.
+        /// </summary>
+        /// <param name="psVersion">The PowerShellVersion object to convert.</param>
         public static explicit operator Version(PowerShellVersion psVersion)
         {
             if (psVersion.PreReleaseLabel != null)
@@ -127,16 +161,33 @@ namespace Microsoft.PowerShell.CrossCompatibility
             return new Version(psVersion.Major, psVersion.Minor, psVersion.Patch, psVersion.Revision);
         }
 
+        /// <summary>
+        /// Explicit conversion to a PowerShellVersion to a string,
+        /// allows PowerShell to cast from a string to a PowerShellVersion.
+        /// </summary>
+        /// <param name="versionString"></param>
         public static explicit operator PowerShellVersion(string versionString)
         {
             return PowerShellVersion.Parse(versionString);
         }
 
+        /// <summary>
+        /// Explicit conversion from a System.Version to a PowerShellVersion,
+        /// for simpler casting in PowerShell.
+        /// </summary>
+        /// <param name="version"></param>
         public static explicit operator PowerShellVersion(Version version)
         {
             return new PowerShellVersion(version.Major, version.Minor, version.Build, version.Revision);
         }
 
+        /// <summary>
+        /// Create a new PowerShellVersion from four version numbers.
+        /// </summary>
+        /// <param name="major"></param>
+        /// <param name="minor"></param>
+        /// <param name="build"></param>
+        /// <param name="revision"></param>
         public PowerShellVersion(int major, int minor, int build, int revision)
         {
             ValidateVersionArguments(major, minor, build, revision, preReleaseLabel: null);
@@ -146,6 +197,13 @@ namespace Microsoft.PowerShell.CrossCompatibility
             Revision = revision;
         }
 
+        /// <summary>
+        /// Create a new PowerShellVersion from three version numbers and a build label.
+        /// </summary>
+        /// <param name="major"></param>
+        /// <param name="minor"></param>
+        /// <param name="patch"></param>
+        /// <param name="label"></param>
         public PowerShellVersion(int major, int minor, int patch, string label)
         {
             ValidateVersionArguments(major, minor, patch, -1, label);
@@ -165,22 +223,52 @@ namespace Microsoft.PowerShell.CrossCompatibility
             }
         }
 
+        /// <summary>
+        /// The major version number.
+        /// </summary>
         public int Major { get; } = -1;
 
+        /// <summary>
+        /// The minor version number.
+        /// </summary>
         public int Minor { get; } = -1;
 
+        /// <summary>
+        /// The build version number.
+        /// </summary>
         public int Build { get; } = -1;
 
+        /// <summary>
+        /// The patch version number, an alias of the build for compatibility with SemanticVersion.
+        /// </summary>
         public int Patch => Build;
 
+        /// <summary>
+        /// The semver v1 revision version number.
+        /// Mutually exclusive with the PreReleaseLabel.
+        /// </summary>
+        /// <value></value>
         public int Revision { get; } = -1;
 
+        /// <summary>
+        /// The semver v2 prerelease label.
+        /// Mutually exclusive with the Revision version number.
+        /// </summary>
         public string PreReleaseLabel { get; }
 
+        /// <summary>
+        /// The build label, as specified after the '+' in the PreReleaseLabel.
+        /// </summary>
         public string BuildLabel { get; }
 
+        /// <summary>
+        /// True if this represents a semver v2, false otherwise.
+        /// </summary>
         public bool IsSemVer => Revision < 0;
 
+        /// <summary>
+        /// Renders a PowerShellVersion as a version string.
+        /// </summary>
         public override string ToString()
         {
             var sb = new StringBuilder().Append(Major);
@@ -212,29 +300,47 @@ namespace Microsoft.PowerShell.CrossCompatibility
         }
     }
 
+    /// <summary>
+    /// A JsonConverter for PowerShellVersions that performs serialization
+    /// and deserialization to version strings.
+    /// </summary>
     public class PowerShellVersionJsonConverter : JsonConverter
     {
+        /// <summary>
+        /// Determines whether a given type can be converted to or from
+        /// a PowerShellVersion.
+        /// </summary>
+        /// <param name="objectType">The type to assess for conversion.</param>
+        /// <returns>True if the type can be converted, false otherwise.</returns>
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(PowerShellVersion)
                 || objectType.FullName == "System.Management.Automation.SemanticVersion";
         }
 
+        /// <summary>
+        /// Read a PowerShellVersion object from a JSON string representing a version.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="objectType"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="serializer"></param>
+        /// <returns></returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             string s = (string)reader.Value;
             return PowerShellVersion.Parse(s);
         }
 
+        /// <summary>
+        /// Serialize a PowerShellVersion (or SemanticVersion) object to a string for JSON.
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="value"></param>
+        /// <param name="serializer"></param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            if (value.GetType() != typeof(string))
-            {
-                writer.WriteValue(value.ToString());
-                return;
-            }
-
-            writer.WriteValue(PowerShellVersion.Create(value).ToString());
+            writer.WriteValue(value.ToString());
         }
     }
 }

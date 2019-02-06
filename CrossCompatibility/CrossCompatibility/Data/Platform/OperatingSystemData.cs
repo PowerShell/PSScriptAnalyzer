@@ -91,6 +91,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
         [DataMember(EmitDefaultValue = false)]
         public string DistributionPrettyName { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the operating system data object.
+        /// </summary>
         public object Clone()
         {
             return new OperatingSystemData()
