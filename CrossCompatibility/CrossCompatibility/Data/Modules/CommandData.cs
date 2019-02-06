@@ -49,6 +49,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
         [DataMember(EmitDefaultValue = false)]
         public JsonCaseInsensitiveStringDictionary<string> ParameterAliases { get; set; }
 
+        /// <summary>
+        /// Create a deep clone of the command data object.
+        /// </summary>
         public abstract object Clone();
     }
 }
