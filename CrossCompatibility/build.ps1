@@ -134,5 +134,5 @@ else
 if ($Test)
 {
     $testPath = "$PSScriptRoot/Tests"
-    & (Get-Process -Id $PID | ForEach-Object -MemberName ProcessName) -Command "Invoke-Pester -Path '$testPath'"
+    & (Get-Process -Id $PID).ProcessName -Command "Invoke-Pester -Path '$testPath'"
 }

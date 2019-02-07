@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 # Add the relevant binary module
-if ($PSVersionTable.PSVersion.Major -ge 5)
+if ($PSVersionTable.PSVersion.Major -ge 6)
 {
     Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'CrossCompatibility.dll'))
 }

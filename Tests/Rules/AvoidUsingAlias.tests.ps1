@@ -102,6 +102,10 @@ Configuration MyDscConfiguration {
 
         It "do not warn when about Get-* completed cmdlets when the command exists natively on Unix platforms" -skip:(-not ($IsLinux -or $IsMacOS)) {
             $violations = Invoke-ScriptAnalyzer -ExcludeRule PSUseCompatibleCommands -ScriptDefinition 'date' | Where-Object { $_.RuleName -eq $violationName }
+            if ($violations)
+            {
+                $violations | Write-Error
+            }
             $violations.Count | Should -Be 0
         }
     }
