@@ -12,6 +12,10 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
+
+#if !CORECLR
+    [System.ComponentModel.Composition.Export(typeof(IScriptRule))]
+#endif
     public class UseCompatibleTypes : CompatibilityRule
     {
         public override string GetCommonName()

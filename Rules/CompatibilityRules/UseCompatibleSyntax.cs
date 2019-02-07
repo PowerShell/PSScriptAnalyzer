@@ -7,6 +7,10 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
+
+#if !CORECLR
+    [System.ComponentModel.Composition.Export(typeof(IScriptRule))]
+#endif
     public class UseCompatibleSyntax : ConfigurableRule
     {
         private static readonly Version s_v3 = new Version(3,0);

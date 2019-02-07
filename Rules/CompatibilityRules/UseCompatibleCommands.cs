@@ -15,6 +15,10 @@ using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
+
+#if !CORECLR
+    [System.ComponentModel.Composition.Export(typeof(IScriptRule))]
+#endif
     public class UseCompatibleCommands : CompatibilityRule
     {
         public override string GetCommonName()
