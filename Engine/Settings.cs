@@ -524,10 +524,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
 
                 case ArrayExpressionAst arrExprAst:
-                    // Array expressions may not really be arrays.
-                    // Here we just want to rip away the cladding and get to the true expression underneath
 
-                    PipelineAst pipelineAst = arrExprAst.SubExpression?.Statements?.FirstOrDefault() as PipelineAst;
+                    // Most cases are handled by the inner array handling,
+                    // but we may have an empty array
+                    if (arrExprAst.SubExpression?.Statements == null)
+                    {
+                        throw CreateInvalidDataExceptionFromAst(arrExprAst);
+                    }
+
+                    if (arrExprAst.SubExpression.Statements.Count == 0)
+                    {
+                        return new object[0];
+                    }
+
+                    PipelineAst pipelineAst = arrExprAst.SubExpression.Statements[0] as PipelineAst;
                     if (pipelineAst == null)
                     {
                         throw CreateInvalidDataExceptionFromAst(arrExprAst);
@@ -539,7 +549,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         throw CreateInvalidDataExceptionFromAst(arrExprAst);
                     }
 
-                    return GetSafeValueFromExpressionAst(pipelineExpressionAst);
+                    // Array expressions may not really be arrays (like `@('a')`, which has no ArrayLiteralAst within)
+                    // However, some rules depend on this always being an array
+                    object arrayValue = GetSafeValueFromExpressionAst(pipelineExpressionAst);
+                    return arrayValue.GetType().IsArray
+                        ? arrayValue
+                        : new object[] { arrayValue };
 
                 case ArrayLiteralAst arrLiteralAst:
                     return GetSafeValuesFromArrayAst(arrLiteralAst);

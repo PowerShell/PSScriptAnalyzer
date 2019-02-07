@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-Import-Module "$PSScriptRoot/../../out/PSScriptAnalyzer"
-
-$script:RuleName = 'UseCompatibleTypes'
+$script:RuleName = 'PSUseCompatibleTypes'
 $script:AnyProfileConfigKey = 'AnyProfilePath'
 $script:TargetProfileConfigKey = 'TargetProfilePaths'
 

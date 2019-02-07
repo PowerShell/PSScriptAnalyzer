@@ -876,39 +876,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private IEnumerable<T> GetInterfaceImplementationsFromAssembly<T>(string ruleDllPath) where T : class
         {
-            var fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
+            string fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
             var assemblyName = new AssemblyName(fileName);
             outputWriter.WriteVerbose(string.Format("Loading Assembly:{0}", assemblyName.FullName));
 
-            var dll = Assembly.Load(assemblyName);
-            var rules = new List<T>();
+            Assembly dll = Assembly.Load(assemblyName);
+
             if (dll == null)
             {
                 outputWriter.WriteVerbose(string.Format("Cannot load {0}", ruleDllPath));
-                return rules;
+                return Enumerable.Empty<T>();
             }
-            foreach (var type in dll.ExportedTypes)
+
+            var rules = new List<T>();
+            foreach (Type type in dll.ExportedTypes)
             {
-                var typeInfo = type.GetTypeInfo();
-                if (!typeInfo.IsInterface
-                    && !typeInfo.IsAbstract
-                    && typeInfo.ImplementedInterfaces.Contains(typeof(T)))
+                if (type.IsInterface
+                    || type.IsAbstract
+                    || !typeof(T).IsAssignableFrom(type))
+                {
+                    continue;
+                }
+
+                outputWriter.WriteVerbose(
+                    string.Format(
+                        "Creating Instance of {0}", type.Name));
+
+                var rule = Activator.CreateInstance(type) as T;
+                if (rule == null)
                 {
                     outputWriter.WriteVerbose(
                         string.Format(
-                            "Creating Instance of {0}", type.Name));
-
-                    var ruleObj = Activator.CreateInstance(type);
-                    T rule = ruleObj as T;
-                    if (rule == null)
-                    {
-                        outputWriter.WriteVerbose(
-                            string.Format(
-                                "Cannot cast instance of type {0} to {1}", type.Name, typeof(T).GetTypeInfo().Name));
-                        continue;
-                    }
-                    rules.Add(rule);
+                            "Cannot cast instance of type {0} to {1}", type.Name, typeof(T).GetTypeInfo().Name));
+                    continue;
                 }
+                rules.Add(rule);
             }
             return rules;
         }

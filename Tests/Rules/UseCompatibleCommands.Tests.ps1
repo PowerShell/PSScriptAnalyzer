@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-Import-Module ([System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'out', 'PSScriptAnalyzer'))
-
-$script:RuleName = 'UseCompatibleCommands'
+$script:RuleName = 'PSUseCompatibleCommands'
 $script:AnyProfileConfigKey = 'AnyProfilePath'
 $script:TargetProfileConfigKey = 'TargetProfilePaths'
 $script:AssetDirPath = Join-Path $PSScriptRoot $script:RuleName

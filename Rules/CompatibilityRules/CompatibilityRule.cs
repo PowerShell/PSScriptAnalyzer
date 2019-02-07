@@ -158,7 +158,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static string GetModuleRootDirPath()
         {
-            string asmDirLocation = Path.GetDirectoryName(typeof(UseCompatibleCommands).Assembly.Location);
+            string asmDirLocation = Path.GetDirectoryName(typeof(CompatibilityRule).Assembly.Location);
 
             string topDir = Path.GetFileName(asmDirLocation);
 

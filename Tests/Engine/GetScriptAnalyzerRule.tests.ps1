@@ -59,7 +59,7 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 57
+            $expectedNumRules = 58
             if ((Test-PSEditionCoreClr) -or (Test-PSVersionV3) -or (Test-PSVersionV4))
             {
                 # for PSv3 PSAvoidGlobalAliases is not shipped because
