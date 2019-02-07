@@ -313,6 +313,32 @@ Describe "Test Exclude And Include" {1
 }
 
 Describe "Test Severity" {
+    Context "Each severity can be chosen in any combination" {
+        BeforeAll {
+            $Severities = "ParseError","Error","Warning","Information"
+            # end space is important
+            $script = '$a=;ConvertTo-SecureString -Force -AsPlainText "bad practice" '
+            $testcases = @{ Severity = "ParseError" }, @{ Severity = "Error" },
+                @{ Severity = "Warning" }, @{ Severity = "Information" },
+                @{ Severity = "ParseError", "Error" }, @{ Severity = "ParseError","Information" },
+                @{ Severity = "Information", "Warning", "Error" }
+        }
+
+        It "Can retrieve specific severity <severity>" -testcase $testcases {
+            param ( $severity )
+            $result = Invoke-ScriptAnalyzer -ScriptDefinition $script -Severity $severity
+            if ( $severity -is [array] ) {
+                @($result).Count | Should -Be @($severity).Count
+                foreach ( $sev in $severity ) {
+                    $result.Severity | Should -Contain $sev
+                }
+            }
+            else {
+                $result.Severity | Should -Be $severity
+            }
+        }
+    }
+
     Context "When used correctly" {
         It "works with one argument" {
             $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity Information
