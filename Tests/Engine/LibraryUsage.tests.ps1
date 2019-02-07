@@ -36,7 +36,7 @@ function Invoke-ScriptAnalyzer {
         [Parameter(Mandatory = $false)]
         [string[]] $IncludeRule = $null, 
 
-        [ValidateSet("Warning", "Error", "Information", IgnoreCase = $true)]
+        [ValidateSet("Warning", "Error", "Information", "ParseError", IgnoreCase = $true)]
         [Parameter(Mandatory = $false)]
         [string[]] $Severity = $null,
         
