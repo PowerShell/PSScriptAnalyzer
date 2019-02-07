@@ -126,11 +126,13 @@ Describe "Test Path" {
             $withoutPath = Invoke-ScriptAnalyzer -Path $scriptPath
             $withPath.Count | Should -Be $withoutPath.Count
         }
+    }
 
-        It "Runs rules on script with more than 10 parser errors" {
+    Context "When there are more than 10 errors in a file" {
+        It "All errors are found in a file" {
             # this is a script with 12 parse errors
-            1..12 | Foreach-Object { ');' } | Out-File -Encoding ASCII "TestDrive:\badfile.ps1"
-            $moreThanTenErrors = Invoke-ScriptAnalyzer -Path "TestDrive:\badfile.ps1"
+            1..12 | Foreach-Object { ');' } | Out-File -Encoding ASCII "${TestDrive}\badfile.ps1"
+            $moreThanTenErrors = Invoke-ScriptAnalyzer -Path "${TestDrive}\badfile.ps1"
             @($moreThanTenErrors).Count | Should -Be 12
         }
     }
