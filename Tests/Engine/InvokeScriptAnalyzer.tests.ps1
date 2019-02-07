@@ -567,22 +567,41 @@ Describe "Test -Fix Switch" {
 
 Describe "Test -EnableExit Switch" {
     It "Returns exit code equivalent to number of warnings" {
-        $pwshExePath = (Get-Process -Id $PID).Path
-        & $pwshExePath -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        if ($IsCoreCLR)
+        {
+            $pwshExe = (Get-Process -Id $PID).Path
+        }
+        else
+        {
+            $pwshExe = 'powershell'
+        }
+
+        & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+
         $LASTEXITCODE  | Should -Be 1
     }
 
     Describe "-ReportSummary switch" {
-        $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
+        BeforeAll {
+            if ($IsCoreCLR)
+            {
+                $pwshExe = (Get-Process -Id $PID).Path
+            }
+            else
+            {
+                $pwshExe = 'powershell'
+            }
+
+            $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
+        }
+
         It "prints the correct report summary using the -NoReportSummary switch" {
-            $pwshExePath = (Get-Process -Id $PID).Path
-            $result = & $pwshExePath -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary'
+            $result = & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary'
 
             "$result" | Should -BeLike $reportSummaryFor1Warning
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
-            $pwshExePath = (Get-Process -Id $PID).Path
-            $result = & $pwshExePath -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci'
+            $result = & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci'
 
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning
         }
