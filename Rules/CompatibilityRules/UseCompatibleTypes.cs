@@ -13,21 +13,34 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
 
+    /// <summary>
+    /// Rule to check that .NET type usage in PowerShell is compatible
+    /// with configured target PowerShell runtimes.
+    /// </summary>
 #if !CORECLR
     [System.ComponentModel.Composition.Export(typeof(IScriptRule))]
 #endif
     public class UseCompatibleTypes : CompatibilityRule
     {
+        /// <summary>
+        /// Get the common name of this rule.
+        /// </summary>
         public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleTypesCommonName);
         }
 
+        /// <summary>
+        /// Get the description of this rule.
+        /// </summary>
         public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleTypesDescription);
         }
 
+        /// <summary>
+        /// Get the localized name of this rule.
+        /// </summary>
         public override string GetName()
         {
             return string.Format(
@@ -37,6 +50,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 Strings.UseCompatibleTypesName);
         }
 
+        /// <summary>
+        /// Create a visitor to check type compatibility of a PowerShell AST.
+        /// </summary>
+        /// <param name="fileName">The path of the PowerShell script to be checked.</param>
+        /// <returns>An AST visitor to perform type compatibility analysis.</returns>
         protected override CompatibilityVisitor CreateVisitor(string fileName)
         {
             Tuple<CompatibilityProfileData, CompatibilityProfileData[]> profiles = LoadCompatibilityProfiles();
@@ -122,6 +140,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
+            /// <summary>
+            /// Try to get an argument with a given position/parameter name in a PowerShell command call.
+            /// </summary>
+            /// <param name="commandElements">The full list of command elements in the call.</param>
+            /// <param name="argumentPosition">The position of the argument (starting from 0).</param>
+            /// <param name="argumentParameterName">The name of the parameter of the argument.</param>
+            /// <param name="argument">If the argument is found, the AST where its value is specified.</param>
+            /// <returns>True if the argument was found, false otherwise.</returns>
+            /// <remarks>
+            /// This implementation is simplified to ignore the positions of parameters
+            /// that have a position but are given by name, and may be incorrect.
+            /// Ideally it should use parameter information for the command to work out the binding.
+            /// </remarks>
             private bool TryGetArgument(IReadOnlyList<CommandElementAst> commandElements, int argumentPosition, string argumentParameterName, out CommandElementAst argument)
             {
                 argumentPosition++;
@@ -317,8 +348,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 
+    /// <summary>
+    /// A diagnostic indicating an incompatibility of a type used
+    /// with a given PowerShell target runtime.
+    /// </summary>
     public class TypeCompatibilityDiagnostic : CompatibilityDiagnostic
     {
+        /// <summary>
+        /// Create a new type incompatibility diagnostic
+        /// for a type accelerator.
+        /// </summary>
+        /// <param name="typeAcceleratorName">The name of the type accelerator used.</param>
+        /// <param name="platform">The PowerShell platform where the type accelerator is incompatible.</param>
+        /// <param name="extent">The AST extent of the offending type accelerator.</param>
+        /// <param name="analyzedFileName">The path to the script being analyzed.</param>
+        /// <param name="rule">The type compatibility rule.</param>
+        /// <param name="suggestedCorrections">Any suggested corrections to fix the problem.</param>
+        /// <returns></returns>
         public static TypeCompatibilityDiagnostic CreateForTypeAccelerator(
             string typeAcceleratorName,
             PlatformData platform,
@@ -345,6 +391,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 suggestedCorrections: suggestedCorrections);
         }
 
+        /// <summary>
+        /// Create a PowerShell type incompatibility diagnostic
+        /// for a type.
+        /// </summary>
+        /// <param name="typeName">The full name of the type that is incompatible.</param>
+        /// <param name="platform">The PowerShell platform where the type is incompatible.</param>
+        /// <param name="extent">The AST extent where the incompatible type appears.</param>
+        /// <param name="analyzedFileName">The path of the script being analyzed.</param>
+        /// <param name="rule">The type incompatibility rule generating the diagnostic.</param>
+        /// <param name="suggestedCorrections">Any suggested replacements in the script to prevent the incompatibility.</param>
+        /// <returns></returns>
         public static TypeCompatibilityDiagnostic CreateForType(
             string typeName,
             PlatformData platform,
@@ -394,10 +451,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IsTypeAccelerator = isTypeAccelerator;
         }
 
+        /// <summary>
+        /// The full name of the type or type accelerator that is incompatible.
+        /// </summary>
         public string Type { get; }
 
+        /// <summary>
+        /// The PowerShell platform where the type would be incompatible.
+        /// </summary>
         public PlatformData TargetPlatform { get; }
 
+        /// <summary>
+        /// True if the type refers to a type accelerator, false otherwise.
+        /// </summary>
         public bool IsTypeAccelerator { get; }
     }
 }

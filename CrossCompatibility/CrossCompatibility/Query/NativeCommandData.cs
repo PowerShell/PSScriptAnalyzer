@@ -8,8 +8,16 @@ using NativeCommandDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Native
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
+    /// <summary>
+    /// Readonly query object for a native/application command/util available to PowerShell.
+    /// </summary>
     public class NativeCommandData
     {
+        /// <summary>
+        /// Create a new query object around collected native command data.
+        /// </summary>
+        /// <param name="name">The name of the native command.</param>
+        /// <param name="nativeCommandMut">Data describing a native command collected from a PowerShell runtime.</param>
         public NativeCommandData(string name, NativeCommandDataMut nativeCommandMut)
         {
             Name = name;
@@ -17,15 +25,34 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             Path = nativeCommandMut?.Path;
         }
 
+        /// <summary>
+        /// The invocation name of the native command, stripped of any extension.
+        /// For example 'dir', 'powershell', 'ls'.
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// The version of the command if known.
+        /// A version of 0.0.0.0 should be considered the same as null/no version.
+        /// </summary>
         public Version Version { get; }
 
+        /// <summary>
+        /// The full path of the command, including its extension.
+        /// </summary>
         public string Path { get; }
     }
 
+    /// <summary>
+    /// Special lookup table for native commands, to support target-dependent case sensitivity.
+    /// </summary>
     public class NativeCommandLookupTable
     {
+        /// <summary>
+        /// Create a new native command lookup table.
+        /// </summary>
+        /// <param name="nativeCommands">A list of native command data objects collected from a PowerShell runtime.</param>
+        /// <returns>A new lookup table to query native commands.</returns>
         public static NativeCommandLookupTable Create(IReadOnlyDictionary<string, NativeCommandDataMut[]> nativeCommands)
         {
             var table = new Dictionary<string, IReadOnlyList<NativeCommandData>>(StringComparer.OrdinalIgnoreCase);
@@ -48,11 +75,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         private readonly IReadOnlyDictionary<string, IReadOnlyList<NativeCommandData>> _nativeCommands;
 
+        /// <summary>
+        /// Private constructor for the native command lookup table from a dictionary.
+        /// </summary>
+        /// <param name="nativeCommandTable">The internal native command dictionary used to back the lookup table.</param>
         private NativeCommandLookupTable(IReadOnlyDictionary<string, IReadOnlyList<NativeCommandData>> nativeCommandTable)
         {
             _nativeCommands = nativeCommandTable;
         }
 
+        /// <summary>
+        /// Check if a command is defined in the lookup table.
+        /// </summary>
+        /// <param name="commandName">The name of the command to search for.</param>
+        /// <param name="caseSensitive">Whether to search case-sensitively or not.</param>
+        /// <returns>True if the command is defined, false otherwise.</returns>
         public bool HasCommand(string commandName, bool caseSensitive = true)
         {
             commandName = Path.GetFileNameWithoutExtension(commandName);
@@ -78,6 +115,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             return false;
         }
 
+        /// <summary>
+        /// Try to find a native command by name in the lookup table.
+        /// </summary>
+        /// <param name="commandName">The name of the native command to find.</param>
+        /// <param name="matchedCommands">The list of all commands matched.</param>
+        /// <param name="caseSensitive">Whether to search for commands case-sensitively or not.</param>
+        /// <returns>True if the command was found and the matchedCommands field was populated, false otherwise.</returns>
         public bool TryGetCommand(string commandName, out IReadOnlyList<NativeCommandData> matchedCommands, bool caseSensitive = true)
         {
             commandName = Path.GetFileNameWithoutExtension(commandName);

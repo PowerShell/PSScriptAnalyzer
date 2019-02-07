@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
+    /// <summary>
+    /// API for resolving PowerShell type names to .NET type names and vice versa.
+    /// </summary>
     public static class TypeNaming
     {
         private static readonly ConcurrentDictionary<string, ITypeName> s_typeAcceleratorNameCache = new ConcurrentDictionary<string, ITypeName>();
@@ -19,8 +22,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             .GetConstructor(new Type[0])
             .Invoke(new object[0]);
 
+        /// <summary>
+        /// Expand a non-generic, non-array, non-byref PowerShell-formatted type name to a full .NET type name.
+        /// </summary>
+        /// <param name="typeAccelerators">Lookup table of type accelerators available in the current target PowerShell runtime.</param>
+        /// <param name="typeName">The PowerShell-format type name to expand.</param>
+        /// <returns>The expanded .NET full typename.</returns>
         public static string ExpandSimpleTypeName(IReadOnlyDictionary<string, string> typeAccelerators, string typeName)
         {
+            // Assumption that type accelerators do not contain '.'
             if (typeName.Contains('.'))
             {
                 return typeName;
@@ -34,6 +44,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return typeName;
         }
 
+        /// <summary>
+        /// Get the expanded .NET type name from a PowerShell ITypeName object.
+        /// </summary>
+        /// <param name="typeAccelerators">The type accelerators available in the target PowerShell runtime.</param>
+        /// <param name="typeName">The PowerShell ITypeName to expand.</param>
+        /// <returns>The full .NET type name of the type.</returns>
         public static string GetCanonicalTypeName(IReadOnlyDictionary<string, string> typeAccelerators, ITypeName typeName)
         {
             if (typeName is ReflectionTypeName reflectionTypeName)
@@ -44,6 +60,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return ExpandTypeName(typeAccelerators, typeName).FullName;
         }
 
+        /// <summary>
+        /// Get the full name of a .NET type, without assembly qualification of generics.
+        /// </summary>
+        /// <param name="type">The type to get the full name of.</param>
+        /// <returns>The full, namespace-qualified name of the type, without assembly qualification.</returns>
         public static string GetFullTypeName(Type type)
         {
             if (type == null)
@@ -91,11 +112,22 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Heuristic to check if a full .NET or PowerShell type name represents a generic.
+        /// </summary>
+        /// <param name="typeName">The full type name to check.</param>
+        /// <returns>True if the type name represents a genric type, false otherwise.</returns>
         public static bool IsGenericName(string typeName)
         {
             return typeName.Contains('`');
         }
 
+        /// <summary>
+        /// Strip out the generic quantification from a .NET type name.
+        /// For example "System.Collections.Generic.Dictionary`2" -> "System.Collections.Generic.Dictionary".
+        /// </summary>
+        /// <param name="typeName">The name of the type to strip.</param>
+        /// <returns>The type name without its generic quantifiers.</returns>
         public static string StripGenericQuantifiers(string typeName)
         {
             var sb = new StringBuilder();
@@ -125,6 +157,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Assemble the full name of a type given its simple name and namespace.
+        /// </summary>
+        /// <param name="nspace">The namespace of the type.</param>
+        /// <param name="typeName">The simple name of the type.</param>
+        /// <returns>The namespace-qualified full name of the type.</returns>
         public static string AssembleFullName(string nspace, string typeName)
         {
             if (string.IsNullOrEmpty(nspace))

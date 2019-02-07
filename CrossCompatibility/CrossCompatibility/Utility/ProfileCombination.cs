@@ -12,8 +12,20 @@ using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
+    /// <summary>
+    /// API to combine PowerShell compatibility profiles together.
+    /// Currently this only supports unions, used to generate a union profile
+    /// so that commands and types can be identified as being in some profile but not a configured one.
+    /// </summary>
     public static class ProfileCombination
     {
+        /// <summary>
+        /// Combine a list of compatibility profiles together so that any assembly, module,
+        /// type, command, etc. available in one is listed in the final result.
+        /// </summary>
+        /// <param name="profileId">The profile ID to assign to the generated union profile.</param>
+        /// <param name="profiles">The profiles to union together to generate the result.</param>
+        /// <returns>The deep union of all the given profiles, with the configured ID.</returns>
         public static CompatibilityProfileData UnionMany(string profileId, IEnumerable<CompatibilityProfileData> profiles)
         {
             CompatibilityProfileData unionProfile = CombineProfiles(profiles, Union);
@@ -24,14 +36,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return unionProfile;
         }
 
-        public static object Union(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
+        private static object Union(CompatibilityProfileData thisProfile, CompatibilityProfileData thatProfile)
         {
             Union(thisProfile.Runtime, thatProfile.Runtime);
 
             return thisProfile;
         }
 
-        public static object Union(RuntimeData thisRuntime, RuntimeData thatRuntime)
+        private static object Union(RuntimeData thisRuntime, RuntimeData thatRuntime)
         {
             foreach (KeyValuePair<string, JsonDictionary<Version, ModuleData>> moduleVersions in thatRuntime.Modules)
             {
@@ -51,7 +63,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisRuntime;
         }
 
-        public static object Union(ModuleData thisModule, ModuleData thatModule)
+        private static object Union(ModuleData thisModule, ModuleData thatModule)
         {
             thisModule.Aliases = StringDictionaryUnion(thisModule.Aliases, thatModule.Aliases);
 
@@ -64,7 +76,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisModule;
         }
 
-        public static object Union(CommandData thisCommand, CommandData thatCommand)
+        private static object Union(CommandData thisCommand, CommandData thatCommand)
         {
             thisCommand.OutputType = ArrayUnion(thisCommand.OutputType, thatCommand.OutputType);
             thisCommand.ParameterSets = ArrayUnion(thisCommand.ParameterSets, thatCommand.ParameterSets);
@@ -75,21 +87,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisCommand;
         }
 
-        public static object Union(ParameterData thisParameter, ParameterData thatParameter)
+        private static object Union(ParameterData thisParameter, ParameterData thatParameter)
         {
             thisParameter.ParameterSets = StringDictionaryUnion(thisParameter.ParameterSets, thatParameter.ParameterSets, Union);
 
             return thisParameter;
         }
 
-        public static object Union(ParameterSetData thisParameterSet, ParameterSetData thatParameterSet)
+        private static object Union(ParameterSetData thisParameterSet, ParameterSetData thatParameterSet)
         {
             thisParameterSet.Flags = ArrayUnion(thisParameterSet.Flags, thatParameterSet.Flags);
 
             return thisParameterSet;
         }
 
-        public static object Union(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
+        private static object Union(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
         {
             thisTypes.Assemblies = StringDictionaryUnion(thisTypes.Assemblies, thatTypes.Assemblies, Union);
             thisTypes.TypeAccelerators = StringDictionaryUnion(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
@@ -97,7 +109,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisTypes;
         }
 
-        public static object Union(AssemblyData thisAssembly, AssemblyData thatAssembly)
+        private static object Union(AssemblyData thisAssembly, AssemblyData thatAssembly)
         {
             Union(thisAssembly.AssemblyName, thatAssembly.AssemblyName);
 
@@ -123,7 +135,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisAssembly;
         }
 
-        public static object Union(AssemblyNameData thisAsmName, AssemblyNameData thatAsmName)
+        private static object Union(AssemblyNameData thisAsmName, AssemblyNameData thatAsmName)
         {
             if (thatAsmName.Version > thisAsmName.Version)
             {
@@ -138,14 +150,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisAsmName;
         }
 
-        public static object Union(TypeData thisType, TypeData thatType)
+        private static object Union(TypeData thisType, TypeData thatType)
         {
             thisType.Instance = (MemberData)Union(thisType.Instance, thatType.Instance);
             thisType.Static = (MemberData)Union(thisType.Instance, thatType.Instance);
             return thisType;
         }
 
-        public static object Union(MemberData thisMembers, MemberData thatMembers)
+        private static object Union(MemberData thisMembers, MemberData thatMembers)
         {
             if (thatMembers == null)
             {
@@ -170,13 +182,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisMembers;
         }
 
-        public static object Union(PropertyData thisProperty, PropertyData thatProperty)
+        private static object Union(PropertyData thisProperty, PropertyData thatProperty)
         {
             thisProperty.Accessors = ArrayUnion(thisProperty.Accessors, thatProperty.Accessors);
             return thisProperty;
         }
 
-        public static object Union(MethodData thisMethod, MethodData thatMethod)
+        private static object Union(MethodData thisMethod, MethodData thatMethod)
         {
             thisMethod.OverloadParameters = ParameterUnion(thisMethod.OverloadParameters, thatMethod.OverloadParameters);
             return thisMethod;

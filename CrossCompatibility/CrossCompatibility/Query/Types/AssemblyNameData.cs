@@ -9,6 +9,9 @@ using AsmNameDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.Assemb
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
+    /// <summary>
+    /// A readonly query object for .NET assembly name information.
+    /// </summary>
     public class AssemblyNameData
     {
         private readonly AsmNameDataMut _assemblyNameData;
@@ -17,6 +20,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         private readonly Lazy<AssemblyName> _assemblyName;
 
+        /// <summary>
+        /// Create a query object for assembly name information from collected assembly name data.
+        /// </summary>
+        /// <param name="assemblyNameData">Collected assembly name data object.</param>
         public AssemblyNameData(AsmNameDataMut assemblyNameData)
         {
             _assemblyNameData = assemblyNameData;
@@ -24,21 +31,43 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             _assemblyName = new Lazy<AssemblyName>(() => new AssemblyName(FullName));
         }
 
+        /// <summary>
+        /// The simple name of the assembly.
+        /// </summary>
         public string Name => _assemblyNameData.Name;
 
+        /// <summary>
+        /// The version of the assembly.
+        /// </summary>
         public Version Version => _assemblyNameData.Version;
 
+        /// <summary>
+        /// The culture of the assembly, if it is not null, "" or "neutral".
+        /// </summary>
         public string Culture => _assemblyNameData.Culture;
 
+        /// <summary>
+        /// The public key token of the assembly, if any.
+        /// </summary>
         public IReadOnlyList<byte> PublicKeyToken => _assemblyNameData.PublicKeyToken;
 
+        /// <summary>
+        /// The full name of the assembly, in strong name format.
+        /// </summary>
         public string FullName => _fullName.Value;
 
+        /// <summary>
+        /// Gets a System.Reflection.AssemblyName object from this assembly name.
+        /// </summary>
+        /// <returns></returns>
         public AssemblyName AsAssemblyName()
         {
             return _assemblyName.Value;
         }
 
+        /// <summary>
+        /// Builds a formatted assembly name from this assembly name object.
+        /// </summary>
         private string GetFullName()
         {
             var sb = new StringBuilder(Name);

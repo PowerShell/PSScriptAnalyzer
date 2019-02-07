@@ -6,10 +6,19 @@ using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
+    /// <summary>
+    /// API for naming PowerShell platforms given a PlatformData object describing them.
+    /// </summary>
     public static class PlatformNaming
     {
+        /// <summary>
+        /// The name of the profile union to be used for target comparisons.
+        /// </summary>
         public static string AnyPlatformUnionName => "anyplatform_union";
 
+        /// <summary>
+        /// The string separating fields in a platform name.
+        /// </summary>
         public static string PlatformNameJoiner
         {
             get
@@ -25,8 +34,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// os-name for Linux is the ID entry in /etc/os-release.
         /// os-name for Mac is "macos".
         /// </summary>
-        /// <param name="platform"></param>
-        /// <returns></returns>
+        /// <param name="platform">The platform to generate a name for.</param>
+        /// <returns>The unique name for that platform.</returns>
         public static string GetPlatformName(PlatformData platform)
         {
             string psVersion = platform.PowerShell.Version?.ToString();

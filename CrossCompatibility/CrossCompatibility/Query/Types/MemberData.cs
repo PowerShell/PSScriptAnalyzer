@@ -7,10 +7,18 @@ using MemberDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.MemberD
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
+    /// <summary>
+    /// Readonly query object for a set of members on a .NET type.
+    /// MemberData objects collect either static or instance members available on a type.
+    /// </summary>
     public class MemberData
     {
         private readonly MemberDataMut _memberData;
 
+        /// <summary>
+        /// Create a new query object around a collected .NET member data.
+        /// </summary>
+        /// <param name="memberData">The collected .NET member data.</param>
         public MemberData(MemberDataMut memberData)
         {
             _memberData = memberData;
@@ -21,16 +29,34 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             NestedTypes = memberData.NestedTypes?.ToDictionary(t => t.Key, t => new TypeData(t.Key, t.Value));
         }
 
+        /// <summary>
+        /// Constructor overloads on the type, arranged as an array of arrays of full type names.
+        /// </summary>
         public IReadOnlyList<IReadOnlyList<string>> Constructors => _memberData.Constructors;
 
+        /// <summary>
+        /// Lookup table of all fields on the type.
+        /// </summary>
         public IReadOnlyDictionary<string, FieldData> Fields { get; }
 
+        /// <summary>
+        /// Lookup table of all properties on the type.
+        /// </summary>
         public IReadOnlyDictionary<string, PropertyData> Properties { get; }
 
+        /// <summary>
+        /// List of all indexers on the type.
+        /// </summary>
         public IReadOnlyList<IndexerData> Indexers { get; }
 
+        /// <summary>
+        /// Lookup table of all events on the type.
+        /// </summary>
         public IReadOnlyDictionary<string, EventData> Events { get; }
 
+        /// <summary>
+        /// Lookup table of all nested types in the type.
+        /// </summary>
         public IReadOnlyDictionary<string, TypeData> NestedTypes { get; }
     }
 }

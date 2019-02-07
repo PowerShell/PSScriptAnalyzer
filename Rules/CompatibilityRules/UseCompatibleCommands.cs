@@ -16,21 +16,34 @@ using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
 
+    /// <summary>
+    /// Rule to identify when commands used in a script will not
+    /// be available in target PowerShell runtimes.
+    /// </summary>
 #if !CORECLR
     [System.ComponentModel.Composition.Export(typeof(IScriptRule))]
 #endif
     public class UseCompatibleCommands : CompatibilityRule
     {
+        /// <summary>
+        /// Get the common name of this rule.
+        /// </summary>
         public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCommandsCommonName);
         }
 
+        /// <summary>
+        /// Get the description of this rule.
+        /// </summary>
         public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseCompatibleCommandsDescription);
         }
 
+        /// <summary>
+        /// Get the localized name of this rule.
+        /// </summary>
         public override string GetName()
         {
             return string.Format(
@@ -40,13 +53,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 Strings.UseCompatibleCommandsName);
         }
 
+        /// <summary>
+        /// Create an AST visitor to generate command-compatiblity diagnostics.
+        /// </summary>
+        /// <param name="analyzedFileName">The full path of the script analyzer.</param>
+        /// <returns>A command-compatibility assessing AST visitor.</returns>
         protected override CompatibilityVisitor CreateVisitor(string analyzedFileName)
         {
             Tuple<CompatibilityProfileData, CompatibilityProfileData[]> profiles = LoadCompatibilityProfiles();
-            return new CmdletCompatibilityVisitor(analyzedFileName, compatibilityTargets: profiles.Item2, anyProfile: profiles.Item1, rule: this);
+            return new CommandCompatibilityVisitor(analyzedFileName, compatibilityTargets: profiles.Item2, anyProfile: profiles.Item1, rule: this);
         }
 
-        private class CmdletCompatibilityVisitor : CompatibilityVisitor
+        private class CommandCompatibilityVisitor : CompatibilityVisitor
         {
             private readonly IReadOnlyList<CompatibilityProfileData> _compatibilityTargets;
 
@@ -58,7 +76,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             private readonly UseCompatibleCommands _rule;
 
-            public CmdletCompatibilityVisitor(
+            public CommandCompatibilityVisitor(
                 string analyzedFileName,
                 CompatibilityProfileData[] compatibilityTargets,
                 CompatibilityProfileData anyProfile,
@@ -125,8 +143,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 
+    /// <summary>
+    /// A compatibility diagnostic that carries details of the
+    /// command warned about and the target platform it is incompatible with.
+    /// </summary>
     public class CommandCompatibilityDiagnostic : CompatibilityDiagnostic
     {
+        /// <summary>
+        /// Create a new command compatibility diagnostic.
+        /// </summary>
+        /// <param name="commandName">The name of the incompatible command.</param>
+        /// <param name="platform">An object detailing the target platform that the command is incompatible with.</param>
+        /// <param name="extent">The AST extent of the incompatible command.</param>
+        /// <param name="analyzedFileName">The path of the script where the incompatibility is.</param>
+        /// <param name="rule">The compatibility rule generating the diagnostic.</param>
+        /// <param name="suggestedCorrections">Any suggested corrections for the diagnosed issue.</param>
+        /// <returns></returns>
         public static CommandCompatibilityDiagnostic Create(
             string commandName,
             PlatformData platform,
@@ -174,8 +206,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             TargetPlatform = targetPlatform;
         }
 
+        /// <summary>
+        /// The name of the command that is incompatible.
+        /// </summary>
+        /// <value></value>
         public string Command { get; }
 
+        /// <summary>
+        /// The platform where the command is incompatible.
+        /// </summary>
         public PlatformData TargetPlatform { get; }
     }
 }

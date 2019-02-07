@@ -9,10 +9,17 @@ using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
+    /// <summary>
+    /// Encapsulates loading and caching of compatibility profiles.
+    /// Intended to be thread safe for usage by multiple PSSA rules.
+    /// </summary>
     public class CompatibilityProfileLoader
     {
         private static Lazy<CompatibilityProfileLoader> s_sharedInstance = new Lazy<CompatibilityProfileLoader>(() => new CompatibilityProfileLoader());
 
+        /// <summary>
+        /// A lazy-initialized static instance to allow for a shared profile cache.
+        /// </summary>
         public static CompatibilityProfileLoader StaticInstance => s_sharedInstance.Value;
 
         private readonly JsonProfileSerializer _jsonSerializer;
@@ -21,6 +28,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private readonly object _loaderLock;
 
+        /// <summary>
+        /// Create a new compatibility profile loader with an empty cache.
+        /// </summary>
         public CompatibilityProfileLoader()
         {
             _jsonSerializer = JsonProfileSerializer.Create();
@@ -28,6 +38,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             _loaderLock = new object();
         }
 
+        /// <summary>
+        /// Load a profile from a path.
+        /// Caches profiles based on path, so that repeated calls do not require JSON deserialization.
+        /// </summary>
+        /// <param name="path">The path to load a profile from.</param>
+        /// <returns>A query object around the loaded profile.</returns>
         public CompatibilityProfileData GetProfileFromFilePath(string path)
         {
             if (path == null)
@@ -52,6 +68,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
         }
 
+        /// <summary>
+        /// Clear all loaded profiles from this loader.
+        /// </summary>
         public void ClearCache()
         {
             lock (_loaderLock)

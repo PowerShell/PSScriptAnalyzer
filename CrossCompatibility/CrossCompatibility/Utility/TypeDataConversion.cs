@@ -169,7 +169,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             };
         }
 
-        public static MemberData AssembleMembers(Type type, BindingFlags memberBinding)
+        private static MemberData AssembleMembers(Type type, BindingFlags memberBinding)
         {
             if ((memberBinding & BindingFlags.Instance) != 0 && (memberBinding & BindingFlags.Static) != 0)
             {
@@ -279,7 +279,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             };
         }
 
-        public static FieldData AssembleField(FieldInfo field)
+        private static FieldData AssembleField(FieldInfo field)
         {
             return new FieldData()
             {
@@ -287,7 +287,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             };
         }
 
-        public static PropertyData AssembleProperty(PropertyInfo property)
+        private static PropertyData AssembleProperty(PropertyInfo property)
         {
             return new PropertyData()
             {
@@ -296,7 +296,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             };
         }
 
-        public static IndexerData AssembleIndexer(PropertyInfo indexer)
+        private static IndexerData AssembleIndexer(PropertyInfo indexer)
         {
             var paramTypes = new List<string>();
             foreach (ParameterInfo param in indexer.GetIndexParameters())
@@ -312,7 +312,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             };
         }
 
-        public static EventData AssembleEvent(EventInfo e)
+        private static EventData AssembleEvent(EventInfo e)
         {
             return new EventData()
             {
@@ -321,7 +321,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             };
         }
 
-        public static string[] AssembleConstructor(ConstructorInfo ctor)
+        private static string[] AssembleConstructor(ConstructorInfo ctor)
         {
             var parameters = new List<string>();
             foreach (ParameterInfo param in ctor.GetParameters())
@@ -332,7 +332,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return parameters.ToArray();
         }
 
-        public static MethodData AssembleMethod(List<MethodInfo> methodOverloads)
+        private static MethodData AssembleMethod(List<MethodInfo> methodOverloads)
         {
             var overloads = new List<string[]>();
             foreach (MethodInfo overload in methodOverloads)

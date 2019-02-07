@@ -9,12 +9,19 @@ using AvailableTypeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
 {
+    /// <summary>
+    /// Readonly query object for all .NET type information in a PowerShell runtime.
+    /// </summary>
     public class AvailableTypeData
     {
         private readonly Lazy<IReadOnlyDictionary<string, TypeData>> _types;
 
         private readonly Lazy<IReadOnlyDictionary<string, string>> _typeAcceleratorNames;
 
+        /// <summary>
+        /// Create a new query object around collected .NET type information.
+        /// </summary>
+        /// <param name="availableTypeData">The .NET type data object to query.</param>
         public AvailableTypeData(AvailableTypeDataMut availableTypeData)
         {
             TypeAccelerators = availableTypeData.TypeAccelerators.ToDictionary(ta => ta.Key, ta => new TypeAcceleratorData(ta.Key, ta.Value));
@@ -23,14 +30,30 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
             _typeAcceleratorNames = new Lazy<IReadOnlyDictionary<string, string>>(() => TypeAccelerators.ToDictionary(ta => ta.Key, ta => ta.Value.Type));
         }
 
+        /// <summary>
+        /// Type accelerators in the PowerShell runtime.
+        /// </summary>
         public IReadOnlyDictionary<string, TypeAcceleratorData> TypeAccelerators { get; }
 
+        /// <summary>
+        /// Assemblies loaded in the PowerShell runtime.
+        /// </summary>
         public IReadOnlyDictionary<string, AssemblyData> Assemblies { get; }
 
+        /// <summary>
+        /// Types, keyed by full type name, loaded in the PowerShell runtime.
+        /// </summary>
         public IReadOnlyDictionary<string, TypeData> Types => _types.Value;
 
+        /// <summary>
+        /// Type accelerator lookup table linking type accelerators to their full type names.
+        /// </summary>
         public IReadOnlyDictionary<string, string> TypeAcceleratorNames => _typeAcceleratorNames.Value;
 
+        /// <summary>
+        /// Builds the lookup table for full type names.
+        /// </summary>
+        /// <param name="assemblies">The assembly lookup table in the data object.</param>
         private static IReadOnlyDictionary<string, TypeData> CreateTypeLookupTable(IReadOnlyDictionary<string, AssemblyData> assemblies)
         {
             var typeDict = new Dictionary<string, TypeData>(StringComparer.OrdinalIgnoreCase);
