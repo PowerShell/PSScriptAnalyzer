@@ -129,9 +129,9 @@ Describe "Test Path" {
 
         It "Runs rules on script with more than 10 parser errors" {
             # this is a script with 12 parse errors
-            1..12 | Foreach-Object { ')' } | Out-File "TestDrive:\badfile.ps1"
-            $moreThanTenErrors = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue "TestDrive:\badfile.ps1"
-            $moreThanTenErrors.Count | Should -Be 12
+            1..12 | Foreach-Object { ');' } | Out-File -Encoding ASCII "TestDrive:\badfile.ps1"
+            $moreThanTenErrors = Invoke-ScriptAnalyzer -Path "TestDrive:\badfile.ps1"
+            @($moreThanTenErrors).Count | Should -Be 12
         }
     }
 
