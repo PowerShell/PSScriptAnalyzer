@@ -576,13 +576,13 @@ Describe "Test -EnableExit Switch" {
         $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
         It "prints the correct report summary using the -NoReportSummary switch" {
             $pwshExePath = (Get-Process -Id $PID).Path
-            $result = & $pwshExePath -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+            $result = & $pwshExePath -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary'
 
             "$result" | Should -BeLike $reportSummaryFor1Warning
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
             $pwshExePath = (Get-Process -Id $PID).Path
-            $result = & $pwshExePath -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+            $result = & $pwshExePath -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci'
 
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning
         }
