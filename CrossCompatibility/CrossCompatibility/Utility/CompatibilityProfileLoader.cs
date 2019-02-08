@@ -7,6 +7,10 @@ using System.IO;
 using Microsoft.PowerShell.CrossCompatibility.Query;
 using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData;
 
+#if NETSTANDARD2_0
+using System.Runtime.InteropServices;
+#endif
+
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
     /// <summary>
@@ -34,8 +38,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         public CompatibilityProfileLoader()
         {
             _jsonSerializer = JsonProfileSerializer.Create();
-            _profileCache = new Dictionary<string, CompatibilityProfileData>();
             _loaderLock = new object();
+
+            // Cache keys are filenames, which must be case-insensitive in Windows and macOS
+#if NETSTANDARD2_0
+            _profileCache = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                ? new Dictionary<string, CompatibilityProfileData>()
+                : new Dictionary<string, CompatibilityProfileData>(StringComparer.OrdinalIgnoreCase);
+#else
+            _profileCache = new Dictionary<string, CompatibilityProfileData>(StringComparer.OrdinalIgnoreCase);
+#endif
         }
 
         /// <summary>
