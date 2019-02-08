@@ -142,7 +142,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return targetVersions;
         }
 
-#if !PSV3
+#if !PSV3 && !PSV4
         private class SyntaxCompatibilityVisitor : AstVisitor2
 #else
         private class SyntaxCompatibilityVisitor : AstVisitor
@@ -257,9 +257,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-#if !PSV3
+#if !PSV3 && !PSV4
             public override AstVisitAction VisitUsingStatement(UsingStatementAst usingStatementAst)
             {
+                // Look for 'using ...;' at the top of scripts
+
                 if (!_targetVersions.Contains(s_v3) && !_targetVersions.Contains(s_v4))
                 {
                     return AstVisitAction.Continue;
@@ -286,6 +288,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public override AstVisitAction VisitTypeDefinition(TypeDefinitionAst typeDefinitionAst)
             {
+                // Look for 'class MyClass { ... }' and 'enum MyEnum { ... }' definitions
+
                 if (!_targetVersions.Contains(s_v3) && !_targetVersions.Contains(s_v4))
                 {
                     return AstVisitAction.Continue;

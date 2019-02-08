@@ -55,11 +55,11 @@
     <ProjectReference Include="..\CrossCompatibility\CrossCompatibility\CrossCompatibility.csproj" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Release' Or '$(Configuration)' == 'PSV3Debug' ">
     <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Release' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Release' Or '$(Configuration)' == 'PSV4Debug' ">
     <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
   </PropertyGroup>
 
