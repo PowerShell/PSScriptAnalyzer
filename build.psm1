@@ -277,22 +277,38 @@ function Install-Dotnet
 {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param ( [Parameter()][Switch]$Force )
-    $json = Get-Content (Join-Path $PSScriptRoot global.json) | ConvertFrom-Json
+    $json = Get-Content -raw (Join-Path $PSScriptRoot global.json) | ConvertFrom-Json
     $version = $json.sdk.Version
+    if ( Test-DotnetInstallation -version $version ) {
+        Write-Verbose -Verbose "dotnet version '$version' already installed"
+        return
+    }
     try {
         Push-Location $PSScriptRoot
-        $installScriptName = Receive-DotnetInstallScript
+        $installScriptPath = Receive-DotnetInstallScript
         If ( $PSCmdlet.ShouldProcess("$installScriptName for $version")) {
-            $installScriptPath = Join-Path . $installScriptName
             & "${installScriptPath}" -c release -v $version
         }
     }
+    catch {
+        throw $_
+    }
     finally {
-        if ( Test-Path $installScriptName ) {
-            Remove-Item $installScriptName
+        if ( Test-Path $installScriptPath ) {
+            Remove-Item $installScriptPath
         }
         Pop-Location
     }
+}
+
+function Test-DotnetInstallation
+{
+    param ( $version )
+    $installedVersions = dotnet --list-sdks | Foreach-Object { $_.Split()[0] }
+    if ( $installedVersions -contains $version ) {
+        return $true
+    }
+    return $false
 }
 
 function Receive-DotnetInstallScript
@@ -302,9 +318,27 @@ function Receive-DotnetInstallScript
     if ( (Test-Path Variable:IsWindows) -and -not $IsWindows ) {
         $installScriptName = "dotnet-install.sh"
     }
-    $null = Invoke-WebRequest -Uri "https://dot.net/v1/${installScriptName}" -OutFile "${installScriptName}"
+    $uri = "https://dot.net/v1/${installScriptName}"
+    # enable Tls12 for the request
+    # -SslProtocol parameter for Invoke-WebRequest wasn't in PSv3
+    $securityProtocol = [System.Net.ServicePointManager]::SecurityProtocol
+    $tls12 = [System.Net.SecurityProtocolType]::Tls12
+    try {
+        if ( ([System.Net.ServicePointManager]::SecurityProtocol -band $tls12) -eq 0 ) {
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor $tls12
+        }
+        $null = Invoke-WebRequest -Uri ${uri} -OutFile "${installScriptName}"
+    }
+    finally {
+        [System.Net.ServicePointManager]::SecurityProtocol = $securityProtocol 
+    }
     if ( (Test-Path Variable:IsWindows) -and -not $IsWindows ) {
         chmod +x $installScriptName
     }
-    return $installScriptName
+    $installScript = Get-Item $installScriptName -ErrorAction Stop
+    if ( -not $installScript ) {
+        throw "Download failure of ${uri}"
+    }
+
+    return $installScript.FullName
 }
