@@ -507,6 +507,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             switch (exprAst)
             {
                 case ConstantExpressionAst constExprAst:
+                    // Note, this parses top-level command invocations as bareword strings
+                    // However, forbidding this causes hashtable parsing to fail
+                    // It is probably not worth the complexity to isolate this case
                     return constExprAst.Value;
 
                 case VariableExpressionAst varExprAst:
@@ -639,6 +642,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private static InvalidDataException CreateInvalidDataExceptionFromAst(Ast ast)
         {
+            if (ast == null)
+            {
+                throw new ArgumentNullException(nameof(ast));
+            }
+
             return ThrowInvalidDataException(ast.Extent);
         }
 

@@ -196,4 +196,164 @@ Describe "Settings Class" {
             }
         }
     }
+
+    Context "Settings GetSafeValue API" {
+        BeforeAll {
+            $gsvSimpleTests = @(
+                @{ Expr = '0' }
+                @{ Expr = '-2'}
+                @{ Expr = '-2.5'}
+                @{ Expr = '$true' }
+                @{ Expr = '$false' }
+                @{ Expr = '123124' }
+                @{ Expr = '0.142' }
+                @{ Expr = '"Hello"' }
+                @{ Expr = '"Well then"' }
+            )
+
+            $gsvArrayTests = @(
+                @{ Expr = '1, 2, 3'; Count = 3 }
+                @{ Expr = '"One","Two","Three"'; Count = 3 }
+                @{ Expr = '@(1,2,3,4)'; Count = 4 }
+                @{ Expr = '@("A","B","C")'; Count = 3 }
+                @{ Expr = '@()'; Count = 0 }
+                @{ Expr = '@(7)'; Count = 1 }
+            )
+
+            $gsvHashtableTests = @(
+                @{ Expr = '@{}' }
+                @{ Expr = '@{ Key = "Value" }' }
+                @{ Expr = '@{ Item = @(1, 2, 3) }' }
+                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = "Hello"; Setting2 = 42 } } }' }
+                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = 7,4,6,1; Setting2 = 42 } } }' }
+                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(); Setting2 = 42 } } }' }
+                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, 2, 1, "Hello"); Setting2 = 42 } } }' }
+                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, @(3, 6), 1, "Hello"); Setting2 = 42 } } }' }
+                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, @{ x = 10; y = 11 }, 1, "Hello"); Setting2 = 42 } } }' }
+            )
+
+            $gsvThrowTests = @(
+                @{ Expr = '$var' }
+                @{ Expr = '' }
+                @{ Expr = '$null' }
+                @{ Expr = '3+7' }
+                @{ Expr = '- 2.5'}
+                @{ Expr = '-not $true' }
+                @{ Expr = '@(1, Get-Thing)' }
+                @{ Expr = '@{ Key = Get-Thing }' }
+                @{ Expr = '@{ Thing = $true;7 ' }
+                @{ Expr = '@{ Thing = @(Asset-Thing;10) ' }
+                @{ Expr = ';)' }
+            )
+
+            $gsvMethod = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings].GetMethod('GetSafeValueFromExpressionAst', [System.Reflection.BindingFlags]'nonpublic,static')
+
+            function ShouldBeDeeplyEqual
+            {
+                param(
+                    [Parameter(Position=0)]
+                    $To,
+
+                    [Parameter(ValueFromPipeline)]
+                    $InputObject
+                )
+
+                if ($null -eq $To)
+                {
+                    $InputObject | Should -Be $null
+                    return
+                }
+
+                if ($To -is [hashtable])
+                {
+                    foreach ($toKey in $To.get_Keys())
+                    {
+                        $inputVal = $InputObject[$toKey]
+                        if ($inputVal -is [array])
+                        {
+                            @(,$inputVal) | ShouldBeDeeplyEqual -To $To[$toKey]
+                            continue
+                        }
+                        $inputVal | ShouldBeDeeplyEqual -To $To[$toKey]
+                    }
+                    return
+                }
+
+                if ($To -is [array])
+                {
+                    $InputObject.Count | Should -Be $To.Count
+                    for ($i = 0; $i -lt $To.Count; $i++)
+                    {
+                        $inputVal = $InputObject[$i]
+                        if ($inputVal -is [array])
+                        {
+                            @(,$inputVal) | ShouldBeDeeplyEqual -To $To[$i]
+                            continue
+                        }
+                        $inputVal | ShouldBeDeeplyEqual -To $To[$i]
+                    }
+                    return
+                }
+
+                $InputObject | Should -Be $To
+            }
+        }
+
+        It "Safely gets the simple value <Expr>" -TestCases $gsvSimpleTests {
+            param([string]$Expr)
+
+            $pwshVal = Invoke-Expression $Expr
+
+            $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
+            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $gsvVal = $gsvMethod.Invoke($null, @($exprAst))
+
+            $gsvVal | Should -Be $pwshVal
+        }
+
+        It "Safely gets the array value <Expr>" -TestCases $gsvArrayTests {
+            param([string]$Expr)
+
+            $pwshVal = Invoke-Expression $Expr
+
+            $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
+            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $gsvVal = $gsvMethod.Invoke($null, @($exprAst))
+
+
+            # Need to test the type like this so that the pipeline doesn't unwrap the type,
+            # but we also don't create the array ourselves
+            $gsvVal.GetType().IsArray | Should -BeTrue
+
+            @(,$gsvVal) | ShouldBeDeeplyEqual -To $pwshVal
+        }
+
+        It "Safely gets the hashtable value <Expr>" -TestCases $gsvHashtableTests {
+            param([string]$Expr)
+
+            $pwshVal = Invoke-Expression $Expr
+
+            $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
+            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $gsvVal = $gsvMethod.Invoke($null, @($exprAst))
+
+            $gsvVal | Should -BeOfType [hashtable]
+            $gsvVal | ShouldBeDeeplyEqual -To $pwshVal
+        }
+
+        It "Rejects the input <Expr>" -TestCases $gsvThrowTests {
+            param([string]$Expr)
+
+            $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
+            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+
+            $expectedError = 'InvalidDataException'
+            if ($null -eq $exprAst)
+            {
+                $expectedError = 'ArgumentNullException'
+            }
+
+            { $gsvVal = $gsvMethod.Invoke($null, @($exprAst)) } | Should -Throw -ErrorId $expectedError
+        }
+    }
 }
