@@ -344,7 +344,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.UseCompatibleSyntaxCorrection,
-                        "New-Object [@($args)]",
+                        "New-Object @($arg1, $arg2, ...)",
                         "3,4"));
             }
         }
