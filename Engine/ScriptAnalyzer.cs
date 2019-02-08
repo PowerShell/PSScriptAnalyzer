@@ -31,6 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private IOutputWriter outputWriter;
         private Dictionary<string, object> settings;
+        private readonly Regex s_aboutHelpRegex = new Regex("^about_.*help\\.txt$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 #if !CORECLR
         private CompositionContainer container;
 #endif // !CORECLR
@@ -1526,12 +1527,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
 
-            int emitParseErrors = severity == null ? 1 : severity.Count(item => item == "ParseError");
             // Add parse errors first if requested!
-            if ( relevantParseErrors != null && emitParseErrors == 1)
+            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
             {
-                List<DiagnosticRecord> results = new List<DiagnosticRecord>();
-                foreach ( var parseError in relevantParseErrors )
+                var results = new List<DiagnosticRecord>();
+                foreach ( ParseError parseError in relevantParseErrors )
                 {
                     string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
                     results.Add(new DiagnosticRecord(
@@ -1539,7 +1539,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         parseError.Extent,
                         parseError.ErrorId.ToString(),
                         DiagnosticSeverity.ParseError,
-                        "" // no script file
+                        String.Empty // no script file
                         )
                         );
                 }
@@ -1855,7 +1855,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // short-circuited processing for a help file
             // no parsing can really be done, but there are other rules to run (specifically encoding).
-            if ( Regex.Matches(Path.GetFileName(filePath), @"^about_.*help.txt$", RegexOptions.IgnoreCase).Count != 0)
+            if ( s_aboutHelpRegex.IsMatch(Path.GetFileName(filePath)) )
             {
                 return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
             }
@@ -1877,14 +1877,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
             }
 #endif //!PSV3
-            var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
+            IEnumerable<ParseError> relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
 
             // First, add all parse errors if they've been requested
-            int emitParseErrors = severity == null ? 1 : severity.Count(item => item == "ParseError");
-            if ( relevantParseErrors != null && emitParseErrors == 1 )
+            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
             {
                 List<DiagnosticRecord> results = new List<DiagnosticRecord>();
-                foreach ( var parseError in relevantParseErrors )
+                foreach ( ParseError parseError in relevantParseErrors )
                 {
                     string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
                     results.Add(new DiagnosticRecord(
