@@ -17,6 +17,51 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         private readonly JsonSerializer _serializer;
 
         /// <summary>
+        /// Utility method to get the ID from a profile JSON file.
+        /// If the file does not exist, this will throw.
+        /// If the property is not found, this will return null.
+        /// </summary>
+        /// <param name="path">The absolute path to the profile file.</param>
+        /// <returns>The string value of the ID field if it is found, or null if it is not.</returns>
+        public static string ReadIdFromProfileFile(string path)
+        {
+            int depth = 0;
+            using (FileStream fileStream = File.OpenRead(path))
+            using (var streamReader = new StreamReader(fileStream))
+            using (var jsonReader = new JsonTextReader(streamReader))
+            {
+                while (jsonReader.Read())
+                {
+                    switch (jsonReader.TokenType)
+                    {
+                        case JsonToken.PropertyName:
+                            if (depth <= 1 && (string)jsonReader.Value == "Id")
+                            {
+                                jsonReader.Read();
+                                return (string)jsonReader.Value;
+                            }
+                            continue;
+
+                        case JsonToken.StartArray:
+                        case JsonToken.StartConstructor:
+                        case JsonToken.StartObject:
+                            depth++;
+                            continue;
+
+                        case JsonToken.EndArray:
+                        case JsonToken.EndConstructor:
+                        case JsonToken.EndObject:
+                            depth--;
+                            continue;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+
+        /// <summary>
         /// Create a new profile serializer with no whitespace/formatting inclusion.
         /// </summary>
         public static JsonProfileSerializer Create()
@@ -121,7 +166,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// <returns>The hydrated compatibility profile as a .NET object.</returns>
         public CompatibilityProfileData Deserialize(FileInfo file)
         {
-            using (var fileStream = file.OpenRead())
+            using (FileStream fileStream = file.OpenRead())
             using (var streamReader = new StreamReader(fileStream))
             {
                 return Deserialize(streamReader);

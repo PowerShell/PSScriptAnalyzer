@@ -60,13 +60,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>A command-compatibility assessing AST visitor.</returns>
         protected override CompatibilityVisitor CreateVisitor(string analyzedFileName)
         {
-            Tuple<CompatibilityProfileData, CompatibilityProfileData[]> profiles = LoadCompatibilityProfiles();
-            return new CommandCompatibilityVisitor(analyzedFileName, compatibilityTargets: profiles.Item2, anyProfile: profiles.Item1, rule: this);
+            IEnumerable<CompatibilityProfileData> compatibilityTargets = LoadCompatibilityProfiles(out CompatibilityProfileData unionProfile);
+            return new CommandCompatibilityVisitor(analyzedFileName, compatibilityTargets, unionProfile, rule: this);
         }
 
         private class CommandCompatibilityVisitor : CompatibilityVisitor
         {
-            private readonly IReadOnlyList<CompatibilityProfileData> _compatibilityTargets;
+            private readonly IEnumerable<CompatibilityProfileData> _compatibilityTargets;
 
             private readonly CompatibilityProfileData _anyProfile;
 
@@ -78,7 +78,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public CommandCompatibilityVisitor(
                 string analyzedFileName,
-                CompatibilityProfileData[] compatibilityTargets,
+                IEnumerable<CompatibilityProfileData> compatibilityTargets,
                 CompatibilityProfileData anyProfile,
                 UseCompatibleCommands rule)
             {

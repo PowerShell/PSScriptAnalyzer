@@ -57,8 +57,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>An AST visitor to perform type compatibility analysis.</returns>
         protected override CompatibilityVisitor CreateVisitor(string fileName)
         {
-            Tuple<CompatibilityProfileData, CompatibilityProfileData[]> profiles = LoadCompatibilityProfiles();
-            return new TypeCompatibilityVisitor(fileName, profiles.Item1, profiles.Item2, this);
+            IEnumerable<CompatibilityProfileData> targetProfiles = LoadCompatibilityProfiles(out CompatibilityProfileData unionProfile);
+            return new TypeCompatibilityVisitor(fileName, unionProfile, targetProfiles, this);
         }
 
         private class TypeCompatibilityVisitor : CompatibilityVisitor
@@ -67,7 +67,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             private readonly CompatibilityProfileData _anyProfile;
 
-            private readonly IReadOnlyList<CompatibilityProfileData> _compatibilityTargets;
+            private readonly IEnumerable<CompatibilityProfileData> _compatibilityTargets;
 
             private readonly List<DiagnosticRecord> _diagnosticAccumulator;
 
@@ -76,7 +76,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             public TypeCompatibilityVisitor(
                 string analyzedFileName,
                 CompatibilityProfileData anyProfile,
-                IReadOnlyList<CompatibilityProfileData> compatibilityTargetProfiles,
+                IEnumerable<CompatibilityProfileData> compatibilityTargetProfiles,
                 UseCompatibleTypes rule)
             {
                 _analyzedFileName = analyzedFileName;

@@ -6,6 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.PowerShell.CrossCompatibility.Query;
 using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 #if NETSTANDARD2_0
 using System.Runtime.InteropServices;
@@ -19,18 +24,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
     /// </summary>
     public class CompatibilityProfileLoader
     {
-        private static Lazy<CompatibilityProfileLoader> s_sharedInstance = new Lazy<CompatibilityProfileLoader>(() => new CompatibilityProfileLoader());
+        private static readonly Regex s_unionFileRegex = new Regex("[a-fA-F0-9]{8}.json", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Lazy<CompatibilityProfileLoader> s_sharedInstance = new Lazy<CompatibilityProfileLoader>(() => new CompatibilityProfileLoader());
+
+        private readonly JsonProfileSerializer _jsonSerializer;
+
+        private readonly ConcurrentDictionary<string, Lazy<CompatibilityProfileCacheEntry>> _profileCache;
 
         /// <summary>
         /// A lazy-initialized static instance to allow for a shared profile cache.
         /// </summary>
         public static CompatibilityProfileLoader StaticInstance => s_sharedInstance.Value;
-
-        private readonly JsonProfileSerializer _jsonSerializer;
-
-        private readonly IDictionary<string, CompatibilityProfileData> _profileCache;
-
-        private readonly object _loaderLock;
 
         /// <summary>
         /// Create a new compatibility profile loader with an empty cache.
@@ -38,16 +43,69 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         public CompatibilityProfileLoader()
         {
             _jsonSerializer = JsonProfileSerializer.Create();
-            _loaderLock = new object();
 
             // Cache keys are filenames, which must be case-insensitive in Windows and macOS
 #if NETSTANDARD2_0
-            _profileCache = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                ? new Dictionary<string, CompatibilityProfileData>()
-                : new Dictionary<string, CompatibilityProfileData>(StringComparer.OrdinalIgnoreCase);
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                _profileCache = new ConcurrentDictionary<string, Lazy<CompatibilityProfileCacheEntry>>();
+            }
+            else
+            {
+                _profileCache = new ConcurrentDictionary<string, Lazy<CompatibilityProfileCacheEntry>>(StringComparer.OrdinalIgnoreCase);
+            }
 #else
-            _profileCache = new Dictionary<string, CompatibilityProfileData>(StringComparer.OrdinalIgnoreCase);
+            _profileCache = new ConcurrentDictionary<string, Lazy<CompatibilityProfileCacheEntry>>(StringComparer.OrdinalIgnoreCase);
 #endif
+        }
+
+        /// <summary>
+        /// For a set of profile paths, retrieve those profiles,
+        /// along with the union profile for comparison.
+        /// </summary>
+        /// <param name="profileDirPath">The absolute path to the profile directory.</param>
+        /// <param name="profilePaths">Absolute paths to all profiles to load.</param>
+        /// <param name="unionProfile">The loaded union profile to compare against.</param>
+        /// <returns>A list of hydrated profiles from all the profile paths given, not necessarily in order.</returns>
+        public IEnumerable<CompatibilityProfileData> GetProfilesWithUnion(
+            DirectoryInfo profileDirPath,
+            IEnumerable<string> profilePaths,
+            out CompatibilityProfileData unionProfile)
+        {
+            IEnumerable<CompatibilityProfileCacheEntry> profileEntries = GetProfilesFromPaths(profilePaths);
+
+            unionProfile = GetUnionProfile(profileDirPath);
+
+            return profileEntries.Select(p => p.Profile);
+        }
+
+        /// <summary>
+        /// Clear all loaded profiles from this loader.
+        /// </summary>
+        public void ClearCache()
+        {
+            _profileCache.Clear();
+        }
+
+        private IEnumerable<CompatibilityProfileCacheEntry> GetProfilesFromPaths(IEnumerable<string> profilePaths)
+        {
+            // We have a situation where:
+            //   - multiple caller threads
+            //   - with some arguments the same but possibly some different
+            //   - are trying to perform expensive (partially CPU-bound) cacheable computations
+            //   - which are trivially parallel
+            // We want to control all concurrency from the caller,
+            // but also want to parallelize the computations for maximum throughput.
+            //
+            // So we:
+            //   - Corrale all the load calls through a threadsafe cache of lazy calls (fan the load calls in from the number of calling threads)
+            //   - Transform the query into PLINQ
+            //   - Evaluate the lazy calls in parallel (fan the load calls out to the available global threadpool)
+            //   - Put them into an array for the caller
+            return profilePaths.Select(path => GetNonUnionProfileFromFilePath(path))
+                .AsParallel()
+                .AsUnordered()
+                .Select(cacheEntry => cacheEntry.Value);
         }
 
         /// <summary>
@@ -56,39 +114,114 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// </summary>
         /// <param name="path">The path to load a profile from.</param>
         /// <returns>A query object around the loaded profile.</returns>
-        public CompatibilityProfileData GetProfileFromFilePath(string path)
+        private Lazy<CompatibilityProfileCacheEntry> GetNonUnionProfileFromFilePath(string path)
         {
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
-            lock (_loaderLock)
-            {
-                if (_profileCache.ContainsKey(path))
-                {
-                    return _profileCache[path];
-                }
-
+            return _profileCache.GetOrAdd(path, new Lazy<CompatibilityProfileCacheEntry>(() => {
                 CompatibilityProfileDataMut compatibilityProfileMut = _jsonSerializer.DeserializeFromFile(path);
 
                 var compatibilityProfile = new CompatibilityProfileData(compatibilityProfileMut);
 
-                _profileCache[path] = compatibilityProfile;
-
-                return compatibilityProfile;
-            }
+                return new CompatibilityProfileCacheEntry(
+                    compatibilityProfileMut,
+                    compatibilityProfile);
+            }));
         }
 
-        /// <summary>
-        /// Clear all loaded profiles from this loader.
-        /// </summary>
-        public void ClearCache()
+        private CompatibilityProfileData GetUnionProfile(DirectoryInfo profileDir)
         {
-            lock (_loaderLock)
+            IEnumerable<CompatibilityProfileCacheEntry> profiles = GetProfilesFromPaths(profileDir.EnumerateFiles("*.json")
+                .Where(file => file.Name.IndexOf("union", StringComparison.OrdinalIgnoreCase) < 0)
+                .Select(file => file.FullName));
+
+            string unionId = GetUnionIdFromProfiles(profiles);
+            string unionPath = Path.Combine(profileDir.FullName, unionId + ".json");
+
+            return _profileCache.GetOrAdd(unionPath, new Lazy<CompatibilityProfileCacheEntry>(() => {
+                try
+                {
+                    // We read the ID first to avoid needing to rehydrate MBs of unneeded JSON
+                    if (JsonProfileSerializer.ReadIdFromProfileFile(unionPath) == unionId)
+                    {
+                        CompatibilityProfileDataMut loadedUnionProfile = _jsonSerializer.DeserializeFromFile(unionPath);
+
+                        // This is unlikely, but the ID has limited entropy
+                        if (UnionMatchesProfiles(loadedUnionProfile, profiles))
+                        {
+                            return new CompatibilityProfileCacheEntry(
+                                loadedUnionProfile,
+                                new CompatibilityProfileData(loadedUnionProfile));
+                        }
+                    }
+
+                    // We found the union file, but it didn't match for some reason
+                    File.Delete(unionPath);
+                }
+                catch (Exception)
+                {
+                    // Do nothing, we will now generate the profile
+                }
+
+                // Loading the union file failed, so we are forced to generate it
+                CompatibilityProfileDataMut generatedUnionProfile = ProfileCombination.UnionMany(unionId, profiles.Select(p => p.MutableProfileData));
+
+                return new CompatibilityProfileCacheEntry(
+                    generatedUnionProfile,
+                    new CompatibilityProfileData(generatedUnionProfile));
+            })).Value.Profile;
+        }
+
+        private static string GetUnionIdFromProfiles(IEnumerable<CompatibilityProfileCacheEntry> profiles)
+        {
+            // Build an order-independent hashcode
+            int hash = 0;
+            foreach (CompatibilityProfileCacheEntry profile in profiles)
             {
-                _profileCache.Clear();
+                unchecked
+                {
+                    hash += profile.Profile.Id.GetHashCode();
+                }
             }
+
+            // Return a hex representation of the hashcode
+            return "union" + hash.ToString("x");
+        }
+
+        private static bool UnionMatchesProfiles(
+            CompatibilityProfileDataMut unionProfile,
+            IEnumerable<CompatibilityProfileCacheEntry> profiles)
+        {
+            var idsToSee = new HashSet<string>(unionProfile.ConstituentProfiles);
+            foreach (CompatibilityProfileCacheEntry profile in profiles)
+            {
+                // Check that every ID is in the list
+                if (!idsToSee.Remove(profile.Profile.Id))
+                {
+                    return false;
+                }
+            }
+
+            // Check that there are no other IDs in the profile
+            return idsToSee.Count == 0;
+        }
+
+        private class CompatibilityProfileCacheEntry
+        {
+            public CompatibilityProfileCacheEntry(
+                CompatibilityProfileDataMut mutableProfileData,
+                CompatibilityProfileData profile)
+            {
+                MutableProfileData = mutableProfileData;
+                Profile = profile;
+            }
+
+            public CompatibilityProfileDataMut MutableProfileData { get; }
+
+            public CompatibilityProfileData Profile { get; }
         }
     }
 }
