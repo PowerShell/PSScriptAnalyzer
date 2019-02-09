@@ -24,8 +24,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
     /// </summary>
     public class CompatibilityProfileLoader
     {
-        private static readonly Regex s_unionFileRegex = new Regex("[a-fA-F0-9]{8}.json", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
         private static readonly Lazy<CompatibilityProfileLoader> s_sharedInstance = new Lazy<CompatibilityProfileLoader>(() => new CompatibilityProfileLoader());
 
         private readonly JsonProfileSerializer _jsonSerializer;

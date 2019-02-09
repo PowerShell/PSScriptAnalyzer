@@ -274,8 +274,8 @@ function Test-ScriptAnalyzer
 
     END {
         $testModulePath = Join-Path "${projectRoot}" -ChildPath out
-        $testResultsFile = Join-Path ${projectRoot} -childPath TestResults.xml
-        $testScripts = "${projectRoot}\Tests\Engine,${projectRoot}\Tests\Rules,${projectRoot}\Tests\Documentation"
+        $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
+        $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
         try {
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
