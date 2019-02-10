@@ -117,9 +117,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (CompatibilityProfileData targetProfile in _compatibilityTargets)
                 {
                     // If the target has this command, everything is good
-                    if (targetProfile.Runtime.Commands.ContainsKey(commandName))
+                    if (targetProfile.Runtime.Commands.TryGetValue(commandName, out IReadOnlyList<CommandData> matchedCommands))
                     {
-                        // TODO: Check parameters
+                        // Now check that the parameters on the command are available on all target platforms
+                        CheckCommandInvocationParameters(targetProfile, commandName, commandAst, matchedCommands);
                         continue;
                     }
 
@@ -139,6 +140,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             public override IEnumerable<DiagnosticRecord> GetDiagnosticRecords()
             {
                 return _diagnosticAccumulator;
+            }
+
+            private void CheckCommandInvocationParameters(
+                CompatibilityProfileData targetProfile,
+                string commandName,
+                CommandAst commandAst,
+                IEnumerable<CommandData> commandsToCheck)
+            {
+                // TODO:
+                // Ideally we would go through each command and emulate the parameter binding algorithm
+                // to work out what positions and what parameters will and won't work,
+                // but this is very involved.
+                // For now, we'll just check that the parameters exist
+
+                foreach (CommandElementAst commandElement in commandAst.CommandElements)
+                {
+                    var param = commandElement as CommandParameterAst;
+                    if (commandElement == null)
+                    {
+                        continue;
+                    }
+
+                    bool isGoodParam = false;
+                    foreach (CommandData command in commandsToCheck)
+                    {
+                        isGoodParam |= command.Parameters.ContainsKey(param.ParameterName);
+                    }
+
+                    if (isGoodParam)
+                    {
+                        continue;
+                    }
+
+                    _diagnosticAccumulator.Add(CommandCompatibilityDiagnostic.CreateForParameter(
+                        param.ParameterName,
+                        commandName,
+                        targetProfile.Platform,
+                        param.Extent,
+                        _analyzedFileName,
+                        _rule));
+                }
             }
         }
     }
@@ -167,12 +209,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IRule rule,
             IEnumerable<CorrectionExtent> suggestedCorrections = null)
         {
-            string message = String.Format(
+            string message = string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.UseCompatibleCommandsError,
                 commandName,
                 platform.PowerShell.Version,
-                platform.OperatingSystem.Name);
+                platform.OperatingSystem.FriendlyName);
 
             return new CommandCompatibilityDiagnostic(
                 commandName,
@@ -185,6 +227,45 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 suggestedCorrections: suggestedCorrections);
         }
 
+        /// <summary>
+        /// Create a compatibility diagnostic for an incompatible parameter.
+        /// </summary>
+        /// <param name="parameterName">The name of the incompatible parameter.</param>
+        /// <param name="commandName">The name of the command where the parameter is incompatible.</param>
+        /// <param name="platform">The platform where the parameter is incompatible.</param>
+        /// <param name="extent">The AST extent of the incompatible invocation.</param>
+        /// <param name="analyzedFileName">The path of the script where the incompatibility has been found.</param>
+        /// <param name="rule">The rule that found the incompatibility.</param>
+        /// <param name="suggestedCorrections">Any suggested corrections, may be null.</param>
+        /// <returns></returns>
+        public static CommandCompatibilityDiagnostic CreateForParameter(
+            string parameterName,
+            string commandName,
+            PlatformData platform,
+            IScriptExtent extent,
+            string analyzedFileName,
+            IRule rule,
+            IEnumerable<CorrectionExtent> suggestedCorrections = null)
+        {
+            string message = string.Format(
+                CultureInfo.CurrentCulture,
+                "The parameter '{0}' is not available for command '{1}' in PowerShell '{2}' on '{3}'",
+                parameterName,
+                commandName,
+                platform.PowerShell.Version,
+                platform.OperatingSystem.FriendlyName);
+
+            return new CommandCompatibilityDiagnostic(
+                commandName,
+                platform,
+                message,
+                extent,
+                rule.GetName(),
+                ruleId: null,
+                analyzedFileName: analyzedFileName,
+                parameterName: parameterName);
+        }
+
         private CommandCompatibilityDiagnostic(
             string incompatibleCommand,
             PlatformData targetPlatform,
@@ -193,6 +274,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             string ruleName,
             string ruleId,
             string analyzedFileName,
+            string parameterName = null,
             IEnumerable<CorrectionExtent> suggestedCorrections = null)
             : base(
                 message,
@@ -211,6 +293,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         /// <value></value>
         public string Command { get; }
+
+        /// <summary>
+        /// The name of the incompatible command, if any
+        /// </summary>
+        public string Parameter { get; }
 
         /// <summary>
         /// The platform where the command is incompatible.

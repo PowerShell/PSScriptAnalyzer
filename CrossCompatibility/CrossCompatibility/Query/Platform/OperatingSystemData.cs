@@ -71,5 +71,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
         /// The self-reported "pretty name" of the Linux distribution, if any.
         /// </summary>
         public string DistributionPrettyName => _operatingSystemData.DistributionPrettyName;
+
+        /// <summary>
+        /// The human-readable name of this operating system
+        /// </summary>
+        public string FriendlyName => Family == OSFamily.Linux ? DistributionPrettyName : Name;
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MemberDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.MemberData;
@@ -22,11 +23,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public MemberData(MemberDataMut memberData)
         {
             _memberData = memberData;
-            Fields = memberData.Fields?.ToDictionary(f => f.Key, f => new FieldData(f.Key, f.Value));
-            Properties = memberData.Properties?.ToDictionary(p => p.Key, p => new PropertyData(p.Key, p.Value));
+            Fields = memberData.Fields?.ToDictionary(f => f.Key, f => new FieldData(f.Key, f.Value), StringComparer.OrdinalIgnoreCase);
+            Properties = memberData.Properties?.ToDictionary(p => p.Key, p => new PropertyData(p.Key, p.Value), StringComparer.OrdinalIgnoreCase);
             Indexers = memberData.Indexers?.Select(i => new IndexerData(i)).ToArray();
-            Events = memberData.Events?.ToDictionary(e => e.Key, e => new EventData(e.Key, e.Value));
-            NestedTypes = memberData.NestedTypes?.ToDictionary(t => t.Key, t => new TypeData(t.Key, t.Value));
+            Events = memberData.Events?.ToDictionary(e => e.Key, e => new EventData(e.Key, e.Value), StringComparer.OrdinalIgnoreCase);
+            NestedTypes = memberData.NestedTypes?.ToDictionary(t => t.Key, t => new TypeData(t.Key, t.Value), StringComparer.OrdinalIgnoreCase);
+            Methods = memberData.Methods?.ToDictionary(m => m.Key, m => new MethodData(m.Key, m.Value), StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -43,6 +45,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// Lookup table of all properties on the type.
         /// </summary>
         public IReadOnlyDictionary<string, PropertyData> Properties { get; }
+
+        /// <summary>
+        /// Lookup table of all methods on the type.
+        /// </summary>
+        public IReadOnlyDictionary<string, MethodData> Methods { get; }
 
         /// <summary>
         /// List of all indexers on the type.

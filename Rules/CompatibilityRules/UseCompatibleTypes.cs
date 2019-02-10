@@ -133,8 +133,141 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         return AstVisitAction.Continue;
                     }
 
-                    TryFindTypeIncompatibilities(typeNameStringExp.Value, typeNameStringExp.Extent);
+                    // We need the PowerShell parser to turn this into something structured now
+                    TypeExpressionAst typeNameAst = (TypeExpressionAst)Parser.ParseInput("["+typeNameStringExp.Value+"]", out Token[] tokens, out ParseError[] errors)
+                        .Find(ast => ast is TypeExpressionAst, true);
+
+                    if (typeNameAst == null)
+                    {
+                        return AstVisitAction.Continue;
+                    }
+
+                    TryFindTypeIncompatibilities(typeNameAst.TypeName);
                     return AstVisitAction.Continue;
+                }
+
+                return AstVisitAction.Continue;
+            }
+
+            public override AstVisitAction VisitInvokeMemberExpression(InvokeMemberExpressionAst methodCallAst)
+            {
+                // Look for static method invocations not supported
+                if (!methodCallAst.Static)
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                if (!(methodCallAst.Expression is TypeExpressionAst typeExpr))
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                if (!(methodCallAst.Member is StringConstantExpressionAst methodNameAst))
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                // We only need to get the full type name once -- from the union profile
+                string typeName = TypeNaming.GetOuterMostTypeName(_anyProfile.Runtime.Types.TypeAcceleratorNames, typeExpr.TypeName);
+                if (!_anyProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData unionType))
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                if (!unionType.Static.Methods.ContainsKey(methodNameAst.Value))
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                foreach (CompatibilityProfileData targetProfile in _compatibilityTargets)
+                {
+                    if (!targetProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData typeData))
+                    {
+                        continue;
+                    }
+
+                    if (typeData.Static.Methods.ContainsKey(methodNameAst.Value))
+                    {
+                        continue;
+                    }
+
+                    _diagnosticAccumulator.Add(TypeCompatibilityDiagnostic.CreateForStaticMethod(
+                        typeName,
+                        methodNameAst.Value,
+                        targetProfile.Platform,
+                        methodCallAst.Extent,
+                        _analyzedFileName,
+                        _rule));
+                }
+
+                return AstVisitAction.Continue;
+            }
+
+            public override AstVisitAction VisitMemberExpression(MemberExpressionAst memberExpressionAst)
+            {
+                // Can only check static members
+                if (!memberExpressionAst.Static)
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                // Need to make sure the calling expression is a TypeExpressionAst (this should be ensured by the IsStatic)
+                if (!(memberExpressionAst.Expression is TypeExpressionAst typeExpressionAst))
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                // Need a static constant member name
+                if (!(memberExpressionAst.Member is StringConstantExpressionAst memberNameAst))
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                // Get the outer type and make sure it exists in the anyProfile
+                string typeName = TypeNaming.GetOuterMostTypeName(_anyProfile.Runtime.Types.TypeAcceleratorNames, typeExpressionAst.TypeName);
+                if (!_anyProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData unionType))
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                // Make sure the member also exists on the type from the anyProfile, and check what kind of member it is
+                bool isProperty = unionType.Static.Properties.ContainsKey(memberNameAst.Value);
+                bool isEvent = !isProperty && unionType.Static.Events.ContainsKey(memberNameAst.Value);
+                bool isField = !isEvent && unionType.Static.Fields.ContainsKey(memberNameAst.Value);
+                if (!isField)
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                foreach (CompatibilityProfileData targetProfile in _compatibilityTargets)
+                {
+                    if (!targetProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData profileType))
+                    {
+                        continue;
+                    }
+
+                    if (isProperty && profileType.Static.Properties.ContainsKey(memberNameAst.Value))
+                    {
+                        continue;
+                    }
+
+                    if (isEvent && profileType.Static.Events.ContainsKey(memberNameAst.Value))
+                    {
+                        continue;
+                    }
+
+                    if (isField && profileType.Static.Fields.ContainsKey(memberNameAst.Value))
+                    {
+                        continue;
+                    }
+
+                    _diagnosticAccumulator.Add(TypeCompatibilityDiagnostic.CreateForStaticProperty(
+                        typeName,
+                        memberNameAst.Value,
+                        targetProfile.Platform,
+                        memberExpressionAst.Extent,
+                        _analyzedFileName,
+                        _rule));
                 }
 
                 return AstVisitAction.Continue;
@@ -388,6 +521,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 rule.GetName(),
                 ruleId: null,
                 analyzedFileName: analyzedFileName,
+                kind: TypeCompatibilityDiagnosticKind.TypeAccelerator,
                 suggestedCorrections: suggestedCorrections);
         }
 
@@ -425,6 +559,91 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 rule.GetName(),
                 ruleId: null,
                 analyzedFileName: analyzedFileName,
+                kind: TypeCompatibilityDiagnosticKind.Type,
+                suggestedCorrections: suggestedCorrections);
+        }
+
+        /// <summary>
+        /// Create a PowerShell type incompatibility diagnostic
+        /// for a static method invocation.
+        /// </summary>
+        /// <param name="typeName">The full name of the type where the incompatibility occurs.</param>
+        /// <param name="methodName">The name of the method that is incompatible.</param>
+        /// <param name="platform">The PowerShell platform where the type is incompatible.</param>
+        /// <param name="extent">The AST extent where the incompatible type appears.</param>
+        /// <param name="analyzedFileName">The path of the script being analyzed.</param>
+        /// <param name="rule">The type incompatibility rule generating the diagnostic.</param>
+        /// <param name="suggestedCorrections">Any suggested replacements in the script to prevent the incompatibility.</param>
+        /// <returns></returns>
+        public static TypeCompatibilityDiagnostic CreateForStaticMethod(
+            string typeName,
+            string methodName,
+            PlatformData platform,
+            IScriptExtent extent,
+            string analyzedFileName,
+            IRule rule,
+            IEnumerable<CorrectionExtent> suggestedCorrections = null)
+        {
+            string message = String.Format(
+                CultureInfo.CurrentCulture,
+                "The method '{0}' on type '{1}' is not available in PowerShell {2} on platform '{3}'",
+                methodName,
+                typeName,
+                platform.PowerShell.Version,
+                platform.OperatingSystem.FriendlyName);
+
+            return new TypeCompatibilityDiagnostic(
+                typeName,
+                platform,
+                message,
+                extent,
+                rule.GetName(),
+                memberName: methodName,
+                ruleId: null,
+                analyzedFileName: analyzedFileName,
+                kind: TypeCompatibilityDiagnosticKind.Type,
+                suggestedCorrections: suggestedCorrections);
+        }
+
+        /// <summary>
+        /// Create a PowerShell type incompatibility diagnostic
+        /// for a static property usage.
+        /// </summary>
+        /// <param name="typeName">The full name of the type where the incompatibility occurs.</param>
+        /// <param name="propertyName">The name of the property that is incompatible.</param>
+        /// <param name="platform">The PowerShell platform where the type is incompatible.</param>
+        /// <param name="extent">The AST extent where the incompatible type appears.</param>
+        /// <param name="analyzedFileName">The path of the script being analyzed.</param>
+        /// <param name="rule">The type incompatibility rule generating the diagnostic.</param>
+        /// <param name="suggestedCorrections">Any suggested replacements in the script to prevent the incompatibility.</param>
+        /// <returns></returns>
+        public static TypeCompatibilityDiagnostic CreateForStaticProperty(
+            string typeName,
+            string propertyName,
+            PlatformData platform,
+            IScriptExtent extent,
+            string analyzedFileName,
+            IRule rule,
+            IEnumerable<CorrectionExtent> suggestedCorrections = null)
+        {
+            string message = String.Format(
+                CultureInfo.CurrentCulture,
+                "The member '{0}' on type '{1}' is not available in PowerShell {2} on platform '{3}'",
+                propertyName,
+                typeName,
+                platform.PowerShell.Version,
+                platform.OperatingSystem.FriendlyName);
+
+            return new TypeCompatibilityDiagnostic(
+                typeName,
+                platform,
+                message,
+                extent,
+                rule.GetName(),
+                memberName: propertyName,
+                ruleId: null,
+                analyzedFileName: analyzedFileName,
+                kind: TypeCompatibilityDiagnosticKind.Type,
                 suggestedCorrections: suggestedCorrections);
         }
 
@@ -436,7 +655,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             string ruleName,
             string ruleId,
             string analyzedFileName,
-            bool isTypeAccelerator = false,
+            TypeCompatibilityDiagnosticKind kind,
+            string memberName = null,
             IEnumerable<CorrectionExtent> suggestedCorrections = null)
             : base(
                 message,
@@ -448,7 +668,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             Type = incompatibleCommand;
             TargetPlatform = targetPlatform;
-            IsTypeAccelerator = isTypeAccelerator;
+            MemberName = memberName;
+            Kind = kind;
         }
 
         /// <summary>
@@ -462,8 +683,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public PlatformData TargetPlatform { get; }
 
         /// <summary>
-        /// True if the type refers to a type accelerator, false otherwise.
+        /// Denotes what kind of type diagnostic this is.
         /// </summary>
-        public bool IsTypeAccelerator { get; }
+        public TypeCompatibilityDiagnosticKind Kind { get; }
+
+        /// <summary>
+        /// If this diagnostic is about a type member, the name of that member.
+        /// </summary>
+        public string MemberName { get; }
+    }
+
+    /// <summary>
+    /// Label for the different kinds of type compatibility diagnostic that may occur
+    /// </summary>
+    public enum TypeCompatibilityDiagnosticKind
+    {
+        /// <summary>Denotes a type compatibility diagnostic about the usage of a type.</summary>
+        Type,
+        /// <summary>Denotes a type compatibility diagnostic about the usage of a type accelerator.</summary>
+        TypeAccelerator,
+        /// <summary>Denotes a type compatibility diagnostic about the usage of a static method.</summary>
+        StaticMethod,
+        /// <summary>Denotes a type compatibility diagnostic about the usage of a static property.</summary>
+        StaticProperty
     }
 }

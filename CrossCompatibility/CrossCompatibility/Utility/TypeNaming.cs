@@ -44,6 +44,27 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return typeName;
         }
 
+        public static string GetOuterMostTypeName(IReadOnlyDictionary<string, string> typeAccelerators, ITypeName typeName)
+        {
+            switch (typeName)
+            {
+                case TypeName simpleTypeName:
+                    return ExpandSimpleTypeName(typeAccelerators, simpleTypeName.FullName);
+
+                case ArrayTypeName arrayTypeName:
+                    return GetOuterMostTypeName(typeAccelerators, arrayTypeName.ElementType);
+
+                case GenericTypeName genericTypeName:
+                    return GetOuterMostTypeName(typeAccelerators, genericTypeName.TypeName);
+
+                case ReflectionTypeName reflectionTypeName:
+                    return GetFullTypeName(reflectionTypeName.GetReflectionType());
+
+                default:
+                    throw new ArgumentException($"{nameof(typeName)} is not a known instantiation of ITypeName. Type: {typeName.GetType()}");
+            }
+        }
+
         /// <summary>
         /// Get the expanded .NET type name from a PowerShell ITypeName object.
         /// </summary>
