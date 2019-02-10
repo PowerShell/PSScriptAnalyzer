@@ -11,6 +11,7 @@ using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Text;
 
 #if NETSTANDARD2_0
 using System.Runtime.InteropServices;
@@ -167,6 +168,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 // Loading the union file failed, so we are forced to generate it
                 CompatibilityProfileDataMut generatedUnionProfile = ProfileCombination.UnionMany(unionId, profiles.Select(p => p.MutableProfileData));
 
+                // Write the union to the filesystem for faster startup later
+                Task.Run(() => {
+                    _jsonSerializer.SerializeToFile(generatedUnionProfile, unionPath);
+                });
+
                 return new CompatibilityProfileCacheEntry(
                     generatedUnionProfile,
                     new CompatibilityProfileData(generatedUnionProfile));
@@ -181,12 +187,51 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 unchecked
                 {
-                    hash += profile.Profile.Id.GetHashCode();
+                    hash += GetDeterministicIdCode(profile.Profile.Id);
                 }
             }
 
             // Return a hex representation of the hashcode
-            return "union" + hash.ToString("x");
+            return "union_" + hash.ToString("x");
+        }
+
+        private static int GetDeterministicIdCode(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return 0;
+            }
+
+            byte[] idBytes = Encoding.UTF8.GetBytes(id);
+            int code = 0;
+            for (int i = 0; i < idBytes.Length; i += 4)
+            {
+                int currInt;
+
+                int remainingBytes = idBytes.Length - i;
+                if (remainingBytes >= 4)
+                {
+                    currInt = BitConverter.ToInt32(idBytes, i);
+                }
+                else
+                {
+                    var lastBytes = new byte[4];
+                    for (int j = 0; j < 4; j++)
+                    {
+                        lastBytes[j] = j < remainingBytes
+                            ? idBytes[i + j]
+                            : (byte)0;
+                    }
+                    currInt = BitConverter.ToInt32(lastBytes, 0);
+                }
+
+                unchecked
+                {
+                    code += currInt;
+                }
+            }
+
+            return code;
         }
 
         private static bool UnionMatchesProfiles(

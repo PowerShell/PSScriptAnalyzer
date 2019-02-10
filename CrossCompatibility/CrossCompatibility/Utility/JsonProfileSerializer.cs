@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.PowerShell.CrossCompatibility.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -116,7 +117,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         public void SerializeToFile(object data, string filePath)
         {
             using (var fileStream = File.OpenWrite(filePath))
-            using (var streamWriter = new StreamWriter(fileStream))
+            using (var streamWriter = new StreamWriter(fileStream, Encoding.UTF8))
             {
                 _serializer.Serialize(streamWriter, data);
             }
