@@ -151,17 +151,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public override AstVisitAction VisitInvokeMemberExpression(InvokeMemberExpressionAst methodCallAst)
             {
-                // Look for static method invocations not supported
+                // We can only analyze static invocations
                 if (!methodCallAst.Static)
                 {
                     return AstVisitAction.Continue;
                 }
 
+                // We need to make sure the expression is a type literal so we can analyze it
                 if (!(methodCallAst.Expression is TypeExpressionAst typeExpr))
                 {
                     return AstVisitAction.Continue;
                 }
 
+                // Also ensure the member invocation is a static string
                 if (!(methodCallAst.Member is StringConstantExpressionAst methodNameAst))
                 {
                     return AstVisitAction.Continue;
@@ -174,23 +176,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.Continue;
                 }
 
-                if (!unionType.Static.Methods.ContainsKey(methodNameAst.Value))
-                {
-                    return AstVisitAction.Continue;
-                }
-
                 foreach (CompatibilityProfileData targetProfile in _compatibilityTargets)
                 {
+                    // If the type isn't defined in the target, that will be dealt with later
                     if (!targetProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData typeData))
                     {
                         continue;
                     }
 
-                    if (typeData.Static.Methods.ContainsKey(methodNameAst.Value))
+                    // If the member is defined here as well, nothing to complain about
+                    if (typeData.Static?.Methods?.ContainsKey(methodNameAst.Value) ?? false)
                     {
                         continue;
                     }
 
+                    // The member on this type is defined in the union, but not in the target, so we must complain
                     _diagnosticAccumulator.Add(TypeCompatibilityDiagnostic.CreateForStaticMethod(
                         typeName,
                         methodNameAst.Value,
@@ -211,7 +211,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.Continue;
                 }
 
-                // Need to make sure the calling expression is a TypeExpressionAst (this should be ensured by the IsStatic)
+                // Need to make sure the calling expression is a TypeExpressionAst
                 if (!(memberExpressionAst.Expression is TypeExpressionAst typeExpressionAst))
                 {
                     return AstVisitAction.Continue;
@@ -225,42 +225,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 // Get the outer type and make sure it exists in the anyProfile
                 string typeName = TypeNaming.GetOuterMostTypeName(_anyProfile.Runtime.Types.TypeAcceleratorNames, typeExpressionAst.TypeName);
-                if (!_anyProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData unionType))
-                {
-                    return AstVisitAction.Continue;
-                }
-
-                // Make sure the member also exists on the type from the anyProfile, and check what kind of member it is
-                bool isProperty = unionType.Static.Properties.ContainsKey(memberNameAst.Value);
-                bool isEvent = !isProperty && unionType.Static.Events.ContainsKey(memberNameAst.Value);
-                bool isField = !isEvent && unionType.Static.Fields.ContainsKey(memberNameAst.Value);
-                if (!isField)
+                if (!_anyProfile.Runtime.Types.Types.ContainsKey(typeName))
                 {
                     return AstVisitAction.Continue;
                 }
 
                 foreach (CompatibilityProfileData targetProfile in _compatibilityTargets)
                 {
+                    // The type isn't defined in the target - we'll get to that in another visit
                     if (!targetProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData profileType))
                     {
                         continue;
                     }
 
-                    if (isProperty && profileType.Static.Properties.ContainsKey(memberNameAst.Value))
+                    // Check properties in the target
+                    if (profileType.Static?.Properties?.ContainsKey(memberNameAst.Value) ?? false)
                     {
                         continue;
                     }
 
-                    if (isEvent && profileType.Static.Events.ContainsKey(memberNameAst.Value))
+                    // Then check events
+                    if (profileType.Static?.Events?.ContainsKey(memberNameAst.Value) ?? false)
                     {
                         continue;
                     }
 
-                    if (isField && profileType.Static.Fields.ContainsKey(memberNameAst.Value))
+                    // Then check fields
+                    if (profileType.Static?.Fields?.ContainsKey(memberNameAst.Value) ?? false)
                     {
                         continue;
                     }
 
+                    // There's no such member in this target
                     _diagnosticAccumulator.Add(TypeCompatibilityDiagnostic.CreateForStaticProperty(
                         typeName,
                         memberNameAst.Value,

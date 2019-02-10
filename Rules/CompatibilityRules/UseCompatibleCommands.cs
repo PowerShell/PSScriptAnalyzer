@@ -156,8 +156,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 foreach (CommandElementAst commandElement in commandAst.CommandElements)
                 {
-                    var param = commandElement as CommandParameterAst;
-                    if (commandElement == null)
+                    if (!(commandElement is CommandParameterAst parameterAst))
                     {
                         continue;
                     }
@@ -165,7 +164,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     bool isGoodParam = false;
                     foreach (CommandData command in commandsToCheck)
                     {
-                        isGoodParam |= command.Parameters.ContainsKey(param.ParameterName);
+                        isGoodParam |= command.Parameters?.ContainsKey(parameterAst.ParameterName) ?? false;
                     }
 
                     if (isGoodParam)
@@ -174,10 +173,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
 
                     _diagnosticAccumulator.Add(CommandCompatibilityDiagnostic.CreateForParameter(
-                        param.ParameterName,
+                        parameterAst.ParameterName,
                         commandName,
                         targetProfile.Platform,
-                        param.Extent,
+                        parameterAst.Extent,
                         _analyzedFileName,
                         _rule));
                 }
@@ -286,6 +285,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             Command = incompatibleCommand;
             TargetPlatform = targetPlatform;
+            Parameter = parameterName;
         }
 
         /// <summary>
