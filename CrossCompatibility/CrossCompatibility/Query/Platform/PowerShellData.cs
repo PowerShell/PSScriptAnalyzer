@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using PowerShellDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Platform.PowerShellData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
@@ -21,6 +22,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
         public PowerShellData(PowerShellDataMut powerShellData)
         {
             _powerShellData = powerShellData;
+            CompatibleVersions = new ReadOnlyCollection<Version>(_powerShellData.CompatibleVersions);
         }
 
         /// <summary>
@@ -36,7 +38,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
         /// <summary>
         /// Output of $PSVersionTable.PSCompatibleVersions.
         /// </summary>
-        public IReadOnlyList<Version> CompatibleVersions => _powerShellData.CompatibleVersions;
+        public IReadOnlyList<Version> CompatibleVersions { get; }
 
         /// <summary>
         /// Output of $PSVersionTable.PSRemotingProtocolVersion.
