@@ -187,6 +187,43 @@ Get-TestFailures
 
 [Back to ToC](#table-of-contents)
 
+Parser Errors
+=============
+
+In prior versions of ScriptAnalyer, errors found during parsing were reported as errors and diagnostic records were not created.
+ScriptAnalyzer now emits parser errors as diagnostic records in the output stream with other diagnostic records.
+
+```powershell
+PS> Invoke-ScriptAnalyzer -ScriptDefinition '"b" = "b"; function eliminate-file () { }'
+
+RuleName            Severity   ScriptName Line Message
+--------            --------   ---------- ---- -------
+InvalidLeftHandSide ParseError            1    The assignment expression is not
+                                               valid. The input to an
+                                               assignment operator must be an
+                                               object that is able to accept
+                                               assignments, such as a variable
+                                               or a property.
+PSUseApprovedVerbs  Warning               1    The cmdlet 'eliminate-file' uses an
+                                               unapproved verb.
+```
+
+The RuleName is set to the `ErrorId` of the parser error.
+
+If ParseErrors would like to be suppressed, do not include it as a value in the `-Severity` parameter.
+
+```powershell
+PS> Invoke-ScriptAnalyzer -ScriptDefinition '"b" = "b"; function eliminate-file () { }' -Severity Warning
+
+RuleName           Severity ScriptName Line Message
+--------           -------- ---------- ---- -------
+PSUseApprovedVerbs Warning             1    The cmdlet 'eliminate-file' uses an
+                                            unapproved verb.
+```
+
+
+
+
 Suppressing Rules
 =================
 
@@ -271,6 +308,8 @@ Param()
 ```
 
 **Note**: Rule suppression is currently supported only for built-in rules.
+
+**Note**: Parser Errors cannot be suppressed via the `SuppressMessageAttribute`
 
 [Back to ToC](#table-of-contents)
 

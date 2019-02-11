@@ -31,6 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private IOutputWriter outputWriter;
         private Dictionary<string, object> settings;
+        private readonly Regex s_aboutHelpRegex = new Regex("^about_.*help\\.txt$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 #if !CORECLR
         private CompositionContainer container;
 #endif // !CORECLR
@@ -1526,23 +1527,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
 
-            if (relevantParseErrors != null && relevantParseErrors.Count > 0)
+            // Add parse errors first if requested!
+            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
             {
-                foreach (var parseError in relevantParseErrors)
+                var results = new List<DiagnosticRecord>();
+                foreach ( ParseError parseError in relevantParseErrors )
                 {
                     string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
-                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
+                    results.Add(new DiagnosticRecord(
+                        parseError.Message,
+                        parseError.Extent,
+                        parseError.ErrorId.ToString(),
+                        DiagnosticSeverity.ParseError,
+                        String.Empty // no script file
+                        )
+                        );
                 }
+                diagnosticRecords.AddRange(results);
             }
 
-            if (relevantParseErrors != null && relevantParseErrors.Count > 10)
-            {
-                string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessageForScriptDefinition);
-                this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, scriptDefinition));
-
-                return new List<DiagnosticRecord>();
-            }
-
+            // now, analyze the script definition
             return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty));
         }
 
@@ -1839,55 +1843,58 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, filePath));
             var diagnosticRecords = new List<DiagnosticRecord>();
 
-            //Parse the file
-            if (File.Exists(filePath))
-            {
-                // processing for non help script
-                if (!(Path.GetFileName(filePath).ToLower().StartsWith("about_") && Path.GetFileName(filePath).ToLower().EndsWith(".help.txt")))
-                {
-                    try
-                    {
-                        scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
-                    }
-                    catch (Exception e)
-                    {
-                        this.outputWriter.WriteWarning(e.ToString());
-                        return null;
-                    }
-#if !PSV3
-                    //try parsing again
-                    if (TrySaveModules(errors, scriptAst))
-                    {
-                        scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
-                    }
-#endif //!PSV3
-                    var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
-
-                    //Runspace.DefaultRunspace = oldDefault;
-                    if (relevantParseErrors != null && relevantParseErrors.Count > 0)
-                    {
-                        foreach (var parseError in relevantParseErrors)
-                        {
-                            string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, parseError.Extent.File, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
-                            this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
-                        }
-                    }
-
-                    if (relevantParseErrors != null && relevantParseErrors.Count > 10)
-                    {
-                        string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
-                        this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));
-                        return new List<DiagnosticRecord>();
-                    }
-                }
-            }
-            else
+            // If the file doesn't exist, return
+            if (! File.Exists(filePath))
             {
                 this.outputWriter.ThrowTerminatingError(new ErrorRecord(new FileNotFoundException(),
                     string.Format(CultureInfo.CurrentCulture, Strings.InvalidPath, filePath),
                     ErrorCategory.InvalidArgument, filePath));
 
                 return null;
+            }
+
+            // short-circuited processing for a help file
+            // no parsing can really be done, but there are other rules to run (specifically encoding).
+            if ( s_aboutHelpRegex.IsMatch(Path.GetFileName(filePath)) )
+            {
+                return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
+            }
+
+            // Process script
+            try
+            {
+                scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+            }
+            catch (Exception e)
+            {
+                this.outputWriter.WriteWarning(e.ToString());
+                return null;
+            }
+#if !PSV3
+            //try parsing again
+            if (TrySaveModules(errors, scriptAst))
+            {
+                scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+            }
+#endif //!PSV3
+            IEnumerable<ParseError> relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
+
+            // First, add all parse errors if they've been requested
+            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
+            {
+                List<DiagnosticRecord> results = new List<DiagnosticRecord>();
+                foreach ( ParseError parseError in relevantParseErrors )
+                {
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
+                    results.Add(new DiagnosticRecord(
+                            parseError.Message,
+                            parseError.Extent,
+                            parseError.ErrorId.ToString(),
+                            DiagnosticSeverity.ParseError,
+                            filePath)
+                        );
+                }
+                diagnosticRecords.AddRange(results);
             }
 
             return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
