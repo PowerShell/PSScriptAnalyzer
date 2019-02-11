@@ -26,6 +26,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class UseCompatibleCommands : CompatibilityRule
     {
         /// <summary>
+        /// List of commands to ignore the compatibility of.
+        /// </summary>
+        [ConfigurableRuleProperty(new string[] {})]
+        public string[] IgnoreCommands { get; set; }
+
+        /// <summary>
         /// Get the common name of this rule.
         /// </summary>
         public override string GetCommonName()
@@ -61,7 +67,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         protected override CompatibilityVisitor CreateVisitor(string analyzedFileName)
         {
             IEnumerable<CompatibilityProfileData> compatibilityTargets = LoadCompatibilityProfiles(out CompatibilityProfileData unionProfile);
-            return new CommandCompatibilityVisitor(analyzedFileName, compatibilityTargets, unionProfile, rule: this);
+            return new CommandCompatibilityVisitor(analyzedFileName, compatibilityTargets, unionProfile, IgnoreCommands, rule: this);
         }
 
         private class CommandCompatibilityVisitor : CompatibilityVisitor
@@ -76,10 +82,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             private readonly UseCompatibleCommands _rule;
 
+            private readonly HashSet<string> _commandsToIgnore;
+
             public CommandCompatibilityVisitor(
                 string analyzedFileName,
                 IEnumerable<CompatibilityProfileData> compatibilityTargets,
                 CompatibilityProfileData anyProfile,
+                IEnumerable<string> commandsToIgnore,
                 UseCompatibleCommands rule)
             {
                 _analyzedFileName = analyzedFileName;
@@ -87,12 +96,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 _anyProfile = anyProfile;
                 _diagnosticAccumulator = new List<DiagnosticRecord>();
                 _rule = rule;
+                _commandsToIgnore = new HashSet<string>(commandsToIgnore, StringComparer.OrdinalIgnoreCase);
             }
 
             public override AstVisitAction VisitCommand(CommandAst commandAst)
             {
                 string commandName = commandAst?.GetCommandName();
                 if (commandName == null)
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                if (_commandsToIgnore.Contains(commandName))
                 {
                     return AstVisitAction.Continue;
                 }

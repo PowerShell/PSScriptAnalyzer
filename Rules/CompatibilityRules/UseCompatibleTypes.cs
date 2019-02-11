@@ -23,6 +23,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class UseCompatibleTypes : CompatibilityRule
     {
         /// <summary>
+        /// Full names of types or type accelerators to ignore the compatibility of.
+        /// </summary>
+        [ConfigurableRuleProperty(new string[] {})]
+        public string[] IgnoreTypes { get; set; }
+
+        /// <summary>
         /// Get the common name of this rule.
         /// </summary>
         public override string GetCommonName()
@@ -58,7 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         protected override CompatibilityVisitor CreateVisitor(string fileName)
         {
             IEnumerable<CompatibilityProfileData> targetProfiles = LoadCompatibilityProfiles(out CompatibilityProfileData unionProfile);
-            return new TypeCompatibilityVisitor(fileName, unionProfile, targetProfiles, this);
+            return new TypeCompatibilityVisitor(fileName, unionProfile, targetProfiles, IgnoreTypes, this);
         }
 
         private class TypeCompatibilityVisitor : CompatibilityVisitor
@@ -73,15 +79,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             private readonly UseCompatibleTypes _rule;
 
+            private readonly HashSet<string> _typesToIgnore;
+
             public TypeCompatibilityVisitor(
                 string analyzedFileName,
                 CompatibilityProfileData anyProfile,
                 IEnumerable<CompatibilityProfileData> compatibilityTargetProfiles,
+                IEnumerable<string> typesToIgnore,
                 UseCompatibleTypes rule)
             {
                 _analyzedFileName = analyzedFileName;
                 _anyProfile = anyProfile;
                 _compatibilityTargets = compatibilityTargetProfiles;
+                _typesToIgnore = new HashSet<string>(typesToIgnore, StringComparer.OrdinalIgnoreCase);
                 _rule = rule;
                 _diagnosticAccumulator = new List<DiagnosticRecord>();
             }
@@ -171,7 +181,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 // We only need to get the full type name once -- from the union profile
                 string typeName = TypeNaming.GetOuterMostTypeName(_anyProfile.Runtime.Types.TypeAcceleratorNames, typeExpr.TypeName);
-                if (!_anyProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData unionType))
+                if (_typesToIgnore.Contains(typeName) || !_anyProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData unionType))
                 {
                     return AstVisitAction.Continue;
                 }
@@ -225,7 +235,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 // Get the outer type and make sure it exists in the anyProfile
                 string typeName = TypeNaming.GetOuterMostTypeName(_anyProfile.Runtime.Types.TypeAcceleratorNames, typeExpressionAst.TypeName);
-                if (!_anyProfile.Runtime.Types.Types.ContainsKey(typeName))
+                if (_typesToIgnore.Contains(typeName) || !_anyProfile.Runtime.Types.Types.ContainsKey(typeName))
                 {
                     return AstVisitAction.Continue;
                 }
@@ -366,6 +376,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             private bool TryFindTypeIncompatibilities(string typeName, IScriptExtent extent)
             {
+                if (_typesToIgnore.Contains(typeName))
+                {
+                    return false;
+                }
+
                 if (IsTypeAcceleratorUnsupportedByTarget(typeName, out IReadOnlyList<PlatformData> unsupportedTypeAcceleratorTargets))
                 {
                     foreach (PlatformData target in unsupportedTypeAcceleratorTargets)
