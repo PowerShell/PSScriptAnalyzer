@@ -66,7 +66,7 @@ function Uninstall-ScriptAnalyzer
     [CmdletBinding(SupportsShouldProcess)]
     param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath PSScriptAnalyzer) )
     END {
-        if (Test-Path $ModulePath -and (Get-Item $ModulePath).PSIsContainer )
+        if ((Test-Path $ModulePath) -and (Get-Item $ModulePath).PSIsContainer )
         {
             Remove-Item -Force -Recurse $ModulePath
         }
