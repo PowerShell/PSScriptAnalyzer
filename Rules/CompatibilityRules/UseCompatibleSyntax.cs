@@ -174,11 +174,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public override AstVisitAction VisitInvokeMemberExpression(InvokeMemberExpressionAst methodCallAst)
             {
-                // Look for [typename]::new(...) syntax
+                // Look for [typename]::new(...) and [typename]::$dynamicMethodName syntax
 
                 if (!_targetVersions.Contains(s_v3) && !_targetVersions.Contains(s_v4))
                 {
                     return AstVisitAction.Continue;
+                }
+
+                if (_targetVersions.Contains(s_v3) && methodCallAst.Member is VariableExpressionAst)
+                {
+                    string message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.UseCompatibleSyntaxError,
+                        "dynamic method invocation",
+                        methodCallAst.Extent.Text,
+                        "3");
+
+                    _diagnosticAccumulator.Add(new DiagnosticRecord(
+                        message,
+                        methodCallAst.Extent,
+                        _rule.GetName(),
+                        _rule.Severity,
+                        _analyzedFilePath
+                    ));
                 }
 
                 if (!(methodCallAst.Expression is TypeExpressionAst typeExpressionAst))
