@@ -15,7 +15,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// </summary>
         /// <param name="functionData">The function data object.</param>
         /// <param name="name">The name of the function.</param>
-        public FunctionData(Modules.FunctionData functionData, string name)
+        public FunctionData(string name, Modules.FunctionData functionData)
             : base(name, functionData)
         {
         }

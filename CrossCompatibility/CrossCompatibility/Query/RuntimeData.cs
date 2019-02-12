@@ -27,6 +27,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         {
             Modules = runtimeData.Modules.ToDictionary(m => m.Key, m => (IReadOnlyDictionary<Version, ModuleData>)m.Value.ToDictionary(mv => mv.Key, mv => new ModuleData(m.Key, mv.Key, mv.Value)), StringComparer.OrdinalIgnoreCase);
             Types = new AvailableTypeData(runtimeData.Types);
+            Common = new CommonPowerShellData(runtimeData.Common);
 
             _commands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateCommandLookupTable(Modules.Values.SelectMany(mv => mv.Values)));
             _nativeCommands = new Lazy<NativeCommandLookupTable>(() => NativeCommandLookupTable.Create(runtimeData.NativeCommands));
@@ -52,6 +53,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// All the native commands/applications available to PowerShell.
         /// </summary>
         public NativeCommandLookupTable NativeCommands => _nativeCommands.Value;
+
+        /// <summary>
+        /// PowerShell runtime data not confined to a module.
+        /// </summary>
+        public CommonPowerShellData Common { get; }
 
         private static IReadOnlyDictionary<string, IReadOnlyList<CommandData>> CreateCommandLookupTable(
             IEnumerable<ModuleData> modules)
@@ -84,28 +90,17 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
                         ((List<CommandData>)commandTable[function.Key]).Add(function.Value);
                     }
                 }
-            }
 
-            // Add aliases in a second pass so that all the commands they point to are known
-            foreach (ModuleData module in modules)
-            {
                 if (module.Aliases != null)
                 {
-                    foreach (KeyValuePair<string, string> alias in module.Aliases)
+                    foreach (KeyValuePair<string, CommandData> alias in module.Aliases)
                     {
                         if (!commandTable.ContainsKey(alias.Key))
                         {
                             commandTable.Add(alias.Key, new List<CommandData>());
                         }
 
-                        // Link the alias to the actual command
-                        if (commandTable.ContainsKey(alias.Value))
-                        {
-                            // TODO: This isn't quite accurate, but we need more information
-                            // on which command the alias actually targets to do it properly
-                            ((List<CommandData>)commandTable[alias.Key]).AddRange(commandTable[alias.Value]);
-                            continue;
-                        }
+                        ((List<CommandData>)commandTable[alias.Key]).Add(alias.Value);
                     }
                 }
             }

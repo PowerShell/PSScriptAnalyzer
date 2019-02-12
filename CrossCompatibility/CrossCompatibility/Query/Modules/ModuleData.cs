@@ -27,9 +27,48 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
             Name = name;
             Version = version;
-            Functions = moduleData.Functions?.ToDictionary(f => f.Key, f => new FunctionData(f.Value, f.Key));
-            Cmdlets = moduleData.Cmdlets?.ToDictionary(c => c.Key, c => new CmdletData(c.Key, c.Value));
-            Aliases = moduleData.Aliases?.ToDictionary(a => a.Key, a => a.Value);
+
+            var functions = new Dictionary<string, FunctionData>(StringComparer.OrdinalIgnoreCase);
+            var cmdlets = new Dictionary<string, CmdletData>(StringComparer.OrdinalIgnoreCase);
+            var aliases = new Dictionary<string, CommandData>(StringComparer.OrdinalIgnoreCase);
+
+            if (moduleData.Functions != null)
+            {
+                foreach (KeyValuePair<string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.FunctionData> function in moduleData.Functions)
+                {
+                    functions.Add(function.Key, new FunctionData(function.Key, function.Value));
+                }
+            }
+
+            if (moduleData.Cmdlets != null)
+            {
+                foreach (KeyValuePair<string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.CmdletData> cmdlet in moduleData.Cmdlets)
+                {
+                    cmdlets.Add(cmdlet.Key, new CmdletData(cmdlet.Key, cmdlet.Value));
+                }
+            }
+
+            if (moduleData.Aliases != null)
+            {
+                foreach (KeyValuePair<string, string> alias in moduleData.Aliases)
+                {
+                    if (cmdlets.TryGetValue(alias.Value, out CmdletData cmdlet))
+                    {
+                        aliases.Add(alias.Key, cmdlet);
+                        continue;
+                    }
+
+                    if (functions.TryGetValue(alias.Value, out FunctionData function))
+                    {
+                        aliases.Add(alias.Key, function);
+                        continue;
+                    }
+                }
+            }
+
+            Functions = functions;
+            Cmdlets = cmdlets;
+            Aliases = aliases;
         }
 
         /// <summary>
@@ -65,6 +104,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// Aliases exported by the module.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Aliases { get; }
+        public IReadOnlyDictionary<string, CommandData> Aliases { get; }
     }
 }

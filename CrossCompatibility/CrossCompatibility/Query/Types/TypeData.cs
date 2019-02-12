@@ -18,6 +18,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public TypeData(string name, TypeDataMut typeData)
         {
             Name = name;
+            IsEnum = typeData.IsEnum;
             Instance = typeData.Instance == null ? null : new MemberData(typeData.Instance);
             Static = typeData.Static == null ? null : new MemberData(typeData.Static);
         }
@@ -26,6 +27,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// The simple, non-namespace-qualified name of the type.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// True if the type is an enum, false otherwise.
+        /// </summary>
+        public bool IsEnum { get; }
 
         /// <summary>
         /// All instance members of the type.

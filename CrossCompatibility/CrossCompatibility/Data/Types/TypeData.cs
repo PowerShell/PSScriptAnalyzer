@@ -14,6 +14,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
     [DataContract]
     public class TypeData : ICloneable
     {
+        [DataMember(EmitDefaultValue = false)]
+        public bool IsEnum { get; set; }
+
         /// <summary>
         /// The static members on the type.
         /// </summary>

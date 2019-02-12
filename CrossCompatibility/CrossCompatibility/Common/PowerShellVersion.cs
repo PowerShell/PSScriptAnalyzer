@@ -158,7 +158,17 @@ namespace Microsoft.PowerShell.CrossCompatibility
                 throw new InvalidCastException($"Cannot convert version '{psVersion}' to System.Version, since there is a pre-release label");
             }
 
-            return new Version(psVersion.Major, psVersion.Minor, psVersion.Patch, psVersion.Revision);
+            if (psVersion.Revision >= 0)
+            {
+                return new Version(psVersion.Major, psVersion.Minor, psVersion.Patch, psVersion.Revision);
+            }
+
+            if (psVersion.Patch >= 0)
+            {
+                return new Version(psVersion.Major, psVersion.Minor, psVersion.Patch);
+            }
+
+            return new Version(psVersion.Major, psVersion.Minor >= 0 ? psVersion.Minor : 0);
         }
 
         /// <summary>
@@ -314,7 +324,9 @@ namespace Microsoft.PowerShell.CrossCompatibility
         /// <returns>True if the type can be converted, false otherwise.</returns>
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(PowerShellVersion)
+            return 
+                objectType == typeof(Version)
+                || objectType == typeof(PowerShellVersion)
                 || objectType.FullName == "System.Management.Automation.SemanticVersion";
         }
 
@@ -329,6 +341,17 @@ namespace Microsoft.PowerShell.CrossCompatibility
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             string s = (string)reader.Value;
+
+            if (s == null)
+            {
+                return null;
+            }
+
+            if (objectType == typeof(Version))
+            {
+                return (Version)PowerShellVersion.Parse(s);
+            }
+
             return PowerShellVersion.Parse(s);
         }
 

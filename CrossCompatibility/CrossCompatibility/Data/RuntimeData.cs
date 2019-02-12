@@ -31,6 +31,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         public JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>> Modules { get; set; }
 
         /// <summary>
+        /// Describes PowerShell runtime features that are not confined to a particular module
+        /// </summary>
+        [DataMember]
+        public CommonPowerShellData Common { get; set; }
+
+        /// <summary>
         /// Describes native applications available to the PowerShell platform.
         /// </summary>
         [DataMember]

@@ -72,6 +72,72 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private class CommandCompatibilityVisitor : CompatibilityVisitor
         {
+            private static readonly HashSet<string> s_psBinOps = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "bnot",
+                "eq",
+                "ieq",
+                "ceq",
+                "ne",
+                "ine",
+                "cne",
+                "ge",
+                "ige",
+                "cge",
+                "gt",
+                "igt",
+                "cgt",
+                "lt",
+                "ilt",
+                "clt",
+                "le",
+                "ile",
+                "cle",
+                "like",
+                "ilike",
+                "clike",
+                "notlike",
+                "inotlike",
+                "cnotlike",
+                "match",
+                "imatch",
+                "cmatch",
+                "notmatch",
+                "inotmatch",
+                "cnotmatch",
+                "replace",
+                "ireplace",
+                "creplace",
+                "contains",
+                "icontains",
+                "ccontains",
+                "notcontains",
+                "inotcontains",
+                "cnotcontains",
+                "in",
+                "iin",
+                "cin",
+                "notin",
+                "inotin",
+                "cnotin",
+                "split",
+                "isplit",
+                "csplit",
+                "isnot",
+                "is",
+                "as",
+                "f",
+                "and",
+                "band",
+                "or",
+                "bor",
+                "xor",
+                "bxor",
+                "join",
+                "shl",
+                "shr",
+            };
+
             private readonly IEnumerable<CompatibilityProfileData> _compatibilityTargets;
 
             private readonly CompatibilityProfileData _anyProfile;
@@ -169,9 +235,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // but this is very involved.
                 // For now, we'll just check that the parameters exist
 
-                foreach (CommandElementAst commandElement in commandAst.CommandElements)
+                for (int i = 0; i < commandAst.CommandElements.Count; i++)
                 {
+                    CommandElementAst commandElement = commandAst.CommandElements[i];
                     if (!(commandElement is CommandParameterAst parameterAst))
+                    {
+                        continue;
+                    }
+
+                    // A strange quirk of the AST allows a binary operation to slip in
+                    // as what looks like the last parameter of a command
+                    if (i == commandAst.CommandElements.Count - 2
+                        && s_psBinOps.Contains(parameterAst.ParameterName))
                     {
                         continue;
                     }
@@ -179,7 +254,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     bool isGoodParam = false;
                     foreach (CommandData command in commandsToCheck)
                     {
-                        isGoodParam |= command.Parameters?.ContainsKey(parameterAst.ParameterName) ?? false;
+                        if ((command.Parameters != null && command.Parameters.ContainsKey(parameterAst.ParameterName))
+                            || (command.IsCmdletBinding && targetProfile.Runtime.Common.Parameters.ContainsKey(parameterAst.ParameterName)))
+                        {
+                            isGoodParam = true;
+                            break;
+                        }
                     }
 
                     if (isGoodParam)

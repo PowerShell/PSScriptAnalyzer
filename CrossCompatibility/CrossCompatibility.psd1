@@ -59,6 +59,8 @@ FunctionsToExport = @(
     'Get-TypeAccelerators'
     'Get-CoreModuleData'
     'Get-AvailableModules'
+    'Get-CommonParameters'
+    'New-CommonData'
     'New-RuntimeData'
     'New-ModuleData'
     'New-AliasData'

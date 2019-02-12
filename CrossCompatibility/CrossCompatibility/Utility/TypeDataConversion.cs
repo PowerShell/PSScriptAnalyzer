@@ -164,6 +164,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             return new TypeData()
             {
+                IsEnum = type.IsEnum,
                 Instance = instanceMembers,
                 Static = staticMembers
             };

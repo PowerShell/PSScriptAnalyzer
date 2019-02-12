@@ -58,9 +58,28 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             thisRuntime.NativeCommands = StringDictionaryUnion(thisRuntime.NativeCommands, thatRuntime.NativeCommands, ArrayUnion);
 
+            thisRuntime.Common = (CommonPowerShellData)Union(thisRuntime.Common, thatRuntime.Common);
+
             Union(thisRuntime.Types, thatRuntime.Types);
 
             return thisRuntime;
+        }
+
+        private static object Union(CommonPowerShellData thisCommon, CommonPowerShellData thatCommon)
+        {
+            if (thatCommon == null)
+            {
+                return thisCommon;
+            }
+
+            if (thisCommon == null)
+            {
+                return thatCommon.Clone();
+            }
+
+            thisCommon.ParameterAliases = StringDictionaryUnion(thisCommon.ParameterAliases, thatCommon.ParameterAliases);
+            thisCommon.Parameters = StringDictionaryUnion(thisCommon.Parameters, thatCommon.Parameters, Union);
+            return thisCommon;
         }
 
         private static object Union(ModuleData thisModule, ModuleData thatModule)

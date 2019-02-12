@@ -234,7 +234,7 @@ function New-AllPlatformReferenceProfile
         Remove-Item -Path $Path -Force
     }
 
-    $name = $script:AnyPlatformUnionPlatformName
+    $name = $script:AnyPlatformUnionPlatformNam
 
     $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) "anyprofile_union.json"
 
@@ -544,20 +544,20 @@ PowerShell runtime.
 #>
 function Get-PowerShellCompatibilityData
 {
-    param(
-        [Parameter()]
-        [switch]
-        $IncludeAllModules
-    )
-
-    $modules = Get-AvailableModules -IncludeAll:$IncludeAllModules
+    $modules = Get-AvailableModules
     $typeAccelerators = Get-TypeAccelerators
     $asms = Get-AvailableTypes -All:$IncludeAllModules
     $nativeCommands = Get-Command -CommandType Application
+    $aliasTable = Get-AliasTable
 
     $coreModule = Get-CoreModuleData
 
-    $compatibilityData = New-RuntimeData -Modules $modules -Assemblies $asms -TypeAccelerators $typeAccelerators -NativeCommands $nativeCommands
+    $compatibilityData = New-RuntimeData `
+        -Modules $modules `
+        -AliasTable $aliasTable `
+        -Assemblies $asms `
+        -TypeAccelerators $typeAccelerators `
+        -NativeCommands $nativeCommands
 
     $psVersion = New-Object 'System.Version' $PSVersionTable.PSVersion.Major,$PSVersionTable.PSVersion.Minor,$PSVersionTable.PSVersion.Patch
 
@@ -677,21 +677,7 @@ function Get-CoreModuleData
 
 function Get-AvailableModules
 {
-    param(
-        [Parameter()]
-        [switch]
-        $IncludeAll
-    )
-
-    if ($IncludeAll)
-    {
-        $modsToLoad = Get-Module -ListAvailable
-    }
-    else
-    {
-        $modsToLoad = Get-Module -ListAvailable `
-            | Where-Object { Test-HasAnyPrefix $_.Path $script:PSHomeModulePath,$script:WinPSHomeModulePath -IgnoreCase:$script:IsWindows }
-    }
+    $modsToLoad = Get-Module -ListAvailable
 
     # Filter out this module
     $modsToLoad = $modsToLoad | Where-Object { -not ( $_.Name -eq 'CrossCompatibility' ) }
@@ -738,6 +724,10 @@ function New-RuntimeData
         $Modules,
 
         [Parameter()]
+        [System.Collections.Generic.IDictionary[string, System.Management.Automation.AliasInfo[]]]
+        $AliasTable,
+
+        [Parameter()]
         [System.Collections.Generic.IDictionary[string, type]]
         $TypeAccelerators,
 
@@ -750,7 +740,7 @@ function New-RuntimeData
 
     if ($Modules)
     {
-        $compatData.Modules = $Modules | New-ModuleData
+        $compatData.Modules = $Modules | New-ModuleData -AliasTable $AliasTable
     }
 
     if ($Assemblies)
@@ -762,6 +752,8 @@ function New-RuntimeData
     {
         $compatData.NativeCommands = $NativeCommands | New-NativeCommandData
     }
+
+    $compatData.Common = New-CommonData -CommonParameters (Get-CommonParameters)
 
     return [Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData]$compatData
 }
@@ -807,12 +799,58 @@ function New-NativeCommandData
     }
 }
 
+function Get-AliasTable
+{
+    return Get-Alias `
+        | ForEach-Object {
+            $dict = New-Object 'System.Collections.Generic.Dictionary[string,System.Management.Automation.AliasInfo[]]'
+            } {
+                if ($dict.ContainsKey($_.Definition))
+                {
+                    $dict[$_.ReferencedCommand] += $_
+                }
+                else
+                {
+                    $dict.Add($_.Definition, @($_))
+                }
+            } {
+                $dict
+            }
+}
+
+function Get-CommonParameters
+{
+    return (Get-Command Get-Command).Parameters.Values `
+        | Where-Object { $script:CommonParameters.Contains($_.Name) }
+}
+
+function New-CommonData
+{
+    param(
+        [Parameter()]
+        [System.Management.Automation.ParameterMetadata[]]
+        $CommonParameters
+    )
+
+    $params = $CommonParameters | New-ParameterData
+    $aliases = $CommonParameters | New-ParameterAliasData
+
+    return [Microsoft.PowerShell.CrossCompatibility.Data.CommonPowerShellData]@{
+        Parameters = $params
+        ParameterAliases = $aliases
+    }
+}
+
 function New-ModuleData
 {
     param(
         [Parameter(ValueFromPipeline=$true)]
         [psmoduleinfo]
-        $Module
+        $Module,
+
+        [Parameter()]
+        [System.Collections.Generic.IDictionary[string, System.Management.Automation.AliasInfo[]]]
+        $AliasTable
     )
 
     begin
@@ -824,19 +862,51 @@ function New-ModuleData
     {
         $modData = @{}
 
-        if ($Module.ExportedAliases -and $Module.ExportedAliases.get_Count() -gt 0)
-        {
-            $modData['Aliases'] = $Module.ExportedAliases.Values | New-AliasData
-        }
+        $modData['Aliases'] = $Module.ExportedAliases.Values | New-AliasData
 
         if ($Module.ExportedCmdlets -and $Module.ExportedCmdlets.get_Count() -gt 0)
         {
             $modData['Cmdlets'] = $Module.ExportedCmdlets.Values | New-CmdletData
+
+            foreach ($cmdlet in $Module.ExportedCmdlets.get_Values())
+            {
+                $aliases = $null
+                if ($AliasTable.TryGetValue($cmdlet.Name, [ref]$aliases))
+                {
+                    foreach ($alias in $aliases)
+                    {
+                        if (-not $modData['Aliases'].ContainsKey($alias.Name))
+                        {
+                            $null = $modData.Aliases.Add($alias.Name, $cmdlet.Name)
+                        }
+                    }
+                }
+            }
         }
 
         if ($Module.ExportedFunctions -and $Module.ExportedFunctions.get_Count() -gt 0)
         {
             $modData['Functions'] = $Module.ExportedFunctions.Values | New-FunctionData
+
+            foreach ($function in $Module.ExportedFunctions.get_Values())
+            {
+                $aliases = $null
+                if ($AliasTable.TryGetValue($function.Name, [ref]$aliases))
+                {
+                    foreach ($alias in $aliases)
+                    {
+                        if (-not $modData['Aliases'].ContainsKey($alias.Name))
+                        {
+                            $null = $modData.Aliases.Add($alias.Name, $cmdlet.Name)
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($modData['Aliases'].get_Count() -le 0)
+        {
+            $modData.Remove('Aliases')
         }
 
         if ($Module.ExportedVariables -and $Module.ExportedVariables.get_Count() -gt 0)
@@ -1215,6 +1285,31 @@ function Assert-CompatibilityProfileIsValid
         }
     }
 
+    if (-not $CompatibilityProfile.Runtime.Common)
+    {
+        $problems.Add("Common field missing")
+    }
+    else
+    {
+        if (-not $CompatibilityProfile.Runtime.Common.Parameters)
+        {
+            $problems.Add("Common parameters missing")
+        }
+        elseif (-not $CompatibilityProfile.Runtime.Common.Parameters.ContainsKey("Verbose"))
+        {
+            $problems.Add("Verbose common parameter missing")
+        }
+
+        if (-not $CompatibilityProfile.Runtime.Common.ParameterAliases)
+        {
+            $problems.Add("Common parameter aliases missing")
+        }
+        elseif (-not $CompatibilityProfile.Runtime.Common.ParameterAliases.ContainsKey("vb"))
+        {
+            $problems.Add("vb Verbose common variable alias missing")
+        }
+    }
+
     $modules = @{
         "Microsoft.PowerShell.Core" = @{
             "Get-Module" = @(
@@ -1271,6 +1366,18 @@ function Assert-CompatibilityProfileIsValid
         }
     }
 
+    if ($CompatibilityProfile.PowerShell.Version.Major -ge 4)
+    {
+        $modules += @{
+            "PowerShellGet" = @{
+                "Install-Module" = @(
+                    "Name"
+                    "Scope"
+                )
+            }
+        }
+    }
+
     if ($CompatibilityProfile.PowerShell.Version.Major -ge 5)
     {
         $modules += @{
@@ -1303,9 +1410,10 @@ function Assert-CompatibilityProfileIsValid
             continue
         }
 
-        $mod = $mod.Values[0]
+        $highestVersion = $mod.Keys | Sort-Object -Descending | Select-Object -First 1
+        $mod = $mod[$highestVersion]
 
-        foreach ($cKey in $modules[$mod].Keys)
+        foreach ($cKey in $modules[$mKey].Keys)
         {
             $cmdlet = $mod.Cmdlets[$cKey]
 
@@ -1315,7 +1423,7 @@ function Assert-CompatibilityProfileIsValid
                 continue
             }
 
-            foreach ($param in $modules[$mod][$command])
+            foreach ($param in $modules[$mKey][$cKey])
             {
                 if (-not $cmdlet.Parameters[$param])
                 {
@@ -1324,6 +1432,19 @@ function Assert-CompatibilityProfileIsValid
             }
         }
     }
+
+
+    $utilMod = $CompatibilityProfile.Runtime.Modules['Microsoft.PowerShell.Utility']
+    $highestVersion = $utilMod.Keys | Sort-Object -Descending | Select-Object -First 1
+    $utilMod = $utilMod[$highestVersion]
+    foreach ($alias in 'select','fl','iwr')
+    {
+        if (-not $utilMod.Aliases.ContainsKey($alias))
+        {
+            $problems.Add("Missing alias in Microsoft.PowerShell.Utility: '$alias'")
+        }
+    }
+
 
     $types = @{
         "System.Management.Automation" = @{

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Modules = Microsoft.PowerShell.CrossCompatibility.Data.Modules;
@@ -22,9 +23,37 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         protected CommandData(string name, Modules.CommandData commandData)
         {
             _commandData = commandData;
-            ParameterAliases = commandData.ParameterAliases?.ToDictionary(a => a.Key, a => a.Value);
-            Parameters = _commandData.Parameters?.ToDictionary(p => p.Key, p => new ParameterData(p.Key, p.Value));
             Name = name;
+
+            var parameters = new Dictionary<string, ParameterData>(StringComparer.OrdinalIgnoreCase);
+            var paramAliases = new Dictionary<string, ParameterData>(StringComparer.OrdinalIgnoreCase);
+
+            if (commandData.Parameters != null)
+            {
+                foreach (KeyValuePair<string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ParameterData> parameter in commandData.Parameters)
+                {
+                    parameters.Add(parameter.Key, new ParameterData(parameter.Key, parameter.Value));
+                }
+            }
+
+            if (commandData.ParameterAliases != null)
+            {
+                foreach (KeyValuePair<string, string> parameterAlias in commandData.ParameterAliases)
+                {
+                    paramAliases.Add(parameterAlias.Key, parameters[parameterAlias.Value]);
+                }
+            }
+
+            foreach (KeyValuePair<string, ParameterData> parameterAlias in paramAliases)
+            {
+                if (!parameters.ContainsKey(parameterAlias.Key))
+                {
+                    parameters.Add(parameterAlias.Key, parameterAlias.Value);
+                }
+            }
+
+            Parameters = parameters;
+            ParameterAliases = paramAliases;
         }
 
         /// <summary>
@@ -45,10 +74,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// Parameter aliases of the command.
         /// </summary>
-        public IReadOnlyDictionary<string, string> ParameterAliases { get; }
+        public IReadOnlyDictionary<string, ParameterData> ParameterAliases { get; }
 
         /// <summary>
-        /// Parameters of the command.
+        /// Parameters of the command, including parameters aliases.
         /// </summary>
         public IReadOnlyDictionary<string, ParameterData> Parameters { get; }
 

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Modules = Microsoft.PowerShell.CrossCompatibility.Data.Modules;
@@ -22,7 +23,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public ParameterData(string name, Modules.ParameterData parameterData)
         {
             _parameterData = parameterData;
-            ParameterSets = parameterData.ParameterSets?.ToDictionary(p => p.Key, p => new ParameterSetData(p.Key, p.Value));
+            ParameterSets = parameterData.ParameterSets?.ToDictionary(p => p.Key, p => new ParameterSetData(p.Key, p.Value), StringComparer.OrdinalIgnoreCase);
             Name = name;
         }
 

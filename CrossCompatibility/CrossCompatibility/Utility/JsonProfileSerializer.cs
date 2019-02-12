@@ -188,7 +188,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             return new List<JsonConverter>()
             {
-                new VersionConverter(),
                 new PowerShellVersionJsonConverter(),
                 new StringEnumConverter()
             };

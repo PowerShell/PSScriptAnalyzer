@@ -24,10 +24,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
         /// <param name="availableTypeData">The .NET type data object to query.</param>
         public AvailableTypeData(AvailableTypeDataMut availableTypeData)
         {
-            TypeAccelerators = availableTypeData.TypeAccelerators.ToDictionary(ta => ta.Key, ta => new TypeAcceleratorData(ta.Key, ta.Value));
+            TypeAccelerators = availableTypeData.TypeAccelerators.ToDictionary(ta => ta.Key, ta => new TypeAcceleratorData(ta.Key, ta.Value), StringComparer.OrdinalIgnoreCase);
             Assemblies = availableTypeData.Assemblies.ToDictionary(asm => asm.Key, asm => new AssemblyData(asm.Value));
             _types = new Lazy<IReadOnlyDictionary<string, TypeData>>(() => CreateTypeLookupTable(Assemblies));
-            _typeAcceleratorNames = new Lazy<IReadOnlyDictionary<string, string>>(() => TypeAccelerators.ToDictionary(ta => ta.Key, ta => ta.Value.Type));
+            _typeAcceleratorNames = new Lazy<IReadOnlyDictionary<string, string>>(() => TypeAccelerators.ToDictionary(ta => ta.Key, ta => ta.Value.Type, StringComparer.OrdinalIgnoreCase));
         }
 
         /// <summary>
