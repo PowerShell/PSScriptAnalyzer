@@ -419,7 +419,17 @@ function Test-SuitableDotnet {
 # these are mockable functions for testing
 function Get-InstalledCLIVersion {
     try {
-        $installedVersions = dotnet --list-sdks | Foreach-Object { $_.Split()[0] }
+        # earlier versions of dotnet do not support --list-sdks, so we'll check the output
+        # and use dotnet --version as a fallback
+
+        $sdkList = dotnet --list-sdks 2>&1
+        $sdkList = "Unknown option"
+        if ( $sdkList -match "Unknown option" ) {
+            $installedVersions = dotnet --version
+        }
+        else {
+            $installedVersions = $sdkList | Foreach-Object { $_.Split()[0] }
+        }
     }
     catch {
         $installedVersions = @()
