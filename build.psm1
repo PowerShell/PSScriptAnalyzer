@@ -21,7 +21,7 @@ function Publish-File
 # attempt to get the users module directory
 function Get-UserModulePath
 {
-    if ( $IsCoreCLR -and ! $IsWindows )
+    if ( $IsCoreCLR -and -not $IsWindows )
     {
         $platformType = "System.Management.Automation.Platform" -as [Type]
         if ( $platformType ) {
@@ -104,7 +104,7 @@ function Start-DocumentationBuild
         throw "Cannot find markdown documentation folder."
     }
     Import-Module platyPS
-    if ( ! (Test-Path $outputDocsPath)) {
+    if ( -not (Test-Path $outputDocsPath)) {
         $null = New-Item -Type Directory -Path $outputDocsPath -Force
     }
     $null = New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force
@@ -126,7 +126,22 @@ function Start-ScriptAnalyzerBuild
         [switch]$Documentation
         )
 
+    BEGIN {
+        # don't allow the build to be started unless we have the proper Cli version
+        if ( -not (Test-SuitableDotnet) ) {
+            $requiredVersion = Get-GlobalJsonSdkVersion
+            throw "No suitable dotnet CLI found, requires version '$requiredVersion'"
+        }
+    }
     END {
+
+        # Build docs either when -Documentation switch is being specified or the first time in a clean repo
+        $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out\PSScriptAnalyzer\en-us\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
+        if ( $Documentation -or -not $documentationFileExists )
+        {
+            Start-DocumentationBuild
+        }
+
         if ( $All )
         {
             # Build all the versions of the analyzer
@@ -134,13 +149,6 @@ function Start-ScriptAnalyzerBuild
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
             }
             return
-        }
-
-        $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out\PSScriptAnalyzer\en-us\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
-        # Build docs either when -Documentation switch is being specified or the first time in a clean repo
-        if ( $Documentation -or -not $documentationFileExists )
-        {
-            Start-DocumentationBuild
         }
 
         if ($PSVersion -ge 6) {
@@ -277,17 +285,25 @@ function Get-TestFailures
 function Install-Dotnet
 {
     [CmdletBinding(SupportsShouldProcess=$true)]
-    param ( [Parameter()][Switch]$Force )
+    param ( 
+        [Parameter()][Switch]$Force,
+        [Parameter()]$version = $( Get-GlobalJsonSdkVersion )
+        )
 
-    $json = Get-Content -raw (Join-Path $PSScriptRoot global.json) | ConvertFrom-Json
-    $version = $json.sdk.Version
-    if ( Test-DotnetInstallation -version $version ) {
+    if ( Test-DotnetInstallation -requestedversion $version ) {
         Write-Verbose -Verbose "dotnet version '$version' already installed"
-        return
+        if ( $Force ) {
+            Write-Verbose -Verbose "Installing again"
+        }
+        else {
+            return
+        }
     }
+
     try {
         Push-Location $PSScriptRoot
         $installScriptPath = Receive-DotnetInstallScript
+        $installScriptName = [System.IO.Path]::GetFileName($installScriptPath)
         If ( $PSCmdlet.ShouldProcess("$installScriptName for $version")) {
             & "${installScriptPath}" -c release -v $version
         }
@@ -303,19 +319,119 @@ function Install-Dotnet
     }
 }
 
-function Test-DotnetInstallation
-{
-    param ( $version )
+function Get-GlobalJsonSdkVersion {
+    $json = Get-Content -raw (Join-Path $PSScriptRoot global.json) | ConvertFrom-Json
+    $version = $json.sdk.Version
+    ConvertTo-PortableVersion $version
+}
+
+# we don't have semantic version in earlier versions of PowerShell, so we need to
+# create something that we can use
+function ConvertTo-PortableVersion {
+    param ( [string[]]$strVersion )
+    if ( -not $strVersion ) {
+        return (ConvertTo-PortableVersion "0.0.0-0")
+    }
+    foreach ( $v in $strVersion ) {
+        $ver, $pre = $v.split("-",2)
+        try {
+            [int]$major, [int]$minor, [int]$patch = $ver.Split(".")
+        }
+        catch {
+            Write-Warning "Cannot convert '$v' to portable version"
+            continue
+        }
+        $h = @{
+            Major = $major
+            Minor = $minor
+            Patch = $patch
+        }
+        if ( $pre ) {
+            $h['PrereleaseLabel'] = $pre
+        }
+        else {
+            $h['PrereleaseLabel'] = [String]::Empty
+        }
+        $customObject = [pscustomobject]$h
+        Add-Member -inputobject $customObject -Type ScriptMethod -Name ToString -Force -Value {
+            $str = "{0}.{1}.{2}" -f $this.Major,$this.Minor,$this.Patch
+            if ( $this.PrereleaseLabel ) {
+                $str += "-{0}" -f $this.PrereleaseLabel
+            }
+            return $str
+        }
+        Add-Member -inputobject $customObject -Type ScriptMethod -Name IsContainedIn -Value {
+            param ( [object[]]$collection )
+            foreach ( $object in $collection ) {
+                if ( 
+                    $this.Major -eq $object.Major -and
+                    $this.Minor -eq $object.Minor -and
+                    $this.Patch -eq $object.Patch -and
+                    $this.PrereleaseLabel -eq $object.PrereleaseLabel
+                    ) {
+                    return $true
+                }
+            }
+            return $false
+        }
+        $customObject
+    }
+}
+
+# see https://docs.microsoft.com/en-us/dotnet/core/tools/global-json for rules
+# on how version checks are done
+function Test-SuitableDotnet {
+    param (
+        $availableVersions = $( Get-InstalledCliVersion),
+        $requiredVersion = $( Get-GlobalJsonSdkVersion )
+        )
+    if ( $requiredVersion -is [String] -or $requiredVersion -is [Version] ) {
+        $requiredVersion = ConvertTo-PortableVersion "$requiredVersion"
+    }
+    # if we have what was requested, we can use it
+    if ( $RequiredVersion.IsContainedIn($availableVersions)) {
+        return $true
+    }
+    # if we had found a match, we would have returned $true above
+    # exact match required for 2.1.100 through 2.1.201
+    if ( $RequiredVersion.Major -eq 2 -and $RequiredVersion.Minor -eq 1 -and $RequiredVersion.Patch -ge 100 -and $RequiredVersion.Patch -le 201 ) {
+        return $false
+    }
+    # we need to check each available version for something that's useable
+    foreach ( $version in $availableVersions ) {
+        # major/minor numbers don't match - keep looking
+        if ( $version.Major -ne $requiredVersion.Major -or $version.Minor -ne $requiredVersion.Minor ) {
+            continue
+        }
+        $requiredPatch = $requiredVersion.Patch
+        $possiblePatch = $version.Patch
+        if ( $requiredPatch -gt $possiblePath ) {
+            continue
+        }
+        if ( ($requiredPatch - $possiblePatch) -ge 100 ) {
+            continue
+        }
+        return $true
+    }
+    return $false
+}
+
+# these are mockable functions for testing
+function Get-InstalledCLIVersion {
     try {
         $installedVersions = dotnet --list-sdks | Foreach-Object { $_.Split()[0] }
     }
     catch {
         $installedVersions = @()
     }
-    if ( $installedVersions -contains $version ) {
-        return $true
-    }
-    return $false
+    return (ConvertTo-PortableVersion $installedVersions)
+}
+
+function Test-DotnetInstallation
+{
+    param ( $requestedVersion = $( Get-GlobalJsonSdkVersion ) )
+    $installedVersions = Get-InstalledCLIVersion
+    return (Test-SuitableDotnet -availableVersions $installedVersions -requiredVersion $requestedVersion )
 }
 
 function Receive-DotnetInstallScript
