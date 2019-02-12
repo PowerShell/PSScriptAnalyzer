@@ -29,7 +29,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private readonly JsonProfileSerializer _jsonSerializer;
 
-        private readonly ConcurrentDictionary<string, Lazy<CompatibilityProfileCacheEntry>> _profileCache;
+        private readonly ConcurrentDictionary<string, Lazy<Task<CompatibilityProfileCacheEntry>>> _profileCache;
 
         /// <summary>
         /// A lazy-initialized static instance to allow for a shared profile cache.
@@ -47,14 +47,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 #if NETSTANDARD2_0
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                _profileCache = new ConcurrentDictionary<string, Lazy<CompatibilityProfileCacheEntry>>();
+                _profileCache = new ConcurrentDictionary<string, Lazy<Task<CompatibilityProfileCacheEntry>>>();
             }
             else
             {
-                _profileCache = new ConcurrentDictionary<string, Lazy<CompatibilityProfileCacheEntry>>(StringComparer.OrdinalIgnoreCase);
+                _profileCache = new ConcurrentDictionary<string, Lazy<Task<CompatibilityProfileCacheEntry>>>(StringComparer.OrdinalIgnoreCase);
             }
 #else
-            _profileCache = new ConcurrentDictionary<string, Lazy<CompatibilityProfileCacheEntry>>(StringComparer.OrdinalIgnoreCase);
+            _profileCache = new ConcurrentDictionary<string, Lazy<Task<CompatibilityProfileCacheEntry>>>(StringComparer.OrdinalIgnoreCase);
 #endif
         }
 
@@ -71,11 +71,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             IEnumerable<string> profilePaths,
             out CompatibilityProfileData unionProfile)
         {
-            IEnumerable<CompatibilityProfileCacheEntry> profileEntries = GetProfilesFromPaths(profilePaths);
+            Task<CompatibilityProfileCacheEntry[]> profileEntries = GetProfilesFromPaths(profilePaths);
 
-            unionProfile = GetUnionProfile(profileDirPath);
+            unionProfile = GetUnionProfile(profileDirPath).Result.Profile;
 
-            return profileEntries.Select(p => p.Profile);
+            return profileEntries.Result.Select(p => p.Profile);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             _profileCache.Clear();
         }
 
-        private IEnumerable<CompatibilityProfileCacheEntry> GetProfilesFromPaths(IEnumerable<string> profilePaths)
+        private async Task<CompatibilityProfileCacheEntry[]> GetProfilesFromPaths(IEnumerable<string> profilePaths)
         {
             // We have a situation where:
             //   - multiple caller threads
@@ -101,10 +101,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             //   - Transform the query into PLINQ
             //   - Evaluate the lazy calls in parallel (fan the load calls out to the available global threadpool)
             //   - Put them into an array for the caller
-            return profilePaths.Select(path => GetNonUnionProfileFromFilePath(path))
-                .AsParallel()
-                .AsUnordered()
-                .Select(cacheEntry => cacheEntry.Value);
+            return await Task.WhenAll(profilePaths.Select(path => GetProfileFromFilePath(path).Value));
         }
 
         /// <summary>
@@ -113,14 +110,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// </summary>
         /// <param name="path">The path to load a profile from.</param>
         /// <returns>A query object around the loaded profile.</returns>
-        private Lazy<CompatibilityProfileCacheEntry> GetNonUnionProfileFromFilePath(string path)
+        private Lazy<Task<CompatibilityProfileCacheEntry>> GetProfileFromFilePath(string path)
         {
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
-            return _profileCache.GetOrAdd(path, new Lazy<CompatibilityProfileCacheEntry>(() => {
+            return _profileCache.GetOrAdd(path, new Lazy<Task<CompatibilityProfileCacheEntry>>(() => Task.Run(() => {
                 CompatibilityProfileDataMut compatibilityProfileMut = _jsonSerializer.DeserializeFromFile(path);
 
                 var compatibilityProfile = new CompatibilityProfileData(compatibilityProfileMut);
@@ -128,19 +125,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 return new CompatibilityProfileCacheEntry(
                     compatibilityProfileMut,
                     compatibilityProfile);
-            }));
+            })));
         }
 
-        private CompatibilityProfileData GetUnionProfile(DirectoryInfo profileDir)
+        private Task<CompatibilityProfileCacheEntry> GetUnionProfile(DirectoryInfo profileDir)
         {
-            IEnumerable<CompatibilityProfileCacheEntry> profiles = GetProfilesFromPaths(profileDir.EnumerateFiles("*.json")
-                .Where(file => file.Name.IndexOf("union", StringComparison.OrdinalIgnoreCase) < 0)
-                .Select(file => file.FullName));
+            IEnumerable<string> profilePaths = profileDir.EnumerateFiles("*.json")
+                .Where(file => file.Name.IndexOf("union", StringComparison.OrdinalIgnoreCase) < 0) // Filter out union files
+                .Select(file => file.FullName);
+
+            IEnumerable<CompatibilityProfileCacheEntry> profiles = GetProfilesFromPaths(profilePaths).Result;
 
             string unionId = GetUnionIdFromProfiles(profiles);
             string unionPath = Path.Combine(profileDir.FullName, unionId + ".json");
 
-            return _profileCache.GetOrAdd(unionPath, new Lazy<CompatibilityProfileCacheEntry>(() => {
+            return _profileCache.GetOrAdd(unionPath, new Lazy<Task<CompatibilityProfileCacheEntry>>(() => Task.Run(() => {
                 try
                 {
                     // We read the ID first to avoid needing to rehydrate MBs of unneeded JSON
@@ -176,7 +175,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 return new CompatibilityProfileCacheEntry(
                     generatedUnionProfile,
                     new CompatibilityProfileData(generatedUnionProfile));
-            })).Value.Profile;
+            }))).Value;
         }
 
         private static string GetUnionIdFromProfiles(IEnumerable<CompatibilityProfileCacheEntry> profiles)
