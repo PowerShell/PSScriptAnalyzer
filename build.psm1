@@ -306,7 +306,12 @@ function Install-Dotnet
 function Test-DotnetInstallation
 {
     param ( $version )
-    $installedVersions = dotnet --list-sdks | Foreach-Object { $_.Split()[0] }
+    try {
+        $installedVersions = dotnet --list-sdks | Foreach-Object { $_.Split()[0] }
+    }
+    catch {
+        $installedVersions = @()
+    }
     if ( $installedVersions -contains $version ) {
         return $true
     }
