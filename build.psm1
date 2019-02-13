@@ -130,7 +130,8 @@ function Start-ScriptAnalyzerBuild
         # don't allow the build to be started unless we have the proper Cli version
         if ( -not (Test-SuitableDotnet) ) {
             $requiredVersion = Get-GlobalJsonSdkVersion
-            throw "No suitable dotnet CLI found, requires version '$requiredVersion'"
+            $foundVersion = Get-InstalledCLIVersion
+            throw "No suitable dotnet CLI found, requires version '$requiredVersion' found only '$foundVersion'"
         }
     }
     END {
@@ -201,7 +202,7 @@ function Start-ScriptAnalyzerBuild
         try {
             Push-Location $projectRoot/Rules
             Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
-            $buildOutput = dotnet build --framework $framework --configuration "$config"
+            $buildOutput = & $script:dotnetExe build --framework $framework --configuration "$config"
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
@@ -285,7 +286,7 @@ function Get-TestFailures
 function Install-Dotnet
 {
     [CmdletBinding(SupportsShouldProcess=$true)]
-    param ( 
+    param (
         [Parameter()][Switch]$Force,
         [Parameter()]$version = $( Get-GlobalJsonSdkVersion )
         )
@@ -363,7 +364,7 @@ function ConvertTo-PortableVersion {
         Add-Member -inputobject $customObject -Type ScriptMethod -Name IsContainedIn -Value {
             param ( [object[]]$collection )
             foreach ( $object in $collection ) {
-                if ( 
+                if (
                     $this.Major -eq $object.Major -and
                     $this.Minor -eq $object.Minor -and
                     $this.Patch -eq $object.Patch -and
@@ -422,10 +423,10 @@ function Get-InstalledCLIVersion {
         # earlier versions of dotnet do not support --list-sdks, so we'll check the output
         # and use dotnet --version as a fallback
 
-        $sdkList = dotnet --list-sdks 2>&1
+        $sdkList = & $script:dotnetExe --list-sdks 2>&1
         $sdkList = "Unknown option"
         if ( $sdkList -match "Unknown option" ) {
-            $installedVersions = dotnet --version
+            $installedVersions = & $script:dotnetExe --version
         }
         else {
             $installedVersions = $sdkList | Foreach-Object { $_.Split()[0] }
@@ -475,3 +476,28 @@ function Receive-DotnetInstallScript
 
     return $installScript.FullName
 }
+
+function Get-DotnetExe
+{
+    $discoveredDotNet = Get-Command -CommandType Application dotnet
+    if ( $discoveredDotNet ) {
+        $discoveredDotNet | Select-Object -First 1 | Foreach-Object { $_.Source }
+        return
+    }
+    # it's not in the path, try harder to find it
+    # check the usual places
+    if ( ! (test-path variable:IsWindows) -or $IsWindows ) {
+        $dotnetHuntPath = "$HOME\AppData\Local\Microsoft\dotnet\dotnet.exe"
+        if ( test-path $dotnetHuntPath ) {
+            return $dotnetHuntPath
+        }
+    }
+    else {
+        $dotnetHuntPath = "$HOME/.dotnet/dotnet"
+        if ( test-path $dotnetHuntPath ) {
+            return $dotnetHuntPath
+        }
+    }
+    throw "Could not find dotnet executable"
+}
+$script:dotnetExe = Get-DotnetExe
