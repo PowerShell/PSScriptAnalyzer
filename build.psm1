@@ -306,7 +306,7 @@ function Install-Dotnet
         $installScriptPath = Receive-DotnetInstallScript
         $installScriptName = [System.IO.Path]::GetFileName($installScriptPath)
         If ( $PSCmdlet.ShouldProcess("$installScriptName for $version")) {
-            & "${installScriptPath}" -c release -v $version
+            & "${installScriptPath}" -c release -version $version
         }
     }
     catch {
