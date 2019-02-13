@@ -33,7 +33,7 @@ while ($stack.Count -gt 0)
     Write-Information $t.GetString()
 }
 
-Get-EventLog -Name System | ogv
+Get-EventLog -LogName System | ogv
 
 Invoke-WebRequest -Uri 'https://aka.ms/everyonebehappy/' -NoProxy -SkipHeaderValidation
 

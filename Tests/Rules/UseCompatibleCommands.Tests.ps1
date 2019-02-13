@@ -198,7 +198,77 @@ Describe 'UseCompatibleCommands' {
                 $diagnostics[$i].TargetPlatform.PowerShell.Version.Minor | Should -Be $Version.Minor
             }
         }
+    }
 
+    Context "Checking a file against many targets" {
+        It "Finds all command problems" {
+            $settings = @{
+                Rules = @{
+                    $script:RuleName = @{
+                        Enable = $true
+                        $script:TargetProfileConfigKey = @(
+                            $script:Srv2012_3_profile
+                            $script:Srv2012r2_4_profile
+                            $script:Srv2012r2_6_1_profile
+                            $script:Srv2016_5_profile
+                            $script:Srv2016_6_1_profile
+                            $script:Srv2019_5_profile
+                            $script:Srv2019_6_1_profile
+                            $script:Win10_5_profile
+                            $script:Win10_6_1_profile
+                            $script:Ubuntu1804_6_1_profile
+                            $script:Debian8_6_1_profile
+                            $script:Rhel76_6_1_profile
+                        )
+                    }
+                }
+            }
+
+            $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings
+
+            $diagnostics.Count | Should -Be 28
+
+            $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Command
+
+            foreach ($group in $diagnosticGroups)
+            {
+                switch ($group.Name)
+                {
+                    'Get-EventLog'
+                    {
+                        $group.Count | Should -Be 7
+                        break
+                    }
+
+                    'Import-Module'
+                    {
+                        $group.Count | Should -Be 2
+                        break
+                    }
+
+                    'Invoke-WebRequest'
+                    {
+                        $group.Count | Should -Be 10
+                        break
+                    }
+
+                    'ogv'
+                    {
+                        $group.Count | Should -Be 7
+                        break
+                    }
+
+                    'Write-Information'
+                    {
+                        $group.Count | Should -Be 2
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    Context "Checking PSSA repository scripts" {
         It "Ensures that PSSA build scripts are cross compatible with everything" {
             $settings = @{
                 Rules = @{
