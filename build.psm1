@@ -423,7 +423,6 @@ function Get-InstalledCLIVersion {
     try {
         # earlier versions of dotnet do not support --list-sdks, so we'll check the output
         # and use dotnet --version as a fallback
-
         $sdkList = & $script:dotnetExe --list-sdks 2>&1
         $sdkList = "Unknown option"
         if ( $sdkList -match "Unknown option" ) {
@@ -434,7 +433,8 @@ function Get-InstalledCLIVersion {
         }
     }
     catch {
-        $installedVersions = @()
+        Write-Verbose -Verbose "$_"
+        $installedVersions = & $script:dotnetExe --version
     }
     return (ConvertTo-PortableVersion $installedVersions)
 }
