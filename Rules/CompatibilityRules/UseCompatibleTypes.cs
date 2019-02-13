@@ -179,6 +179,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.Continue;
                 }
 
+                // Leave the [type]::new() checking to another rule for now (TODO: could check constructor arity)
+                if (methodNameAst.Value.Equals("new", StringComparison.OrdinalIgnoreCase))
+                {
+                    return AstVisitAction.Continue;
+                }
+
                 // We only need to get the full type name once -- from the union profile
                 string typeName = TypeNaming.GetOuterMostTypeName(_anyProfile.Runtime.Types.TypeAcceleratorNames, typeExpr.TypeName);
                 if (_typesToIgnore.Contains(typeName) || !_anyProfile.Runtime.Types.Types.TryGetValue(typeName, out TypeData unionType))
@@ -679,7 +685,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             Type = incompatibleCommand;
             TargetPlatform = targetPlatform;
-            MemberName = memberName;
+            Member = memberName;
             Kind = kind;
         }
 
@@ -701,7 +707,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// If this diagnostic is about a type member, the name of that member.
         /// </summary>
-        public string MemberName { get; }
+        public string Member { get; }
     }
 
     /// <summary>

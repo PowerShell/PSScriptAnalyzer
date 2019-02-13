@@ -95,13 +95,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             //   - which are trivially parallel
             // We want to control all concurrency from the caller,
             // but also want to parallelize the computations for maximum throughput.
+            // In most scenarios, where the work has already been done, we want to avoid any parallel overhead we can.
             //
             // So we:
             //   - Corrale all the load calls through a threadsafe cache of lazy calls (fan the load calls in from the number of calling threads)
-            //   - Transform the query into PLINQ
-            //   - Evaluate the lazy calls in parallel (fan the load calls out to the available global threadpool)
-            //   - Put them into an array for the caller
-            return await Task.WhenAll(profilePaths.Select(path => GetProfileFromFilePath(path).Value));
+            //   - Transform the query into lazy tasks, lazy so that each task is only created and evaluated once, tasks so that they are handled by the threadpool
+            //   - Evaluate the lazy calls (fan the load calls out to the available global threadpool)
+            //   - Wait for the calls and marshall the results back into an array in the caller
+            return await Task.WhenAll(profilePaths.Select(path => GetProfileFromPath(path).Value));
         }
 
         /// <summary>
@@ -110,7 +111,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// </summary>
         /// <param name="path">The path to load a profile from.</param>
         /// <returns>A query object around the loaded profile.</returns>
-        private Lazy<Task<CompatibilityProfileCacheEntry>> GetProfileFromFilePath(string path)
+        private Lazy<Task<CompatibilityProfileCacheEntry>> GetProfileFromPath(string path)
         {
             if (path == null)
             {

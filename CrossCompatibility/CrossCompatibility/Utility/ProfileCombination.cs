@@ -172,7 +172,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         private static object Union(TypeData thisType, TypeData thatType)
         {
             thisType.Instance = (MemberData)Union(thisType.Instance, thatType.Instance);
-            thisType.Static = (MemberData)Union(thisType.Instance, thatType.Instance);
+            thisType.Static = (MemberData)Union(thisType.Static, thatType.Static);
             return thisType;
         }
 
