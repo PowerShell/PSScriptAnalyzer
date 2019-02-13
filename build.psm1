@@ -386,6 +386,7 @@ function Test-SuitableDotnet {
         $availableVersions = $( Get-InstalledCliVersion),
         $requiredVersion = $( Get-GlobalJsonSdkVersion )
         )
+
     if ( $requiredVersion -is [String] -or $requiredVersion -is [Version] ) {
         $requiredVersion = ConvertTo-PortableVersion "$requiredVersion"
     }
@@ -406,7 +407,7 @@ function Test-SuitableDotnet {
         }
         $requiredPatch = $requiredVersion.Patch
         $possiblePatch = $version.Patch
-        if ( $requiredPatch -gt $possiblePath ) {
+        if ( $requiredPatch -gt $possiblePatch ) {
             continue
         }
         if ( ($requiredPatch - $possiblePatch) -ge 100 ) {
