@@ -4,7 +4,6 @@
 $script:RuleName = 'PSUseCompatibleCommands'
 $script:AnyProfileConfigKey = 'AnyProfilePath'
 $script:TargetProfileConfigKey = 'TargetProfiles'
-$script:AssetDirPath = Join-Path $PSScriptRoot $script:RuleName
 
 $script:Srv2012_3_profile = 'win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework'
 $script:Srv2012r2_4_profile = 'win-8_x64_6.3.9600.0_4.0_x64_4.0.30319.42000_framework'
