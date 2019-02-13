@@ -84,7 +84,16 @@ Describe "PSUseCompatibleSyntax" {
 
         $diagnostics = Invoke-ScriptAnalyzer -IncludeRule PSUseCompatibleSyntax -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -Settings $settings
 
-        $diagnostics.Count | Should -Be 5
+        if ($PSVersionTable.PSVersion.Major -ge 5)
+        {
+            $expected = 5
+        }
+        else
+        {
+            $expected = 4
+        }
+
+        $diagnostics.Count | Should -Be $expected
     }
 
     It "Ensures there are no incompatibilities in PSSA build files" {
