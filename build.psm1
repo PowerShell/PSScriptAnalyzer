@@ -208,7 +208,7 @@ function Start-ScriptAnalyzerBuild
             if ( -not $script:DotnetExe ) {
                 $script:DotnetExe = Get-DotnetExe
             }
-            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$config"
+            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$config" 2>&1
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
@@ -368,8 +368,11 @@ function ConvertTo-PortableVersion {
             $h['PrereleaseLabel'] = [String]::Empty
         }
         $customObject = [pscustomobject]$h
+        # we do this so we can get an approximate sort, since this implements a pseudo-version
+        # type in script, we need a way to find the highest version of dotnet, it's not a great solution
+        # but it will work in most cases.
         Add-Member -inputobject $customObject -Type ScriptMethod -Name ToString -Force -Value {
-            $str = "{0}.{1}.{2}" -f $this.Major,$this.Minor,$this.Patch
+            $str = "{0:0000}.{1:0000}.{2:0000}.{3:0000}" -f $this.Major,$this.Minor,$this.Patch
             if ( $this.PrereleaseLabel ) {
                 $str += "-{0}" -f $this.PrereleaseLabel
             }
@@ -445,7 +448,7 @@ function Get-InstalledCLIVersion {
         $sdkList = & $script:DotnetExe --list-sdks 2>&1
         $sdkList = "Unknown option"
         if ( $sdkList -match "Unknown option" ) {
-            $installedVersions = & $script:DotnetExe --version
+            $installedVersions = & $script:DotnetExe --version 2>$null
         }
         else {
             $installedVersions = $sdkList | Foreach-Object { $_.Split()[0] }
@@ -453,7 +456,7 @@ function Get-InstalledCLIVersion {
     }
     catch {
         Write-Verbose -Verbose "$_"
-        $installedVersions = & $script:DotnetExe --version
+        $installedVersions = & $script:DotnetExe --version 2>$null
     }
     return (ConvertTo-PortableVersion $installedVersions)
 }
@@ -505,8 +508,8 @@ function Get-DotnetExe
         # the problem is that invoking dotnet on a version which is lower than the specified
         # version in global.json will produce an error, so we can only take the dotnet which executes
         $latestDotnet = $discoveredDotNet |
-            Where-Object { try { & $_ --version } catch { } } |
-            Sort-Object { [version](& $_ --version) } |
+            Where-Object { try { & $_ --version 2>$null } catch { } } |
+            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null ); "$pv" } |
             Select-Object -Last 1
         if ( $latestDotnet ) {
             Write-Verbose -Verbose "Found dotnet here: $latestDotnet"
