@@ -499,11 +499,13 @@ function Receive-DotnetInstallScript
 
 function Get-DotnetExe
 {
-    $discoveredDotNet = Get-Command -CommandType Application dotnet -ErrorAction SilentlyContinue
-    if ( $discoveredDotNet ) {
-        Write-Verbose -Verbose "Found dotnet here: $dotnetFoundPath"
-        $script:DotnetExe = $discoveredDotNet
-        return $discoveredDotNet
+    $discoveredDotnet = Get-Command -CommandType Application dotnet -ErrorAction SilentlyContinu
+    if ( $discoveredDotnet ) {
+        # it's possible that there are multiples. Take the highest version we find
+        $latestDotnet = $discoveredDotNet | Sort-object { [version](& $_ --version) } | Select-Object -Last 1
+        Write-Verbose -Verbose "Found dotnet here: $latestDotnet"
+        $script:DotnetExe = $latestDotnet
+        return $latestDotnet
     }
     # it's not in the path, try harder to find it
     # check the usual places
