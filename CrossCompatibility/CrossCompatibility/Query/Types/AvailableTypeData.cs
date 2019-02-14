@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
-using AvailableTypeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.AvailableTypeData;
+using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
 {
@@ -14,31 +14,31 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
     /// </summary>
     public class AvailableTypeData
     {
-        private readonly Lazy<IReadOnlyDictionary<string, TypeData>> _types;
+        private readonly Lazy<Tuple<IReadOnlyDictionary<string, TypeAcceleratorData>, IReadOnlyDictionary<string, string>>> _typeAccelerators;
 
-        private readonly Lazy<IReadOnlyDictionary<string, string>> _typeAcceleratorNames;
+        private readonly Lazy<IReadOnlyDictionary<string, AssemblyData>> _assemblies;
+
+        private readonly Lazy<IReadOnlyDictionary<string, TypeData>> _types;
 
         /// <summary>
         /// Create a new query object around collected .NET type information.
         /// </summary>
         /// <param name="availableTypeData">The .NET type data object to query.</param>
-        public AvailableTypeData(AvailableTypeDataMut availableTypeData)
+        public AvailableTypeData(Data.Types.AvailableTypeData availableTypeData)
         {
-            TypeAccelerators = availableTypeData.TypeAccelerators.ToDictionary(ta => ta.Key, ta => new TypeAcceleratorData(ta.Key, ta.Value), StringComparer.OrdinalIgnoreCase);
-            Assemblies = availableTypeData.Assemblies.ToDictionary(asm => asm.Key, asm => new AssemblyData(asm.Value));
-            _types = new Lazy<IReadOnlyDictionary<string, TypeData>>(() => CreateTypeLookupTable(Assemblies));
-            _typeAcceleratorNames = new Lazy<IReadOnlyDictionary<string, string>>(() => TypeAccelerators.ToDictionary(ta => ta.Key, ta => ta.Value.Type, StringComparer.OrdinalIgnoreCase));
+            _types = new Lazy<IReadOnlyDictionary<string, TypeData>>(() => CreateTypeLookupTable(Assemblies.Values));
+            _typeAccelerators = new Lazy<Tuple<IReadOnlyDictionary<string, TypeAcceleratorData>, IReadOnlyDictionary<string, string>>>(() => CreateTypeAcceleratorTables(availableTypeData.TypeAccelerators));
         }
 
         /// <summary>
         /// Type accelerators in the PowerShell runtime.
         /// </summary>
-        public IReadOnlyDictionary<string, TypeAcceleratorData> TypeAccelerators { get; }
+        public IReadOnlyDictionary<string, TypeAcceleratorData> TypeAccelerators => _typeAccelerators.Value.Item1;
 
         /// <summary>
         /// Assemblies loaded in the PowerShell runtime.
         /// </summary>
-        public IReadOnlyDictionary<string, AssemblyData> Assemblies { get; }
+        public IReadOnlyDictionary<string, AssemblyData> Assemblies => _assemblies.Value;
 
         /// <summary>
         /// Types, keyed by full type name, loaded in the PowerShell runtime.
@@ -48,17 +48,45 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
         /// <summary>
         /// Type accelerator lookup table linking type accelerators to their full type names.
         /// </summary>
-        public IReadOnlyDictionary<string, string> TypeAcceleratorNames => _typeAcceleratorNames.Value;
+        public IReadOnlyDictionary<string, string> TypeAcceleratorNames => _typeAccelerators.Value.Item2;
+
+        private static IReadOnlyDictionary<string, AssemblyData> CreateAssemblyTable(
+            IReadOnlyDictionary<string, Data.Types.AssemblyData> assemblies)
+        {
+            var dict = new Dictionary<string, AssemblyData>(assemblies.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (KeyValuePair<string, Data.Types.AssemblyData> assembly in assemblies)
+            {
+                dict[assembly.Key] = new AssemblyData(assembly.Value);
+            }
+            return dict;
+        }
+
+        private static Tuple<IReadOnlyDictionary<string, TypeAcceleratorData>, IReadOnlyDictionary<string, string>> CreateTypeAcceleratorTables(
+            IReadOnlyDictionary<string, Data.Types.TypeAcceleratorData> typeAccelerators)
+        {
+            var typeAcceleratorDict = new Dictionary<string, TypeAcceleratorData>(typeAccelerators.Count, StringComparer.OrdinalIgnoreCase);
+            var typeAcceleratorNames = new Dictionary<string, string>(typeAccelerators.Count, StringComparer.OrdinalIgnoreCase);
+
+            foreach (KeyValuePair<string, Data.Types.TypeAcceleratorData> typeAccelerator in typeAccelerators)
+            {
+                typeAcceleratorDict[typeAccelerator.Key] = new TypeAcceleratorData(typeAccelerator.Key, typeAccelerator.Value);
+                typeAcceleratorNames[typeAccelerator.Key] = typeAccelerator.Value.Type;
+            }
+
+            return new Tuple<IReadOnlyDictionary<string, TypeAcceleratorData>, IReadOnlyDictionary<string, string>>(
+                typeAcceleratorDict,
+                typeAcceleratorNames);
+        }
 
         /// <summary>
         /// Builds the lookup table for full type names.
         /// </summary>
         /// <param name="assemblies">The assembly lookup table in the data object.</param>
-        private static IReadOnlyDictionary<string, TypeData> CreateTypeLookupTable(IReadOnlyDictionary<string, AssemblyData> assemblies)
+        private static IReadOnlyDictionary<string, TypeData> CreateTypeLookupTable(IEnumerable<AssemblyData> assemblies)
         {
             var typeDict = new Dictionary<string, TypeData>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (AssemblyData asm in assemblies.Values)
+            foreach (AssemblyData asm in assemblies)
             {
                 if (asm.Types == null)
                 {

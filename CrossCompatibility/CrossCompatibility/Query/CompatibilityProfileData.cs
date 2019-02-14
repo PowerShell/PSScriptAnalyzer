@@ -30,6 +30,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
             if (compatibilityProfileData.ConstituentProfiles != null)
             {
+                // This is intended to be case-sensitive
                 ConstituentProfiles = new HashSet<string>(compatibilityProfileData.ConstituentProfiles);
             }
 

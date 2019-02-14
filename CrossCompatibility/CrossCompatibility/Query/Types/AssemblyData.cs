@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AssemblyDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.AssemblyData;
+using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
@@ -13,14 +13,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class AssemblyData
     {
+        private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>>> _types;
+
         /// <summary>
         /// Create a query object for assembly data from collected assembly data.
         /// </summary>
         /// <param name="assemblyData">Collected assembly data.</param>
-        public AssemblyData(AssemblyDataMut assemblyData)
+        public AssemblyData(Data.Types.AssemblyData assemblyData)
         {
             AssemblyName = new AssemblyNameData(assemblyData.AssemblyName);
-            Types = assemblyData.Types?.ToDictionary(ns => ns.Key, ns => (IReadOnlyDictionary<string, TypeData>)ns.Value.ToDictionary(t => t.Key, t => new TypeData(t.Key, t.Value), StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+            _types = new Lazy<IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>>>(() => CreateTypeDictionary(assemblyData.Types));
         }
 
         /// <summary>
@@ -31,6 +33,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// Lookup table of types in the assembly, keyed by namespace and then type name.
         /// </summary>
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> Types { get; }
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> Types => _types.Value;
+
+        private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> CreateTypeDictionary(IReadOnlyDictionary<string, JsonCaseInsensitiveStringDictionary<Data.Types.TypeData>> typeData)
+        {
+            var namespaceDict = new Dictionary<string, IReadOnlyDictionary<string, TypeData>>(typeData.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (KeyValuePair<string, JsonCaseInsensitiveStringDictionary<Data.Types.TypeData>> nspace in typeData)
+            {
+                var typeDict = new Dictionary<string, TypeData>(nspace.Value.Count, StringComparer.OrdinalIgnoreCase);
+                foreach (KeyValuePair<string, Data.Types.TypeData> type in nspace.Value)
+                {
+                    typeDict[type.Key] = new TypeData(type.Key, type.Value);
+                }
+                namespaceDict[nspace.Key] = typeDict;
+            }
+            return namespaceDict;
+        }
     }
 }

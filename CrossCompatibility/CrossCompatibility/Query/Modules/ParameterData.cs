@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Modules = Microsoft.PowerShell.CrossCompatibility.Data.Modules;
+using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
@@ -13,17 +13,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class ParameterData
     {
-        private readonly Modules.ParameterData _parameterData;
+        private readonly Data.Modules.ParameterData _parameterData;
+
+        private readonly Lazy<IReadOnlyDictionary<string, ParameterSetData>> _parameterSets;
 
         /// <summary>
         /// Create a new parameter query object from the parameter name and its data object.
         /// </summary>
         /// <param name="name">The name of the parameter.</param>
         /// <param name="parameterData">The parameter data object.</param>
-        public ParameterData(string name, Modules.ParameterData parameterData)
+        public ParameterData(string name, Data.Modules.ParameterData parameterData)
         {
             _parameterData = parameterData;
-            ParameterSets = parameterData.ParameterSets?.ToDictionary(p => p.Key, p => new ParameterSetData(p.Key, p.Value), StringComparer.OrdinalIgnoreCase);
+            _parameterSets = new Lazy<IReadOnlyDictionary<string, ParameterSetData>>(() => CreateParameterSetDictionary(_parameterData.ParameterSets));
             Name = name;
         }
 
@@ -31,7 +33,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// The parameter sets of the object.
         /// </summary>
         /// <value></value>
-        public IReadOnlyDictionary<string, ParameterSetData> ParameterSets { get; }
+        public IReadOnlyDictionary<string, ParameterSetData> ParameterSets => _parameterSets.Value;
 
         /// <summary>
         /// The name of the type of the object.
@@ -47,5 +49,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// The name of the parameter.
         /// </summary>
         public string Name { get; }
+
+        private static IReadOnlyDictionary<string, ParameterSetData> CreateParameterSetDictionary(
+            IReadOnlyDictionary<string, Data.Modules.ParameterSetData> parameterSetData)
+        {
+            var dict = new Dictionary<string, ParameterSetData>(parameterSetData.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (KeyValuePair<string, Data.Modules.ParameterSetData> parameterSet in parameterSetData)
+            {
+                dict[parameterSet.Key] = new ParameterSetData(parameterSet.Key, parameterSet.Value);
+            }
+            return dict;
+        }
     }
 }
