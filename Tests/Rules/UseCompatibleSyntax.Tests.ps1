@@ -83,9 +83,19 @@ Describe "PSUseCompatibleSyntax" {
         $settings = @{ Rules = @{ PSUseCompatibleSyntax = @{ Enable = $true; TargetVersions = @("3.0", "4.0", "5.1", "6.0") } } }
 
         $diagnostics = Invoke-ScriptAnalyzer -IncludeRule PSUseCompatibleSyntax -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -Settings $settings `
-            | Where-Object { $_.RuleName -eq $script:RuleName }
+            | Where-Object { $_.RuleName -eq 'PSUseCompatibleSyntax' }
 
-        $diagnostics.Count | Should -Be 5
+        if ($PSVersionTable.PSVersion.Major -ge 5)
+        {
+            $expected = 5
+        }
+        else
+        {
+            # PSv3/4 can't detect class/enum parts
+            $expected = 4
+        }
+
+        $diagnostics.Count | Should -Be $expected
     }
 
     It "Ensures there are no incompatibilities in PSSA build files" {
