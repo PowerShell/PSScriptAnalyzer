@@ -480,7 +480,7 @@ function Receive-DotnetInstallScript
 
 function Get-DotnetExe
 {
-    $discoveredDotNet = Get-Command -CommandType Application dotnet
+    $discoveredDotNet = Get-Command -CommandType Application dotnet -ErrorAction SilentlyContinue
     if ( $discoveredDotNet ) {
         $discoveredDotNet | Select-Object -First 1 | Foreach-Object { $_.Source }
         return
@@ -499,6 +499,7 @@ function Get-DotnetExe
             return $dotnetHuntPath
         }
     }
-    throw "Could not find dotnet executable"
+    Write-Warning "Could not find dotnet executable"
+    return [String]::Empty
 }
 $script:dotnetExe = Get-DotnetExe
