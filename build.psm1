@@ -206,9 +206,9 @@ function Start-ScriptAnalyzerBuild
             Push-Location $projectRoot/Rules
             Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
             if ( -not $script:DotnetExe ) {
-                $script:dotnetExe = Get-DotnetExe
+                $script:DotnetExe = Get-DotnetExe
             }
-            $buildOutput = & $script:dotnetExe build --framework $framework --configuration "$config"
+            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$config"
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
@@ -442,10 +442,10 @@ function Get-InstalledCLIVersion {
     try {
         # earlier versions of dotnet do not support --list-sdks, so we'll check the output
         # and use dotnet --version as a fallback
-        $sdkList = & $script:dotnetExe --list-sdks 2>&1
+        $sdkList = & $script:DotnetExe --list-sdks 2>&1
         $sdkList = "Unknown option"
         if ( $sdkList -match "Unknown option" ) {
-            $installedVersions = & $script:dotnetExe --version
+            $installedVersions = & $script:DotnetExe --version
         }
         else {
             $installedVersions = $sdkList | Foreach-Object { $_.Split()[0] }
@@ -453,7 +453,7 @@ function Get-InstalledCLIVersion {
     }
     catch {
         Write-Verbose -Verbose "$_"
-        $installedVersions = & $script:dotnetExe --version
+        $installedVersions = & $script:DotnetExe --version
     }
     return (ConvertTo-PortableVersion $installedVersions)
 }
@@ -501,16 +501,15 @@ function Get-DotnetExe
 {
     $discoveredDotNet = Get-Command -CommandType Application dotnet -ErrorAction SilentlyContinue
     if ( $discoveredDotNet ) {
-        $dotnetFoundPath = $discoveredDotNet | Select-Object -First 1 | Foreach-Object { $_.Source }
         Write-Verbose -Verbose "Found dotnet here: $dotnetFoundPath"
-        $script:DotnetExe = $dotnetFoundPath
-        return $dotnetFoundPath
+        $script:DotnetExe = $discoveredDotNet
+        return $discoveredDotNet
     }
     # it's not in the path, try harder to find it
     # check the usual places
     if ( ! (test-path variable:IsWindows) -or $IsWindows ) {
         $dotnetHuntPath = "$HOME\AppData\Local\Microsoft\dotnet\dotnet.exe"
-        Write-Verbose -Verbose "checking $dotnetHuntPath"
+        Write-Verbose -Verbose "checking Windows $dotnetHuntPath"
         if ( test-path $dotnetHuntPath ) {
             $script:DotnetExe = $dotnetHuntPath
             return $dotnetHuntPath
@@ -518,13 +517,14 @@ function Get-DotnetExe
     }
     else {
         $dotnetHuntPath = "$HOME/.dotnet/dotnet"
-        Write-Verbose -Verbose "checking $dotnetHuntPath"
+        Write-Verbose -Verbose "checking non-Windows $dotnetHuntPath"
         if ( test-path $dotnetHuntPath ) {
             $script:DotnetExe = $dotnetHuntPath
             return $dotnetHuntPath
         }
     }
+
     Write-Warning "Could not find dotnet executable"
     return [String]::Empty
 }
-$script:dotnetExe = Get-DotnetExe
+$script:DotnetExe = Get-DotnetExe
