@@ -502,13 +502,19 @@ function Get-DotnetExe
     $discoveredDotnet = Get-Command -CommandType Application dotnet -ErrorAction SilentlyContinu
     if ( $discoveredDotnet ) {
         # it's possible that there are multiples. Take the highest version we find
-        $latestDotnet = $discoveredDotNet | Sort-object { [version](& $_ --version) } | Select-Object -Last 1
-        Write-Verbose -Verbose "Found dotnet here: $latestDotnet"
-        $script:DotnetExe = $latestDotnet
-        return $latestDotnet
+        # the problem is that invoking dotnet on a version which is lower than the specified
+        # version in global.json will produce an error, so we can only take the dotnet which executes
+        $latestDotnet = $discoveredDotNet |
+            Where-Object { try { & $_ --version } catch { } } |
+            Sort-Object { [version](& $_ --version) } |
+            Select-Object -Last 1
+        if ( $latestDotnet ) {
+            Write-Verbose -Verbose "Found dotnet here: $latestDotnet"
+            $script:DotnetExe = $latestDotnet
+            return $latestDotnet
+        }
     }
-    # it's not in the path, try harder to find it
-    # check the usual places
+    # it's not in the path, try harder to find it by checking some usual places
     if ( ! (test-path variable:IsWindows) -or $IsWindows ) {
         $dotnetHuntPath = "$HOME\AppData\Local\Microsoft\dotnet\dotnet.exe"
         Write-Verbose -Verbose "checking Windows $dotnetHuntPath"
