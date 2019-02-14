@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Text;
 
-#if NETSTANDARD2_0
+#if CORECLR
 using System.Runtime.InteropServices;
 #endif
 
@@ -44,7 +44,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             _jsonSerializer = JsonProfileSerializer.Create();
 
             // Cache keys are filenames, which must be case-insensitive in Windows and macOS
-#if NETSTANDARD2_0
+#if CORECLR
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 _profileCache = new ConcurrentDictionary<string, Lazy<Task<CompatibilityProfileCacheEntry>>>();
