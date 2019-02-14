@@ -819,8 +819,11 @@
   <data name="UseCompatibleCommandsDescription" xml:space="preserve">
     <value>Use commands compatible with the given PowerShell version and operating system</value>
   </data>
-  <data name="UseCompatibleCommandsError" xml:space="preserve">
+  <data name="UseCompatibleCommandsCommandError" xml:space="preserve">
     <value>The command '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
+  </data>
+  <data name="UseCompatibleCommandsParameterError" xml:space="preserve">
+    <value>The parameter '{0}' is not available for command '{1}' by default in PowerShell version '{2}' on platform '{3}'</value>
   </data>
   <data name="UseCompatibleTypesName" xml:space="preserve">
     <value>UseCompatibleTypes</value>
@@ -833,6 +836,12 @@
   </data>
   <data name="UseCompatibleTypesTypeError" xml:space="preserve">
     <value>The type '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
+  </data>
+  <data name="UseCompatibleTypesMethodError" xml:space="preserve">
+    <value>The method '{0}' is not available on type '{1}' by default in PowerShell version '{2}' on platform '{3}'</value>
+  </data>
+  <data name="UseCompatibleTypesMemberError" xml:space="preserve">
+    <value>The member '{0}' is not available on type '{1}' by default in PowerShell version '{2}' on platform '{3}'</value>
   </data>
   <data name="UseCompatibleSyntaxName" xml:space="preserve">
     <value>UseCompatibleSyntax</value>

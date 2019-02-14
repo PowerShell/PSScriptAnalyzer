@@ -231,7 +231,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             string message = string.Format(
                 CultureInfo.CurrentCulture,
-                Strings.UseCompatibleCommandsError,
+                Strings.UseCompatibleCommandsCommandError,
                 commandName,
                 platform.PowerShell.Version,
                 platform.OperatingSystem.FriendlyName);
@@ -269,7 +269,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             string message = string.Format(
                 CultureInfo.CurrentCulture,
-                "The parameter '{0}' is not available for command '{1}' in PowerShell '{2}' on '{3}'",
+                Strings.UseCompatibleCommandsParameterError,
                 parameterName,
                 commandName,
                 platform.PowerShell.Version,

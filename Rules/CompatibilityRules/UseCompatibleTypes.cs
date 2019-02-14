@@ -603,7 +603,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             string message = String.Format(
                 CultureInfo.CurrentCulture,
-                "The method '{0}' on type '{1}' is not available in PowerShell {2} on platform '{3}'",
+                Strings.UseCompatibleTypesMethodError,
                 methodName,
                 typeName,
                 platform.PowerShell.Version,
@@ -645,7 +645,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             string message = String.Format(
                 CultureInfo.CurrentCulture,
-                "The member '{0}' on type '{1}' is not available in PowerShell {2} on platform '{3}'",
+                Strings.UseCompatibleTypesMemberError,
                 propertyName,
                 typeName,
                 platform.PowerShell.Version,

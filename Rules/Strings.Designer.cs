@@ -2050,6 +2050,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The command &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleCommandsCommandError {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsCommandError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use compatible commands.
         /// </summary>
         internal static string UseCompatibleCommandsCommonName {
@@ -2068,20 +2077,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The command &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
-        /// </summary>
-        internal static string UseCompatibleCommandsError {
-            get {
-                return ResourceManager.GetString("UseCompatibleCommandsError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to UseCompatibleCommands.
         /// </summary>
         internal static string UseCompatibleCommandsName {
             get {
                 return ResourceManager.GetString("UseCompatibleCommandsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The parameter &apos;{0}&apos; is not available for command &apos;{1}&apos; by default in PowerShell version &apos;{2}&apos; on platform &apos;{3}&apos;.
+        /// </summary>
+        internal static string UseCompatibleCommandsParameterError {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsParameterError", resourceCulture);
             }
         }
         
@@ -2145,6 +2154,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseCompatibleTypesDescription {
             get {
                 return ResourceManager.GetString("UseCompatibleTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The member &apos;{0}&apos; is not available on type &apos;{1}&apos; by default in PowerShell version &apos;{2}&apos; on platform &apos;{3}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesMemberError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesMemberError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The method &apos;{0}&apos; is not available on type &apos;{1}&apos; by default in PowerShell version &apos;{2}&apos; on platform &apos;{3}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesMethodError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesMethodError", resourceCulture);
             }
         }
         
