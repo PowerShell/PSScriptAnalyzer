@@ -128,10 +128,13 @@ function Start-ScriptAnalyzerBuild
 
     BEGIN {
         # don't allow the build to be started unless we have the proper Cli version
+        # this will not actually install dotnet if it's already present, but it will
+        # install the proper version
+        Install-Dotnet
         if ( -not (Test-SuitableDotnet) ) {
             $requiredVersion = Get-GlobalJsonSdkVersion
             $foundVersion = Get-InstalledCLIVersion
-            throw "No suitable dotnet CLI found, requires version '$requiredVersion' found only '$foundVersion'"
+            Write-Warning "No suitable dotnet CLI found, requires version '$requiredVersion' found only '$foundVersion'"
         }
     }
     END {
@@ -202,6 +205,9 @@ function Start-ScriptAnalyzerBuild
         try {
             Push-Location $projectRoot/Rules
             Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            if ( -not $script:DotnetExe ) {
+                $script:dotnetExe = Get-DotnetExe
+            }
             $buildOutput = & $script:dotnetExe build --framework $framework --configuration "$config"
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
@@ -308,6 +314,11 @@ function Install-Dotnet
         If ( $PSCmdlet.ShouldProcess("$installScriptName for $version")) {
             & "${installScriptPath}" -c release -version $version
         }
+        # this may be the first time that dotnet has been installed,
+        # set up the executable variable
+        if ( -not $script:DotnetExe ) {
+            $script:DotnetExe = Get-DotnetExe
+        }
     }
     catch {
         throw $_
@@ -336,7 +347,10 @@ function ConvertTo-PortableVersion {
     foreach ( $v in $strVersion ) {
         $ver, $pre = $v.split("-",2)
         try {
-            [int]$major, [int]$minor, [int]$patch = $ver.Split(".")
+            [int]$major, [int]$minor, [int]$patch, $unused = $ver.Split(".",4)
+            if ( -not $pre ) {
+                $pre = $unused
+            }
         }
         catch {
             Write-Warning "Cannot convert '$v' to portable version"
@@ -420,6 +434,11 @@ function Test-SuitableDotnet {
 
 # these are mockable functions for testing
 function Get-InstalledCLIVersion {
+    # dotnet might not have been installed _ever_, so just return 0.0.0.0
+    if ( -not $script:DotnetExe ) {
+        Write-Warning "Dotnet executable not found"
+        return (ConvertTo-PortableVersion 0.0.0)
+    }
     try {
         # earlier versions of dotnet do not support --list-sdks, so we'll check the output
         # and use dotnet --version as a fallback
@@ -482,20 +501,26 @@ function Get-DotnetExe
 {
     $discoveredDotNet = Get-Command -CommandType Application dotnet -ErrorAction SilentlyContinue
     if ( $discoveredDotNet ) {
-        $discoveredDotNet | Select-Object -First 1 | Foreach-Object { $_.Source }
-        return
+        $dotnetFoundPath = $discoveredDotNet | Select-Object -First 1 | Foreach-Object { $_.Source }
+        Write-Verbose -Verbose "Found dotnet here: $dotnetFoundPath"
+        $script:DotnetExe = $dotnetFoundPath
+        return $dotnetFoundPath
     }
     # it's not in the path, try harder to find it
     # check the usual places
     if ( ! (test-path variable:IsWindows) -or $IsWindows ) {
         $dotnetHuntPath = "$HOME\AppData\Local\Microsoft\dotnet\dotnet.exe"
+        Write-Verbose -Verbose "checking $dotnetHuntPath"
         if ( test-path $dotnetHuntPath ) {
+            $script:DotnetExe = $dotnetHuntPath
             return $dotnetHuntPath
         }
     }
     else {
         $dotnetHuntPath = "$HOME/.dotnet/dotnet"
+        Write-Verbose -Verbose "checking $dotnetHuntPath"
         if ( test-path $dotnetHuntPath ) {
+            $script:DotnetExe = $dotnetHuntPath
             return $dotnetHuntPath
         }
     }
