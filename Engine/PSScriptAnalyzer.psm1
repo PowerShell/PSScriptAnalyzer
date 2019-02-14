@@ -20,10 +20,12 @@ if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition
 else {
     if ($PSVersionTable.PSVersion.Major -eq 3) {
         $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv3'
+        # Without this, PSSA tries to load this from $PSHome
         Add-Type -Path "$binaryModuleRoot/Newtonsoft.Json.dll"
     }
     elseif ($PSVersionTable.PSVersion.Major -eq 4) {
         $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv4'
+        # Without this, PSSA tries to load this from $PSHome
         Add-Type -Path "$binaryModuleRoot/Newtonsoft.Json.dll"
     }
 }

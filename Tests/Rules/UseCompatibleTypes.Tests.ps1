@@ -134,7 +134,9 @@ Describe 'UseCompatibleTypes' {
                 }
             }
 
-            $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -Settings $settings -IncludeRule PSUseCompatibleTypes
+            $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -Settings $settings -IncludeRule PSUseCompatibleTypes `
+                | Where-Object { $_.RuleName -eq $script:RuleName }
+
             $diagnostics.Count | Should -Be 2
             foreach ($diagnostic in $diagnostics)
             {
