@@ -1,4 +1,7 @@
-Import-Module "$PSScriptRoot/../out/CrossCompatibility" -Force -ErrorAction Stop
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module CrossCompatibility -ErrorAction Stop
 
 function Get-TypeNameAstFromScript
 {
