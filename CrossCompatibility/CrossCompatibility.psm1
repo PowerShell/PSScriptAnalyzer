@@ -12,7 +12,7 @@ catch
 {
     # Do nothing
 }
-if ($compatibilityLoaded)
+if (-not $compatibilityLoaded)
 {
     if ($PSVersionTable.PSVersion.Major -ge 6)
     {

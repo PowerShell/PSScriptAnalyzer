@@ -99,9 +99,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 return type.FullName;
             }
 
-            if (type.IsByRef || type.IsArray)
+            if (type.IsArray)
             {
-                return type.ToString();
+                return GetFullTypeName(type.GetElementType()) + "[]";
+            }
+
+            if (type.IsByRef)
+            {
+                return GetFullTypeName(type.GetElementType()) + "&";
             }
 
             // Uninstantiated generics also have PowerShell-parseable full names
