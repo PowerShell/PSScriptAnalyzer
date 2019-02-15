@@ -50,10 +50,14 @@ function Invoke-AppveyorTest {
 
     $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
-    $testResultsFile = ".\TestResults.xml"
+    $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
     $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation"
-    $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
-    (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}", (Resolve-Path $testResultsFile))
+    $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
+    $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
+    Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
+    $response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+    $responseString = [System.Text.Encoding]::ASCII.GetString($response)
+    Write-Verbose -Verbose ("Response: ({0} bytes) ${responseString}" -f $response.Count)
     if ($testResults.FailedCount -gt 0) {
         throw "$($testResults.FailedCount) tests failed."
     }
