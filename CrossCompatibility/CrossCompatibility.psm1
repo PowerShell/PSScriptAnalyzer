@@ -2,13 +2,26 @@
 # Licensed under the MIT License.
 
 # Add the relevant binary module
-if ($PSVersionTable.PSVersion.Major -ge 6)
+$compatibilityLoaded = $false
+try
 {
-    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'CrossCompatibility.dll'))
+    $null = [Microsoft.PowerShell.CrossCompatibility.CompatibilityAnalysisException]
+    $compatibilityLoaded = $true
 }
-else
+catch
 {
-    Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'CrossCompatibility.dll'))
+    # Do nothing
+}
+if ($compatibilityLoaded)
+{
+    if ($PSVersionTable.PSVersion.Major -ge 6)
+    {
+        Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'CrossCompatibility.dll'))
+    }
+    else
+    {
+        Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'CrossCompatibility.dll'))
+    }
 }
 
 # Location of directory where compatibility reports should be put
