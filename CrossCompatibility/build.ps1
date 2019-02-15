@@ -118,7 +118,7 @@ if ($Clean)
 }
 
 # Only build if the output directory does not exist
-if (Test-Path "$PSScriptRoot/out/CrossCompatibility")
+if (-not (Test-Path "$PSScriptRoot/out/CrossCompatibility"))
 {
     if ($Framework)
     {
