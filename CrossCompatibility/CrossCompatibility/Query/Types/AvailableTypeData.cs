@@ -26,8 +26,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
         /// <param name="availableTypeData">The .NET type data object to query.</param>
         public AvailableTypeData(Data.Types.AvailableTypeData availableTypeData)
         {
-            _types = new Lazy<IReadOnlyDictionary<string, TypeData>>(() => CreateTypeLookupTable(Assemblies.Values));
+            _assemblies = new Lazy<IReadOnlyDictionary<string, AssemblyData>>(() => CreateAssemblyTable(availableTypeData.Assemblies));
             _typeAccelerators = new Lazy<Tuple<IReadOnlyDictionary<string, TypeAcceleratorData>, IReadOnlyDictionary<string, string>>>(() => CreateTypeAcceleratorTables(availableTypeData.TypeAccelerators));
+            _types = new Lazy<IReadOnlyDictionary<string, TypeData>>(() => CreateTypeLookupTable(Assemblies.Values));
         }
 
         /// <summary>
