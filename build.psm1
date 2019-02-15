@@ -294,7 +294,7 @@ function Install-Dotnet
     [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [Parameter()][Switch]$Force,
-        [Parameter()]$version = $( Get-GlobalJsonSdkVersion )
+        [Parameter()]$version = $( Get-GlobalJsonSdkVersion -Raw )
         )
 
     if ( Test-DotnetInstallation -requestedversion $version ) {
@@ -332,9 +332,15 @@ function Install-Dotnet
 }
 
 function Get-GlobalJsonSdkVersion {
+    param ( [switch]$Raw )
     $json = Get-Content -raw (Join-Path $PSScriptRoot global.json) | ConvertFrom-Json
     $version = $json.sdk.Version
-    ConvertTo-PortableVersion $version
+    if ( $Raw ) {
+        return $version
+    }
+    else {
+        ConvertTo-PortableVersion $version
+    }
 }
 
 # we don't have semantic version in earlier versions of PowerShell, so we need to
