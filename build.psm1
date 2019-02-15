@@ -372,7 +372,7 @@ function ConvertTo-PortableVersion {
         # type in script, we need a way to find the highest version of dotnet, it's not a great solution
         # but it will work in most cases.
         Add-Member -inputobject $customObject -Type ScriptMethod -Name ToString -Force -Value {
-            $str = "{0:0000}.{1:0000}.{2:0000}.{3:0000}" -f $this.Major,$this.Minor,$this.Patch
+            $str = "{0:0000}.{1:0000}.{2:0000}" -f $this.Major,$this.Minor,$this.Patch
             if ( $this.PrereleaseLabel ) {
                 $str += "-{0}" -f $this.PrereleaseLabel
             }
@@ -509,7 +509,7 @@ function Get-DotnetExe
         # version in global.json will produce an error, so we can only take the dotnet which executes
         $latestDotnet = $discoveredDotNet |
             Where-Object { try { & $_ --version 2>$null } catch { } } |
-            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null ); "$pv" } |
+            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null); "$pv" } |
             Select-Object -Last 1
         if ( $latestDotnet ) {
             Write-Verbose -Verbose "Found dotnet here: $latestDotnet"
