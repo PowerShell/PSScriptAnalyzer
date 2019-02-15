@@ -53,12 +53,20 @@ function Invoke-AppveyorTest {
 
     $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
+
+    # Set up testing assets
     $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
-    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation"
-    $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
+    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\CrossCompatibility\Tests"
+
+    # Run all tests
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
+
+    # Upload the test results
+    $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
     Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
     [byte[]]$response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+
+    # Throw an error if any tests failed
     if ($testResults.FailedCount -gt 0) {
         throw "$($testResults.FailedCount) tests failed."
     }

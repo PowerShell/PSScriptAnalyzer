@@ -36,8 +36,6 @@ Describe "Type name serialization" {
             @{ RawTypeName = "Dictionary``2"; StrippedTypeName = "Dictionary" }
             @{ RawTypeName = "Dictionary``2+Enumerator"; StrippedTypeName = "Dictionary+Enumerator" }
         )
-
-        Wait-Debugger
     }
 
     It "Serializes the name of type <InputType> to <ExpectedName>" -TestCases $typeNameTestCases {

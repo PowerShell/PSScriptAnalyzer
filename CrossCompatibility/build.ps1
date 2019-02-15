@@ -117,22 +117,31 @@ if ($Clean)
     Remove-Item -Force -Recurse $script:BinModDir
 }
 
-if ($Framework)
+# Only build if the output directory does not exist
+if (Test-Path "$PSScriptRoot/out/CrossCompatibility")
 {
-    Invoke-CrossCompatibilityModuleBuild -Configuration $Configuration -Framework $Framework
-    Publish-CrossCompatibilityModule -TargetFramework $Framework
+    if ($Framework)
+    {
+        Invoke-CrossCompatibilityModuleBuild -Configuration $Configuration -Framework $Framework
+        Publish-CrossCompatibilityModule -TargetFramework $Framework
+    }
+    else
+    {
+        foreach ($f in $script:TargetFrameworks)
+        {
+            Invoke-CrossCompatibilityModuleBuild -Framework $f -Configuration $Configuration
+        }
+        Publish-CrossCompatibilityModule
+    }
 }
 else
 {
-    foreach ($f in $script:TargetFrameworks)
-    {
-        Invoke-CrossCompatibilityModuleBuild -Framework $f -Configuration $Configuration
-    }
-    Publish-CrossCompatibilityModule
+    Write-Verbose "CrossCompatibility module already built -- skipping build"
+    Write-Verbose "Use '-Clean' to force building"
 }
 
 if ($Test)
 {
     $testPath = "$PSScriptRoot/Tests"
-    & (Get-Process -Id $PID).ProcessName -Command "Invoke-Pester -Path '$testPath'"
+    & (Get-Process -Id $PID).Path -Command "Invoke-Pester -Path '$testPath'"
 }

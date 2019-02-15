@@ -28,11 +28,13 @@ build_script:
              ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 3
           }
           ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion "$env:PSVersion"
+          ./CrossCompatibility/build.ps1 -Configuration "$env:BuildConfiguration"
       }
   - pwsh: |
       if ($env:PowerShellEdition -eq 'PowerShellCore') {
           Set-Location $env:APPVEYOR_BUILD_FOLDER
           ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 6
+          ./CrossCompatibility/build.ps1 -Configuration "$env:BuildConfiguration"
       }
 
 test_script:
