@@ -76,5 +76,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
         /// The human-readable name of this operating system
         /// </summary>
         public string FriendlyName => Family == OSFamily.Linux ? DistributionPrettyName : Name;
+
+        /// <summary>
+        /// A descriptive enum form of the Windows SKU, if one is available.
+        /// </summary>
+        public WindowsSku? Sku
+        {
+            get
+            {
+                // Type inference fails on a ternary, so we are forced to write this out...
+                if (SkuId.HasValue) { return (WindowsSku)SkuId.Value; }
+                return null;
+            }
+        }
     }
 }
