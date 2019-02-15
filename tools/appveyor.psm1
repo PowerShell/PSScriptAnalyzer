@@ -5,7 +5,7 @@ $ErrorActionPreference = 'Stop'
 
 # Implements the AppVeyor 'install' step and installs the required versions of Pester, platyPS and the .Net Core SDK if needed.
 function Invoke-AppVeyorInstall {
-    $requiredPesterVersion = '4.4.1'
+    $requiredPesterVersion = '4.4.4'
     $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
     if ($null -eq $pester) {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
@@ -70,6 +70,7 @@ function Invoke-AppveyorFinish {
     Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
     [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $pwd 'out'), $zipFile)
     @(
+        (Get-ChildItem TestResults.xml)
         # You can add other artifacts here
         (Get-ChildItem $zipFile)
     ) | ForEach-Object { Push-AppveyorArtifact $_.FullName }
