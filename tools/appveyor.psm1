@@ -47,6 +47,7 @@ function Invoke-AppveyorTest {
     )
 
     Write-Verbose -Verbose ("Running tests on PowerShell version " + $PSVersionTable.PSVersion)
+    Write-Verbose -Verbose "Language set to '${env:LANG}'"
 
     $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
@@ -55,17 +56,7 @@ function Invoke-AppveyorTest {
     $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
     Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
-    # there seems to be a problem where sometimes the test-suite name is not set to Pester
-    # which causes appveyor to not recognise it as test results
-    # attempt to force it to look right
-    $x = [xml](Get-Content $testResultsPath)
-    if ( $x."test-results"."test-suite".name -ne "Pester" ) {
-        $x."test-results"."test-suite".name = "Pester"
-        $x.Save($testResultsPath)
-    }
-    $response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
-    $responseString = [System.Text.Encoding]::ASCII.GetString($response)
-    Write-Verbose -Verbose ("Response: ({0} bytes) ${responseString}" -f $response.Count)
+    [byte[]]$response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
     if ($testResults.FailedCount -gt 0) {
         throw "$($testResults.FailedCount) tests failed."
     }
@@ -78,6 +69,7 @@ function Invoke-AppveyorFinish {
     Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
     [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $pwd 'out'), $zipFile)
     @(
+        # add test results as an artifact
         (Get-ChildItem TestResults.xml)
         # You can add other artifacts here
         (Get-ChildItem $zipFile)

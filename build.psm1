@@ -298,7 +298,6 @@ function Install-Dotnet
         )
 
     if ( Test-DotnetInstallation -requestedversion $version ) {
-        Write-Verbose -Verbose "dotnet version '$version' already installed"
         if ( $Force ) {
             Write-Verbose -Verbose "Installing again"
         }
@@ -518,7 +517,6 @@ function Get-DotnetExe
             Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null); "$pv" } |
             Select-Object -Last 1
         if ( $latestDotnet ) {
-            Write-Verbose -Verbose "Found dotnet here: $latestDotnet"
             $script:DotnetExe = $latestDotnet
             return $latestDotnet
         }
