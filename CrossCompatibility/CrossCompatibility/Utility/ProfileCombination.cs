@@ -413,15 +413,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                     return 0;
                 }
 
-                unsafe
+                int hc = 1;
+                foreach (string s in obj)
                 {
-                    int hc = 1;
-                    foreach (string s in obj)
+                    unchecked
                     {
                         hc = 31 * hc + (s?.GetHashCode() ?? 0);
                     }
-                    return hc;
                 }
+                return hc;
             }
         }
     }
