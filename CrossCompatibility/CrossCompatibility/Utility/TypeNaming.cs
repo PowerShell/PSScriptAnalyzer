@@ -31,7 +31,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         public static string ExpandSimpleTypeName(IReadOnlyDictionary<string, string> typeAccelerators, string typeName)
         {
             // Assumption that type accelerators do not contain '.'
-            if (typeName.Contains('.'))
+            if (typeName.Contains("."))
             {
                 return typeName;
             }
@@ -145,7 +145,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// <returns>True if the type name represents a genric type, false otherwise.</returns>
         public static bool IsGenericName(string typeName)
         {
-            return typeName.Contains('`');
+            return typeName.Contains("`");
         }
 
         /// <summary>
@@ -268,13 +268,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private static ITypeName ExpandTypeName(IReadOnlyDictionary<string, string> typeAccelerators, TypeName typeName, int genericArgCount = 0)
         {
-            if (genericArgCount > 0 && !typeName.FullName.Contains('`'))
+            if (genericArgCount > 0 && !typeName.FullName.Contains("`"))
             {
                 string newTypeName = new StringBuilder(typeName.FullName).Append('`').Append(genericArgCount).ToString();
                 return new TypeName(s_emptyExtent, newTypeName);
             }
 
-            if (typeName.FullName.Contains('.'))
+            if (typeName.FullName.Contains("."))
             {
                 return typeName;
             }
