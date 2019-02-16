@@ -55,6 +55,14 @@ function Invoke-AppveyorTest {
     $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
     Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
+    # there seems to be a problem where sometimes the test-suite name is not set to Pester
+    # which causes appveyor to not recognise it as test results
+    # attempt to force it to look right
+    $x = [xml](Get-Content $testResultsPath)
+    if ( $x."test-results"."test-suite".name -ne "Pester" ) {
+        $x."test-results"."test-suite".name = "Pester"
+        $x.Save($testResultsPath)
+    }
     $response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
     $responseString = [System.Text.Encoding]::ASCII.GetString($response)
     Write-Verbose -Verbose ("Response: ({0} bytes) ${responseString}" -f $response.Count)
