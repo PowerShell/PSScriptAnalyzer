@@ -34,10 +34,10 @@ if (-not $compatibilityLoaded)
 [string]$script:DefaultParameterSet = '__AllParameterSets'
 
 # Binding flags for static fields
-[System.Reflection.BindingFlags]$script:StaticBindingFlags = [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static
+[System.Reflection.BindingFlags]$script:StaticBindingFlags = 'Public,Static'
 
 # Binding flags for instance fields -- note the 'FlattenHierarchy'
-[System.Reflection.BindingFlags]$script:InstanceBindingFlags = [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::FlattenHierarchy
+[System.Reflection.BindingFlags]$script:InstanceBindingFlags = 'Public,Instance,FlattenHierarchy'
 
 # Common/ubiquitous cmdlet parameters which we don't want to repeat over and over
 [System.Collections.Generic.HashSet[string]]$script:CommonParameters = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
@@ -60,10 +60,6 @@ foreach ($p in $commonParams)
 {
     [void]$script:CommonParameters.Add($p)
 }
-
-# The file name for the any-platform reference generated from the union of all other platforms
-[string]$script:AnyPlatformUnionPlatformName = [Microsoft.PowerShell.CrossCompatibility.Utility.PlatformNaming]::AnyPlatformUnionName
-[string]$script:AnyPlatformReferenceProfileFilePath = [System.IO.Path]::Combine($script:CompatibilityProfileDir, "$script:AnyPlatformUnionPlatformName.json")
 
 # Module path locations
 if ($PSVersionTable.PSVersion.Major -ge 6)
@@ -184,13 +180,13 @@ function New-PowerShellCompatibilityProfile
 
     if ($PlatformName)
     {
-        $OutFile = [System.IO.Path]::Combine($here, "$Platform.json")
+        $here = Get-Location
+        $OutFile = Join-Path $here "$PlatformName.json"
         $PlatformId = $PlatformName
     }
-    elseif ($OutFile -and -not [System.IO.Path]::IsPathRooted($OutFile))
+    elseif (-not [System.IO.Path]::IsPathRooted($OutFile))
     {
-        $here = Get-Location
-        $OutFile = [System.IO.Path]::Combine($here, $OutFile)
+        $OutFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutFile)
     }
 
     $reportData = Get-PowerShellCompatibilityProfileData
@@ -232,30 +228,6 @@ function New-PowerShellCompatibilityProfile
     return Get-Item -LiteralPath $OutFile
 }
 
-function New-AllPlatformReferenceProfile
-{
-    param(
-        [string]
-        $Path = $script:AnyPlatformReferenceProfileFilePath,
-
-        [string]
-        $ProfileDir = $script:CompatibilityProfileDir
-    )
-
-    if (Test-Path -Path $Path)
-    {
-        Remove-Item -Path $Path -Force
-    }
-
-    $name = $script:AnyPlatformUnionPlatformNam
-
-    $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) "anyprofile_union.json"
-
-    Join-CompatibilityProfile -InputFile $ProfileDir -ProfileId $name | ConvertTo-CompatibilityJson -NoWhitespace | Out-File -Encoding UTF8 -FilePath $tmpPath
-
-    Move-Item -Path $tmpPath -Destination $Path
-}
-
 <#
 .SYNOPSIS
 Get the unique platform name of a given PowerShell platform.
@@ -263,10 +235,15 @@ Get the unique platform name of a given PowerShell platform.
 function Get-PlatformName
 {
     param(
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [Parameter(ValueFromPipeline=$true)]
         [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData[]]
         $PlatformData
     )
+
+    if (-not $PlatformData)
+    {
+        $PlatformData = Get-PlatformData
+    }
 
     foreach ($platform in $PlatformData)
     {
@@ -276,18 +253,17 @@ function Get-PlatformName
 
 <#
 .SYNOPSIS
-Get the unique name for the current PowerShell platform
-this cmdlet is executed on.
-#>
-function Get-CurrentPlatformName
-{
-    return Get-PlatformData | Get-PlatformName
-}
-
-<#
-.SYNOPSIS
 Alternative to ConvertTo-Json that converts enums to strings
 and does not display null fields.
+
+PowerShell's ConvertTo-Json
+serializes null fields to `"field": null` (not respecting [MemberData(EmitDefaultValue = false)])
+and emits enums as integers (when we want strings). It also bases out at a certain level.
+
+Converting compatibility JSON, we want certain serialization settings baked in.
+Also, we want to fail rather than call `.ToString()` on the bottom objects.
+And finally we don't want to do logic at every depth stage - we feed the whole thing to
+Newtonsoft.Json, which means we can be faster.
 
 .PARAMETER Item
 The object to serialize to JSON.
@@ -359,7 +335,7 @@ function ConvertFrom-CompatibilityJson
     {
         if (-not [System.IO.Path]::IsPathRooted($Path))
         {
-            $Path = Join-Path (Get-Location) $Path
+            $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
         }
 
         return $deserializer.DeserializeFromFile($Path)
