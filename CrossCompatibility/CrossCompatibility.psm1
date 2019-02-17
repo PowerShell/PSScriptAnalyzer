@@ -42,23 +42,9 @@ if (-not $compatibilityLoaded)
 # Common/ubiquitous cmdlet parameters which we don't want to repeat over and over
 [System.Collections.Generic.HashSet[string]]$script:CommonParameters = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
 
-$commonParams = @(
-    'Verbose'
-    'Debug'
-    'ErrorAction'
-    'WarningAction'
-    'InformationAction'
-    'ErrorVariable'
-    'WarningVariable'
-    'InformationVariable'
-    'OutVariable'
-    'OutBuffer'
-    'PipelineVariable'
-)
-
-foreach ($p in $commonParams)
+foreach ($p in [System.Management.Automation.Internal.CommonParameters].GetProperties())
 {
-    [void]$script:CommonParameters.Add($p)
+    [void]$script:CommonParameters.Add($p.Name)
 }
 
 # Module path locations
