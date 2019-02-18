@@ -126,13 +126,40 @@ function Join-CompatibilityProfile
 Generate a new compatibility JSON file of the current PowerShell session
 at the specified location.
 
+.DESCRIPTION
+WARNING: This command will load all modules on the module path when executed in order to build a profile.
+It should be called from a fresh noprofile session, like `pwsh -NoProfile -Command { New-PowerShellCompatibilityProfile }`.
+New-PowerShellCompatibilityProfile will catalog all modules available in a PowerShell session,
+as well as all types available, to build a profile of that PowerShell session for later compatibility analysis.
+
 .PARAMETER OutFile
 The file location where the JSON compatibility file should be generated.
 If this is null or empty, the result will be written to a file with a platform-appropriate name.
 
+.PARAMETER PlatformName
+The name to give the platform being profiled, used as the profile filename and also as the profile ID.
+When this is specified, the profile is created in the current directory with the given name.
+If not provided, this will be generated based off the platform data read from the machine.
+
 .PARAMETER PassThru
-If set, write the report object to output.
+If set, write the report object to output rather than to a file.
+
+.PARAMETER PlatformId
+Set a custom ID for the platform in the profile object, without setting the filename.
+
+.PARAMETER Readable
+If set, JSON output will include whitespace and indentation for human readability.
+
+.PARAMETER Validate
+If set, validates the output before returning.
+
+.EXAMPLE
+
+
+.NOTES
+General notes
 #>
+
 function New-PowerShellCompatibilityProfile
 {
     [CmdletBinding(DefaultParameterSetName='OutFile')]
@@ -164,48 +191,83 @@ function New-PowerShellCompatibilityProfile
         $Validate
     )
 
-    if ($PlatformName)
-    {
-        $here = Get-Location
-        $OutFile = Join-Path $here "$PlatformName.json"
-        $PlatformId = $PlatformName
-    }
-    elseif (-not [System.IO.Path]::IsPathRooted($OutFile))
-    {
-        $OutFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutFile)
-    }
-
     $reportData = Get-PowerShellCompatibilityProfileData
-
-    if ($Validate)
-    {
-        Assert-CompatibilityProfileIsValid -CompatibilityProfile $reportData
-    }
 
     if (-not $reportData)
     {
-        throw "Report generation failed. Please see errors for more information"
+        throw "Report generation failed. See errors for more information"
     }
 
-    if (-not $PlatformId)
+    if ($Validate)
     {
-        $PlatformId = Get-PlatformName $reportData.Platform
-        $reportData.Id = $PlatformId
+        try
+        {
+            Assert-CompatibilityProfileIsValid -CompatibilityProfile $reportData
+        }
+        catch
+        {
+            # Inform the user that a problem occurred,
+            # but continue outputting data so that they can examine it
+            Write-Error $_
+        }
     }
+
+    switch ($PSCmdlet.ParameterSetName)
+    {
+        'OutFile'
+        {
+            # If PlatformId
+            if (-not $PlatformId)
+            {
+                $PlatformId = Get-PlatformName $reportData.Platform
+            }
+
+            # Deal with the output file path
+            if (-not $OutFile)
+            {
+                # Create the profile dir if it doesn't exist
+                if (-not (Test-Path $script:CompatibilityProfileDir))
+                {
+                    $null = New-Item -ItemType Directory $script:CompatibilityProfileDir
+                }
+
+                # The output file path is the
+                $OutFile = Join-Path $script:CompatibilityProfileDir "$PlatformId.json"
+            }
+            elseif (-not [System.IO.Path]::IsPathRooted($OutFile))
+            {
+                # Otherwise,
+                $OutFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutFile)
+            }
+
+            break
+        }
+
+        # If PlatformName is given, it becomes the ProfileId and the local file name
+        'PlatformName'
+        {
+            $here = Get-Location
+            $OutFile = Join-Path $here "$PlatformName.json"
+            $PlatformId = $PlatformName
+            break
+        }
+
+        # We just need the PlatformId for PassThru
+        'PassThru'
+        {
+            if (-not $PlatformId)
+            {
+                $PlatformId = Get-PlatformName $reportData.Platform
+            }
+            break
+        }
+    }
+
+    $reportData.Id = $PlatformId
 
     if ($PassThru)
     {
         return $reportData
-    }
-
-    if (-not $OutFile)
-    {
-        if (-not (Test-Path $script:CompatibilityProfileDir))
-        {
-            $null = New-Item -ItemType Directory $script:CompatibilityProfileDir
-        }
-
-        $OutFile = Join-Path $script:CompatibilityProfileDir "$PlatformId.json"
     }
 
     ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $Readable) `
@@ -488,7 +550,7 @@ function Get-LinuxLsbInfo
 {
     return Get-Content -Raw -Path '/etc/*-release' -ErrorAction SilentlyContinue `
         | ConvertFrom-Csv -Delimiter '=' -Header 'Key','Value' `
-        | ForEach-Object { $acc = @{} } { $acc[$_.Key] = $_.Value } { [psobject]$acc }
+        | ForEach-Object { $acc = @{} } { $acc[$_.Key] = $_.Value } { [pscustomobject]$acc }
 }
 
 <#
@@ -524,17 +586,26 @@ function Get-PowerShellCompatibilityData
     $asms = Get-AvailableTypes -All:$IncludeAllModules
     $nativeCommands = Get-Command -CommandType Application
     $aliasTable = Get-AliasTable
-
     $coreModule = Get-CoreModuleData
 
-    $compatibilityData = New-RuntimeData `
-        -Modules $modules `
-        -AliasTable $aliasTable `
-        -Assemblies $asms `
-        -TypeAccelerators $typeAccelerators `
-        -NativeCommands $nativeCommands
+    $runtimeArgs = @{
+        Modules = $modules
+        AliasTable = $aliasTable
+        Assemblies = $asms
+        TypeAccelerators = $typeAccelerators
+        NativeCommands = $nativeCommands
+    }
+    $compatibilityData = New-RuntimeData @runtimeArgs
 
-    $psVersion = New-Object 'System.Version' $PSVersionTable.PSVersion.Major,$PSVersionTable.PSVersion.Minor,$PSVersionTable.PSVersion.Patch
+    # Need to deal with semver v2 in PowerShell 6+
+    if ($null -eq $PSVersionTable.PSVersion.Revision)
+    {
+        $psVersion = New-Object 'System.Version' $PSVersionTable.PSVersion.Major,$PSVersionTable.PSVersion.Minor,$PSVersionTable.PSVersion.Patch
+    }
+    else
+    {
+        $psVersion = $PSVersionTable.PSVersion
+    }
 
     $coreDict = New-Object 'System.Collections.Generic.Dictionary[version, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]'
     $coreDict[$psVersion] = $coreModule
@@ -743,7 +814,7 @@ function New-NativeCommandData
 
     begin
     {
-        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData[]]' @([System.StringComparer]::OrdinalIgnoreCase)
+        $dict = New-Object 'System.Collections.Generic.Dictionary[string, Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData[]]' ([System.StringComparer]::OrdinalIgnoreCase)
     }
 
     process
@@ -759,9 +830,10 @@ function New-NativeCommandData
 
         $nativeCommandData = [Microsoft.PowerShell.CrossCompatibility.Data.NativeCommandData]$nativeCommandData
 
-        if ($dict.ContainsKey($InfoObject.Name))
+        $existingNativeCommands = $null
+        if ($dict.TryGetValue($InfoObject.Name, [ref]$existingNativeCommands))
         {
-            $dict[$InfoObject.Name] = ($dict[$InfoObject.Name] + $nativeCommandData)
+            $dict[$InfoObject.Name] = $existingNativeCommands + $nativeCommandData
             return
         }
 
