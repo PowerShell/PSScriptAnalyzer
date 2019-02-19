@@ -398,9 +398,19 @@ Generate a new compatibility report object for the current PowerShell session.
 #>
 function Get-PowerShellCompatibilityProfileData
 {
+    param(
+        [Parameter()]
+        [Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData]
+        $Runtime = (Get-PowerShellCompatibilityData),
+
+        [Parameter()]
+        [Microsoft.PowerShell.CrossCompatibility.Data.PlatformData]
+        $Platform = (Get-PlatformData)
+    )
+
     return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]@{
-        Runtime = Get-PowerShellCompatibilityData
-        Platform = Get-PlatformData
+        Runtime = $Runtime
+        Platform = $Platform
     }
 }
 
@@ -410,10 +420,24 @@ Get all information on the current platform running PowerShell.
 #>
 function Get-PlatformData
 {
+    param(
+        [Parameter()]
+        [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PowerShellData]
+        $PowerShell = (Get-PowerShellRuntimeData),
+
+        [Parameter()]
+        [Microsoft.PowerShell.CrossCompatibility.Data.Platform.OperatingSystemData]
+        $OperatingSystem = (Get-OSData),
+
+        [Parameter()]
+        [Microsoft.PowerShell.CrossCompatibility.Data.Platform.DotNetData]
+        $DotNet = (Get-DotNetData)
+    )
+
     return [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData]@{
-        PowerShell = Get-PowerShellRuntimeData
-        OperatingSystem = Get-OSData
-        DotNet = Get-DotNetData
+        PowerShell = $PowerShell
+        OperatingSystem = $OperatingSystem
+        DotNet = $DotNet
     }
 }
 
