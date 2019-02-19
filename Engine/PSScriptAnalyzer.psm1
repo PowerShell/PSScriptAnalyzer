@@ -18,10 +18,9 @@ if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition
     }
 }
 elseif ($PSVersionTable.PSVersion.Major -le 4) {
-        $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath "PSv$($PSVersionTable.PSVersion.Major)"
-        # Without this, PSSA tries to load this from $PSHome
-        Add-Type -Path "$binaryModuleRoot/Newtonsoft.Json.dll"
-    }
+    $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath "PSv$($PSVersionTable.PSVersion.Major)"
+    # Without this, PSSA tries to load this from $PSHome
+    Add-Type -Path "$binaryModuleRoot/Newtonsoft.Json.dll"
 }
 
 $binaryModulePath = Join-Path -Path $binaryModuleRoot -ChildPath 'Microsoft.Windows.PowerShell.ScriptAnalyzer.dll'

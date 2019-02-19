@@ -113,10 +113,24 @@ function Start-DocumentationBuild
 function Copy-CompatibilityProfiles
 {
     $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility', 'profiles')
-    $destination = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer', 'compatibility_profiles')
+    $destinationDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer')
+    $destination = Join-Path $destinationDir 'compatibility_profiles.zip'
 
-    Remove-Item -Force -Recurse $destination -ErrorAction Ignore
-    Copy-Item -Recurse -Force -Path $profileDir -Destination $destination
+    if (Test-Path -LiteralPath $destinationDir -PathType Container)
+    {
+        Remove-Item -Force -Recurse $destination -ErrorAction Ignore
+    }
+    else
+    {
+        $null = New-Item -Path $destinationDir -ItemType Directory
+    }
+
+    [System.IO.Compression.ZipFile]::CreateFromDirectory(
+        $profileDir,
+        $destination,
+        [System.IO.Compression.CompressionLevel]::Optimal,
+        <# includeBaseDirectory #> $false,
+        [System.Text.Encoding]::UTF8)
 }
 
 # build script analyzer (and optionally build everything with -All)
