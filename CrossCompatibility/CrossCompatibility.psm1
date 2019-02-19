@@ -16,11 +16,11 @@ if (-not $compatibilityLoaded)
 {
     if ($PSVersionTable.PSVersion.Major -ge 6)
     {
-        Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'CrossCompatibility.dll'))
+        Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'Microsoft.PowerShell.CrossCompatibility.dll'))
     }
     else
     {
-        Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'CrossCompatibility.dll'))
+        Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'Microsoft.PowerShell.CrossCompatibility.dll'))
     }
 }
 

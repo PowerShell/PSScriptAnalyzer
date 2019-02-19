@@ -35,8 +35,8 @@ $script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'CrossCompat
 $script:BinModSrcDir = Join-Path $PSScriptRoot 'CrossCompatibility'
 
 $script:PublishDlls = @{
-    'net452' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
-    'netstandard2.0' = @('CrossCompatibility.dll', 'CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
+    'net452' = @('Microsoft.PowerShell.CrossCompatibility.dll', 'Microsoft.PowerShell.CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
+    'netstandard2.0' = @('Microsoft.PowerShell.CrossCompatibility.dll', 'Microsoft.PowerShell.CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
 }
 
 function Invoke-CrossCompatibilityModuleBuild
