@@ -17,14 +17,8 @@ if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition
         throw "Minimum supported version of PSScriptAnalyzer for PowerShell Core is 6.0.2 but current version is '$($PSVersionTable.PSVersion)'. Please update PowerShell Core."
     }
 }
-else {
-    if ($PSVersionTable.PSVersion.Major -eq 3) {
-        $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv3'
-        # Without this, PSSA tries to load this from $PSHome
-        Add-Type -Path "$binaryModuleRoot/Newtonsoft.Json.dll"
-    }
-    elseif ($PSVersionTable.PSVersion.Major -eq 4) {
-        $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'PSv4'
+elseif ($PSVersionTable.PSVersion.Major -le 4) {
+        $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath "PSv$($PSVersionTable.PSVersion.Major)"
         # Without this, PSSA tries to load this from $PSHome
         Add-Type -Path "$binaryModuleRoot/Newtonsoft.Json.dll"
     }
