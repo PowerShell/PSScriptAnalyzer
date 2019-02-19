@@ -166,6 +166,7 @@ Describe 'UseCompatibleTypes' {
                             $script:Debian8_6_1_profile
                             $script:Rhel76_6_1_profile
                         )
+                        IgnoreTypes = @('System.IO.Compression.ZipFile')
                     }
                 }
             }
