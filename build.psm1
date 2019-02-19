@@ -412,6 +412,9 @@ function Test-SuitableDotnet {
     if ( $requiredVersion -is [String] -or $requiredVersion -is [Version] ) {
         $requiredVersion = ConvertTo-PortableVersion "$requiredVersion"
     }
+
+    $availableVersionList = $availableVersions | ForEach-Object { if ( $_ -is [string] -or $_ -is [version] ) { ConvertTo-PortableVersion $_ } else { $_ } }
+    $availableVersions = $availableVersionList
     # if we have what was requested, we can use it
     if ( $RequiredVersion.IsContainedIn($availableVersions)) {
         return $true
@@ -429,13 +432,13 @@ function Test-SuitableDotnet {
         }
         $requiredPatch = $requiredVersion.Patch
         $possiblePatch = $version.Patch
+
         if ( $requiredPatch -gt $possiblePatch ) {
             continue
         }
-        if ( ($requiredPatch - $possiblePatch) -ge 100 ) {
-            continue
+        if ( [math]::Abs(($requiredPatch - $possiblePatch)) -lt 100 ) {
+            return $true
         }
-        return $true
     }
     return $false
 }
@@ -468,19 +471,16 @@ function Get-InstalledCLIVersion {
 
 function Test-DotnetInstallation
 {
-    param ( $requestedVersion = $( Get-GlobalJsonSdkVersion ) )
-    $installedVersions = Get-InstalledCLIVersion
+    param (
+        $requestedVersion = $( Get-GlobalJsonSdkVersion ),
+        $installedVersions = $( Get-InstalledCLIVersion )
+        )
     return (Test-SuitableDotnet -availableVersions $installedVersions -requiredVersion $requestedVersion )
 }
 
-function Receive-DotnetInstallScript
-{
-    $installScriptName = "dotnet-install.ps1"
+function Receive-File {
+    param ( [Parameter(Mandatory,Position=0)]$uri )
 
-    if ( (Test-Path Variable:IsWindows) -and -not $IsWindows ) {
-        $installScriptName = "dotnet-install.sh"
-    }
-    $uri = "https://dot.net/v1/${installScriptName}"
     # enable Tls12 for the request
     # -SslProtocol parameter for Invoke-WebRequest wasn't in PSv3
     $securityProtocol = [System.Net.ServicePointManager]::SecurityProtocol
@@ -501,7 +501,20 @@ function Receive-DotnetInstallScript
     if ( -not $installScript ) {
         throw "Download failure of ${uri}"
     }
+    return $installScript
+}
 
+function Receive-DotnetInstallScript
+{
+    param ( [switch]$forceNonWindows )
+    $installScriptName = "dotnet-install.ps1"
+
+    if ( ((Test-Path Variable:IsWindows) -and -not $IsWindows) -or $forceNonWindows ) {
+        $installScriptName = "dotnet-install.sh"
+    }
+    $uri = "https://dot.net/v1/${installScriptName}"
+
+    $installScript = Receive-File -Uri $uri
     return $installScript.FullName
 }
 
