@@ -506,11 +506,24 @@ function Receive-File {
 
 function Receive-DotnetInstallScript
 {
-    param ( [switch]$forceNonWindows )
-    $installScriptName = "dotnet-install.ps1"
+    # param '$platform' is a hook to enable forcing download of a specific
+    # install script, generally it should not be used except in testing.
+    param ( $platform = "" )
 
-    if ( ((Test-Path Variable:IsWindows) -and -not $IsWindows) -or $forceNonWindows ) {
+    # if $platform has been set, it has priority
+    # if it's not set to Windows or NonWindows, it will be ignored
+    if ( $platform -eq "Windows" ) {
+        $installScriptName = "dotnet-install.ps1"
+    }
+    elseif ( $platform -eq "NonWindows" ) {
         $installScriptName = "dotnet-install.sh"
+    }
+    elseif ( ((Test-Path Variable:IsWindows) -and -not $IsWindows) ) {
+        # if the variable IsWindows exists and it is set to false
+        $installScriptName = "dotnet-install.sh"
+    }
+    else { # the default case - we're running on a Windows system
+        $installScriptName = "dotnet-install.ps1"
     }
     $uri = "https://dot.net/v1/${installScriptName}"
 

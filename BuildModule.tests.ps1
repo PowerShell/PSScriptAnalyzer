@@ -75,11 +75,12 @@ Describe "Build Module Tests" {
     }
 
     Context "Receive-DotnetInstallScript" {
+
         Mock -ModuleName Build Receive-File { new-item -type file TestDrive:/dotnet-install.sh }
-        It "Downloads the proper file" {
+        It "Downloads the proper non-Windows file" {
             try {
                 push-location TestDrive:
-                Receive-DotnetInstallScript -forceNonWindows
+                Receive-DotnetInstallScript -platform NonWindows
                 "TestDrive:/dotnet-install.sh" | Should -Exist
             }
             finally {
@@ -87,5 +88,66 @@ Describe "Build Module Tests" {
             }
         }
 
+        Mock -ModuleName Build Receive-File { new-item -type file TestDrive:/dotnet-install.ps1 }
+        It "Downloads the proper file Windows file" {
+            try {
+                push-location TestDrive:
+                Receive-DotnetInstallScript -platform "Windows"
+                "TestDrive:/dotnet-install.ps1" | Should -Exist
+            }
+            finally {
+                Pop-Location
+            }
+        }
+
+    }
+
+    Context "Test result functions" {
+        BeforeAll {
+            $xmlFile = @'
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="2" errors="0" failures="1" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2019-02-19" time="11:36:56">
+  <environment platform="Darwin" clr-version="Unknown" os-version="18.2.0" cwd="/Users/jimtru/src/github/forks/JamesWTruher/PSScriptAnalyzer" user="jimtru" user-domain="" machine-name="Jims-Mac-mini.guest.corp.microsoft.com" nunit-version="2.5.8.0" />
+  <culture-info current-culture="en-US" current-uiculture="en-US" />
+  <test-suite type="TestFixture" name="Pester" executed="True" result="Failure" success="False" time="0.0982" asserts="0" description="Pester">
+    <results>
+      <test-suite type="TestFixture" name="/tmp/bad.tests.ps1" executed="True" result="Failure" success="False" time="0.0982" asserts="0" description="/tmp/bad.tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="test function" executed="True" result="Failure" success="False" time="0.084" asserts="0" description="test function">
+            <results>
+              <test-case description="a passing test" name="test function.a passing test" time="0.0072" asserts="0" success="True" result="Success" executed="True" />
+              <test-case description="a failing test" name="test function.a failing test" time="0.0268" asserts="0" success="False" result="Failure" executed="True">
+                <failure>
+                  <message>Expected 2, but got 1.</message>
+                  <stack-trace>at &lt;ScriptBlock&gt;, /tmp/bad.tests.ps1: line 3
+3:     It "a failing test" { 1 | Should -Be 2 }</stack-trace>
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>
+'@
+
+            $xmlFile | out-file TESTDRIVE:/results.xml
+            $results = Get-TestResults -logfile TESTDRIVE:/results.xml
+            $failures = Get-TestFailures -logfile TESTDRIVE:/results.xml
+        }
+
+        It "Get-TestResults finds 2 results" {
+            $results.Count | Should -Be 2
+        }
+        It "Get-TestResults finds 1 pass" {
+            @($results | ?{ $_.result -eq "Success" }).Count |Should -Be 1
+        }
+        It "Get-TestResults finds 1 failure" {
+            @($results | ?{ $_.result -eq "Failure" }).Count |Should -Be 1
+        }
+        It "Get-TestFailures finds 1 failure" {
+            $failures.Count | Should -Be 1
+        }
     }
 }

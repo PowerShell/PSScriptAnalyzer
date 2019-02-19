@@ -46,6 +46,8 @@ function Invoke-AppveyorTest {
         $CheckoutPath
     )
 
+    # enforce the language to utf-8 to avoid issues
+    $env:LANG = "en_US.UTF-8"
     Write-Verbose -Verbose ("Running tests on PowerShell version " + $PSVersionTable.PSVersion)
     Write-Verbose -Verbose "Language set to '${env:LANG}'"
 
