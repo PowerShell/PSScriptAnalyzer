@@ -104,9 +104,9 @@ function Join-CompatibilityProfile
 
             if (Test-Path $resolvedPath -PathType Container)
             {
-                Get-ChildItem -Path $resolvedPath -Filter "*.json" `
-                    | ForEach-Object { ConvertFrom-CompatibilityJson -Path $_ } `
-                    | ForEach-Object { $profiles.Add($_) }
+                Get-ChildItem -Path $resolvedPath -Filter "*.json" |
+                    ForEach-Object { ConvertFrom-CompatibilityJson -Path $_ } |
+                    ForEach-Object { $profiles.Add($_) }
 
                 continue
             }
@@ -270,8 +270,8 @@ function New-PowerShellCompatibilityProfile
         return $reportData
     }
 
-    ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $Readable) `
-        | Out-File -Force -LiteralPath $OutFile -Encoding Utf8
+    ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $Readable) |
+        Out-File -Force -LiteralPath $OutFile -Encoding Utf8
 
     return Get-Item -LiteralPath $OutFile
 }
@@ -548,9 +548,9 @@ Get Linux platform information from the files in /etc/*-release.
 #>
 function Get-LinuxLsbInfo
 {
-    return Get-Content -Raw -Path '/etc/*-release' -ErrorAction SilentlyContinue `
-        | ConvertFrom-Csv -Delimiter '=' -Header 'Key','Value' `
-        | ForEach-Object { $acc = @{} } { $acc[$_.Key] = $_.Value } { [pscustomobject]$acc }
+    return Get-Content -Raw -Path '/etc/*-release' -ErrorAction SilentlyContinue |
+        ConvertFrom-Csv -Delimiter '=' -Header 'Key','Value' |
+        ForEach-Object { $acc = @{} } { $acc[$_.Key] = $_.Value } { [pscustomobject]$acc }
 }
 
 <#
@@ -848,27 +848,15 @@ function New-NativeCommandData
 
 function Get-AliasTable
 {
-    return Get-Alias `
-        | ForEach-Object {
-            $dict = New-Object 'System.Collections.Generic.Dictionary[string,System.Management.Automation.AliasInfo[]]'
-            } {
-                if ($dict.ContainsKey($_.Definition))
-                {
-                    $dict[$_.ReferencedCommand] += $_
-                }
-                else
-                {
-                    $dict.Add($_.Definition, @($_))
-                }
-            } {
-                $dict
-            }
+    $dict = New-Object 'System.Collections.Generic.Dictionary[string, System.Management.Automation.AliasInfo[]]'
+    Get-Alias | Group-Object Definition | %{ $dict[$_.Name] = $_.Group }
+    return $dict
 }
 
 function Get-CommonParameters
 {
-    return (Get-Command Get-Command).Parameters.Values `
-        | Where-Object { $script:CommonParameters.Contains($_.Name) }
+    return (Get-Command Get-Command).Parameters.Values |
+        Where-Object { $script:CommonParameters.Contains($_.Name) }
 }
 
 function New-CommonData
