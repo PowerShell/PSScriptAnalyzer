@@ -112,6 +112,11 @@ function Start-DocumentationBuild
 
 function Copy-CompatibilityProfiles
 {
+    if ($PSVersionTable.PSVersion.Major -le 5)
+    {
+        Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
+    }
+
     $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility', 'profiles')
     $destinationDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer')
     $destination = Join-Path $destinationDir 'compatibility_profiles.zip'
