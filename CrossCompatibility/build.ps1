@@ -32,7 +32,7 @@ $script:Psd1Path = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility.
 $script:ProfileDirPath = [System.IO.Path]::Combine($PSScriptRoot, 'profiles')
 
 $script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'CrossCompatibility')
-$script:BinModSrcDir = Join-Path $PSScriptRoot 'CrossCompatibility'
+$script:BinModSrcDir = Join-Path $PSScriptRoot 'Microsoft.PowerShell.CrossCompatibility'
 
 $script:PublishDlls = @{
     'net452' = @('Microsoft.PowerShell.CrossCompatibility.dll', 'Microsoft.PowerShell.CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
