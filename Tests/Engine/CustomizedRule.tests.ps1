@@ -20,12 +20,13 @@ if (-not (Test-PSEditionCoreCLR))
 
 
 $message = "this is help"
-$measure = "Measure-RequiresRunAsAdministrator"
+$ruleFunctionName = "Measure-RequiresRunAsAdministrator"
 
 Describe "Test importing customized rules with null return results" {
+	$ruleName = "SampleRulesWithErrors\$ruleFunctionName"
     Context "Test Get-ScriptAnalyzer with customized rules" {
         It "will not terminate the engine" {
-            $customizedRulePath = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\samplerule\SampleRulesWithErrors.psm1 | Where-Object {$_.RuleName -eq $measure}
+            $customizedRulePath = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\samplerule\SampleRulesWithErrors.psm1 | Where-Object {$_.RuleName -eq $ruleName}
             $customizedRulePath.Count | Should -Be 1
         }
 
@@ -33,7 +34,7 @@ Describe "Test importing customized rules with null return results" {
 
     Context "Test Invoke-ScriptAnalyzer with customized rules" {
         It "will not terminate the engine" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\SampleRulesWithErrors.psm1 | Where-Object {$_.RuleName -eq $measure}
+            $customizedRulePath = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule\SampleRulesWithErrors.psm1 | Where-Object {$_.RuleName -eq $ruleName}
             $customizedRulePath.Count | Should -Be 0
         }
     }
@@ -78,19 +79,20 @@ Describe "Test importing correct customized rules" {
 	}
 
     Context "Test Get-ScriptAnalyzer with customized rules" {
+		$ruleName = "samplerule\$ruleFunctionName"
         It "will show the custom rule" {
-            $customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\samplerule.psm1 | Where-Object {$_.RuleName -eq $measure}
+            $customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\samplerule.psm1 | Where-Object {$_.RuleName -eq $ruleName}
             $customizedRulePath.Count | Should -Be 1
         }
 
 		It "will show the custom rule when given a rule folder path" {
-			$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule | Where-Object {$_.RuleName -eq $measure}
+			$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule | Where-Object {$_.RuleName -eq $ruleName}
 		    $customizedRulePath.Count | Should -Be 1
 		}
 
         It "will show the custom rule when given a rule folder path with trailing backslash" -skip:$($IsLinux -or $IsMacOS) {
 			# needs fixing for linux
-            $customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory/samplerule/ | Where-Object {$_.RuleName -eq $measure}
+            $customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory/samplerule/ | Where-Object {$_.RuleName -eq $ruleName}
             $customizedRulePath.Count | Should -Be 1
 		}
 
@@ -101,12 +103,14 @@ Describe "Test importing correct customized rules" {
 			{
 				$expectedNumRules = 3
 			}
-			$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.RuleName -match $measure}
+			$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\samplerule* |
+				Where-Object {$_.RuleName -match $ruleFunctionName}
 			$customizedRulePath.Count | Should -Be $expectedNumRules
 		}
 
 		It "will show the custom rules when given recurse switch" {
-			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath "$directory\samplerule", "$directory\samplerule\samplerule2" | Where-Object {$_.RuleName -eq $measure}
+			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath "$directory\samplerule", "$directory\samplerule\samplerule2" |
+				Where-Object { $_.RuleName.EndsWith($ruleFunctionName) }
 			$customizedRulePath.Count | Should -Be 5
 		}
 
@@ -117,12 +121,14 @@ Describe "Test importing correct customized rules" {
 			{
 				$expectedNumRules = 4
 			}
-			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.RuleName -eq $measure}
+			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule\samplerule* |
+                Where-Object { $_.RuleName.EndsWith($ruleFunctionName) }
 			$customizedRulePath.Count | Should -Be $expectedNumRules
 		}
 
 		It "will show the custom rules when given glob with recurse switch" {
-			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule* | Where-Object {$_.RuleName -eq $measure}
+			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule* |
+				Where-Object { $_.RuleName.EndsWith($ruleFunctionName) }
 			$customizedRulePath.Count | Should -Be 3
 		}
     }
