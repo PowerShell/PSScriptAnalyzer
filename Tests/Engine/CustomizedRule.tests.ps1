@@ -160,6 +160,12 @@ Describe "Test importing correct customized rules" {
             $violations[0].SuggestedCorrections.Text   | Should -Be 'text'
             $violations[0].SuggestedCorrections.File   | Should -Be 'filePath'
             $violations[0].SuggestedCorrections.Description   | Should -Be 'description'
+		}
+
+		It "will set SuggestedCorrections" {
+            $violations = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule
+            $expectedScriptPath = Join-Path $directory 'TestScript.ps1'
+            $violations[0].RuleSuppressionID   | Should -Be "MyRuleSuppressionID"
         }
 
         if (!$testingLibraryUsage)

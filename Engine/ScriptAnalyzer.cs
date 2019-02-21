@@ -1268,6 +1268,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             IScriptExtent extent;
                             string message = string.Empty;
                             string ruleName = string.Empty;
+                            string ruleSuppressionID = string.Empty;
                             IEnumerable<CorrectionExtent> suggestedCorrections;
 
                             if (psobject != null && psobject.ImmediateBaseObject != null)
@@ -1288,6 +1289,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     message = psobject.Properties["Message"].Value.ToString();
                                     extent = (IScriptExtent)psobject.Properties["Extent"].Value;
                                     ruleName = psobject.Properties["RuleName"].Value.ToString();
+                                    ruleSuppressionID = psobject.Properties["RuleSuppressionID"].Value.ToString();
                                     suggestedCorrections = (IEnumerable<CorrectionExtent>)psobject.Properties["SuggestedCorrections"].Value;
                                 }
                                 catch (Exception ex)
@@ -1298,7 +1300,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                                 if (!string.IsNullOrEmpty(message))
                                 {
-                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, filePath) { SuggestedCorrections = suggestedCorrections });
+                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, filePath)
+                                    {
+                                        SuggestedCorrections = suggestedCorrections,
+                                        RuleSuppressionID = ruleSuppressionID,
+                                    });
                                 }
                             }
                         }
