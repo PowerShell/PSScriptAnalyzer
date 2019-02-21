@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Globalization;
+
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     internal class ExternalRule : IExternalRule
@@ -15,9 +17,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         string modPath = string.Empty;
         string paramType = string.Empty;
 
+        /// <summary>
+        /// Adds module name (source name) to handle ducplicate function names in different modules.
+        /// </summary>
+        /// <returns></returns>
         public string GetName()
         {
-            return this.name;
+            return string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", this.GetSourceName(), this.name);
         }
 
         public string GetCommonName()

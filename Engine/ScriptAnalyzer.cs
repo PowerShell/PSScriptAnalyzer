@@ -1206,9 +1206,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         // Adds command to run external analyzer rule, like
                         // Measure-CurlyBracket -ScriptBlockAst $ScriptBlockAst
-                        // Adds module name (source name) to handle ducplicate function names in different modules.
-                        string ruleName = string.Format("{0}\\{1}", rule.GetSourceName(), rule.GetName());
-                        posh.Commands.AddCommand(ruleName);
+                        posh.Commands.AddCommand(rule.GetName());
                         posh.Commands.AddParameter(rule.GetParameter(), token);
 
                         // Merges results because external analyzer rules may throw exceptions.
@@ -1236,9 +1234,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                             // Adds command to run external analyzer rule, like
                             // Measure-CurlyBracket -ScriptBlockAst $ScriptBlockAst
-                            // Adds module name (source name) to handle ducplicate function names in different modules.
-                            string ruleName = string.Format("{0}\\{1}", rule.GetSourceName(), rule.GetName());
-                            posh.Commands.AddCommand(ruleName);
+                            posh.Commands.AddCommand(rule.GetName());
                             posh.Commands.AddParameter(rule.GetParameter(), childAst);
 
                             // Merges results because external analyzer rules may throw exceptions.
@@ -2278,7 +2274,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     if (IsRuleAllowed(exRule))
                     {
-                        string ruleName = string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", exRule.GetSourceName(), exRule.GetName());
+                        string ruleName = exRule.GetName();
                         this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, ruleName));
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors
