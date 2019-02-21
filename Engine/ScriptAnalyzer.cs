@@ -1289,7 +1289,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     message = psobject.Properties["Message"].Value.ToString();
                                     extent = (IScriptExtent)psobject.Properties["Extent"].Value;
                                     ruleName = psobject.Properties["RuleName"].Value.ToString();
-                                    ruleSuppressionID = psobject.Properties["RuleSuppressionID"].Value.ToString();
+                                    ruleSuppressionID = psobject.Properties["RuleSuppressionID"].Value?.ToString();
                                     suggestedCorrections = (IEnumerable<CorrectionExtent>)psobject.Properties["SuggestedCorrections"].Value;
                                 }
                                 catch (Exception ex)
