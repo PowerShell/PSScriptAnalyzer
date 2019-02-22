@@ -17,11 +17,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         string modPath = string.Empty;
         string paramType = string.Empty;
 
-        /// <summary>
-        /// Adds module name (source name) to handle ducplicate function names in different modules.
-        /// </summary>
-        /// <returns></returns>
         public string GetName()
+        {
+            return this.name;
+        }
+
+        public string GetFullName()
         {
             return string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", this.GetSourceName(), this.name);
         }

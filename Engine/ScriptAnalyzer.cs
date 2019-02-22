@@ -1206,7 +1206,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         // Adds command to run external analyzer rule, like
                         // Measure-CurlyBracket -ScriptBlockAst $ScriptBlockAst
-                        posh.Commands.AddCommand(rule.GetName());
+                        posh.Commands.AddCommand(rule.GetFullName());
                         posh.Commands.AddParameter(rule.GetParameter(), token);
 
                         // Merges results because external analyzer rules may throw exceptions.
@@ -1234,7 +1234,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                             // Adds command to run external analyzer rule, like
                             // Measure-CurlyBracket -ScriptBlockAst $ScriptBlockAst
-                            posh.Commands.AddCommand(rule.GetName());
+                            posh.Commands.AddCommand(rule.GetFullName());
                             posh.Commands.AddParameter(rule.GetParameter(), childAst);
 
                             // Merges results because external analyzer rules may throw exceptions.
@@ -2274,7 +2274,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     if (IsRuleAllowed(exRule))
                     {
-                        string ruleName = exRule.GetName();
+                        string ruleName = exRule.GetFullName();
                         this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, ruleName));
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors
