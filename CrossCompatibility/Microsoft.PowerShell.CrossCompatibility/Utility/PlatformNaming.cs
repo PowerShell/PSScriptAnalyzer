@@ -12,11 +12,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
     public static class PlatformNaming
     {
         /// <summary>
-        /// The name of the profile union to be used for target comparisons.
-        /// </summary>
-        public static string AnyPlatformUnionName => "anyplatform_union";
-
-        /// <summary>
         /// The string separating fields in a platform name.
         /// </summary>
         public static string PlatformNameJoiner
