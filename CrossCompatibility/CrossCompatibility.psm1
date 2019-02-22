@@ -77,50 +77,6 @@ function Test-IsCommonParameter
     return $script:CommonParameters.Contains($ParameterName)
 }
 
-function Join-CompatibilityProfile
-{
-    [CmdletBinding(DefaultParameterSetName='File')]
-    param(
-        [Parameter(ParameterSetName='File', Position=0, ValueFromPipeline=$true)]
-        [string[]]
-        $InputFile,
-
-        [Parameter(ParameterSetName='Object', Position=0, ValueFromPipeline=$true)]
-        [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData[]]
-        $ProfileObject,
-
-        [Parameter()]
-        [string]
-        $ProfileId
-    )
-
-    if ($PSCmdlet.ParameterSetName -eq 'File')
-    {
-        $profiles = New-Object 'System.Collections.Generic.List[Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]]'
-
-        foreach ($path in $InputFile)
-        {
-            $resolvedPath = Resolve-Path $path
-
-            if (Test-Path $resolvedPath -PathType Container)
-            {
-                Get-ChildItem -Path $resolvedPath -Filter "*.json" |
-                    ForEach-Object { ConvertFrom-CompatibilityJson -Path $_ } |
-                    ForEach-Object { $profiles.Add($_) }
-
-                continue
-            }
-
-            $loadedProfile = ConvertFrom-CompatibilityJson -Path $resolvedPath
-            $profiles.Add($loadedProfile)
-        }
-
-        $ProfileObject = $profiles
-    }
-
-    return [Microsoft.PowerShell.CrossCompatibility.Utility.ProfileCombination]::UnionMany($ProfileId, $ProfileObject)
-}
-
 <#
 .SYNOPSIS
 Generate a new compatibility JSON file of the current PowerShell session
@@ -152,14 +108,7 @@ If set, JSON output will include whitespace and indentation for human readabilit
 
 .PARAMETER Validate
 If set, validates the output before returning.
-
-.EXAMPLE
-
-
-.NOTES
-General notes
 #>
-
 function New-PowerShellCompatibilityProfile
 {
     [CmdletBinding(DefaultParameterSetName='OutFile')]
@@ -561,6 +510,11 @@ function Get-OSData
     return [Microsoft.PowerShell.CrossCompatibility.Data.Platform.OperatingSystemData]$osData
 }
 
+<#
+.SYNOPSIS
+Gets the Windows SKU ID of the current OS.
+
+#>
 function Get-WindowsSkuId
 {
     return (Get-CimInstance Win32_OperatingSystem).OperatingSystemSKU
@@ -744,9 +698,47 @@ function Get-CoreModuleData
     return [Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData]$coreModuleData
 }
 
+<#
+.SYNOPSIS
+Gets all modules available on the module path for use.
 
+.DESCRIPTION
+Gets a list of all modules that are available on the module path.
+This will import all modules into a session in order to populate their aliases,
+so should be invoked in a new process.
+Parameters can be passed to filter out unwanted modules.
+
+.PARAMETER ExcludePathPrefixes
+If found modules are on a path prefixed with one of the given paths, it will be excluded.
+
+.PARAMETER IncludeModulesFilter
+A scriptblock that returns true for modules to include and false for modules to exclude.
+
+.EXAMPLE
+# Gets all modules available on the script path
+Get-AvailableModules
+
+.EXAMPLE
+# Get all modules available except those under the System32 directory
+Get-AvailableModules -ExcludePathPrefixes "$env:windir\System32"
+
+.NOTES
+This function will import (and remove) all modules it finds.
+This may leave module DLLs loaded,
+so it's recommended to run this from a new process
+#>
 function Get-AvailableModules
 {
+    param(
+        [Parameter(ParameterSetName='ExcludePaths')]
+        [string[]]
+        $ExcludePathPrefixes,
+
+        [Parameter(ParameterSetName='ModuleFilter')]
+        [scriptblock]
+        $IncludeModulesFilter
+    )
+
     $modsToLoad = Get-Module -ListAvailable
 
     # Filter out this module
@@ -754,8 +746,27 @@ function Get-AvailableModules
 
     $mods = New-Object 'System.Collections.Generic.List[psmoduleinfo]'
 
-    foreach ($m in $modsToLoad)
+    :ModuleLoop foreach ($m in $modsToLoad)
     {
+        # If the module path begins with an excluded prefix, skip to the next module
+        if ($ExcludePathPrefixes)
+        {
+            foreach ($prefix in $ExcludePathPrefixes)
+            {
+                if ($m.Path.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase))
+                {
+                    continue :ModuleLoop
+                }
+            }
+        }
+        elseif ($IncludeModulesFilter)
+        {
+            if (-not (& $IncludeModulesFilter $m))
+            {
+                continue
+            }
+        }
+
         try
         {
             $mi = Import-Module $m -PassThru -ErrorAction Stop
@@ -782,6 +793,29 @@ function Get-AvailableModules
     return @(,$mods)
 }
 
+<#
+.SYNOPSIS
+Assembles a PowerShell runtime data description object from local runtime information.
+
+.DESCRIPTION
+Collects information on .NET types, PowerShell modules, aliases,
+type accelerators and native commands given into a serializable metadata format.
+
+.PARAMETER Assemblies
+A list of .NET assemblies available in the PowerShell session.
+
+.PARAMETER Modules
+A list of PowerShell modules available in the PowerShell session.
+
+.PARAMETER AliasTable
+A dictionary of aliases available in the PowerShell session.
+
+.PARAMETER TypeAccelerators
+A dictionary of type accelerators available in the PowerShell session.
+
+.PARAMETER NativeCommands
+A list of native application commands available in the PowerShell session.
+#>
 function New-RuntimeData
 {
     param(
@@ -828,6 +862,19 @@ function New-RuntimeData
     return [Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData]$compatData
 }
 
+<#
+.SYNOPSIS
+Creates a dictionary of native command metadata object from native commands.
+
+.DESCRIPTION
+Create a serializable metadata object cataloging application commands available in a PowerShell session.
+
+.PARAMETER InfoObject
+An ApplicationInfo object describing a native application.
+
+.EXAMPLE
+Get-Command -CommandType Application | New-NativeCommandData
+#>
 function New-NativeCommandData
 {
     param(
@@ -870,19 +917,45 @@ function New-NativeCommandData
     }
 }
 
+<#
+.SYNOPSIS
+Create a table of aliases available in the current PowerShell session.
+
+.DESCRIPTION
+Builds a dictionary of what aliases correspond to which commands in the current PowerShell session.
+#>
 function Get-AliasTable
 {
     $dict = New-Object 'System.Collections.Generic.Dictionary[string, System.Management.Automation.AliasInfo[]]'
-    Get-Alias | Group-Object Definition | %{ $dict[$_.Name] = $_.Group }
+    Get-Alias | Group-Object Definition | ForEach-Object { $dict[$_.Name] = $_.Group }
     return $dict
 }
 
+<#
+.SYNOPSIS
+Get the cmdlet common parameters in PowerShell.
+
+.DESCRIPTION
+Gets a list of the PowerShell common parameters
+implicitly provided in the CmdletBinding attribute.
+#>
 function Get-CommonParameters
 {
     return (Get-Command Get-Command).Parameters.Values |
         Where-Object { $script:CommonParameters.Contains($_.Name) }
 }
 
+<#
+.SYNOPSIS
+Creates a catalog of ubiquitous PowerShell runtime features.
+
+.DESCRIPTION
+Catalogs common runtime features in PowerShell,
+such as common parameters in PowerShell cmdlets.
+
+.PARAMETER CommonParameters
+A list of the common parameters available in cmdlets.
+#>
 function New-CommonData
 {
     param(
@@ -900,6 +973,20 @@ function New-CommonData
     }
 }
 
+<#
+.SYNOPSIS
+Creates a table of module metadata.
+
+.DESCRIPTION
+Given a list of PSModuleInfo objects,
+creates a dictionary of serializable metadata describing those modules.
+
+.PARAMETER Module
+A module to include in the table
+
+.PARAMETER AliasTable
+Global PowerShell aliases, to look up and include aliases referring to commands in this module.
+#>
 function New-ModuleData
 {
     param(
@@ -988,6 +1075,16 @@ function New-ModuleData
     }
 }
 
+<#
+.SYNOPSIS
+Creates a table of alias data from aliases.
+
+.DESCRIPTION
+Groups aliases given into a table of metadata for serialization.
+
+.PARAMETER Alias
+An alias to catalog.
+#>
 function New-AliasData
 {
     param(
@@ -1012,6 +1109,16 @@ function New-AliasData
     }
 }
 
+<#
+.SYNOPSIS
+Groups cmdlets into a table for serialization.
+
+.DESCRIPTION
+Given cmdlet info objects, maps them into serializable metadata objects and aggregates them into a dictionary.
+
+.PARAMETER Cmdlet
+A cmdlet to add to the table.
+#>
 function New-CmdletData
 {
     param(
@@ -1072,6 +1179,16 @@ function New-CmdletData
     }
 }
 
+<#
+.SYNOPSIS
+Aggregates runtime functions into a dictionary to serialize.
+
+.DESCRIPTION
+Collects given functions into a dictionary of serializable metadata objects for cataloging and serialization.
+
+.PARAMETER Function
+A function to add to the catalog.
+#>
 function New-FunctionData
 {
     param(
@@ -1130,6 +1247,20 @@ function New-FunctionData
     }
 }
 
+<#
+.SYNOPSIS
+Aggregate command parameter aliases into a lookup dictionary.
+
+.DESCRIPTION
+Takes the parameters of a command and creates a mapping dictionary
+from parameter alias names to parameter names.
+
+.PARAMETER Parameter
+A parameter whose aliases should be added to the table.
+
+.PARAMETER IsCmdlet
+Indicates whether the command whose parameters are being passed is a cmdlet.
+#>
 function New-ParameterAliasData
 {
     param(
@@ -1166,6 +1297,20 @@ function New-ParameterAliasData
     }
 }
 
+<#
+.SYNOPSIS
+Aggregate parameters on a command into a lookup table.
+
+.DESCRIPTION
+Takes parameters from a command and maps them into
+serializable metadata objects, collecting them into a dictionary by parameter name.
+
+.PARAMETER Parameter
+A parameter whose metadata to collect and include in the table.
+
+.PARAMETER IsCmdlet
+True if the command owning the parameter is a cmdlet or an advanced function, false otherwise.
+#>
 function New-ParameterData
 {
     param(
@@ -1210,6 +1355,17 @@ function New-ParameterData
     }
 }
 
+<#
+.SYNOPSIS
+Create a table of parameter set metadata objects from given parameter set information.
+
+.DESCRIPTION
+Transforms given parameter set information objects into serializable metadata objects
+and aggregates them into a dictionary keyed by parameter set name.
+
+.PARAMETER ParameterSet
+A parameter set to catalog.
+#>
 function New-ParameterSetData
 {
     param(
@@ -1268,6 +1424,20 @@ function New-ParameterSetData
     }
 }
 
+<#
+.SYNOPSIS
+Creates a catalog of types available in a PowerShell session.
+
+.DESCRIPTION
+Given assemblies and a table of type accelerators,
+creates a serializable metadata object cataloging that information.
+
+.PARAMETER Assemblies
+The .NET assemblies available in the session.
+
+.PARAMETER TypeAccelerators
+The PowerShell type accelerators in the session.
+#>
 function New-AvailableTypeData
 {
     param(
@@ -1296,6 +1466,13 @@ function New-AvailableTypeData
     return $result
 }
 
+<#
+.SYNOPSIS
+Get the full name of a .NET type in a PowerShell-friendly way.
+
+.PARAMETER Type
+The .NET type whose name is required.
+#>
 function Get-FullTypeName
 {
     param(
@@ -1307,6 +1484,17 @@ function Get-FullTypeName
     return [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetFullTypeName($Type)
 }
 
+<#
+.SYNOPSIS
+Validate a generated compatibility profile object.
+
+.DESCRIPTION
+Checks a generated compatibility profile object for
+parts that should be in it, and throws if any are not present.
+
+.PARAMETER CompatibilityProfile
+The compatibility profile to validate.
+#>
 function Assert-CompatibilityProfileIsValid
 {
     param(

@@ -15,7 +15,7 @@
 RootModule = 'CrossCompatibility.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.1'
+ModuleVersion = '0.1.0'
 
 # Supported PSEditions (field not compatible with PS v3/4)
 # CompatiblePSEditions = @('Core', 'Desktop')
@@ -40,11 +40,8 @@ PowerShellVersion = '3.0'
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Join-CompatibilityProfile'
     'New-PowerShellCompatibilityProfile'
-    'New-AllPlatformReferenceProfile'
     'Get-PlatformName'
-    'Get-CurrentPlatformName'
     'ConvertTo-CompatibilityJson'
     'ConvertFrom-CompatibilityJson'
     'Get-PowerShellCompatibilityProfileData'
@@ -60,6 +57,8 @@ FunctionsToExport = @(
     'Get-CoreModuleData'
     'Get-AvailableModules'
     'Get-CommonParameters'
+    'Get-AliasTable'
+    'New-NativeCommandData'
     'New-CommonData'
     'New-RuntimeData'
     'New-ModuleData'
