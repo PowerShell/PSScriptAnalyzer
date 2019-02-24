@@ -27,13 +27,13 @@ function Measure-RequiresRunAsAdministrator
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.Language.ScriptBlockAst]
         $testAst
-    )        
+    )
     $l=(new-object System.Collections.ObjectModel.Collection["Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent"])
     $c = (new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent 1,2,3,4,'text','filePath','description')
     $l.Add($c)
     $dr = New-Object `
             -Typename "Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord" `
-            -ArgumentList "This is help",$ast.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null,$null,$l     
+            -ArgumentList "This is help",$testAst.Extent,$PSCmdlet.MyInvocation.InvocationName,Warning,$null,$null,$l
         return $dr
 }
 Export-ModuleMember -Function Measure*
