@@ -1419,7 +1419,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 while (startRecord < diagnostics.Count
                     // && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
                     // && diagnostics[startRecord].Extent.StartLineNumber < ruleSuppression.st)
-                    && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
+                    && offsetArr[startRecord] != null && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
                 {
                     startRecord += 1;
                 }
@@ -1433,7 +1433,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     var curOffset = offsetArr[recordIndex];
 
                     //if (record.Extent.EndOffset > ruleSuppression.EndOffset)
-                    if (curOffset.Item2 > ruleSuppression.EndOffset)
+                    if (curOffset != null && curOffset.Item2 > ruleSuppression.EndOffset)
                     {
                         break;
                     }
@@ -1489,6 +1489,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             for (int k = 0; k < diagnostics.Count; k++)
             {
                 var ext = diagnostics[k].Extent;
+                if (ext == null)
+                {
+                    continue;
+                }
                 if (ext.StartOffset == 0 && ext.EndOffset == 0)
                 {
                     // check if line and column number correspond to 0 offsets
