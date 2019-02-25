@@ -106,6 +106,12 @@ Set a custom ID for the platform in the profile object, without setting the file
 .PARAMETER NoCompress
 If set, JSON output will include whitespace and indentation for human readability.
 
+.PARAMETER ExcludeModulePathPrefix
+Exclude modules on paths beginning with any of the given prefixes from the profile
+
+.PARAMETER ExcludeAssemblyPathPrefix
+Exclude assemblies at paths beginning with any of the given prefixes from the profile
+
 .PARAMETER Validate
 If set, validates the output before returning.
 #>
@@ -364,7 +370,20 @@ function ConvertFrom-CompatibilityJson
 <#
 .SYNOPSIS
 Generate a new compatibility report object for the current PowerShell session.
+
+.PARAMETER Runtime
+The PowerShell runtime data to include in the profile.
+
+.PARAMETER Platform
+The PowerShell platform data to include in the profile.
+
+.PARAMETER ExcludeModulePathPrefix
+Exclude modules on paths beginning with any of the given prefixes from the profile
+
+.PARAMETER ExcludeAssemblyPathPrefix
+Exclude assemblies at paths beginning with any of the given prefixes from the profile
 #>
+
 function Get-PowerShellCompatibilityProfileData
 {
     [CmdletBinding(DefaultParameterSetName = 'RunQuery')]
@@ -412,6 +431,18 @@ function Get-PowerShellCompatibilityProfileData
 <#
 .SYNOPSIS
 Get all information on the current platform running PowerShell.
+
+.PARAMETER PowerShell
+The PowerShell platform data to include.
+If not set, this will be taken from the current runtime.
+
+.PARAMETER OperatingSystem
+The Operating System data to include.
+If not set, this will be taken from the current runtime.
+
+.PARAMETER DotNet
+The .NET data to include.
+If not set, this will be taken from the current runtime.
 #>
 function Get-PlatformData
 {
@@ -559,7 +590,6 @@ function Get-OSData
 <#
 .SYNOPSIS
 Gets the Windows SKU ID of the current OS.
-
 #>
 function Get-WindowsSkuId
 {
@@ -602,6 +632,12 @@ function Get-DotNetData
 .SYNOPSIS
 Get the compatibility profile of the current
 PowerShell runtime.
+
+.PARAMETER ExcludeModulePathPrefix
+Exclude modules on paths beginning with any of the given prefixes from the profile
+
+.PARAMETER ExcludeAssemblyPathPrefix
+Exclude assemblies at paths beginning with any of the given prefixes from the profile
 #>
 function Get-PowerShellCompatibilityData
 {
@@ -627,6 +663,10 @@ function Get-PowerShellCompatibilityData
     if ($ExcludeAssemblyPathPrefix)
     {
         $asms = Get-AvailableTypes -ExcludeAssemblyPathPrefix $ExcludeAssemblyPathPrefix
+    }
+    else
+    {
+        $asms = Get-AvailableTypes
     }
 
     $typeAccelerators = Get-TypeAccelerators
@@ -668,8 +708,8 @@ Gets all assemblies publicly available in
 the current PowerShell session.
 Skips assemblies from user modules by default.
 
-.PARAMETER All
-Include
+.PARAMETER ExcludeAssemblyPathPrefix
+Exclude assemblies at paths beginning with any of the given prefixes from the returned data.
 #>
 function Get-AvailableTypes
 {
