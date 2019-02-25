@@ -103,7 +103,7 @@ If set, write the report object to output rather than to a file.
 .PARAMETER PlatformId
 Set a custom ID for the platform in the profile object, without setting the filename.
 
-.PARAMETER Readable
+.PARAMETER NoCompress
 If set, JSON output will include whitespace and indentation for human readability.
 
 .PARAMETER Validate
@@ -134,13 +134,33 @@ function New-PowerShellCompatibilityProfile
         [Parameter(ParameterSetName='OutFile')]
         [Parameter(ParameterSetName='PlatformName')]
         [switch]
-        $Readable,
+        $NoCompress,
+
+        [Parameter()]
+        [string[]]
+        $ExcludeModulePathPrefix,
+
+        [Parameter()]
+        [string[]]
+        $ExcludeAssemblyPathPrefix,
 
         [switch]
         $Validate
     )
 
-    $reportData = Get-PowerShellCompatibilityProfileData
+    $getArgs = @{}
+
+    if ($ExcludeModulePathPrefix)
+    {
+        $getArgs.ExcludeModulePathPrefix = $ExcludeModulePathPrefix
+    }
+
+    if ($ExcludeAssemblyPathPrefix)
+    {
+        $getArgs.ExcludeAssemblyPathPrefix
+    }
+
+    $reportData = Get-PowerShellCompatibilityProfileData @getArgs
 
     if (-not $reportData)
     {
@@ -219,7 +239,7 @@ function New-PowerShellCompatibilityProfile
         return $reportData
     }
 
-    ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $Readable) |
+    ConvertTo-CompatibilityJson -Item $reportData -NoWhitespace:(-not $NoCompress) |
         Out-File -Force -LiteralPath $OutFile -Encoding Utf8
 
     return Get-Item -LiteralPath $OutFile
@@ -347,15 +367,41 @@ Generate a new compatibility report object for the current PowerShell session.
 #>
 function Get-PowerShellCompatibilityProfileData
 {
+    [CmdletBinding(DefaultParameterSetName = 'RunQuery')]
     param(
-        [Parameter()]
+        [Parameter(ParameterSetName = 'ProvidedData')]
         [Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData]
-        $Runtime = (Get-PowerShellCompatibilityData),
+        $Runtime,
 
-        [Parameter()]
-        [Microsoft.PowerShell.CrossCompatibility.Data.PlatformData]
-        $Platform = (Get-PlatformData)
+        [Parameter(ParameterSetName = 'ProvidedData')]
+        [Parameter(ParameterSetName = 'RunQuery')]
+        [Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData]
+        $Platform = (Get-PlatformData),
+
+        [Parameter(ParameterSetName = 'RunQuery')]
+        [string[]]
+        $ExcludeModulePathPrefix,
+
+        [Parameter(ParameterSetName = 'RunQuery')]
+        [string[]]
+        $ExcludeAssemblyPathPrefix
     )
+
+    if (-not $Runtime)
+    {
+        $runtimeArgs = @{}
+        if ($ExcludeModulePathPrefix)
+        {
+            $runtimeArgs.ExcludeModulePathPrefix = $ExcludeModulePathPrefix
+        }
+
+        if ($ExcludeAssemblyPathPrefix)
+        {
+            $runtimeArgs.ExcludeAssemblyPathPrefix = $ExcludeAssemblyPathPrefix
+        }
+
+        $Runtime = Get-PowerShellCompatibilityData @runtimeArgs
+    }
 
     return [Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData]@{
         Runtime = $Runtime
@@ -559,9 +605,32 @@ PowerShell runtime.
 #>
 function Get-PowerShellCompatibilityData
 {
-    $modules = Get-AvailableModules
+    param(
+        [Parameter()]
+        [string[]]
+        $ExcludeModulePathPrefix,
+
+        [Parameter()]
+        [string[]]
+        $ExcludeAssemblyPathPrefix
+    )
+
+    if ($ExcludeModulePathPrefix)
+    {
+        $modules = Get-AvailableModules -ExcludePathPrefix $ExcludeModulePathPrefix
+    }
+    else
+    {
+        $modules = Get-AvailableModules
+    }
+
+    if ($ExcludeAssemblyPathPrefix)
+    {
+        $asms = Get-AvailableTypes -ExcludeAssemblyPathPrefix $ExcludeAssemblyPathPrefix
+    }
+
     $typeAccelerators = Get-TypeAccelerators
-    $asms = Get-AvailableTypes -All:$IncludeAllModules
+
     $nativeCommands = Get-Command -CommandType Application
     $aliasTable = Get-AliasTable
     $coreModule = Get-CoreModuleData
@@ -606,8 +675,8 @@ function Get-AvailableTypes
 {
     param(
         [Parameter()]
-        [switch]
-        $All
+        [string[]]
+        $ExcludeAssemblyPathPrefix
     )
 
     # In PS Core, we need to explicitly force the loading of all assemblies (which normally lazy-load)
@@ -618,8 +687,6 @@ function Get-AvailableTypes
 
     $asms = New-Object 'System.Collections.Generic.List[System.Reflection.Assembly]'
 
-    $asmPaths = $PSHOME, (Split-Path $script:WinPSHomeModulePath)
-
     foreach ($asm in [System.AppDomain]::CurrentDomain.GetAssemblies())
     {
         if ($asm.IsDynamic -or -not $asm.Location)
@@ -627,10 +694,13 @@ function Get-AvailableTypes
             continue
         }
 
-        if ($All -or $asm.GlobalAssemblyCache -or (Test-HasAnyPrefix $asm.Location -Prefix $asmPaths -IgnoreCase:$script:IsWindows))
+        # Exclude assemblies with excluded paths
+        if (Test-HasAnyPrefix $asm.Location -Prefix $ExcludeAssemblyPathPrefix -IgnoreCase:$script:IsWindows)
         {
-            $asms.Add($asm)
+            continue
         }
+
+        $asms.Add($asm)
     }
 
     return $asms
@@ -708,7 +778,7 @@ This will import all modules into a session in order to populate their aliases,
 so should be invoked in a new process.
 Parameters can be passed to filter out unwanted modules.
 
-.PARAMETER ExcludePathPrefixes
+.PARAMETER ExcludePathPrefix
 If found modules are on a path prefixed with one of the given paths, it will be excluded.
 
 .PARAMETER IncludeModulesFilter
@@ -720,7 +790,7 @@ Get-AvailableModules
 
 .EXAMPLE
 # Get all modules available except those under the System32 directory
-Get-AvailableModules -ExcludePathPrefixes "$env:windir\System32"
+Get-AvailableModules -ExcludePathPrefix "$env:windir\System32"
 
 .NOTES
 This function will import (and remove) all modules it finds.
@@ -729,10 +799,11 @@ so it's recommended to run this from a new process
 #>
 function Get-AvailableModules
 {
+    [CmdletBinding(DefaultParameterSetName='ExcludePaths')]
     param(
         [Parameter(ParameterSetName='ExcludePaths')]
         [string[]]
-        $ExcludePathPrefixes,
+        $ExcludePathPrefix,
 
         [Parameter(ParameterSetName='ModuleFilter')]
         [scriptblock]
@@ -749,9 +820,9 @@ function Get-AvailableModules
     :ModuleLoop foreach ($m in $modsToLoad)
     {
         # If the module path begins with an excluded prefix, skip to the next module
-        if ($ExcludePathPrefixes)
+        if ($ExcludePathPrefix)
         {
-            foreach ($prefix in $ExcludePathPrefixes)
+            foreach ($prefix in $ExcludePathPrefix)
             {
                 if ($m.Path.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase))
                 {
