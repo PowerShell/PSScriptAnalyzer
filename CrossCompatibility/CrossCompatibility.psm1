@@ -716,7 +716,7 @@ function Get-AvailableTypes
     param(
         [Parameter()]
         [string[]]
-        $ExcludeAssemblyPathPrefix
+        $ExcludeAssemblyPathPrefix = @($PSScriptRoot)
     )
 
     # In PS Core, we need to explicitly force the loading of all assemblies (which normally lazy-load)
@@ -844,7 +844,7 @@ function Get-AvailableModules
     param(
         [Parameter(ParameterSetName='ExcludePaths')]
         [string[]]
-        $ExcludePathPrefix,
+        $ExcludePathPrefix = @($PSScriptRoot),
 
         [Parameter(ParameterSetName='ModuleFilter')]
         [scriptblock]
