@@ -28,14 +28,15 @@ namespace Microsoft.PowerShell.CrossCompatibility
 
                 case string versionString:
                     return Parse(versionString);
-            }
 
-            if (versionInput.BuildLabel != null)
-            {
-                return new PowerShellVersion(versionInput.Major, versionInput.Minor, versionInput.Patch, $"{versionInput.PreReleaseLabel}+{versionInput.BuildLabel}");
-            }
+                default:
+                    if (versionInput.BuildLabel != null)
+                    {
+                        return new PowerShellVersion(versionInput.Major, versionInput.Minor, versionInput.Patch, $"{versionInput.PreReleaseLabel}+{versionInput.BuildLabel}");
+                    }
 
-            return new PowerShellVersion(versionInput.Major, versionInput.Minor, versionInput.Patch, versionInput.PreReleaseLabel);
+                    return new PowerShellVersion(versionInput.Major, versionInput.Minor, versionInput.Patch, versionInput.PreReleaseLabel);
+            }
         }
 
         /// <summary>
