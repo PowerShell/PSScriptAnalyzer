@@ -778,7 +778,8 @@ function Get-CoreModuleData
 {
     $coreCommands = Get-Command -Module 'Microsoft.PowerShell.Core'
 
-    $coreVariables = Get-Variable | Where-Object { -not $_.Module } | ForEach-Object { $_.Name }
+    $pwshExe = (Get-Process -PID $PID).Path
+    $coreVariables = & $pwshExe -Command { Get-Variable } | ForEach-Object { $_.Name }
     $coreAliases = Get-Alias | Where-Object { -not $_.Module } | New-AliasData
     $coreFunctions = $coreCommands | Where-Object { $_.CommandType -eq 'Function' } | New-FunctionData
     $coreCmdlets = $coreCommands | Where-Object { $_.CommandType -eq 'Cmdlet' } | New-CmdletData
