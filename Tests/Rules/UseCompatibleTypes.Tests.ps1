@@ -149,9 +149,12 @@ Describe 'UseCompatibleTypes' {
                         $script:TargetProfileConfigKey = @(
                             $script:Srv2012_3_profile
                             $script:Srv2012r2_4_profile
-                            $script:Srv2012r2_6_1_profile
+                            $script:Srv2016_5_profile
+                            $script:Srv2016_6_1_profile
                             $script:Srv2019_5_profile
                             $script:Srv2019_6_1_profile
+                            $script:Win10_5_profile
+                            $script:Win10_6_1_profile
                             $script:Ubuntu1804_6_1_profile
                         )
                         IgnoreTypes = @('System.IO.Compression.ZipFile')
