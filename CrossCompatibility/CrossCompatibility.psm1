@@ -735,7 +735,7 @@ function Get-AvailableTypes
         }
 
         # Exclude assemblies with excluded paths
-        if (Test-HasAnyPrefix $asm.Location -Prefix $ExcludeAssemblyPathPrefix -IgnoreCase:$script:IsWindows)
+        if ($ExcludeAssemblyPathPrefix -and (Test-HasAnyPrefix $asm.Location -Prefix $ExcludeAssemblyPathPrefix -IgnoreCase:$script:IsWindows))
         {
             continue
         }
