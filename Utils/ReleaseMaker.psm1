@@ -96,7 +96,7 @@ function New-ReleaseBuild
         .\build.ps1 -All -Configuration Release
         .\PSCompatibilityAnalyzer\build.ps1 -Clean -Configuration Release
         Copy-Item -Recurse .\PSCompatibilityAnalyzer\out\* .\out\
-        Write-Verbose (Get-ChildItem ./out)
+        Write-Verbose (Get-ChildItem ./out | Out-String)
     }
     finally
     {
