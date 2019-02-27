@@ -44,7 +44,7 @@
     <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\netstandard2.0\Newtonsoft.Json.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\netstandard2.0\Newtonsoft.Json.dll" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PSCompatibilityAnalyzer netframework bins" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" />
-    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\netstandard2.0\Newtonsoft.Json.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\netstandard2.0\Newtonsoft.Json.dll" />
+    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\net452\Microsoft.PowerShell.CrossCompatibility.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\net452\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\net452\Newtonsoft.Json.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\net452\Newtonsoft.Json.dll" />
  </job>
 </SignConfigXML>
