@@ -5,6 +5,8 @@ param(
 )
 # Script for use in VSTS to update signing.xml
 
+$ErrorActionPreference = 'Stop'
+
 # Parse the signing xml
 $signingXml = [xml](Get-Content $signingXmlPath)
 
