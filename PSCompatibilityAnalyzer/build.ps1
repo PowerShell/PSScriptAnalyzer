@@ -114,7 +114,7 @@ function Publish-CrossCompatibilityModule
 
 if ($Clean)
 {
-    Remove-Item -Force -Recurse $script:BinModDir
+    Remove-Item -Force -Recurse $script:BinModDir -ErrorAction Ignore
 }
 
 # Only build if the output directory does not exist
