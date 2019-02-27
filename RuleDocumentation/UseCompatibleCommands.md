@@ -34,17 +34,17 @@ Some platforms come bundled with PSScriptAnalyzer as JSON files, named in this w
 
 Platforms bundled by default are:
 
-| Platform                             | ID                                                                    |
-| ------------------------------------ | --------------------------------------------------------------------- |
-| Windows Server 2012 - PowerShell 3   | `win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework`              |
-| Windows Server 2012R2 - PowerShell 4 | `win-8_x64_6.3.9600.0_4.0_x64_4.0.30319.42000_framework`              |
-| Windows Server 2016 - PowerShell 5.1 | `win-8_x64_10.0.14393.0_5.1.14393.2636_x64_4.0.30319.42000_framework` |
-| Windows Server 2019 - PowerShell 5.1 | `win-8_x64_10.0.17763.0_5.1.17763.134_x64_4.0.30319.42000_framework`  |
-| Windows 10 - PowerShell 5.1          | `win-48_x64_10.0.17763.0_5.1.17763.134_x64_4.0.30319.42000_framework` |
-| Windows Server 2019 - PowerShell 6.1 | `win-8_x64_10.0.14393.0_6.1.2_x64_4.0.30319.42000_core`               |
-| Windows Server 2016 - PowerShell 6.1 | `win-8_x64_10.0.17763.0_6.1.2_x64_4.0.30319.42000_core`               |
-| Windows 10 - PowerShell 6.1          | `win-48_x64_10.0.17763.0_6.1.2_x64_4.0.30319.42000_core`              |
-| Ubuntu 18.04 LTS - PowerShell 6.1    | `ubuntu_x64_18.04_6.1.2_x64_4.0.30319.42000_core`                     |
+| PowerShell Version | Operating System      | ID                                                                    |
+| -------------------|---------------------- | --------------------------------------------------------------------- |
+| 3.0                | Windows Server 2012   | `win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework`              |
+| 4.0                | Windows Server 2012R2 | `win-8_x64_6.3.9600.0_4.0_x64_4.0.30319.42000_framework`              |
+| 5.1                | Windows Server 2016   | `win-8_x64_10.0.14393.0_5.1.14393.2636_x64_4.0.30319.42000_framework` |
+| 5.1                | Windows Server 2019   | `win-8_x64_10.0.17763.0_5.1.17763.134_x64_4.0.30319.42000_framework`  |
+| 5.1                | Windows 10            | `win-48_x64_10.0.17763.0_5.1.17763.134_x64_4.0.30319.42000_framework` |
+| 6.1                | Windows Server 2019   | `win-8_x64_10.0.14393.0_6.1.3_x64_4.0.30319.42000_core`               |
+| 6.1                | Windows Server 2016   | `win-8_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core`               |
+| 6.1                | Windows 10            | `win-48_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core`              |
+| 6.1                | Ubuntu 18.04 LTS      | `ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core`                     |
 
 Other profiles can be found [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/CrossCompatibility/optional_profiles).
 
