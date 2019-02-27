@@ -2,9 +2,9 @@
 <SignConfigXML>
   <!-- ****Begin**** BothDual - Dual (Sha256 and Sha1) AuthicodeDual) and should be StrongName, but we will add this in 6.1.0 ******** -->
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\Microsoft.PowerShell.CrossCompatibility.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\Microsoft.PowerShell.CrossCompatibility.dll" />
     <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSScriptAnalyzer.psd1" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSScriptAnalyzer.psd1" />
     <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSScriptAnalyzer.psm1" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSScriptAnalyzer.psm1" />
     <file src="__INPATHROOT__\out\PSScriptAnalyzer\ScriptAnalyzer.format.ps1xml" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\ScriptAnalyzer.format.ps1xml" />
@@ -21,30 +21,30 @@
     <file src="__INPATHROOT__\out\PSScriptAnalyzer\Settings\ScriptSecurity.psd1" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\Settings\ScriptSecurity.psd1" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer core" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\coreclr\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\coreclr\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\coreclr\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\coreclr\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\coreclr\Microsoft.PowerShell.CrossCompatibility.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\coreclr\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\coreclr\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\coreclr\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\coreclr\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\coreclr\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\coreclr\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\coreclr\Microsoft.PowerShell.CrossCompatibility.dll" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv3" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv3\Microsoft.PowerShell.CrossCompatibility.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv3\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv3\Microsoft.PowerShell.CrossCompatibility.dll" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv4" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
-    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv4\Microsoft.PowerShell.CrossCompatibility.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\PSv4\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSv4\Microsoft.PowerShell.CrossCompatibility.dll" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PSCompatibilityAnalyzer" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.psd1" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.psd1" />
-    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.psm1" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.psm1" />
+    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.psd1" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.psd1" />
+    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.psm1" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.psm1" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PSCompatibilityAnalyzer netstandard bins" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" />
-    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\netstandard2.0\Newtonsoft.Json.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\netstandard2.0\Newtonsoft.Json.dll" />
+    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\netstandard2.0\Newtonsoft.Json.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\netstandard2.0\Newtonsoft.Json.dll" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PSCompatibilityAnalyzer netframework bins" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\net452\Microsoft.PowerShell.CrossCompatibility.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\net452\Microsoft.PowerShell.CrossCompatibility.dll" />
-    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\net452\Newtonsoft.Json.dll" signType="AuthenticodeDual" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\net452\Newtonsoft.Json.dll" />
+    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\net452\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\net452\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSCompatibilityAnalyzer\net452\Newtonsoft.Json.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\net452\Newtonsoft.Json.dll" />
  </job>
 </SignConfigXML>
