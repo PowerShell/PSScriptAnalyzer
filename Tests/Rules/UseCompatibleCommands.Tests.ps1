@@ -7,13 +7,13 @@ $script:TargetProfileConfigKey = 'TargetProfiles'
 
 $script:Srv2012_3_profile = 'win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework'
 $script:Srv2012r2_4_profile = 'win-8_x64_6.3.9600.0_4.0_x64_4.0.30319.42000_framework'
-$script:Srv2016_5_profile = 'win-8_x64_10.0.14393.0_5.1.14393.2636_x64_4.0.30319.42000_framework'
-$script:Srv2016_6_1_profile = 'win-8_x64_10.0.14393.0_6.1.2_x64_4.0.30319.42000_core'
-$script:Srv2019_5_profile = 'win-8_x64_10.0.17763.0_5.1.17763.134_x64_4.0.30319.42000_framework'
-$script:Srv2019_6_1_profile = 'win-8_x64_10.0.17763.0_6.1.2_x64_4.0.30319.42000_core'
-$script:Win10_5_profile = 'win-48_x64_10.0.17763.0_5.1.17763.134_x64_4.0.30319.42000_framework'
-$script:Win10_6_1_profile = 'win-48_x64_10.0.17763.0_6.1.2_x64_4.0.30319.42000_core'
-$script:Ubuntu1804_6_1_profile = 'ubuntu_x64_18.04_6.1.2_x64_4.0.30319.42000_core'
+$script:Srv2016_5_profile = 'win-8_x64_10.0.14393.0_5.1.14393.2791_x64_4.0.30319.42000_framework'
+$script:Srv2016_6_1_profile = 'win-8_x64_10.0.14393.0_6.1.3_x64_4.0.30319.42000_core'
+$script:Srv2019_5_profile = 'win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
+$script:Srv2019_6_1_profile = 'win-8_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core'
+$script:Win10_5_profile = 'win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
+$script:Win10_6_1_profile = 'win-48_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core'
+$script:Ubuntu1804_6_1_profile = 'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
 
 $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = 'Write-Information "Information"'; Commands = @("Write-Information"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
@@ -275,7 +275,22 @@ Describe 'UseCompatibleCommands' {
                             $script:Win10_6_1_profile
                             $script:Ubuntu1804_6_1_profile
                         )
-                        IgnoreCommands = @('Install-Module')
+                        IgnoreCommands = @(
+                            'Install-Module'
+                            # Some PowerShell profiles have Pester installed by default
+                            # So Pester is legitimately flagged
+                            'Describe'
+                            'It'
+                            'Should'
+                            'Be'
+                            'BeforeAll'
+                            'Context'
+                            'AfterAll'
+                            'BeforeEach'
+                            'AfterEach'
+                            'Mock'
+                            'Assert-MockCalled'
+                        )
                     }
                 }
             }

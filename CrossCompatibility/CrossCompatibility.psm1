@@ -579,7 +579,7 @@ function Get-OSData
         if ($lsbInfo)
         {
             $osData['DistributionId'] = $lsbInfo.ID
-            $osData['DistributionVersion'] = $lsbInf.VERSION_ID
+            $osData['DistributionVersion'] = $lsbInfo.VERSION_ID
             $osData['DistributionPrettyName'] = $lsbInfo.PRETTY_NAME
         }
     }
