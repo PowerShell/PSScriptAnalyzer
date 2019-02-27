@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engine", "Engine\Engine.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rules", "Rules\Rules.csproj", "{D601FAC9-48CD-45B5-B4E8-9A3BD06E1436}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrossCompatibility", "CrossCompatibility\Microsoft.PowerShell.CrossCompatibility\Microsoft.PowerShell.CrossCompatibility.csproj", "{0A219FDB-79ED-402F-9B98-24389A1CCF9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PSCompatibilityAnalyzer", "PSCompatibilityAnalyzer\Microsoft.PowerShell.CrossCompatibility\Microsoft.PowerShell.CrossCompatibility.csproj", "{0A219FDB-79ED-402F-9B98-24389A1CCF9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

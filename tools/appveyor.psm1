@@ -54,11 +54,11 @@ function Invoke-AppveyorTest {
     # Copy the generated modules into the out directory
     $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
-    Copy-Item "${CheckoutPath}\CrossCompatibility\out\CrossCompatibility" "$modulePath\" -Recurse -Force
+    Copy-Item "${CheckoutPath}\PSCompatibilityAnalyzer\out\PSCompatibilityAnalyzer" "$modulePath\" -Recurse -Force
 
     # Set up testing assets
     $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
-    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\CrossCompatibility\Tests"
+    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\PSCompatibilityAnalyzer\Tests"
 
     # Run all tests
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru

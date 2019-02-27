@@ -27,12 +27,12 @@ if ($IsWindows -eq $false) {
     $script:TargetFrameworks = 'netstandard2.0','net452'
 }
 
-$script:Psm1Path = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility.psm1')
-$script:Psd1Path = [System.IO.Path]::Combine($PSScriptRoot, 'CrossCompatibility.psd1')
+$script:Psm1Path = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityAnalyzer.psm1')
+$script:Psd1Path = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityAnalyzer.psd1')
 $script:ProfileDirPath = [System.IO.Path]::Combine($PSScriptRoot, 'profiles')
 
-$script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'CrossCompatibility')
-$script:BinModSrcDir = Join-Path $PSScriptRoot 'Microsoft.PowerShell.CrossCompatibility'
+$script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSCompatibilityAnalyzer')
+$script:BinModSrcDir = Join-Path $PSScriptRoot 'Microsoft.PowerShell.PSCompatibilityAnalyzer'
 
 $script:PublishDlls = @{
     'net452' = @('Microsoft.PowerShell.CrossCompatibility.dll', 'Microsoft.PowerShell.CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
@@ -89,8 +89,8 @@ function Publish-CrossCompatibilityModule
         throw "$DestinationDir exists but is not a directory. Aborting."
     }
 
-    Copy-Item -LiteralPath $script:Psd1Path -Destination (Join-Path $DestinationDir 'CrossCompatibility.psd1')
-    Copy-Item -LiteralPath $script:Psm1Path -Destination (Join-Path $DestinationDir 'CrossCompatibility.psm1')
+    Copy-Item -LiteralPath $script:Psd1Path -Destination (Join-Path $DestinationDir 'PSCompatibilityAnalyzer.psd1')
+    Copy-Item -LiteralPath $script:Psm1Path -Destination (Join-Path $DestinationDir 'PSCompatibilityAnalyzer.psm1')
     Copy-Item -Recurse -LiteralPath $script:ProfileDirPath -Destination $DestinationDir -ErrorAction Ignore
 
     foreach ($framework in $TargetFramework)
@@ -118,7 +118,7 @@ if ($Clean)
 }
 
 # Only build if the output directory does not exist
-if (-not (Test-Path "$PSScriptRoot/out/CrossCompatibility"))
+if (-not (Test-Path "$PSScriptRoot/out/PSCompatibilityAnalyzer"))
 {
     if ($Framework)
     {
@@ -136,7 +136,7 @@ if (-not (Test-Path "$PSScriptRoot/out/CrossCompatibility"))
 }
 else
 {
-    Write-Verbose "CrossCompatibility module already built -- skipping build"
+    Write-Verbose "PSCompatibilityAnalyzer module already built -- skipping build"
     Write-Verbose "Use '-Clean' to force building"
 }
 

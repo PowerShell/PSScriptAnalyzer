@@ -46,9 +46,9 @@ Platforms bundled by default are:
 | 6.1                | Windows 10            | `win-48_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core`              |
 | 6.1                | Ubuntu 18.04 LTS      | `ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core`                     |
 
-Other profiles can be found [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/CrossCompatibility/optional_profiles).
+Other profiles can be found [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityAnalyzer/optional_profiles).
 
-You can also generate your own platform profile using the [CrossCompatibility module](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/CrossCompatibility).
+You can also generate your own platform profile using the [PSCompatibilityAnalyzer module](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityAnalyzer).
 
 The compatibility profile settings takes a list of platforms to target under `TargetProfiles`.
 A platform can be specified as:
@@ -58,8 +58,14 @@ A platform can be specified as:
 - A file name (like `my_custom_platform.json`), which will be searched for the in the default profile directory.
 - An absolute path to a file (like `D:\PowerShellProfiles\TargetMachine.json`).
 
-The default profile directory is under the PSScriptAnalzyer module at `$PSScriptRoot/CrossCompatibility/profiles`
+The default profile directory is under the PSScriptAnalzyer module at `$PSScriptRoot/PSCompatibilityAnalyzer/profiles`
 (where `$PSScriptRoot` here refers to the directory containing `PSScriptAnalyzer.psd1`).
+
+The compatibility analysis compares a type used to both a target profile
+and a "union" profile (containing all types available in *any* profile in the profile dir).
+If a type is not present in the union profile, it is assumed to be locally created and ignored.
+Otherwise, if a type is present in the union profile but not present in a target,
+it is deemed to be incompatible with that target.
 
 An example configuration might look like:
 
