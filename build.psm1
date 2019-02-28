@@ -66,7 +66,7 @@ function Uninstall-ScriptAnalyzer
     [CmdletBinding(SupportsShouldProcess)]
     param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath PSScriptAnalyzer) )
     END {
-        if (Test-Path $ModulePath -and (Get-Item $ModulePath).PSIsContainer )
+        if ((Test-Path $ModulePath) -and (Get-Item $ModulePath).PSIsContainer )
         {
             Remove-Item -Force -Recurse $ModulePath
         }
@@ -110,6 +110,34 @@ function Start-DocumentationBuild
     $null = New-ExternalHelp -Path $markdownDocsPath -OutputPath $outputDocsPath -Force
 }
 
+function Copy-CompatibilityProfiles
+{
+    if ($PSVersionTable.PSVersion.Major -le 5)
+    {
+        Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
+    }
+
+    $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityAnalyzer', 'profiles')
+    $destinationDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer')
+    $destination = Join-Path $destinationDir 'compatibility_profiles.zip'
+
+    if (Test-Path -LiteralPath $destinationDir -PathType Container)
+    {
+        Remove-Item -Force -Recurse $destination -ErrorAction Ignore
+    }
+    else
+    {
+        $null = New-Item -Path $destinationDir -ItemType Directory
+    }
+
+    [System.IO.Compression.ZipFile]::CreateFromDirectory(
+        $profileDir,
+        $destination,
+        [System.IO.Compression.CompressionLevel]::Optimal,
+        <# includeBaseDirectory #> $false,
+        [System.Text.Encoding]::UTF8)
+}
+
 # build script analyzer (and optionally build everything with -All)
 function Start-ScriptAnalyzerBuild
 {
@@ -146,6 +174,9 @@ function Start-ScriptAnalyzerBuild
             Start-DocumentationBuild
         }
 
+        # Destination for the composed module when built
+        $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
+
         if ( $All )
         {
             # Build all the versions of the analyzer
@@ -155,11 +186,24 @@ function Start-ScriptAnalyzerBuild
             return
         }
 
+        if (-not $profilesCopied)
+        {
+            Copy-CompatibilityProfiles
+            # Set the variable in the caller's scope, so this will only happen once
+            Set-Variable -Name profilesCopied -Value $true -Scope 1
+        }
+
         if ($PSVersion -ge 6) {
             $framework = 'netstandard2.0'
         }
         else {
             $framework = "net452"
+        }
+
+        # build the appropriate assembly
+        if ($PSVersion -match "[34]" -and $Framework -eq "core")
+        {
+            throw ("ScriptAnalyzer for PS version '{0}' is not applicable to {1} framework" -f $PSVersion,$Framework)
         }
 
         Push-Location -Path $projectRoot
@@ -214,7 +258,7 @@ function Start-ScriptAnalyzerBuild
         catch {
             Write-Warning $_
             Write-Error "Failure to build for PSVersion '$PSVersion' using framework '$framework' and configuration '$config'"
-            return
+            throw
         }
         finally {
             Pop-Location
@@ -223,8 +267,9 @@ function Start-ScriptAnalyzerBuild
         Publish-File $itemsToCopyCommon $destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${config}\${framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${config}\${framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\Engine\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot\Rules\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\Rules\bin\${config}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
@@ -244,16 +289,23 @@ function Start-ScriptAnalyzerBuild
 function Test-ScriptAnalyzer
 {
     [CmdletBinding()]
-    param ( [Parameter()][switch]$InProcess )
+    param ( [Parameter()][switch]$InProcess, [switch]$ShowAll )
 
     END {
         $testModulePath = Join-Path "${projectRoot}" -ChildPath out
-        $testResultsFile = Join-Path ${projectRoot} -childPath TestResults.xml
-        $testScripts = "${projectRoot}\Tests\Engine,${projectRoot}\Tests\Rules,${projectRoot}\Tests\Documentation"
+        $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
+        $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
         try {
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
-            $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary")
+            if ($ShowAll)
+            {
+                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile")
+            }
+            else
+            {
+                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary")
+            }
             if ( $InProcess ) {
                 & $scriptBlock
             }
@@ -569,3 +621,48 @@ function Get-DotnetExe
     return [String]::Empty
 }
 $script:DotnetExe = Get-DotnetExe
+
+# Copies the built PSCompatibilityAnalyzer module to the output destination for PSSA
+function Copy-CrossCompatibilityModule
+{
+    param(
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Destination
+    )
+
+    $destInfo = Get-Item -Path $Destination -ErrorAction SilentlyContinue
+
+    # Can't copy to a file
+    if ($destInfo -and -not $destInfo.PSIsContainer)
+    {
+        throw "Destination exists but is not a directory"
+    }
+
+    # Create the destination if it does not exist
+    if (-not $destInfo)
+    {
+        New-Item -Path $Destination -ItemType Directory
+    }
+
+    $outputAssets = @(
+        "$PSScriptRoot/PSCompatibilityAnalyzer/PSCompatibilityAnalyzer.psd1"
+        "$PSScriptRoot/PSCompatibilityAnalyzer/PSCompatibilityAnalyzer.psm1"
+        "$PSScriptRoot/PSCompatibilityAnalyzer/CrossCompatibilityBinary"
+        "$PSScriptRoot/PSCompatibilityAnalyzer/profiles"
+    )
+
+    foreach ($assetPath in $outputAssets)
+    {
+        try
+        {
+            Copy-Item -Path $assetPath -Destination $Destination -Recurse -Force -ErrorAction Stop
+        }
+        catch
+        {
+            # Display the problem as a warning, but continue
+            Write-Warning $_
+        }
+    }
+}
