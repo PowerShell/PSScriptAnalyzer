@@ -21,10 +21,9 @@ The parameter `compatibility` is a list that contain any of the following
 - desktop-3.0-windows
 - desktop-4.0-windows (taken from Windows Server 2012R2)
 - desktop-5.1.14393.206-windows
-- core-6.0.2-windows (taken from Windows 10 - 1709)
-- core-6.0.2-linux (taken from Ubuntu 16.04)
-- core-6.0.2-macos
 - core-6.1.0-windows (taken from Windows 10 - 1803)
 - core-6.1.0-linux (taken from Ubuntu 18.04)
 - core-6.1.0-linux-arm (taken from Raspbian)
 - core-6.1.0-macos
+
+Note that the `core-6.0.2-*` files were removed in PSScriptAnalyzer 1.18 since PowerShell 6.0 reached it's end of life.
