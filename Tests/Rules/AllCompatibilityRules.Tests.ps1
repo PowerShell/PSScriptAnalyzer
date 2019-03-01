@@ -87,8 +87,8 @@ $script:expectedSyntaxDiagnostics = @(
 
 Describe "Running all compatibility rules with a settings file" {
     BeforeAll {
-        $testFile = New-Item -Path "$TestDrive/test.ps1" -Value $script:fileContent
-        $settingsFile = New-Item -Path "$TestDrive/settings.psd1" -Value $script:settingsContent
+        $testFile = New-Item -Path "$TestDrive/test.ps1" -Value $script:fileContent -ItemType File
+        $settingsFile = New-Item -Path "$TestDrive/settings.psd1" -Value $script:settingsContent -ItemType File
         $diagnostics = Invoke-ScriptAnalyzer -Path $testFile.FullName -Settings $settingsFile.FullName |
             Group-Object -Property RuleName -AsHashtable
         $commandDiagnostics = $diagnostics.PSUseCompatibleCommands
