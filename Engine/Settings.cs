@@ -522,6 +522,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         case "false":
                             return false;
 
+                        case "null":
+                            return null;
+
                         default:
                             throw CreateInvalidDataExceptionFromAst(varExprAst);
                     }
@@ -547,13 +550,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     // This will also mean that @(1; 2) is parsed as an array of two elements, but there's not much point defending against this
                     foreach (StatementAst statement in arrExprAst.SubExpression.Statements)
                     {
-                        var pipelineAst = statement as PipelineAst;
-                        if (pipelineAst == null)
+                        if (!(statement is PipelineAst pipelineAst))
                         {
                             throw CreateInvalidDataExceptionFromAst(arrExprAst);
                         }
 
-                        var pipelineExpressionAst = pipelineAst.GetPureExpression();
+                        ExpressionAst pipelineExpressionAst = pipelineAst.GetPureExpression();
                         if (pipelineExpressionAst == null)
                         {
                             throw CreateInvalidDataExceptionFromAst(arrExprAst);
@@ -660,10 +662,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(ast));
             }
 
-            return ThrowInvalidDataException(ast.Extent);
+            return CreateInvalidDataException(ast.Extent);
         }
 
-        private static InvalidDataException ThrowInvalidDataException(IScriptExtent extent)
+        private static InvalidDataException CreateInvalidDataException(IScriptExtent extent)
         {
             return new InvalidDataException(string.Format(
                                     CultureInfo.CurrentCulture,
