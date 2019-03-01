@@ -222,6 +222,7 @@ Describe "Settings Class" {
                 @{ Expr = "@(1`n3`n5`n7)"; Count = 4 }
                 @{ Expr = "'1',`r`n'2',`r`n'3'"; Count = 3 }
                 @{ Expr = "@(1`r`n3`r`n5`r`n7)"; Count = 4 }
+                @{ Expr = "@(1,2,3`n7,8,9)"; Count = 6 }
             )
 
             $gsvHashtableTests = @(
