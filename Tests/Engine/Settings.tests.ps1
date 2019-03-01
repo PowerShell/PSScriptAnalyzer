@@ -209,6 +209,7 @@ Describe "Settings Class" {
                 @{ Expr = '0.142' }
                 @{ Expr = '"Hello"' }
                 @{ Expr = '"Well then"' }
+                @{ Expr = '$null' }
             )
 
             $gsvArrayTests = @(
@@ -240,7 +241,6 @@ Describe "Settings Class" {
             $gsvThrowTests = @(
                 @{ Expr = '$var' }
                 @{ Expr = '' }
-                @{ Expr = '$null' }
                 @{ Expr = '3+7' }
                 @{ Expr = '- 2.5'}
                 @{ Expr = '-not $true' }
