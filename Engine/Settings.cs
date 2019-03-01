@@ -541,6 +541,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
 
                     var listComponents = new List<object>();
+                    // Arrays can either be array expressions (1, 2, 3) or array literals with statements @(1 `n 2 `n 3)
+                    // Or they can be a combination of these
+                    // We go through each statement (line) in an array and read the whole subarray
+                    // This will also mean that @(1; 2) is parsed as an array of two elements, but there's not much point defending against this
                     foreach (StatementAst statement in arrExprAst.SubExpression.Statements)
                     {
                         var pipelineAst = statement as PipelineAst;
