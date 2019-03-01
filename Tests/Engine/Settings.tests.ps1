@@ -218,6 +218,10 @@ Describe "Settings Class" {
                 @{ Expr = '@("A","B","C")'; Count = 3 }
                 @{ Expr = '@()'; Count = 0 }
                 @{ Expr = '@(7)'; Count = 1 }
+                @{ Expr = "'1',`n'2',`n'3'"; Count = 3 }
+                @{ Expr = "@(1`n3`n5`n7)"; Count = 4 }
+                @{ Expr = "'1',`r`n'2',`r`n'3'"; Count = 3 }
+                @{ Expr = "@(1`r`n3`r`n5`r`n7)"; Count = 4 }
             )
 
             $gsvHashtableTests = @(

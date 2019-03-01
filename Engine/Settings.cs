@@ -540,24 +540,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         return new object[0];
                     }
 
-                    PipelineAst pipelineAst = arrExprAst.SubExpression.Statements[0] as PipelineAst;
-                    if (pipelineAst == null)
+                    var listComponents = new List<object>();
+                    foreach (StatementAst statement in arrExprAst.SubExpression.Statements)
                     {
-                        throw CreateInvalidDataExceptionFromAst(arrExprAst);
-                    }
+                        var pipelineAst = statement as PipelineAst;
+                        if (pipelineAst == null)
+                        {
+                            throw CreateInvalidDataExceptionFromAst(arrExprAst);
+                        }
 
-                    ExpressionAst pipelineExpressionAst = pipelineAst.GetPureExpression();
-                    if (pipelineExpressionAst == null)
-                    {
-                        throw CreateInvalidDataExceptionFromAst(arrExprAst);
-                    }
+                        var pipelineExpressionAst = pipelineAst.GetPureExpression();
+                        if (pipelineExpressionAst == null)
+                        {
+                            throw CreateInvalidDataExceptionFromAst(arrExprAst);
+                        }
 
-                    // Array expressions may not really be arrays (like `@('a')`, which has no ArrayLiteralAst within)
-                    // However, some rules depend on this always being an array
-                    object arrayValue = GetSafeValueFromExpressionAst(pipelineExpressionAst);
-                    return arrayValue.GetType().IsArray
-                        ? arrayValue
-                        : new object[] { arrayValue };
+                        object arrayValue = GetSafeValueFromExpressionAst(pipelineExpressionAst);
+                        // We might hit arrays like @(\n1,2,3\n4,5,6), which the parser sees as two statements containing array expressions
+                        if (arrayValue is object[] subArray)
+                        {
+                            listComponents.AddRange(subArray);
+                            continue;
+                        }
+
+                        listComponents.Add(arrayValue);
+                    }
+                    return listComponents.ToArray();
+
 
                 case ArrayLiteralAst arrLiteralAst:
                     return GetSafeValuesFromArrayAst(arrLiteralAst);
