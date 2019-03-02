@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
+using System.Threading;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -29,6 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
         private Dictionary<CommandLookupKey, CommandInfo> commandInfoCache;
+        private ReaderWriterLockSlim commandInfoCacheLock = new ReaderWriterLockSlim();
 
         #endregion
 
@@ -701,17 +703,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             var key = new CommandLookupKey(name, commandType);
-            lock (getCommandLock)
+            commandInfoCacheLock.EnterReadLock();
+            try
             {
                 if (commandInfoCache.ContainsKey(key))
                 {
                     return commandInfoCache[key];
                 }
-
-                var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
-                commandInfoCache.Add(key, commandInfo);
-                return commandInfo;
             }
+            finally
+            {
+                commandInfoCacheLock.ExitReadLock();
+            }
+            var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
+            commandInfoCacheLock.EnterWriteLock();
+            try
+            {
+                if (commandInfoCache.ContainsKey(key))
+                {
+                    return commandInfoCache[key];
+                }
+                commandInfoCache.Add(key, commandInfo);
+            }
+            finally
+            {
+                commandInfoCacheLock.ExitWriteLock();
+            }
+            return commandInfo;
         }
 
         /// <summary>
@@ -728,17 +746,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             var key = new CommandLookupKey(name, commandType);
-            lock (getCommandLock)
+
+            commandInfoCacheLock.EnterReadLock();
+            try
             {
                 if (commandInfoCache.ContainsKey(key))
                 {
                     return commandInfoCache[key];
                 }
-
-                var commandInfo = GetCommandInfoInternal(name, commandType);
-                commandInfoCache.Add(key, commandInfo);
-                return commandInfo;
             }
+            finally
+            {
+                commandInfoCacheLock.ExitReadLock();
+            }
+            var commandInfo = GetCommandInfoInternal(name, commandType);
+            commandInfoCacheLock.EnterWriteLock();
+            try
+            {
+                if (commandInfoCache.ContainsKey(key))
+                {
+                    return commandInfoCache[key];
+                }
+                commandInfoCache.Add(key, commandInfo);
+            }
+            finally
+            {
+                commandInfoCacheLock.ExitWriteLock();
+            }
+            return commandInfo;
         }
 
         /// <summary>
