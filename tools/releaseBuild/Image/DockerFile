@@ -26,7 +26,7 @@ RUN Import-Module ./containerFiles/dockerInstall.psm1; `
     Install-ChocolateyPackage -PackageName dotnet4.5;
 
 RUN Import-Module ./containerFiles/dockerInstall.psm1; `
-    Install-ChocolateyPackage -PackageName netfx-4.5.1-devpack;
+    Install-ChocolateyPackage -PackageName netfx-4.5.2-devpack;
 
 COPY buildPSSA.ps1 containerFiles/buildPSSA.ps1
 

@@ -2,17 +2,17 @@
 
   <PropertyGroup>
     <VersionPrefix>1.17.1</VersionPrefix>
-    <TargetFrameworks>netstandard2.0;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer</AssemblyName>
     <PackageId>Engine</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
@@ -26,6 +26,20 @@
 
   <ItemGroup>
   <Compile Remove="Commands\GetScriptAnalyzerLoggerCommand.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Settings\*.psd1" />
+    <None Remove="Settings\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Settings\*.psd1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Settings\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -51,23 +65,31 @@
     <PackageReference Include="System.Management.Automation" Version="6.0.2" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net451' AND '$(Configuration)' == 'PSV3Release' AND '$(Configuration)' != 'PSV4Release'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net452' AND '$(Configuration)' == 'PSV3Release' AND '$(Configuration)' != 'PSV4Release'">
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net451' AND '$(Configuration)' == 'PSV4Release'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net452' AND '$(Configuration)' == 'PSV4Release'">
     <PackageReference Include="Microsoft.PowerShell.4.ReferenceAssemblies" Version="1.0.0" />
   </ItemGroup>
    
-  <ItemGroup Condition="'$(TargetFramework)' == 'net451' AND '$(Configuration)' != 'PSV3Release'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net452' AND '$(Configuration)' != 'PSV3Release'">
     <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
   </ItemGroup>
-
+   
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
     <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Release' ">
+    <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Debug' ">
+    <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Debug' ">
     <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
   </PropertyGroup>
 

@@ -3,6 +3,13 @@ $testRootDirectory = Split-Path -Parent $directory
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 Describe "Invoke-Formatter Cmdlet" {
+    Context "Cmdlet cleans up and has no knock on effect" {
+        It "Invoke-Formatter has knock on effect on Invoke-ScriptAnalyzer" {
+            Invoke-Formatter 'foo'
+            Invoke-ScriptAnalyzer -ScriptDefinition 'gci' | Should -Not -BeNullOrEmpty
+        }
+    }
+
     Context "When positional parameters are given" {
         It "Should use the positional parameters" {
             $def = @"
@@ -30,12 +37,12 @@ function foo {
         }
 
         It "Should not expand unary operators when being used as a single negative argument" {
-            $script = '$foo.bar(-$a)' 
+            $script = '$foo.bar(-$a)'
             Invoke-Formatter '$foo.bar(-$a)' -Settings CodeFormatting | Should -Be $script
         }
 
         It "Should expand unary operators when not being used as a single negative argument" {
-            Invoke-Formatter '$foo.bar(-$a+$b+$c)' -Settings CodeFormatting | Should -Be '$foo.bar(-$a + $b + $c)' 
+            Invoke-Formatter '$foo.bar(-$a+$b+$c)' -Settings CodeFormatting | Should -Be '$foo.bar(-$a + $b + $c)'
         }
     }
 

@@ -203,4 +203,4 @@ function Measure-RequiresRunAsAdministrator
 }
 ```
 
-More examples can be found in *Tests\Engine\CommunityRules*
+More examples can be found in *Tests\Engine\CommunityAnalyzerRules*

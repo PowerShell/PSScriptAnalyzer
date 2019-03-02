@@ -13,6 +13,10 @@ Describe "PossibleIncorrectComparisonWithNull" {
         It "has the correct description message" {
             $violations.Message | Should -Match $violationMessage
         }
+
+        It "has the correct description message" {
+            $violations[0].SuggestedCorrections[0].Text | Should -Be '$null -eq @("dfd", "eee")'
+        }
     }
 
     Context "When there are no violations" {

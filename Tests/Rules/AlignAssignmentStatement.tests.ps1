@@ -126,6 +126,7 @@ Configuration Sample_ChangeDescriptionAndPermissions
                 # NonExistentModule is not really avaiable to load. Therefore we set erroraction to
                 # SilentlyContinue
                 Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Severity -ne "ParseError" } |
                     Get-Count |
                     Should -Be 4
             }
