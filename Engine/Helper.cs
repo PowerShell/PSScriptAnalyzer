@@ -25,11 +25,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private CommandInvocationIntrinsics invokeCommand;
         private readonly IOutputWriter outputWriter;
+        private readonly ReaderWriterLockSlim commandInfoCacheLock = new ReaderWriterLockSlim();
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
         private Dictionary<CommandLookupKey, CommandInfo> commandInfoCache;
-        private ReaderWriterLockSlim commandInfoCacheLock = new ReaderWriterLockSlim();
 
         #endregion
 
