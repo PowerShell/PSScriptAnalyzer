@@ -24,8 +24,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         #region Private members
 
         private CommandInvocationIntrinsics invokeCommand;
-        private IOutputWriter outputWriter;
-        private Object getCommandLock = new object();
+        private readonly IOutputWriter outputWriter;
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
@@ -654,9 +653,41 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
 
         /// <summary>
-        /// Get a CommandInfo object of the given command name
+        /// Get a CommandInfo object of the given command name. Uses the commandInfoCache for performance optimisation.
         /// </summary>
         /// <returns>Returns null if command does not exists</returns>
+        private CommandInfo GetCommandInfoInternalWithCommandCache(CommandLookupKey commandLookupKey, string cmdName, CommandTypes? commandType)
+        {
+            commandInfoCacheLock.EnterReadLock();
+            try
+            {
+                if (commandInfoCache.ContainsKey(commandLookupKey))
+                {
+                    return commandInfoCache[commandLookupKey];
+                }
+            }
+            finally
+            {
+                commandInfoCacheLock.ExitReadLock();
+            }
+            var commandInfo = GetCommandInfoInternal(cmdName, commandType);
+            commandInfoCacheLock.EnterWriteLock();
+            try
+            {
+                // Check Cache again because the command might have been added to it by another thread in the meantime
+                if (commandInfoCache.ContainsKey(commandLookupKey))
+                {
+                    return commandInfoCache[commandLookupKey];
+                }
+                commandInfoCache.Add(commandLookupKey, commandInfo);
+            }
+            finally
+            {
+                commandInfoCacheLock.ExitWriteLock();
+            }
+            return commandInfo;
+        }
+
         private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
             using (var ps = System.Management.Automation.PowerShell.Create())
@@ -665,7 +696,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     .AddParameter("Name", cmdName)
                     .AddParameter("ErrorAction", "SilentlyContinue");
 
-                if(commandType!=null)
+                if (commandType != null)
                 {
                     psCommand.AddParameter("CommandType", commandType);
                 }
@@ -678,7 +709,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-
         ///  Legacy method, new callers should use <see cref="GetCommandInfo"/> instead.
         ///  Given a command's name, checks whether it exists. It does not use the passed in CommandTypes parameter, which is a bug.
         ///  But existing method callers are already depending on this behaviour and therefore this could not be simply fixed.
@@ -703,33 +733,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             var key = new CommandLookupKey(name, commandType);
-            commandInfoCacheLock.EnterReadLock();
-            try
-            {
-                if (commandInfoCache.ContainsKey(key))
-                {
-                    return commandInfoCache[key];
-                }
-            }
-            finally
-            {
-                commandInfoCacheLock.ExitReadLock();
-            }
-            var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
-            commandInfoCacheLock.EnterWriteLock();
-            try
-            {
-                if (commandInfoCache.ContainsKey(key))
-                {
-                    return commandInfoCache[key];
-                }
-                commandInfoCache.Add(key, commandInfo);
-            }
-            finally
-            {
-                commandInfoCacheLock.ExitWriteLock();
-            }
-            return commandInfo;
+            return GetCommandInfoInternalWithCommandCache(key, cmdletName, commandType);
         }
 
         /// <summary>
@@ -746,34 +750,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             var key = new CommandLookupKey(name, commandType);
-
-            commandInfoCacheLock.EnterReadLock();
-            try
-            {
-                if (commandInfoCache.ContainsKey(key))
-                {
-                    return commandInfoCache[key];
-                }
-            }
-            finally
-            {
-                commandInfoCacheLock.ExitReadLock();
-            }
-            var commandInfo = GetCommandInfoInternal(name, commandType);
-            commandInfoCacheLock.EnterWriteLock();
-            try
-            {
-                if (commandInfoCache.ContainsKey(key))
-                {
-                    return commandInfoCache[key];
-                }
-                commandInfoCache.Add(key, commandInfo);
-            }
-            finally
-            {
-                commandInfoCacheLock.ExitWriteLock();
-            }
-            return commandInfo;
+            return GetCommandInfoInternalWithCommandCache(key, name, commandType);
         }
 
         /// <summary>
