@@ -139,8 +139,12 @@ Describe "Resolve DSC Resource Dependency" {
 
     Context "Invoke-ScriptAnalyzer without switch" {
         It "Has parse errors" -skip:$skipTest {
-            $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
-            $parseErrors.Count | Should -Be 1
+            $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable analyzerErrors -ErrorAction SilentlyContinue
+            $analyzerErrors.Count | Should -Be 0
+
+            $dr |
+                Where-Object { $_.Severity -eq "ParseError" } |
+                Get-Count | Should -Be 1
         }
     }
 
@@ -182,10 +186,13 @@ Describe "Resolve DSC Resource Dependency" {
             Copy-Item -Recurse -Path $modulePath -Destination $tempModulePath
         }
 
-        It "Doesn't have parse errors" -skip:$skipTest {
+        It "has a single parse error" -skip:$skipTest {
             # invoke script analyzer
-            $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
-            $dr.Count | Should -Be 0
+            $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable analyzerErrors -ErrorAction SilentlyContinue
+            $analyzerErrors.Count | Should -Be 0
+            $dr |
+                Where-Object { $_.Severity -eq "ParseError" } |
+                Get-Count | Should -Be 1
         }
 
         It "Keeps PSModulePath unchanged before and after invocation" -skip:$skipTest {

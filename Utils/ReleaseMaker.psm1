@@ -94,6 +94,8 @@ function New-ReleaseBuild
     {
         if ( test-path out ) { remove-item out/ -recurse -force }
         .\build.ps1 -All -Configuration Release
+        .\PSCompatibilityAnalyzer\build.ps1 -Clean -Configuration Release
+        Copy-Item -Recurse .\PSCompatibilityAnalyzer\out\* .\out\
     }
     finally
     {
