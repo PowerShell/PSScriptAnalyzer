@@ -9,8 +9,6 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
-using System.Linq;
-using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -20,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class UseCorrectCasing : ConfigurableRule //IScriptRule
+    public class UseCorrectCasing : ConfigurableRule
     {
         /// <summary>
         /// AnalyzeScript: Analyze the script to check if cmdlet alias is used.
@@ -44,41 +42,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                using (var powershell = System.Management.Automation.PowerShell.Create())
+                var commandInfo = Helper.Instance.GetCommandInfo(commandName);
+                if (commandInfo == null)
                 {
-                    var getCommand = powershell.AddCommand("Get-Command")
-                        .AddParameter("Name", commandName)
-                        .AddParameter("ErrorAction", "SilentlyContinue");
-
-                    //if (commandName != null)
-                    //{
-                    //    psCommand.AddParameter("CommandType", commandType);
-                    //}
-
-                    var commandInfo = getCommand.Invoke<CommandInfo>().FirstOrDefault();
-                    if (commandInfo != null)
-                    {
-                        var shortName = commandInfo.Name;
-                        var fullyqualifiedName = $"{commandInfo.ModuleName}\\{shortName}";
-
-                        var isFullyQualified = commandName.Equals(fullyqualifiedName, StringComparison.OrdinalIgnoreCase);
-                        var correctlyCasedCommandName = isFullyQualified ? fullyqualifiedName : shortName;
-
-
-                        if (!commandName.Equals(correctlyCasedCommandName, StringComparison.Ordinal))
-                        {
-                            yield return new DiagnosticRecord(
-                                string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingError, commandName, shortName),
-                                GetCommandExtent(commandAst),
-                                GetName(),
-                                DiagnosticSeverity.Warning,
-                                fileName,
-                                commandName,
-                                suggestedCorrections: GetCorrectionExtent(commandAst, correctlyCasedCommandName));
-                        }
-                    }
+                    continue;
                 }
 
+                var shortName = commandInfo.Name;
+                var fullyqualifiedName = $"{commandInfo.ModuleName}\\{shortName}";
+                var isFullyQualified = commandName.Equals(fullyqualifiedName, StringComparison.OrdinalIgnoreCase);
+                var correctlyCasedCommandName = isFullyQualified ? fullyqualifiedName : shortName;
+
+                if (!commandName.Equals(correctlyCasedCommandName, StringComparison.Ordinal))
+                {
+                    yield return new DiagnosticRecord(
+                        string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingError, commandName, shortName),
+                        GetCommandExtent(commandAst),
+                        GetName(),
+                        DiagnosticSeverity.Warning,
+                        fileName,
+                        commandName,
+                        suggestedCorrections: GetCorrectionExtent(commandAst, correctlyCasedCommandName));
+                }
             }
         }
 
