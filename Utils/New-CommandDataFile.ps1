@@ -5,7 +5,7 @@
 .EXAMPLE
     C:\PS> ./New-CommandDataFile.ps1
 
-    Suppose this file is run on the following version of PowerShell: PSVersion = 6.0.2, PSEdition = Core, and Windows 10 operating system. Then this script will create a file named core-6.0.2-windows.json that contains a JSON object of the following form:
+    Suppose this file is run on the following version of PowerShell: PSVersion = 6.1.0, PSEdition = Core, and Windows 10 operating system. Then this script will create a file named core-6.1.0-windows.json that contains a JSON object of the following form:
     {
         "Modules" : [
             "Module1" : {
