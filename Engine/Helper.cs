@@ -699,7 +699,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private Task<CommandInfo> GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
-            //Task.Factory.StartNew(() =>
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
                 var psCommand = ps.AddCommand("Get-Command")
@@ -711,8 +710,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     psCommand.AddParameter("CommandType", commandType);
                 }
 
-                var commandInfo = psCommand.Invoke<CommandInfo>()
-                         .FirstOrDefault();
+                var commandInfo = psCommand.Invoke<CommandInfo>().FirstOrDefault();
 
                 return Task.FromResult(commandInfo);
             }
