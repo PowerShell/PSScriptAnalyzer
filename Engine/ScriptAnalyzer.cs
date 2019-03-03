@@ -159,8 +159,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             //initialize helper
             Helper.Instance = new Helper(
-                runspace.SessionStateProxy.InvokeCommand,
-                outputWriter);
+                runspace.SessionStateProxy.InvokeCommand);
             Helper.Instance.Initialize();
 
 

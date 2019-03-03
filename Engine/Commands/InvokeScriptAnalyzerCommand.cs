@@ -266,8 +266,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
             Helper.Instance = new Helper(
-                SessionState.InvokeCommand,
-                this);
+                SessionState.InvokeCommand);
             Helper.Instance.Initialize();
 
             var psVersionTable = this.SessionState.PSVariable.GetValue("PSVersionTable") as Hashtable;

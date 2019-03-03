@@ -4,6 +4,7 @@
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -12,6 +13,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -23,13 +25,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     {
         #region Private members
 
-        private CommandInvocationIntrinsics invokeCommand;
-        private readonly IOutputWriter outputWriter;
+        private readonly CommandInvocationIntrinsics invokeCommand;
         private readonly ReaderWriterLockSlim commandInfoCacheLock = new ReaderWriterLockSlim();
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
-        private Dictionary<CommandLookupKey, CommandInfo> commandInfoCache;
+        private ConcurrentDictionary<CommandLookupKey, CommandInfo> commandInfoCache;
+        private ConcurrentDictionary<CommandLookupKey, Task<CommandInfo>> commandInfoLookupItemsInProcess;
 
         #endregion
 
@@ -122,12 +124,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// An IOutputWriter instance for use in writing output
         /// to the PowerShell environment.
         /// </param>
-        public Helper(
-            CommandInvocationIntrinsics invokeCommand,
-            IOutputWriter outputWriter)
+        public Helper(CommandInvocationIntrinsics invokeCommand)
         {
             this.invokeCommand = invokeCommand;
-            this.outputWriter = outputWriter;
         }
 
         #region Methods
@@ -143,7 +142,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
             if (commandInfoCache == null)
             {
-                commandInfoCache = new Dictionary<CommandLookupKey, CommandInfo>();
+                commandInfoCache = new ConcurrentDictionary<CommandLookupKey, CommandInfo>();
+            }
+            if (commandInfoLookupItemsInProcess == null)
+            {
+                commandInfoLookupItemsInProcess = new ConcurrentDictionary<CommandLookupKey, Task<CommandInfo>>();
             }
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
@@ -653,43 +656,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
 
         /// <summary>
-        /// Get a CommandInfo object of the given command name. Uses the commandInfoCache for performance optimisation.
+        /// Get a CommandInfo object of the given command name using sophisticated caching.
+        /// Uses the commandInfoCache for performance optimisation.
         /// </summary>
         /// <returns>Returns null if command does not exists</returns>
         private CommandInfo GetCommandInfoInternalWithCommandCache(CommandLookupKey commandLookupKey, string cmdName, CommandTypes? commandType)
         {
-            commandInfoCacheLock.EnterReadLock();
-            try
+            // Check if CommandInfo is cached
+            if (commandInfoCache.TryGetValue(commandLookupKey, out CommandInfo cachedCommandInfo))
             {
-                if (commandInfoCache.ContainsKey(commandLookupKey))
+                return cachedCommandInfo;
+            }
+
+            var commandInfoLookupTask = new Task<CommandInfo>(() => GetCommandInfoInternal(cmdName, commandType).Result);
+            if (commandInfoLookupItemsInProcess.TryAdd(commandLookupKey, commandInfoLookupTask))
+            {
+                commandInfoLookupTask.Start();
+                commandInfoLookupTask.Wait();
+                commandInfoCache.TryAdd(commandLookupKey, commandInfoLookupTask.Result);
+                return commandInfoLookupTask.Result;
+            }
+            else
+            {
+                // Already processing a request for the same commandLookupKey
+                if (commandInfoLookupItemsInProcess.TryGetValue(commandLookupKey, out Task<CommandInfo> runningCommandInfoLookupTask))
                 {
-                    return commandInfoCache[commandLookupKey];
+                    runningCommandInfoLookupTask.Wait();
+                    commandInfoCache.TryAdd(commandLookupKey, runningCommandInfoLookupTask.Result);
+                    return runningCommandInfoLookupTask.Result;
+                }
+                else
+                {
+                    // The CommandInfoLookup task in commandInfoLookupItemsInProcess has just finished now and must therefore be in the cache
+                    if (commandInfoCache.TryGetValue(commandLookupKey, out CommandInfo commandInfo))
+                    {
+                        return commandInfo;
+                    }
+                    // This case should never happen but is being catered for by just calling the function directly
+                    return GetCommandInfoInternal(cmdName, commandType).Result;
                 }
             }
-            finally
-            {
-                commandInfoCacheLock.ExitReadLock();
-            }
-            var commandInfo = GetCommandInfoInternal(cmdName, commandType);
-            commandInfoCacheLock.EnterWriteLock();
-            try
-            {
-                // Check Cache again because the command might have been added to it by another thread in the meantime
-                if (commandInfoCache.ContainsKey(commandLookupKey))
-                {
-                    return commandInfoCache[commandLookupKey];
-                }
-                commandInfoCache.Add(commandLookupKey, commandInfo);
-            }
-            finally
-            {
-                commandInfoCacheLock.ExitWriteLock();
-            }
-            return commandInfo;
         }
 
-        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
+        private Task<CommandInfo> GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
+            //Task.Factory.StartNew(() =>
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
                 var psCommand = ps.AddCommand("Get-Command")
@@ -704,7 +715,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 var commandInfo = psCommand.Invoke<CommandInfo>()
                          .FirstOrDefault();
 
-                return commandInfo;
+                return Task.FromResult(commandInfo);
             }
         }
 
