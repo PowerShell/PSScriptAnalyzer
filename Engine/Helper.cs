@@ -26,7 +26,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         #region Private members
 
         private readonly CommandInvocationIntrinsics invokeCommand;
-        private readonly ReaderWriterLockSlim commandInfoCacheLock = new ReaderWriterLockSlim();
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
