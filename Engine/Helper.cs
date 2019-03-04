@@ -673,6 +673,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 commandInfoLookupTask.Start();
                 commandInfoLookupTask.Wait();
                 commandInfoCache.TryAdd(commandLookupKey, commandInfoLookupTask.Result);
+                commandInfoLookupItemsInProcess.TryRemove(commandLookupKey, out _);
                 return commandInfoLookupTask.Result;
             }
             else
