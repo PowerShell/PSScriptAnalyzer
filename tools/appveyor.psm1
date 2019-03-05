@@ -5,7 +5,7 @@ $ErrorActionPreference = 'Stop'
 
 # Implements the AppVeyor 'install' step and installs the required versions of Pester, platyPS and the .Net Core SDK if needed.
 function Invoke-AppVeyorInstall {
-    $requiredPesterVersion = '4.4.1'
+    $requiredPesterVersion = '4.4.4'
     $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
     if ($null -eq $pester) {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
@@ -20,26 +20,22 @@ function Invoke-AppVeyorInstall {
         }
     }
 
+    $platyPSVersion = '0.12.0'
     if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
         # WMF 4 image build
         Write-Verbose -Verbose "Installing platyPS via nuget"
-        nuget install platyPS -Version 0.9.0 -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+        nuget install platyPS -Version $platyPSVersion -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
     }
     else {
         Write-Verbose -Verbose "Installing platyPS via Install-Module"
-        Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion '0.9.0'
+        Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion $platyPSVersion
     }
 
-    # the legacy WMF4 image only has the old preview SDKs of dotnet
-    $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
-    $dotNetCoreSDKVersion = $globalDotJson.sdk.version
-    # don't try to run this script on linux - we have to do the negative check because IsLinux will be defined in core, but not windows
-    if (-not ((dotnet --version).StartsWith($dotNetCoreSDKVersion)) -and ! $IsLinux ) {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 # https://github.com/dotnet/announcements/issues/77
-        Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
-        .\dotnet-install.ps1 -Version $dotNetCoreSDKVersion
-        Remove-Item .\dotnet-install.ps1
-    }
+    # the build script sorts out the problems of WMF4 and earlier versions of dotnet CLI
+    Write-Verbose -Verbose "Installing required .Net CORE SDK"
+    Write-Verbose "& $buildScriptDir/build.ps1 -bootstrap"
+    $buildScriptDir = (Resolve-Path "$PSScriptRoot/..").Path
+    & "$buildScriptDir/build.ps1" -bootstrap
 }
 
 # Implements AppVeyor 'test_script' step
@@ -50,14 +46,29 @@ function Invoke-AppveyorTest {
         $CheckoutPath
     )
 
+    # enforce the language to utf-8 to avoid issues
+    $env:LANG = "en_US.UTF-8"
     Write-Verbose -Verbose ("Running tests on PowerShell version " + $PSVersionTable.PSVersion)
+    Write-Verbose -Verbose "Language set to '${env:LANG}'"
 
+    # Copy the generated modules into the out directory
     $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
-    $testResultsFile = ".\TestResults.xml"
-    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation"
-    $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
-    (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}", (Resolve-Path $testResultsFile))
+    Copy-Item "${CheckoutPath}\PSCompatibilityAnalyzer\out\PSCompatibilityAnalyzer" "$modulePath\" -Recurse -Force
+
+    # Set up testing assets
+    $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
+    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\PSCompatibilityAnalyzer\Tests"
+
+    # Run all tests
+    $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
+
+    # Upload the test results
+    $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
+    Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
+    [byte[]]$response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+
+    # Throw an error if any tests failed
     if ($testResults.FailedCount -gt 0) {
         throw "$($testResults.FailedCount) tests failed."
     }
@@ -70,6 +81,8 @@ function Invoke-AppveyorFinish {
     Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
     [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $pwd 'out'), $zipFile)
     @(
+        # add test results as an artifact
+        (Get-ChildItem TestResults.xml)
         # You can add other artifacts here
         (Get-ChildItem $zipFile)
     ) | ForEach-Object { Push-AppveyorArtifact $_.FullName }

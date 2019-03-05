@@ -133,7 +133,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// IncludeRule: Array of the severity types to be enabled.
         /// </summary>
-        [ValidateSet("Warning", "Error", "Information", IgnoreCase = true)]
+        [ValidateSet("Warning", "Error", "Information", "ParseError", IgnoreCase = true)]
         [Parameter(Mandatory = false)]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public string[] Severity
@@ -432,6 +432,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 var errorCount = 0;
                 var warningCount = 0;
                 var infoCount = 0;
+                var parseErrorCount = 0;
 
                 foreach (DiagnosticRecord diagnostic in diagnosticRecords)
                 {
@@ -446,6 +447,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                             break;
                         case DiagnosticSeverity.Error:
                             errorCount++;
+                            break;
+                        case DiagnosticSeverity.ParseError:
+                            parseErrorCount++;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(diagnostic.Severity), $"Severity '{diagnostic.Severity}' is unknown");

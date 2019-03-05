@@ -212,21 +212,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             return line;
         }
 
-        private void SaveModule(PSObject module)
-        {
-            ThrowIfNull(module, "module");
-
-            // TODO validate module
-            using (var ps = System.Management.Automation.PowerShell.Create())
-            {
-                ps.Runspace = runspace;
-                ps.AddCommand("Save-Module")
-                    .AddParameter("Path", tempModulePath)
-                    .AddParameter("InputObject", module);
-                ps.Invoke();
-            }
-        }
-
         private void SetupPSModulePath()
         {
             oldPSModulePath = Environment.GetEnvironmentVariable("PSModulePath");
@@ -296,50 +281,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
-        /// Encapsulates Find-Module
-        /// </summary>
-        /// <param name="moduleName">Name of the module</param>
-        /// <returns>A PSObject if it finds the modules otherwise returns null</returns>
-        public PSObject FindModule(string moduleName)
-        {
-            ThrowIfNull(moduleName, "moduleName");
-            moduleName = moduleName.ToLower();
-            if (modulesFound.ContainsKey(moduleName))
-            {
-                return modulesFound[moduleName];
-            }
-            Collection<PSObject> modules = null;
-            using (var ps = System.Management.Automation.PowerShell.Create())
-            {
-                ps.Runspace = runspace;
-                ps.AddCommand("Find-Module", true)
-                    .AddParameter("Name", moduleName)
-                    .AddParameter("Repository", moduleRepository);
-                modules = ps.Invoke<PSObject>();
-            }
-            if (modules == null)
-            {
-                return null;
-            }
-            var module = modules.FirstOrDefault();
-            if (module == null )
-            {
-                return null;
-            }
-            modulesFound.Add(moduleName, module);
-            return module;
-        }
-
-        /// <summary>
         /// SaveModule version that doesn't throw
         /// </summary>
         /// <param name="moduleName">Name of the module</param>
+        /// <param name="moduleVersion">(Optional) version of the module</param>
         /// <returns>True if it can save a module otherwise false.</returns>
-        public bool TrySaveModule(string moduleName)
+        public bool TrySaveModule(string moduleName, Version moduleVersion)
         {
             try
             {
-                SaveModule(moduleName);
+                SaveModule(moduleName, moduleVersion);
                 return true;
             }
             catch
@@ -353,7 +304,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// Encapsulates Save-Module cmdlet
         /// </summary>
         /// <param name="moduleName">Name of the module</param>
-        public void SaveModule(string moduleName)
+        /// <param name="moduleVersion">(Optional) version of the module</param>
+        public void SaveModule(string moduleName, Version moduleVersion)
         {
             ThrowIfNull(moduleName, "moduleName");
             if (IsModulePresentInTempModulePath(moduleName))
@@ -368,6 +320,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     .AddParameter("Name", moduleName)
                     .AddParameter("Repository", moduleRepository)
                     .AddParameter("Force");
+                if (moduleVersion != null)
+                {
+                    ps.AddParameter("RequiredVersion", moduleVersion);
+                }
                 ps.Invoke();
             }
         }
@@ -376,18 +332,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// Encapsulates Get-Module to check the availability of the module on the system
         /// </summary>
         /// <param name="moduleName"></param>
+        /// <param name="moduleVersion"></param>
         /// <returns>True indicating the presence of the module, otherwise false</returns>
-        public bool IsModuleAvailable(string moduleName)
+        public bool IsModuleAvailable(string moduleName, Version moduleVersion)
         {
             ThrowIfNull(moduleName, "moduleName");
             IEnumerable<PSModuleInfo> availableModules;
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
                 ps.Runspace = runspace;
-                availableModules = ps.AddCommand("Get-Module")
+                ps.AddCommand("Get-Module")
                     .AddParameter("Name", moduleName)
-                    .AddParameter("ListAvailable")
-                    .Invoke<PSModuleInfo>();                
+                    .AddParameter("ListAvailable");
+                if (moduleVersion != null)
+                {
+                    ps.AddCommand("Where-Object")
+                      .AddParameter("Filterscript", ScriptBlock.Create($"$_.Version -eq '{moduleVersion}'"));
+                }
+                availableModules = ps.Invoke<PSModuleInfo>();
+
             }
             return availableModules != null ? availableModules.Any() : false;
         }
@@ -405,12 +368,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// </summary>
         /// <param name="error"></param>
         /// <param name="ast"></param>
+        /// <param name="moduleVersion"></param>
         /// <returns>An enumeration over the module names that are not available</returns>
-        public IEnumerable<string> GetUnavailableModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
+        public IEnumerable<string> GetUnavailableModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast, out Version moduleVersion)
         {
             ThrowIfNull(error, "error");
             ThrowIfNull(ast, "ast");
-            var moduleNames = ModuleDependencyHandler.GetModuleNameFromErrorExtent(error, ast);
+            var moduleNames = ModuleDependencyHandler.GetModuleNameFromErrorExtent(error, ast, out moduleVersion);
             if (moduleNames == null)
             {
                 return null;
@@ -418,12 +382,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             var unavailableModules = new List<string>();
             foreach (var moduleName in moduleNames)
             {
-                if (!IsModuleAvailable(moduleName))
+                if (!IsModuleAvailable(moduleName, moduleVersion))
                 {
                     unavailableModules.Add(moduleName);
                 }
             }
-            //return moduleNames.Where(x => !IsModuleAvailable(x));
+
             return unavailableModules;
         }
 
@@ -438,9 +402,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// </summary>
         /// <param name="error">Parse error</param>
         /// <param name="ast">AST of the script that contians the parse error</param>
+        /// <param name="moduleVersion">Specifc version of the required module</param>
         /// <returns>The name of the module that caused the parser to throw the error. Returns null if it cannot extract the module name.</returns>
-        public static IEnumerable<string> GetModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast)
+        public static IEnumerable<string> GetModuleNameFromErrorExtent(ParseError error, ScriptBlockAst ast, out Version moduleVersion)
         {
+            moduleVersion = null;
             ThrowIfNull(error, "error");
             ThrowIfNull(ast, "ast");
             var statement = ast.Find(x => x.Extent.Equals(error.Extent), true);
@@ -452,12 +418,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             // check if the command name is import-dscmodule
             // right now we handle only the following forms
             // 1. Import-DSCResourceModule -ModuleName somemodule
-            // 2. Import-DSCResourceModule -ModuleName somemodule1,somemodule2
-            if (dynamicKywdAst.CommandElements.Count < 3)
-            {
-                return null;
-            }
-
+            // 2. Import-DSCResourceModule -ModuleName somemodule1 -ModuleVersion major.minor.patch.build
+            // 3. Import-DSCResourceModule -ModuleName somemodule1,somemodule2
             var dscKeywordAst = dynamicKywdAst.CommandElements[0] as StringConstantExpressionAst;
             if (dscKeywordAst == null || !dscKeywordAst.Value.Equals("Import-DscResource", StringComparison.OrdinalIgnoreCase))
             {
@@ -465,39 +427,72 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
 
             // find a parameter named modulename
-            int k;
-            for (k = 1; k < dynamicKywdAst.CommandElements.Count; k++)
+            int positionOfModuleNameParamter = 0;
+            int positionOfModuleVersionParameter = 0;
+            for (int i = 1; i < dynamicKywdAst.CommandElements.Count; i++)
             {
-                var paramAst = dynamicKywdAst.CommandElements[k] as CommandParameterAst;
+                var paramAst = dynamicKywdAst.CommandElements[i] as CommandParameterAst;
                 // TODO match the initial letters only
-                if (paramAst == null || !paramAst.ParameterName.Equals("ModuleName", StringComparison.OrdinalIgnoreCase))
+                if (paramAst != null && paramAst.ParameterName.Equals("ModuleName", StringComparison.OrdinalIgnoreCase))
                 {
+                    if (i == dynamicKywdAst.CommandElements.Count)
+                    {
+                        // command was Save-DscDependency ... -ModuleName -> module name missing
+                        return null;
+                    }
+                    positionOfModuleNameParamter = i + 1;
                     continue;
                 }
-                break;
+
+                if (paramAst != null && paramAst.ParameterName.Equals("ModuleVersion", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i == dynamicKywdAst.CommandElements.Count)
+                    {
+                        // command was Save-DscDependency ... -ModuleVersion -> module version missing
+                        return null;
+                    }
+                    positionOfModuleVersionParameter = i + 1;
+                    continue;
+                }
             }
             
-            if (k == dynamicKywdAst.CommandElements.Count)
-            {
-                // cannot find  modulename
-                return null;
-            }
             var modules = new List<string>();
             
-            // k < count - 1, because only -ModuleName throws parse error and hence not possible
-            var paramValAst = dynamicKywdAst.CommandElements[++k];
+            var paramValAst = dynamicKywdAst.CommandElements[positionOfModuleNameParamter];
 
             // import-dscresource -ModuleName module1
-            var paramValStrConstExprAst = paramValAst as StringConstantExpressionAst;
-            if (paramValStrConstExprAst != null)
+            if (paramValAst is StringConstantExpressionAst paramValStrConstExprAst)
             {                
                 modules.Add(paramValStrConstExprAst.Value);
+
+                // import-dscresource -ModuleName module1 -ModuleVersion major.minor.patch.build
+                var versionParameterAst = dynamicKywdAst.CommandElements[positionOfModuleVersionParameter] as StringConstantExpressionAst;
+                if (versionParameterAst != null)
+                {
+                    Version.TryParse(versionParameterAst.Value, out moduleVersion); // ignore return value since a module version of null means no version
+                }
                 return modules;
             }
-            
+
+            // Import-DscResource –ModuleName @{ModuleName="module1";ModuleVersion="1.2.3.4"}
+            //var paramValAstHashtableAst = paramValAst.Find(oneAst => oneAst is HashtableAst, true) as HashtableAst;
+            if (paramValAst.Find(oneAst => oneAst is HashtableAst, true) is HashtableAst paramValAstHashtableAst)
+            {
+                var moduleNameTuple = paramValAstHashtableAst.KeyValuePairs.SingleOrDefault(x => x.Item1.Extent.Text.Equals("ModuleName"));
+                var moduleName = moduleNameTuple.Item2.Find(astt => astt is StringConstantExpressionAst, true) as StringConstantExpressionAst;
+                if (moduleName == null)
+                {
+                    return null;
+                }
+                modules.Add(moduleName.Value);
+                var moduleVersionTuple = paramValAstHashtableAst.KeyValuePairs.SingleOrDefault(x => x.Item1.Extent.Text.Equals("ModuleVersion"));
+                var moduleVersionAst = moduleVersionTuple.Item2.Find(astt => astt is StringConstantExpressionAst, true) as StringConstantExpressionAst;
+                Version.TryParse(moduleVersionAst.Value, out moduleVersion);
+                return modules;
+            }
+
             // import-dscresource -ModuleName module1,module2
-            var paramValArrLtrlAst = paramValAst as ArrayLiteralAst;
-            if (paramValArrLtrlAst != null)
+            if (paramValAst is ArrayLiteralAst paramValArrLtrlAst)
             {
                 foreach (var elem in paramValArrLtrlAst.Elements)
                 {
@@ -513,6 +508,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 }
                 return modules;
             }
+
             return null;
         }
 
