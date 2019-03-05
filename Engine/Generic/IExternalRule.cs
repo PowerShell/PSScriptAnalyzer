@@ -9,6 +9,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     internal interface IExternalRule : IRule
     {
         /// <summary>
+        /// Adds module name (source name) to handle ducplicate function names in different modules.
+        /// </summary>
+        /// <returns></returns>
+        string GetFullName();
+
+        /// <summary>
         /// GetParameter: Retrieves AstType parameter
         /// </summary>
         /// <returns>string</returns>

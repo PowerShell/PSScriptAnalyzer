@@ -2257,11 +2257,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use space after open brace..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorAfterOpeningBrace {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorAfterOpeningBrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space before closing brace..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorBeforeClosingInnerBrace {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorBeforeClosingInnerBrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use space before open brace..
         /// </summary>
-        internal static string UseConsistentWhitespaceErrorBeforeBrace {
+        internal static string UseConsistentWhitespaceErrorBeforeOpeningBrace {
             get {
-                return ResourceManager.GetString("UseConsistentWhitespaceErrorBeforeBrace", resourceCulture);
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorBeforeOpeningBrace", resourceCulture);
             }
         }
         
@@ -2298,6 +2316,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseConsistentWhitespaceErrorSeparatorSemi {
             get {
                 return ResourceManager.GetString("UseConsistentWhitespaceErrorSeparatorSemi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space after pipe..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorSpaceAfterPipe {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorSpaceAfterPipe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space before pipe..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorSpaceBeforePipe {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorSpaceBeforePipe", resourceCulture);
             }
         }
         
