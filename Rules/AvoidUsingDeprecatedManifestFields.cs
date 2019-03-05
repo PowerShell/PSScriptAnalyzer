@@ -40,83 +40,83 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             if (Helper.IsModuleManifest(fileName))
             {
-                var ps = System.Management.Automation.PowerShell.Create();
-                IEnumerable<PSObject> result = null;
-
-                // hash table in psd1
-                var hashTableAst = ast.FindAll(item => item is HashtableAst, false).FirstOrDefault();
-
-                // no hash table means not a module manifest
-                if (hashTableAst == null)
+                using (var ps = System.Management.Automation.PowerShell.Create())
                 {
-                    yield break;
-                }
+                    IEnumerable<PSObject> result = null;
 
-                var table = hashTableAst as HashtableAst;
+                    // hash table in psd1
+                    var hashTableAst = ast.FindAll(item => item is HashtableAst, false).FirstOrDefault();
 
-                // needs to find the PowerShellVersion key
-                foreach (var kvp in table.KeyValuePairs)
-                {
-                    if (kvp.Item1 != null && kvp.Item1 is StringConstantExpressionAst)
+                    // no hash table means not a module manifest
+                    if (hashTableAst == null)
                     {
-                        var key = (kvp.Item1 as StringConstantExpressionAst).Value;
+                        yield break;
+                    }
 
-                        // find the powershellversion key in the hashtable
-                        if (string.Equals(key, "PowerShellVersion", StringComparison.OrdinalIgnoreCase) && kvp.Item2 != null)
+                    var table = hashTableAst as HashtableAst;
+
+                    // needs to find the PowerShellVersion key
+                    foreach (var kvp in table.KeyValuePairs)
+                    {
+                        if (kvp.Item1 != null && kvp.Item1 is StringConstantExpressionAst)
                         {
-                            // get the string value of the version
-                            var value = kvp.Item2.Find(item => item is StringConstantExpressionAst, false);
+                            var key = (kvp.Item1 as StringConstantExpressionAst).Value;
 
-                            if (value != null)
+                            // find the powershellversion key in the hashtable
+                            if (string.Equals(key, "PowerShellVersion", StringComparison.OrdinalIgnoreCase) && kvp.Item2 != null)
                             {
-                                Version psVersion = null;
+                                // get the string value of the version
+                                var value = kvp.Item2.Find(item => item is StringConstantExpressionAst, false);
 
-                                // get the version
-                                if (Version.TryParse((value as StringConstantExpressionAst).Value, out psVersion))
+                                if (value != null)
                                 {
-                                    // if version exists and version less than 3, don't raise rule
-                                    if (psVersion.Major < 3)
+                                    Version psVersion = null;
+
+                                    // get the version
+                                    if (Version.TryParse((value as StringConstantExpressionAst).Value, out psVersion))
                                     {
-                                        yield break;
+                                        // if version exists and version less than 3, don't raise rule
+                                        if (psVersion.Major < 3)
+                                        {
+                                            yield break;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                try
-                {
-                    ps.AddCommand("Test-ModuleManifest");
-                    ps.AddParameter("Path", fileName);
-
-                    // Suppress warnings emitted during the execution of Test-ModuleManifest
-                    // ModuleManifest rule must catch any violations (warnings/errors) and generate DiagnosticRecord(s)
-                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
-                    ps.AddParameter("WarningVariable", "Message");
-                    ps.AddScript("$Message");
-                    result = ps.Invoke();
-                }
-                catch
-                {}
-
-                if (result != null)
-                {
-                    foreach (var warning in result)
+                    try
                     {
-                        if (warning.BaseObject != null)
+                        ps.AddCommand("Test-ModuleManifest");
+                        ps.AddParameter("Path", fileName);
+
+                        // Suppress warnings emitted during the execution of Test-ModuleManifest
+                        // ModuleManifest rule must catch any violations (warnings/errors) and generate DiagnosticRecord(s)
+                        ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                        ps.AddParameter("WarningVariable", "Message");
+                        ps.AddScript("$Message");
+                        result = ps.Invoke();
+                    }
+                    catch
+                    {}
+
+                    if (result != null)
+                    {
+                        foreach (var warning in result)
                         {
-                            yield return
-                                new DiagnosticRecord(
-                                    String.Format(CultureInfo.CurrentCulture, warning.BaseObject.ToString()), ast.Extent,
-                                    GetName(), DiagnosticSeverity.Warning, fileName);
+                            if (warning.BaseObject != null)
+                            {
+                                yield return
+                                    new DiagnosticRecord(
+                                        String.Format(CultureInfo.CurrentCulture, warning.BaseObject.ToString()), ast.Extent,
+                                        GetName(), DiagnosticSeverity.Warning, fileName);
+                            }
                         }
                     }
+
                 }
-
-                ps.Dispose();
             }
-
         }
 
         /// <summary>
