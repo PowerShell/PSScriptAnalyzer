@@ -18,6 +18,7 @@ This rule flags cmdlets that are not available in a given Edition/Version of Pow
 
 The parameter `compatibility` is a list that contain any of the following
 
+- desktop-2.0-windows
 - desktop-3.0-windows
 - desktop-4.0-windows (taken from Windows Server 2012R2)
 - desktop-5.1.14393.206-windows
