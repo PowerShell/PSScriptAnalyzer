@@ -25,6 +25,7 @@
         PSUseConsistentIndentation = @{
             Enable          = $true
             Kind            = 'space'
+            PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
             IndentationSize = 4
         }
 
