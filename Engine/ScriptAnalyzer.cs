@@ -286,17 +286,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (key.Equals("severity", StringComparison.OrdinalIgnoreCase))
             {
                 severityList.AddRange(values);
+                return true;
             }
-            else if (key.Equals("includerules", StringComparison.OrdinalIgnoreCase))
+            if (key.Equals("includerules", StringComparison.OrdinalIgnoreCase))
             {
                 includeRuleList.AddRange(values);
-            }
-            else
-            {
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         private Dictionary<string, object> GetDictionaryFromHashTableAst(
