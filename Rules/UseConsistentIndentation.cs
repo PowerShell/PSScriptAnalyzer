@@ -151,7 +151,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.Pipe:
-                        var pipelineIsFollowedByNewlineOrLineContinuation = k < tokens.Length - 1 && k > 0 &&
+                        bool pipelineIsFollowedByNewlineOrLineContinuation = k < tokens.Length - 1 && k > 0 &&
                               (tokens[k + 1].Kind == TokenKind.NewLine || tokens[k + 1].Kind == TokenKind.LineContinuation);
                         if (!pipelineIsFollowedByNewlineOrLineContinuation)
                         {
@@ -163,7 +163,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
                         else if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
                         {
-                            var isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst => PositionIsEqual(((PipelineAst)pipelineAst).PipelineElements[0].Extent.EndScriptPosition, tokens[k - 1].Extent.EndScriptPosition));
+                            bool isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst => PositionIsEqual(((PipelineAst)pipelineAst).PipelineElements[0].Extent.EndScriptPosition, tokens[k - 1].Extent.EndScriptPosition));
                             if (isFirstPipeInPipeline)
                             {
                                 AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
