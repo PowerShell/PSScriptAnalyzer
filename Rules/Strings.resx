@@ -957,7 +957,7 @@
   <data name="UseConsistentWhitespaceDescription" xml:space="preserve">
     <value>Check for whitespace between keyword and open paren/curly, around assigment operator ('='), around arithmetic operators and after separators (',' and ';')</value>
   </data>
-  <data name="UseConsistentWhitespaceErrorBeforeBrace" xml:space="preserve">
+  <data name="UseConsistentWhitespaceErrorBeforeOpeningBrace" xml:space="preserve">
     <value>Use space before open brace.</value>
   </data>
   <data name="UseConsistentWhitespaceErrorBeforeParen" xml:space="preserve">
@@ -1043,5 +1043,17 @@
   </data>
   <data name="PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription" xml:space="preserve">
     <value>Use $null on the left hand side for safe comparison with $null.</value>
+  </data>
+  <data name="UseConsistentWhitespaceErrorAfterOpeningBrace" xml:space="preserve">
+    <value>Use space after open brace.</value>
+  </data>
+  <data name="UseConsistentWhitespaceErrorBeforeClosingInnerBrace" xml:space="preserve">
+    <value>Use space before closing brace.</value>
+  </data>
+  <data name="UseConsistentWhitespaceErrorSpaceAfterPipe" xml:space="preserve">
+    <value>Use space after pipe.</value>
+  </data>
+  <data name="UseConsistentWhitespaceErrorSpaceBeforePipe" xml:space="preserve">
+    <value>Use space before pipe.</value>
   </data>
 </root>
