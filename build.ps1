@@ -7,19 +7,17 @@ param(
     [switch]$All,
 
     [Parameter(ParameterSetName="BuildOne")]
-    [ValidateSet("full", "core")]
-    [string]$Framework = "core",
-
-    [Parameter(ParameterSetName="BuildOne")]
-    [ValidateSet("3","4","5")]
-    [string]$PSVersion = "5",
+    [ValidateRange(3, 6)]
+    [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
     [Parameter(ParameterSetName="BuildOne")]
     [Parameter(ParameterSetName="BuildAll")]
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
-    [Parameter(ParameterSetName="BuildDoc")]
+    # For building documentation only
+    # or re-building it since docs gets built automatically only the first time
+    [Parameter(ParameterSetName="BuildDocumentation")]
     [switch]$Documentation,
 
     [Parameter(ParameterSetName='BuildAll')]
@@ -33,7 +31,10 @@ param(
     [switch] $Test,
 
     [Parameter(ParameterSetName='Test')]
-    [switch] $InProcess
+    [switch] $InProcess,
+
+    [Parameter(ParameterSetName='Bootstrap')]
+    [switch] $Bootstrap
 )
 
 END {
@@ -50,16 +51,19 @@ END {
         "BuildAll" {
             Start-ScriptAnalyzerBuild -All -Configuration $Configuration
         }
-        "BuildDoc" {
+        "BuildDocumentation" {
             Start-ScriptAnalyzerBuild -Documentation
         }
         "BuildOne" {
             $buildArgs = @{
-                Framework = $Framework
                 PSVersion = $PSVersion
                 Configuration = $Configuration
             }
             Start-ScriptAnalyzerBuild @buildArgs
+        }
+        "Bootstrap" {
+            Install-DotNet
+            return
         }
         "Test" {
             Test-ScriptAnalyzer -InProcess:$InProcess

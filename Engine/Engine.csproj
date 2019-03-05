@@ -62,7 +62,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Management.Automation" Version="6.0.2" />
+    <PackageReference Include="System.Management.Automation" Version="6.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net452' AND '$(Configuration)' == 'PSV3Release' AND '$(Configuration)' != 'PSV4Release'">
@@ -76,12 +76,20 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net452' AND '$(Configuration)' != 'PSV3Release'">
     <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
   </ItemGroup>
-
+   
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
     <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Release' ">
+    <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Debug' ">
+    <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Debug' ">
     <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
   </PropertyGroup>
 

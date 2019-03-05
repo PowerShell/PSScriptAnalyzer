@@ -3,41 +3,40 @@ $testRootDirectory = Split-Path -Parent $directory
 
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-$indentationUnit = ' '
-$indentationSize = 4
-$ruleConfiguration = @{
-    Enable          = $true
-    IndentationSize = 4
-    Kind            = 'space'
-}
-
-$settings = @{
-    IncludeRules = @("PSUseConsistentIndentation")
-    Rules        = @{
-        PSUseConsistentIndentation = $ruleConfiguration
-    }
-}
-
 Describe "UseConsistentIndentation" {
+    BeforeEach {
+        $indentationUnit = ' '
+        $indentationSize = 4
+        $ruleConfiguration = @{
+            Enable          = $true
+            IndentationSize = 4
+            PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+            Kind            = 'space'
+        }
+
+        $settings = @{
+            IncludeRules = @("PSUseConsistentIndentation")
+            Rules        = @{
+                PSUseConsistentIndentation = $ruleConfiguration
+            }
+        }
+    }
+
     Context "When top level indentation is not consistent" {
-        BeforeAll {
+        It "Should detect a violation" {
             $def = @'
  function foo ($param1)
 {
 
 }
 '@
-
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-        }
-
-        It "Should detect a violation" {
             $violations.Count | Should -Be 1
         }
     }
 
     Context "When nested indenation is not consistent" {
-        BeforeAll {
+        It "Should find a violation" {
             $def = @'
 function foo ($param1)
 {
@@ -45,15 +44,12 @@ function foo ($param1)
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-        }
-
-        It "Should find a violation" {
             $violations.Count | Should -Be 1
         }
     }
 
     Context "When a multi-line hashtable is provided" {
-        BeforeAll {
+        It "Should find violations" {
             $def = @'
 $hashtable = @{
 a = 1
@@ -62,15 +58,12 @@ b = 2
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-        }
-
-        It "Should find violations" {
             $violations.Count | Should -Be 2
         }
     }
 
     Context "When a multi-line array is provided" {
-        BeforeAll {
+        It "Should find violations" {
             $def = @'
 $array = @(
 1,
@@ -78,15 +71,12 @@ $array = @(
 3)
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-        }
-
-        It "Should find violations" {
             $violations.Count | Should -Be 2
         }
     }
 
     Context "When a param block is provided" {
-        BeforeAll {
+        It "Should find violations" {
             $def = @'
 param(
             [string] $param1,
@@ -99,15 +89,12 @@ $param3
 )
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-        }
-
-        It "Should find violations" {
             $violations.Count | Should -Be 4
         }
     }
 
     Context "When a sub-expression is provided" {
-        BeforeAll {
+        It "Should not find a violations" {
             $def = @'
 function foo {
     $x = $("abc")
@@ -115,9 +102,6 @@ function foo {
 }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-        }
-
-        It "Should not find a violations" {
             $violations.Count | Should -Be 0
         }
     }
@@ -135,7 +119,9 @@ where-object {$_.Name -match 'powershell'}
         It "Should not find a violation if a pipleline element is indented correctly" {
             $def = @'
 get-process |
-    where-object {$_.Name -match 'powershell'}
+    where-object {
+        $_.Name -match 'powershell'
+    }
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should -Be 0
@@ -168,11 +154,68 @@ $x = "this " + `
             }
             Test-CorrectionExtentFromContent @params
         }
+
+        It "Should indent pipelines correctly using IncreaseIndentationAfterEveryPipeline option" {
+            $def = @'
+foo |
+    bar |
+baz
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            $params = @{
+                RawContent       = $def
+                DiagnosticRecord = $violations[0]
+                CorrectionsCount = 1
+                ViolationText    = "baz"
+                CorrectionText   = (New-Object -TypeName String -ArgumentList $indentationUnit, ($indentationSize * 2)) + 'baz'
+            }
+            Test-CorrectionExtentFromContent @params
+        }
+
+        It "Should indent pipelines correctly using NoIndentation option" {
+            $def = @'
+foo |
+    bar |
+        baz
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'NoIndentation'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 2
+            $params = @{
+                RawContent       = $def
+                DiagnosticRecord = $violations[1]
+                CorrectionsCount = 1
+                ViolationText    = "        baz"
+                CorrectionText   = (New-Object -TypeName String -ArgumentList $indentationUnit, ($indentationSize * 0)) + 'baz'
+            }
+            Test-CorrectionExtentFromContent @params
+        }
+
+
+        It "Should indent properly after line continuation (backtick) character with pipeline" {
+            $def = @'
+foo |
+    bar `
+| baz
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            $params = @{
+                RawContent       = $def
+                DiagnosticRecord = $violations[0]
+                CorrectionsCount = 1
+                ViolationText    = "| baz"
+                CorrectionText   = (New-Object -TypeName String -ArgumentList $indentationUnit, $indentationSize) + "| baz"
+            }
+            Test-CorrectionExtentFromContent @params
+        }
     }
 
     Context "When tabs instead of spaces are used for indentation" {
-        BeforeAll {
-            $ruleConfiguration.'Kind' = 'tab'
+        BeforeEach {
+            $settings.Rules.PSUseConsistentIndentation.Kind = 'tab'
         }
 
         It "Should indent using tabs" {
@@ -183,7 +226,9 @@ get-childitem
 $x=1+2
 $hashtable = @{
 property1 = "value"
-    anotherProperty = "another value"
+
+'@ + "`t" + @'
+anotherProperty = "another value"
 }
 }
 '@

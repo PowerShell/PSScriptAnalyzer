@@ -31,6 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private IOutputWriter outputWriter;
         private Dictionary<string, object> settings;
+        private readonly Regex s_aboutHelpRegex = new Regex("^about_.*help\\.txt$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 #if !CORECLR
         private CompositionContainer container;
 #endif // !CORECLR
@@ -875,39 +876,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private IEnumerable<T> GetInterfaceImplementationsFromAssembly<T>(string ruleDllPath) where T : class
         {
-            var fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
+            string fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
             var assemblyName = new AssemblyName(fileName);
             outputWriter.WriteVerbose(string.Format("Loading Assembly:{0}", assemblyName.FullName));
 
-            var dll = Assembly.Load(assemblyName);
-            var rules = new List<T>();
+            Assembly dll = Assembly.Load(assemblyName);
+
             if (dll == null)
             {
                 outputWriter.WriteVerbose(string.Format("Cannot load {0}", ruleDllPath));
-                return rules;
+                return Enumerable.Empty<T>();
             }
-            foreach (var type in dll.ExportedTypes)
+
+            var rules = new List<T>();
+            foreach (Type type in dll.ExportedTypes)
             {
-                var typeInfo = type.GetTypeInfo();
-                if (!typeInfo.IsInterface
-                    && !typeInfo.IsAbstract
-                    && typeInfo.ImplementedInterfaces.Contains(typeof(T)))
+                if (type.IsInterface
+                    || type.IsAbstract
+                    || !typeof(T).IsAssignableFrom(type))
+                {
+                    continue;
+                }
+
+                var rule = Activator.CreateInstance(type) as T;
+                if (rule == null)
                 {
                     outputWriter.WriteVerbose(
                         string.Format(
-                            "Creating Instance of {0}", type.Name));
-
-                    var ruleObj = Activator.CreateInstance(type);
-                    T rule = ruleObj as T;
-                    if (rule == null)
-                    {
-                        outputWriter.WriteVerbose(
-                            string.Format(
-                                "Cannot cast instance of type {0} to {1}", type.Name, typeof(T).GetTypeInfo().Name));
-                        continue;
-                    }
-                    rules.Add(rule);
+                            "Cannot cast instance of type {0} to {1}", type.Name, typeof(T).GetTypeInfo().Name));
+                    continue;
                 }
+                rules.Add(rule);
             }
             return rules;
         }
@@ -1205,9 +1204,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         // Adds command to run external analyzer rule, like
                         // Measure-CurlyBracket -ScriptBlockAst $ScriptBlockAst
-                        // Adds module name (source name) to handle ducplicate function names in different modules.
-                        string ruleName = string.Format("{0}\\{1}", rule.GetSourceName(), rule.GetName());
-                        posh.Commands.AddCommand(ruleName);
+                        posh.Commands.AddCommand(rule.GetFullName());
                         posh.Commands.AddParameter(rule.GetParameter(), token);
 
                         // Merges results because external analyzer rules may throw exceptions.
@@ -1235,9 +1232,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                             // Adds command to run external analyzer rule, like
                             // Measure-CurlyBracket -ScriptBlockAst $ScriptBlockAst
-                            // Adds module name (source name) to handle ducplicate function names in different modules.
-                            string ruleName = string.Format("{0}\\{1}", rule.GetSourceName(), rule.GetName());
-                            posh.Commands.AddCommand(ruleName);
+                            posh.Commands.AddCommand(rule.GetFullName());
                             posh.Commands.AddParameter(rule.GetParameter(), childAst);
 
                             // Merges results because external analyzer rules may throw exceptions.
@@ -1526,23 +1521,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
 
-            if (relevantParseErrors != null && relevantParseErrors.Count > 0)
+            // Add parse errors first if requested!
+            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
             {
-                foreach (var parseError in relevantParseErrors)
+                var results = new List<DiagnosticRecord>();
+                foreach ( ParseError parseError in relevantParseErrors )
                 {
                     string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
-                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
+                    results.Add(new DiagnosticRecord(
+                        parseError.Message,
+                        parseError.Extent,
+                        parseError.ErrorId.ToString(),
+                        DiagnosticSeverity.ParseError,
+                        String.Empty // no script file
+                        )
+                        );
                 }
+                diagnosticRecords.AddRange(results);
             }
 
-            if (relevantParseErrors != null && relevantParseErrors.Count > 10)
-            {
-                string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessageForScriptDefinition);
-                this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, scriptDefinition));
-
-                return new List<DiagnosticRecord>();
-            }
-
+            // now, analyze the script definition
             return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty));
         }
 
@@ -1839,55 +1837,58 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, filePath));
             var diagnosticRecords = new List<DiagnosticRecord>();
 
-            //Parse the file
-            if (File.Exists(filePath))
-            {
-                // processing for non help script
-                if (!(Path.GetFileName(filePath).ToLower().StartsWith("about_") && Path.GetFileName(filePath).ToLower().EndsWith(".help.txt")))
-                {
-                    try
-                    {
-                        scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
-                    }
-                    catch (Exception e)
-                    {
-                        this.outputWriter.WriteWarning(e.ToString());
-                        return null;
-                    }
-#if !PSV3
-                    //try parsing again
-                    if (TrySaveModules(errors, scriptAst))
-                    {
-                        scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
-                    }
-#endif //!PSV3
-                    var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
-
-                    //Runspace.DefaultRunspace = oldDefault;
-                    if (relevantParseErrors != null && relevantParseErrors.Count > 0)
-                    {
-                        foreach (var parseError in relevantParseErrors)
-                        {
-                            string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, parseError.Extent.File, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
-                            this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
-                        }
-                    }
-
-                    if (relevantParseErrors != null && relevantParseErrors.Count > 10)
-                    {
-                        string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
-                        this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));
-                        return new List<DiagnosticRecord>();
-                    }
-                }
-            }
-            else
+            // If the file doesn't exist, return
+            if (! File.Exists(filePath))
             {
                 this.outputWriter.ThrowTerminatingError(new ErrorRecord(new FileNotFoundException(),
                     string.Format(CultureInfo.CurrentCulture, Strings.InvalidPath, filePath),
                     ErrorCategory.InvalidArgument, filePath));
 
                 return null;
+            }
+
+            // short-circuited processing for a help file
+            // no parsing can really be done, but there are other rules to run (specifically encoding).
+            if ( s_aboutHelpRegex.IsMatch(Path.GetFileName(filePath)) )
+            {
+                return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
+            }
+
+            // Process script
+            try
+            {
+                scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+            }
+            catch (Exception e)
+            {
+                this.outputWriter.WriteWarning(e.ToString());
+                return null;
+            }
+#if !PSV3
+            //try parsing again
+            if (TrySaveModules(errors, scriptAst))
+            {
+                scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+            }
+#endif //!PSV3
+            IEnumerable<ParseError> relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
+
+            // First, add all parse errors if they've been requested
+            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
+            {
+                List<DiagnosticRecord> results = new List<DiagnosticRecord>();
+                foreach ( ParseError parseError in relevantParseErrors )
+                {
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
+                    results.Add(new DiagnosticRecord(
+                            parseError.Message,
+                            parseError.Extent,
+                            parseError.ErrorId.ToString(),
+                            DiagnosticSeverity.ParseError,
+                            filePath)
+                        );
+                }
+                diagnosticRecords.AddRange(results);
             }
 
             return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
@@ -2271,7 +2272,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     if (IsRuleAllowed(exRule))
                     {
-                        string ruleName = string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", exRule.GetSourceName(), exRule.GetName());
+                        string ruleName = exRule.GetFullName();
                         this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, ruleName));
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors

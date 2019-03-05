@@ -105,7 +105,7 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 
 #### Requirements
 
-* [.NET Core 2.2.102 SDK](https://www.microsoft.com/net/download/dotnet-core/2.2#sdk-2.2.102) or newer patch release
+* [.NET Core 2.2.104 SDK](https://www.microsoft.com/net/download/dotnet-core/2.2#sdk-2.2.104) or newer patch release
 * [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
 
@@ -123,31 +123,31 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 * Building
 
     You can either build using the `Visual Studio` solution `PSScriptAnalyzer.sln` or build using `PowerShell` specifically for your platform as follows:
-    * The default build is for PowerShell Core
+    * The default build is for the currently used version of PowerShell
     ```powershell
     .\build.ps1
     ```
     * Windows PowerShell version 5.0
     ```powershell
-    .\build.ps1 -Framework full -PSVersion 5 -Configuration Release
+    .\build.ps1 -PSVersion 5
     ```
     * Windows PowerShell version 4.0
     ```powershell
-    .\build.ps1 -Framework full -PSVersion 4 -Configuration Release
+    .\build.ps1 -PSVersion 4
     ```
     * Windows PowerShell version 3.0
     ```powershell
-    .\build.ps1 -Framework full -PSVersion 3 -Configuration Release
+    .\build.ps1 -PSVersion 3
     ```
     * PowerShell Core
     ```powershell
-    .\buildCoreClr.ps1 -Framework core -Configuration Release -Build
+    .\build.ps1 -PSVersion 6
     ```
-* Build documentation
+* Rebuild documentation since it gets built automatically only the first time
     ```powershell
     .\build.ps1 -Documentation
     ```
-* Build all versions (PowerShell v3, v4, v5, and Core) and documentation
+* Build all versions (PowerShell v3, v4, v5, and v6) and documentation
     ```powershell
     .\build.ps1 -All
     ```
@@ -166,7 +166,6 @@ For adding/removing resource strings in the `*.resx` files, it is recommended to
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
 * Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) or higher is installed
-* Ensure that the documentation has been built (`./build.ps1 -Documentation`) 
 * In the root folder of your local repository, run:
 ``` PowerShell
 ./build -Test
@@ -187,6 +186,43 @@ Get-TestFailures
 ```
 
 [Back to ToC](#table-of-contents)
+
+Parser Errors
+=============
+
+In prior versions of ScriptAnalyer, errors found during parsing were reported as errors and diagnostic records were not created.
+ScriptAnalyzer now emits parser errors as diagnostic records in the output stream with other diagnostic records.
+
+```powershell
+PS> Invoke-ScriptAnalyzer -ScriptDefinition '"b" = "b"; function eliminate-file () { }'
+
+RuleName            Severity   ScriptName Line Message
+--------            --------   ---------- ---- -------
+InvalidLeftHandSide ParseError            1    The assignment expression is not
+                                               valid. The input to an
+                                               assignment operator must be an
+                                               object that is able to accept
+                                               assignments, such as a variable
+                                               or a property.
+PSUseApprovedVerbs  Warning               1    The cmdlet 'eliminate-file' uses an
+                                               unapproved verb.
+```
+
+The RuleName is set to the `ErrorId` of the parser error.
+
+If ParseErrors would like to be suppressed, do not include it as a value in the `-Severity` parameter.
+
+```powershell
+PS> Invoke-ScriptAnalyzer -ScriptDefinition '"b" = "b"; function eliminate-file () { }' -Severity Warning
+
+RuleName           Severity ScriptName Line Message
+--------           -------- ---------- ---- -------
+PSUseApprovedVerbs Warning             1    The cmdlet 'eliminate-file' uses an
+                                            unapproved verb.
+```
+
+
+
 
 Suppressing Rules
 =================
@@ -271,7 +307,7 @@ Suppress violation in `start-bar`, `start-baz` and `start-bam` but not in `start
 Param()
 ```
 
-**Note**: Rule suppression is currently supported only for built-in rules.
+**Note**: Parser Errors cannot be suppressed via the `SuppressMessageAttribute`
 
 [Back to ToC](#table-of-contents)
 

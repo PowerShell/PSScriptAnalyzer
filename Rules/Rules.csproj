@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
   </ItemGroup>
 
@@ -46,12 +46,24 @@
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
     <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\PSCompatibilityAnalyzer\Microsoft.PowerShell.CrossCompatibility\Microsoft.PowerShell.CrossCompatibility.csproj" />
+  </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
     <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Release' ">
+    <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Debug' ">
+    <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Debug' ">
     <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
   </PropertyGroup>
 

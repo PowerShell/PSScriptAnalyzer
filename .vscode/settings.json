@@ -4,5 +4,11 @@
     "powershell.codeFormatting.preset": "Allman",
     "[powershell]": {
         "files.trimTrailingWhitespace": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "/PSCompatibilityAnalyzer/profiles": true,
+        "/PSCompatibilityAnalyzer/optional_profiles": true
     }
 }

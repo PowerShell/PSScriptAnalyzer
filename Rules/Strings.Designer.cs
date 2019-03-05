@@ -10,7 +10,6 @@
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Windows.PowerShell.ScriptAnalyzer.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -2051,6 +2050,159 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The command &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleCommandsCommandError {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsCommandError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use compatible commands.
+        /// </summary>
+        internal static string UseCompatibleCommandsCommonName {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use commands compatible with the given PowerShell version and operating system.
+        /// </summary>
+        internal static string UseCompatibleCommandsDescription {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleCommands.
+        /// </summary>
+        internal static string UseCompatibleCommandsName {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The parameter &apos;{0}&apos; is not available for command &apos;{1}&apos; by default in PowerShell version &apos;{2}&apos; on platform &apos;{3}&apos;.
+        /// </summary>
+        internal static string UseCompatibleCommandsParameterError {
+            get {
+                return ResourceManager.GetString("UseCompatibleCommandsParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use compatible syntax.
+        /// </summary>
+        internal static string UseCompatibleSyntaxCommonName {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use the &apos;{0}&apos; syntax instead for compatibility with PowerShell versions {1}.
+        /// </summary>
+        internal static string UseCompatibleSyntaxCorrection {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxCorrection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use script syntax compatible with the given PowerShell versions.
+        /// </summary>
+        internal static string UseCompatibleSyntaxDescription {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} syntax &apos;{1}&apos; is not available by default in PowerShell versions {2}.
+        /// </summary>
+        internal static string UseCompatibleSyntaxError {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleSyntax.
+        /// </summary>
+        internal static string UseCompatibleSyntaxName {
+            get {
+                return ResourceManager.GetString("UseCompatibleSyntaxName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use compatible types.
+        /// </summary>
+        internal static string UseCompatibleTypesCommonName {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use types compatible with the given PowerShell version and operating system.
+        /// </summary>
+        internal static string UseCompatibleTypesDescription {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The member &apos;{0}&apos; is not available on type &apos;{1}&apos; by default in PowerShell version &apos;{2}&apos; on platform &apos;{3}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesMemberError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesMemberError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The method &apos;{0}&apos; is not available on type &apos;{1}&apos; by default in PowerShell version &apos;{2}&apos; on platform &apos;{3}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesMethodError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesMethodError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCompatibleTypes.
+        /// </summary>
+        internal static string UseCompatibleTypesName {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type accelerator &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesTypeAcceleratorError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesTypeAcceleratorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
+        /// </summary>
+        internal static string UseCompatibleTypesTypeError {
+            get {
+                return ResourceManager.GetString("UseCompatibleTypesTypeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use consistent indentation.
         /// </summary>
         internal static string UseConsistentIndentationCommonName {
@@ -2105,11 +2257,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use space after open brace..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorAfterOpeningBrace {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorAfterOpeningBrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space before closing brace..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorBeforeClosingInnerBrace {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorBeforeClosingInnerBrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use space before open brace..
         /// </summary>
-        internal static string UseConsistentWhitespaceErrorBeforeBrace {
+        internal static string UseConsistentWhitespaceErrorBeforeOpeningBrace {
             get {
-                return ResourceManager.GetString("UseConsistentWhitespaceErrorBeforeBrace", resourceCulture);
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorBeforeOpeningBrace", resourceCulture);
             }
         }
         
@@ -2146,6 +2316,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseConsistentWhitespaceErrorSeparatorSemi {
             get {
                 return ResourceManager.GetString("UseConsistentWhitespaceErrorSeparatorSemi", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space after pipe..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorSpaceAfterPipe {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorSpaceAfterPipe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use space before pipe..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorSpaceBeforePipe {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorSpaceBeforePipe", resourceCulture);
             }
         }
         
