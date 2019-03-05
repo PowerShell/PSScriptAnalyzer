@@ -295,35 +295,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             errorRecord = null;
             PSModuleInfo psModuleInfo = null;
             Collection<PSObject> psObj = null;
-            var ps = System.Management.Automation.PowerShell.Create();
-            try
+            using (var ps = System.Management.Automation.PowerShell.Create())
             {
-                ps.AddCommand("Test-ModuleManifest");
-                ps.AddParameter("Path", filePath);
-                ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
-                psObj = ps.Invoke();
-            }
-            catch (CmdletInvocationException e)
-            {
-                // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
-                // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
-                // we consume it to allow execution of the of this method.
-                if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                try
                 {
-                    throw;
+                    ps.AddCommand("Test-ModuleManifest");
+                    ps.AddParameter("Path", filePath);
+                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                    psObj = ps.Invoke();
+                }
+                catch (CmdletInvocationException e)
+                {
+                    // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
+                    // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
+                    // we consume it to allow execution of the of this method.
+                    if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                    {
+                        throw;
+                    }
+                }
+                if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
+                {
+                    var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
+                    ps.Streams.Error.CopyTo(errorRecordArr, 0);
+                    errorRecord = errorRecordArr;
+                }
+                if (psObj != null && psObj.Any() && psObj[0] != null)
+                {
+                    psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
                 }
             }
-            if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
-            {
-                var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
-                ps.Streams.Error.CopyTo(errorRecordArr, 0);
-                errorRecord = errorRecordArr;
-            }
-            if (psObj != null && psObj.Any() && psObj[0] != null)
-            {
-                psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
-            }
-            ps.Dispose();
             return psModuleInfo;
         }
 
@@ -1419,7 +1420,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 while (startRecord < diagnostics.Count
                     // && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
                     // && diagnostics[startRecord].Extent.StartLineNumber < ruleSuppression.st)
-                    && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
+                    && offsetArr[startRecord] != null && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
                 {
                     startRecord += 1;
                 }
@@ -1433,7 +1434,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     var curOffset = offsetArr[recordIndex];
 
                     //if (record.Extent.EndOffset > ruleSuppression.EndOffset)
-                    if (curOffset.Item2 > ruleSuppression.EndOffset)
+                    if (curOffset != null && curOffset.Item2 > ruleSuppression.EndOffset)
                     {
                         break;
                     }
@@ -1489,6 +1490,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             for (int k = 0; k < diagnostics.Count; k++)
             {
                 var ext = diagnostics[k].Extent;
+                if (ext == null)
+                {
+                    continue;
+                }
                 if (ext.StartOffset == 0 && ext.EndOffset == 0)
                 {
                     // check if line and column number correspond to 0 offsets

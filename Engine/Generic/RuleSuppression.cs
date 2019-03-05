@@ -64,7 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     && (ScriptAnalyzer.Instance.TokenRules != null
                         && ScriptAnalyzer.Instance.TokenRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
                     && (ScriptAnalyzer.Instance.ExternalRules != null
-                        && ScriptAnalyzer.Instance.ExternalRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
+                        && ScriptAnalyzer.Instance.ExternalRules.Count(item => String.Equals(item.GetFullName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0)
                     && (ScriptAnalyzer.Instance.DSCResourceRules != null
                         && ScriptAnalyzer.Instance.DSCResourceRules.Count(item => String.Equals(item.GetName(), _ruleName, StringComparison.OrdinalIgnoreCase)) == 0))
                 {

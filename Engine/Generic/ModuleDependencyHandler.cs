@@ -461,8 +461,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             var paramValAst = dynamicKywdAst.CommandElements[positionOfModuleNameParamter];
 
             // import-dscresource -ModuleName module1
-            var paramValStrConstExprAst = paramValAst as StringConstantExpressionAst;
-            if (paramValStrConstExprAst != null)
+            if (paramValAst is StringConstantExpressionAst paramValStrConstExprAst)
             {                
                 modules.Add(paramValStrConstExprAst.Value);
 
@@ -470,15 +469,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 var versionParameterAst = dynamicKywdAst.CommandElements[positionOfModuleVersionParameter] as StringConstantExpressionAst;
                 if (versionParameterAst != null)
                 {
-                    Version.TryParse(versionParameterAst.Value, out Version version); // ignore return value since a module version of null means no version
-                    moduleVersion = version;
+                    Version.TryParse(versionParameterAst.Value, out moduleVersion); // ignore return value since a module version of null means no version
                 }
                 return modules;
             }
-            
+
+            // Import-DscResource –ModuleName @{ModuleName="module1";ModuleVersion="1.2.3.4"}
+            //var paramValAstHashtableAst = paramValAst.Find(oneAst => oneAst is HashtableAst, true) as HashtableAst;
+            if (paramValAst.Find(oneAst => oneAst is HashtableAst, true) is HashtableAst paramValAstHashtableAst)
+            {
+                var moduleNameTuple = paramValAstHashtableAst.KeyValuePairs.SingleOrDefault(x => x.Item1.Extent.Text.Equals("ModuleName"));
+                var moduleName = moduleNameTuple.Item2.Find(astt => astt is StringConstantExpressionAst, true) as StringConstantExpressionAst;
+                if (moduleName == null)
+                {
+                    return null;
+                }
+                modules.Add(moduleName.Value);
+                var moduleVersionTuple = paramValAstHashtableAst.KeyValuePairs.SingleOrDefault(x => x.Item1.Extent.Text.Equals("ModuleVersion"));
+                var moduleVersionAst = moduleVersionTuple.Item2.Find(astt => astt is StringConstantExpressionAst, true) as StringConstantExpressionAst;
+                Version.TryParse(moduleVersionAst.Value, out moduleVersion);
+                return modules;
+            }
+
             // import-dscresource -ModuleName module1,module2
-            var paramValArrLtrlAst = paramValAst as ArrayLiteralAst;
-            if (paramValArrLtrlAst != null)
+            if (paramValAst is ArrayLiteralAst paramValArrLtrlAst)
             {
                 foreach (var elem in paramValArrLtrlAst.Elements)
                 {
