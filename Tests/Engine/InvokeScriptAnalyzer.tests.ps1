@@ -109,9 +109,11 @@ Describe "Test available parameters" {
 
 Describe "Test ScriptDefinition" {
     Context "When given a script definition" {
-        It "Does not run rules on script with more than 10 parser errors" {
-            $moreThanTenErrors = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue -ScriptDefinition (Get-Content -Raw "$directory\CSharp.ps1")
-            $moreThanTenErrors.Count | Should -Be 0
+        It "Runs rules on script with more than 10 parser errors" {
+            # this is a script with 12 parse errors
+            $script = ');' * 12
+            $moreThanTenErrors = Invoke-ScriptAnalyzer -ScriptDefinition $script
+            $moreThanTenErrors.Count | Should -Be 12
         }
     }
 }
@@ -119,14 +121,19 @@ Describe "Test ScriptDefinition" {
 Describe "Test Path" {
     Context "When given a single file" {
         It "Has the same effect as without Path parameter" {
-            $withPath = Invoke-ScriptAnalyzer $directory\TestScript.ps1
-            $withoutPath = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1
-            $withPath.Count -eq $withoutPath.Count | Should -BeTrue
+            $scriptPath = Join-Path $directory "TestScript.ps1"
+            $withPath = Invoke-ScriptAnalyzer $scriptPath
+            $withoutPath = Invoke-ScriptAnalyzer -Path $scriptPath
+            $withPath.Count | Should -Be $withoutPath.Count
         }
+    }
 
-        It "Does not run rules on script with more than 10 parser errors" {
-            $moreThanTenErrors = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\CSharp.ps1
-            $moreThanTenErrors.Count | Should -Be 0
+    Context "When there are more than 10 errors in a file" {
+        It "All errors are found in a file" {
+            # this is a script with 12 parse errors
+            1..12 | Foreach-Object { ');' } | Out-File -Encoding ASCII "${TestDrive}\badfile.ps1"
+            $moreThanTenErrors = Invoke-ScriptAnalyzer -Path "${TestDrive}\badfile.ps1"
+            @($moreThanTenErrors).Count | Should -Be 12
         }
     }
 
@@ -181,15 +188,15 @@ Describe "Test Path" {
 			$numFilesResult | Should -Be $numFilesExpected
 			}
         }
-        
+
         Context "When piping in files" {
             It "Can be piped in from a string" {
                 $piped = ("$directory\TestScript.ps1" | Invoke-ScriptAnalyzer)
                 $explicit = Invoke-ScriptAnalyzer -Path $directory\TestScript.ps1
-    
+
                 $piped.Count | Should Be $explicit.Count
             }
-    
+
             It "Can be piped from Get-ChildItem" {
                 $piped = ( Get-ChildItem -Path $directory -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
                 $explicit = Invoke-ScriptAnalyzer -Path $directory\TestTestPath*.ps1
@@ -306,6 +313,32 @@ Describe "Test Exclude And Include" {1
 }
 
 Describe "Test Severity" {
+    Context "Each severity can be chosen in any combination" {
+        BeforeAll {
+            $Severities = "ParseError","Error","Warning","Information"
+            # end space is important
+            $script = '$a=;ConvertTo-SecureString -Force -AsPlainText "bad practice" '
+            $testcases = @{ Severity = "ParseError" }, @{ Severity = "Error" },
+                @{ Severity = "Warning" }, @{ Severity = "Information" },
+                @{ Severity = "ParseError", "Error" }, @{ Severity = "ParseError","Information" },
+                @{ Severity = "Information", "Warning", "Error" }
+        }
+
+        It "Can retrieve specific severity <severity>" -testcase $testcases {
+            param ( $severity )
+            $result = Invoke-ScriptAnalyzer -ScriptDefinition $script -Severity $severity
+            if ( $severity -is [array] ) {
+                @($result).Count | Should -Be @($severity).Count
+                foreach ( $sev in $severity ) {
+                    $result.Severity | Should -Contain $sev
+                }
+            }
+            else {
+                $result.Severity | Should -Be $severity
+            }
+        }
+    }
+
     Context "When used correctly" {
         It "works with one argument" {
             $errors = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -Severity Information
@@ -410,7 +443,7 @@ Describe "Test CustomizedRulePath" {
                     Pop-Location
                 }
             }
-            
+
             It "resolves rule preset when passed in via pipeline" {
                 $warnings = 'CodeFormattingStroustrup' | ForEach-Object {
                     Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){}' -Settings $_}
@@ -534,36 +567,43 @@ Describe "Test -Fix Switch" {
 
 Describe "Test -EnableExit Switch" {
     It "Returns exit code equivalent to number of warnings" {
-        if ($IsCoreCLR) {
-            pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        if ($IsCoreCLR)
+        {
+            $pwshExe = (Get-Process -Id $PID).Path
         }
-        else {
-            powershell -command 'Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        else
+        {
+            $pwshExe = 'powershell'
         }
+
+        & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+
         $LASTEXITCODE  | Should -Be 1
     }
 
     Describe "-ReportSummary switch" {
-        $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
+        BeforeAll {
+            if ($IsCoreCLR)
+            {
+                $pwshExe = (Get-Process -Id $PID).Path
+            }
+            else
+            {
+                $pwshExe = 'powershell'
+            }
+
+            $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
+        }
+
         It "prints the correct report summary using the -NoReportSummary switch" {
-            if ($IsCoreCLR) {
-                $result = pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
-            }
-            else {
-                $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci -ReportSummary'
-            }
-            
-            "$result" | Should -BeLike $reportSummaryFor1Warning 
+            $result = & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary'
+
+            "$result" | Should -BeLike $reportSummaryFor1Warning
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
-            if ($IsCoreCLR) {
-                $result = pwsh -command 'Import-Module PSScriptAnalyzer; Invoke-Scriptanalyzer -ScriptDefinition gci'
-            }
-            else {
-                $result = powershell -command 'Invoke-Scriptanalyzer -ScriptDefinition gci'
-            }
-            
-            "$result" | Should -Not -BeLike $reportSummaryFor1Warning 
+            $result = & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci'
+
+            "$result" | Should -Not -BeLike $reportSummaryFor1Warning
         }
     }
 

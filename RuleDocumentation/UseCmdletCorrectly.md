@@ -28,7 +28,7 @@ Function Set-TodaysDate ()
 Function Set-TodaysDate ()
 {
 	$date = Get-Date
-	Set-Date -Date $t
+	Set-Date -Date $date
 	...
 }
 ```

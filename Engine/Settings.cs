@@ -475,7 +475,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 // ideally we should use HashtableAst.SafeGetValue() but since
                 // it is not available on PSv3, we resort to our own narrow implementation.
-                hashtable = GetHashtableFromHashTableAst(hashTableAst);
+                hashtable = GetSafeValueFromHashtableAst(hashTableAst);
             }
             catch (InvalidOperationException e)
             {
@@ -494,147 +494,165 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             parseSettingsHashtable(hashtable);
         }
 
-        private Hashtable GetHashtableFromHashTableAst(HashtableAst hashTableAst)
+        /// <summary>
+        /// Evaluates all statically evaluable, side-effect-free expressions under an
+        /// expression AST to return a value.
+        /// Throws if an expression cannot be safely evaluated.
+        /// Attempts to replicate the GetSafeValue() method on PowerShell AST methods from PSv5.
+        /// </summary>
+        /// <param name="exprAst">The expression AST to try to evaluate.</param>
+        /// <returns>The .NET value represented by the PowerShell expression.</returns>
+        private static object GetSafeValueFromExpressionAst(ExpressionAst exprAst)
         {
-            var output = new Hashtable();
-            foreach (var kvp in hashTableAst.KeyValuePairs)
+            switch (exprAst)
             {
-                var keyAst = kvp.Item1 as StringConstantExpressionAst;
-                if (keyAst == null)
-                {
-                    // first item (the key) should be a string
-                    ThrowInvalidDataException(kvp.Item1);
-                }
-                var key = keyAst.Value;
+                case ConstantExpressionAst constExprAst:
+                    // Note, this parses top-level command invocations as bareword strings
+                    // However, forbidding this causes hashtable parsing to fail
+                    // It is probably not worth the complexity to isolate this case
+                    return constExprAst.Value;
 
-                // parse the item2 as array
-                PipelineAst pipeAst = kvp.Item2 as PipelineAst;
-                List<string> rhsList = new List<string>();
-                if (pipeAst != null)
-                {
-                    ExpressionAst pureExp = pipeAst.GetPureExpression();
-                    var constExprAst = pureExp as ConstantExpressionAst;
-                    if (constExprAst != null)
+                case VariableExpressionAst varExprAst:
+                    // $true and $false are VariableExpressionAsts, so look for them here
+                    switch (varExprAst.VariablePath.UserPath.ToLower())
                     {
-                        var strConstExprAst = constExprAst as StringConstantExpressionAst;
-                        if (strConstExprAst != null)
-                        {
-                            // it is a string literal
-                            output[key] = strConstExprAst.Value;
-                        }
-                        else
-                        {
-                            // it is either an integer or a float
-                            output[key] = constExprAst.Value;
-                        }
-                        continue;
+                        case "true":
+                            return true;
+
+                        case "false":
+                            return false;
+
+                        default:
+                            throw CreateInvalidDataExceptionFromAst(varExprAst);
                     }
-                    else if (pureExp is HashtableAst)
+
+                case ArrayExpressionAst arrExprAst:
+
+                    // Most cases are handled by the inner array handling,
+                    // but we may have an empty array
+                    if (arrExprAst.SubExpression?.Statements == null)
                     {
-                        output[key] = GetHashtableFromHashTableAst((HashtableAst)pureExp);
-                        continue;
+                        throw CreateInvalidDataExceptionFromAst(arrExprAst);
                     }
-                    else if (pureExp is VariableExpressionAst)
+
+                    if (arrExprAst.SubExpression.Statements.Count == 0)
                     {
-                        var varExprAst = (VariableExpressionAst)pureExp;
-                        switch (varExprAst.VariablePath.UserPath.ToLower())
-                        {
-                            case "true":
-                                output[key] = true;
-                                break;
-
-                            case "false":
-                                output[key] = false;
-                                break;
-
-                            default:
-                                ThrowInvalidDataException(varExprAst.Extent);
-                                break;
-                        }
-
-                        continue;
+                        return new object[0];
                     }
-                    else
+
+                    PipelineAst pipelineAst = arrExprAst.SubExpression.Statements[0] as PipelineAst;
+                    if (pipelineAst == null)
                     {
-                        rhsList = GetArrayFromAst(pureExp);
+                        throw CreateInvalidDataExceptionFromAst(arrExprAst);
                     }
-                }
 
-                output[key] = rhsList.ToArray();
+                    ExpressionAst pipelineExpressionAst = pipelineAst.GetPureExpression();
+                    if (pipelineExpressionAst == null)
+                    {
+                        throw CreateInvalidDataExceptionFromAst(arrExprAst);
+                    }
+
+                    // Array expressions may not really be arrays (like `@('a')`, which has no ArrayLiteralAst within)
+                    // However, some rules depend on this always being an array
+                    object arrayValue = GetSafeValueFromExpressionAst(pipelineExpressionAst);
+                    return arrayValue.GetType().IsArray
+                        ? arrayValue
+                        : new object[] { arrayValue };
+
+                case ArrayLiteralAst arrLiteralAst:
+                    return GetSafeValuesFromArrayAst(arrLiteralAst);
+
+                case HashtableAst hashtableAst:
+                    return GetSafeValueFromHashtableAst(hashtableAst);
+
+                default:
+                    // Other expression types are too complicated or fundamentally unsafe
+                    throw CreateInvalidDataExceptionFromAst(exprAst);
             }
-
-            return output;
         }
 
-        private List<string> GetArrayFromAst(ExpressionAst exprAst)
+        /// <summary>
+        /// Process a PowerShell array literal with statically evaluable/safe contents
+        /// into a .NET value.
+        /// </summary>
+        /// <param name="arrLiteralAst">The PowerShell array AST to turn into a value.</param>
+        /// <returns>The .NET value represented by PowerShell syntax.</returns>
+        private static object[] GetSafeValuesFromArrayAst(ArrayLiteralAst arrLiteralAst)
         {
-            ArrayLiteralAst arrayLitAst = exprAst as ArrayLiteralAst;
-            var result = new List<string>();
-
-            if (arrayLitAst == null && exprAst is ArrayExpressionAst)
+            if (arrLiteralAst == null)
             {
-                ArrayExpressionAst arrayExp = (ArrayExpressionAst)exprAst;
-                return arrayExp == null ? null : GetArrayFromArrayExpressionAst(arrayExp);
+                throw new ArgumentNullException(nameof(arrLiteralAst));
             }
 
-            if (arrayLitAst == null)
+            if (arrLiteralAst.Elements == null)
             {
-                ThrowInvalidDataException(arrayLitAst);
+                throw CreateInvalidDataExceptionFromAst(arrLiteralAst);
             }
 
-            foreach (var element in arrayLitAst.Elements)
+            var elements = new List<object>();
+            foreach (ExpressionAst exprAst in arrLiteralAst.Elements)
             {
-                var elementValue = element as StringConstantExpressionAst;
-                if (elementValue == null)
+                elements.Add(GetSafeValueFromExpressionAst(exprAst));
+            }
+
+            return elements.ToArray();
+        }
+
+        /// <summary>
+        /// Create a hashtable value from a PowerShell AST representing one,
+        /// provided that the PowerShell expression is statically evaluable and safe.
+        /// </summary>
+        /// <param name="hashtableAst">The PowerShell representation of the hashtable value.</param>
+        /// <returns>The Hashtable as a hydrated .NET value.</returns>
+        private static Hashtable GetSafeValueFromHashtableAst(HashtableAst hashtableAst)
+        {
+            if (hashtableAst == null)
+            {
+                throw new ArgumentNullException(nameof(hashtableAst));
+            }
+
+            if (hashtableAst.KeyValuePairs == null)
+            {
+                throw CreateInvalidDataExceptionFromAst(hashtableAst);
+            }
+
+            var hashtable = new Hashtable();
+            foreach (Tuple<ExpressionAst, StatementAst> entry in hashtableAst.KeyValuePairs)
+            {
+                // Get the key
+                object key = GetSafeValueFromExpressionAst(entry.Item1);
+                if (key == null)
                 {
-                    ThrowInvalidDataException(element);
+                    throw CreateInvalidDataExceptionFromAst(entry.Item1);
                 }
 
-                result.Add(elementValue.Value);
-            }
-
-            return result;
-        }
-
-        private List<string> GetArrayFromArrayExpressionAst(ArrayExpressionAst arrayExp)
-        {
-            var result = new List<string>();
-            if (arrayExp.SubExpression != null)
-            {
-                StatementAst stateAst = arrayExp.SubExpression.Statements.FirstOrDefault();
-                if (stateAst != null && stateAst is PipelineAst)
+                // Get the value
+                ExpressionAst valueExprAst = (entry.Item2 as PipelineAst)?.GetPureExpression();
+                if (valueExprAst == null)
                 {
-                    CommandBaseAst cmdBaseAst = (stateAst as PipelineAst).PipelineElements.FirstOrDefault();
-                    if (cmdBaseAst != null && cmdBaseAst is CommandExpressionAst)
-                    {
-                        CommandExpressionAst cmdExpAst = cmdBaseAst as CommandExpressionAst;
-                        if (cmdExpAst.Expression is StringConstantExpressionAst)
-                        {
-                            return new List<string>()
-                            {
-                                (cmdExpAst.Expression as StringConstantExpressionAst).Value
-                            };
-                        }
-                        else
-                        {
-                            // It should be an ArrayLiteralAst at this point
-                            return GetArrayFromAst(cmdExpAst.Expression);
-                        }
-                    }
+                    throw CreateInvalidDataExceptionFromAst(entry.Item2);
                 }
+
+                // Add the key/value entry into the hydrated hashtable
+                hashtable[key] = GetSafeValueFromExpressionAst(valueExprAst);
             }
 
-            return result;
+            return hashtable;
         }
 
-        private void ThrowInvalidDataException(Ast ast)
+        private static InvalidDataException CreateInvalidDataExceptionFromAst(Ast ast)
         {
-            ThrowInvalidDataException(ast.Extent);
+            if (ast == null)
+            {
+                throw new ArgumentNullException(nameof(ast));
+            }
+
+            return ThrowInvalidDataException(ast.Extent);
         }
 
-        private void ThrowInvalidDataException(IScriptExtent extent)
+        private static InvalidDataException ThrowInvalidDataException(IScriptExtent extent)
         {
-            throw new InvalidDataException(string.Format(
+            return new InvalidDataException(string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.WrongValueFormat,
                                     extent.StartLineNumber,

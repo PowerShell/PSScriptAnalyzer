@@ -1,0 +1,1696 @@
+{
+  "SchemaVersion": "0.0.1",
+  "Modules": [
+    {
+      "Name": "Microsoft.PowerShell.Archive",
+      "Version": "1.1.0.0",
+      "ExportedCommands": [
+        {
+          "Name": "Compress-Archive",
+          "CommandType": "Function",
+          "ParameterSets": "[-Path] <string[]> [-DestinationPath] <string> [-CompressionLevel <string>] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-Path] <string[]> [-DestinationPath] <string> -Update [-CompressionLevel <string>] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-Path] <string[]> [-DestinationPath] <string> -Force [-CompressionLevel <string>] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-DestinationPath] <string> -LiteralPath <string[]> -Update [-CompressionLevel <string>] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-DestinationPath] <string> -LiteralPath <string[]> -Force [-CompressionLevel <string>] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-DestinationPath] <string> -LiteralPath <string[]> [-CompressionLevel <string>] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Expand-Archive",
+          "CommandType": "Function",
+          "ParameterSets": "[-Path] <string> [[-DestinationPath] <string>] [-Force] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [[-DestinationPath] <string>] -LiteralPath <string> [-Force] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": []
+    },
+    {
+      "Name": "Microsoft.PowerShell.Host",
+      "Version": "6.1.0.0",
+      "ExportedCommands": [
+        {
+          "Name": "Start-Transcript",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Path] <string>] [-Append] [-Force] [-NoClobber] [-IncludeInvocationHeader] [-WhatIf] [-Confirm] [<CommonParameters>] [[-LiteralPath] <string>] [-Append] [-Force] [-NoClobber] [-IncludeInvocationHeader] [-WhatIf] [-Confirm] [<CommonParameters>] [[-OutputDirectory] <string>] [-Append] [-Force] [-NoClobber] [-IncludeInvocationHeader] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Stop-Transcript",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": []
+    },
+    {
+      "Name": "Microsoft.PowerShell.Management",
+      "Version": "6.1.0.0",
+      "ExportedCommands": [
+        {
+          "Name": "Add-Content",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Value] <Object[]> [-PassThru] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [-NoNewline] [-Encoding <Encoding>] [-AsByteStream] [<CommonParameters>] [-Value] <Object[]> -LiteralPath <string[]> [-PassThru] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [-NoNewline] [-Encoding <Encoding>] [-AsByteStream] [<CommonParameters>]"
+        },
+        {
+          "Name": "Clear-Content",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Clear-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string[]> [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Clear-ItemProperty",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Name] <string> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string> -LiteralPath <string[]> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Convert-Path",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [<CommonParameters>] -LiteralPath <string[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Copy-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [[-Destination] <string>] [-Container] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Recurse] [-PassThru] [-Credential <pscredential>] [-WhatIf] [-Confirm] [-FromSession <PSSession>] [-ToSession <PSSession>] [<CommonParameters>] [[-Destination] <string>] -LiteralPath <string[]> [-Container] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Recurse] [-PassThru] [-Credential <pscredential>] [-WhatIf] [-Confirm] [-FromSession <PSSession>] [-ToSession <PSSession>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Copy-ItemProperty",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Destination] <string> [-Name] <string> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Destination] <string> [-Name] <string> -LiteralPath <string[]> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Debug-Process",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-WhatIf] [-Confirm] [<CommonParameters>] [-Id] <int[]> [-WhatIf] [-Confirm] [<CommonParameters>] -InputObject <Process[]> [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-ChildItem",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Path] <string[]>] [[-Filter] <string>] [-Include <string[]>] [-Exclude <string[]>] [-Recurse] [-Depth <uint32>] [-Force] [-Name] [-Attributes <FlagsExpression[FileAttributes]>] [-FollowSymlink] [-Directory] [-File] [-Hidden] [-ReadOnly] [-System] [<CommonParameters>] [[-Filter] <string>] -LiteralPath <string[]> [-Include <string[]>] [-Exclude <string[]>] [-Recurse] [-Depth <uint32>] [-Force] [-Name] [-Attributes <FlagsExpression[FileAttributes]>] [-FollowSymlink] [-Directory] [-File] [-Hidden] [-ReadOnly] [-System] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Content",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-ReadCount <long>] [-TotalCount <long>] [-Tail <int>] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [-Delimiter <string>] [-Wait] [-Raw] [-Encoding <Encoding>] [-AsByteStream] [<CommonParameters>] -LiteralPath <string[]> [-ReadCount <long>] [-TotalCount <long>] [-Tail <int>] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [-Delimiter <string>] [-Wait] [-Raw] [-Encoding <Encoding>] [-AsByteStream] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [<CommonParameters>] -LiteralPath <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-ItemProperty",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [[-Name] <string[]>] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [<CommonParameters>] [[-Name] <string[]>] -LiteralPath <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-ItemPropertyValue",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Path] <string[]>] [-Name] <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [<CommonParameters>] [-Name] <string[]> -LiteralPath <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Location",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-PSProvider <string[]>] [-PSDrive <string[]>] [<CommonParameters>] [-Stack] [-StackName <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Process",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-Module] [-FileVersionInfo] [<CommonParameters>] [[-Name] <string[]>] -IncludeUserName [<CommonParameters>] -Id <int[]> [-Module] [-FileVersionInfo] [<CommonParameters>] -Id <int[]> -IncludeUserName [<CommonParameters>] -InputObject <Process[]> [-Module] [-FileVersionInfo] [<CommonParameters>] -InputObject <Process[]> -IncludeUserName [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PSDrive",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-Scope <string>] [-PSProvider <string[]>] [<CommonParameters>] [-LiteralName] <string[]> [-Scope <string>] [-PSProvider <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PSProvider",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-PSProvider] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-TimeZone",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [<CommonParameters>] -Id <string[]> [<CommonParameters>] -ListAvailable [<CommonParameters>]"
+        },
+        {
+          "Name": "Invoke-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Join-Path",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-ChildPath] <string> [[-AdditionalChildPath] <string[]>] [-Resolve] [-Credential <pscredential>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Move-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [[-Destination] <string>] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-PassThru] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [[-Destination] <string>] -LiteralPath <string[]> [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-PassThru] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Move-ItemProperty",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Destination] <string> [-Name] <string[]> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Destination] <string> [-Name] <string[]> -LiteralPath <string[]> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-ItemType <string>] [-Value <Object>] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [[-Path] <string[]>] -Name <string> [-ItemType <string>] [-Value <Object>] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-ItemProperty",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Name] <string> [-PropertyType <string>] [-Value <Object>] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string> -LiteralPath <string[]> [-PropertyType <string>] [-Value <Object>] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-PSDrive",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string> [-PSProvider] <string> [-Root] <string> [-Description <string>] [-Scope <string>] [-Persist] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Pop-Location",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-PassThru] [-StackName <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Push-Location",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Path] <string>] [-PassThru] [-StackName <string>] [<CommonParameters>] [-LiteralPath <string>] [-PassThru] [-StackName <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Recurse] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Recurse] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-ItemProperty",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Name] <string[]> [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string[]> -LiteralPath <string[]> [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-PSDrive",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-PSProvider <string[]>] [-Scope <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-LiteralName] <string[]> [-PSProvider <string[]>] [-Scope <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Rename-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string> [-NewName] <string> [-Force] [-PassThru] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-NewName] <string> -LiteralPath <string> [-Force] [-PassThru] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Rename-ItemProperty",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string> [-Name] <string> [-NewName] <string> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string> [-NewName] <string> -LiteralPath <string> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Resolve-Path",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Relative] [-Credential <pscredential>] [<CommonParameters>] -LiteralPath <string[]> [-Relative] [-Credential <pscredential>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-Content",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Value] <Object[]> [-PassThru] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [-NoNewline] [-Encoding <Encoding>] [-AsByteStream] [<CommonParameters>] [-Value] <Object[]> -LiteralPath <string[]> [-PassThru] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Credential <pscredential>] [-WhatIf] [-Confirm] [-NoNewline] [-Encoding <Encoding>] [-AsByteStream] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-Item",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [[-Value] <Object>] [-Force] [-PassThru] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [[-Value] <Object>] -LiteralPath <string[]> [-Force] [-PassThru] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-ItemProperty",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Name] <string> [-Value] <Object> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Path] <string[]> -InputObject <psobject> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string> [-Value] <Object> -LiteralPath <string[]> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string[]> -InputObject <psobject> [-PassThru] [-Force] [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-Credential <pscredential>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-Location",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Path] <string>] [-PassThru] [<CommonParameters>] -LiteralPath <string> [-PassThru] [<CommonParameters>] [-PassThru] [-StackName <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Split-Path",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Parent] [-Resolve] [-Credential <pscredential>] [<CommonParameters>] [-Path] <string[]> [-Leaf] [-Resolve] [-Credential <pscredential>] [<CommonParameters>] [-Path] <string[]> [-LeafBase] [-Resolve] [-Credential <pscredential>] [<CommonParameters>] [-Path] <string[]> [-Extension] [-Resolve] [-Credential <pscredential>] [<CommonParameters>] [-Path] <string[]> [-Qualifier] [-Resolve] [-Credential <pscredential>] [<CommonParameters>] [-Path] <string[]> [-NoQualifier] [-Resolve] [-Credential <pscredential>] [<CommonParameters>] [-Path] <string[]> [-Resolve] [-IsAbsolute] [-Credential <pscredential>] [<CommonParameters>] -LiteralPath <string[]> [-Resolve] [-Credential <pscredential>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Start-Process",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-FilePath] <string> [[-ArgumentList] <string[]>] [-Credential <pscredential>] [-WorkingDirectory <string>] [-LoadUserProfile] [-NoNewWindow] [-PassThru] [-RedirectStandardError <string>] [-RedirectStandardInput <string>] [-RedirectStandardOutput <string>] [-WindowStyle <ProcessWindowStyle>] [-Wait] [-UseNewEnvironment] [-WhatIf] [-Confirm] [<CommonParameters>] [-FilePath] <string> [[-ArgumentList] <string[]>] [-WorkingDirectory <string>] [-PassThru] [-Verb <string>] [-WindowStyle <ProcessWindowStyle>] [-Wait] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Stop-Process",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Id] <int[]> [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] -Name <string[]> [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <Process[]> [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-Connection",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-TargetName] <string[]> [-Ping] [-IPv4] [-IPv6] [-ResolveDestination] [-Source <string>] [-MaxHops <int>] [-Count <int>] [-Delay <int>] [-BufferSize <int>] [-DontFragment] [-TimeoutSeconds <int>] [-Quiet] [<CommonParameters>] [-TargetName] <string[]> [-Ping] [-IPv4] [-IPv6] [-ResolveDestination] [-Source <string>] [-MaxHops <int>] [-Delay <int>] [-BufferSize <int>] [-DontFragment] [-Continues] [-TimeoutSeconds <int>] [-Quiet] [<CommonParameters>] [-TargetName] <string[]> -Traceroute [-IPv4] [-IPv6] [-ResolveDestination] [-Source <string>] [-MaxHops <int>] [-TimeoutSeconds <int>] [-Quiet] [<CommonParameters>] [-TargetName] <string[]> -MTUSizeDetect [-IPv4] [-IPv6] [-ResolveDestination] [-TimeoutSeconds <int>] [-Quiet] [<CommonParameters>] [-TargetName] <string[]> -TCPPort <int> [-IPv4] [-IPv6] [-ResolveDestination] [-Source <string>] [-TimeoutSeconds <int>] [-Quiet] [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-Path",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-PathType <TestPathType>] [-IsValid] [-Credential <pscredential>] [-OlderThan <datetime>] [-NewerThan <datetime>] [<CommonParameters>] -LiteralPath <string[]> [-Filter <string>] [-Include <string[]>] [-Exclude <string[]>] [-PathType <TestPathType>] [-IsValid] [-Credential <pscredential>] [-OlderThan <datetime>] [-NewerThan <datetime>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Wait-Process",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [[-Timeout] <int>] [<CommonParameters>] [-Id] <int[]> [[-Timeout] <int>] [<CommonParameters>] [[-Timeout] <int>] -InputObject <Process[]> [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": [
+        "gtz"
+      ]
+    },
+    {
+      "Name": "Microsoft.PowerShell.Security",
+      "Version": "6.1.0.0",
+      "ExportedCommands": [
+        {
+          "Name": "ConvertFrom-SecureString",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-SecureString] <securestring> [[-SecureKey] <securestring>] [<CommonParameters>] [-SecureString] <securestring> [-Key <byte[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertTo-SecureString",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-String] <string> [[-SecureKey] <securestring>] [<CommonParameters>] [-String] <string> [-AsPlainText] [-Force] [<CommonParameters>] [-String] <string> [-Key <byte[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Credential",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Credential] <pscredential>] [<CommonParameters>] [[-UserName] <string>] [-Message <string>] [-Title <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-ExecutionPolicy",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Scope] <ExecutionPolicyScope>] [-List] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PfxCertificate",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-FilePath] <string[]> [-Password <securestring>] [-NoPromptForPassword] [<CommonParameters>] -LiteralPath <string[]> [-Password <securestring>] [-NoPromptForPassword] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-ExecutionPolicy",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-ExecutionPolicy] <ExecutionPolicy> [[-Scope] <ExecutionPolicyScope>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": []
+    },
+    {
+      "Name": "Microsoft.PowerShell.Utility",
+      "Version": "6.1.0.0",
+      "ExportedCommands": [
+        {
+          "Name": "Add-Member",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "-InputObject <psobject> -TypeName <string> [-PassThru] [<CommonParameters>] [-MemberType] <PSMemberTypes> [-Name] <string> [[-Value] <Object>] [[-SecondValue] <Object>] -InputObject <psobject> [-TypeName <string>] [-Force] [-PassThru] [<CommonParameters>] [-NotePropertyName] <string> [-NotePropertyValue] <Object> -InputObject <psobject> [-TypeName <string>] [-Force] [-PassThru] [<CommonParameters>] [-NotePropertyMembers] <IDictionary> -InputObject <psobject> [-TypeName <string>] [-Force] [-PassThru] [<CommonParameters>]"
+        },
+        {
+          "Name": "Add-Type",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-TypeDefinition] <string> [-Language <Language>] [-ReferencedAssemblies <string[]>] [-OutputAssembly <string>] [-OutputType <OutputAssemblyType>] [-PassThru] [-IgnoreWarnings] [-CompilerOptions <string[]>] [<CommonParameters>] [-Name] <string> [-MemberDefinition] <string[]> [-Namespace <string>] [-UsingNamespace <string[]>] [-Language <Language>] [-ReferencedAssemblies <string[]>] [-OutputAssembly <string>] [-OutputType <OutputAssemblyType>] [-PassThru] [-IgnoreWarnings] [-CompilerOptions <string[]>] [<CommonParameters>] [-Path] <string[]> [-ReferencedAssemblies <string[]>] [-OutputAssembly <string>] [-OutputType <OutputAssemblyType>] [-PassThru] [-IgnoreWarnings] [-CompilerOptions <string[]>] [<CommonParameters>] -LiteralPath <string[]> [-ReferencedAssemblies <string[]>] [-OutputAssembly <string>] [-OutputType <OutputAssemblyType>] [-PassThru] [-IgnoreWarnings] [-CompilerOptions <string[]>] [<CommonParameters>] -AssemblyName <string[]> [-PassThru] [<CommonParameters>]"
+        },
+        {
+          "Name": "Clear-Variable",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-Include <string[]>] [-Exclude <string[]>] [-Force] [-PassThru] [-Scope <string>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Compare-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-ReferenceObject] <psobject[]> [-DifferenceObject] <psobject[]> [-SyncWindow <int>] [-Property <Object[]>] [-ExcludeDifferent] [-IncludeEqual] [-PassThru] [-Culture <string>] [-CaseSensitive] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertFrom-Csv",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject] <psobject[]> [[-Delimiter] <char>] [-Header <string[]>] [<CommonParameters>] [-InputObject] <psobject[]> -UseCulture [-Header <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertFrom-Json",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject] <string> [-AsHashtable] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertFrom-Markdown",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-AsVT100EncodedString] [<CommonParameters>] -LiteralPath <string[]> [-AsVT100EncodedString] [<CommonParameters>] -InputObject <psobject> [-AsVT100EncodedString] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertFrom-StringData",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-StringData] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertTo-Csv",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject] <psobject> [[-Delimiter] <char>] [-IncludeTypeInformation] [-NoTypeInformation] [<CommonParameters>] [-InputObject] <psobject> [-UseCulture] [-IncludeTypeInformation] [-NoTypeInformation] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertTo-Html",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <Object[]>] [[-Head] <string[]>] [[-Title] <string>] [[-Body] <string[]>] [-InputObject <psobject>] [-As <string>] [-CssUri <uri>] [-PostContent <string[]>] [-PreContent <string[]>] [-Meta <hashtable>] [-Charset <string>] [-Transitional] [<CommonParameters>] [[-Property] <Object[]>] [-InputObject <psobject>] [-As <string>] [-Fragment] [-PostContent <string[]>] [-PreContent <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertTo-Json",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject] <Object> [-Depth <int>] [-Compress] [-EnumsAsStrings] [-AsArray] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertTo-Xml",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject] <psobject> [-Depth <int>] [-NoTypeInformation] [-As <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Debug-Runspace",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Runspace] <runspace> [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string> [-WhatIf] [-Confirm] [<CommonParameters>] [-Id] <int> [-WhatIf] [-Confirm] [<CommonParameters>] [-InstanceId] <guid> [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Disable-PSBreakpoint",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Breakpoint] <Breakpoint[]> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-Id] <int[]> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Disable-RunspaceDebug",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-RunspaceName] <string[]>] [<CommonParameters>] [-Runspace] <runspace[]> [<CommonParameters>] [-RunspaceId] <int[]> [<CommonParameters>] [-RunspaceInstanceId] <guid[]> [<CommonParameters>] [[-ProcessName] <string>] [[-AppDomainName] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Enable-PSBreakpoint",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Id] <int[]> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-Breakpoint] <Breakpoint[]> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Enable-RunspaceDebug",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-RunspaceName] <string[]>] [-BreakAll] [<CommonParameters>] [-Runspace] <runspace[]> [-BreakAll] [<CommonParameters>] [-RunspaceId] <int[]> [-BreakAll] [<CommonParameters>] [-RunspaceInstanceId] <guid[]> [<CommonParameters>] [[-ProcessName] <string>] [[-AppDomainName] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Export-Alias",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string> [[-Name] <string[]>] [-PassThru] [-As <ExportAliasFormat>] [-Append] [-Force] [-NoClobber] [-Description <string>] [-Scope <string>] [-WhatIf] [-Confirm] [<CommonParameters>] [[-Name] <string[]>] -LiteralPath <string> [-PassThru] [-As <ExportAliasFormat>] [-Append] [-Force] [-NoClobber] [-Description <string>] [-Scope <string>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Export-Clixml",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string> -InputObject <psobject> [-Depth <int>] [-Force] [-NoClobber] [-Encoding <Encoding>] [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string> -InputObject <psobject> [-Depth <int>] [-Force] [-NoClobber] [-Encoding <Encoding>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Export-Csv",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Path] <string>] [[-Delimiter] <char>] -InputObject <psobject> [-LiteralPath <string>] [-Force] [-NoClobber] [-Encoding <Encoding>] [-Append] [-IncludeTypeInformation] [-NoTypeInformation] [-WhatIf] [-Confirm] [<CommonParameters>] [[-Path] <string>] -InputObject <psobject> [-LiteralPath <string>] [-Force] [-NoClobber] [-Encoding <Encoding>] [-Append] [-UseCulture] [-IncludeTypeInformation] [-NoTypeInformation] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Export-FormatData",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "-InputObject <ExtendedTypeDefinition[]> -Path <string> [-Force] [-NoClobber] [-IncludeScriptBlock] [<CommonParameters>] -InputObject <ExtendedTypeDefinition[]> -LiteralPath <string> [-Force] [-NoClobber] [-IncludeScriptBlock] [<CommonParameters>]"
+        },
+        {
+          "Name": "Export-PSSession",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Session] <PSSession> [-OutputModule] <string> [[-CommandName] <string[]>] [[-FormatTypeName] <string[]>] [-Force] [-Encoding <Encoding>] [-AllowClobber] [-ArgumentList <Object[]>] [-CommandType <CommandTypes>] [-Module <string[]>] [-FullyQualifiedModule <ModuleSpecification[]>] [-Certificate <X509Certificate2>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Format-Custom",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <Object[]>] [-Depth <int>] [-GroupBy <Object>] [-View <string>] [-ShowError] [-DisplayError] [-Force] [-Expand <string>] [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Format-Hex",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string[]> [-WhatIf] [-Confirm] [<CommonParameters>] -InputObject <psobject> [-Encoding <Encoding>] [-Raw] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Format-List",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <Object[]>] [-GroupBy <Object>] [-View <string>] [-ShowError] [-DisplayError] [-Force] [-Expand <string>] [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Format-Table",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <Object[]>] [-AutoSize] [-HideTableHeaders] [-Wrap] [-GroupBy <Object>] [-View <string>] [-ShowError] [-DisplayError] [-Force] [-Expand <string>] [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Format-Wide",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <Object>] [-AutoSize] [-Column <int>] [-GroupBy <Object>] [-View <string>] [-ShowError] [-DisplayError] [-Force] [-Expand <string>] [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Alias",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-Exclude <string[]>] [-Scope <string>] [<CommonParameters>] [-Exclude <string[]>] [-Scope <string>] [-Definition <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Culture",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Date",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Date] <datetime>] [-Year <int>] [-Month <int>] [-Day <int>] [-Hour <int>] [-Minute <int>] [-Second <int>] [-Millisecond <int>] [-DisplayHint <DisplayHintType>] [-Format <string>] [<CommonParameters>] [[-Date] <datetime>] [-Year <int>] [-Month <int>] [-Day <int>] [-Hour <int>] [-Minute <int>] [-Second <int>] [-Millisecond <int>] [-DisplayHint <DisplayHintType>] [-UFormat <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Event",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-SourceIdentifier] <string>] [<CommonParameters>] [-EventIdentifier] <int> [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-EventSubscriber",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-SourceIdentifier] <string>] [-Force] [<CommonParameters>] [-SubscriptionId] <int> [-Force] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-FileHash",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [[-Algorithm] <string>] [<CommonParameters>] [-LiteralPath] <string[]> [[-Algorithm] <string>] [<CommonParameters>] [-InputStream] <Stream> [[-Algorithm] <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-FormatData",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-TypeName] <string[]>] [-PowerShellVersion <version>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Host",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "Get-MarkdownOption",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Member",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-InputObject <psobject>] [-MemberType <PSMemberTypes>] [-View <PSMemberViewTypes>] [-Static] [-Force] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PSBreakpoint",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Script] <string[]>] [<CommonParameters>] -Variable <string[]> [-Script <string[]>] [<CommonParameters>] -Command <string[]> [-Script <string[]>] [<CommonParameters>] [-Type] <BreakpointType[]> [-Script <string[]>] [<CommonParameters>] [-Id] <int[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PSCallStack",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Random",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Maximum] <Object>] [-SetSeed <int>] [-Minimum <Object>] [<CommonParameters>] [-InputObject] <Object[]> [-SetSeed <int>] [-Count <int>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Runspace",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [<CommonParameters>] [-Id] <int[]> [<CommonParameters>] [-InstanceId] <guid[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-RunspaceDebug",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-RunspaceName] <string[]>] [<CommonParameters>] [-Runspace] <runspace[]> [<CommonParameters>] [-RunspaceId] <int[]> [<CommonParameters>] [-RunspaceInstanceId] <guid[]> [<CommonParameters>] [[-ProcessName] <string>] [[-AppDomainName] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-TraceSource",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-TypeData",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-TypeName] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-UICulture",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Unique",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject <psobject>] [-AsString] [<CommonParameters>] [-InputObject <psobject>] [-OnType] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Uptime",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>] [-Since] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Variable",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-ValueOnly] [-Include <string[]>] [-Exclude <string[]>] [-Scope <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Verb",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Verb] <string[]>] [[-Group] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Group-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <Object[]>] [-NoElement] [-AsHashTable] [-AsString] [-InputObject <psobject>] [-Culture <string>] [-CaseSensitive] [<CommonParameters>]"
+        },
+        {
+          "Name": "Import-Alias",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string> [-Scope <string>] [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string> [-Scope <string>] [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Import-Clixml",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-IncludeTotalCount] [-Skip <uint64>] [-First <uint64>] [<CommonParameters>] -LiteralPath <string[]> [-IncludeTotalCount] [-Skip <uint64>] [-First <uint64>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Import-Csv",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Path] <string[]>] [[-Delimiter] <char>] [-LiteralPath <string[]>] [-Header <string[]>] [-Encoding <Encoding>] [<CommonParameters>] [[-Path] <string[]>] -UseCulture [-LiteralPath <string[]>] [-Header <string[]>] [-Encoding <Encoding>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Import-LocalizedData",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-BindingVariable] <string>] [[-UICulture] <string>] [-BaseDirectory <string>] [-FileName <string>] [-SupportedCommand <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Import-PowerShellDataFile",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [<CommonParameters>] [-LiteralPath] <string[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Import-PSSession",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Session] <PSSession> [[-CommandName] <string[]>] [[-FormatTypeName] <string[]>] [-Prefix <string>] [-DisableNameChecking] [-AllowClobber] [-ArgumentList <Object[]>] [-CommandType <CommandTypes>] [-Module <string[]>] [-FullyQualifiedModule <ModuleSpecification[]>] [-Certificate <X509Certificate2>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Invoke-Expression",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Command] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Invoke-RestMethod",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Uri] <uri> [-Method <WebRequestMethod>] [-FollowRelLink] [-MaximumFollowRelLink <int>] [-ResponseHeadersVariable <string>] [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-ProxyUseDefaultCredentials] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>] [-Uri] <uri> -NoProxy [-Method <WebRequestMethod>] [-FollowRelLink] [-MaximumFollowRelLink <int>] [-ResponseHeadersVariable <string>] [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>] [-Uri] <uri> -CustomMethod <string> [-FollowRelLink] [-MaximumFollowRelLink <int>] [-ResponseHeadersVariable <string>] [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-ProxyUseDefaultCredentials] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>] [-Uri] <uri> -CustomMethod <string> -NoProxy [-FollowRelLink] [-MaximumFollowRelLink <int>] [-ResponseHeadersVariable <string>] [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>]"
+        },
+        {
+          "Name": "Invoke-WebRequest",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Uri] <uri> [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Method <WebRequestMethod>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-ProxyUseDefaultCredentials] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>] [-Uri] <uri> -NoProxy [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Method <WebRequestMethod>] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>] [-Uri] <uri> -CustomMethod <string> [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-ProxyUseDefaultCredentials] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>] [-Uri] <uri> -CustomMethod <string> -NoProxy [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>]"
+        },
+        {
+          "Name": "Measure-Command",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Expression] <scriptblock> [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Measure-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <pspropertyexpression[]>] [-InputObject <psobject>] [-StandardDeviation] [-Sum] [-AllStats] [-Average] [-Maximum] [-Minimum] [<CommonParameters>] [[-Property] <pspropertyexpression[]>] [-InputObject <psobject>] [-Line] [-Word] [-Character] [-IgnoreWhiteSpace] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-Alias",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string> [-Value] <string> [-Description <string>] [-Option <ScopedItemOptions>] [-PassThru] [-Scope <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-Event",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-SourceIdentifier] <string> [[-Sender] <psobject>] [[-EventArguments] <psobject[]>] [[-MessageData] <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-Guid",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "New-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-TypeName] <string> [[-ArgumentList] <Object[]>] [-Property <IDictionary>] [<CommonParameters>] [-Strict] [-Property <IDictionary>] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-TemporaryFile",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-TimeSpan",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Start] <datetime>] [[-End] <datetime>] [<CommonParameters>] [-Days <int>] [-Hours <int>] [-Minutes <int>] [-Seconds <int>] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-Variable",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string> [[-Value] <Object>] [-Description <string>] [-Option <ScopedItemOptions>] [-Visibility <SessionStateEntryVisibility>] [-Force] [-PassThru] [-Scope <string>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Out-File",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-FilePath] <string> [[-Encoding] <Encoding>] [-Append] [-Force] [-NoClobber] [-Width <int>] [-NoNewline] [-InputObject <psobject>] [-WhatIf] [-Confirm] [<CommonParameters>] [[-Encoding] <Encoding>] -LiteralPath <string> [-Append] [-Force] [-NoClobber] [-Width <int>] [-NoNewline] [-InputObject <psobject>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Out-String",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Width <int>] [-NoNewline] [-InputObject <psobject>] [<CommonParameters>] [-Stream] [-Width <int>] [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Read-Host",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Prompt] <Object>] [-AsSecureString] [<CommonParameters>]"
+        },
+        {
+          "Name": "Register-EngineEvent",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-SourceIdentifier] <string> [[-Action] <scriptblock>] [-MessageData <psobject>] [-SupportEvent] [-Forward] [-MaxTriggerCount <int>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Register-ObjectEvent",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject] <psobject> [-EventName] <string> [[-SourceIdentifier] <string>] [[-Action] <scriptblock>] [-MessageData <psobject>] [-SupportEvent] [-Forward] [-MaxTriggerCount <int>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-Alias",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-Scope <string>] [-Force] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-Event",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-SourceIdentifier] <string> [-WhatIf] [-Confirm] [<CommonParameters>] [-EventIdentifier] <int> [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-PSBreakpoint",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Breakpoint] <Breakpoint[]> [-WhatIf] [-Confirm] [<CommonParameters>] [-Id] <int[]> [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-TypeData",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "-TypeData <TypeData> [-WhatIf] [-Confirm] [<CommonParameters>] [-TypeName] <string> [-WhatIf] [-Confirm] [<CommonParameters>] -Path <string[]> [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-Variable",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-Include <string[]>] [-Exclude <string[]>] [-Force] [-Scope <string>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Select-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <Object[]>] [-InputObject <psobject>] [-ExcludeProperty <string[]>] [-ExpandProperty <string>] [-Unique] [-Last <int>] [-First <int>] [-Skip <int>] [-Wait] [<CommonParameters>] [[-Property] <Object[]>] [-InputObject <psobject>] [-ExcludeProperty <string[]>] [-ExpandProperty <string>] [-Unique] [-SkipLast <int>] [<CommonParameters>] [-InputObject <psobject>] [-Unique] [-Wait] [-Index <int[]>] [<CommonParameters>] [-InputObject <psobject>] [-Unique] [-SkipIndex <int[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Select-String",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Pattern] <string[]> [-Path] <string[]> [-SimpleMatch] [-CaseSensitive] [-Quiet] [-List] [-Include <string[]>] [-Exclude <string[]>] [-NotMatch] [-AllMatches] [-Encoding <Encoding>] [-Context <int[]>] [<CommonParameters>] [-Pattern] <string[]> -InputObject <psobject> [-SimpleMatch] [-CaseSensitive] [-Quiet] [-List] [-Include <string[]>] [-Exclude <string[]>] [-NotMatch] [-AllMatches] [-Encoding <Encoding>] [-Context <int[]>] [<CommonParameters>] [-Pattern] <string[]> -LiteralPath <string[]> [-SimpleMatch] [-CaseSensitive] [-Quiet] [-List] [-Include <string[]>] [-Exclude <string[]>] [-NotMatch] [-AllMatches] [-Encoding <Encoding>] [-Context <int[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Select-Xml",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-XPath] <string> [-Xml] <XmlNode[]> [-Namespace <hashtable>] [<CommonParameters>] [-XPath] <string> [-Path] <string[]> [-Namespace <hashtable>] [<CommonParameters>] [-XPath] <string> -LiteralPath <string[]> [-Namespace <hashtable>] [<CommonParameters>] [-XPath] <string> -Content <string[]> [-Namespace <hashtable>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Send-MailMessage",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-To] <string[]> [-Subject] <string> [[-Body] <string>] [[-SmtpServer] <string>] -From <string> [-Attachments <string[]>] [-Bcc <string[]>] [-BodyAsHtml] [-Encoding <Encoding>] [-Cc <string[]>] [-DeliveryNotificationOption <DeliveryNotificationOptions>] [-Priority <MailPriority>] [-Credential <pscredential>] [-UseSsl] [-Port <int>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-Alias",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string> [-Value] <string> [-Description <string>] [-Option <ScopedItemOptions>] [-PassThru] [-Scope <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-Date",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Date] <datetime> [-DisplayHint <DisplayHintType>] [-WhatIf] [-Confirm] [<CommonParameters>] [-Adjust] <timespan> [-DisplayHint <DisplayHintType>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-MarkdownOption",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Header1Color <string>] [-Header2Color <string>] [-Header3Color <string>] [-Header4Color <string>] [-Header5Color <string>] [-Header6Color <string>] [-Code <string>] [-ImageAltTextForegroundColor <string>] [-LinkForegroundColor <string>] [-ItalicsForegroundColor <string>] [-BoldForegroundColor <string>] [-PassThru] [<CommonParameters>] -Theme <string> [-PassThru] [<CommonParameters>] [-InputObject] <psobject> [-PassThru] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PSBreakpoint",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Script] <string[]> [-Line] <int[]> [[-Column] <int>] [-Action <scriptblock>] [<CommonParameters>] [[-Script] <string[]>] -Command <string[]> [-Action <scriptblock>] [<CommonParameters>] [[-Script] <string[]>] -Variable <string[]> [-Action <scriptblock>] [-Mode <VariableAccessMode>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-TraceSource",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [[-Option] <PSTraceSourceOptions>] [-ListenerOption <TraceOptions>] [-FilePath <string>] [-Force] [-Debugger] [-PSHost] [-PassThru] [<CommonParameters>] [-Name] <string[]> [-RemoveListener <string[]>] [<CommonParameters>] [-Name] <string[]> [-RemoveFileListener <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-Variable",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [[-Value] <Object>] [-Include <string[]>] [-Exclude <string[]>] [-Description <string>] [-Option <ScopedItemOptions>] [-Force] [-Visibility <SessionStateEntryVisibility>] [-PassThru] [-Scope <string>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Show-Markdown",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string[]> [-UseBrowser] [<CommonParameters>] -InputObject <psobject> [-UseBrowser] [<CommonParameters>] -LiteralPath <string[]> [-UseBrowser] [<CommonParameters>]"
+        },
+        {
+          "Name": "Sort-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Property] <Object[]>] [-Descending] [-Unique] [-Top <int>] [-InputObject <psobject>] [-Culture <string>] [-CaseSensitive] [<CommonParameters>] [[-Property] <Object[]>] -Bottom <int> [-Descending] [-Unique] [-InputObject <psobject>] [-Culture <string>] [-CaseSensitive] [<CommonParameters>]"
+        },
+        {
+          "Name": "Start-Sleep",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Seconds] <int> [<CommonParameters>] -Milliseconds <int> [<CommonParameters>]"
+        },
+        {
+          "Name": "Tee-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-FilePath] <string> [-InputObject <psobject>] [-Append] [<CommonParameters>] -LiteralPath <string> [-InputObject <psobject>] [<CommonParameters>] -Variable <string> [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-Json",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Json] <string> [[-Schema] <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Trace-Command",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-Expression] <scriptblock> [[-Option] <PSTraceSourceOptions>] [-InputObject <psobject>] [-ListenerOption <TraceOptions>] [-FilePath <string>] [-Force] [-Debugger] [-PSHost] [<CommonParameters>] [-Name] <string[]> [-Command] <string> [[-Option] <PSTraceSourceOptions>] [-InputObject <psobject>] [-ArgumentList <Object[]>] [-ListenerOption <TraceOptions>] [-FilePath <string>] [-Force] [-Debugger] [-PSHost] [<CommonParameters>]"
+        },
+        {
+          "Name": "Unregister-Event",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-SourceIdentifier] <string> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-SubscriptionId] <int> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-FormatData",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-AppendPath] <string[]>] [-PrependPath <string[]>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-TypeData",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-AppendPath] <string[]>] [-PrependPath <string[]>] [-WhatIf] [-Confirm] [<CommonParameters>] -TypeName <string> [-MemberType <PSMemberTypes>] [-MemberName <string>] [-Value <Object>] [-SecondValue <Object>] [-TypeConverter <type>] [-TypeAdapter <type>] [-SerializationMethod <string>] [-TargetTypeForDeserialization <type>] [-SerializationDepth <int>] [-DefaultDisplayProperty <string>] [-InheritPropertySerializationSet <bool>] [-StringSerializationSource <string>] [-DefaultDisplayPropertySet <string[]>] [-DefaultKeyPropertySet <string[]>] [-PropertySerializationSet <string[]>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-TypeData] <TypeData[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Wait-Debugger",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "Wait-Event",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-SourceIdentifier] <string>] [-Timeout <int>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Debug",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Message] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Error",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Message] <string> [-Category <ErrorCategory>] [-ErrorId <string>] [-TargetObject <Object>] [-RecommendedAction <string>] [-CategoryActivity <string>] [-CategoryReason <string>] [-CategoryTargetName <string>] [-CategoryTargetType <string>] [<CommonParameters>] -Exception <Exception> [-Message <string>] [-Category <ErrorCategory>] [-ErrorId <string>] [-TargetObject <Object>] [-RecommendedAction <string>] [-CategoryActivity <string>] [-CategoryReason <string>] [-CategoryTargetName <string>] [-CategoryTargetType <string>] [<CommonParameters>] -ErrorRecord <ErrorRecord> [-RecommendedAction <string>] [-CategoryActivity <string>] [-CategoryReason <string>] [-CategoryTargetName <string>] [-CategoryTargetType <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Host",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Object] <Object>] [-NoNewline] [-Separator <Object>] [-ForegroundColor <ConsoleColor>] [-BackgroundColor <ConsoleColor>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Information",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-MessageData] <Object> [[-Tags] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Output",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject] <psobject[]> [-NoEnumerate] [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Progress",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Activity] <string> [[-Status] <string>] [[-Id] <int>] [-PercentComplete <int>] [-SecondsRemaining <int>] [-CurrentOperation <string>] [-ParentId <int>] [-Completed] [-SourceId <int>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Verbose",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Message] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Warning",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Message] <string> [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": [
+        "fhx"
+      ]
+    },
+    {
+      "Name": "PackageManagement",
+      "Version": "1.1.7.2",
+      "ExportedCommands": [
+        {
+          "Name": "Find-Package",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-IncludeDependencies] [-AllVersions] [-Source <string[]>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-Force] [-ForceBootstrap] [-ProviderName <string[]>] [-ConfigFile <string>] [-SkipValidate] [-Headers <string[]>] [-FilterOnTag <string[]>] [-Contains <string>] [-AllowPrereleaseVersions] [<CommonParameters>] [[-Name] <string[]>] [-IncludeDependencies] [-AllVersions] [-Source <string[]>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-Force] [-ForceBootstrap] [-ProviderName <string[]>] [-AllowPrereleaseVersions] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [-Type <string>] [-Filter <string>] [-Tag <string[]>] [-Includes <string[]>] [-DscResource <string[]>] [-RoleCapability <string[]>] [-Command <string[]>] [-AcceptLicense] [<CommonParameters>]"
+        },
+        {
+          "Name": "Find-PackageProvider",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-AllVersions] [-Source <string[]>] [-IncludeDependencies] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-Force] [-ForceBootstrap] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Package",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-AllVersions] [-Force] [-ForceBootstrap] [-ProviderName <string[]>] [-Destination <string>] [-ExcludeVersion] [-Scope <string>] [-SkipDependencies] [<CommonParameters>] [[-Name] <string[]>] [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-AllVersions] [-Force] [-ForceBootstrap] [-ProviderName <string[]>] [-Scope <string>] [-PackageManagementProvider <string>] [-Type <string>] [-AllowClobber] [-SkipPublisherCheck] [-InstallUpdate] [-NoPathUpdate] [-AllowPrereleaseVersions] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PackageProvider",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-ListAvailable] [-Force] [-ForceBootstrap] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PackageSource",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string>] [-Location <string>] [-Force] [-ForceBootstrap] [-ProviderName <string[]>] [-ConfigFile <string>] [-SkipValidate] [<CommonParameters>] [[-Name] <string>] [-Location <string>] [-Force] [-ForceBootstrap] [-ProviderName <string[]>] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Import-PackageProvider",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-Force] [-ForceBootstrap] [<CommonParameters>]"
+        },
+        {
+          "Name": "Install-Package",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-Source <string[]>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ProviderName <string[]>] [<CommonParameters>] [-InputObject] <SoftwareIdentity[]> [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [<CommonParameters>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [-Headers <string[]>] [-FilterOnTag <string[]>] [-Contains <string>] [-AllowPrereleaseVersions] [-Destination <string>] [-ExcludeVersion] [-Scope <string>] [-SkipDependencies] [<CommonParameters>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [-Headers <string[]>] [-FilterOnTag <string[]>] [-Contains <string>] [-AllowPrereleaseVersions] [-Destination <string>] [-ExcludeVersion] [-Scope <string>] [-SkipDependencies] [<CommonParameters>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-AllowPrereleaseVersions] [-Scope <string>] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [-Type <string>] [-Filter <string>] [-Tag <string[]>] [-Includes <string[]>] [-DscResource <string[]>] [-RoleCapability <string[]>] [-Command <string[]>] [-AcceptLicense] [-AllowClobber] [-SkipPublisherCheck] [-InstallUpdate] [-NoPathUpdate] [<CommonParameters>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-AllowPrereleaseVersions] [-Scope <string>] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [-Type <string>] [-Filter <string>] [-Tag <string[]>] [-Includes <string[]>] [-DscResource <string[]>] [-RoleCapability <string[]>] [-Command <string[]>] [-AcceptLicense] [-AllowClobber] [-SkipPublisherCheck] [-InstallUpdate] [-NoPathUpdate] [<CommonParameters>]"
+        },
+        {
+          "Name": "Install-PackageProvider",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-Credential <pscredential>] [-Scope <string>] [-Source <string[]>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <SoftwareIdentity[]> [-Scope <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Register-PackageSource",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string>] [[-Location] <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ProviderName <string>] [<CommonParameters>] [[-Name] <string>] [[-Location] <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [<CommonParameters>] [[-Name] <string>] [[-Location] <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Save-Package",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-Source <string[]>] [-Path <string>] [-LiteralPath <string>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ProviderName <string[]>] [<CommonParameters>] -InputObject <SoftwareIdentity> [-Path <string>] [-LiteralPath <string>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [<CommonParameters>] [-Path <string>] [-LiteralPath <string>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [-Headers <string[]>] [-FilterOnTag <string[]>] [-Contains <string>] [-AllowPrereleaseVersions] [<CommonParameters>] [-Path <string>] [-LiteralPath <string>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [-Headers <string[]>] [-FilterOnTag <string[]>] [-Contains <string>] [-AllowPrereleaseVersions] [<CommonParameters>] [-Path <string>] [-LiteralPath <string>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-AllowPrereleaseVersions] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [-Type <string>] [-Filter <string>] [-Tag <string[]>] [-Includes <string[]>] [-DscResource <string[]>] [-RoleCapability <string[]>] [-Command <string[]>] [-AcceptLicense] [<CommonParameters>] [-Path <string>] [-LiteralPath <string>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-AllowPrereleaseVersions] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [-Type <string>] [-Filter <string>] [-Tag <string[]>] [-Includes <string[]>] [-DscResource <string[]>] [-RoleCapability <string[]>] [-Command <string[]>] [-AcceptLicense] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PackageSource",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Location <string>] [-NewLocation <string>] [-NewName <string>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ProviderName <string>] [<CommonParameters>] -InputObject <PackageSource> [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-NewLocation <string>] [-NewName <string>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [<CommonParameters>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-NewLocation <string>] [-NewName <string>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [<CommonParameters>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-NewLocation <string>] [-NewName <string>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [<CommonParameters>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-NewLocation <string>] [-NewName <string>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [<CommonParameters>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-NewLocation <string>] [-NewName <string>] [-Trusted] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Uninstall-Package",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject] <SoftwareIdentity[]> [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string[]> [-RequiredVersion <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ProviderName <string[]>] [<CommonParameters>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-Destination <string>] [-ExcludeVersion] [-Scope <string>] [-SkipDependencies] [<CommonParameters>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-Destination <string>] [-ExcludeVersion] [-Scope <string>] [-SkipDependencies] [<CommonParameters>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-Scope <string>] [-PackageManagementProvider <string>] [-Type <string>] [-AllowClobber] [-SkipPublisherCheck] [-InstallUpdate] [-NoPathUpdate] [-AllowPrereleaseVersions] [<CommonParameters>] [-AllVersions] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-Scope <string>] [-PackageManagementProvider <string>] [-Type <string>] [-AllowClobber] [-SkipPublisherCheck] [-InstallUpdate] [-NoPathUpdate] [-AllowPrereleaseVersions] [<CommonParameters>]"
+        },
+        {
+          "Name": "Unregister-PackageSource",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Source] <string>] [-Location <string>] [-Credential <pscredential>] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ProviderName <string>] [<CommonParameters>] -InputObject <PackageSource[]> [-Credential <pscredential>] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [<CommonParameters>] [-Credential <pscredential>] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [<CommonParameters>] [-Credential <pscredential>] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-ConfigFile <string>] [-SkipValidate] [<CommonParameters>] [-Credential <pscredential>] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [<CommonParameters>] [-Credential <pscredential>] [-Force] [-ForceBootstrap] [-WhatIf] [-Confirm] [-PackageManagementProvider <string>] [-PublishLocation <string>] [-ScriptSourceLocation <string>] [-ScriptPublishLocation <string>] [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": []
+    },
+    {
+      "Name": "PowerShellGet",
+      "Version": "1.6.7",
+      "ExportedCommands": [
+        {
+          "Name": "Find-Command",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-ModuleName <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-AllVersions] [-AllowPrerelease] [-Tag <string[]>] [-Filter <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Repository <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Find-DscResource",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-ModuleName <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-AllVersions] [-AllowPrerelease] [-Tag <string[]>] [-Filter <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Repository <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Find-Module",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-AllVersions] [-IncludeDependencies] [-Filter <string>] [-Tag <string[]>] [-Includes <string[]>] [-DscResource <string[]>] [-RoleCapability <string[]>] [-Command <string[]>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Repository <string[]>] [-Credential <pscredential>] [-AllowPrerelease] [<CommonParameters>]"
+        },
+        {
+          "Name": "Find-RoleCapability",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-ModuleName <string>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-AllVersions] [-AllowPrerelease] [-Tag <string[]>] [-Filter <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Repository <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Find-Script",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-AllVersions] [-IncludeDependencies] [-Filter <string>] [-Tag <string[]>] [-Includes <string[]>] [-Command <string[]>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Repository <string[]>] [-Credential <pscredential>] [-AllowPrerelease] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-InstalledModule",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-MinimumVersion <string>] [-RequiredVersion <string>] [-MaximumVersion <string>] [-AllVersions] [-AllowPrerelease] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-InstalledScript",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-MinimumVersion <string>] [-RequiredVersion <string>] [-MaximumVersion <string>] [-AllowPrerelease] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PSRepository",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Install-Module",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string[]> [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-Repository <string[]>] [-Credential <pscredential>] [-Scope <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllowClobber] [-SkipPublisherCheck] [-Force] [-AllowPrerelease] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <psobject[]> [-Credential <pscredential>] [-Scope <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-AllowClobber] [-SkipPublisherCheck] [-Force] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Install-Script",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string[]> [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-Repository <string[]>] [-Scope <string>] [-NoPathUpdate] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AllowPrerelease] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <psobject[]> [-Scope <string>] [-NoPathUpdate] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-ScriptFileInfo",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Path] <string>] -Description <string> [-Version <string>] [-Author <string>] [-Guid <guid>] [-CompanyName <string>] [-Copyright <string>] [-RequiredModules <Object[]>] [-ExternalModuleDependencies <string[]>] [-RequiredScripts <string[]>] [-ExternalScriptDependencies <string[]>] [-Tags <string[]>] [-ProjectUri <uri>] [-LicenseUri <uri>] [-IconUri <uri>] [-ReleaseNotes <string[]>] [-PrivateData <string>] [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Publish-Module",
+          "CommandType": "Function",
+          "ParameterSets": "-Name <string> [-RequiredVersion <string>] [-NuGetApiKey <string>] [-Repository <string>] [-Credential <pscredential>] [-FormatVersion <version>] [-ReleaseNotes <string[]>] [-Tags <string[]>] [-LicenseUri <uri>] [-IconUri <uri>] [-ProjectUri <uri>] [-Force] [-AllowPrerelease] [-WhatIf] [-Confirm] [<CommonParameters>] -Path <string> [-NuGetApiKey <string>] [-Repository <string>] [-Credential <pscredential>] [-FormatVersion <version>] [-ReleaseNotes <string[]>] [-Tags <string[]>] [-LicenseUri <uri>] [-IconUri <uri>] [-ProjectUri <uri>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Publish-Script",
+          "CommandType": "Function",
+          "ParameterSets": "-Path <string> [-NuGetApiKey <string>] [-Repository <string>] [-Credential <pscredential>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] -LiteralPath <string> [-NuGetApiKey <string>] [-Repository <string>] [-Credential <pscredential>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Register-PSRepository",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string> [-SourceLocation] <uri> [-PublishLocation <uri>] [-ScriptSourceLocation <uri>] [-ScriptPublishLocation <uri>] [-Credential <pscredential>] [-InstallationPolicy <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-PackageManagementProvider <string>] [<CommonParameters>] -Default [-InstallationPolicy <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Save-Module",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string[]> [-Path] <string> [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-Repository <string[]>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AllowPrerelease] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string[]> -LiteralPath <string> [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-Repository <string[]>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AllowPrerelease] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <psobject[]> -LiteralPath <string> [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <psobject[]> [-Path] <string> [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Save-Script",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string[]> [-Path] <string> [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-Repository <string[]>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AllowPrerelease] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string[]> -LiteralPath <string> [-MinimumVersion <string>] [-MaximumVersion <string>] [-RequiredVersion <string>] [-Repository <string[]>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AllowPrerelease] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <psobject[]> -LiteralPath <string> [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <psobject[]> [-Path] <string> [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PSRepository",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string> [[-SourceLocation] <uri>] [-PublishLocation <uri>] [-ScriptSourceLocation <uri>] [-ScriptPublishLocation <uri>] [-Credential <pscredential>] [-InstallationPolicy <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-PackageManagementProvider <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-ScriptFileInfo",
+          "CommandType": "Function",
+          "ParameterSets": "[-Path] <string> [<CommonParameters>] -LiteralPath <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Uninstall-Module",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string[]> [-MinimumVersion <string>] [-RequiredVersion <string>] [-MaximumVersion <string>] [-AllVersions] [-Force] [-AllowPrerelease] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <psobject[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Uninstall-Script",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string[]> [-MinimumVersion <string>] [-RequiredVersion <string>] [-MaximumVersion <string>] [-Force] [-AllowPrerelease] [-WhatIf] [-Confirm] [<CommonParameters>] [-InputObject] <psobject[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Unregister-PSRepository",
+          "CommandType": "Function",
+          "ParameterSets": "[-Name] <string[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-Module",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-RequiredVersion <string>] [-MaximumVersion <string>] [-Credential <pscredential>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Force] [-AllowPrerelease] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-ModuleManifest",
+          "CommandType": "Function",
+          "ParameterSets": "[-Path] <string> [-NestedModules <Object[]>] [-Guid <guid>] [-Author <string>] [-CompanyName <string>] [-Copyright <string>] [-RootModule <string>] [-ModuleVersion <version>] [-Description <string>] [-ProcessorArchitecture <ProcessorArchitecture>] [-CompatiblePSEditions <string[]>] [-PowerShellVersion <version>] [-ClrVersion <version>] [-DotNetFrameworkVersion <version>] [-PowerShellHostName <string>] [-PowerShellHostVersion <version>] [-RequiredModules <Object[]>] [-TypesToProcess <string[]>] [-FormatsToProcess <string[]>] [-ScriptsToProcess <string[]>] [-RequiredAssemblies <string[]>] [-FileList <string[]>] [-ModuleList <Object[]>] [-FunctionsToExport <string[]>] [-AliasesToExport <string[]>] [-VariablesToExport <string[]>] [-CmdletsToExport <string[]>] [-DscResourcesToExport <string[]>] [-PrivateData <hashtable>] [-Tags <string[]>] [-ProjectUri <uri>] [-LicenseUri <uri>] [-IconUri <uri>] [-ReleaseNotes <string[]>] [-Prerelease <string>] [-HelpInfoUri <uri>] [-PassThru] [-DefaultCommandPrefix <string>] [-ExternalModuleDependencies <string[]>] [-PackageManagementProviders <string[]>] [-RequireLicenseAcceptance] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-Script",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [-RequiredVersion <string>] [-MaximumVersion <string>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-Credential <pscredential>] [-Force] [-AllowPrerelease] [-AcceptLicense] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-ScriptFileInfo",
+          "CommandType": "Function",
+          "ParameterSets": "[-Path] <string> [-Version <string>] [-Author <string>] [-Guid <guid>] [-Description <string>] [-CompanyName <string>] [-Copyright <string>] [-RequiredModules <Object[]>] [-ExternalModuleDependencies <string[]>] [-RequiredScripts <string[]>] [-ExternalScriptDependencies <string[]>] [-Tags <string[]>] [-ProjectUri <uri>] [-LicenseUri <uri>] [-IconUri <uri>] [-ReleaseNotes <string[]>] [-PrivateData <string>] [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-LiteralPath] <string> [-Version <string>] [-Author <string>] [-Guid <guid>] [-Description <string>] [-CompanyName <string>] [-Copyright <string>] [-RequiredModules <Object[]>] [-ExternalModuleDependencies <string[]>] [-RequiredScripts <string[]>] [-ExternalScriptDependencies <string[]>] [-Tags <string[]>] [-ProjectUri <uri>] [-LicenseUri <uri>] [-IconUri <uri>] [-ReleaseNotes <string[]>] [-PrivateData <string>] [-PassThru] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": [
+        "inmo",
+        "fimo",
+        "upmo",
+        "pumo"
+      ]
+    },
+    {
+      "Name": "PSDesiredStateConfiguration",
+      "Version": "0.0",
+      "ExportedCommands": [
+        {
+          "Name": "Add-NodeKeys",
+          "CommandType": "Function",
+          "ParameterSets": "[-ResourceKey] <string> [-keywordName] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "AddDscResourceProperty",
+          "CommandType": "Function",
+          "ParameterSets": null
+        },
+        {
+          "Name": "AddDscResourcePropertyFromMetadata",
+          "CommandType": "Function",
+          "ParameterSets": null
+        },
+        {
+          "Name": "CheckResourceFound",
+          "CommandType": "Function",
+          "ParameterSets": "[[-names] <Object>] [[-Resources] <Object>]"
+        },
+        {
+          "Name": "Configuration",
+          "CommandType": "Function",
+          "ParameterSets": "[[-ResourceModuleTuplesToImport] <List[Tuple[string[],ModuleSpecification[],version]]>] [[-OutputPath] <Object>] [[-Name] <Object>] [[-Body] <scriptblock>] [[-ArgsToBody] <hashtable>] [[-ConfigurationData] <hashtable>] [[-InstanceName] <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "ConvertTo-MOFInstance",
+          "CommandType": "Function",
+          "ParameterSets": "[-Type] <string> [-Properties] <hashtable> [<CommonParameters>]"
+        },
+        {
+          "Name": "Generate-VersionInfo",
+          "CommandType": "Function",
+          "ParameterSets": "[-KeywordData] <Object> [-Value] <hashtable> [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-CompatibleVersionAddtionaPropertiesStr",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-ComplexResourceQualifier",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-ConfigurationErrorCount",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-DscResource",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string[]>] [[-Module] <Object>] [-Syntax] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-DSCResourceModules",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-EncryptedPassword",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Value] <Object>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-InnerMostErrorRecord",
+          "CommandType": "Function",
+          "ParameterSets": "[-ErrorRecord] <ErrorRecord> [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-MofInstanceName",
+          "CommandType": "Function",
+          "ParameterSets": "[[-mofInstance] <string>]"
+        },
+        {
+          "Name": "Get-MofInstanceText",
+          "CommandType": "Function",
+          "ParameterSets": "[-aliasId] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PositionInfo",
+          "CommandType": "Function",
+          "ParameterSets": "[[-sourceMetadata] <string>]"
+        },
+        {
+          "Name": "Get-PSCurrentConfigurationNode",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-PSDefaultConfigurationDocument",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-PSMetaConfigDocumentInstVersionInfo",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-PSMetaConfigurationProcessed",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-PSTopConfigurationName",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-PublicKeyFromFile",
+          "CommandType": "Function",
+          "ParameterSets": "[-certificatefile] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PublicKeyFromStore",
+          "CommandType": "Function",
+          "ParameterSets": "[-certificateid] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "GetCompositeResource",
+          "CommandType": "Function",
+          "ParameterSets": "[[-patterns] <WildcardPattern[]>] [-configInfo] <ConfigurationInfo> [[-ignoreParameters] <Object>] [-modules] <psmoduleinfo[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "GetImplementingModulePath",
+          "CommandType": "Function",
+          "ParameterSets": "[-schemaFileName] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "GetModule",
+          "CommandType": "Function",
+          "ParameterSets": "[-modules] <psmoduleinfo[]> [-schemaFileName] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "GetPatterns",
+          "CommandType": "Function",
+          "ParameterSets": "[[-names] <string[]>]"
+        },
+        {
+          "Name": "GetResourceFromKeyword",
+          "CommandType": "Function",
+          "ParameterSets": "[-keyword] <DynamicKeyword> [[-patterns] <WildcardPattern[]>] [-modules] <psmoduleinfo[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "GetSyntax",
+          "CommandType": "Function",
+          "ParameterSets": null
+        },
+        {
+          "Name": "ImportCimAndScriptKeywordsFromModule",
+          "CommandType": "Function",
+          "ParameterSets": "[-Module] <Object> [-resource] <Object> [[-functionsToDefine] <Object>] [<CommonParameters>]"
+        },
+        {
+          "Name": "ImportClassResourcesFromModule",
+          "CommandType": "Function",
+          "ParameterSets": "[-Module] <psmoduleinfo> [-Resources] <List[string]> [[-functionsToDefine] <Dictionary[string,scriptblock]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Initialize-ConfigurationRuntimeState",
+          "CommandType": "Function",
+          "ParameterSets": "[[-ConfigurationName] <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "IsHiddenResource",
+          "CommandType": "Function",
+          "ParameterSets": "[-ResourceName] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "IsPatternMatched",
+          "CommandType": "Function",
+          "ParameterSets": "[[-patterns] <WildcardPattern[]>] [-Name] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "New-DscChecksum",
+          "CommandType": "Function",
+          "ParameterSets": "[-Path] <string[]> [[-OutPath] <string>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Node",
+          "CommandType": "Function",
+          "ParameterSets": "[-KeywordData] <Object> [[-Name] <string[]>] [-Value] <scriptblock> [-sourceMetadata] <Object> [<CommonParameters>]"
+        },
+        {
+          "Name": "ReadEnvironmentFile",
+          "CommandType": "Function",
+          "ParameterSets": "[-FilePath] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-NodeExclusiveResources",
+          "CommandType": "Function",
+          "ParameterSets": "[-resourceId] <string> [-exclusiveResource] <string[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-NodeManager",
+          "CommandType": "Function",
+          "ParameterSets": "[-resourceId] <string> [-referencedManagers] <string[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-NodeResources",
+          "CommandType": "Function",
+          "ParameterSets": "[-resourceId] <string> [-requiredResourceList] <string[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-NodeResourceSource",
+          "CommandType": "Function",
+          "ParameterSets": "[-resourceId] <string> [-referencedResourceSources] <string[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PSCurrentConfigurationNode",
+          "CommandType": "Function",
+          "ParameterSets": "[[-nodeName] <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PSDefaultConfigurationDocument",
+          "CommandType": "Function",
+          "ParameterSets": "[[-documentText] <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PSMetaConfigDocInsProcessedBeforeMeta",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Set-PSMetaConfigVersionInfoV2",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Set-PSTopConfigurationName",
+          "CommandType": "Function",
+          "ParameterSets": "[[-Name] <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "StrongConnect",
+          "CommandType": "Function",
+          "ParameterSets": "[[-resourceId] <string>]"
+        },
+        {
+          "Name": "Test-ConflictingResources",
+          "CommandType": "Function",
+          "ParameterSets": "[[-keyword] <string>] [-properties] <hashtable> [-keywordData] <Object> [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-ModuleReloadRequired",
+          "CommandType": "Function",
+          "ParameterSets": "[-SchemaFilePath] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-MofInstanceText",
+          "CommandType": "Function",
+          "ParameterSets": "[-instanceText] <Object> [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-NodeManager",
+          "CommandType": "Function",
+          "ParameterSets": "[-resourceId] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-NodeResources",
+          "CommandType": "Function",
+          "ParameterSets": "[-resourceId] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-NodeResourceSource",
+          "CommandType": "Function",
+          "ParameterSets": "[-resourceId] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "ThrowError",
+          "CommandType": "Function",
+          "ParameterSets": "[-ExceptionName] <string> [-ExceptionMessage] <string> [[-ExceptionObject] <Object>] [-errorId] <string> [-errorCategory] <ErrorCategory> [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-ConfigurationDocumentRef",
+          "CommandType": "Function",
+          "ParameterSets": "[-NodeResources] <Dictionary[string,string[]]> [-NodeInstanceAliases] <Dictionary[string,string]> [-NodeResourceIdAliases] <Dictionary[string,string]> [-ConfigurationName] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-ConfigurationErrorCount",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Update-DependsOn",
+          "CommandType": "Function",
+          "ParameterSets": "[-NodeResources] <Dictionary[string,string[]]> [-NodeInstanceAliases] <Dictionary[string,string]> [-NodeResourceIdAliases] <Dictionary[string,string]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-LocalConfigManager",
+          "CommandType": "Function",
+          "ParameterSets": "[[-localConfigManager] <string>] [[-resourceManagers] <string>] [[-reportManagers] <string>] [[-downloadManagers] <string>] [[-partialConfigurations] <string>]"
+        },
+        {
+          "Name": "Update-ModuleVersion",
+          "CommandType": "Function",
+          "ParameterSets": "[-NodeResources] <Dictionary[string,string[]]> [-NodeInstanceAliases] <Dictionary[string,string]> [-NodeResourceIdAliases] <Dictionary[string,string]> [<CommonParameters>]"
+        },
+        {
+          "Name": "ValidateNoCircleInNodeResources",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "ValidateNodeExclusiveResources",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "ValidateNodeManager",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "ValidateNodeResources",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "ValidateNodeResourceSource",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "ValidateNoNameNodeResources",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "ValidateUpdate-ConfigurationData",
+          "CommandType": "Function",
+          "ParameterSets": "[[-ConfigurationData] <hashtable>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-Log",
+          "CommandType": "Function",
+          "ParameterSets": "[-message] <string> [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Write-MetaConfigFile",
+          "CommandType": "Function",
+          "ParameterSets": "[[-ConfigurationName] <string>] [[-mofNode] <string>] [[-mofNodeHash] <Dictionary[string,string]>]"
+        },
+        {
+          "Name": "Write-NodeMOFFile",
+          "CommandType": "Function",
+          "ParameterSets": "[[-ConfigurationName] <string>] [[-mofNode] <string>] [[-mofNodeHash] <Dictionary[string,string]>]"
+        },
+        {
+          "Name": "WriteFile",
+          "CommandType": "Function",
+          "ParameterSets": "[-Value] <string> [-Path] <string> [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": []
+    },
+    {
+      "Name": "PSReadLine",
+      "Version": "2.0.0",
+      "ExportedCommands": [
+        {
+          "Name": "PSConsoleHostReadLine",
+          "CommandType": "Function",
+          "ParameterSets": ""
+        },
+        {
+          "Name": "Get-PSReadLineKeyHandler",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Bound] [-Unbound] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PSReadLineOption",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-PSReadLineKeyHandler",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Chord] <string[]> [-ViMode <ViMode>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PSReadLineKeyHandler",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Chord] <string[]> [-ScriptBlock] <scriptblock> [-BriefDescription <string>] [-Description <string>] [-ViMode <ViMode>] [<CommonParameters>] [-Chord] <string[]> [-Function] <string> [-ViMode <ViMode>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PSReadLineOption",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-EditMode <EditMode>] [-ContinuationPrompt <string>] [-HistoryNoDuplicates] [-AddToHistoryHandler <Func[string,bool]>] [-CommandValidationHandler <Action[CommandAst]>] [-HistorySearchCursorMovesToEnd] [-MaximumHistoryCount <int>] [-MaximumKillRingCount <int>] [-ShowToolTips] [-ExtraPromptLineCount <int>] [-DingTone <int>] [-DingDuration <int>] [-BellStyle <BellStyle>] [-CompletionQueryItems <int>] [-WordDelimiters <string>] [-HistorySearchCaseSensitive] [-HistorySaveStyle <HistorySaveStyle>] [-HistorySavePath <string>] [-AnsiEscapeTimeout <int>] [-PromptText <string>] [-ViModeIndicator <ViModeStyle>] [-Colors <hashtable>] [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": []
+    },
+    {
+      "Name": "ThreadJob",
+      "Version": "1.1.2",
+      "ExportedCommands": {
+        "Name": "Start-ThreadJob",
+        "CommandType": "Cmdlet",
+        "ParameterSets": [
+          "[-ScriptBlock] <scriptblock> [-Name <string>] [-InitializationScript <scriptblock>] [-InputObject <psobject>] [-ArgumentList <Object[]>] [-ThrottleLimit <int>] [<CommonParameters>]",
+          "[-FilePath] <string> [-Name <string>] [-InitializationScript <scriptblock>] [-InputObject <psobject>] [-ArgumentList <Object[]>] [-ThrottleLimit <int>] [<CommonParameters>]"
+        ]
+      },
+      "ExportedAliases": []
+    },
+    {
+      "Name": "Microsoft.PowerShell.Core",
+      "Version": "6.1.0",
+      "ExportedCommands": [
+        {
+          "Name": "Add-History",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-InputObject] <psobject[]>] [-Passthru] [<CommonParameters>]"
+        },
+        {
+          "Name": "Clear-History",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Id] <int[]>] [[-Count] <int>] [-Newest] [-WhatIf] [-Confirm] [<CommonParameters>] [[-Count] <int>] [-CommandLine <string[]>] [-Newest] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Debug-Job",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Job] <Job> [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string> [-WhatIf] [-Confirm] [<CommonParameters>] [-Id] <int> [-WhatIf] [-Confirm] [<CommonParameters>] [-InstanceId] <guid> [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Enter-PSSession",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-ComputerName] <string> [-EnableNetworkAccess] [-Credential <pscredential>] [-ConfigurationName <string>] [-Port <int>] [-UseSSL] [-ApplicationName <string>] [-SessionOption <PSSessionOption>] [-Authentication <AuthenticationMechanism>] [-CertificateThumbprint <string>] [<CommonParameters>] [-HostName] <string> [-Port <int>] [-UserName <string>] [-KeyFilePath <string>] [-SSHTransport] [-Subsystem <string>] [<CommonParameters>] [[-Session] <PSSession>] [<CommonParameters>] [[-ConnectionUri] <uri>] [-EnableNetworkAccess] [-Credential <pscredential>] [-ConfigurationName <string>] [-AllowRedirection] [-SessionOption <PSSessionOption>] [-Authentication <AuthenticationMechanism>] [-CertificateThumbprint <string>] [<CommonParameters>] [-InstanceId <guid>] [<CommonParameters>] [[-Id] <int>] [<CommonParameters>] [-Name <string>] [<CommonParameters>] [-VMId] <guid> [-Credential] <pscredential> [-ConfigurationName <string>] [<CommonParameters>] [-VMName] <string> [-Credential] <pscredential> [-ConfigurationName <string>] [<CommonParameters>] [-ContainerId] <string> [-ConfigurationName <string>] [-RunAsAdministrator] [<CommonParameters>]"
+        },
+        {
+          "Name": "Exit-PSSession",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[<CommonParameters>]"
+        },
+        {
+          "Name": "Export-ModuleMember",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Function] <string[]>] [-Cmdlet <string[]>] [-Variable <string[]>] [-Alias <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "ForEach-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Process] <scriptblock[]> [-InputObject <psobject>] [-Begin <scriptblock>] [-End <scriptblock>] [-RemainingScripts <scriptblock[]>] [-WhatIf] [-Confirm] [<CommonParameters>] [-MemberName] <string> [-InputObject <psobject>] [-ArgumentList <Object[]>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Command",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-ArgumentList] <Object[]>] [-Verb <string[]>] [-Noun <string[]>] [-Module <string[]>] [-FullyQualifiedModule <ModuleSpecification[]>] [-TotalCount <int>] [-Syntax] [-ShowCommandInfo] [-All] [-ListImported] [-ParameterName <string[]>] [-ParameterType <PSTypeName[]>] [<CommonParameters>] [[-Name] <string[]>] [[-ArgumentList] <Object[]>] [-Module <string[]>] [-FullyQualifiedModule <ModuleSpecification[]>] [-CommandType <CommandTypes>] [-TotalCount <int>] [-Syntax] [-ShowCommandInfo] [-All] [-ListImported] [-ParameterName <string[]>] [-ParameterType <PSTypeName[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-ExperimentalFeature",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-ListAvailable] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Help",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string>] [-Path <string>] [-Category <string[]>] [-Full] [-Component <string[]>] [-Functionality <string[]>] [-Role <string[]>] [<CommonParameters>] [[-Name] <string>] -Detailed [-Path <string>] [-Category <string[]>] [-Component <string[]>] [-Functionality <string[]>] [-Role <string[]>] [<CommonParameters>] [[-Name] <string>] -Examples [-Path <string>] [-Category <string[]>] [-Component <string[]>] [-Functionality <string[]>] [-Role <string[]>] [<CommonParameters>] [[-Name] <string>] -Parameter <string> [-Path <string>] [-Category <string[]>] [-Component <string[]>] [-Functionality <string[]>] [-Role <string[]>] [<CommonParameters>] [[-Name] <string>] -Online [-Path <string>] [-Category <string[]>] [-Component <string[]>] [-Functionality <string[]>] [-Role <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-History",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Id] <long[]>] [[-Count] <int>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Job",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Id] <int[]>] [-IncludeChildJob] [-ChildJobState <JobState>] [-HasMoreData <bool>] [-Before <datetime>] [-After <datetime>] [-Newest <int>] [<CommonParameters>] [-InstanceId] <guid[]> [-IncludeChildJob] [-ChildJobState <JobState>] [-HasMoreData <bool>] [-Before <datetime>] [-After <datetime>] [-Newest <int>] [<CommonParameters>] [-Name] <string[]> [-IncludeChildJob] [-ChildJobState <JobState>] [-HasMoreData <bool>] [-Before <datetime>] [-After <datetime>] [-Newest <int>] [<CommonParameters>] [-State] <JobState> [-IncludeChildJob] [-ChildJobState <JobState>] [-HasMoreData <bool>] [-Before <datetime>] [-After <datetime>] [-Newest <int>] [<CommonParameters>] [-IncludeChildJob] [-ChildJobState <JobState>] [-HasMoreData <bool>] [-Before <datetime>] [-After <datetime>] [-Newest <int>] [-Command <string[]>] [<CommonParameters>] [-Filter] <hashtable> [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-Module",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Name] <string[]>] [-FullyQualifiedName <ModuleSpecification[]>] [-All] [<CommonParameters>] [[-Name] <string[]>] -ListAvailable [-FullyQualifiedName <ModuleSpecification[]>] [-All] [-PSEdition <string>] [-SkipEditionCheck] [-Refresh] [<CommonParameters>] [[-Name] <string[]>] -PSSession <PSSession> [-FullyQualifiedName <ModuleSpecification[]>] [-ListAvailable] [-PSEdition <string>] [-SkipEditionCheck] [-Refresh] [<CommonParameters>] [[-Name] <string[]>] -CimSession <CimSession> [-FullyQualifiedName <ModuleSpecification[]>] [-ListAvailable] [-SkipEditionCheck] [-Refresh] [-CimResourceUri <uri>] [-CimNamespace <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Get-PSSession",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name <string[]>] [<CommonParameters>] [-ComputerName] <string[]> [-ApplicationName <string>] [-ConfigurationName <string>] [-Name <string[]>] [-Credential <pscredential>] [-Authentication <AuthenticationMechanism>] [-CertificateThumbprint <string>] [-Port <int>] [-UseSSL] [-ThrottleLimit <int>] [-State <SessionFilterState>] [-SessionOption <PSSessionOption>] [<CommonParameters>] [-ComputerName] <string[]> -InstanceId <guid[]> [-ApplicationName <string>] [-ConfigurationName <string>] [-Credential <pscredential>] [-Authentication <AuthenticationMechanism>] [-CertificateThumbprint <string>] [-Port <int>] [-UseSSL] [-ThrottleLimit <int>] [-State <SessionFilterState>] [-SessionOption <PSSessionOption>] [<CommonParameters>] [-ConnectionUri] <uri[]> [-ConfigurationName <string>] [-AllowRedirection] [-Name <string[]>] [-Credential <pscredential>] [-Authentication <AuthenticationMechanism>] [-CertificateThumbprint <string>] [-ThrottleLimit <int>] [-State <SessionFilterState>] [-SessionOption <PSSessionOption>] [<CommonParameters>] [-ConnectionUri] <uri[]> -InstanceId <guid[]> [-ConfigurationName <string>] [-AllowRedirection] [-Credential <pscredential>] [-Authentication <AuthenticationMechanism>] [-CertificateThumbprint <string>] [-ThrottleLimit <int>] [-State <SessionFilterState>] [-SessionOption <PSSessionOption>] [<CommonParameters>] -ContainerId <string[]> [-ConfigurationName <string>] [-Name <string[]>] [-State <SessionFilterState>] [<CommonParameters>] -InstanceId <guid[]> -ContainerId <string[]> [-ConfigurationName <string>] [-State <SessionFilterState>] [<CommonParameters>] -VMId <guid[]> [-ConfigurationName <string>] [-Name <string[]>] [-State <SessionFilterState>] [<CommonParameters>] -InstanceId <guid[]> -VMId <guid[]> [-ConfigurationName <string>] [-State <SessionFilterState>] [<CommonParameters>] -VMName <string[]> [-ConfigurationName <string>] [-Name <string[]>] [-State <SessionFilterState>] [<CommonParameters>] -InstanceId <guid[]> -VMName <string[]> [-ConfigurationName <string>] [-State <SessionFilterState>] [<CommonParameters>] [-InstanceId <guid[]>] [<CommonParameters>] [-Id] <int[]> [<CommonParameters>]"
+        },
+        {
+          "Name": "Import-Module",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-Global] [-Prefix <string>] [-Function <string[]>] [-Cmdlet <string[]>] [-Variable <string[]>] [-Alias <string[]>] [-Force] [-SkipEditionCheck] [-PassThru] [-AsCustomObject] [-MinimumVersion <version>] [-MaximumVersion <string>] [-RequiredVersion <version>] [-ArgumentList <Object[]>] [-DisableNameChecking] [-NoClobber] [-Scope <string>] [<CommonParameters>] [-Name] <string[]> -PSSession <PSSession> [-Global] [-Prefix <string>] [-Function <string[]>] [-Cmdlet <string[]>] [-Variable <string[]>] [-Alias <string[]>] [-Force] [-SkipEditionCheck] [-PassThru] [-AsCustomObject] [-MinimumVersion <version>] [-MaximumVersion <string>] [-RequiredVersion <version>] [-ArgumentList <Object[]>] [-DisableNameChecking] [-NoClobber] [-Scope <string>] [<CommonParameters>] [-Name] <string[]> -CimSession <CimSession> [-Global] [-Prefix <string>] [-Function <string[]>] [-Cmdlet <string[]>] [-Variable <string[]>] [-Alias <string[]>] [-Force] [-SkipEditionCheck] [-PassThru] [-AsCustomObject] [-MinimumVersion <version>] [-MaximumVersion <string>] [-RequiredVersion <version>] [-ArgumentList <Object[]>] [-DisableNameChecking] [-NoClobber] [-Scope <string>] [-CimResourceUri <uri>] [-CimNamespace <string>] [<CommonParameters>] [-FullyQualifiedName] <ModuleSpecification[]> [-Global] [-Prefix <string>] [-Function <string[]>] [-Cmdlet <string[]>] [-Variable <string[]>] [-Alias <string[]>] [-Force] [-SkipEditionCheck] [-PassThru] [-AsCustomObject] [-ArgumentList <Object[]>] [-DisableNameChecking] [-NoClobber] [-Scope <string>] [<CommonParameters>] [-FullyQualifiedName] <ModuleSpecification[]> -PSSession <PSSession> [-Global] [-Prefix <string>] [-Function <string[]>] [-Cmdlet <string[]>] [-Variable <string[]>] [-Alias <string[]>] [-Force] [-SkipEditionCheck] [-PassThru] [-AsCustomObject] [-ArgumentList <Object[]>] [-DisableNameChecking] [-NoClobber] [-Scope <string>] [<CommonParameters>] [-Assembly] <Assembly[]> [-Global] [-Prefix <string>] [-Function <string[]>] [-Cmdlet <string[]>] [-Variable <string[]>] [-Alias <string[]>] [-Force] [-SkipEditionCheck] [-PassThru] [-AsCustomObject] [-ArgumentList <Object[]>] [-DisableNameChecking] [-NoClobber] [-Scope <string>] [<CommonParameters>] [-ModuleInfo] <psmoduleinfo[]> [-Global] [-Prefix <string>] [-Function <string[]>] [-Cmdlet <string[]>] [-Variable <string[]>] [-Alias <string[]>] [-Force] [-SkipEditionCheck] [-PassThru] [-AsCustomObject] [-ArgumentList <Object[]>] [-DisableNameChecking] [-NoClobber] [-Scope <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Invoke-Command",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-ScriptBlock] <scriptblock> [-NoNewScope] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [[-Session] <PSSession[]>] [-ScriptBlock] <scriptblock> [-ThrottleLimit <int>] [-AsJob] [-HideComputerName] [-JobName <string>] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [[-Session] <PSSession[]>] [-FilePath] <string> [-ThrottleLimit <int>] [-AsJob] [-HideComputerName] [-JobName <string>] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [[-ComputerName] <string[]>] [-ScriptBlock] <scriptblock> [-Credential <pscredential>] [-Port <int>] [-UseSSL] [-ConfigurationName <string>] [-ApplicationName <string>] [-ThrottleLimit <int>] [-AsJob] [-InDisconnectedSession] [-SessionName <string[]>] [-HideComputerName] [-JobName <string>] [-SessionOption <PSSessionOption>] [-Authentication <AuthenticationMechanism>] [-EnableNetworkAccess] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [-CertificateThumbprint <string>] [<CommonParameters>] [[-ComputerName] <string[]>] [-FilePath] <string> [-Credential <pscredential>] [-Port <int>] [-UseSSL] [-ConfigurationName <string>] [-ApplicationName <string>] [-ThrottleLimit <int>] [-AsJob] [-InDisconnectedSession] [-SessionName <string[]>] [-HideComputerName] [-JobName <string>] [-SessionOption <PSSessionOption>] [-Authentication <AuthenticationMechanism>] [-EnableNetworkAccess] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [[-ConnectionUri] <uri[]>] [-ScriptBlock] <scriptblock> [-Credential <pscredential>] [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AsJob] [-InDisconnectedSession] [-HideComputerName] [-JobName <string>] [-AllowRedirection] [-SessionOption <PSSessionOption>] [-Authentication <AuthenticationMechanism>] [-EnableNetworkAccess] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [-CertificateThumbprint <string>] [<CommonParameters>] [[-ConnectionUri] <uri[]>] [-FilePath] <string> [-Credential <pscredential>] [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AsJob] [-InDisconnectedSession] [-HideComputerName] [-JobName <string>] [-AllowRedirection] [-SessionOption <PSSessionOption>] [-Authentication <AuthenticationMechanism>] [-EnableNetworkAccess] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [-VMId] <guid[]> [-ScriptBlock] <scriptblock> -Credential <pscredential> [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AsJob] [-HideComputerName] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [-ScriptBlock] <scriptblock> -Credential <pscredential> -VMName <string[]> [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AsJob] [-HideComputerName] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [-VMId] <guid[]> [-FilePath] <string> -Credential <pscredential> [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AsJob] [-HideComputerName] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [-FilePath] <string> -Credential <pscredential> -VMName <string[]> [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AsJob] [-HideComputerName] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] -ScriptBlock <scriptblock> -HostName <string[]> [-Port <int>] [-AsJob] [-HideComputerName] [-UserName <string>] [-KeyFilePath <string>] [-SSHTransport] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [-Subsystem <string>] [<CommonParameters>] [-ScriptBlock] <scriptblock> -ContainerId <string[]> [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AsJob] [-HideComputerName] [-JobName <string>] [-RunAsAdministrator] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [-FilePath] <string> -ContainerId <string[]> [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AsJob] [-HideComputerName] [-JobName <string>] [-RunAsAdministrator] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] -ScriptBlock <scriptblock> -SSHConnection <hashtable[]> [-AsJob] [-HideComputerName] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] -FilePath <string> -HostName <string[]> [-AsJob] [-HideComputerName] [-UserName <string>] [-KeyFilePath <string>] [-SSHTransport] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] -FilePath <string> -SSHConnection <hashtable[]> [-AsJob] [-HideComputerName] [-RemoteDebug] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Invoke-History",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Id] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-Module",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-ScriptBlock] <scriptblock> [-Function <string[]>] [-Cmdlet <string[]>] [-ReturnResult] [-AsCustomObject] [-ArgumentList <Object[]>] [<CommonParameters>] [-Name] <string> [-ScriptBlock] <scriptblock> [-Function <string[]>] [-Cmdlet <string[]>] [-ReturnResult] [-AsCustomObject] [-ArgumentList <Object[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-ModuleManifest",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string> [-NestedModules <Object[]>] [-Guid <guid>] [-Author <string>] [-CompanyName <string>] [-Copyright <string>] [-RootModule <string>] [-ModuleVersion <version>] [-Description <string>] [-ProcessorArchitecture <ProcessorArchitecture>] [-PowerShellVersion <version>] [-ClrVersion <version>] [-DotNetFrameworkVersion <version>] [-PowerShellHostName <string>] [-PowerShellHostVersion <version>] [-RequiredModules <Object[]>] [-TypesToProcess <string[]>] [-FormatsToProcess <string[]>] [-ScriptsToProcess <string[]>] [-RequiredAssemblies <string[]>] [-FileList <string[]>] [-ModuleList <Object[]>] [-FunctionsToExport <string[]>] [-AliasesToExport <string[]>] [-VariablesToExport <string[]>] [-CmdletsToExport <string[]>] [-DscResourcesToExport <string[]>] [-CompatiblePSEditions <string[]>] [-PrivateData <Object>] [-Tags <string[]>] [-ProjectUri <uri>] [-LicenseUri <uri>] [-IconUri <uri>] [-ReleaseNotes <string>] [-HelpInfoUri <string>] [-PassThru] [-DefaultCommandPrefix <string>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-PSRoleCapabilityFile",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string> [-Guid <guid>] [-Author <string>] [-Description <string>] [-CompanyName <string>] [-Copyright <string>] [-ModulesToImport <Object[]>] [-VisibleAliases <string[]>] [-VisibleCmdlets <Object[]>] [-VisibleFunctions <Object[]>] [-VisibleExternalCommands <string[]>] [-VisibleProviders <string[]>] [-ScriptsToProcess <string[]>] [-AliasDefinitions <IDictionary[]>] [-FunctionDefinitions <IDictionary[]>] [-VariableDefinitions <Object>] [-EnvironmentVariables <IDictionary>] [-TypesToProcess <string[]>] [-FormatsToProcess <string[]>] [-AssembliesToLoad <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-PSSession",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-ComputerName] <string[]>] [-Credential <pscredential>] [-Name <string[]>] [-EnableNetworkAccess] [-ConfigurationName <string>] [-Port <int>] [-UseSSL] [-ApplicationName <string>] [-ThrottleLimit <int>] [-SessionOption <PSSessionOption>] [-Authentication <AuthenticationMechanism>] [-CertificateThumbprint <string>] [<CommonParameters>] [-ConnectionUri] <uri[]> [-Credential <pscredential>] [-Name <string[]>] [-EnableNetworkAccess] [-ConfigurationName <string>] [-ThrottleLimit <int>] [-AllowRedirection] [-SessionOption <PSSessionOption>] [-Authentication <AuthenticationMechanism>] [-CertificateThumbprint <string>] [<CommonParameters>] [-VMId] <guid[]> -Credential <pscredential> [-Name <string[]>] [-ConfigurationName <string>] [-ThrottleLimit <int>] [<CommonParameters>] -Credential <pscredential> -VMName <string[]> [-Name <string[]>] [-ConfigurationName <string>] [-ThrottleLimit <int>] [<CommonParameters>] [[-Session] <PSSession[]>] [-Name <string[]>] [-EnableNetworkAccess] [-ThrottleLimit <int>] [<CommonParameters>] -ContainerId <string[]> [-Name <string[]>] [-ConfigurationName <string>] [-RunAsAdministrator] [-ThrottleLimit <int>] [<CommonParameters>] [-HostName] <string[]> [-Name <string[]>] [-Port <int>] [-UserName <string>] [-KeyFilePath <string>] [-SSHTransport] [-Subsystem <string>] [<CommonParameters>] -SSHConnection <hashtable[]> [-Name <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "New-PSTransportOption",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-MaxIdleTimeoutSec <int>] [-ProcessIdleTimeoutSec <int>] [-MaxSessions <int>] [-MaxConcurrentCommandsPerSession <int>] [-MaxSessionsPerUser <int>] [-MaxMemoryPerSessionMB <int>] [-MaxProcessesPerSession <int>] [-MaxConcurrentUsers <int>] [-IdleTimeoutSec <int>] [-OutputBufferingMode <OutputBufferingMode>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Out-Default",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Transcript] [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Out-Host",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Paging] [-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Out-Null",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-InputObject <psobject>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Receive-Job",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Job] <Job[]> [[-Location] <string[]>] [-Keep] [-NoRecurse] [-Force] [-Wait] [-AutoRemoveJob] [-WriteEvents] [-WriteJobInResults] [<CommonParameters>] [-Job] <Job[]> [[-ComputerName] <string[]>] [-Keep] [-NoRecurse] [-Force] [-Wait] [-AutoRemoveJob] [-WriteEvents] [-WriteJobInResults] [<CommonParameters>] [-Job] <Job[]> [[-Session] <PSSession[]>] [-Keep] [-NoRecurse] [-Force] [-Wait] [-AutoRemoveJob] [-WriteEvents] [-WriteJobInResults] [<CommonParameters>] [-Name] <string[]> [-Keep] [-NoRecurse] [-Force] [-Wait] [-AutoRemoveJob] [-WriteEvents] [-WriteJobInResults] [<CommonParameters>] [-InstanceId] <guid[]> [-Keep] [-NoRecurse] [-Force] [-Wait] [-AutoRemoveJob] [-WriteEvents] [-WriteJobInResults] [<CommonParameters>] [-Id] <int[]> [-Keep] [-NoRecurse] [-Force] [-Wait] [-AutoRemoveJob] [-WriteEvents] [-WriteJobInResults] [<CommonParameters>]"
+        },
+        {
+          "Name": "Register-ArgumentCompleter",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "-CommandName <string[]> -ScriptBlock <scriptblock> [-Native] [<CommonParameters>] -ParameterName <string> -ScriptBlock <scriptblock> [-CommandName <string[]>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-Job",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Id] <int[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-Job] <Job[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-InstanceId] <guid[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-Filter] <hashtable> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-State] <JobState> [-WhatIf] [-Confirm] [<CommonParameters>] [-Command <string[]>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-Module",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Name] <string[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-FullyQualifiedName] <ModuleSpecification[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>] [-ModuleInfo] <psmoduleinfo[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Remove-PSSession",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Id] <int[]> [-WhatIf] [-Confirm] [<CommonParameters>] [-Session] <PSSession[]> [-WhatIf] [-Confirm] [<CommonParameters>] -ContainerId <string[]> [-WhatIf] [-Confirm] [<CommonParameters>] -VMId <guid[]> [-WhatIf] [-Confirm] [<CommonParameters>] -VMName <string[]> [-WhatIf] [-Confirm] [<CommonParameters>] -InstanceId <guid[]> [-WhatIf] [-Confirm] [<CommonParameters>] -Name <string[]> [-WhatIf] [-Confirm] [<CommonParameters>] [-ComputerName] <string[]> [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Save-Help",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-DestinationPath] <string[]> [[-Module] <psmoduleinfo[]>] [[-UICulture] <cultureinfo[]>] [-FullyQualifiedModule <ModuleSpecification[]>] [-Credential <pscredential>] [-UseDefaultCredentials] [-Force] [-Scope <UpdateHelpScope>] [<CommonParameters>] [[-Module] <psmoduleinfo[]>] [[-UICulture] <cultureinfo[]>] -LiteralPath <string[]> [-FullyQualifiedModule <ModuleSpecification[]>] [-Credential <pscredential>] [-UseDefaultCredentials] [-Force] [-Scope <UpdateHelpScope>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-PSDebug",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Trace <int>] [-Step] [-Strict] [<CommonParameters>] [-Off] [<CommonParameters>]"
+        },
+        {
+          "Name": "Set-StrictMode",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "-Version <version> [<CommonParameters>] -Off [<CommonParameters>]"
+        },
+        {
+          "Name": "Start-Job",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-ScriptBlock] <scriptblock> [[-InitializationScript] <scriptblock>] [-Name <string>] [-Credential <pscredential>] [-Authentication <AuthenticationMechanism>] [-RunAs32] [-PSVersion <version>] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [-DefinitionName] <string> [[-DefinitionPath] <string>] [[-Type] <string>] [<CommonParameters>] [-FilePath] <string> [[-InitializationScript] <scriptblock>] [-Name <string>] [-Credential <pscredential>] [-Authentication <AuthenticationMechanism>] [-RunAs32] [-PSVersion <version>] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [[-InitializationScript] <scriptblock>] -LiteralPath <string> [-Name <string>] [-Credential <pscredential>] [-Authentication <AuthenticationMechanism>] [-RunAs32] [-PSVersion <version>] [-InputObject <psobject>] [-ArgumentList <Object[]>] [<CommonParameters>] [-HostName] <string[]> [-Subsystem <string>] [<CommonParameters>]"
+        },
+        {
+          "Name": "Stop-Job",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Id] <int[]> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-Job] <Job[]> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-Name] <string[]> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-InstanceId] <guid[]> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-State] <JobState> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>] [-Filter] <hashtable> [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Test-ModuleManifest",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Path] <string> [<CommonParameters>]"
+        },
+        {
+          "Name": "Update-Help",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[[-Module] <string[]>] [[-SourcePath] <string[]>] [[-UICulture] <cultureinfo[]>] [-FullyQualifiedModule <ModuleSpecification[]>] [-Recurse] [-Credential <pscredential>] [-UseDefaultCredentials] [-Force] [-Scope <UpdateHelpScope>] [-WhatIf] [-Confirm] [<CommonParameters>] [[-Module] <string[]>] [[-UICulture] <cultureinfo[]>] [-FullyQualifiedModule <ModuleSpecification[]>] [-LiteralPath <string[]>] [-Recurse] [-Credential <pscredential>] [-UseDefaultCredentials] [-Force] [-Scope <UpdateHelpScope>] [-WhatIf] [-Confirm] [<CommonParameters>]"
+        },
+        {
+          "Name": "Wait-Job",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Id] <int[]> [-Any] [-Timeout <int>] [-Force] [<CommonParameters>] [-Job] <Job[]> [-Any] [-Timeout <int>] [-Force] [<CommonParameters>] [-Name] <string[]> [-Any] [-Timeout <int>] [-Force] [<CommonParameters>] [-InstanceId] <guid[]> [-Any] [-Timeout <int>] [-Force] [<CommonParameters>] [-State] <JobState> [-Any] [-Timeout <int>] [-Force] [<CommonParameters>] [-Filter] <hashtable> [-Any] [-Timeout <int>] [-Force] [<CommonParameters>]"
+        },
+        {
+          "Name": "Where-Object",
+          "CommandType": "Cmdlet",
+          "ParameterSets": "[-Property] <string> [[-Value] <Object>] [-InputObject <psobject>] [-EQ] [<CommonParameters>] [-FilterScript] <scriptblock> [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CEQ [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -NE [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CNE [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -GT [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CGT [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -LT [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CLT [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -GE [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CGE [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -LE [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CLE [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -Like [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CLike [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -NotLike [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CNotLike [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -Match [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CMatch [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -NotMatch [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CNotMatch [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -Contains [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CContains [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -NotContains [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CNotContains [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -In [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CIn [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -NotIn [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -CNotIn [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -Is [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> [[-Value] <Object>] -IsNot [-InputObject <psobject>] [<CommonParameters>] [-Property] <string> -Not [-InputObject <psobject>] [<CommonParameters>]"
+        }
+      ],
+      "ExportedAliases": [
+        "?",
+        "%",
+        "clhy",
+        "etsn",
+        "exsn",
+        "foreach",
+        "gcm",
+        "ghy",
+        "gjb",
+        "gmo",
+        "gsn",
+        "h",
+        "history",
+        "icm",
+        "ihy",
+        "ipmo",
+        "nmo",
+        "nsn",
+        "oh",
+        "r",
+        "rcjb",
+        "rjb",
+        "rmo",
+        "rsn",
+        "sajb",
+        "spjb",
+        "where",
+        "wjb"
+      ]
+    }
+  ]
+}

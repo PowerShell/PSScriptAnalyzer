@@ -810,6 +810,57 @@
   <data name="UseCompatibleCmdletsError" xml:space="preserve">
     <value>'{0}' is not compatible with PowerShell edition '{1}', version '{2}' and OS '{3}'</value>
   </data>
+  <data name="UseCompatibleCommandsName" xml:space="preserve">
+    <value>UseCompatibleCommands</value>
+  </data>
+  <data name="UseCompatibleCommandsCommonName" xml:space="preserve">
+    <value>Use compatible commands</value>
+  </data>
+  <data name="UseCompatibleCommandsDescription" xml:space="preserve">
+    <value>Use commands compatible with the given PowerShell version and operating system</value>
+  </data>
+  <data name="UseCompatibleCommandsCommandError" xml:space="preserve">
+    <value>The command '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
+  </data>
+  <data name="UseCompatibleCommandsParameterError" xml:space="preserve">
+    <value>The parameter '{0}' is not available for command '{1}' by default in PowerShell version '{2}' on platform '{3}'</value>
+  </data>
+  <data name="UseCompatibleTypesName" xml:space="preserve">
+    <value>UseCompatibleTypes</value>
+  </data>
+  <data name="UseCompatibleTypesCommonName" xml:space="preserve">
+    <value>Use compatible types</value>
+  </data>
+  <data name="UseCompatibleTypesDescription" xml:space="preserve">
+    <value>Use types compatible with the given PowerShell version and operating system</value>
+  </data>
+  <data name="UseCompatibleTypesTypeError" xml:space="preserve">
+    <value>The type '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
+  </data>
+  <data name="UseCompatibleTypesMethodError" xml:space="preserve">
+    <value>The method '{0}' is not available on type '{1}' by default in PowerShell version '{2}' on platform '{3}'</value>
+  </data>
+  <data name="UseCompatibleTypesMemberError" xml:space="preserve">
+    <value>The member '{0}' is not available on type '{1}' by default in PowerShell version '{2}' on platform '{3}'</value>
+  </data>
+  <data name="UseCompatibleSyntaxName" xml:space="preserve">
+    <value>UseCompatibleSyntax</value>
+  </data>
+  <data name="UseCompatibleSyntaxCommonName" xml:space="preserve">
+    <value>Use compatible syntax</value>
+  </data>
+  <data name="UseCompatibleSyntaxDescription" xml:space="preserve">
+    <value>Use script syntax compatible with the given PowerShell versions</value>
+  </data>
+  <data name="UseCompatibleSyntaxError" xml:space="preserve">
+    <value>The {0} syntax '{1}' is not available by default in PowerShell versions {2}</value>
+  </data>
+  <data name="UseCompatibleSyntaxCorrection" xml:space="preserve">
+    <value>Use the '{0}' syntax instead for compatibility with PowerShell versions {1}</value>
+  </data>
+  <data name="UseCompatibleTypesTypeAcceleratorError" xml:space="preserve">
+    <value>The type accelerator '{0}' is not available by default in PowerShell version '{1}' on platform '{2}'</value>
+  </data>
   <data name="AvoidGlobalFunctionsCommonName" xml:space="preserve">
     <value>Avoid global functiosn and aliases</value>
   </data>
@@ -989,5 +1040,8 @@
   </data>
   <data name="PossibleIncorrectUsageOfRedirectionOperatorName" xml:space="preserve">
     <value>PossibleIncorrectUsageOfRedirectionOperator</value>
+  </data>
+  <data name="PossibleIncorrectComparisonWithNullSuggesteCorrectionDescription" xml:space="preserve">
+    <value>Use $null on the left hand side for safe comparison with $null.</value>
   </data>
 </root>
