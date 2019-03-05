@@ -28,11 +28,13 @@ build_script:
              ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 3
           }
           ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion "$env:PSVersion"
+          ./PSCompatibilityAnalyzer/build.ps1 -Configuration "$env:BuildConfiguration" -Framework 'net452'
       }
   - pwsh: |
       if ($env:PowerShellEdition -eq 'PowerShellCore') {
           Set-Location $env:APPVEYOR_BUILD_FOLDER
           ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 6
+          ./PSCompatibilityAnalyzer/build.ps1 -Configuration "$env:BuildConfiguration" -Framework 'netstandard2.0'
       }
 
 test_script:

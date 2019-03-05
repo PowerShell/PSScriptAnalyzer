@@ -162,9 +162,19 @@ Describe "Test importing correct customized rules" {
             $violations[0].SuggestedCorrections.Description   | Should -Be 'description'
 		}
 
-		It "will set SuggestedCorrections" {
+        It "can suppress custom rule" {
+			$script = "[Diagnostics.CodeAnalysis.SuppressMessageAttribute('samplerule\$measure','')]Param()"
+			$testScriptPath = "TestDrive:\SuppressedCustomRule.ps1"
+			Set-Content -Path $testScriptPath -Value $script
+
+            $customizedRulePath = Invoke-ScriptAnalyzer -Path $testScriptPath -CustomizedRulePath $directory\samplerule\samplerule.psm1 |
+				Where-Object { $_.Message -eq $message }
+
+            $customizedRulePath.Count | Should -Be 0
+		}
+
+        It "will set RuleSuppressionID" {
             $violations = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule
-            $expectedScriptPath = Join-Path $directory 'TestScript.ps1'
             $violations[0].RuleSuppressionID   | Should -Be "MyRuleSuppressionID"
         }
 

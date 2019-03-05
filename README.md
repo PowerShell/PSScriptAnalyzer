@@ -105,7 +105,7 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 
 #### Requirements
 
-* [.NET Core 2.2.102 SDK](https://www.microsoft.com/net/download/dotnet-core/2.2#sdk-2.2.102) or newer patch release
+* [.NET Core 2.2.104 SDK](https://www.microsoft.com/net/download/dotnet-core/2.2#sdk-2.2.104) or newer patch release
 * [PlatyPS 0.9.0 or greater](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
 
@@ -306,8 +306,6 @@ Suppress violation in `start-bar`, `start-baz` and `start-bam` but not in `start
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", Scope="Function", Target="start-b*")]
 Param()
 ```
-
-**Note**: Rule suppression is currently supported only for built-in rules.
 
 **Note**: Parser Errors cannot be suppressed via the `SuppressMessageAttribute`
 
