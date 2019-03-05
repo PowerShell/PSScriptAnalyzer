@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Reflection;
 
@@ -118,6 +119,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
         private void SetValue(PropertyInfo property, object value)
         {
+            if (IsArray(property.PropertyType, out Type elementType))
+            {
+                object newArray = LanguagePrimitives.ConvertTo(value, elementType.MakeArrayType());
+                property.SetValue(this, newArray);
+                return;
+            }
+
             // TODO Check if type is convertible
             property.SetValue(this, Convert.ChangeType(value, property.PropertyType));
         }
@@ -144,6 +152,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
 
             return ((ConfigurableRulePropertyAttribute)attr).DefaultValue;
+        }
+
+        private static bool IsArray(Type propertyType, out Type elementType)
+        {
+            if (propertyType.IsArray)
+            {
+                elementType = propertyType.GetElementType();
+                return true;
+            }
+
+            elementType = null;
+            return false;
         }
     }
 }

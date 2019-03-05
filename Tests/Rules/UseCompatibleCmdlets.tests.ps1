@@ -35,7 +35,7 @@ Describe "UseCompatibleCmdlets" {
         }
     }
 
-    $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("core-6.0.2-windows")}}}
+    $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("core-6.1.0-windows")}}}
 
     Context "Microsoft.PowerShell.Core" {
          @('Enter-PSSession', 'Foreach-Object', 'Get-Command') | `
