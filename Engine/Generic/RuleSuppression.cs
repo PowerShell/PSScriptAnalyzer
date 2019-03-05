@@ -202,7 +202,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                             break;
                         }
 
-                        var argumentName = name.ArgumentName;
+                        string argumentName = name.ArgumentName;
                         if (argumentName.Equals("rulename", StringComparison.OrdinalIgnoreCase))
                         {
                             if (!String.IsNullOrWhiteSpace(RuleName))
@@ -349,7 +349,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     Regex reg = new Regex(String.Format("^{0}$", ruleSupp.Target.Replace(@"*", ".*")), RegexOptions.IgnoreCase);
                     IEnumerable<Ast> targetAsts = null;
 
-                    var scope = ruleSupp.Scope;
+                    string scope = ruleSupp.Scope;
                     if (scope.Equals("function", StringComparison.OrdinalIgnoreCase))
                     {
                         targetAsts = scopeAst.FindAll(ast => ast is FunctionDefinitionAst && reg.IsMatch((ast as FunctionDefinitionAst).Name), true);
