@@ -307,8 +307,6 @@ Suppress violation in `start-bar`, `start-baz` and `start-bam` but not in `start
 Param()
 ```
 
-**Note**: Rule suppression is currently supported only for built-in rules.
-
 **Note**: Parser Errors cannot be suppressed via the `SuppressMessageAttribute`
 
 [Back to ToC](#table-of-contents)
