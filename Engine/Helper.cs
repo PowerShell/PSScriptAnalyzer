@@ -24,11 +24,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private CommandInvocationIntrinsics invokeCommand;
         private IOutputWriter outputWriter;
-        private Object getCommandLock = new object();
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
-        private Dictionary<CommandLookupKey, CommandInfo> commandInfoCache;
+
+        private readonly Lazy<CommandInfoCache> _commandInfoCacheLazy;
 
         #endregion
 
@@ -100,6 +100,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:"};
 
         private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":"};
+
+        /// <summary>
+        /// Store of command info objects for commands. Memoizes results.
+        /// </summary>
+        private CommandInfoCache CommandInfoCache => _commandInfoCacheLazy.Value;
+
         #endregion
 
         /// <summary>
@@ -107,7 +113,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-
+            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this));
         }
 
         /// <summary>
@@ -123,7 +129,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </param>
         public Helper(
             CommandInvocationIntrinsics invokeCommand,
-            IOutputWriter outputWriter)
+            IOutputWriter outputWriter) : this()
         {
             this.invokeCommand = invokeCommand;
             this.outputWriter = outputWriter;
@@ -140,10 +146,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-            if (commandInfoCache == null)
-            {
-                commandInfoCache = new Dictionary<CommandLookupKey, CommandInfo>();
-            }
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -676,7 +678,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-
         ///  Legacy method, new callers should use <see cref="GetCommandInfo"/> instead.
         ///  Given a command's name, checks whether it exists. It does not use the passed in CommandTypes parameter, which is a bug.
         ///  But existing method callers are already depending on this behaviour and therefore this could not be simply fixed.
@@ -688,30 +689,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         [Obsolete]
         public CommandInfo GetCommandInfoLegacy(string name, CommandTypes? commandType = null)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return null;
-            }
-
-            // check if it is an alias
-            string cmdletName = Helper.Instance.GetCmdletNameFromAlias(name);
-            if (string.IsNullOrWhiteSpace(cmdletName))
-            {
-                cmdletName = name;
-            }
-
-            var key = new CommandLookupKey(name, commandType);
-            lock (getCommandLock)
-            {
-                if (commandInfoCache.ContainsKey(key))
-                {
-                    return commandInfoCache[key];
-                }
-
-                var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
-                commandInfoCache.Add(key, commandInfo);
-                return commandInfo;
-            }
+            return CommandInfoCache.GetCommandInfoLegacy(commandOrAliasName: name, commandTypes: commandType);
         }
 
         /// <summary>
@@ -722,23 +700,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return null;
-            }
-
-            var key = new CommandLookupKey(name, commandType);
-            lock (getCommandLock)
-            {
-                if (commandInfoCache.ContainsKey(key))
-                {
-                    return commandInfoCache[key];
-                }
-
-                var commandInfo = GetCommandInfoInternal(name, commandType);
-                commandInfoCache.Add(key, commandInfo);
-                return commandInfo;
-            }
+            return CommandInfoCache.GetCommandInfo(name, commandTypes: commandType);
         }
 
         /// <summary>
