@@ -522,6 +522,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         case "false":
                             return false;
 
+                        case "null":
+                            return null;
+
                         default:
                             throw CreateInvalidDataExceptionFromAst(varExprAst);
                     }
@@ -540,24 +543,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         return new object[0];
                     }
 
-                    PipelineAst pipelineAst = arrExprAst.SubExpression.Statements[0] as PipelineAst;
-                    if (pipelineAst == null)
+                    var listComponents = new List<object>();
+                    // Arrays can either be array expressions (1, 2, 3) or array literals with statements @(1 `n 2 `n 3)
+                    // Or they can be a combination of these
+                    // We go through each statement (line) in an array and read the whole subarray
+                    // This will also mean that @(1; 2) is parsed as an array of two elements, but there's not much point defending against this
+                    foreach (StatementAst statement in arrExprAst.SubExpression.Statements)
                     {
-                        throw CreateInvalidDataExceptionFromAst(arrExprAst);
-                    }
+                        if (!(statement is PipelineAst pipelineAst))
+                        {
+                            throw CreateInvalidDataExceptionFromAst(arrExprAst);
+                        }
 
-                    ExpressionAst pipelineExpressionAst = pipelineAst.GetPureExpression();
-                    if (pipelineExpressionAst == null)
-                    {
-                        throw CreateInvalidDataExceptionFromAst(arrExprAst);
-                    }
+                        ExpressionAst pipelineExpressionAst = pipelineAst.GetPureExpression();
+                        if (pipelineExpressionAst == null)
+                        {
+                            throw CreateInvalidDataExceptionFromAst(arrExprAst);
+                        }
 
-                    // Array expressions may not really be arrays (like `@('a')`, which has no ArrayLiteralAst within)
-                    // However, some rules depend on this always being an array
-                    object arrayValue = GetSafeValueFromExpressionAst(pipelineExpressionAst);
-                    return arrayValue.GetType().IsArray
-                        ? arrayValue
-                        : new object[] { arrayValue };
+                        object arrayValue = GetSafeValueFromExpressionAst(pipelineExpressionAst);
+                        // We might hit arrays like @(\n1,2,3\n4,5,6), which the parser sees as two statements containing array expressions
+                        if (arrayValue is object[] subArray)
+                        {
+                            listComponents.AddRange(subArray);
+                            continue;
+                        }
+
+                        listComponents.Add(arrayValue);
+                    }
+                    return listComponents.ToArray();
+
 
                 case ArrayLiteralAst arrLiteralAst:
                     return GetSafeValuesFromArrayAst(arrLiteralAst);
@@ -647,10 +662,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(ast));
             }
 
-            return ThrowInvalidDataException(ast.Extent);
+            return CreateInvalidDataException(ast.Extent);
         }
 
-        private static InvalidDataException ThrowInvalidDataException(IScriptExtent extent)
+        private static InvalidDataException CreateInvalidDataException(IScriptExtent extent)
         {
             return new InvalidDataException(string.Format(
                                     CultureInfo.CurrentCulture,

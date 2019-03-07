@@ -209,6 +209,7 @@ Describe "Settings Class" {
                 @{ Expr = '0.142' }
                 @{ Expr = '"Hello"' }
                 @{ Expr = '"Well then"' }
+                @{ Expr = '$null' }
             )
 
             $gsvArrayTests = @(
@@ -218,6 +219,11 @@ Describe "Settings Class" {
                 @{ Expr = '@("A","B","C")'; Count = 3 }
                 @{ Expr = '@()'; Count = 0 }
                 @{ Expr = '@(7)'; Count = 1 }
+                @{ Expr = "'1',`n'2',`n'3'"; Count = 3 }
+                @{ Expr = "@(1`n3`n5`n7)"; Count = 4 }
+                @{ Expr = "'1',`r`n'2',`r`n'3'"; Count = 3 }
+                @{ Expr = "@(1`r`n3`r`n5`r`n7)"; Count = 4 }
+                @{ Expr = "@(1,2,3`n7,8,9)"; Count = 6 }
             )
 
             $gsvHashtableTests = @(
@@ -235,7 +241,6 @@ Describe "Settings Class" {
             $gsvThrowTests = @(
                 @{ Expr = '$var' }
                 @{ Expr = '' }
-                @{ Expr = '$null' }
                 @{ Expr = '3+7' }
                 @{ Expr = '- 2.5'}
                 @{ Expr = '-not $true' }
