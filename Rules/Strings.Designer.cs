@@ -2347,6 +2347,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use exact casing of cmdlet/function name..
+        /// </summary>
+        internal static string UseCorrectCasingCommonName {
+            get {
+                return ResourceManager.GetString("UseCorrectCasingCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to For better readability and consistency, use the exact casing of the cmdlet/function..
+        /// </summary>
+        internal static string UseCorrectCasingDescription {
+            get {
+                return ResourceManager.GetString("UseCorrectCasingDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cmdlet/Function does not match its exact casing &apos;{0}&apos;..
+        /// </summary>
+        internal static string UseCorrectCasingError {
+            get {
+                return ResourceManager.GetString("UseCorrectCasingError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseCorrectCasing.
+        /// </summary>
+        internal static string UseCorrectCasingName {
+            get {
+                return ResourceManager.GetString("UseCorrectCasingName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extra Variables.
         /// </summary>
         internal static string UseDeclaredVarsMoreThanAssignmentsCommonName {

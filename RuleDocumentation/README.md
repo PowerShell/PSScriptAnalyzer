@@ -45,6 +45,7 @@
 |[UseApprovedVerbs](./UseApprovedVerbs.md) | Warning | |
 |[UseBOMForUnicodeEncodedFile](./UseBOMForUnicodeEncodedFile.md) | Warning | |
 |[UseCmdletCorrectly](./UseCmdletCorrectly.md) | Warning | |
+|[UseCorrectCasing](./UseCorrectCasing.md) | Information | |
 |[UseDeclaredVarsMoreThanAssignments](./UseDeclaredVarsMoreThanAssignments.md) | Warning | |
 |[UseLiteralInitializerForHashtable](./UseLiteralInitializerForHashtable.md) | Warning | |
 |[UseOutputTypeCorrectly](./UseOutputTypeCorrectly.md) | Information | |

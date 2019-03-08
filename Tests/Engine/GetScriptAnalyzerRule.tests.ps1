@@ -59,7 +59,7 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
 			$defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 58
+            $expectedNumRules = 59
             if ((Test-PSEditionCoreClr) -or (Test-PSVersionV3) -or (Test-PSVersionV4))
             {
                 # for PSv3 PSAvoidGlobalAliases is not shipped because
@@ -157,7 +157,7 @@ Describe "TestSeverity" {
 
     It "filters rules based on multiple severity inputs"{
         $rules = Get-ScriptAnalyzerRule -Severity Error,Information
-        $rules.Count | Should -Be 15
+        $rules.Count | Should -Be 16
     }
 
         It "takes lower case inputs" {
