@@ -171,6 +171,11 @@ Describe "Test importing correct customized rules" {
 				Where-Object { $_.Message -eq $message }
 
             $customizedRulePath.Count | Should -Be 0
+		}
+
+        It "will set RuleSuppressionID" {
+            $violations = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule
+            $violations[0].RuleSuppressionID   | Should -Be "MyRuleSuppressionID"
         }
 
         if (!$testingLibraryUsage)

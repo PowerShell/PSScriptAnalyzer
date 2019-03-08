@@ -79,6 +79,8 @@ $suggestedCorrections.add($correctionExtent) | out-null
     "Extent"               = $ast.Extent
     "RuleName"             = $PSCmdlet.MyInvocation.InvocationName
     "Severity"             = "Warning"
+    "Severity"             = "Warning"
+    "RuleSuppressionID"    = "MyRuleSuppressionID"
     "SuggestedCorrections" = $suggestedCorrections
 }
 ```
