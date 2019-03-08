@@ -395,7 +395,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var settings = GetDictionaryFromHashtable(settingsHashtable);
             foreach (var settingKey in settings.Keys)
             {
-                var key = settingKey.ToLower();
+                var key = settingKey.ToLowerInvariant(); // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
                 object val = settings[key];
                 switch (key)
                 {
@@ -514,7 +514,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 case VariableExpressionAst varExprAst:
                     // $true and $false are VariableExpressionAsts, so look for them here
-                    switch (varExprAst.VariablePath.UserPath.ToLower())
+                    switch (varExprAst.VariablePath.UserPath.ToLowerInvariant())
                     {
                         case "true":
                             return true;

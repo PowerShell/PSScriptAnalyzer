@@ -60,6 +60,10 @@ function Invoke-AppveyorTest {
     $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
     $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\PSCompatibilityAnalyzer\Tests"
 
+    # Change culture to Turkish to test that PSSA works well with different locales
+    [System.Threading.Thread]::CurrentThread.CurrentCulture = [cultureinfo]::CreateSpecificCulture('tr-TR')
+    [System.Threading.Thread]::CurrentThread.CurrentUICulture = [cultureinfo]::CreateSpecificCulture('tr-TR')
+
     # Run all tests
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
 

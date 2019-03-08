@@ -1,7 +1,15 @@
 ﻿#Requires -Version 3.0
 
 # Import Localized Data
-Import-LocalizedData -BindingVariable Messages
+# Explicit culture needed for culture that do not match when using PowerShell Core: https://github.com/PowerShell/PowerShell/issues/8219
+if ([System.Threading.Thread]::CurrentThread.CurrentUICulture.Name -ne 'en-US')
+{
+    Import-LocalizedData -BindingVariable Messages -UICulture 'en-US'
+}
+else
+{
+    Import-LocalizedData -BindingVariable Messages
+}
 
 <#
 .SYNOPSIS
@@ -71,7 +79,7 @@ function Measure-RequiresRunAsAdministrator
                 if ($ast -is [System.Management.Automation.Language.AssignmentStatementAst])
                 {
                     [System.Management.Automation.Language.AssignmentStatementAst]$asAst = $Ast;
-                    if ($asAst.Right.ToString().ToLower() -eq "[system.security.principal.windowsbuiltinrole]::administrator")
+                    if ($asAst.Right.ToString() -eq "[system.security.principal.windowsbuiltinrole]::administrator")
                     {
                         $returnValue = $true
                     }
@@ -167,7 +175,7 @@ function Measure-RequiresModules
                     [System.Management.Automation.Language.CommandAst]$cmdAst = $Ast;
                     if ($null -ne $cmdAst.GetCommandName())
                     {
-                        if ($cmdAst.GetCommandName().ToLower() -eq "import-module")
+                        if ($cmdAst.GetCommandName() -eq "import-module")
                         {
                             $returnValue = $true
                         }
@@ -225,8 +233,8 @@ function Measure-RequiresModules
 }
 
 
-# The two rules in the following if block use StaticParameterBinder class. 
-# StaticParameterBinder class was introduced in PSv4. 
+# The two rules in the following if block use StaticParameterBinder class.
+# StaticParameterBinder class was introduced in PSv4.
 if ($PSVersionTable.PSVersion -ge [Version]'4.0.0')
 {
 	<#

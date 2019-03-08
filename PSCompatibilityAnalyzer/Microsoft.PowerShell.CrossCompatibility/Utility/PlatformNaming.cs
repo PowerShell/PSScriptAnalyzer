@@ -35,10 +35,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             string psVersion = platform.PowerShell.Version?.ToString();
             string osVersion = platform.OperatingSystem.Version;
-            string osArch = platform.OperatingSystem.Architecture.ToString().ToLower();
-            string pArch = platform.PowerShell.ProcessArchitecture.ToString().ToLower();
-            string dotnetVersion = platform.Dotnet.ClrVersion.ToString().ToLower();
-            string dotnetEdition = platform.Dotnet.Runtime.ToString().ToLower();
+            string osArch = platform.OperatingSystem.Architecture.ToString().ToLowerInvariant();
+            string pArch = platform.PowerShell.ProcessArchitecture.ToString().ToLowerInvariant();
+            string dotnetVersion = platform.Dotnet.ClrVersion.ToString().ToLowerInvariant();
+            string dotnetEdition = platform.Dotnet.Runtime.ToString().ToLowerInvariant();
 
             string[] platformNameComponents;
             switch (platform.OperatingSystem.Family)

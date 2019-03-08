@@ -451,7 +451,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public override int GetHashCode()
         {
-            return name.ToLower().GetHashCode();
+            return name.ToLowerInvariant().GetHashCode();
         }
     }
 

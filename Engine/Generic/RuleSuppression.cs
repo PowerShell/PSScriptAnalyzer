@@ -202,61 +202,56 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                             break;
                         }
 
-                        switch (name.ArgumentName.ToLower())
+                        string argumentName = name.ArgumentName;
+                        if (argumentName.Equals("rulename", StringComparison.OrdinalIgnoreCase))
                         {
-                            case "rulename":
-                                if (!String.IsNullOrWhiteSpace(RuleName))
-                                {
-                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
-                                }
+                            if (!String.IsNullOrWhiteSpace(RuleName))
+                            {
+                                Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
+                            }
 
-                                RuleName = (name.Argument as StringConstantExpressionAst).Value;
-                                goto default;
+                            RuleName = (name.Argument as StringConstantExpressionAst).Value;
+                        }
+                        else if (argumentName.Equals("rulesuppressionid", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!String.IsNullOrWhiteSpace(RuleName))
+                            {
+                                Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
+                            }
 
-                            case "rulesuppressionid":
-                                if (!String.IsNullOrWhiteSpace(RuleSuppressionID))
-                                {
-                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
-                                }
+                            RuleName = (name.Argument as StringConstantExpressionAst).Value;
+                        }
+                        else if (argumentName.Equals("scope", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!String.IsNullOrWhiteSpace(Scope))
+                            {
+                                Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
+                            }
 
-                                RuleSuppressionID = (name.Argument as StringConstantExpressionAst).Value;
-                                goto default;
+                            Scope = (name.Argument as StringConstantExpressionAst).Value;
 
-                            case "scope":
-                                if (!String.IsNullOrWhiteSpace(Scope))
-                                {
-                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
-                                }
+                            if (!scopeSet.Contains(Scope))
+                            {
+                                Error = Strings.WrongScopeArgumentSuppressionAttributeError;
+                            }
+                        }
+                        else if (argumentName.Equals("target", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!String.IsNullOrWhiteSpace(Target))
+                            {
+                                Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
+                            }
 
-                                Scope = (name.Argument as StringConstantExpressionAst).Value;
+                            Target = (name.Argument as StringConstantExpressionAst).Value;
+                        }
+                        else if (argumentName.Equals("justification", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!String.IsNullOrWhiteSpace(Justification))
+                            {
+                                Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
+                            }
 
-                                if (!scopeSet.Contains(Scope))
-                                {
-                                    Error = Strings.WrongScopeArgumentSuppressionAttributeError;
-                                }
-
-                                goto default;
-
-                            case "target":
-                                if (!String.IsNullOrWhiteSpace(Target))
-                                {
-                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
-                                }
-
-                                Target = (name.Argument as StringConstantExpressionAst).Value;
-                                goto default;
-
-                            case "justification":
-                                if (!String.IsNullOrWhiteSpace(Justification))
-                                {
-                                    Error = String.Format(Strings.NamedAndPositionalArgumentsConflictError, name);
-                                }
-
-                                Justification = (name.Argument as StringConstantExpressionAst).Value;
-                                goto default;
-
-                            default:
-                                break;
+                            Justification = (name.Argument as StringConstantExpressionAst).Value;
                         }
                     }
                 }
@@ -354,23 +349,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     Regex reg = new Regex(String.Format("^{0}$", ruleSupp.Target.Replace(@"*", ".*")), RegexOptions.IgnoreCase);
                     IEnumerable<Ast> targetAsts = null;
 
-                    switch (ruleSupp.Scope.ToLower())
+                    string scope = ruleSupp.Scope;
+                    if (scope.Equals("function", StringComparison.OrdinalIgnoreCase))
                     {
-                        case "function":
-                            targetAsts = scopeAst.FindAll(item => item is FunctionDefinitionAst && reg.IsMatch((item as FunctionDefinitionAst).Name), true);
-                            goto default;
-
-                        #if !(PSV3||PSV4)
-
-                        case "class":
-                            targetAsts = scopeAst.FindAll(item => item is TypeDefinitionAst && reg.IsMatch((item as TypeDefinitionAst).Name), true);
-                            goto default;
-
-                        #endif
-
-                        default:
-                            break;
+                        targetAsts = scopeAst.FindAll(ast => ast is FunctionDefinitionAst && reg.IsMatch((ast as FunctionDefinitionAst).Name), true);
                     }
+                    #if !(PSV3 || PSV4)
+                    else if (scope.Equals("class", StringComparison.OrdinalIgnoreCase))
+                    {
+                        targetAsts = scopeAst.FindAll(ast => ast is TypeDefinitionAst && reg.IsMatch((ast as TypeDefinitionAst).Name), true);
+                    }
+                    #endif
 
                     if (targetAsts != null)
                     {
