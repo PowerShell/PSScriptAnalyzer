@@ -139,6 +139,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// default initialization. We build everything
+        /// </summary>
+        public void Initialize()
+        {
+            SensibleDefaults sd = new SensibleDefaults();
+            this.myStreams = sd.Streams;
+            this.Initialize( sd.Runspace, myStreams, null, null, null, null, true, false, null );
+        }
+
+
+        private StreamStorage myStreams;
+        /// <summary>
+        /// get the streams from our default
+        /// </summary>
+        public StreamStorage MyStreams {
+            get { return myStreams; }
+        }
+
+        /// <summary>
         /// Initialize : Initializes default rules, loggers and helper.
         /// </summary>
         public void Initialize(
