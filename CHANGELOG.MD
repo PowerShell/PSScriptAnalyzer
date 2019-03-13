@@ -46,7 +46,7 @@ Multi-threading efficiency was highly improved leading to a speedup whilst keepi
 - Fix settings file array parsing when no commas are present (#1161) (by @rjmholt)
 - Ensure correct disposal with using statement (#1164) (by @bergmeister)
 - Emit parsing errors as diagnostic records (#1130) (by @JamesWTruher)
-- Make Invoke-Formatter cleanup its state in the same way as Invoke-ScriptAnalyzer does to avoid knock on effect on Invoke-ScriptAnalyzer when Invoke-Formatter is being called (#1121) (by @bergmeister)
+- Fix bug that caused Invoke-ScriptAnalyzer to not run any rule after an execution of Invoke-Formatter in the same session (but Invoke-ScriptAnalyzer would've recovered when being called again) (#1121) (by @bergmeister)
 - Fix parsing of empty hashtable when string is provided as settings object (#1073) (by @bergmeister)
 - Fix AlignAssignment rule to calculate alignment position correctly and avoid crash (#1070) (by @bergmeister)
 - Don't crash on CIM classes with no superclass (#1046) (Thanks @edyoung!)
