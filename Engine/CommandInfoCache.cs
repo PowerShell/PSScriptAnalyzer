@@ -75,7 +75,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     .AddParameter("Name", cmdName)
                     .AddParameter("ErrorAction", "SilentlyContinue");
 
-                if(commandType != null)
+                if (commandType != null)
                 {
                     ps.AddParameter("CommandType", commandType);
                 }
