@@ -53,7 +53,7 @@ End {
         $buildArgs = @{
             RepoPath = $resolvedRepoRoot
             BuildJsonPath = './tools/releaseBuild/build.json'
-            Parameters = @{ } # not needed for PSSA
+            Parameters = @{ ReleaseTag = "unused" } # not needed for PSSA
             AdditionalFiles = $AdditionalFiles
             Name = "win7-x64"
         }
