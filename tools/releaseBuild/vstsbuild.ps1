@@ -1,4 +1,6 @@
 [cmdletbinding()]
+param ( )
+
 Begin
 {
     $ErrorActionPreference = 'Stop'
