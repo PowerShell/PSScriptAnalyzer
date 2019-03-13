@@ -18,7 +18,7 @@
 ### Script Analysis Rules
 
 - Add command data file for PowerShell `2.0` (#1091) (by @bergmeister)
-- Add Command data files of PowerShell `6.1.0` (#1075) (by @bergmeister)
+- Add command data files of PowerShell `6.1.0` (#1075) (by @bergmeister)
 - New PowerShell compatibility rules: `UseCompatibleCommands`, `UseCompatibleSyntax` and `UseCompatibleTypes` (#1156 and #1133) (by @rjmholt)
 - Make `PossibleIncorrectComparisonWithNull` rule return a `SuggestCorrection` for auto-fixes in VS-Code or via the -Fix switch (#1115) (by @bergmeister)
 - Make UseCompatibleCmdlets not throw if default reference desktop-5.1.14393.206-windows is specified in the list of platforms and use core-6.1.0-windows as an alternative default reference (#1043 and #1075) (by @bergmeister)
@@ -35,7 +35,7 @@
 
 ### Performance
 
-Multi-threading efficiency was highly improved leading to a speedup whilst keeping the CPU usage roughly the same. One can expect `PSScriptAnalyzer` (PSSA) `1.18` to be more than twice as fast in most situations (including 'cold' runs) compared to its predecessor 1.17.0.
+Multi-threading efficiency was highly improved leading to a speedup whilst keeping the CPU usage roughly the same. One can expect `PSScriptAnalyzer` (PSSA) 1.18.0 to be more than twice as fast in most situations (including 'cold' runs) compared to its predecessor 1.17.0.
 
 - Increase lock granularity for CommandInfo cache #1166 (by @bergmeister and @rjmholt)
 - Restore caching in Helper.GetCommandInfo (#1074) (Thanks @SeeminglyScience!)
