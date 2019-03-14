@@ -8,6 +8,7 @@
 - Updated used version of `Newtonsoft.Json` to `11.0.2`. (#1165) (by @bergmeister)
 - Command data files of PowerShell `6.0.2` were removed. Updated files for PowerShell `6.1.0` were added. This means that users that have customized the `UseCompatibleCmdlets` rule, need to either adapt the version string as per rule documentation or can alternatively copy in the old command data files into the `Settings` installation folder (#1075) (by @bergmeister)
 - The minimum required runtime of the full .Net Framework was raised from `4.5.1` to `4.5.2` as `4.5.1` is not supported any more. If the OS is patched then Windows update will have ensured that the newer runtime patch is available. (#1108) (by @bergmeister)
+- Emit parsing errors as diagnostic records (#1130) (by @JamesWTruher)
 
 ### Formatter Rules
 
@@ -45,7 +46,6 @@ Multi-threading efficiency was highly improved leading to a speedup whilst keepi
 - Fix bug when culture was set to Turkish (#1095) (by @bergmeister)
 - Fix settings file array parsing when no commas are present (#1161) (by @rjmholt)
 - Ensure correct disposal with using statement (#1164) (by @bergmeister)
-- Emit parsing errors as diagnostic records (#1130) (by @JamesWTruher)
 - Fix bug that caused Invoke-ScriptAnalyzer to not run any rule after an execution of Invoke-Formatter in the same session (but Invoke-ScriptAnalyzer would've recovered when being called again) (#1121) (by @bergmeister)
 - Fix parsing of empty hashtable when string is provided as settings object (#1073) (by @bergmeister)
 - Fix AlignAssignment rule to calculate alignment position correctly and avoid crash (#1070) (by @bergmeister)
@@ -88,8 +88,8 @@ Multi-threading efficiency was highly improved leading to a speedup whilst keepi
 - Update PR template to be more similar to the one of PowerShell but still distinguish where necessary (#1077)
 - Update documentation of `PSUseConsistentWhiteSpace`: enhance example and correct argument type. #1069 (Thanks @TheIncorrigible1!)
 - Update AvoidNullOrEmptyHelpMessageAttribute.md fix typo (#1068) (Thanks @TheIncorrigible1!)
- 
- ## [1.17.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.1) - 2018-06-06
+
+## [1.17.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.17.1) - 2018-06-06
 
 ### Fixes
 
