@@ -218,12 +218,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private static string GetModuleRootDirPath()
         {
             string asmDirLocation = Path.GetDirectoryName(typeof(CompatibilityRule).Assembly.Location);
-
-            string topDir = Path.GetFileName(asmDirLocation);
-
-            string nonNormalizedRoot = "PSScriptAnalyzer".Equals(topDir, StringComparison.OrdinalIgnoreCase)
-                ? Path.Combine(asmDirLocation)
-                : Path.Combine(asmDirLocation, "..");
+            // We check our assembly location and then parent, looking for PSScriptAnalyzer.psd1,
+            // because the assembly might be in the root of the module or in a child directory (ex: coreclr).
+            // That's the base where we will find our compatibility zip file.
+            // We can't hunt for the directory 'PSScriptAnalyzer' because we may be installed in
+            // PSScriptAnalyzer/1.18.0 or PSScriptAnalyzer.
+            const string psdFile = "PSScriptAnalyzer.psd1";
+            string nonNormalizedRoot = asmDirLocation;
+            string psmPath = Path.Combine(nonNormalizedRoot, psdFile);
+            if ( ! File.Exists(psmPath) ) {
+                nonNormalizedRoot = Path.Combine(nonNormalizedRoot, "..");
+                psmPath = Path.Combine(nonNormalizedRoot, psdFile);
+                if ( ! File.Exists(psmPath) ) {
+                    // Couldn't find it, give up
+                    return String.Empty;
+                }
+            }
 
             return Path.GetFullPath(nonNormalizedRoot);
         }
