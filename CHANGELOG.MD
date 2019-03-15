@@ -20,7 +20,7 @@
 
 - Add command data file for PowerShell `2.0` (#1091) (by @bergmeister)
 - Add command data files of PowerShell `6.1.0` (#1075) (by @bergmeister)
-- New PowerShell compatibility rules: `UseCompatibleCommands`, `UseCompatibleSyntax` and `UseCompatibleTypes` (#1156 and #1133) (by @rjmholt)
+- New PowerShell compatibility rules: `UseCompatibleCommands`, `UseCompatibleSyntax` and `UseCompatibleTypes` (#1156, #1133 and #1176) (by @rjmholt and @JamesWTruher)
 - Make `PossibleIncorrectComparisonWithNull` rule return a `SuggestCorrection` for auto-fixes in VS-Code or via the -Fix switch (#1115) (by @bergmeister)
 - Make UseCompatibleCmdlets not throw if default reference desktop-5.1.14393.206-windows is specified in the list of platforms and use core-6.1.0-windows as an alternative default reference (#1043 and #1075) (by @bergmeister)
 
@@ -50,13 +50,14 @@ Multi-threading efficiency was highly improved leading to a speedup whilst keepi
 - Fix parsing of empty hashtable when string is provided as settings object (#1073) (by @bergmeister)
 - Fix AlignAssignment rule to calculate alignment position correctly and avoid crash (#1070) (by @bergmeister)
 - Don't crash on CIM classes with no superclass (#1046) (Thanks @edyoung!)
-- Trigger AvoidPositionalParameters rule for function defined and called inside a script. (#963) (Thanks @kalgiz!)
+- Trigger AvoidPositionalParameters rule for function defined and called inside a script. (#963 and #1175) (Thanks @kalgiz! and @bergmeister)
 - Add OutputType attributes to cmdlets to enhance tab completion (#1020) (by @bergmeister)
 - Allow paths to be pipelined to Invoke-ScriptAnalyzer (#1040) (Thanks @edyoung!)
 - PSGallery will no longer use PSAvoidUsingConvertToSecureStringWithPlainText and PSAvoidUsingUserNameAndPasswordParams rules (#1037) (Thanks @edyoung!)
 
 ### Build
 
+- Update platyps to 0.13 (#1172) (by @bergmeister)
 - Raise minimum required PS version of PS 6 to `6.1.0` due to 6.0 running out of support now and update Newtonsoft.Json to `11.0.2` (#1165) (by @bergmeister)
 - Unify reference to `Microsoft.Management.Infrastructure` and update `System.Reflection.TypeExtensions` NuGet package (#1105) (by @bergmeister)
 - Update .Net Core SDK from 2.2.103 to `2.2.104` (latest patch) (#1158) (by @bergmeister)
