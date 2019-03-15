@@ -1,4 +1,4 @@
-# UseCompatibleCommands
+# UseCompatibleTypes
 
 **Severity Level: Warning**
 
@@ -88,4 +88,24 @@ An example configuration might look like:
         }
     }
 }
+```
+
+Alternatively, you could provide a settings object as follows:
+
+```PowerShell
+PS> $settings = @{
+      Rules = @{
+        PSUseCompatibleTypes = @{
+          Enable = $true
+          TargetProfiles = @("win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework")
+        }
+      }
+}
+PS> Invoke-ScriptAnalyzer -Settings $settings -ScriptDefinition '[System.Management.Automation.SemanticVersion]"1.18.0-rc1"'
+
+RuleName                            Severity     ScriptName Line  Message
+--------                            --------     ---------- ----  -------
+PSUseCompatibleTypes                Warning                 1     The type 'System.Management.Automation.SemanticVersion' is
+                                                                  not available by default in PowerShell version
+                                                                  '5.1.17763.316' on platform 'Microsoft Windows 10 Pro'
 ```
