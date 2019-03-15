@@ -20,7 +20,7 @@ function Invoke-AppVeyorInstall {
         }
     }
 
-    $platyPSVersion = '0.12.0'
+    $platyPSVersion = '0.13.0'
     if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
         # WMF 4 image build
         Write-Verbose -Verbose "Installing platyPS via nuget"
