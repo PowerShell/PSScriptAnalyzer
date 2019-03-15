@@ -6,7 +6,7 @@
 
 - Minimum required version of `PowerShell Core` was raised from `6.0.2` to `6.1.0` due to `6.0` having reached the end of its support life-cycle. (#1165)
 - Updated used version of `Newtonsoft.Json` to `11.0.2`. (#1165) (by @bergmeister)
-- Command data files of PowerShell `6.0.2` were removed. Updated files for PowerShell `6.1.0` were added. This means that users that have customized the `UseCompatibleCmdlets` rule, need to either adapt the version string as per rule documentation or can alternatively copy in the old command data files into the `Settings` installation folder (#1075) (by @bergmeister)
+- Command data files of PowerShell `6.0` were removed. Updated files for PowerShell `6.1` were added. This means that users that have customized the `UseCompatibleCmdlets` rule, need to either adapt the version string as per rule documentation or can alternatively copy in the old command data files into the `Settings` installation folder (#1075) (by @bergmeister)
 - The minimum required runtime of the full .Net Framework was raised from `4.5.1` to `4.5.2` as `4.5.1` is not supported any more. If the OS is patched then Windows update will have ensured that the newer runtime patch is available. (#1108) (by @bergmeister)
 - Emit parsing errors as diagnostic records (#1130) (by @JamesWTruher)
 
