@@ -593,7 +593,17 @@ Gets the Windows SKU ID of the current OS.
 #>
 function Get-WindowsSkuId
 {
-    return (Get-CimInstance Win32_OperatingSystem).OperatingSystemSKU
+    try
+    {
+        return (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).OperatingSystemSKU
+    }
+    catch
+    {
+        # Do nothing
+    }
+
+    # Backup call if `Get-CimInstance` does not exist
+    return [CimSession]::Create('localhost', [Microsoft.Management.Infrastructure.Options.DComSessionOptions]::new()).QueryInstances('root\cimv2', 'WQL', 'SELECT * FROM Win32_OperatingSystem').OperatingSystemSku
 }
 
 <#
