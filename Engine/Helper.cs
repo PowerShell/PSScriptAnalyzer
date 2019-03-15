@@ -605,18 +605,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Given a commandast, checks if the command is a Cmdlet.
+        /// Given a commandast, checks if the command is a known cmdlet, function or ExternalScript. 
         /// </summary>
         /// <param name="cmdAst"></param>
         /// <returns></returns>
-        public bool IsCmdlet(CommandAst cmdAst) {
+        public bool IsKnownCmdletFunctionOrExternalScript(CommandAst cmdAst)
+        {
             if (cmdAst == null)
             {
                 return false;
             }
 
             var commandInfo = GetCommandInfo(cmdAst.GetCommandName());
-            return (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet);
+            if (commandInfo == null)
+            {
+                return false;
+            }
+
+            return commandInfo.CommandType == CommandTypes.Cmdlet ||
+                   commandInfo.CommandType == CommandTypes.Alias ||
+                   commandInfo.CommandType == CommandTypes.ExternalScript;
         }
 
         /// <summary>
