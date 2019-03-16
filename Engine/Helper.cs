@@ -115,8 +115,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-            // There are 5 rules that use the CommandInfo cache and each rule does not request more than one concurrent command info request
-            _runSpacePool = RunspaceFactory.CreateRunspacePool(1, 6);
+            // There are 5 rules that use the CommandInfo cache but one rule (AvoidAlias) makes parallel queries.
+            // Therefore 10 runspaces was a heuristic measure where no more speed improvement was seen.
+            _runSpacePool = RunspaceFactory.CreateRunspacePool(1, 10);
             _runSpacePool.Open();
             _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this, runspacePool: _runSpacePool));
         }
