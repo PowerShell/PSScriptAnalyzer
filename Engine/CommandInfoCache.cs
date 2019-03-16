@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Management.Automation;
 using System.Linq;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     internal class CommandInfoCache
     {
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
-
+        private readonly RunspacePool _runspacePool;
         private readonly Helper _helperInstance;
 
         /// <summary>
@@ -24,6 +25,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             _commandInfoCache = new ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>>();
             _helperInstance = pssaHelperInstance;
+            // There are only 4 rules that use the CommandInfo cache and each rule does not request more than one concurrent command info request
+            _runspacePool = RunspaceFactory.CreateRunspacePool(1, 5);
+            _runspacePool.Open();
         }
 
         /// <summary>
@@ -67,10 +71,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Get a CommandInfo object of the given command name
         /// </summary>
         /// <returns>Returns null if command does not exists</returns>
-        private static CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
+        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
+                ps.RunspacePool = _runspacePool;
+
                 ps.AddCommand("Get-Command")
                     .AddParameter("Name", cmdName)
                     .AddParameter("ErrorAction", "SilentlyContinue");
