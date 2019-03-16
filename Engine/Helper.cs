@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -29,6 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private PSVersionTable psVersionTable;
 
         private readonly Lazy<CommandInfoCache> _commandInfoCacheLazy;
+        private readonly RunspacePool _runSpacePool;
 
         #endregion
 
@@ -113,7 +115,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this));
+            // There are 5 rules that use the CommandInfo cache and each rule does not request more than one concurrent command info request
+            _runSpacePool = RunspaceFactory.CreateRunspacePool(1, 6);
+            _runSpacePool.Open();
+            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this, runspacePool: _runSpacePool));
         }
 
         /// <summary>
@@ -299,11 +304,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Collection<PSObject> psObj = null;
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
+                ps.RunspacePool = _runSpacePool;
+                ps.AddCommand("Test-ModuleManifest");
+                ps.AddParameter("Path", filePath);
+                ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
                 try
                 {
-                    ps.AddCommand("Test-ModuleManifest");
-                    ps.AddParameter("Path", filePath);
-                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
                     psObj = ps.Invoke();
                 }
                 catch (CmdletInvocationException e)
@@ -651,31 +657,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
-        }
-
-
-        /// <summary>
-        /// Get a CommandInfo object of the given command name
-        /// </summary>
-        /// <returns>Returns null if command does not exists</returns>
-        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
-        {
-            using (var ps = System.Management.Automation.PowerShell.Create())
-            {
-                var psCommand = ps.AddCommand("Get-Command")
-                    .AddParameter("Name", cmdName)
-                    .AddParameter("ErrorAction", "SilentlyContinue");
-
-                if(commandType!=null)
-                {
-                    psCommand.AddParameter("CommandType", commandType);
-                }
-
-                var commandInfo = psCommand.Invoke<CommandInfo>()
-                         .FirstOrDefault();
-
-                return commandInfo;
-            }
         }
 
         /// <summary>

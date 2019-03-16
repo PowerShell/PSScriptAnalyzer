@@ -15,19 +15,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     internal class CommandInfoCache
     {
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
-        private readonly RunspacePool _runspacePool;
         private readonly Helper _helperInstance;
+        private readonly RunspacePool _runspacePool;
 
         /// <summary>
         /// Create a fresh command info cache instance.
         /// </summary>
-        public CommandInfoCache(Helper pssaHelperInstance)
+        public CommandInfoCache(Helper pssaHelperInstance, RunspacePool runspacePool)
         {
             _commandInfoCache = new ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>>();
             _helperInstance = pssaHelperInstance;
-            // There are only 4 rules that use the CommandInfo cache and each rule does not request more than one concurrent command info request
-            _runspacePool = RunspaceFactory.CreateRunspacePool(1, 5);
-            _runspacePool.Open();
+            _runspacePool = runspacePool;
         }
 
         /// <summary>
