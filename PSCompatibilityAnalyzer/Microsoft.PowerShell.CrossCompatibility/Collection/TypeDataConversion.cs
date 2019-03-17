@@ -12,8 +12,9 @@ using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
 using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
+using Microsoft.PowerShell.CrossCompatibility.Utility;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Utility
+namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
     /// <summary>
     /// Assembles loaded type data from a list of assemblies.
