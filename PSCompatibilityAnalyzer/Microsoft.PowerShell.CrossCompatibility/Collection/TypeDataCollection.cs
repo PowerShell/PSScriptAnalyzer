@@ -14,18 +14,36 @@ using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 
+using SMA = System.Management.Automation;
+
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
     /// <summary>
     /// Assembles loaded type data from a list of assemblies.
     /// </summary>
-    public static class TypeDataConversion
+    public static class TypeDataCollection
     {
         // Binding flags for static type members
         private const BindingFlags StaticBinding = BindingFlags.Public | BindingFlags.Static;
 
         // Binding flags for instance type members, note FlattenHierarchy
         private const BindingFlags InstanceBinding = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+
+        public static AvailableTypeData GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> errors)
+        {
+            IReadOnlyDictionary<string, Type> typeAccelerators = GetTypeAccelerators();
+            IEnumerable<Assembly> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            return AssembleAvailableTypes(loadedAssemblies, typeAccelerators, out errors);
+        }
+
+        public static IReadOnlyDictionary<string, Type> GetTypeAccelerators()
+        {
+            return (Dictionary<string, Type>)typeof(PSObject).Assembly
+                .GetType("System.Management.Automation.TypeAccelerators")
+                .GetMethod("get_Get")
+                .Invoke(null, new object[0]);
+        }
 
         /// <summary>
         /// Collate type data from assemblies into an AvailableTypeData object.
@@ -35,7 +53,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// <returns>an object describing all the available types from the given assemblies.</returns>
         public static AvailableTypeData AssembleAvailableTypes(
             IEnumerable<Assembly> assemblies,
-            IDictionary<string, Type> typeAccelerators,
+            IReadOnlyDictionary<string, Type> typeAccelerators,
             out IEnumerable<CompatibilityAnalysisException> errors)
         {
             var errAcc = new List<CompatibilityAnalysisException>();

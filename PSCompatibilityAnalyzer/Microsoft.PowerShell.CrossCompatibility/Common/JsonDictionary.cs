@@ -110,4 +110,15 @@ namespace Microsoft.PowerShell.CrossCompatibility
             return CloneInto(new JsonCaseInsensitiveStringDictionary<TValue>(Count));
         }
     }
+
+    internal static class DictionaryExtension
+    {
+        public static void AddAll<K, V>(this IDictionary<K, V> thisDict, IEnumerable<KeyValuePair<K, V>> entries)
+        {
+            foreach (KeyValuePair<K, V> entry in entries)
+            {
+                thisDict[entry.Key] = entry.Value;
+            }
+        }
+    }
 }
