@@ -24,14 +24,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         // The name of the directory where compatibility profiles are looked for by default.
         private const string PROFILE_DIR_NAME = "compatibility_profiles";
 
-        // The name of the file to hydrate the compatibility profile assets from.
-        private const string PROFILE_ZIP_NAME = "compatibility_profiles.zip";
-
         // The full path of the directory where compatiblity profiles are looked for by default.
         private static readonly string s_defaultProfileDirPath;
-
-        // The full path of the file where the zipped compatibility profiles are.
-        private static readonly string s_profileZipPath;
 
         // Memoized path to the module root of PSScriptAnalyzer.
         private static readonly Lazy<string> s_moduleRootDirPath;
@@ -45,10 +39,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             s_moduleRootDirPath = new Lazy<string>(() => GetModuleRootDirPath());
             s_defaultProfileDirPath = Path.Combine(s_moduleRootDirPath.Value, PROFILE_DIR_NAME);
-            s_profileZipPath = Path.Combine(s_moduleRootDirPath.Value, PROFILE_ZIP_NAME);
-
-            // On first run, we need to make sure the profile assets have been hydrated from the zip
-            ExpandZipToDirectory(s_profileZipPath, s_defaultProfileDirPath);
         }
 
         private readonly CompatibilityProfileLoader _profileLoader;
@@ -238,18 +228,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return Path.GetFullPath(nonNormalizedRoot);
         }
 
-        private static void ExpandZipToDirectory(string zipPath, string destinationDirectoryPath)
-        {
-            // Assume that if the directory already exists, there is nothing to do.
-            // Profile unzipping can be forced by deleting the directory.
-            if (Directory.Exists(destinationDirectoryPath))
-            {
-                return;
-            }
-
-            // Note: This method will throw if the directory already exists
-            ZipFile.ExtractToDirectory(zipPath, destinationDirectoryPath, Encoding.UTF8);
-        }
     }
 
     /// <summary>
