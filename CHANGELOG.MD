@@ -1,6 +1,6 @@
 ﻿# CHANGELOG
 
-## [1.18.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.0) - 2019-03-??
+## [1.18.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.0) - 2019-03-21
 
 ### Breaking Changes
 
