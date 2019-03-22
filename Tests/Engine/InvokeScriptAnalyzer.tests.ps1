@@ -632,31 +632,8 @@ Describe "Test -EnableExit Switch" {
         }
 
         Describe "Handles static Singleton (issue 1182)" {
-            $scriptDefinition = @'
-                enum LogLevel
-                {
-                    Error
-                    Information
-                    Verbose
-                    Debug
-                }
-
-                class Logger
-                {
-                    static [Logger] $instance
-                }
-
-                function Write-Log
-                {
-                    [CmdletBinding()]
-                    param(
-                        [LogLevel] $LogLevel
-                    )
-
-                    $logger.WriteLog($LogLevel, "Hello")
-                }
-'@
             It "Does not throw or return diagnostic record" {
+                $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
                 Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
             }
         }
