@@ -14,7 +14,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check for violation.
+    /// UseConsistentIndentation: Checks if indentation is consistent throughout the source file.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
@@ -57,6 +57,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
+
+        [ConfigurableRuleProperty(defaultValue: "IncreaseIndentationForFirstPipeline")]
+        public string PipelineIndentation
+        {
+            get
+            {
+                return pipelineIndentationStyle.ToString();
+            }
+            set
+            {
+                if (String.IsNullOrWhiteSpace(value) ||
+                    !Enum.TryParse(value, true, out pipelineIndentationStyle))
+                {
+                    pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline;
+                }
+            }
+        }
+
         private bool insertSpaces;
         private char indentationChar;
         private int indentationLevelMultiplier;
@@ -68,9 +86,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Auto
         };
 
+        private enum PipelineIndentationStyle
+        {
+            IncreaseIndentationForFirstPipeline,
+            IncreaseIndentationAfterEveryPipeline,
+            NoIndentation
+        }
+
         // TODO make this configurable
         private IndentationKind indentationKind = IndentationKind.Space;
 
+        private PipelineIndentationStyle pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline;
 
         /// <summary>
         /// Analyzes the given ast to find violations.
@@ -104,6 +130,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var diagnosticRecords = new List<DiagnosticRecord>();
             var indentationLevel = 0;
             var onNewLine = true;
+            var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true);
             for (int k = 0; k < tokens.Length; k++)
             {
                 var token = tokens[k];
@@ -121,6 +148,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     case TokenKind.LCurly:
                     case TokenKind.DollarParen:
                         AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                        break;
+
+                    case TokenKind.Pipe:
+                        bool pipelineIsFollowedByNewlineOrLineContinuation = k < tokens.Length - 1 && k > 0 &&
+                              (tokens[k + 1].Kind == TokenKind.NewLine || tokens[k + 1].Kind == TokenKind.LineContinuation);
+                        if (!pipelineIsFollowedByNewlineOrLineContinuation)
+                        {
+                            break;
+                        }
+                        if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
+                        {
+                            AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                            break;
+                        }
+                        if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
+                        {
+                            bool isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst => PositionIsEqual(((PipelineAst)pipelineAst).PipelineElements[0].Extent.EndScriptPosition, tokens[k - 1].Extent.EndScriptPosition));
+                            if (isFirstPipeInPipeline)
+                            {
+                                AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                            }
+                        }
                         break;
 
                     case TokenKind.RParen:
@@ -156,20 +205,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 {
                                     --j;
                                 }
-
-                                if (j >= 0 && tokens[j].Kind == TokenKind.Pipe)
-                                {
-                                    ++tempIndentationLevel;
-                                }
                             }
 
-                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine);
+                            var lineHasPipelineBeforeToken = tokens.Any(oneToken =>
+                                oneToken.Kind == TokenKind.Pipe &&
+                                oneToken.Extent.StartLineNumber == token.Extent.StartLineNumber &&
+                                oneToken.Extent.StartColumnNumber < token.Extent.StartColumnNumber);
+
+                            AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
                         break;
+                }
+
+                // Check if the current token matches the end of a PipelineAst
+                var matchingPipeLineAstEnd = pipelineAsts.FirstOrDefault(pipelineAst =>
+                        PositionIsEqual(pipelineAst.Extent.EndScriptPosition, token.Extent.EndScriptPosition)) as PipelineAst;
+                if (matchingPipeLineAstEnd != null)
+                {
+                    if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
+                    {
+                        indentationLevel = ClipNegative(indentationLevel - 1);
+                    }
+                    else if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
+                    {
+                        indentationLevel = ClipNegative(indentationLevel - (matchingPipeLineAstEnd.PipelineElements.Count - 1));
+                    }
                 }
             }
 
             return diagnosticRecords;
+        }
+
+        private static bool PositionIsEqual(IScriptPosition position1, IScriptPosition position2)
+        {
+            return position1.ColumnNumber == position2.ColumnNumber &&
+                   position1.LineNumber == position2.LineNumber &&
+                   position1.File == position2.File;
         }
 
         /// <summary>
@@ -237,7 +308,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             Token token,
             int expectedIndentationLevel,
             List<DiagnosticRecord> diagnosticRecords,
-            ref bool onNewLine)
+            ref bool onNewLine,
+            bool lineHasPipelineBeforeToken = false)
         {
             if (onNewLine)
             {
@@ -265,26 +337,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetDiagnosticSeverity(),
                             fileName,
                             null,
-                            GetSuggestedCorrections(token, expectedIndentationLevel)));
+                            GetSuggestedCorrections(token, expectedIndentationLevel, lineHasPipelineBeforeToken)));
                 }
             }
         }
 
         private List<CorrectionExtent> GetSuggestedCorrections(
             Token token,
-            int indentationLevel)
+            int indentationLevel,
+            bool lineHasPipelineBeforeToken = false)
         {
             // TODO Add another constructor for correction extent that takes extent
             // TODO handle param block
             // TODO handle multiline commands
 
             var corrections = new List<CorrectionExtent>();
+            var optionalPipeline = lineHasPipelineBeforeToken ? "| " : string.Empty;
             corrections.Add(new CorrectionExtent(
                 token.Extent.StartLineNumber,
                 token.Extent.EndLineNumber,
                 1,
                 token.Extent.EndColumnNumber,
-                GetIndentationString(indentationLevel) + token.Extent.Text,
+                GetIndentationString(indentationLevel) + optionalPipeline + token.Extent.Text,
                 token.Extent.File));
             return corrections;
         }

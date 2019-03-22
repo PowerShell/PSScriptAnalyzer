@@ -15,14 +15,14 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check for [violation]
+    /// UseConsistentWhitespace: Checks if whitespace usage is consistent throughout the source file.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
     public class UseConsistentWhitespace : ConfigurableRule
     {
-        private enum ErrorKind { Brace, Paren, Operator, SeparatorComma, SeparatorSemi };
+        private enum ErrorKind { BeforeOpeningBrace, Paren, Operator, SeparatorComma, SeparatorSemi, AfterOpeningBrace, BeforeClosingBrace, BeforePipe, AfterPipe };
         private const int whiteSpaceSize = 1;
         private const string whiteSpace = " ";
         private readonly SortedSet<TokenKind> openParenKeywordWhitelist = new SortedSet<TokenKind>()
@@ -42,6 +42,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public bool CheckOpenBrace { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckInnerBrace { get; protected set; }
+
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckPipe { get; protected set; }
+
+        [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckOpenParen { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
@@ -56,6 +62,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (CheckOpenBrace)
             {
                 violationFinders.Add(FindOpenBraceViolations);
+            }
+
+            if (CheckInnerBrace)
+            {
+                violationFinders.Add(FindInnerBraceViolations);
+            }
+
+            if (CheckPipe)
+            {
+                violationFinders.Add(FindPipeViolations);
             }
 
             if (CheckOpenParen)
@@ -171,10 +187,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             switch (kind)
             {
-                case ErrorKind.Brace:
-                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeBrace);
+                case ErrorKind.BeforeOpeningBrace:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeOpeningBrace);
+                case ErrorKind.AfterOpeningBrace:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorAfterOpeningBrace);
+                case ErrorKind.BeforeClosingBrace:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeClosingInnerBrace);
                 case ErrorKind.Operator:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorOperator);
+                case ErrorKind.BeforePipe:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSpaceBeforePipe);
+                case ErrorKind.AfterPipe:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSpaceAfterPipe);
                 case ErrorKind.SeparatorComma:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSeparatorComma);
                 case ErrorKind.SeparatorSemi:
@@ -200,13 +224,118 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!IsPreviousTokenApartByWhitespace(lcurly))
                 {
                     yield return new DiagnosticRecord(
-                        GetError(ErrorKind.Brace),
+                        GetError(ErrorKind.BeforeOpeningBrace),
                         lcurly.Value.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
                         GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, false, true).ToList());
+                }
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> FindInnerBraceViolations(TokenOperations tokenOperations)
+        {
+            foreach (var lCurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
+            {
+                if (lCurly.Next == null
+                    || !IsPreviousTokenOnSameLine(lCurly)
+                    || lCurly.Next.Value.Kind == TokenKind.NewLine
+                    || lCurly.Next.Value.Kind == TokenKind.LineContinuation
+                    )
+                {
+                    continue;
+                }
+
+                if (!IsNextTokenApartByWhitespace(lCurly))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.AfterOpeningBrace),
+                        lCurly.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(lCurly.Previous.Value, lCurly.Value, lCurly.Next.Value, true, false).ToList());
+                }
+            }
+
+            foreach (var rCurly in tokenOperations.GetTokenNodes(TokenKind.RCurly))
+            {
+                if (rCurly.Previous == null
+                    || !IsPreviousTokenOnSameLine(rCurly)
+                    || rCurly.Previous.Value.Kind == TokenKind.LCurly
+                    || rCurly.Previous.Value.Kind == TokenKind.NewLine
+                    || rCurly.Previous.Value.Kind == TokenKind.LineContinuation
+                    )
+                {
+                    continue;
+                }
+
+                if (!IsPreviousTokenApartByWhitespace(rCurly))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.BeforeClosingBrace),
+                        rCurly.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(rCurly.Previous.Value, rCurly.Value, rCurly.Next.Value, false, true).ToList());
+                }
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> FindPipeViolations(TokenOperations tokenOperations)
+        {
+            foreach (var pipe in tokenOperations.GetTokenNodes(TokenKind.Pipe))
+            {
+                if (pipe.Next == null
+                    || !IsPreviousTokenOnSameLine(pipe)
+                    || pipe.Next.Value.Kind == TokenKind.Pipe
+                    || pipe.Next.Value.Kind == TokenKind.NewLine
+                    || pipe.Next.Value.Kind == TokenKind.LineContinuation
+                    )
+                {
+                    continue;
+                }
+
+                if (!IsNextTokenApartByWhitespace(pipe))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.AfterPipe),
+                        pipe.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, true, false).ToList());
+                }
+            }
+
+            foreach (var pipe in tokenOperations.GetTokenNodes(TokenKind.Pipe))
+            {
+                if (pipe.Previous == null
+                    || !IsPreviousTokenOnSameLine(pipe)
+                    || pipe.Previous.Value.Kind == TokenKind.Pipe
+                    || pipe.Previous.Value.Kind == TokenKind.NewLine
+                    || pipe.Previous.Value.Kind == TokenKind.LineContinuation
+                    )
+                {
+                    continue;
+                }
+
+                if (!IsPreviousTokenApartByWhitespace(pipe))
+                {
+                    yield return new DiagnosticRecord(
+                        GetError(ErrorKind.BeforePipe),
+                        pipe.Value.Extent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        tokenOperations.Ast.Extent.File,
+                        null,
+                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, false, true).ToList());
                 }
             }
         }
@@ -291,6 +420,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 (tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber);
         }
 
+        private bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
+        {
+            return whiteSpaceSize ==
+                (tokenNode.Next.Value.Extent.StartColumnNumber - tokenNode.Value.Extent.EndColumnNumber);
+        }
+
         private bool IsPreviousTokenOnSameLineAndApartByWhitespace(LinkedListNode<Token> tokenNode)
         {
             return IsPreviousTokenOnSameLine(tokenNode) && IsPreviousTokenApartByWhitespace(tokenNode);
@@ -342,8 +477,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             Token prevToken,
             Token token,
             Token nextToken,
-            bool hasWhitespaceBefore,
-            bool hasWhitespaceAfter)
+            bool hasWhitespaceBefore, // if this is false, then the returned correction extent will add a whitespace before the token
+            bool hasWhitespaceAfter   // if this is false, then the returned correction extent will add a whitespace after the token
+            )
         {
             var sb = new StringBuilder();
             IScriptExtent e1 = token.Extent;

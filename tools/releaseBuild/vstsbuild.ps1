@@ -1,9 +1,5 @@
 [cmdletbinding()]
-param(
-    [Parameter(Mandatory=$true,Position=0)]
-    [ValidatePattern("^v\d+\.\d+\.\d+(-\w+(\.\d+)?)?$")]
-    [string]$ReleaseTag
-)
+param ( )
 
 Begin
 {
@@ -54,13 +50,10 @@ End {
         Write-Verbose "Starting build at $resolvedRepoRoot  ..." -Verbose
         Clear-VstsTaskState
 
-        $buildParameters = @{
-            ReleaseTag = $ReleaseTag
-        }
         $buildArgs = @{
-            RepoPath = $resolvedRepoRoot 
-            BuildJsonPath = './tools/releaseBuild/build.json' 
-            Parameters = $buildParameters 
+            RepoPath = $resolvedRepoRoot
+            BuildJsonPath = './tools/releaseBuild/build.json'
+            Parameters = @{ ReleaseTag = "unused" } # not needed for PSSA
             AdditionalFiles = $AdditionalFiles
             Name = "win7-x64"
         }

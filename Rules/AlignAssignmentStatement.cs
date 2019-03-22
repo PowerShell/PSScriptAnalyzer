@@ -14,7 +14,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// A class to walk an AST to check if consecutive assignment statements are aligned.
+    /// AlignAssignmentStatement: Checks if consecutive assignment statements are aligned.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
@@ -191,15 +191,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                var widestKeyExtent = extentTuples
-                    .Select(t => t.Item1)
-                    .Aggregate((t1, tAggregate) =>
-                    {
-                        return TokenOperations.GetExtentWidth(tAggregate) > TokenOperations.GetExtentWidth(t1)
-                            ? tAggregate
-                            : t1;
-                    });
-                var expectedStartColumnNumber = widestKeyExtent.EndColumnNumber + 1;
+                var expectedStartColumnNumber = extentTuples.Max(x => x.Item1.EndColumnNumber) + 1;
                 foreach (var extentTuple in extentTuples)
                 {
                     if (extentTuple.Item2.StartColumnNumber != expectedStartColumnNumber)

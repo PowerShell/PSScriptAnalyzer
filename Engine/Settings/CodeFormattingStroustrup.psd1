@@ -5,7 +5,8 @@
         'PSPlaceCloseBrace',
         'PSUseConsistentWhitespace',
         'PSUseConsistentIndentation',
-        'PSAlignAssignmentStatement'
+        'PSAlignAssignmentStatement',
+        'PSUseCorrectCasing'
     )
 
     Rules = @{
@@ -26,20 +27,27 @@
         PSUseConsistentIndentation = @{
             Enable          = $true
             Kind            = 'space'
+            PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
             IndentationSize = 4
         }
 
         PSUseConsistentWhitespace = @{
-            Enable         = $true
-            CheckOpenBrace = $true
-            CheckOpenParen = $true
-            CheckOperator  = $true
-            CheckSeparator = $true
+            Enable          = $true
+            CheckInnerBrace = $true
+            CheckOpenBrace  = $true
+            CheckOpenParen  = $true
+            CheckOperator   = $true
+            CheckPipe       = $true
+            CheckSeparator  = $true
         }
 
         PSAlignAssignmentStatement = @{
             Enable         = $true
             CheckHashtable = $true
+        }
+
+        PSUseCorrectCasing     = @{
+            Enable             = $true
         }
     }
 }

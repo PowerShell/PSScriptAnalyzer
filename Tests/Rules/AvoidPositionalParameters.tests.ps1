@@ -15,15 +15,39 @@ Describe "AvoidPositionalParameters" {
             $violations[0].Message | Should -Match $violationMessage
         }
 
+        It "Triggers on alias" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition "gcm 'abc' 4 4.3"
+            $violations.Count | Should -Be 2
+            $violations.RuleName | Should -Contain $violationName
+            $violations.RuleName | Should -Contain 'PSAvoidUsingCmdletAliases'
+        }
+
     }
 
     Context "When there are no violations" {
         It "returns no violations" {
             $noViolations.Count | Should -Be 0
         }
-        
+
         It "returns no violations for DSC configuration" {
             $noViolationsDSC.Count | Should -Be 0
+        }
+    }
+
+    Context "Function defined and called in script, which has 3 or more positional parameters triggers rule." {
+        It "returns avoid positional parameters violation" {
+            $sb=
+            {
+                Function Foo {
+                param(
+                    [Parameter(Mandatory=$true,Position=1)] $A,
+                    [Parameter(Position=2)]$B,
+                    [Parameter(Position=3)]$C)
+                }
+                Foo "a" "b" "c"}
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "$sb"
+            $warnings.Count | Should -Be 1
+            $warnings.RuleName | Should -BeExactly $violationName
         }
     }
 }

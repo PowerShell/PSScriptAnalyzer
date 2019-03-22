@@ -11,6 +11,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     [AttributeUsage(AttributeTargets.Property)]
     public class ConfigurableRulePropertyAttribute : Attribute
     {
+        // TODO: Remove this parameter or make it optional.
+        //       Properties already have a way to specify default values in C#.
+        //       Having this prevents using null (which may be legitimate)
+        //       or values from other assemblies, and overrides the constructor,
+        //       which just makes life harder.
+
         /// <summary>
         /// Default value of the property that the attribute decorates.
         /// </summary>
@@ -22,6 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="defaultValue"></param>
         public ConfigurableRulePropertyAttribute(object defaultValue)
         {
+            // TODO: null is a legitimate value and should be allowed.
             if (defaultValue == null)
             {
                 throw new ArgumentNullException(nameof(defaultValue), Strings.ConfigurableScriptRuleNRE);

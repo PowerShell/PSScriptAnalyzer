@@ -111,3 +111,8 @@ Default value:
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+## OUTPUTS
+
+### System.String
+The formatted string result.

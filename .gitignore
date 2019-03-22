@@ -25,6 +25,9 @@ bld/
 # Visual Studo 2015 cache/options directory
 .vs/
 
+# VSCode configuration directory
+.vscode/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
@@ -206,3 +209,12 @@ FakesAssemblies/
 
 ##Our project binplace location
 PSScriptAnalyzer/
+
+# Vim swap files
+*.swp
+
+# Test result file
+TestResults.xml
+
+# PSCompatibilityAnalyzer module
+PSCompatibilityAnalyzer/out/

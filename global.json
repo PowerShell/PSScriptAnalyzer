@@ -1,9 +1,5 @@
 {
-    "projects": [
-        "Engine",
-        "Rules"
-    ],
     "sdk": {
-        "version": "2.1.101"
+        "version": "2.2.104"
     }
 }

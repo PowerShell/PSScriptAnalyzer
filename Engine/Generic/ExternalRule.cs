@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Globalization;
+
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     internal class ExternalRule : IExternalRule
@@ -18,6 +20,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public string GetName()
         {
             return this.name;
+        }
+
+        public string GetFullName()
+        {
+            return string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", this.GetSourceName(), this.name);
         }
 
         public string GetCommonName()

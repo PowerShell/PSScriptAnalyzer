@@ -24,11 +24,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private CommandInvocationIntrinsics invokeCommand;
         private IOutputWriter outputWriter;
-        private Object getCommandLock = new object();
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
-        private Dictionary<string, CommandInfo> commandInfoCache;
+
+        private readonly Lazy<CommandInfoCache> _commandInfoCacheLazy;
 
         #endregion
 
@@ -100,6 +100,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:"};
 
         private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":"};
+
+        /// <summary>
+        /// Store of command info objects for commands. Memoizes results.
+        /// </summary>
+        private CommandInfoCache CommandInfoCache => _commandInfoCacheLazy.Value;
+
         #endregion
 
         /// <summary>
@@ -107,7 +113,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-
+            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this));
         }
 
         /// <summary>
@@ -123,7 +129,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </param>
         public Helper(
             CommandInvocationIntrinsics invokeCommand,
-            IOutputWriter outputWriter)
+            IOutputWriter outputWriter) : this()
         {
             this.invokeCommand = invokeCommand;
             this.outputWriter = outputWriter;
@@ -140,10 +146,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             KeywordBlockDictionary = new Dictionary<String, List<Tuple<int, int>>>(StringComparer.OrdinalIgnoreCase);
             VariableAnalysisDictionary = new Dictionary<Ast, VariableAnalysis>();
             ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-            if (commandInfoCache == null)
-            {
-                commandInfoCache = new Dictionary<string, CommandInfo>(StringComparer.OrdinalIgnoreCase);
-            }
 
             IEnumerable<CommandInfo> aliases = this.invokeCommand.GetCommands("*", CommandTypes.Alias, true);
 
@@ -295,35 +297,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             errorRecord = null;
             PSModuleInfo psModuleInfo = null;
             Collection<PSObject> psObj = null;
-            var ps = System.Management.Automation.PowerShell.Create();
-            try
+            using (var ps = System.Management.Automation.PowerShell.Create())
             {
-                ps.AddCommand("Test-ModuleManifest");
-                ps.AddParameter("Path", filePath);
-                ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
-                psObj = ps.Invoke();
-            }
-            catch (CmdletInvocationException e)
-            {
-                // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
-                // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
-                // we consume it to allow execution of the of this method.
-                if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                try
                 {
-                    throw;
+                    ps.AddCommand("Test-ModuleManifest");
+                    ps.AddParameter("Path", filePath);
+                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                    psObj = ps.Invoke();
+                }
+                catch (CmdletInvocationException e)
+                {
+                    // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
+                    // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
+                    // we consume it to allow execution of the of this method.
+                    if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                    {
+                        throw;
+                    }
+                }
+                if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
+                {
+                    var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
+                    ps.Streams.Error.CopyTo(errorRecordArr, 0);
+                    errorRecord = errorRecordArr;
+                }
+                if (psObj != null && psObj.Any() && psObj[0] != null)
+                {
+                    psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
                 }
             }
-            if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
-            {
-                var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
-                ps.Streams.Error.CopyTo(errorRecordArr, 0);
-                errorRecord = errorRecordArr;
-            }
-            if (psObj != null && psObj.Any() && psObj[0] != null)
-            {
-                psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
-            }
-            ps.Dispose();
             return psModuleInfo;
         }
 
@@ -509,7 +512,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            #if !PSV3
+            #if !(PSV3||PSV4)
 
             List<string> dscResourceFunctionNames = new List<string>(new string[] { "Test", "Get", "Set" });
 
@@ -602,91 +605,60 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Given a commandast, checks whether positional parameters are used or not.
+        /// Given a commandast, checks if the command is a known cmdlet, function or ExternalScript. 
         /// </summary>
         /// <param name="cmdAst"></param>
-        /// <param name="moreThanThreePositional">only return true if more than three positional parameters are used</param>
         /// <returns></returns>
-        public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanThreePositional = false)
+        public bool IsKnownCmdletFunctionOrExternalScript(CommandAst cmdAst)
         {
             if (cmdAst == null)
             {
                 return false;
             }
 
-            var commandInfo = GetCommandInfoLegacy(cmdAst.GetCommandName());
-            if (commandInfo == null || (commandInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
+            var commandInfo = GetCommandInfo(cmdAst.GetCommandName());
+            if (commandInfo == null)
             {
                 return false;
             }
 
-            IEnumerable<ParameterMetadata> switchParams = null;
+            return commandInfo.CommandType == CommandTypes.Cmdlet ||
+                   commandInfo.CommandType == CommandTypes.Alias ||
+                   commandInfo.CommandType == CommandTypes.ExternalScript;
+        }
 
+        /// <summary>
+        /// Given a commandast, checks whether positional parameters are used or not.
+        /// </summary>
+        /// <param name="cmdAst"></param>
+        /// <param name="moreThanTwoPositional">only return true if more than two positional parameters are used</param>
+        /// <returns></returns>
+        public bool PositionalParameterUsed(CommandAst cmdAst, bool moreThanTwoPositional = false)
+        {
             if (HasSplattedVariable(cmdAst))
             {
                 return false;
             }
 
-            if (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet)
-            {
-                try
-                {
-                    switchParams = commandInfo.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter);
-                }
-                catch (Exception)
-                {
-                    switchParams = null;
-                }
-            }
-
-            int parameters = 0;
             // Because of the way we count, we will also count the cmdlet as an argument so we have to -1
-            int arguments = -1;
+            int argumentsWithoutProcedingParameters = 0;
 
-            foreach (CommandElementAst ceAst in cmdAst.CommandElements)
-            {
-                var cmdParamAst = ceAst as CommandParameterAst;
-                if (cmdParamAst != null)
+            var commandElementCollection = cmdAst.CommandElements;
+            for (int i = 1; i < commandElementCollection.Count(); i++) {
+                if (!(commandElementCollection[i] is CommandParameterAst) && !(commandElementCollection[i-1] is CommandParameterAst))
                 {
-                    // Skip if it's a switch parameter
-                    if (switchParams != null &&
-                        switchParams.Any(
-                            pm => String.Equals(
-                                pm.Name,
-                                cmdParamAst.ParameterName, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        continue;
-                    }
-
-                    parameters += 1;
-
-                    if (cmdParamAst.Argument != null)
-                    {
-                        arguments += 1;
-                    }
-
-                }
-                else
-                {
-                    arguments += 1;
+                    argumentsWithoutProcedingParameters++;
                 }
             }
 
             // if not the first element in a pipeline, increase the number of arguments by 1
             PipelineAst parent = cmdAst.Parent as PipelineAst;
-
             if (parent != null && parent.PipelineElements.Count > 1 && parent.PipelineElements[0] != cmdAst)
             {
-                arguments += 1;
+                argumentsWithoutProcedingParameters++;
             }
 
-            // if we are only checking for 3 or more positional parameters, check that arguments < parameters + 3
-            if (moreThanThreePositional && (arguments - parameters) < 3)
-            {
-                return false;
-            }
-
-            return arguments > parameters;
+            return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
         }
 
 
@@ -715,7 +687,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-
         ///  Legacy method, new callers should use <see cref="GetCommandInfo"/> instead.
         ///  Given a command's name, checks whether it exists. It does not use the passed in CommandTypes parameter, which is a bug.
         ///  But existing method callers are already depending on this behaviour and therefore this could not be simply fixed.
@@ -727,29 +698,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         [Obsolete]
         public CommandInfo GetCommandInfoLegacy(string name, CommandTypes? commandType = null)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return null;
-            }
-
-            // check if it is an alias
-            string cmdletName = Helper.Instance.GetCmdletNameFromAlias(name);
-            if (string.IsNullOrWhiteSpace(cmdletName))
-            {
-                cmdletName = name;
-            }
-
-            lock (getCommandLock)
-            {
-                if (commandInfoCache.ContainsKey(cmdletName))
-                {
-                    return commandInfoCache[cmdletName];
-                }
-
-                var commandInfo = GetCommandInfoInternal(cmdletName, commandType);
-                commandInfoCache.Add(cmdletName, commandInfo);
-                return commandInfo;
-            }
+            return CommandInfoCache.GetCommandInfoLegacy(commandOrAliasName: name, commandTypes: commandType);
         }
 
         /// <summary>
@@ -760,22 +709,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns></returns>
         public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return null;
-            }
-
-            lock (getCommandLock)
-            {
-                if (commandInfoCache.ContainsKey(name))
-                {
-                    return commandInfoCache[name];
-                }
-
-                var commandInfo = GetCommandInfoInternal(name, commandType);
-
-                return commandInfo;
-            }
+            return CommandInfoCache.GetCommandInfo(name, commandTypes: commandType);
         }
 
         /// <summary>
@@ -1055,7 +989,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="scriptAst"></param>
         /// <returns></returns>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         public string GetTypeFromReturnStatementAst(Ast funcAst, ReturnStatementAst ret)
 
@@ -1126,7 +1060,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="classes"></param>
         /// <returns></returns>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         public string GetTypeFromMemberExpressionAst(MemberExpressionAst memberAst, Ast scopeAst)
 
@@ -1143,7 +1077,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             VariableAnalysisDetails details = null;
 
-#if !PSV3
+#if !(PSV3||PSV4)
 
             TypeDefinitionAst psClass = null;
 
@@ -1186,7 +1120,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="analysisDetails"></param>
         /// <returns></returns>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         internal string GetTypeFromMemberExpressionAstHelper(MemberExpressionAst memberAst, VariableAnalysisDetails analysisDetails)
 
@@ -1199,7 +1133,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             //Try to get the type without using psClass first
             Type result = AssignmentTarget.GetTypeFromMemberExpressionAst(memberAst);
 
-#if !PSV3
+#if !(PSV3||PSV4)
 
             //If we can't get the type, then it may be that the type of the object being invoked on is a powershell class
             if (result == null && psClass != null && analysisDetails != null)
@@ -1307,7 +1241,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ruleSuppressionList.AddRange(GetSuppressionsFunction(funcAst));
             }
 
-#if !PSV3
+#if !(PSV3||PSV4)
             // Get rule suppression from classes
             IEnumerable<TypeDefinitionAst> typeAsts = ast.FindAll(item => item is TypeDefinitionAst, true).Cast<TypeDefinitionAst>();
 
@@ -1359,7 +1293,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-#if !PSV3
+#if !(PSV3||PSV4)
         /// <summary>
         /// Returns a list of rule suppression from the class
         /// </summary>
@@ -1456,7 +1390,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 while (startRecord < diagnostics.Count
                     // && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
                     // && diagnostics[startRecord].Extent.StartLineNumber < ruleSuppression.st)
-                    && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
+                    && offsetArr[startRecord] != null && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
                 {
                     startRecord += 1;
                 }
@@ -1470,7 +1404,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     var curOffset = offsetArr[recordIndex];
 
                     //if (record.Extent.EndOffset > ruleSuppression.EndOffset)
-                    if (curOffset.Item2 > ruleSuppression.EndOffset)
+                    if (curOffset != null && curOffset.Item2 > ruleSuppression.EndOffset)
                     {
                         break;
                     }
@@ -1526,6 +1460,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             for (int k = 0; k < diagnostics.Count; k++)
             {
                 var ext = diagnostics[k].Extent;
+                if (ext == null)
+                {
+                    continue;
+                }
                 if (ext.StartOffset == 0 && ext.EndOffset == 0)
                 {
                     // check if line and column number correspond to 0 offsets
@@ -2076,7 +2014,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-#if PSV3
+#if (PSV3||PSV4)
 
             statementAst.Visit(this);
 
@@ -2792,7 +2730,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     {
         List<Tuple<string, StatementAst>> outputTypes;
 
-#if !PSV3
+#if !(PSV3||PSV4)
 
         IEnumerable<TypeDefinitionAst> classes;
 
@@ -2834,7 +2772,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="ast"></param>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         public FindPipelineOutput(FunctionDefinitionAst ast)
 
@@ -2865,7 +2803,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <returns></returns>
 
-#if PSV3
+#if (PSV3||PSV4)
 
         public static List<Tuple<string, StatementAst>> OutputTypes(FunctionDefinitionAst funcAst)
         {

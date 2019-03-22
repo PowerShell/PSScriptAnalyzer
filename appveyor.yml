@@ -1,63 +1,53 @@
 environment:
+  PSVersion: 5
+  BuildConfiguration: Release
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: PowerShellCore
-    BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     PowerShellEdition: WindowsPowerShell
-    BuildConfiguration: Release
   - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
     PowerShellEdition: WindowsPowerShell
-    BuildConfiguration: PSv4Release
+    PSVersion: 4
   - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     PowerShellEdition: PowerShellCore
-    BuildConfiguration: Release
 
 # cache Nuget packages and dotnet CLI cache
 cache:
   - '%USERPROFILE%\.nuget\packages -> appveyor.yml'
-  - '%LocalAppData%\Microsoft\dotnet -> appveyor.yml'
 
 install:
   - ps:   if ($env:PowerShellEdition -eq 'WindowsPowerShell') { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
   - pwsh: if ($env:PowerShellEdition -eq 'PowerShellCore')    { Import-Module .\tools\appveyor.psm1; Invoke-AppveyorInstall }
-  - ps:   |
-            # Windows image still has version 6.0.0 of pwsh but 6.0.2 is required due to System.Management.Automation package https://github.com/appveyor/ci/issues/2230
-            if ($env:PowerShellEdition -eq 'PowerShellCore' -and $PSVersionTable.PSVersion -lt [version]'6.0.2' -and $IsWindows) {
-                $msiPath = "$env:TEMP\PowerShell-6.0.2-win-x64.msi"
-                (New-Object Net.WebClient).DownloadFile('https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.msi', $msiPath)
-                Write-Verbose 'Installing pwsh 6.0.2' -Verbose
-                Start-Process 'msiexec.exe' -Wait -ArgumentList "/i $msiPath /quiet"
-                Remove-Item $msiPath
-                $env:Path = "$env:ProgramFiles\PowerShell\6.0.2;$env:Path"
-            }
 
 build_script:
   - ps:   |
-            if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
-                if ($env:BuildConfiguration -eq 'PSv4Release') {
-                  # On WMF$: Also build for v3 to check it builds at least since we do not have a WMF3 image
-                  Invoke-AppveyorBuild -CheckoutPath $env:APPVEYOR_BUILD_FOLDER -BuildConfiguration PSv3Release -BuildType 'FullCLR'
-                }
-                Invoke-AppveyorBuild -CheckoutPath $env:APPVEYOR_BUILD_FOLDER -BuildConfiguration $env:BuildConfiguration -BuildType 'FullCLR'
-            }
+      if ( $env:PowerShellEdition -eq 'WindowsPowerShell' ) {
+          Set-Location $env:APPVEYOR_BUILD_FOLDER
+          if ( $env:PSVersion -eq "4" ) { # On WMF4: Also build for v3 to check it builds at least since we do not have a WMF3 image
+             ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 3
+          }
+          ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion "$env:PSVersion"
+          ./PSCompatibilityAnalyzer/build.ps1 -Configuration "$env:BuildConfiguration" -Framework 'net452'
+      }
   - pwsh: |
-            if ($env:PowerShellEdition -eq 'PowerShellCore') {
-                Import-Module .\tools\appveyor.psm1 # Appveyor does not persist pwsh sessions like it does for ps
-                Invoke-AppveyorBuild -CheckoutPath $env:APPVEYOR_BUILD_FOLDER -BuildConfiguration $env:BuildConfiguration -BuildType 'NetStandard'
-            }
+      if ($env:PowerShellEdition -eq 'PowerShellCore') {
+          Set-Location $env:APPVEYOR_BUILD_FOLDER
+          ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 6
+          ./PSCompatibilityAnalyzer/build.ps1 -Configuration "$env:BuildConfiguration" -Framework 'netstandard2.0'
+      }
 
 test_script:
   - ps:   |
-            if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
-                Invoke-AppveyorTest -CheckoutPath $env:APPVEYOR_BUILD_FOLDER
-            }
+      if ($env:PowerShellEdition -eq 'WindowsPowerShell') {
+          Invoke-AppveyorTest -CheckoutPath $env:APPVEYOR_BUILD_FOLDER
+      }
   - pwsh: |
-            if ($env:PowerShellEdition -eq 'PowerShellCore') {
-                Import-Module .\tools\appveyor.psm1 # Appveyor does not persist pwsh sessions like it does for ps
-                Invoke-AppveyorTest -CheckoutPath $env:APPVEYOR_BUILD_FOLDER
-            }
+      if ($env:PowerShellEdition -eq 'PowerShellCore') {
+          Import-Module .\tools\appveyor.psm1 # Appveyor does not persist pwsh sessions like it does for ps
+          Invoke-AppveyorTest -CheckoutPath $env:APPVEYOR_BUILD_FOLDER
+      }
 
 # Upload the project along with test results as a zip archive
 on_finish:
-  - ps: Import-Module .\tools\appveyor.psm1; Invoke-AppveyorFinish
+  - ps: Import-Module "${env:APPVEYOR_BUILD_FOLDER}\tools\appveyor.psm1"; Invoke-AppveyorFinish

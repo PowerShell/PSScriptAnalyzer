@@ -15,6 +15,8 @@ Indentation should be consistent throughout the source file.
         PSUseConsistentIndentation = @{
             Enable = $true
             IndentationSize = 4
+            PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+            Kind = 'space'
         }
     }
 ```
@@ -25,9 +27,32 @@ Indentation should be consistent throughout the source file.
 
 Enable or disable the rule during ScriptAnalyzer invocation.
 
-#### IndentationSize: bool (Default value is `4`)
+#### IndentationSize: int (Default value is `4`)
 
 Indentation size in the number of space characters.
+
+#### PipelineIndentation: string (Default value is `IncreaseIndentationForFirstPipeline`)
+
+Whether to increase indentation after a pipeline for multi-line statements. The settings are:
+
+- IncreaseIndentationForFirstPipeline (default): Indent once after the first pipeline and keep this indentation. Example:
+```powershell
+foo |
+    bar |
+    baz
+```
+- IncreaseIndentationAfterEveryPipeline: Indent more after the first pipeline and keep this indentation. Example:
+```powershell
+foo |
+    bar |
+        baz
+```
+- NoIndentation: Do not increase indentation. Example:
+```powershell
+foo |
+bar |
+baz
+```
 
 #### Kind: string (Default value is `space`)
 

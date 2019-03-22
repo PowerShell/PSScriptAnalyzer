@@ -22,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseOutputTypeCorrectly : SkipTypeDefinition, IScriptRule
     {
-        #if !PSV3
+        #if !(PSV3||PSV4)
 
         private IEnumerable<TypeDefinitionAst> _classes;
 
@@ -41,7 +41,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             DiagnosticRecords.Clear();
             this.fileName = fileName;
 
-            #if !PSV3
+            #if !(PSV3||PSV4)
 
             _classes = ast.FindAll(item => item is TypeDefinitionAst && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
 

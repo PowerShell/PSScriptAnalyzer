@@ -79,6 +79,8 @@ $suggestedCorrections.add($correctionExtent) | out-null
     "Extent"               = $ast.Extent
     "RuleName"             = $PSCmdlet.MyInvocation.InvocationName
     "Severity"             = "Warning"
+    "Severity"             = "Warning"
+    "RuleSuppressionID"    = "MyRuleSuppressionID"
     "SuggestedCorrections" = $suggestedCorrections
 }
 ```
@@ -153,7 +155,7 @@ function Measure-RequiresRunAsAdministrator
                 if ($Ast -is [System.Management.Automation.Language.AssignmentStatementAst])
                 {
                     [System.Management.Automation.Language.AssignmentStatementAst]$asAst = $Ast
-                    if ($asAst.Right.ToString().ToLower() -eq '[system.security.principal.windowsbuiltinrole]::administrator')
+                    if ($asAst.Right.ToString() -eq '[system.security.principal.windowsbuiltinrole]::administrator')
                     {
                         $returnValue = $true
                     }
@@ -203,4 +205,4 @@ function Measure-RequiresRunAsAdministrator
 }
 ```
 
-More examples can be found in *Tests\Engine\CommunityRules*
+More examples can be found in *Tests\Engine\CommunityAnalyzerRules*

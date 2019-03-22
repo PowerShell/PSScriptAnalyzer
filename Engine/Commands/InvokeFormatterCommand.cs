@@ -13,6 +13,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// A cmdlet to format a PowerShell script text.
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "Formatter")]
+    [OutputType(typeof(string))]
     public class InvokeFormatterCommand : PSCmdlet, IOutputWriter
     {
         private const string defaultSettingsPreset = "CodeFormatting";
@@ -110,6 +111,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             string formattedScriptDefinition;
             formattedScriptDefinition = Formatter.Format(ScriptDefinition, inputSettings, range, this);
             this.WriteObject(formattedScriptDefinition);
+        }
+
+        protected override void EndProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.EndProcessing();
+        }
+
+        protected override void StopProcessing()
+        {
+            ScriptAnalyzer.Instance.CleanUp();
+            base.StopProcessing();
         }
 
         private void ValidateInputSettings()

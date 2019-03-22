@@ -31,6 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private IOutputWriter outputWriter;
         private Dictionary<string, object> settings;
+        private readonly Regex s_aboutHelpRegex = new Regex("^about_.*help\\.txt$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 #if !CORECLR
         private CompositionContainer container;
 #endif // !CORECLR
@@ -282,21 +283,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Debug.Assert(includeRuleList != null);
             Debug.Assert(excludeRuleList != null);
 
-            switch (key.ToLower())
+            if (key.Equals("severity", StringComparison.OrdinalIgnoreCase))
             {
-                case "severity":
-                    severityList.AddRange(values);
-                    break;
-                case "includerules":
-                    includeRuleList.AddRange(values);
-                    break;
-                case "excluderules":
-                    excludeRuleList.AddRange(values);
-                    break;
-                default:
-                    return false;
+                severityList.AddRange(values);
+                return true;
             }
-            return true;
+            if (key.Equals("includerules", StringComparison.OrdinalIgnoreCase))
+            {
+                includeRuleList.AddRange(values);
+                return true;
+            }
+
+            return false;
         }
 
         private Dictionary<string, object> GetDictionaryFromHashTableAst(
@@ -509,75 +507,70 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             settings.Keys.CopyTo(settingsKeys, 0);
             foreach (var settingKey in settingsKeys)
             {
-                var key = settingKey.ToLower();
-                object value = settings[key];
-                switch (key)
+                object value = settings[settingKey];
+
+                if (settingKey.Equals("severity", StringComparison.OrdinalIgnoreCase) ||
+                    settingKey.Equals("includerules", StringComparison.OrdinalIgnoreCase) ||
+                    settingKey.Equals("excluderules", StringComparison.OrdinalIgnoreCase))
                 {
-                    case "severity":
-                    case "includerules":
-                    case "excluderules":
-                        // value must be either string or collections of string or array
-                        if (value == null
-                            || !(value is string
-                                || value is IEnumerable<string>
-                                || value.GetType().IsArray))
-                        {
-                            writer.WriteError(
-                                new ErrorRecord(
-                                    new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, key)),
-                                    Strings.WrongConfigurationKey,
-                                    ErrorCategory.InvalidData,
-                                    profile));
-                            hasError = true;
-                            break;
-                        }
-                        List<string> values = new List<string>();
-                        if (value is string)
-                        {
-                            values.Add(value as string);
-                        }
-                        else if (value is IEnumerable<string>)
-                        {
-                            values.Union(value as IEnumerable<string>);
-                        }
-                        else if (value.GetType().IsArray)
-                        {
-                            // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
-                            foreach (var val in value as IEnumerable)
-                            {
-                                if (val is string)
-                                {
-                                    values.Add(val as string);
-                                }
-                                else
-                                {
-                                    writer.WriteError(
-                                        new ErrorRecord(
-                                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, key)),
-                                            Strings.WrongConfigurationKey,
-                                            ErrorCategory.InvalidData,
-                                            profile));
-                                    hasError = true;
-                                    break;
-                                }
-                            }
-                        }
-                        AddProfileItem(key, values, severityList, includeRuleList, excludeRuleList);
-                        settings[key] = values;
-                        break;
-
-                    case "rules":
-                        break;
-
-                    default:
+                    // value must be either string or collections of string or array
+                    if (value == null
+                        || !(value is string
+                            || value is IEnumerable<string>
+                            || value.GetType().IsArray))
+                    {
                         writer.WriteError(
                             new ErrorRecord(
-                                new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, key)),
+                                new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, value, settingKey)),
                                 Strings.WrongConfigurationKey,
                                 ErrorCategory.InvalidData,
                                 profile));
                         hasError = true;
                         break;
+                    }
+                    var values = new List<string>();
+                    if (value is string)
+                    {
+                        values.Add(value as string);
+                    }
+                    else if (value is IEnumerable<string>)
+                    {
+                        values.Union(value as IEnumerable<string>);
+                    }
+                    else if (value.GetType().IsArray)
+                    {
+                        // for array case, sometimes we won't be able to cast it directly to IEnumerable<string>
+                        foreach (var val in value as IEnumerable)
+                        {
+                            if (val is string)
+                            {
+                                values.Add(val as string);
+                            }
+                            else
+                            {
+                                writer.WriteError(
+                                    new ErrorRecord(
+                                        new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, val, settingKey)),
+                                        Strings.WrongConfigurationKey,
+                                        ErrorCategory.InvalidData,
+                                        profile));
+                                hasError = true;
+                                break;
+                            }
+                        }
+                    }
+                    AddProfileItem(settingKey, values, severityList, includeRuleList, excludeRuleList);
+                    settings[settingKey] = values;
+                }
+                else if (settingKey.Equals("excluderules", StringComparison.OrdinalIgnoreCase))
+                {
+                    writer.WriteError(
+                        new ErrorRecord(
+                            new InvalidDataException(string.Format(CultureInfo.CurrentCulture, Strings.WrongKeyHashTable, settingKey)),
+                            Strings.WrongConfigurationKey,
+                            ErrorCategory.InvalidData,
+                            profile));
+                    hasError = true;
                 }
             }
             return hasError;
@@ -875,39 +868,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private IEnumerable<T> GetInterfaceImplementationsFromAssembly<T>(string ruleDllPath) where T : class
         {
-            var fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
+            string fileName = Path.GetFileNameWithoutExtension(ruleDllPath);
             var assemblyName = new AssemblyName(fileName);
             outputWriter.WriteVerbose(string.Format("Loading Assembly:{0}", assemblyName.FullName));
 
-            var dll = Assembly.Load(assemblyName);
-            var rules = new List<T>();
+            Assembly dll = Assembly.Load(assemblyName);
+
             if (dll == null)
             {
                 outputWriter.WriteVerbose(string.Format("Cannot load {0}", ruleDllPath));
-                return rules;
+                return Enumerable.Empty<T>();
             }
-            foreach (var type in dll.ExportedTypes)
+
+            var rules = new List<T>();
+            foreach (Type type in dll.ExportedTypes)
             {
-                var typeInfo = type.GetTypeInfo();
-                if (!typeInfo.IsInterface
-                    && !typeInfo.IsAbstract
-                    && typeInfo.ImplementedInterfaces.Contains(typeof(T)))
+                if (type.IsInterface
+                    || type.IsAbstract
+                    || !typeof(T).IsAssignableFrom(type))
+                {
+                    continue;
+                }
+
+                var rule = Activator.CreateInstance(type) as T;
+                if (rule == null)
                 {
                     outputWriter.WriteVerbose(
                         string.Format(
-                            "Creating Instance of {0}", type.Name));
-
-                    var ruleObj = Activator.CreateInstance(type);
-                    T rule = ruleObj as T;
-                    if (rule == null)
-                    {
-                        outputWriter.WriteVerbose(
-                            string.Format(
-                                "Cannot cast instance of type {0} to {1}", type.Name, typeof(T).GetTypeInfo().Name));
-                        continue;
-                    }
-                    rules.Add(rule);
+                            "Cannot cast instance of type {0} to {1}", type.Name, typeof(T).GetTypeInfo().Name));
+                    continue;
                 }
+                rules.Add(rule);
             }
             return rules;
         }
@@ -1205,9 +1196,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         // Adds command to run external analyzer rule, like
                         // Measure-CurlyBracket -ScriptBlockAst $ScriptBlockAst
-                        // Adds module name (source name) to handle ducplicate function names in different modules.
-                        string ruleName = string.Format("{0}\\{1}", rule.GetSourceName(), rule.GetName());
-                        posh.Commands.AddCommand(ruleName);
+                        posh.Commands.AddCommand(rule.GetFullName());
                         posh.Commands.AddParameter(rule.GetParameter(), token);
 
                         // Merges results because external analyzer rules may throw exceptions.
@@ -1235,9 +1224,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                             // Adds command to run external analyzer rule, like
                             // Measure-CurlyBracket -ScriptBlockAst $ScriptBlockAst
-                            // Adds module name (source name) to handle ducplicate function names in different modules.
-                            string ruleName = string.Format("{0}\\{1}", rule.GetSourceName(), rule.GetName());
-                            posh.Commands.AddCommand(ruleName);
+                            posh.Commands.AddCommand(rule.GetFullName());
                             posh.Commands.AddParameter(rule.GetParameter(), childAst);
 
                             // Merges results because external analyzer rules may throw exceptions.
@@ -1267,6 +1254,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             IScriptExtent extent;
                             string message = string.Empty;
                             string ruleName = string.Empty;
+                            string ruleSuppressionID = string.Empty;
                             IEnumerable<CorrectionExtent> suggestedCorrections;
 
                             if (psobject != null && psobject.ImmediateBaseObject != null)
@@ -1287,6 +1275,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     message = psobject.Properties["Message"].Value.ToString();
                                     extent = (IScriptExtent)psobject.Properties["Extent"].Value;
                                     ruleName = psobject.Properties["RuleName"].Value.ToString();
+                                    ruleSuppressionID = psobject.Properties["RuleSuppressionID"].Value?.ToString();
                                     suggestedCorrections = (IEnumerable<CorrectionExtent>)psobject.Properties["SuggestedCorrections"].Value;
                                 }
                                 catch (Exception ex)
@@ -1297,7 +1286,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                                 if (!string.IsNullOrEmpty(message))
                                 {
-                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, filePath) { SuggestedCorrections = suggestedCorrections });
+                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, filePath)
+                                    {
+                                        SuggestedCorrections = suggestedCorrections,
+                                        RuleSuppressionID = ruleSuppressionID,
+                                    });
                                 }
                             }
                         }
@@ -1526,23 +1519,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
 
-            if (relevantParseErrors != null && relevantParseErrors.Count > 0)
+            // Add parse errors first if requested!
+            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
             {
-                foreach (var parseError in relevantParseErrors)
+                var results = new List<DiagnosticRecord>();
+                foreach ( ParseError parseError in relevantParseErrors )
                 {
                     string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
-                    this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
+                    results.Add(new DiagnosticRecord(
+                        parseError.Message,
+                        parseError.Extent,
+                        parseError.ErrorId.ToString(),
+                        DiagnosticSeverity.ParseError,
+                        String.Empty // no script file
+                        )
+                        );
                 }
+                diagnosticRecords.AddRange(results);
             }
 
-            if (relevantParseErrors != null && relevantParseErrors.Count > 10)
-            {
-                string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessageForScriptDefinition);
-                this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, scriptDefinition));
-
-                return new List<DiagnosticRecord>();
-            }
-
+            // now, analyze the script definition
             return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty));
         }
 
@@ -1804,7 +1800,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             foreach (var error in errors.Where(IsModuleNotFoundError))
             {
-                var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst);
+                var moduleNames = moduleHandler.GetUnavailableModuleNameFromErrorExtent(error, scriptAst, out Version moduleVersion);
                 if (moduleNames == null)
                 {
                     continue;
@@ -1815,7 +1811,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         String.Format(
                             "Saving module {0} from PSGallery",
                             moduleName));
-                    var moduleSaved = moduleHandler.TrySaveModule(moduleName);
+                    var moduleSaved = moduleHandler.TrySaveModule(moduleName, moduleVersion);
                     if (!moduleSaved)
                     {
                         this.outputWriter.WriteVerbose(
@@ -1839,55 +1835,58 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseFileMessage, filePath));
             var diagnosticRecords = new List<DiagnosticRecord>();
 
-            //Parse the file
-            if (File.Exists(filePath))
-            {
-                // processing for non help script
-                if (!(Path.GetFileName(filePath).ToLower().StartsWith("about_") && Path.GetFileName(filePath).ToLower().EndsWith(".help.txt")))
-                {
-                    try
-                    {
-                        scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
-                    }
-                    catch (Exception e)
-                    {
-                        this.outputWriter.WriteWarning(e.ToString());
-                        return null;
-                    }
-#if !PSV3
-                    //try parsing again
-                    if (TrySaveModules(errors, scriptAst))
-                    {
-                        scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
-                    }
-#endif //!PSV3
-                    var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
-
-                    //Runspace.DefaultRunspace = oldDefault;
-                    if (relevantParseErrors != null && relevantParseErrors.Count > 0)
-                    {
-                        foreach (var parseError in relevantParseErrors)
-                        {
-                            string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorFormat, parseError.Extent.File, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
-                            this.outputWriter.WriteError(new ErrorRecord(new ParseException(parseErrorMessage), parseErrorMessage, ErrorCategory.ParserError, parseError.ErrorId));
-                        }
-                    }
-
-                    if (relevantParseErrors != null && relevantParseErrors.Count > 10)
-                    {
-                        string manyParseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParserErrorMessage, System.IO.Path.GetFileName(filePath));
-                        this.outputWriter.WriteError(new ErrorRecord(new ParseException(manyParseErrorMessage), manyParseErrorMessage, ErrorCategory.ParserError, filePath));
-                        return new List<DiagnosticRecord>();
-                    }
-                }
-            }
-            else
+            // If the file doesn't exist, return
+            if (! File.Exists(filePath))
             {
                 this.outputWriter.ThrowTerminatingError(new ErrorRecord(new FileNotFoundException(),
                     string.Format(CultureInfo.CurrentCulture, Strings.InvalidPath, filePath),
                     ErrorCategory.InvalidArgument, filePath));
 
                 return null;
+            }
+
+            // short-circuited processing for a help file
+            // no parsing can really be done, but there are other rules to run (specifically encoding).
+            if ( s_aboutHelpRegex.IsMatch(Path.GetFileName(filePath)) )
+            {
+                return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
+            }
+
+            // Process script
+            try
+            {
+                scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+            }
+            catch (Exception e)
+            {
+                this.outputWriter.WriteWarning(e.ToString());
+                return null;
+            }
+#if !PSV3
+            //try parsing again
+            if (TrySaveModules(errors, scriptAst))
+            {
+                scriptAst = Parser.ParseFile(filePath, out scriptTokens, out errors);
+            }
+#endif //!PSV3
+            IEnumerable<ParseError> relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
+
+            // First, add all parse errors if they've been requested
+            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
+            {
+                List<DiagnosticRecord> results = new List<DiagnosticRecord>();
+                foreach ( ParseError parseError in relevantParseErrors )
+                {
+                    string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
+                    results.Add(new DiagnosticRecord(
+                            parseError.Message,
+                            parseError.Extent,
+                            parseError.ErrorId.ToString(),
+                            DiagnosticSeverity.ParseError,
+                            filePath)
+                        );
+                }
+                diagnosticRecords.AddRange(results);
             }
 
             return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
@@ -2271,7 +2270,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     if (IsRuleAllowed(exRule))
                     {
-                        string ruleName = string.Format(CultureInfo.CurrentCulture, "{0}\\{1}", exRule.GetSourceName(), exRule.GetName());
+                        string ruleName = exRule.GetFullName();
                         this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseRunningMessage, ruleName));
 
                         // Ensure that any unhandled errors from Rules are converted to non-terminating errors

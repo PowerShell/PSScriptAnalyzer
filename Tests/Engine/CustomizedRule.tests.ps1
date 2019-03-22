@@ -9,7 +9,7 @@ if (-not (Test-PSEditionCoreCLR))
 	$null,"Wow6432Node" | ForEach-Object {
 		try
 		{
-			Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+			Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -ErrorAction SilentlyContinue
 		}
 		catch
 		{
@@ -66,7 +66,7 @@ Describe "Test importing correct customized rules" {
 				$null,"Wow6432Node" | ForEach-Object {
 					try
 					{
-						Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+						Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -EA SilentlyContinue
 					}
 					catch
 					{
@@ -97,7 +97,7 @@ Describe "Test importing correct customized rules" {
 		It "will show the custom rules when given a glob" {
 			# needs fixing for Linux
 			$expectedNumRules = 4
-			if ($IsLinux -or $IsMacOS)
+			if ($IsLinux)
 			{
 				$expectedNumRules = 3
 			}
@@ -113,7 +113,7 @@ Describe "Test importing correct customized rules" {
 		It "will show the custom rules when given glob with recurse switch" {
 			# needs fixing for Linux
 			$expectedNumRules = 5
-			if ($IsLinux -or $IsMacOS)
+			if ($IsLinux)
 			{
 				$expectedNumRules = 4
 			}
@@ -160,6 +160,22 @@ Describe "Test importing correct customized rules" {
             $violations[0].SuggestedCorrections.Text   | Should -Be 'text'
             $violations[0].SuggestedCorrections.File   | Should -Be 'filePath'
             $violations[0].SuggestedCorrections.Description   | Should -Be 'description'
+		}
+
+        It "can suppress custom rule" {
+			$script = "[Diagnostics.CodeAnalysis.SuppressMessageAttribute('samplerule\$measure','')]Param()"
+			$testScriptPath = "TestDrive:\SuppressedCustomRule.ps1"
+			Set-Content -Path $testScriptPath -Value $script
+
+            $customizedRulePath = Invoke-ScriptAnalyzer -Path $testScriptPath -CustomizedRulePath $directory\samplerule\samplerule.psm1 |
+				Where-Object { $_.Message -eq $message }
+
+            $customizedRulePath.Count | Should -Be 0
+		}
+
+        It "will set RuleSuppressionID" {
+            $violations = Invoke-ScriptAnalyzer $directory\TestScript.ps1 -CustomizedRulePath $directory\samplerule
+            $violations[0].RuleSuppressionID   | Should -Be "MyRuleSuppressionID"
         }
 
         if (!$testingLibraryUsage)

@@ -36,7 +36,7 @@ function Invoke-ScriptAnalyzer {
         [Parameter(Mandatory = $false)]
         [string[]] $IncludeRule = $null, 
 
-        [ValidateSet("Warning", "Error", "Information", IgnoreCase = $true)]
+        [ValidateSet("Warning", "Error", "Information", "ParseError", IgnoreCase = $true)]
         [Parameter(Mandatory = $false)]
         [string[]] $Severity = $null,
         
@@ -191,7 +191,7 @@ $testingLibraryUsage = $true
 $null,"Wow6432Node" | ForEach-Object {
 	try
 	{
-		Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force
+		Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -ErrorAction SilentlyContinue
 	} 
 	catch
 	{

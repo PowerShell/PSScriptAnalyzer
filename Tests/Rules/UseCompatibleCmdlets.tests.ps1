@@ -26,14 +26,16 @@ Describe "UseCompatibleCmdlets" {
         process
         {
             It ("found {0} violations for '{1}'" -f $expectedViolations, $command) {
-                Invoke-ScriptAnalyzer -ScriptDefinition $command -IncludeRule $ruleName -Settings $settings | `
-                    Get-Count | `
-                    Should -Be $expectedViolations
+                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $command -IncludeRule $ruleName -Settings $settings
+                $warnings.Count | Should -Be  $expectedViolations
+                $warnings | ForEach-Object {
+                    $_.RuleName | Should -Be 'PSUseCompatibleCmdlets'
+                }
             }
         }
     }
 
-    $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("core-6.0.2-windows")}}}
+    $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("core-6.1.0-windows")}}}
 
     Context "Microsoft.PowerShell.Core" {
          @('Enter-PSSession', 'Foreach-Object', 'Get-Command') | `
@@ -53,5 +55,10 @@ Describe "UseCompatibleCmdlets" {
     Context "Commands present in reference platform but not in target platform" {
         @("Start-VM", "New-SmbShare", "Get-Disk") | `
             Test-Command -Settings $settings -ExpectedViolations 1
+    }
+
+    Context "Default reference can also be used as target platform" {
+        $settings = @{rules=@{PSUseCompatibleCmdlets=@{compatibility=@("desktop-5.1.14393.206-windows")}}}
+        @("Remove-Service") | Test-Command -Settings $settings -ExpectedViolations 1
     }
 }
