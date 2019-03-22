@@ -1,6 +1,6 @@
 ﻿# CHANGELOG
 
-## [1.18.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.0) - 2019-03-??
+## [1.18.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.0) - 2019-03-21
 
 ### Breaking Changes
 
@@ -20,7 +20,7 @@
 
 - Add command data file for PowerShell `2.0` (#1091) (by @bergmeister)
 - Add command data files of PowerShell `6.1.0` (#1075) (by @bergmeister)
-- New PowerShell compatibility rules: `UseCompatibleCommands`, `UseCompatibleSyntax` and `UseCompatibleTypes` (#1156, #1133 and #1176) (by @rjmholt and @JamesWTruher)
+- New PowerShell compatibility rules: `UseCompatibleCommands`, `UseCompatibleSyntax` and `UseCompatibleTypes` (#1156, #1133, #1176 and #1179) (by @rjmholt and @JamesWTruher)
 - Make `PossibleIncorrectComparisonWithNull` rule return a `SuggestCorrection` for auto-fixes in VS-Code or via the -Fix switch (#1115) (by @bergmeister)
 - Make UseCompatibleCmdlets not throw if default reference desktop-5.1.14393.206-windows is specified in the list of platforms and use core-6.1.0-windows as an alternative default reference (#1043 and #1075) (by @bergmeister)
 
