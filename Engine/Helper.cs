@@ -1094,7 +1094,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (details != null && classes != null)
                 {
                     // Get the class that corresponds to the name of the type (if possible)
-                    psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
+                    psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type?.FullName, StringComparison.OrdinalIgnoreCase));
                 }
 
 #endif
