@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Internal;
+using System.Reflection;
+using Microsoft.PowerShell.Commands;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using SMA = System.Management.Automation;
@@ -13,36 +16,111 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
     {
         private const string DEFAULT_DEFAULT_PARAMETER_SET = "__AllParameterSets";
 
+        private const string CORE_MODULE_NAME = "Microsoft.PowerShell.Core";
+
+        private static readonly CmdletInfo s_gmoInfo = new CmdletInfo("Get-Module", typeof(GetModuleCommand));
+
+        private static readonly CmdletInfo s_ipmoInfo = new CmdletInfo("Import-Module", typeof(ImportModuleCommand));
+
+        private static readonly CmdletInfo s_rmoInfo = new CmdletInfo("Remove-Module", typeof(RemoveModuleCommand));
+
+        private static readonly CmdletInfo s_gcmInfo = new CmdletInfo("Get-Command", typeof(GetCommandCommand));
+
+        internal static CmdletInfo GcmInfo => s_gcmInfo;
+
+        private readonly PowerShellVersion _psVersion;
+
+        private readonly Lazy<ReadOnlySet<string>> _lazyCommonParameters;
+
         private SMA.PowerShell _pwsh;
 
-        public PowerShellDataCollector(SMA.PowerShell pwsh)
+        public PowerShellDataCollector(SMA.PowerShell pwsh, PowerShellVersion psVersion)
         {
             _pwsh = pwsh;
+            _psVersion = psVersion;
+            _lazyCommonParameters = new Lazy<ReadOnlySet<string>>(GetPowerShellCommonParameterNames);
         }
 
-        public IEnumerable<KeyValuePair<string, ModuleData>> GetModulesData()
-        {
-            IEnumerable<PSModuleInfo> modules = _pwsh.AddCommand("Get-Module")
-                .AddParameter("ListAvailable")
-                .Invoke<PSModuleInfo>();
+        internal ReadOnlySet<string> CommonParameterNames => _lazyCommonParameters.Value;
 
+        public JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>> AssembleModulesData(
+            IEnumerable<Tuple<string, Version, ModuleData>> modules)
+        {
+            var moduleDict = new JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>>();
+            foreach (Tuple<string, Version, ModuleData> module in modules)
+            {
+                if (moduleDict.TryGetValue(module.Item1, out JsonDictionary<Version, ModuleData> versionDict))
+                {
+                    versionDict.Add(module.Item2, module.Item3);
+                    continue;
+                }
+
+                var newVersionDict = new JsonDictionary<Version, ModuleData>();
+                newVersionDict.Add(module.Item2, module.Item3);
+                moduleDict.Add(module.Item1, newVersionDict);
+            }
+
+            return moduleDict;
+        }
+
+        public IEnumerable<Tuple<string, Version, ModuleData>> GetModulesData(out IEnumerable<Exception> errors)
+        {
+            IEnumerable<PSModuleInfo> modules = _pwsh.AddCommand(s_gmoInfo)
+                .AddParameter("ListAvailable")
+                .InvokeAndClear<PSModuleInfo>();
+
+            var moduleDatas = new List<Tuple<string, Version, ModuleData>>();
+
+            // Add the core parts of the module
+            moduleDatas.Add(GetCoreModuleData());
+
+            var errs = new List<Exception>();
             foreach (PSModuleInfo module in modules)
             {
-                PSModuleInfo importedModule = _pwsh.AddCommand("Import-Module")
-                    .AddArgument(module)
-                    .AddParameter("PassThru")
-                    .Invoke<PSModuleInfo>()
-                    .FirstOrDefault();
+                try
+                {
+                    PSModuleInfo importedModule = _pwsh.AddCommand(s_ipmoInfo)
+                        .AddParameter("ModuleInfo", module)
+                        .AddParameter("PassThru")
+                        .AddParameter("ErrorAction", "Stop")
+                        .InvokeAndClear<PSModuleInfo>()
+                        .FirstOrDefault();
 
-                yield return GetSingleModuleData(importedModule);
+                    moduleDatas.Add(GetSingleModuleData(importedModule));
 
-                _pwsh.AddCommand("Remove-Module")
-                    .AddArgument(importedModule)
-                    .Invoke();
+                    _pwsh.AddCommand(s_rmoInfo)
+                        .AddParameter("ModuleInfo", importedModule)
+                        .InvokeAndClear();
+                }
+                catch (CmdletInvocationException)
+                {
+                    // Attempt to load the module in a new runspace instead
+                    try
+                    {
+                        using (SMA.PowerShell fallbackPwsh = SMA.PowerShell.Create(RunspaceMode.NewRunspace))
+                        {
+                            PSModuleInfo importedModule = fallbackPwsh.AddCommand(s_ipmoInfo)
+                                .AddParameter("Name", module.Path)
+                                .AddParameter("PassThru")
+                                .AddParameter("ErrorAction", "Stop")
+                                .InvokeAndClear<PSModuleInfo>()
+                                .FirstOrDefault();
+
+                            moduleDatas.Add(GetSingleModuleData(importedModule));
+                        }
+                    }
+                    catch (Exception fallbackException)
+                    {
+                        errs.Add(fallbackException);
+                    }
+                }
             }
+
+            errors = errs;
+            return moduleDatas;
         }
 
-        public KeyValuePair<string, ModuleData> GetSingleModuleData(PSModuleInfo module)
+        public Tuple<string, Version, ModuleData> GetSingleModuleData(PSModuleInfo module)
         {
             var moduleData = new ModuleData()
             {
@@ -72,7 +150,70 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 moduleData.Variables = GetVariablesData(module.ExportedVariables);
             }
 
-            return new KeyValuePair<string, ModuleData>(module.Name, moduleData);
+            return new Tuple<string, Version, ModuleData>(module.Name, module.Version, moduleData);
+        }
+
+        public Tuple<string, Version, ModuleData> GetCoreModuleData()
+        {
+            var moduleData = new ModuleData();
+
+            IEnumerable<CommandInfo> coreCommands = _pwsh.AddCommand(GcmInfo)
+                .AddParameter("Module", CORE_MODULE_NAME)
+                .InvokeAndClear<CommandInfo>();
+
+            var cmdletData = new JsonCaseInsensitiveStringDictionary<CmdletData>();
+            var functionData = new JsonCaseInsensitiveStringDictionary<FunctionData>();
+            foreach (CommandInfo command in coreCommands)
+            {
+                switch (command)
+                {
+                    case CmdletInfo cmdlet:
+                        cmdletData.Add(cmdlet.Name, GetSingleCmdletData(cmdlet));
+                        continue;
+
+                    case FunctionInfo function:
+                        functionData.Add(function.Name, GetSingleFunctionData(function));
+                        continue;
+
+                    default:
+                        throw new CompatibilityAnalysisException($"Command {command.Name} in core module is of unsupported type {command.CommandType}");
+                }
+            }
+
+            moduleData.Cmdlets = cmdletData;
+            moduleData.Functions = functionData;
+
+            // Get default variables and core aliases out of a fresh runspace
+            using (SMA.PowerShell freshPwsh = SMA.PowerShell.Create(RunspaceMode.NewRunspace))
+            {
+                Collection<PSVariable> defaultVariables = freshPwsh.AddCommand("Get-ChildItem")
+                    .AddParameter("Path", "variable:")
+                    .InvokeAndClear<PSVariable>();
+
+                var variableArray = new string[defaultVariables.Count];
+                for (int i = 0; i < moduleData.Variables.Length; i++)
+                {
+                    moduleData.Variables[i] = defaultVariables[i].Name;
+                }
+                moduleData.Variables = variableArray;
+
+                IEnumerable<AliasInfo> coreAliases = freshPwsh.AddCommand("Get-ChildItem")
+                    .AddParameter("Path", "alias:")
+                    .InvokeAndClear<AliasInfo>();
+
+                var aliases = new JsonCaseInsensitiveStringDictionary<string>();
+                foreach (AliasInfo aliasInfo in coreAliases)
+                {
+                    aliases.Add(aliasInfo.Name, GetSingleAliasData(aliasInfo));
+                }
+                moduleData.Aliases = aliases;
+            }
+
+            Version psVersion = _psVersion.PreReleaseLabel != null
+                ? new Version(_psVersion.Major, _psVersion.Minor, _psVersion.Build)
+                : (Version)_psVersion;
+
+            return new Tuple<string, Version, ModuleData>(CORE_MODULE_NAME, psVersion, moduleData);
         }
 
         public IEnumerable<KeyValuePair<string, string>> GetAliasesData(IReadOnlyDictionary<string, AliasInfo> aliases)
@@ -109,7 +250,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             AssembleParameters(
                 cmdlet.Parameters,
                 out JsonCaseInsensitiveStringDictionary<ParameterData> parameters,
-                out JsonCaseInsensitiveStringDictionary<string> parameterAliases);
+                out JsonCaseInsensitiveStringDictionary<string> parameterAliases,
+                isCmdletBinding: true);
 
             cmdletData.Parameters = parameters;
             cmdletData.ParameterAliases = parameterAliases;
@@ -202,7 +344,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             AssembleParameters(
                 function.Parameters,
                 out JsonCaseInsensitiveStringDictionary<ParameterData> parameters,
-                out JsonCaseInsensitiveStringDictionary<string> parameterAliases);
+                out JsonCaseInsensitiveStringDictionary<string> parameterAliases,
+                isCmdletBinding: function.CmdletBinding);
 
             functionData.Parameters = parameters;
             functionData.ParameterAliases = parameterAliases;
@@ -271,7 +414,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         private void AssembleParameters(
             IReadOnlyDictionary<string, ParameterMetadata> parameters,
             out JsonCaseInsensitiveStringDictionary<ParameterData> parameterData,
-            out JsonCaseInsensitiveStringDictionary<string> parameterAliasData)
+            out JsonCaseInsensitiveStringDictionary<string> parameterAliasData,
+            bool isCmdletBinding)
         {
             if (parameters == null || parameters.Count == 0)
             {
@@ -285,6 +429,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
             foreach (KeyValuePair<string, ParameterMetadata> parameter in parameters)
             {
+                if (isCmdletBinding && CommonParameterNames.Contains(parameter.Key))
+                {
+                    continue;
+                }
+
                 parameterData[parameter.Key] = GetSingleParameterData(parameter.Value);
 
                 if (parameter.Value.Aliases != null && parameter.Value.Aliases.Count > 0)
@@ -300,7 +449,28 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     }
                 }
             }
+
+            if (parameterData.Count == 0)
+            {
+                parameterData = null;
+            }
+
+            if (parameterAliasData != null && parameterAliasData.Count == 0)
+            {
+                parameterAliasData = null;
+            }
         }
+
+        private static ReadOnlySet<string> GetPowerShellCommonParameterNames()
+        {
+            var set = new List<string>();
+            foreach (PropertyInfo property in typeof(CommonParameters).GetProperties())
+            {
+                set.Add(property.Name);
+            }
+            return new ReadOnlySet<string>(set, StringComparer.OrdinalIgnoreCase);
+        }
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

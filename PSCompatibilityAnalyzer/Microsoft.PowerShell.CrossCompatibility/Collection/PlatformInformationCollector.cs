@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.Management.Infrastructure;
 using Microsoft.Management.Infrastructure.Options;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
+using Microsoft.PowerShell.CrossCompatibility.Utility;
 using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
@@ -32,14 +33,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         public PlatformInformationCollector(SMA.PowerShell pwsh)
         {
             _pwsh = pwsh;
-            _lazyPSVersionTable = new Lazy<Hashtable>(() => _pwsh.AddScript("$PSVersionTable").Invoke<Hashtable>().FirstOrDefault());
+            _lazyPSVersionTable = new Lazy<Hashtable>(() => _pwsh.AddScript("$PSVersionTable").InvokeAndClear<Hashtable>().FirstOrDefault());
             _lazyPSVersion = new Lazy<PowerShellVersion>(() => PowerShellVersion.Create(PSVersionTable["PSVersion"]));
             _lazyWin32OperatingSystem = new Lazy<CimInstance>(() => GetWin32OSCimInstance());
         }
 
         private Hashtable PSVersionTable => _lazyPSVersionTable.Value;
 
-        private PowerShellVersion PSVersion => _lazyPSVersion.Value;
+        internal PowerShellVersion PSVersion => _lazyPSVersion.Value;
 
         private CimInstance Win32_OperatingSystem => _lazyWin32OperatingSystem.Value;
 
@@ -200,20 +201,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 #if CoreCLR
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var unameProcess = new Process()
-                {
-                    StartInfo = new ProcessStartInfo()
-                    {
-                        FileName = "uname",
-                        Arguments = "-r",
-                        RedirectStandardOutput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                    }
-                };
-                unameProcess.Start();
-
-                return unameProcess.StandardOutput.ReadToEnd();
+                return File.ReadAllText("/proc/sys/kernel/osrelease");
             }
 #endif
             return Environment.OSVersion.Version.ToString();

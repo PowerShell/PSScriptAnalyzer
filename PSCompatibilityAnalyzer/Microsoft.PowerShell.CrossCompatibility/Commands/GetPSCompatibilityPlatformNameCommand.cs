@@ -1,6 +1,8 @@
 using System.Management.Automation;
+using Microsoft.PowerShell.CrossCompatibility.Collection;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
+using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
 {
@@ -14,7 +16,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         {
             if (PlatformData == null || PlatformData.Length == 0)
             {
-                // TODO: Collect platform data
+                using (SMA.PowerShell pwsh = SMA.PowerShell.Create())
+                using (var platformInfoCollector = new PlatformInformationCollector(pwsh))
+                {
+                    PlatformData = new PlatformData[] { platformInfoCollector.GetPlatformData() };
+                }
             }
         }
 

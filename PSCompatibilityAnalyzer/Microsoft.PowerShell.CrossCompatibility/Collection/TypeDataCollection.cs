@@ -29,6 +29,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         // Binding flags for instance type members, note FlattenHierarchy
         private const BindingFlags InstanceBinding = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
 
+        private static readonly Assembly s_executingAssembly = Assembly.GetExecutingAssembly();
+
         public static AvailableTypeData GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> errors)
         {
             IReadOnlyDictionary<string, Type> typeAccelerators = GetTypeAccelerators();
@@ -72,8 +74,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var asms = new JsonDictionary<string, AssemblyData>();
             foreach (Assembly asm in assemblies)
             {
-                // Don't want to include this module or assembly in the output
-                if (Assembly.GetCallingAssembly() == asm)
+                // Skip over this 
+                if (asm == s_executingAssembly
+                    || asm.IsDynamic
+                    || string.IsNullOrEmpty(asm.Location))
                 {
                     continue;
                 }

@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             if (compatibilityProfileData.ConstituentProfiles != null)
             {
                 // This is intended to be case-sensitive
-                ConstituentProfiles = new HashSet<string>(compatibilityProfileData.ConstituentProfiles);
+                ConstituentProfiles = new ReadOnlySet<string>(compatibilityProfileData.ConstituentProfiles);
             }
 
             // This should only be null in the case of the anyplatform_union profile
@@ -49,10 +49,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public string Id { get; }
 
         /// <summary>
-        /// DO NOT MUTATE.
         /// In a union profile, lists all the profiles used to form it.
         /// </summary>
-        public HashSet<string> ConstituentProfiles { get; }
+        public ReadOnlySet<string> ConstituentProfiles { get; }
 
         /// <summary>
         /// Information about types and commands available in the PowerShell runtime
