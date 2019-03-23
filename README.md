@@ -76,9 +76,9 @@ Exit
 #### Supported PowerShell Versions and Platforms
 
 - Windows PowerShell 3.0 or greater
-- PowerShell Core 6.0.2 or greater on Windows/Linux/macOS
+- PowerShell Core 6.1.0 or greater on Windows/Linux/macOS
 - Docker (tested only using Docker CE on Windows 10 1803
-  - PowerShell 6 Windows Image tags using  from [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `nanoserver`, `6.0.2-nanoserver`, `6.0.2-nanoserver-1709`, `windowsservercore` and `6.0.2-windowsservercore`. Example (1 warning gets produced by `Save-Module` but can be ignored):
+  - PowerShell 6 Windows Image tags using  from [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `nanoserver`, `6.1.0-nanoserver`, `6.1.0-nanoserver-1709`, `windowsservercore` and `6.1.0-windowsservercore`. Example (1 warning gets produced by `Save-Module` but can be ignored):
 
     ```docker run -it microsoft/powershell:nanoserver pwsh -command "Save-Module -Name PSScriptAnalyzer -Path .; Import-Module .\PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
   - PowerShell 5.1 (Windows): Only the [microsoft/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) images work but not the [microsoft/nanoserver](https://hub.docker.com/r/microsoft/windowsservercore/) images because they contain a Core version of it. Example:
