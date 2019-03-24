@@ -8,16 +8,26 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
     {
         public static Collection<PSObject> InvokeAndClear(this SMA.PowerShell pwsh)
         {
-            Collection<PSObject> result = pwsh.Invoke();
-            pwsh.Commands.Clear();
-            return result;
+            try
+            {
+                return pwsh.Invoke();
+            }
+            finally
+            {
+                pwsh.Commands.Clear();
+            }
         }
 
         public static Collection<T> InvokeAndClear<T>(this SMA.PowerShell pwsh)
         {
-            Collection<T> result = pwsh.Invoke<T>();
-            pwsh.Commands.Clear();
-            return result;
+            try
+            {
+                return pwsh.Invoke<T>();
+            }
+            finally
+            {
+                pwsh.Commands.Clear();
+            }
         }
     }
 }

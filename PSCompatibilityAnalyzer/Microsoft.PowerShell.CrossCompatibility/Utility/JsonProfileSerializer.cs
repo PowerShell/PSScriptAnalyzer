@@ -124,6 +124,20 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         }
 
         /// <summary>
+        /// Serialize a given .NET object to a given file, using the FileInfo representation of the file.
+        /// </summary>
+        /// <param name="data">The data object to serialize to JSON.</param>
+        /// <param name="file">The file to serialize to.</param>
+        public void SerializeToFile(object data, FileInfo file)
+        {
+            using (var fileStream = file.OpenRead())
+            using (var streamWriter = new StreamWriter(fileStream, Encoding.UTF8))
+            {
+                _serializer.Serialize(streamWriter, data);
+            }
+        }
+
+        /// <summary>
         /// Hydrate a compatibility profile object from a given file.
         /// </summary>
         /// <param name="filePath">The absolute path to the file to hydrate from.</param>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.PowerShell.Commands;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
@@ -17,6 +18,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         private const string DEFAULT_DEFAULT_PARAMETER_SET = "__AllParameterSets";
 
         private const string CORE_MODULE_NAME = "Microsoft.PowerShell.Core";
+
+        private static readonly Regex s_typeDataRegex = new Regex("Error in TypeData \"([A-Za-z.]+)\"", RegexOptions.Compiled);
 
         private static readonly CmdletInfo s_gmoInfo = new CmdletInfo("Get-Module", typeof(GetModuleCommand));
 
@@ -77,47 +80,78 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var errs = new List<Exception>();
             foreach (PSModuleInfo module in modules)
             {
-                try
+                Tuple<string, Version, ModuleData> moduleData = LoadAndGetModuleData(module, out Exception error);
+
+                if (moduleData == null)
                 {
-                    PSModuleInfo importedModule = _pwsh.AddCommand(s_ipmoInfo)
-                        .AddParameter("ModuleInfo", module)
-                        .AddParameter("PassThru")
-                        .AddParameter("ErrorAction", "Stop")
-                        .InvokeAndClear<PSModuleInfo>()
-                        .FirstOrDefault();
-
-                    moduleDatas.Add(GetSingleModuleData(importedModule));
-
-                    _pwsh.AddCommand(s_rmoInfo)
-                        .AddParameter("ModuleInfo", importedModule)
-                        .InvokeAndClear();
+                    errs.Add(error);
+                    continue;
                 }
-                catch (CmdletInvocationException)
-                {
-                    // Attempt to load the module in a new runspace instead
-                    try
-                    {
-                        using (SMA.PowerShell fallbackPwsh = SMA.PowerShell.Create(RunspaceMode.NewRunspace))
-                        {
-                            PSModuleInfo importedModule = fallbackPwsh.AddCommand(s_ipmoInfo)
-                                .AddParameter("Name", module.Path)
-                                .AddParameter("PassThru")
-                                .AddParameter("ErrorAction", "Stop")
-                                .InvokeAndClear<PSModuleInfo>()
-                                .FirstOrDefault();
 
-                            moduleDatas.Add(GetSingleModuleData(importedModule));
-                        }
-                    }
-                    catch (Exception fallbackException)
-                    {
-                        errs.Add(fallbackException);
-                    }
-                }
+                moduleDatas.Add(moduleData);
             }
 
             errors = errs;
             return moduleDatas;
+        }
+
+        public Tuple<string, Version, ModuleData> LoadAndGetModuleData(PSModuleInfo module, out Exception error)
+        {
+            try
+            {
+                PSModuleInfo importedModule = _pwsh.AddCommand(s_ipmoInfo)
+                    .AddParameter("ModuleInfo", module)
+                    .AddParameter("PassThru")
+                    .AddParameter("ErrorAction", "Stop")
+                    .InvokeAndClear<PSModuleInfo>()
+                    .FirstOrDefault();
+
+                Tuple<string, Version, ModuleData> moduleData = GetSingleModuleData(importedModule);
+
+                _pwsh.AddCommand(s_rmoInfo)
+                    .AddParameter("ModuleInfo", importedModule)
+                    .InvokeAndClear();
+
+                error = null;
+                return moduleData;
+            }
+            catch (RuntimeException e)
+            {
+                // A common problem is TypeData being hit with other modules, this overrides that
+                if (e.ErrorRecord.FullyQualifiedErrorId.Equals("FormatXmlUpdateException,Microsoft.PowerShell.Commands.ImportModuleCommand")
+                    || e.ErrorRecord.FullyQualifiedErrorId.Equals("ErrorsUpdatingTypes"))
+                {
+                   foreach (string typeDataName in GetTypeDataNamesFromErrorMessage(e.Message))
+                   {
+                       _pwsh.AddCommand("Remove-TypeData")
+                            .AddParameter("TypeName", typeDataName)
+                            .InvokeAndClear();
+                   }
+                }
+
+                // Attempt to load the module in a new runspace instead
+                try
+                {
+                    using (SMA.PowerShell fallbackPwsh = SMA.PowerShell.Create(RunspaceMode.NewRunspace))
+                    {
+                        PSModuleInfo importedModule = fallbackPwsh.AddCommand(s_ipmoInfo)
+                            .AddParameter("Name", module.Path)
+                            .AddParameter("PassThru")
+                            .AddParameter("Force")
+                            .AddParameter("ErrorAction", "Stop")
+                            .InvokeAndClear<PSModuleInfo>()
+                            .FirstOrDefault();
+
+                        error = null;
+                        return GetSingleModuleData(importedModule);
+                    }
+                }
+                catch (Exception fallbackException)
+                {
+                    error = fallbackException;
+                    return null;
+                }
+            }
         }
 
         public Tuple<string, Version, ModuleData> GetSingleModuleData(PSModuleInfo module)
@@ -191,9 +225,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     .InvokeAndClear<PSVariable>();
 
                 var variableArray = new string[defaultVariables.Count];
-                for (int i = 0; i < moduleData.Variables.Length; i++)
+                for (int i = 0; i < variableArray.Length; i++)
                 {
-                    moduleData.Variables[i] = defaultVariables[i].Name;
+                    variableArray[i] = defaultVariables[i].Name;
                 }
                 moduleData.Variables = variableArray;
 
@@ -335,9 +369,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 CmdletBinding = function.CmdletBinding
             };
 
-            functionData.DefaultParameterSet = GetDefaultParameterSet(function.DefaultParameterSet);
-
-            functionData.OutputType = GetOutputType(function.OutputType);
+            try
+            {
+                functionData.DefaultParameterSet = GetDefaultParameterSet(function.DefaultParameterSet);
+                functionData.OutputType = GetOutputType(function.OutputType);
+            }
+            catch (RuntimeException)
+            {
+                // function.DefaultParameterSet can fail to do type resolution,
+                // in which case leave functionData.DefaultParameterSet null
+            }
 
             functionData.ParameterSets = GetParameterSets(function.ParameterSets);
 
@@ -471,6 +512,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return new ReadOnlySet<string>(set, StringComparer.OrdinalIgnoreCase);
         }
 
+        private static string[] GetTypeDataNamesFromErrorMessage(string errorMessage)
+        {
+            var typeDataNames = new List<string>();
+            foreach (Match match in s_typeDataRegex.Matches(errorMessage))
+            {
+                typeDataNames.Add(match.Groups[1].Value);
+            }
+            return typeDataNames.ToArray();
+        }
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

@@ -2,25 +2,16 @@
 # Licensed under the MIT License.
 
 # Add the relevant binary module
-$compatibilityLoaded = $false
-try
-{
-    $null = [Microsoft.PowerShell.CrossCompatibility.CompatibilityAnalysisException]
-    $compatibilityLoaded = $true
-}
-catch
-{
-    # Do nothing
-}
+$compatibilityLoaded = -not -not (Get-Command New-PSCompatibilityProfile -ErrorAction Ignore)
 if (-not $compatibilityLoaded)
 {
     if ($PSVersionTable.PSVersion.Major -ge 6)
     {
-        Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'Microsoft.PowerShell.CrossCompatibility.dll'))
+        Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'Microsoft.PowerShell.CrossCompatibility.dll'))
     }
     else
     {
-        Add-Type -LiteralPath ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'Microsoft.PowerShell.CrossCompatibility.dll'))
+        Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'Microsoft.PowerShell.CrossCompatibility.dll'))
     }
 }
 

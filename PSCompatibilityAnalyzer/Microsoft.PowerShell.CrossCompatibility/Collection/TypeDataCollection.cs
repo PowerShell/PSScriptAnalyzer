@@ -94,7 +94,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     }
 
                     KeyValuePair<string, AssemblyData> asmData = AssembleAssembly(asm);
-                    asms[asmData.Key] = asmData.Value;
+                    try
+                    {
+                        asms.Add(asmData.Key, asmData.Value);
+                    }
+                    catch (ArgumentException e)
+                    {
+                        // We don't have a way in the schema for two assemblies with the same name, so we just keep the first
+                        // This is not really valid and we should update the schema to subkey the version
+                        errAcc.Add(new CompatibilityAnalysisException($"Found duplicate assemblies with name {asmData.Key}. Kept the first one.", e));
+                    }
                 }
                 catch (ReflectionTypeLoadException e)
                 {
