@@ -192,11 +192,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             thisMembers.Constructors = ParameterUnion(thisMembers.Constructors, thatMembers.Constructors);
 
-            thisMembers.Events = StringDictionaryUnion(thisMembers.Events, thatMembers.Events);
-            thisMembers.Fields = StringDictionaryUnion(thisMembers.Fields, thatMembers.Fields);
-            thisMembers.Methods = StringDictionaryUnion(thisMembers.Methods, thatMembers.Methods, Union);
-            thisMembers.NestedTypes = StringDictionaryUnion(thisMembers.NestedTypes, thatMembers.NestedTypes, Union);
-            thisMembers.Properties = StringDictionaryUnion(thisMembers.Properties, thatMembers.Properties, Union);
+            thisMembers.Events = DictionaryUnion(thisMembers.Events, thatMembers.Events);
+            thisMembers.Fields = DictionaryUnion(thisMembers.Fields, thatMembers.Fields);
+            thisMembers.Methods = DictionaryUnion(thisMembers.Methods, thatMembers.Methods, Union);
+            thisMembers.NestedTypes = DictionaryUnion(thisMembers.NestedTypes, thatMembers.NestedTypes, Union);
+            thisMembers.Properties = DictionaryUnion(thisMembers.Properties, thatMembers.Properties, Union);
 
             return thisMembers;
         }

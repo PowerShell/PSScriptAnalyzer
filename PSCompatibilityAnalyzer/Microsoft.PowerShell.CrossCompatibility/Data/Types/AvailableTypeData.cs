@@ -36,7 +36,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
             return new AvailableTypeData()
             {
                 TypeAccelerators = (JsonCaseInsensitiveStringDictionary<TypeAcceleratorData>)TypeAccelerators.Clone(),
-                Assemblies = (JsonCaseInsensitiveStringDictionary<AssemblyData>)Assemblies.Clone()
+                Assemblies = (JsonDictionary<string, AssemblyData>)Assemblies.Clone()
             };
         }
     }
