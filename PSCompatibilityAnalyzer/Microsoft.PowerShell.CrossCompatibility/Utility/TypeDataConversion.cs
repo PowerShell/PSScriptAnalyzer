@@ -50,7 +50,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 typeAcceleratorDict.Add(typeAccelerator.Key, ta);
             }
 
-            var asms = new JsonCaseInsensitiveStringDictionary<AssemblyData>();
+            var asms = new JsonDictionary<string, AssemblyData>();
             foreach (Assembly asm in assemblies)
             {
                 // Don't want to include this module or assembly in the output
@@ -96,10 +96,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             };
 
             Type[] types = asm.GetTypes();
-            JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>> namespacedTypes = null;
+            JsonDictionary<string, JsonDictionary<string, TypeData>> namespacedTypes = null;
             if (types.Any())
             {
-                namespacedTypes = new JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>>();
+                namespacedTypes = new JsonDictionary<string, JsonDictionary<string, TypeData>>();
                 foreach (Type type in asm.GetTypes())
                 {
                     if (!type.IsPublic)
@@ -110,14 +110,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                     // Some types don't have a namespace, but we still want to file them
                     string typeNamespace = type.Namespace ?? "";
 
-                    if (!namespacedTypes.ContainsKey(typeNamespace))
+                    if (!namespacedTypes.TryGetValue(typeNamespace, out JsonDictionary<string, TypeData> typeDictionary))
                     {
-                        namespacedTypes.Add(typeNamespace, new JsonCaseInsensitiveStringDictionary<TypeData>());
+                        typeDictionary = new JsonDictionary<string, TypeData>();
                     }
 
                     TypeData typeData = AssembleType(type);
 
-                    namespacedTypes[typeNamespace][type.Name] = typeData;
+                    typeDictionary[type.Name] = typeData;
                 }
             }
 
@@ -271,12 +271,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return new MemberData()
             {
                 Constructors = constructors.Any() ? constructors.Select(c => AssembleConstructor(c)).ToArray() : null,
-                Events = events.Any() ? new JsonCaseInsensitiveStringDictionary<EventData>(events.ToDictionary(e => e.Name, e => AssembleEvent(e), StringComparer.OrdinalIgnoreCase)) : null,
-                Fields = fields.Any() ? new JsonCaseInsensitiveStringDictionary<FieldData>(fields.ToDictionary(f => f.Name, f => AssembleField(f), StringComparer.OrdinalIgnoreCase)) : null,
+                Events = events.Any() ? new JsonCaseInsensitiveStringDictionary<EventData>(events.ToDictionary(e => e.Name, e => AssembleEvent(e))) : null,
+                Fields = fields.Any() ? new JsonCaseInsensitiveStringDictionary<FieldData>(fields.ToDictionary(f => f.Name, f => AssembleField(f))) : null,
                 Indexers = indexers.Any() ? indexers.Select(i => AssembleIndexer(i)).ToArray() : null,
-                Methods = methods.Any() ? new JsonCaseInsensitiveStringDictionary<MethodData>(methods.ToDictionary(m => m.Key, m => AssembleMethod(m.Value), StringComparer.OrdinalIgnoreCase)) : null,
-                NestedTypes = nestedTypes.Any() ? new JsonCaseInsensitiveStringDictionary<TypeData>(nestedTypes.ToDictionary(t => t.Name, t => AssembleType(t), StringComparer.OrdinalIgnoreCase)) : null,
-                Properties = properties.Any() ? new JsonCaseInsensitiveStringDictionary<PropertyData>(properties.ToDictionary(p => p.Name, p => AssembleProperty(p), StringComparer.OrdinalIgnoreCase)) : null
+                Methods = methods.Any() ? new JsonCaseInsensitiveStringDictionary<MethodData>(methods.ToDictionary(m => m.Key, m => AssembleMethod(m.Value))) : null,
+                NestedTypes = nestedTypes.Any() ? new JsonCaseInsensitiveStringDictionary<TypeData>(nestedTypes.ToDictionary(t => t.Name, t => AssembleType(t))) : null,
+                Properties = properties.Any() ? new JsonCaseInsensitiveStringDictionary<PropertyData>(properties.ToDictionary(p => p.Name, p => AssembleProperty(p))) : null
             };
         }
 

@@ -122,7 +122,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private static object Union(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
         {
-            thisTypes.Assemblies = StringDictionaryUnion(thisTypes.Assemblies, thatTypes.Assemblies, Union);
+            thisTypes.Assemblies = DictionaryUnion(thisTypes.Assemblies, thatTypes.Assemblies, Union);
             thisTypes.TypeAccelerators = StringDictionaryUnion(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
 
             return thisTypes;
@@ -136,10 +136,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 if (thisAssembly.Types == null)
                 {
-                    thisAssembly.Types = new JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>>();
+                    thisAssembly.Types = new JsonDictionary<string, JsonDictionary<string, TypeData>>();
                 }
 
-                foreach (KeyValuePair<string, JsonCaseInsensitiveStringDictionary<TypeData>> nspace in thatAssembly.Types)
+                foreach (KeyValuePair<string, JsonDictionary<string, TypeData>> nspace in thatAssembly.Types)
                 {
                     if (!thisAssembly.Types.ContainsKey(nspace.Key))
                     {
@@ -147,7 +147,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                         continue;
                     }
 
-                    thisAssembly.Types[nspace.Key] = StringDictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
+                    thisAssembly.Types[nspace.Key] = DictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
                 }
             }
 
