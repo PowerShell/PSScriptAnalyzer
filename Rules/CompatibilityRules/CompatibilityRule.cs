@@ -235,6 +235,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return dirUpOneLevel;
             }
 
+            // Unable to find the root of the module where it should be, so we give up
             throw new FileNotFoundException("Unable to find the PSScriptAnalyzer module root");
         }
     }
