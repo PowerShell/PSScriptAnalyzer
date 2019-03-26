@@ -205,27 +205,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return Path.Combine(_profileDir.FullName, profileName);
         }
 
+        /// <summary>
+        /// Get the path of PSScriptAnalyzer on the file system.
+        /// </summary>
+        /// <returns>The absolute path of the PSScriptAnalyzer module root.</returns>
         private static string GetModuleRootDirPath()
         {
+            // Start from the directory containing the Rules DLL,
+            // which may be in the module root or in a child directory (ex: coreclr)
             string asmDirLocation = Path.GetDirectoryName(typeof(CompatibilityRule).Assembly.Location);
-            // We check our assembly location and then parent, looking for PSScriptAnalyzer.psd1,
-            // because the assembly might be in the root of the module or in a child directory (ex: coreclr).
-            // That's the base where we will find our compatibility zip file.
-            // We can't hunt for the directory 'PSScriptAnalyzer' because we may be installed in
-            // PSScriptAnalyzer/1.18.0 or PSScriptAnalyzer.
-            const string psdFile = "PSScriptAnalyzer.psd1";
-            string nonNormalizedRoot = asmDirLocation;
-            string psmPath = Path.Combine(nonNormalizedRoot, psdFile);
-            if ( ! File.Exists(psmPath) ) {
-                nonNormalizedRoot = Path.Combine(nonNormalizedRoot, "..");
-                psmPath = Path.Combine(nonNormalizedRoot, psdFile);
-                if ( ! File.Exists(psmPath) ) {
-                    // Couldn't find it, give up
-                    return String.Empty;
-                }
+
+            // Search down the directory structure from the assembly location looking for the module root
+            // We may be in a versioned directory ("PSScriptAnalyzer/1.18.0" vs "PSScriptAnalyzer"), so can't search that way
+            // Instead we look for the PSSA module manifest
+            const string manifestName = "PSScriptAnalyzer.psd1";
+
+            // Look for PSScriptAnalyzer.psd1 next to the Rules DLL
+            string manifestPath = Path.Combine(asmDirLocation, manifestName);
+            if (File.Exists(manifestPath))
+            {
+                return asmDirLocation;
             }
 
-            return Path.GetFullPath(nonNormalizedRoot);
+            // Look for PSScriptAnalyzer.psd1 in the directory above the Rules DLL
+            string dirUpOneLevel = Path.GetDirectoryName(asmDirLocation);
+            manifestPath = Path.Combine(dirUpOneLevel, manifestName);
+            if (File.Exists(manifestPath))
+            {
+                return dirUpOneLevel;
+            }
+
+            throw new FileNotFoundException("Unable to find the PSScriptAnalyzer module root");
         }
 
     }
