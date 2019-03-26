@@ -62,7 +62,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                 try
                 {
                     KeyValuePair<string, AssemblyData> asmData = AssembleAssembly(asm);
-                    asms.Add(asmData.Key, asmData.Value);
+                    asms[asmData.Key] = asmData.Value;
                 }
                 catch (ReflectionTypeLoadException e)
                 {
