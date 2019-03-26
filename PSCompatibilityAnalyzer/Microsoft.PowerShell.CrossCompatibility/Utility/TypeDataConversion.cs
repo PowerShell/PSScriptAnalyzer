@@ -61,6 +61,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
                 try
                 {
+                    // First check whether an assembly with this name already exists
+                    // Only replace it if the current one is newer
+                    AssemblyName asmName = asm.GetName();
+                    if (asms.TryGetValue(asmName.Name, out AssemblyData currentAssemblyData)
+                        && asmName.Version < currentAssemblyData.AssemblyName.Version)
+                    {
+                        continue;
+                    }
+
                     KeyValuePair<string, AssemblyData> asmData = AssembleAssembly(asm);
                     asms[asmData.Key] = asmData.Value;
                 }
