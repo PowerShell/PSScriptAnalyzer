@@ -119,8 +119,11 @@ function Copy-CompatibilityProfiles
 
     $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityAnalyzer', 'profiles')
     $destinationDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer', "compatibility_profiles")
+    if ( -not (Test-Path $destinationDir) ) {
+        $null = New-Item -Type Directory $destinationDir
+    }
 
-    Copy-Item -Recurse $profileDir $destinationDir
+    Copy-Item -Force $profileDir/* $destinationDir
 }
 
 # build script analyzer (and optionally build everything with -All)
