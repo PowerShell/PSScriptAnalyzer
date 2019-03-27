@@ -2,7 +2,15 @@
 # Licensed under the MIT License.
 
 # Add the relevant binary module
-$compatibilityLoaded = -not -not (Get-Command New-PSCompatibilityProfile -ErrorAction Ignore)
+try
+{
+    $null = [Microsoft.PowerShell.CrossCompatibility.Commands.NewPSCompatibilityProfileCommand]
+    $compatibilityLoaded = $true
+}
+catch
+{
+    $compatibilityLoaded = $false
+}
 if (-not $compatibilityLoaded)
 {
     if ($PSVersionTable.PSVersion.Major -ge 6)

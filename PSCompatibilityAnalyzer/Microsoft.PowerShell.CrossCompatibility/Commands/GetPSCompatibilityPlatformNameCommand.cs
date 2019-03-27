@@ -6,7 +6,7 @@ using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
 {
-    [Cmdlet(VerbsCommon.Get, CommandUtilities.ModulePrefix + "PlatformName")]
+    [Cmdlet(VerbsCommon.Get, CommandUtilities.MODULE_PREFIX + "PlatformName")]
     public class GetPSCompatibilityPlatformNameCommand : Cmdlet
     {
         [Parameter(ValueFromPipeline = true)]

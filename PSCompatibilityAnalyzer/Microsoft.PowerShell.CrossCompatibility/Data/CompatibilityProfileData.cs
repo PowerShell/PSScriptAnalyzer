@@ -23,6 +23,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         public string Id { get; set; }
 
         /// <summary>
+        /// The verison of the profile schema this profile object uses.
+        /// </summary>
+        [DataMember]
+        public Version ProfileSchemaVersion { get; set; }
+
+        /// <summary>
         /// For an aggregate profile, the IDs of all the profiles used to make it.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]

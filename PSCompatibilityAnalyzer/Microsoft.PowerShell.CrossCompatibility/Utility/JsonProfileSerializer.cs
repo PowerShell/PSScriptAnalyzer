@@ -81,6 +81,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 Formatting = formatting,
                 Converters = GetFormatConverters(),
+                MissingMemberHandling = MissingMemberHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
             };
 
             var serializer = JsonSerializer.Create(settings);
@@ -130,7 +132,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// <param name="file">The file to serialize to.</param>
         public void SerializeToFile(object data, FileInfo file)
         {
-            using (var fileStream = file.OpenRead())
+            using (var fileStream = file.OpenWrite())
             using (var streamWriter = new StreamWriter(fileStream, Encoding.UTF8))
             {
                 _serializer.Serialize(streamWriter, data);

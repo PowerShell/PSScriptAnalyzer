@@ -13,7 +13,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
     /// <summary>
     /// Creates a new PowerShell compatibility profile for the current PowerShell session
     /// </summary>
-    [Cmdlet(VerbsCommon.New, CommandUtilities.ModulePrefix + "Profile", DefaultParameterSetName = "OutFile")]
+    [Cmdlet(VerbsCommon.New, CommandUtilities.MODULE_PREFIX + "Profile", DefaultParameterSetName = "OutFile")]
     public class NewPSCompatibilityProfileCommand : PSCmdlet
     {
         /// <summary>
@@ -71,7 +71,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
             // Report any problems we hit
             foreach (Exception e in errors)
             {
-                WriteError(new ErrorRecord(e, "CompatibilityProfilerError", ErrorCategory.ReadError, null));
+                WriteError(CommandUtilities.CreateCompatibilityErrorRecord(e));
             }
 
             // If PassThru is set, just pass the object back and we're done
@@ -86,7 +86,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
             if (string.IsNullOrEmpty(OutFile))
             {
                 string profileName = ProfileName ?? profile.Id;
-                outFilePath = GetDefaultProfilePath(profileName);
+                outFilePath = GetProfilePath(profileName);
             }
             else
             {
@@ -112,10 +112,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
             WriteObject(outFile);
         }
 
-        private string GetDefaultProfilePath(string profileName)
+        private string GetProfilePath(string profileName, string profileDirPath = null)
         {
-            string moduleRoot = Path.GetDirectoryName(MyInvocation.MyCommand.Module.Path);
-            return Path.Combine(moduleRoot, DEFAULT_PROFILE_DIR_NAME, profileName + ".json");
+            string dirPath = profileDirPath;
+            if (dirPath == null)
+            {
+                string moduleRoot = Path.GetDirectoryName(MyInvocation.MyCommand.Module.Path);
+                dirPath = Path.Combine(moduleRoot, DEFAULT_PROFILE_DIR_NAME);
+            }
+            return Path.Combine(dirPath, profileName + ".json");
         }
     }
 }

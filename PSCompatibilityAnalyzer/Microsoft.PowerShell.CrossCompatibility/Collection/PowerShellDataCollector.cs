@@ -372,24 +372,45 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             try
             {
                 functionData.DefaultParameterSet = GetDefaultParameterSet(function.DefaultParameterSet);
+            }
+            catch (RuntimeException)
+            {
+                // This can fail when PowerShell can't resolve a type. So we just leave the field null
+            }
+
+            try
+            {
                 functionData.OutputType = GetOutputType(function.OutputType);
             }
             catch (RuntimeException)
             {
-                // function.DefaultParameterSet can fail to do type resolution,
-                // in which case leave functionData.DefaultParameterSet null
+                // Also can fail
             }
 
-            functionData.ParameterSets = GetParameterSets(function.ParameterSets);
+            try
+            {
+                functionData.ParameterSets = GetParameterSets(function.ParameterSets);
+            }
+            catch (RuntimeException)
+            {
+                // Type resolution failure
+            }
 
-            AssembleParameters(
-                function.Parameters,
-                out JsonCaseInsensitiveStringDictionary<ParameterData> parameters,
-                out JsonCaseInsensitiveStringDictionary<string> parameterAliases,
-                isCmdletBinding: function.CmdletBinding);
+            try
+            {
+                AssembleParameters(
+                    function.Parameters,
+                    out JsonCaseInsensitiveStringDictionary<ParameterData> parameters,
+                    out JsonCaseInsensitiveStringDictionary<string> parameterAliases,
+                    isCmdletBinding: function.CmdletBinding);
 
-            functionData.Parameters = parameters;
-            functionData.ParameterAliases = parameterAliases;
+                functionData.Parameters = parameters;
+                functionData.ParameterAliases = parameterAliases;
+            }
+            catch (RuntimeException)
+            {
+                // Can fail
+            }
 
             return functionData;
         }

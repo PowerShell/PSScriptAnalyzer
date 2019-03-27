@@ -154,6 +154,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     if (!namespacedTypes.TryGetValue(typeNamespace, out JsonDictionary<string, TypeData> typeDictionary))
                     {
                         typeDictionary = new JsonDictionary<string, TypeData>();
+                        namespacedTypes.Add(typeNamespace, typeDictionary);
                     }
 
                     TypeData typeData = AssembleType(type);
@@ -180,28 +181,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         {
             MemberData instanceMembers = AssembleMembers(type, InstanceBinding);
             MemberData staticMembers = AssembleMembers(type, StaticBinding);
-
-            if (instanceMembers.Constructors == null
-                && instanceMembers.Events == null
-                && instanceMembers.Fields == null
-                && instanceMembers.Indexers == null
-                && instanceMembers.Methods == null
-                && instanceMembers.NestedTypes == null
-                && instanceMembers.Properties == null)
-            {
-                instanceMembers = null;
-            }
-
-            if (staticMembers.Constructors == null
-                && staticMembers.Events == null
-                && staticMembers.Fields == null
-                && staticMembers.Indexers == null
-                && staticMembers.Methods == null
-                && staticMembers.NestedTypes == null
-                && staticMembers.Properties == null)
-            {
-                staticMembers = null;
-            }
 
             return new TypeData()
             {
@@ -260,64 +239,84 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 typeMembers = members.Values.SelectMany(ms => ms);
             }
 
-            var constructors = new List<ConstructorInfo>();
-            var fields = new List<FieldInfo>();
-            var properties = new List<PropertyInfo>();
-            var indexers = new List<PropertyInfo>();
+            var constructors = new List<string[]>();
+            var fields = new JsonDictionary<string, FieldData>();
+            var properties = new JsonDictionary<string, PropertyData>();
+            var indexers = new List<IndexerData>();
             var methods = new Dictionary<string, List<MethodInfo>>();
-            var events = new List<EventInfo>();
-            var nestedTypes = new List<TypeInfo>();
+            var events = new JsonDictionary<string, EventData>();
+            var nestedTypes = new JsonDictionary<string, TypeData>();
 
             foreach (MemberInfo member in typeMembers)
             {
-                switch (member.MemberType)
+                switch (member)
                 {
-                    case MemberTypes.Constructor:
-                        constructors.Add((ConstructorInfo)member);
+                    case ConstructorInfo constructor:
+                        constructors.Add(AssembleConstructor(constructor));
                         break;
 
-                    case MemberTypes.Field:
-                        fields.Add((FieldInfo)member);
+                    case FieldInfo field:
+                        fields.Add(field.Name, AssembleField(field));
                         break;
 
-                    case MemberTypes.Event:
-                        events.Add((EventInfo)member);
+                    case EventInfo eventMember:
+                        events.Add(eventMember.Name, AssembleEvent(eventMember));
                         break;
 
-                    case MemberTypes.NestedType:
-                        nestedTypes.Add((TypeInfo)member);
+                    case TypeInfo nestedType:
+                        nestedTypes.Add(nestedType.Name, AssembleType(nestedType));
                         break;
 
-                    case MemberTypes.Property:
-                        var property = (PropertyInfo)member;
+                    case PropertyInfo property:
                         if (IsIndexer(property))
                         {
-                            indexers.Add(property);
+                            indexers.Add(AssembleIndexer(property));
                             break;
                         }
 
-                        properties.Add(property);
+                        properties.Add(property.Name, AssembleProperty(property));
                         break;
                     
-                    case MemberTypes.Method:
-                        if (!methods.ContainsKey(member.Name))
+                    case MethodInfo method:
+                        if (!methods.TryGetValue(method.Name, out List<MethodInfo> overloads))
                         {
-                            methods.Add(member.Name, new List<MethodInfo>());
+                            overloads = new List<MethodInfo>();
+                            methods[method.Name] = overloads;
                         }
-                        methods[member.Name].Add((MethodInfo)member);
+                        overloads.Add((MethodInfo)member);
                         break;
                 }
             }
 
+            bool anyConstructors = constructors.Count == 0;
+            bool anyFields = fields.Count == 0;
+            bool anyEvents = events.Count == 0;
+            bool anyNestedTypes = nestedTypes.Count == 0;
+            bool anyProperties = properties.Count == 0;
+            bool anyIndexers = indexers.Count == 0;
+            bool anyMethods = methods.Count == 0;
+
+            if (!anyConstructors && !anyFields && !anyEvents && !anyNestedTypes && !anyProperties && !anyIndexers && !anyMethods)
+            {
+                return null;
+            }
+
+            // Process methods, since they had to be collected differently
+            var methodDatas = new JsonDictionary<string, MethodData>();
+            foreach (KeyValuePair<string, List<MethodInfo>> method in methods)
+            {
+                methodDatas[method.Key] = AssembleMethod(method.Value);
+            }
+
             return new MemberData()
             {
-                Constructors = constructors.Any() ? constructors.Select(c => AssembleConstructor(c)).ToArray() : null,
-                Events = events.Any() ? new JsonDictionary<string, EventData>(events.ToDictionary(e => e.Name, e => AssembleEvent(e))) : null,
-                Fields = fields.Any() ? new JsonDictionary<string, FieldData>(fields.ToDictionary(f => f.Name, f => AssembleField(f))) : null,
-                Indexers = indexers.Any() ? indexers.Select(i => AssembleIndexer(i)).ToArray() : null,
-                Methods = methods.Any() ? new JsonDictionary<string, MethodData>(methods.ToDictionary(m => m.Key, m => AssembleMethod(m.Value))) : null,
-                NestedTypes = nestedTypes.Any() ? new JsonDictionary<string, TypeData>(nestedTypes.ToDictionary(t => t.Name, t => AssembleType(t))) : null,
-                Properties = properties.Any() ? new JsonDictionary<string, PropertyData>(properties.ToDictionary(p => p.Name, p => AssembleProperty(p))) : null
+                Constructors = anyConstructors ? constructors.ToArray() : null,
+                Events = anyEvents ? events : null,
+                Fields = anyFields ? fields : null,
+                Indexers = anyIndexers ? indexers.ToArray() : null,
+                Methods = anyMethods ? methodDatas : null,
+                NestedTypes = anyNestedTypes ? nestedTypes : null,
+                Properties = anyProperties ? properties : null
             };
         }
 
