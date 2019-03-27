@@ -223,13 +223,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (matchingPipeLineAstEnd == null)
                 {
-                    break;
+                    continue;
                 }
 
                 bool pipelineSpansOnlyOneLine = matchingPipeLineAstEnd.Extent.StartLineNumber == matchingPipeLineAstEnd.Extent.EndLineNumber;
                 if (pipelineSpansOnlyOneLine)
                 {
-                    break;
+                    continue;
                 }
 
                 if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
