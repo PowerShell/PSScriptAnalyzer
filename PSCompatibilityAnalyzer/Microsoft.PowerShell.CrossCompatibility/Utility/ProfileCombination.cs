@@ -353,7 +353,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return thisDict;
         }
 
-        private static KeyValuePair<Version, ModuleData> UnionVersionedModules(ICollection<KeyValuePair<Version, ModuleData>> modules)
+        private static KeyValuePair<Version, ModuleData> UnionVersionedModules(IReadOnlyCollection<KeyValuePair<Version, ModuleData>> modules)
         {
             ModuleData unionedModule = null;
             Version version = null;

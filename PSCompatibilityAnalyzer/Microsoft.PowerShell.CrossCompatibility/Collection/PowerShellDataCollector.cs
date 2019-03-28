@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.PowerShell.Commands;
 using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
@@ -15,6 +16,22 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
     public class PowerShellDataCollector : IDisposable
     {
+        public class Builder
+        {
+            private IReadOnlyCollection<string> _modulePrefixes;
+
+            public Builder ExcludedModulePathPrefixes(IReadOnlyCollection<string> modulePrefixes)
+            {
+                _modulePrefixes = modulePrefixes;
+                return this;
+            }
+
+            public PowerShellDataCollector Build(SMA.PowerShell pwsh, PowerShellVersion psVersion)
+            {
+                return new PowerShellDataCollector(pwsh, psVersion, _modulePrefixes);
+            }
+        }
+
         private const string DEFAULT_DEFAULT_PARAMETER_SET = "__AllParameterSets";
 
         private const string CORE_MODULE_NAME = "Microsoft.PowerShell.Core";
@@ -35,12 +52,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private readonly Lazy<ReadOnlySet<string>> _lazyCommonParameters;
 
+        private readonly IReadOnlyCollection<string> _excludedModulePrefixes;
+
         private SMA.PowerShell _pwsh;
 
-        public PowerShellDataCollector(SMA.PowerShell pwsh, PowerShellVersion psVersion)
+        private PowerShellDataCollector(
+            SMA.PowerShell pwsh,
+            PowerShellVersion psVersion,
+            IReadOnlyCollection<string> excludedModulePrefixes)
         {
             _pwsh = pwsh;
             _psVersion = psVersion;
+            _excludedModulePrefixes = excludedModulePrefixes;
             _lazyCommonParameters = new Lazy<ReadOnlySet<string>>(GetPowerShellCommonParameterNames);
         }
 
@@ -80,6 +103,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var errs = new List<Exception>();
             foreach (PSModuleInfo module in modules)
             {
+                if (_excludedModulePrefixes != null && IsExcludedPath(module.Path))
+                {
+                    continue;
+                }
+
                 Tuple<string, Version, ModuleData> moduleData = LoadAndGetModuleData(module, out Exception error);
 
                 if (moduleData == null)
@@ -521,6 +549,26 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             {
                 parameterAliasData = null;
             }
+        }
+
+        private bool IsExcludedPath(string path)
+        {
+            foreach (string excludedPathPrefix in _excludedModulePrefixes)
+            {
+#if CoreCLR
+                StringComparison stringComparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                    ? StringComparison.Ordinal
+                    : StringComparison.OrdinalIgnoreCase;
+#else
+                StringComparison stringComparisonType = StringComparison.OrdinalIgnoreCase;
+#endif
+                if (path.StartsWith(excludedPathPrefix, stringComparisonType))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static ReadOnlySet<string> GetPowerShellCommonParameterNames()

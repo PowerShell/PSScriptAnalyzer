@@ -15,14 +15,31 @@ using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 
 using SMA = System.Management.Automation;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
     /// <summary>
     /// Assembles loaded type data from a list of assemblies.
     /// </summary>
-    public static class TypeDataCollection
+    public class TypeDataCollector
     {
+        public class Builder
+        {
+            private IReadOnlyCollection<string> _excludedAssemblyPathPrefixes;
+
+            public Builder ExcludedAssemblyPathPrefixes(IReadOnlyCollection<string> assemblyPrefixes)
+            {
+                _excludedAssemblyPathPrefixes = assemblyPrefixes;
+                return this;
+            }
+
+            public TypeDataCollector Build()
+            {
+                return new TypeDataCollector(_excludedAssemblyPathPrefixes);
+            }
+        }
+
         // Binding flags for static type members
         private const BindingFlags StaticBinding = BindingFlags.Public | BindingFlags.Static;
 
@@ -31,7 +48,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private static readonly Assembly s_executingAssembly = Assembly.GetExecutingAssembly();
 
-        public static AvailableTypeData GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> errors)
+        private readonly IReadOnlyCollection<string> _excludedAssemblyPathPrefixes;
+
+        private TypeDataCollector(IReadOnlyCollection<string> excludedAssemblyPathPrefixes)
+        {
+            _excludedAssemblyPathPrefixes = excludedAssemblyPathPrefixes;
+        }
+
+        public AvailableTypeData GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> errors)
         {
             IReadOnlyDictionary<string, Type> typeAccelerators = GetTypeAccelerators();
             IEnumerable<Assembly> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -39,7 +63,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return AssembleAvailableTypes(loadedAssemblies, typeAccelerators, out errors);
         }
 
-        public static IReadOnlyDictionary<string, Type> GetTypeAccelerators()
+        public IReadOnlyDictionary<string, Type> GetTypeAccelerators()
         {
             return (Dictionary<string, Type>)typeof(PSObject).Assembly
                 .GetType("System.Management.Automation.TypeAccelerators")
@@ -53,7 +77,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// <param name="assemblies">the assemblies to collate data from.</param>
         /// <param name="typeAccelerators">lookup table of PowerShell type accelerators.</param>
         /// <returns>an object describing all the available types from the given assemblies.</returns>
-        public static AvailableTypeData AssembleAvailableTypes(
+        public AvailableTypeData AssembleAvailableTypes(
             IEnumerable<Assembly> assemblies,
             IReadOnlyDictionary<string, Type> typeAccelerators,
             out IEnumerable<CompatibilityAnalysisException> errors)
@@ -78,6 +102,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 if (asm == s_executingAssembly
                     || asm.IsDynamic
                     || string.IsNullOrEmpty(asm.Location))
+                {
+                    continue;
+                }
+
+                if (_excludedAssemblyPathPrefixes != null
+                    && IsAssemblyPathExcluded(asm.Location))
                 {
                     continue;
                 }
@@ -124,7 +154,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// </summary>
         /// <param name="asm">the assembly to collect data on.</param>
         /// <returns>A pair of the name and data of the given assembly.</returns>
-        public static KeyValuePair<string, AssemblyData> AssembleAssembly(Assembly asm)
+        public KeyValuePair<string, AssemblyData> AssembleAssembly(Assembly asm)
         {
             AssemblyName asmName = asm.GetName();
 
@@ -177,7 +207,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// </summary>
         /// <param name="type">The type to assemble data for.</param>
         /// <returns>An object summarizing the type and its members.</returns>
-        public static TypeData AssembleType(Type type)
+        public TypeData AssembleType(Type type)
         {
             MemberData instanceMembers = AssembleMembers(type, InstanceBinding);
             MemberData staticMembers = AssembleMembers(type, StaticBinding);
@@ -190,7 +220,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
-        private static MemberData AssembleMembers(Type type, BindingFlags memberBinding)
+        private MemberData AssembleMembers(Type type, BindingFlags memberBinding)
         {
             if ((memberBinding & BindingFlags.Instance) != 0 && (memberBinding & BindingFlags.Static) != 0)
             {
@@ -320,7 +350,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
-        private static FieldData AssembleField(FieldInfo field)
+        private FieldData AssembleField(FieldInfo field)
         {
             return new FieldData()
             {
@@ -328,7 +358,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
-        private static PropertyData AssembleProperty(PropertyInfo property)
+        private PropertyData AssembleProperty(PropertyInfo property)
         {
             return new PropertyData()
             {
@@ -337,7 +367,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
-        private static IndexerData AssembleIndexer(PropertyInfo indexer)
+        private IndexerData AssembleIndexer(PropertyInfo indexer)
         {
             var paramTypes = new List<string>();
             foreach (ParameterInfo param in indexer.GetIndexParameters())
@@ -353,7 +383,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
-        private static EventData AssembleEvent(EventInfo e)
+        private EventData AssembleEvent(EventInfo e)
         {
             return new EventData()
             {
@@ -362,7 +392,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
-        private static string[] AssembleConstructor(ConstructorInfo ctor)
+        private string[] AssembleConstructor(ConstructorInfo ctor)
         {
             var parameters = new List<string>();
             foreach (ParameterInfo param in ctor.GetParameters())
@@ -373,7 +403,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return parameters.ToArray();
         }
 
-        private static MethodData AssembleMethod(List<MethodInfo> methodOverloads)
+        private MethodData AssembleMethod(List<MethodInfo> methodOverloads)
         {
             var overloads = new List<string[]>();
             foreach (MethodInfo overload in methodOverloads)
@@ -391,6 +421,25 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 ReturnType = TypeNaming.GetFullTypeName(methodOverloads[0].ReturnType),
                 OverloadParameters = overloads.ToArray()
             };
+        }
+
+        private bool IsAssemblyPathExcluded(string path)
+        {
+#if CoreCLR
+            StringComparison stringComparisonType = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                ? StringComparison.Ordinal
+                : StringComparison.OrdinalIgnoreCase;
+#else
+            StringComparison stringComparisonType = StringComparison.OrdinalIgnoreCase;
+#endif
+            foreach (string prefix in _excludedAssemblyPathPrefixes)
+            {
+                if (path.StartsWith(prefix))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static void ReplaceWithMemberIfOverrides(List<MemberInfo> existingMembers, MemberInfo newMember)

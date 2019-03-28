@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         /// <summary>
         /// The path of the profile file to create.
         /// </summary>
-        [Parameter(ParameterSetName = "OutFile")]
+        [Parameter(ParameterSetName = "OutFile", Position = 0)]
         public string OutFile { get; set; }
 
         /// <summary>
@@ -56,22 +56,57 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         [Parameter(ParameterSetName = "ProfileName")]
         public string ProfileName { get; set; }
 
+        [Parameter]
+        public SwitchParameter Validate { get; set; }
+
+        [Parameter]
+        public string[] ExcludeModulePathPrefix { get; set; }
+
+        [Parameter]
+        public string[] ExcludeAssemblyPathPrefix { get; set; }
+
         protected override void EndProcessing()
         {
             CompatibilityProfileData profile;
             IEnumerable<Exception> errors;
             using (var pwsh = SMA.PowerShell.Create())
-            using (var profileCollector = new CompatibilityProfileCollector(pwsh))
             {
-                profile = string.IsNullOrEmpty(PlatformId)
-                    ? profileCollector.GetCompatibilityData(out errors)
-                    : profileCollector.GetCompatibilityData(PlatformId, out errors);
+                var collectorBuilder = new CompatibilityProfileCollector.Builder();
+
+                if (ExcludeModulePathPrefix != null && ExcludeModulePathPrefix.Length > 0)
+                {
+                    collectorBuilder.ExcludedModulePathPrefixes(ExcludeModulePathPrefix);
+                }
+
+                if (ExcludeAssemblyPathPrefix != null && ExcludeAssemblyPathPrefix.Length > 0)
+                {
+                    collectorBuilder.ExcludeAssemblyPathPrefixes(ExcludeAssemblyPathPrefix);
+                }
+
+                using (var profileCollector = collectorBuilder.Build(pwsh))
+                {
+                    profile = string.IsNullOrEmpty(PlatformId)
+                        ? profileCollector.GetCompatibilityData(out errors)
+                        : profileCollector.GetCompatibilityData(PlatformId, out errors);
+                }
             }
 
             // Report any problems we hit
             foreach (Exception e in errors)
             {
-                WriteError(CommandUtilities.CreateCompatibilityErrorRecord(e));
+                this.WriteExceptionAsError(e);
+            }
+
+            if (Validate)
+            {
+                var validator = new QuickCheckValidator();
+                if (validator.IsProfileValid(profile, out IEnumerable<Exception> validationErrors))
+                {
+                    foreach (Exception validationError in validationErrors)
+                    {
+                        this.WriteExceptionAsError(validationError);
+                    }
+                }
             }
 
             // If PassThru is set, just pass the object back and we're done

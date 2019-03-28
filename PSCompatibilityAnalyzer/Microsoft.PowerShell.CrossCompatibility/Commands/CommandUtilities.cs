@@ -10,17 +10,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
 
         public const string MODULE_PREFIX = "PSCompatibility";
 
-        public static ErrorRecord CreateCompatibilityErrorRecord(
-            Exception e,
+        public static void WriteExceptionAsError(
+            this Cmdlet cmdlet,
+            Exception exception,
             string errorId = COMPATIBILITY_ERROR_ID,
             ErrorCategory errorCategory = ErrorCategory.ReadError,
             object targetObject = null)
         {
-            return new ErrorRecord(
-                e,
-                errorId,
-                errorCategory,
-                targetObject);
+            cmdlet.WriteError(CreateCompatibilityErrorRecord(exception, errorId, errorCategory, targetObject));
         }
 
         public static string GetNormalizedAbsolutePath(this PSCmdlet cmdlet, string path)
@@ -31,6 +28,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
             }
 
             return cmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath(path);
+        }
+
+        private static ErrorRecord CreateCompatibilityErrorRecord(
+            Exception e,
+            string errorId = COMPATIBILITY_ERROR_ID,
+            ErrorCategory errorCategory = ErrorCategory.ReadError,
+            object targetObject = null)
+        {
+            return new ErrorRecord(
+                e,
+                errorId,
+                errorCategory,
+                targetObject);
         }
     }
 }

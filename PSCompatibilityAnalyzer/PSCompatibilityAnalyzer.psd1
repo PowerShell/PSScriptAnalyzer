@@ -39,41 +39,16 @@ Description = 'Collects and makes available information on PowerShell runtimes a
 PowerShellVersion = '3.0'
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @(
-    'Get-WindowsSkuId'
-    'Get-LinuxLsbInfo'
-    'Get-AvailableTypes'
-    'Get-TypeAccelerators'
-    'Get-CoreModuleData'
-    'Get-AvailableModules'
-    'Get-CommonParameters'
-    'Get-AliasTable'
-    'New-NativeCommandData'
-    'New-CommonData'
-    'New-RuntimeData'
-    'New-ModuleData'
-    'New-AliasData'
-    'New-CmdletData'
-    'New-FunctionData'
-    'New-ParameterAliasData'
-    'New-ParameterData'
-    'New-ParameterSetData'
-    'New-AvailableTypeData'
-    'Get-FullTypeName'
-    'Assert-CompatibilityProfileIsValid'
-)
+FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @(
     'ConvertTo-PSCompatibilityJson'
     'ConvertFrom-PSCompatibilityJson'
-    'Get-PSCompatibilityProfileData'
     'Get-PSCompatibilityPlatformData'
-    'Get-PSCompatibilityPowerShellRuntimeData'
-    'Get-PSCompatibilityOperatingSystemData'
-    'Get-PSCompatibilityDotNetData'
     'Get-PSCompatibilityPlatformName'
     'New-PSCompatibilityProfile'
+    'Assert-PSCompatibilityProfileIsValid'
 )
 
 # Variables to export from this module

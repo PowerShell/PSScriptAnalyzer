@@ -15,19 +15,64 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
     public class CompatibilityProfileCollector : IDisposable
     {
+        public class Builder
+        {
+            private PowerShellDataCollector.Builder _pwshDataCollectorBuilder;
+
+            private TypeDataCollector.Builder _typeDataColletorBuilder;
+
+            public Builder()
+            {
+                _pwshDataCollectorBuilder = new PowerShellDataCollector.Builder();
+                _typeDataColletorBuilder = new TypeDataCollector.Builder();
+            }
+
+            public Builder ExcludedModulePathPrefixes(IReadOnlyCollection<string> modulePrefixes)
+            {
+                _pwshDataCollectorBuilder.ExcludedModulePathPrefixes(modulePrefixes);
+                return this;
+            }
+
+            public Builder ExcludeAssemblyPathPrefixes(IReadOnlyCollection<string> assemblyPrefixes)
+            {
+                _typeDataColletorBuilder.ExcludedAssemblyPathPrefixes(assemblyPrefixes);
+                return this;
+            }
+
+            public CompatibilityProfileCollector Build(SMA.PowerShell pwsh)
+            {
+                var platformInfoCollector = new PlatformInformationCollector(pwsh);
+
+                return new CompatibilityProfileCollector(
+                    pwsh,
+                    platformInfoCollector,
+                    _pwshDataCollectorBuilder.Build(pwsh, platformInfoCollector.PSVersion),
+                    _typeDataColletorBuilder.Build());
+            }
+        }
+
         private SMA.PowerShell _pwsh;
 
         private readonly PowerShellDataCollector _pwshDataCollector;
 
+        private readonly TypeDataCollector _typeDataCollector;
+
         private readonly PlatformInformationCollector _platformInfoCollector;
+
+        private readonly IReadOnlyCollection<string> _excludedAssemblyPathPrefixes;
 
         private readonly Func<ApplicationInfo, Version> _getApplicationVersion;
 
-        public CompatibilityProfileCollector(SMA.PowerShell pwsh)
+        private CompatibilityProfileCollector(
+            SMA.PowerShell pwsh,
+            PlatformInformationCollector platformInfoCollector,
+            PowerShellDataCollector pwshDataCollector,
+            TypeDataCollector typeDataCollector)
         {
             _pwsh = pwsh;
-            _platformInfoCollector = new PlatformInformationCollector(pwsh);
-            _pwshDataCollector = new PowerShellDataCollector(pwsh, _platformInfoCollector.PSVersion);
+            _platformInfoCollector = platformInfoCollector;
+            _pwshDataCollector = pwshDataCollector;
+            _typeDataCollector = typeDataCollector;
 
             if (_platformInfoCollector.PSVersion.Major >= 5)
             {
@@ -56,7 +101,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         {
             // Need to ensure modules are imported before types are collected
             JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>> modules = _pwshDataCollector.AssembleModulesData(_pwshDataCollector.GetModulesData(out IEnumerable<Exception> moduleErrors));
-            Data.Types.AvailableTypeData availableTypeData = TypeDataCollection.GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> typeErrors);
+            Data.Types.AvailableTypeData availableTypeData = _typeDataCollector.GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> typeErrors);
 
             var runtimeData = new RuntimeData()
             {

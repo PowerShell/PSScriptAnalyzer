@@ -11,6 +11,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
     public abstract class ProfileValidator
     {
         public abstract bool IsProfileValid(Data.CompatibilityProfileData profileData, out IEnumerable<Exception> validationErrors);
+
+        public abstract void Reset();
     }
 
     internal class QuickCheckValidator : ProfileValidator
@@ -148,6 +150,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
         };
 
+        private static IReadOnlyDictionary<string, string> s_typeAccelerators = new Dictionary<string, string>()
+        {
+            { "type", "System.Type" },
+            { "psobject", "System.Management.Automation.PSObject" },
+            { "pscustomobject", "System.Management.Automation.PSObject" },
+            { "regex", "System.Text.RegularExpressions.Regex" },
+            { "xml", "System.Xml.XmlDocument" },
+            { "hashtable", "System.Collections.Hashtable" },
+        };
+
         private ValidationErrorAccumulator _errAcc;
 
         private int _psVersionMajor;
@@ -203,7 +215,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return true;
         }
 
-        public void Clear()
+        public override void Reset()
         {
             _errAcc.Clear();
             _psVersionMajor = -1;
@@ -432,11 +444,98 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             try
             {
-                ValidateAssemblies(types.Assemblies);
+                ValidateAssemblies(types.Assemblies, s_types);
+
+                switch (_dotNetEdition)
+                {
+                    case Data.Platform.DotnetRuntime.Core:
+                        ValidateAssemblies(types.Assemblies, s_coreTypes);
+                        break;
+
+                    case Data.Platform.DotnetRuntime.Framework:
+                        ValidateAssemblies(types.Assemblies, s_fxTypes);
+                        break;
+
+                    default:
+                        _errAcc.AddError($"Dotnet edition did not resolve properly");
+                        break;
+                }
             }
             catch (Exception e)
             {
                 _errAcc.AddError(e);
+            }
+        }
+
+        private void ValidateTypeAccelerators(IReadOnlyDictionary<string, TypeAcceleratorData> typeAccelerators)
+        {
+            foreach (KeyValuePair<string, string> expectedTypeAccelerator in s_typeAccelerators)
+            {
+                if (!typeAccelerators.TryGetValue(expectedTypeAccelerator.Key, out TypeAcceleratorData typeAccelerator))
+                {
+                    _errAcc.AddError($"Expected type accelerator {expectedTypeAccelerator.Key} not found");
+                    continue;
+                }
+
+                if (typeAccelerator == null)
+                {
+                    _errAcc.AddError($"Expected type accelerator {expectedTypeAccelerator.Key} found but null");
+                    continue;
+                }
+
+                if (!typeAccelerator.Type.Equals(expectedTypeAccelerator.Value))
+                {
+                    _errAcc.AddError($"Type accelerator {expectedTypeAccelerator.Key} was expected to point to type {expectedTypeAccelerator.Value}, but instead points to {typeAccelerator.Type}");
+                }
+            }
+        }
+
+        private void ValidateAssemblies(
+            IReadOnlyDictionary<string, AssemblyData> assemblies,
+            IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyCollection<string>>> expectedAssemblies)
+        {
+            foreach (KeyValuePair<string, IReadOnlyDictionary<string, IReadOnlyCollection<string>>> expectedAssembly in expectedAssemblies)
+            {
+                if (!assemblies.TryGetValue(expectedAssembly.Key, out AssemblyData assembly))
+                {
+                    _errAcc.AddError($"Expected assembly {expectedAssembly.Key} not found");
+                    continue;
+                }
+
+                if (assembly == null)
+                {
+                    _errAcc.AddError($"Expected assembly {expectedAssembly.Key} was found but null");
+                    continue;
+                }
+
+                foreach (KeyValuePair<string, IReadOnlyCollection<string>> expectedNamespace in expectedAssembly.Value)
+                {
+                    if (!assembly.Types.TryGetValue(expectedNamespace.Key, out IReadOnlyDictionary<string, TypeData> namespaceTypes))
+                    {
+                        _errAcc.AddError($"Assembly {expectedAssembly.Key} does not contain expected namespace {expectedNamespace.Key}");
+                        continue;
+                    }
+
+                    if (namespaceTypes == null)
+                    {
+                        _errAcc.AddError($"Assembly {expectedAssembly.Key} contains namespace {expectedNamespace.Key} but it is null");
+                        continue;
+                    }
+
+                    foreach (string expectedType in expectedNamespace.Value)
+                    {
+                        if (!namespaceTypes.TryGetValue(expectedType, out TypeData typeData))
+                        {
+                            _errAcc.AddError($"Expected type {expectedType} was not found in namespace {expectedNamespace.Key} in assembly {expectedAssembly.Key}");
+                            continue;
+                        }
+
+                        if (typeData == null)
+                        {
+                            _errAcc.AddError($"Expected type {expectedType} was found but null in namespace {expectedNamespace.Key} in assemblye {expectedAssembly.Key}");
+                        }
+                    }
+                }
             }
         }
 
