@@ -59,8 +59,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private readonly PlatformInformationCollector _platformInfoCollector;
 
-        private readonly IReadOnlyCollection<string> _excludedAssemblyPathPrefixes;
-
         private readonly Func<ApplicationInfo, Version> _getApplicationVersion;
 
         private CompatibilityProfileCollector(

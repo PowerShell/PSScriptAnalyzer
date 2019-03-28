@@ -434,7 +434,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 #endif
             foreach (string prefix in _excludedAssemblyPathPrefixes)
             {
-                if (path.StartsWith(prefix))
+                if (path.StartsWith(prefix, stringComparisonType))
                 {
                     return true;
                 }
