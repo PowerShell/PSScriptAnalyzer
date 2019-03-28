@@ -318,13 +318,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 }
             }
 
-            bool anyConstructors = constructors.Count == 0;
-            bool anyFields = fields.Count == 0;
-            bool anyEvents = events.Count == 0;
-            bool anyNestedTypes = nestedTypes.Count == 0;
-            bool anyProperties = properties.Count == 0;
-            bool anyIndexers = indexers.Count == 0;
-            bool anyMethods = methods.Count == 0;
+            bool anyConstructors = constructors.Count != 0;
+            bool anyFields = fields.Count != 0;
+            bool anyEvents = events.Count != 0;
+            bool anyNestedTypes = nestedTypes.Count != 0;
+            bool anyProperties = properties.Count != 0;
+            bool anyIndexers = indexers.Count != 0;
+            bool anyMethods = methods.Count != 0;
 
             if (!anyConstructors && !anyFields && !anyEvents && !anyNestedTypes && !anyProperties && !anyIndexers && !anyMethods)
             {
