@@ -13,7 +13,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         private JsonProfileSerializer _serializer;
 
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
-        public object Item { get; set; }
+        public object[] Item { get; set; }
 
         [Parameter]
         [Alias(new [] { "Compress" })]
@@ -26,7 +26,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
 
         protected override void ProcessRecord()
         {
-            WriteObject(_serializer.Serialize(Item));
+            foreach (object obj in Item)
+            {
+                WriteObject(_serializer.Serialize(obj));
+            }
             return;
         }
     }
