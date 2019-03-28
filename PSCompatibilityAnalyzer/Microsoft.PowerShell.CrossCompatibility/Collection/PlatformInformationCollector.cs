@@ -109,7 +109,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             switch (osData.Family)
             {
                 case OSFamily.Windows:
-                    osData.ServicePack = Environment.OSVersion.ServicePack;
+                    if (!string.IsNullOrEmpty(Environment.OSVersion.ServicePack))
+                    {
+                        osData.ServicePack = Environment.OSVersion.ServicePack;
+                    }
                     osData.SkuId = GetSkuId();
                     break;
 
