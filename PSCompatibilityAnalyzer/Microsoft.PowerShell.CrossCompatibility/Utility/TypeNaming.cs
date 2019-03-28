@@ -96,7 +96,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             // Non-generic type names give their full names as something PowerShell can recognize
             if (!IsGeneric(type))
             {
-                return type.FullName;
+                return type.FullName ?? type.Name;
             }
 
             if (type.IsArray)
