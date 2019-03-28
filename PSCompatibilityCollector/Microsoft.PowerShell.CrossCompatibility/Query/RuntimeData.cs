@@ -36,7 +36,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             _modules = new Lazy<IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>>>(() => CreateModuleTable(runtimeData.Modules));
             _nonAliasCommands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateNonAliasCommandLookupTable(Modules));
             _aliases = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateAliasLookupTable(runtimeData.Modules, NonAliasCommands));
-            _commands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => new DualLookupTable<string, IReadOnlyList<CommandData>>(Aliases, NonAliasCommands));
+            _commands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => new DualLookupTable<string, IReadOnlyList<CommandData>>(NonAliasCommands, Aliases));
             _nativeCommands = new Lazy<NativeCommandLookupTable>(() => NativeCommandLookupTable.Create(runtimeData.NativeCommands));
         }
 

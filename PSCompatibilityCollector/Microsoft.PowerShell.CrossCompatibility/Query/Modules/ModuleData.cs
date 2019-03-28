@@ -81,7 +81,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
                 return null;
             }
 
-            var aliasTable = new Dictionary<string, IReadOnlyList<CommandData>>();
+            var aliasTable = new Dictionary<string, IReadOnlyList<CommandData>>(StringComparer.OrdinalIgnoreCase);
             foreach (KeyValuePair<string, string> alias in aliases)
             {
                 if (_parent.Aliases.TryGetValue(alias.Key, out IReadOnlyList<CommandData> aliasedCommands))
