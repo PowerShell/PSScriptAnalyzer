@@ -124,6 +124,40 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return osData;
         }
 
+        public IReadOnlyDictionary<string, string> GetLinuxReleaseInfo()
+        {
+            var dict = new Dictionary<string, string>();
+
+            foreach (string path in s_releaseInfoPaths)
+            {
+                try
+                {
+                    using (FileStream fileStream = File.OpenRead(path))
+                    using (var reader = new StreamReader(fileStream))
+                    {
+                        while (!reader.EndOfStream)
+                        {
+                            string line = reader.ReadLine();
+
+                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                            {
+                                continue;
+                            }
+
+                            string[] elements = line.Split('=');
+                            dict[elements[0]] = Dequote(elements[1]);
+                        }
+                    }
+                }
+                catch (IOException)
+                {
+                    // Do nothing - just continue
+                }
+            }
+
+            return dict;
+        }
+
         private OSFamily GetOSFamily()
         {
 #if CoreCLR
@@ -217,40 +251,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return "Win32NT";
         }
 
-        private IReadOnlyDictionary<string, string> GetLinuxReleaseInfo()
-        {
-            var dict = new Dictionary<string, string>();
-
-            foreach (string path in s_releaseInfoPaths)
-            {
-                try
-                {
-                    using (FileStream fileStream = File.OpenRead(path))
-                    using (var reader = new StreamReader(fileStream))
-                    {
-                        while (!reader.EndOfStream)
-                        {
-                            string line = reader.ReadLine();
-
-                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
-                            {
-                                continue;
-                            }
-
-                            string[] elements = line.Split('=');
-                            dict[elements[0]] = Dequote(elements[1]);
-                        }
-                    }
-                }
-                catch (IOException)
-                {
-                    // Do nothing - just continue
-                }
-            }
-
-            return dict;
-        }
-
         private static string Dequote(string s)
         {
             var sb = new StringBuilder(s.Length);
@@ -302,9 +302,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private static CimInstance GetWin32OSCimInstance()
         {
-            return CimSession.Create("localhost", new DComSessionOptions())
-                .QueryInstances("root\\cimv2", "WQL", "SELECT * FROM Win32_OperatingSystem")
-                .FirstOrDefault();
+            using (var cimSession = CimSession.Create("localhost", new DComSessionOptions()))
+            {
+                return cimSession.QueryInstances("root\\cimv2", "WQL", "SELECT * FROM Win32_OperatingSystem")
+                    .FirstOrDefault();
+            }
         }
 
         #region IDisposable Support

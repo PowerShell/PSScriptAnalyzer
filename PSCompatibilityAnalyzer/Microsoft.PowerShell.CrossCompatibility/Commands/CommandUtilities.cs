@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
@@ -20,6 +21,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
                 errorId,
                 errorCategory,
                 targetObject);
+        }
+
+        public static string GetNormalizedAbsolutePath(this PSCmdlet cmdlet, string path)
+        {
+            if (Path.IsPathRooted(path))
+            {
+                return path;
+            }
+
+            return cmdlet.SessionState.Path.GetUnresolvedProviderPathFromPSPath(path);
         }
     }
 }

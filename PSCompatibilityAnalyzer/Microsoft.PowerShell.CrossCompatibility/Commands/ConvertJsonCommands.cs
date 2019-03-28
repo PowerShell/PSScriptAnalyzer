@@ -54,9 +54,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
             {
                 foreach (string filePath in Path)
                 {
-                    string absolutePath = System.IO.Path.IsPathRooted(filePath)
-                        ? filePath
-                        : SessionState.Path.GetUnresolvedProviderPathFromPSPath(filePath);
+                    string absolutePath = this.GetNormalizedAbsolutePath(filePath);
                     WriteObject(_serializer.DeserializeFromFile(absolutePath));
                 }
                 return;
