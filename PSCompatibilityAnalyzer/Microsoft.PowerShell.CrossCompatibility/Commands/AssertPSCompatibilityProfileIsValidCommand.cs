@@ -33,7 +33,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
                 foreach (Exception error in errors)
                 {
                     // Writing errors will set $? = $false
-                    this.WriteExceptionAsError(error);
+                    this.WriteExceptionAsWarning(error);
                 }
             }
         }

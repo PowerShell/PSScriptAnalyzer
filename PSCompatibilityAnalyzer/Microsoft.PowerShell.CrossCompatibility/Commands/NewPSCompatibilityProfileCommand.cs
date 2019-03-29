@@ -94,7 +94,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
             // Report any problems we hit
             foreach (Exception e in errors)
             {
-                this.WriteExceptionAsError(e);
+                this.WriteExceptionAsWarning(e);
             }
 
             if (Validate)
@@ -104,7 +104,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
                 {
                     foreach (Exception validationError in validationErrors)
                     {
-                        this.WriteExceptionAsError(validationError);
+                        this.WriteExceptionAsWarning(validationError);
                     }
                 }
             }
