@@ -10,14 +10,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
 
         public const string MODULE_PREFIX = "PSCompatibility";
 
-        public static void WriteExceptionAsError(
+        public static void WriteExceptionAsWarning(
             this Cmdlet cmdlet,
             Exception exception,
             string errorId = COMPATIBILITY_ERROR_ID,
             ErrorCategory errorCategory = ErrorCategory.ReadError,
             object targetObject = null)
         {
-            cmdlet.WriteError(CreateCompatibilityErrorRecord(exception, errorId, errorCategory, targetObject));
+            cmdlet.WriteWarning(exception.ToString());
         }
 
         public static string GetNormalizedAbsolutePath(this PSCmdlet cmdlet, string path)
