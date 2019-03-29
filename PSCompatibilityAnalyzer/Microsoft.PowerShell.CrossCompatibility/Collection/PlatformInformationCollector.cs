@@ -6,10 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Management.Infrastructure;
-using Microsoft.Management.Infrastructure.Options;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
+using Microsoft.PowerShell.CrossCompatibility.Query;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
+using Microsoft.Win32;
 using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
@@ -26,7 +26,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private readonly Lazy<PowerShellVersion> _lazyPSVersion;
 
-        private readonly Lazy<CimInstance> _lazyWin32OperatingSystem;
+        private readonly Lazy<CurrentVersionInfo> _lazyCurrentVersionInfo;
 
         private SMA.PowerShell _pwsh;
 
@@ -35,14 +35,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             _pwsh = pwsh;
             _lazyPSVersionTable = new Lazy<Hashtable>(() => _pwsh.AddScript("$PSVersionTable").InvokeAndClear<Hashtable>().FirstOrDefault());
             _lazyPSVersion = new Lazy<PowerShellVersion>(() => PowerShellVersion.Create(PSVersionTable["PSVersion"]));
-            _lazyWin32OperatingSystem = new Lazy<CimInstance>(() => GetWin32OSCimInstance());
+            _lazyCurrentVersionInfo = new Lazy<CurrentVersionInfo>(() => ReadCurrentVersionFromRegistry());
         }
 
         private Hashtable PSVersionTable => _lazyPSVersionTable.Value;
 
-        internal PowerShellVersion PSVersion => _lazyPSVersion.Value;
+        private CurrentVersionInfo RegistryCurrentVersionInfo => _lazyCurrentVersionInfo.Value;
 
-        private CimInstance Win32_OperatingSystem => _lazyWin32OperatingSystem.Value;
+        internal PowerShellVersion PSVersion => _lazyPSVersion.Value;
 
         public PlatformData GetPlatformData()
         {
@@ -220,17 +220,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private uint GetSkuId()
         {
-            return (uint)Win32_OperatingSystem.CimInstanceProperties["OperatingSystemSku"].Value;
+            return (uint)Enum.Parse(typeof(WindowsSku), RegistryCurrentVersionInfo.EditionID);
         }
 
         private string GetOSName()
         {
-            if (PSVersion.Major >= 6)
+#if CoreCLR
+            if (PSVersion.Major >= 6 && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return (string)PSVersionTable["OS"];
             }
+#endif
 
-            return ((string)Win32_OperatingSystem.CimInstanceProperties["Name"].Value).Split('|')[0];
+            return RegistryCurrentVersionInfo.ProductName;
         }
 
         private string GetOSVersion()
@@ -246,12 +248,24 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private string GetOSPlatform()
         {
+#if CoreCLR
             if (PSVersion.Major >= 6)
             {
                 return (string)PSVersionTable["Platform"];
             }
+#endif
 
             return "Win32NT";
+        }
+
+        private static CurrentVersionInfo ReadCurrentVersionFromRegistry()
+        {
+            using (RegistryKey currentVersion = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+            {
+                return new CurrentVersionInfo(
+                    editionId: (string)currentVersion.GetValue("EditionID"),
+                    productName: (string)currentVersion.GetValue("ProductName"));
+            }
         }
 
         private static string Dequote(string s)
@@ -303,15 +317,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return sb.ToString();
         }
 
-        private static CimInstance GetWin32OSCimInstance()
-        {
-            using (var cimSession = CimSession.Create("localhost", new DComSessionOptions()))
-            {
-                return cimSession.QueryInstances("root\\cimv2", "WQL", "SELECT * FROM Win32_OperatingSystem")
-                    .FirstOrDefault();
-            }
-        }
-
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
@@ -341,6 +346,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             None = 0,
             Single = 1,
             Double = 2,
+        }
+
+        private class CurrentVersionInfo
+        {
+            public CurrentVersionInfo(string editionId, string productName)
+            {
+                EditionID = editionId;
+                ProductName = productName;
+            }
+
+            public string EditionID { get; }
+
+            public string ProductName { get; }
         }
     }
 }

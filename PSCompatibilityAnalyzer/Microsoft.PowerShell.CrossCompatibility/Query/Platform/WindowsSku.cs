@@ -9,7 +9,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// Enumeration of Windows OS SKUs corresponding
     /// to GetProfileInfo() from WinNT.h.
     /// </summary>
-    public enum WindowsSku
+    public enum WindowsSku : uint
     {
         Undefined = 0,
 
@@ -20,6 +20,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         HomePremium = 3,
 
         Enterprise = 4,
+
+        HomeBasicN = 5,
 
         Business = 6,
 
@@ -39,7 +41,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         EnterpriseServerCore = 14,
 
+        EnterpriseServerIa64 = 15,
+
+        BusinessN = 16,
+
         WebServer = 17,
+
+        ClusterServer = 18,
 
         HomeServer = 19,
 
@@ -55,11 +63,25 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         SmallbusinessServerPremium = 25,
 
+        HomePremiumN = 26,
+
         EnterpriseN = 27,
 
         UltimateN = 28,
 
         WebServerCore = 29,
+
+        MediumbusinessServerManagement = 30,
+
+        MediumbusinessServerSecurity = 31,
+
+        MediumbusinessServerMessaging = 32,
+
+        ServerFoundation = 33,
+
+        HomePremiumServer = 34,
+
+        ServerForSmallbusinessV = 35,
 
         StandardServerV = 36,
 
@@ -83,13 +105,73 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         StorageEnterpriseServerCore = 46,
 
+        StarterN = 47,
+
+        Professional = 48,
+
+        ProfessionalN = 49,
+
         SbSolutionServer = 50,
+
+        ServerForSbSolutions = 51,
+
+        StandardServerSolutions = 52,
+
+        StandardServerSolutionsCore = 53,
+
+        SbSolutionServerEm = 54,
+
+        ServerForSbSolutionsEm = 55,
+
+        SolutionEmbeddedserver = 56,
+
+        EssentialbusinessServerMgmt = 59,
+
+        EssentialbusinessServerAddl = 60,
+
+        EssentialbusinessServerMgmtsvc = 61,
+
+        EssentialbusinessServerAddlsvc = 62,
 
         SmallbusinessServerPremiumCore = 63,
 
         ClusterServerV = 64,
 
+        StarterE = 66,
+
+        HomeBasicE = 67,
+
+        HomePremiumE = 68,
+
+        ProfessionalE = 69,
+
+        EnterpriseE = 70,
+
+        UltimateE = 71,
+
+        EnterpriseEvaluation = 72,
+
+        MultipointStandardServer = 76,
+
+        MultipointPremiumServer = 77,
+
+        StandardEvaluationServer = 79,
+
+        AtacenterEvaluationServer = 80,
+
+        EnterpriseNEvaluation = 84,
+
+        StorageWorkgroupEvaluationServer = 95,
+
+        StorageStandardEvaluationServer = 96,
+
         CoreArm = 97,
+
+        CoreN = 98,
+
+        CoreCountryspecific = 99,
+
+        CoreSinglelanguage = 100,
 
         Core = 101,
 
@@ -97,15 +179,39 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
         MobileCore = 104,
 
+        Education = 121,
+
+        EducationN = 122,
+
         Iotuap = 123,
+
+        EnterpriseS = 125,
+
+        EnterpriseSN = 126,
+
+        EnterpriseSEvaluation = 129,
+
+        EnterpriseSNEvaluation = 130,
+
+        Iotuapcommercial = 131,
+
+        MobileEnterprise = 133,
 
         DatacenterNanoServer = 143,
 
         StandardNanoServer = 144,
 
+        DatacenterAServerCore = 145,
+
+        StandardAServerCore = 146,
+
         DatacenterWsServerCore = 147,
 
         StandardWsServerCore = 148,
+
+        ProWorkstation = 161,
+
+        ProWorkstationN = 162,
     }
 
     /// <summary>
