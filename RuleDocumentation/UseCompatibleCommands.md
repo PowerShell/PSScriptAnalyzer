@@ -73,7 +73,7 @@ An example configuration might look like:
 @{
     Rules = @{
         UseCompatibleCommmands = @{
-            Enabled = $true
+            Enable = $true
             TargetProfiles = @(
                 'ubuntu_x64_18.04_6.1.2_x64_4.0.30319.42000_core'
                 'win-4_x64_10.0.18312.0_6.1.1_x64_4.0.30319.42000_framework'
