@@ -78,15 +78,15 @@ Exit
 - Windows PowerShell 3.0 or greater
 - PowerShell Core 6.1.0 or greater on Windows/Linux/macOS
 - Docker (tested only using Docker Desktop on Windows 10 1809)
-  - PowerShell 6 Windows Image tags from [mcr.microsoft.com/powershell](https://hub.docker.com/r/microsoft/powershell) where the image has a PowerShell version `>= 6.1`. Example (1 warning gets produced by `Save-Module` but can be ignored):
+  - PowerShell 6 Windows Image tags from [mcr.microsoft.com/powershell](https://hub.docker.com/r/microsoft/powershell). Example (1 warning gets produced by `Save-Module` but can be ignored):
 
     ```docker run -it mcr.microsoft.com/powershell:nanoserver pwsh -command "Save-Module -Name PSScriptAnalyzer -Path .; Import-Module .\PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
   - PowerShell 5.1 (Windows): Only the [mcr.microsoft.com/windowsservercore](https://hub.docker.com/r/microsoft/windowsservercore/) images work but not the [microsoft/nanoserver](https://hub.docker.com/r/microsoft/windowsservercore/) images because they contain a Core version of it. Example:
 
-    ```docker run -it microsoft/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
-  - Linux tags from  [microsoft/powershell](https://hub.docker.com/r/microsoft/powershell/): `latest`, `ubuntu16.04`, `ubuntu14.04` and `centos7`. - Example:
+    ```docker run -it mcr.microsoft.com/windowsservercore powershell -command "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+  - Linux tags from  [mcr.microsoft.com/powershell](https://hub.docker.com/r/microsoft/powershell/). - Example:
 
-     ```docker run -it microsoft/powershell:latest pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
+     ```docker run -it mcr.microsoft.com/powershell pwsh -c "Install-Module PSScriptAnalyzer -Force; Invoke-ScriptAnalyzer -ScriptDefinition 'gci'"```
 
 ### From Chocolatey
 
