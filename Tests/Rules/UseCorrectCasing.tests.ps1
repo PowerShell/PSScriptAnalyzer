@@ -11,6 +11,15 @@ Describe "UseCorrectCasing" {
         Invoke-Formatter '"$(get-childitem)"' | Should -Be '"$(get-childitem)"'
     }
 
+    It "Corrects alias correctly" {
+        Invoke-Formatter 'Gci' | Should -Be 'gci'
+        Invoke-Formatter '?' | Should -Be '?'
+    }
+
+    It "Corrects applications on Windows to not end in .exe" -Skip:($IsLinux -or $IsMacOS) {
+        Invoke-Formatter 'Cmd' | Should -Be 'cmd'
+    }
+
     It "corrects case of script function" {
         function Invoke-DummyFunction
         {
