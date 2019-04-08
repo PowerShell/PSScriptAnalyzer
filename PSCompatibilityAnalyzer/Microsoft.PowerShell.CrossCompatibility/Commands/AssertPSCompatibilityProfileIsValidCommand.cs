@@ -9,11 +9,18 @@ using Microsoft.PowerShell.CrossCompatibility.Utility;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
 {
+    /// <summary>
+    /// Class defining the Assert-PSCompatibilityProfileIsValid cmdlet.
+    /// </summary>
     [Cmdlet(VerbsLifecycle.Assert, CommandUtilities.MODULE_PREFIX + "ProfileIsValid")]
     public class AssertPSCompatibilityProfileIsValid : Cmdlet
     {
         private ProfileValidator _validator;
 
+        /// <summary>
+        /// The compatibility profile data object to validate.
+        /// </summary>
+        /// <value></value>
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [ValidateNotNull]
         public CompatibilityProfileData[] CompatibilityProfile { get; set; }

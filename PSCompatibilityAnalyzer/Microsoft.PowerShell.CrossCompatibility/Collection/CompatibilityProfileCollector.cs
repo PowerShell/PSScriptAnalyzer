@@ -103,11 +103,23 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
         }
 
+        /// <summary>
+        /// Gets a full PowerShell compatibility profile from the current session.
+        /// </summary>
+        /// <param name="errors">Any errors encountered while collecting the profile. May be null.</param>
+        /// <returns>A PowerShell compatibility profile for the current session.</returns>
         public CompatibilityProfileData GetCompatibilityData(out IEnumerable<Exception> errors)
         {
             return GetCompatibilityData(platformId: null, errors: out errors);
         }
 
+        /// <summary>
+        /// Get a PowerShell compatibility profile and names it using the platform ID given.
+        /// If the ID is null, uses the canonical platform name.
+        /// </summary>
+        /// <param name="platformId">The platform ID to use for the profile.</param>
+        /// <param name="errors">Errors encountered collecting the profile, if any. May be null.</param>
+        /// <returns>The compatibility profile for the running PowerShell session.</returns>
         public CompatibilityProfileData GetCompatibilityData(string platformId, out IEnumerable<Exception> errors)
         {
             PlatformData platformData = _platformInfoCollector.GetPlatformData();
@@ -120,6 +132,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
+        /// <summary>
+        /// Get PowerShell runtime compatibility data.
+        /// </summary>
+        /// <param name="errors">Any errors encountered during collection. May be null.</param>
+        /// <returns>A runtime compatibility profile object.</returns>
         public RuntimeData GetRuntimeData(out IEnumerable<Exception> errors)
         {
             // Need to ensure modules are imported before types are collected
@@ -142,6 +159,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return runtimeData;
         }
 
+        /// <summary>
+        /// Gets common PowerShell feature information, such as common parameters and parameter aliases.
+        /// </summary>
+        /// <returns>An object containing common feature compatibility information.</returns>
         public CommonPowerShellData GetCommonPowerShellData()
         {
             CmdletInfo gcmInfo = _pwsh.AddCommand(PowerShellDataCollector.GcmInfo)
@@ -170,6 +191,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
+        /// <summary>
+        /// Gets compatibility information for native commands available in the current session.
+        /// </summary>
+        /// <returns>An enumeration of native commands available in the current session.</returns>
         public IEnumerable<KeyValuePair<string, NativeCommandData>> GetNativeCommandData()
         {
             IEnumerable<ApplicationInfo> commands = _pwsh.AddCommand("Get-Command")
@@ -192,6 +217,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
         }
 
+        /// <summary>
+        /// Assembles the given enumeration of native command data into a lookup table.
+        /// </summary>
+        /// <param name="commands">The native command information to assemble.</param>
+        /// <returns>A case-insensitive dictionary of all native commands.</returns>
         public JsonCaseInsensitiveStringDictionary<NativeCommandData[]> AssembleNativeCommands(
             IEnumerable<KeyValuePair<string, NativeCommandData>> commands)
         {

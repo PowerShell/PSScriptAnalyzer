@@ -11,13 +11,29 @@ using Microsoft.PowerShell.CrossCompatibility.Query.Types;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Utility
 {
+    /// <summary>
+    /// Object that takes a PowerShell compatibility profile and validates it.
+    /// </summary>
     public abstract class ProfileValidator
     {
+        /// <summary>
+        /// Check if a PowerShell compatibility profile is valid.
+        /// </summary>
+        /// <param name="profileData">The compatibility profile to check.</param>
+        /// <param name="validationErrors">All errors encountered with the validation. May be null when true is returned.</param>
+        /// <returns>True if the profile is valid, false otherwise.</returns>
         public abstract bool IsProfileValid(Data.CompatibilityProfileData profileData, out IEnumerable<Exception> validationErrors);
 
+        /// <summary>
+        /// Resets the state of the validator so it is ready for another validation.
+        /// May be implemented as a no-op with stateless validators.
+        /// </summary>
         public abstract void Reset();
     }
 
+    /// <summary>
+    /// A simple profile validator that just checks that common keys and values are present.
+    /// </summary>
     internal class QuickCheckValidator : ProfileValidator
     {
         private static IReadOnlyCollection<string> s_commonParameters = new []
@@ -169,6 +185,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private Data.Platform.DotnetRuntime _dotNetEdition;
 
+        /// <summary>
+        /// Create a new quick check validator.
+        /// </summary>
         public QuickCheckValidator()
         {
             _errAcc = new ValidationErrorAccumulator();
@@ -176,6 +195,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             _dotNetEdition = Data.Platform.DotnetRuntime.Other;
         }
 
+        /// <inheritdoc/>
         public override bool IsProfileValid(Data.CompatibilityProfileData profileData, out IEnumerable<Exception> errors)
         {
             CompatibilityProfileData queryableProfile;
@@ -218,6 +238,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             return true;
         }
 
+        /// <inheritdoc/>
         public override void Reset()
         {
             _errAcc.Clear();
@@ -542,6 +563,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             }
         }
 
+        /// <summary>
+        /// Class to accumuate validator errors.
+        /// </summary>
         private class ValidationErrorAccumulator
         {
             private List<Exception> _errors;

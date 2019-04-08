@@ -9,10 +9,18 @@ using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
 {
+    /// <summary>
+    /// Class defining the Get-PSCompatibilityPlatformName cmdlet.
+    /// Gets the canonical profile ID of the current platform PowerShell is executing on.
+    /// </summary>
     [Cmdlet(VerbsCommon.Get, CommandUtilities.MODULE_PREFIX + "PlatformName")]
     public class GetPSCompatibilityPlatformNameCommand : Cmdlet
     {
-        [Parameter(ValueFromPipeline = true)]
+        /// <summary>
+        /// The platform data object to generate the platform name from.
+        /// If this is not set, it is generated from the current platform.
+        /// </summary>
+        [Parameter(Position = 0, ValueFromPipeline = true)]
         public PlatformData[] PlatformData { get; set; }
 
         protected override void BeginProcessing()

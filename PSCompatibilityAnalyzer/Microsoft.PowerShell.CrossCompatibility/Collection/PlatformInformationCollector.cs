@@ -18,8 +18,12 @@ using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
+    /// <summary>
+    /// Collects information about the current platform.
+    /// </summary>
     public class PlatformInformationCollector : IDisposable
     {
+        // Paths on Linux to search for key/value-paired information about the OS.
         private static readonly IReadOnlyCollection<string> s_releaseInfoPaths = new string[]
         {
             "/etc/lsb-release",
@@ -36,6 +40,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private SMA.PowerShell _pwsh;
 
+        /// <summary>
+        /// Create a new platform information collector around the given PowerShell session.
+        /// </summary>
+        /// <param name="pwsh">The PowerShell session to gather platform information from.</param>
         public PlatformInformationCollector(SMA.PowerShell pwsh)
         {
             _pwsh = pwsh;
@@ -51,6 +59,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         internal PowerShellVersion PSVersion => _lazyPSVersion.Value;
 
+        /// <summary>
+        /// Gets all platform information about the current platform.
+        /// </summary>
+        /// <returns>A platform data object with information about the platform.</returns>
         public PlatformData GetPlatformData()
         {
             return new PlatformData()
@@ -61,6 +73,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
+        /// <summary>
+        /// Gets data on the .NET runtime this session is running on.
+        /// </summary>
+        /// <returns>A .NET data object about the current session.</returns>
         public DotnetData GetDotNetData()
         {
 #if !CoreCLR
@@ -80,6 +96,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 #endif
         }
 
+        /// <summary>
+        /// Get metadata about the current PowerShell runtime.
+        /// </summary>
+        /// <returns>A PowerShellData object detailing the current PowerShell runtime.</returns>
         public PowerShellData GetPowerShellData()
         {
             var psData = new PowerShellData()
@@ -102,6 +122,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return psData;
         }
 
+        /// <summary>
+        /// Get information about the current operating system.
+        /// </summary>
+        /// <returns>A data object with metadata about the current operating system.</returns>
         public OperatingSystemData GetOperatingSystemData()
         {
             var osData = new OperatingSystemData()
@@ -134,6 +158,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return osData;
         }
 
+        /// <summary>
+        /// Collect all release info files into a lookup table in memory.
+        /// Overrides pre-existing keys if there are duplicates.
+        /// </summary>
+        /// <returns>A dictionary with the keys and values of all the release info files on the machine.</returns>
         public IReadOnlyDictionary<string, string> GetLinuxReleaseInfo()
         {
             var dict = new Dictionary<string, string>();
@@ -188,6 +217,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
             return OSFamily.Other;
 #else
+            // .NET Framework only runs on Windows
             return OSFamily.Windows;
 #endif
         }
@@ -195,8 +225,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         private Architecture GetProcessArchitecture()
         {
 #if CoreCLR
+            // Our Architecture enum is deliberately value-compatible
             return (Architecture)RuntimeInformation.ProcessArchitecture;
 #else
+            // We assume .NET Framework must be on an Intel architecture
+            // net452 does not reliably have the above API
             return Environment.Is64BitProcess
                 ? Architecture.X64
                 : Architecture.X86;
@@ -206,8 +239,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         private Architecture GetOSArchitecture()
         {
 #if CoreCLR
+            // Our Architecture enum is deliberately value-compatible
             return (Architecture)RuntimeInformation.OSArchitecture;
 #else
+            // We assume .NET Framework must be on an Intel architecture
+            // net452 does not reliably have the above API
             return Environment.Is64BitOperatingSystem
                 ? Architecture.X64
                 : Architecture.X86;
@@ -217,6 +253,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         private DotnetRuntime GetDotnetRuntime()
         {
 #if CoreCLR
+            // Our CoreCLR is actuall .NET Standard, so we could be loaded into net47
             return RuntimeInformation.FrameworkDescription.StartsWith(".NET Core")
                 ? DotnetRuntime.Core
                 : DotnetRuntime.Framework;
@@ -225,6 +262,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 #endif
         }
 
+        /// <summary>
+        /// Get the Windows SKU ID of the current PowerShell session.
+        /// </summary>
+        /// <returns>An unsigned 32-bit integer representing the SKU of the current Windows OS.</returns>
         private uint GetSkuId()
         {
             // If we have a cached value here, try this first
@@ -236,25 +277,27 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
 
             // If we don't have to deal with service pack details, try a GetProductInfo P/Invoke next
-            if (string.IsNullOrEmpty(Environment.OSVersion.ServicePack) && GetProductInfo(
-                Environment.OSVersion.Version.Major,
-                Environment.OSVersion.Version.Minor,
-                0,
-                0,
-                out uint skuId)
+            if (string.IsNullOrEmpty(Environment.OSVersion.ServicePack)
+                && GetProductInfo(
+                    Environment.OSVersion.Version.Major,
+                    Environment.OSVersion.Version.Minor,
+                    0,
+                    0,
+                    out uint skuId)
                 && skuId != 0)
             {
                 return skuId;
             }
 
             // Try looking in the registry
+            // The SKU enum we define matches up all the names to the IDs
             if (Enum.TryParse(RegistryCurrentVersionInfo.EditionID, out WindowsSku sku)
                 && sku != WindowsSku.Undefined)
             {
                 return (uint)sku;
             }
 
-            // Try definitely running CIM
+            // Finally try CIM
             if (_lazyWin32OperatingSystemInfo.Value != null
                 && _lazyWin32OperatingSystemInfo.Value.SkuID != 0)
             {
@@ -268,20 +311,24 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         private string GetOSName()
         {
 #if CoreCLR
-            return (string)PSVersionTable["OS"];
-#else
+            // This key was introduced in PowerShell 6
+            if (PSVersion.Major >= 6)
+            {
+                return (string)PSVersionTable["OS"];
+            }
+#endif
             if (_lazyWin32OperatingSystemInfo.IsValueCreated)
             {
                 return _lazyWin32OperatingSystemInfo.Value.OSName;
             }
 
             return RegistryCurrentVersionInfo.ProductName;
-#endif
         }
 
         private string GetOSVersion()
         {
 #if CoreCLR
+            // On Linux, we want to record the kernel branch, since this can differentiate Azure
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 return File.ReadAllText("/proc/sys/kernel/osrelease");
@@ -298,7 +345,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 return (string)PSVersionTable["Platform"];
             }
 #endif
-
             return "Win32NT";
         }
 

@@ -7,15 +7,28 @@ using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
 {
+    /// <summary>
+    /// Class defining the Get-PSCompatibilityPlatformData cmdlet.
+    /// Assembles an object describing the current platform PowerShell is running on.
+    /// </summary>
     [Cmdlet(VerbsCommon.Get, CommandUtilities.MODULE_PREFIX + "PlatformData")]
     public class GetPSCompatibilityPlatformDataCommand : Cmdlet
     {
+        /// <summary>
+        /// The PowerShell data object to use. If not set, this is generated.
+        /// </summary>
         [Parameter]
         public PowerShellData PowerShell { get; set; }
 
+        /// <summary>
+        /// The operating system data object to use. If not set, this is generated. 
+        /// </summary>
         [Parameter]
         public OperatingSystemData OperatingSystem { get; set; }
 
+        /// <summary>
+        /// The .NET data object to use. If not set, this is generated.
+        /// </summary>
         [Parameter]
         public DotnetData DotNet { get; set; }
 

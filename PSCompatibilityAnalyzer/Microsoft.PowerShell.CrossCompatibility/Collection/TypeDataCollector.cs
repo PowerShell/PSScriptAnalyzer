@@ -25,16 +25,28 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
     /// </summary>
     public class TypeDataCollector
     {
+        /// <summary>
+        /// Builds a TypeDataCollector objects using the configured settings.
+        /// </summary>
         public class Builder
         {
             private IReadOnlyCollection<string> _excludedAssemblyPathPrefixes;
 
+            /// <summary>
+            /// Exclude assemblies on paths starting with the given prefixes when collecting
+            /// .NET type information.
+            /// </summary>
+            /// <param name="assemblyPrefixes">The path prefixes to exclude assemblies with.</param>
             public Builder ExcludedAssemblyPathPrefixes(IReadOnlyCollection<string> assemblyPrefixes)
             {
                 _excludedAssemblyPathPrefixes = assemblyPrefixes;
                 return this;
             }
 
+            /// <summary>
+            /// Build the configured TypeDataCollector object.
+            /// </summary>
+            /// <returns>The constructed TypeDataCollector object.</returns>
             public TypeDataCollector Build()
             {
                 return new TypeDataCollector(_excludedAssemblyPathPrefixes);
@@ -56,6 +68,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             _excludedAssemblyPathPrefixes = excludedAssemblyPathPrefixes;
         }
 
+        /// <summary>
+        /// Get .NET type data from the current session.
+        /// </summary>
+        /// <param name="errors">An enumeration of any errors encountered.</param>
+        /// <returns>A data object describing the assemblies and PowerShell type accelerators available.</returns>
         public AvailableTypeData GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> errors)
         {
             IReadOnlyDictionary<string, Type> typeAccelerators = GetTypeAccelerators();
@@ -64,6 +81,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return AssembleAvailableTypes(loadedAssemblies, typeAccelerators, out errors);
         }
 
+        /// <summary>
+        /// Get the lookup table of PowerShell type accelerators in the current session.
+        /// </summary>
+        /// <returns></returns>
         public IReadOnlyDictionary<string, Type> GetTypeAccelerators()
         {
             return (Dictionary<string, Type>)typeof(PSObject).Assembly

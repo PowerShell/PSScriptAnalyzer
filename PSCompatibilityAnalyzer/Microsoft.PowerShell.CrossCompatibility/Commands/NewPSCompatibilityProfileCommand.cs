@@ -14,6 +14,7 @@ using SMA = System.Management.Automation;
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
 {
     /// <summary>
+    /// Class defining the New-PSCompatibilityProfile cmdlet.
     /// Creates a new PowerShell compatibility profile for the current PowerShell session
     /// </summary>
     [Cmdlet(VerbsCommon.New, CommandUtilities.MODULE_PREFIX + "Profile", DefaultParameterSetName = "OutFile")]

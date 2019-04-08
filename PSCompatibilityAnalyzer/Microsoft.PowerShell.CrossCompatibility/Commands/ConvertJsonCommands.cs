@@ -10,14 +10,24 @@ using Newtonsoft.Json;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
 {
+    /// <summary>
+    /// Class defining the ConvertTo-PSCompatibilityJson cmdlet.
+    /// Turns given .NET objects into JSON strings.
+    /// </summary>
     [Cmdlet(VerbsData.ConvertTo, CommandUtilities.MODULE_PREFIX + "Json")]
     public class ConvertToPSCompatibilityJsonCommand : PSCmdlet
     {
         private JsonProfileSerializer _serializer;
 
+        /// <summary>
+        /// The object to convert to JSON.
+        /// </summary>
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         public object[] Item { get; set; }
 
+        /// <summary>
+        /// If set, do not include whitespace like indentation or newlines in the output JSON.
+        /// </summary>
         [Parameter]
         [Alias(new [] { "Compress" })]
         public SwitchParameter NoWhitespace { get; set; }
@@ -37,14 +47,24 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         }
     }
 
+    /// <summary>
+    /// Class defining the ConvertFrom-PSCompatibilityJson JSON.
+    /// Turns given JSON into .NET compatibility profile objects.
+    /// </summary>
     [Cmdlet(VerbsData.ConvertFrom, CommandUtilities.MODULE_PREFIX + "Json")]
     public class ConvertFromPSCompatibilityJsonCommand : PSCmdlet
     {
         private JsonProfileSerializer _serializer;
 
+        /// <summary>
+        /// The source of the JSON to convert from. Can be a JSON string, a FileInfo or a TextReader object.
+        /// </summary>
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "JsonSource")]
         public object[] JsonSource { get; set; }
 
+        /// <summary>
+        /// The path of a file to convert JSON from.
+        /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "Path")]
         [ValidateNotNullOrEmpty()]
         public string[] Path { get; set; }
