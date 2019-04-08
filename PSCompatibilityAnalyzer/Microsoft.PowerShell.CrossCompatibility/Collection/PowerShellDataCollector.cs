@@ -36,6 +36,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private const string CORE_MODULE_NAME = "Microsoft.PowerShell.Core";
 
+        private const string THIS_MODULE_NAME = "PSCompatibilityAnalyzer";
+
         private static readonly Regex s_typeDataRegex = new Regex("Error in TypeData \"([A-Za-z.]+)\"", RegexOptions.Compiled);
 
         private static readonly CmdletInfo s_gmoInfo = new CmdletInfo("Get-Module", typeof(GetModuleCommand));
@@ -103,6 +105,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var errs = new List<Exception>();
             foreach (PSModuleInfo module in modules)
             {
+                if (string.IsNullOrEmpty(module.Name))
+                {
+                    continue;
+                }
+
+                if (module.Name.Equals(THIS_MODULE_NAME, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 if (_excludedModulePrefixes != null && IsExcludedPath(module.Path))
                 {
                     continue;
