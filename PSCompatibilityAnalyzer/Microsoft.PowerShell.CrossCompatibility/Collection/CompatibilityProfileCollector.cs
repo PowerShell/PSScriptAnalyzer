@@ -13,32 +13,54 @@ using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
+    /// <summary>
+    /// Collects compatibility information for PowerShell on the current platform.
+    /// </summary>
     public class CompatibilityProfileCollector : IDisposable
     {
+        /// <summary>
+        /// Builds a compatibility profiler collector in a configurable way.
+        /// </summary>
         public class Builder
         {
             private PowerShellDataCollector.Builder _pwshDataCollectorBuilder;
 
             private TypeDataCollector.Builder _typeDataColletorBuilder;
 
+            /// <summary>
+            /// Create a new builder instance.
+            /// </summary>
             public Builder()
             {
                 _pwshDataCollectorBuilder = new PowerShellDataCollector.Builder();
                 _typeDataColletorBuilder = new TypeDataCollector.Builder();
             }
 
+            /// <summary>
+            /// Add path prefixes of modules to exclude.
+            /// </summary>
+            /// <param name="modulePrefixes">Path prefixes of modules to exclude.</param>
             public Builder ExcludedModulePathPrefixes(IReadOnlyCollection<string> modulePrefixes)
             {
                 _pwshDataCollectorBuilder.ExcludedModulePathPrefixes(modulePrefixes);
                 return this;
             }
 
+            /// <summary>
+            /// Add path prefixes of assemblies to exclude.
+            /// </summary>
+            /// <param name="assemblyPrefixes">Path prefixes of assemblies to exclude.</param>
             public Builder ExcludeAssemblyPathPrefixes(IReadOnlyCollection<string> assemblyPrefixes)
             {
                 _typeDataColletorBuilder.ExcludedAssemblyPathPrefixes(assemblyPrefixes);
                 return this;
             }
 
+            /// <summary>
+            /// Build a new PowerShell compatibility profile collector around a PowerShell session.
+            /// </summary>
+            /// <param name="pwsh">The PowerShell wrapper to provide PowerShell functionality from.</param>
+            /// <returns>A new compatibility profile collector for profiling with.</returns>
             public CompatibilityProfileCollector Build(SMA.PowerShell pwsh)
             {
                 var platformInfoCollector = new PlatformInformationCollector(pwsh);

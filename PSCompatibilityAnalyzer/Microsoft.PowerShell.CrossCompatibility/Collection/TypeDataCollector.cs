@@ -16,6 +16,7 @@ using Microsoft.PowerShell.CrossCompatibility.Utility;
 
 using SMA = System.Management.Automation;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
@@ -135,7 +136,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                         errAcc.Add(new CompatibilityAnalysisException($"Found duplicate assemblies with name {asmData.Key}. Kept the first one.", e));
                     }
                 }
-                catch (ReflectionTypeLoadException e)
+                catch (Exception e) when (e is ReflectionTypeLoadException || e is FileNotFoundException)
                 {
                     errAcc.Add(new CompatibilityAnalysisException($"Failed to load assembly '{asm.GetName().FullName}'", e));
                 }
@@ -168,7 +169,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
             Type[] types = asm.GetTypes();
             JsonDictionary<string, JsonDictionary<string, TypeData>> namespacedTypes = null;
-            if (types.Any())
+            if (types.Length > 0)
             {
                 namespacedTypes = new JsonDictionary<string, JsonDictionary<string, TypeData>>();
                 foreach (Type type in asm.GetTypes())
@@ -187,7 +188,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                         namespacedTypes.Add(typeNamespace, typeDictionary);
                     }
 
-                    TypeData typeData = AssembleType(type);
+                    TypeData typeData;
+                    try
+                    {
+                        typeData = AssembleType(type);
+                    }
+                    catch (Exception e) when (e is ReflectionTypeLoadException || e is FileNotFoundException)
+                    {
+                        continue;
+                    }
 
                     typeDictionary[type.Name] = typeData;
                 }
@@ -196,7 +205,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var asmData = new AssemblyData()
             {
                 AssemblyName = asmNameData,
-                Types = namespacedTypes
+                Types = namespacedTypes.Count > 0 ? namespacedTypes : null,
             };
 
             return new KeyValuePair<string, AssemblyData>(asmName.Name, asmData);

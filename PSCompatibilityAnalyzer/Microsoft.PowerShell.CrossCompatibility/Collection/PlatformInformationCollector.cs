@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Management.Infrastructure;
 using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 using Microsoft.PowerShell.CrossCompatibility.Query;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
@@ -28,6 +29,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private readonly Lazy<CurrentVersionInfo> _lazyCurrentVersionInfo;
 
+        private readonly Lazy<Win32OSCimInfo> _lazyWin32OperatingSystemInfo;
+
         private SMA.PowerShell _pwsh;
 
         public PlatformInformationCollector(SMA.PowerShell pwsh)
@@ -36,6 +39,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             _lazyPSVersionTable = new Lazy<Hashtable>(() => _pwsh.AddScript("$PSVersionTable").InvokeAndClear<Hashtable>().FirstOrDefault());
             _lazyPSVersion = new Lazy<PowerShellVersion>(() => PowerShellVersion.Create(PSVersionTable["PSVersion"]));
             _lazyCurrentVersionInfo = new Lazy<CurrentVersionInfo>(() => ReadCurrentVersionFromRegistry());
+            _lazyWin32OperatingSystemInfo = new Lazy<Win32OSCimInfo>(() => GetWin32OperatingSystemInfo());
         }
 
         private Hashtable PSVersionTable => _lazyPSVersionTable.Value;
@@ -220,19 +224,56 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private uint GetSkuId()
         {
-            return (uint)Enum.Parse(typeof(WindowsSku), RegistryCurrentVersionInfo.EditionID);
+            // If we have a cached value here, try this first
+            if (_lazyWin32OperatingSystemInfo.IsValueCreated
+                && _lazyWin32OperatingSystemInfo.Value != null
+                && _lazyWin32OperatingSystemInfo.Value.SkuID != 0)
+            {
+                return _lazyWin32OperatingSystemInfo.Value.SkuID;
+            }
+
+            // If we don't have to deal with service pack details, try a GetProductInfo P/Invoke next
+            if (string.IsNullOrEmpty(Environment.OSVersion.ServicePack) && GetProductInfo(
+                Environment.OSVersion.Version.Major,
+                Environment.OSVersion.Version.Minor,
+                0,
+                0,
+                out uint skuId)
+                && skuId != 0)
+            {
+                return skuId;
+            }
+
+            // Try looking in the registry
+            if (Enum.TryParse(RegistryCurrentVersionInfo.EditionID, out WindowsSku sku)
+                && sku != WindowsSku.Undefined)
+            {
+                return (uint)sku;
+            }
+
+            // Try definitely running CIM
+            if (_lazyWin32OperatingSystemInfo.Value != null
+                && _lazyWin32OperatingSystemInfo.Value.SkuID != 0)
+            {
+                return _lazyWin32OperatingSystemInfo.Value.SkuID;
+            }
+
+            // Admit defeat
+            return (uint)WindowsSku.Undefined;
         }
 
         private string GetOSName()
         {
 #if CoreCLR
-            if (PSVersion.Major >= 6 && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return (string)PSVersionTable["OS"];
+#else
+            if (_lazyWin32OperatingSystemInfo.IsValueCreated)
             {
-                return (string)PSVersionTable["OS"];
+                return _lazyWin32OperatingSystemInfo.Value.OSName;
             }
-#endif
 
             return RegistryCurrentVersionInfo.ProductName;
+#endif
         }
 
         private string GetOSVersion()
@@ -264,7 +305,41 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             {
                 return new CurrentVersionInfo(
                     editionId: (string)currentVersion.GetValue("EditionID"),
-                    productName: (string)currentVersion.GetValue("ProductName"));
+                    productName: ((string)currentVersion.GetValue("ProductName"))?.TrimEnd());
+            }
+        }
+
+        [DllImport("kernel32.dll")]
+        private static extern bool GetProductInfo(
+            int dwOSMajorVersion,
+            int dwOSMinorVersion,
+            int dwSpMajorVersion,
+            int dwSpMinorVersion,
+            out uint pdwReturnedProductType);
+
+        private static Win32OSCimInfo GetWin32OperatingSystemInfo()
+        {
+            try
+            {
+                // Creating the session with null here prevents use of the network layer
+                using (var cimSession = CimSession.Create(null))
+                {
+                    CimInstance win32OSInstance = cimSession.EnumerateInstances(@"root\cimv2", "Win32_OperatingSystem")
+                        .FirstOrDefault();
+
+                    if (win32OSInstance == null)
+                    {
+                        return null;
+                    }
+
+                    return new Win32OSCimInfo(
+                        osName: ((string)win32OSInstance.CimInstanceProperties["Name"].Value)?.Split('|')[0].TrimEnd(),
+                        skuID: (uint)win32OSInstance.CimInstanceProperties["OperatingSystemSku"].Value);
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -359,6 +434,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             public string EditionID { get; }
 
             public string ProductName { get; }
+        }
+
+        private class Win32OSCimInfo
+        {
+            public Win32OSCimInfo(string osName, uint skuID)
+            {
+                OSName = osName;
+                SkuID = skuID;
+            }
+
+            public string OSName { get; }
+
+            public uint SkuID { get; }
         }
     }
 }
