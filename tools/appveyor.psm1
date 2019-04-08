@@ -54,11 +54,11 @@ function Invoke-AppveyorTest {
     # Copy the generated modules into the out directory
     $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
-    Copy-Item "${CheckoutPath}\PSCompatibilityAnalyzer\out\PSCompatibilityAnalyzer" "$modulePath\" -Recurse -Force
+    Copy-Item "${CheckoutPath}\PSCompatibilityCollector\out\PSCompatibilityCollector" "$modulePath\" -Recurse -Force
 
     # Set up testing assets
     $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
-    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\PSCompatibilityAnalyzer\Tests"
+    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\PSCompatibilityCollector\Tests"
 
     # Change culture to Turkish to test that PSSA works well with different locales
     [System.Threading.Thread]::CurrentThread.CurrentCulture = [cultureinfo]::CreateSpecificCulture('tr-TR')

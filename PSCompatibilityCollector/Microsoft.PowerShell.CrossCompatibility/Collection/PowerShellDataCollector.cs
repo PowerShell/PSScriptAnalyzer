@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private const string CORE_MODULE_NAME = "Microsoft.PowerShell.Core";
 
-        private const string THIS_MODULE_NAME = "PSCompatibilityAnalyzer";
+        private const string THIS_MODULE_NAME = "PSCompatibilityCollector";
 
         private static readonly Regex s_typeDataRegex = new Regex("Error in TypeData \"([A-Za-z.]+)\"", RegexOptions.Compiled);
 

@@ -12,10 +12,10 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'PSCompatibilityAnalyzer.psm1'
+RootModule = 'PSCompatibilityCollector.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1.0'
+ModuleVersion = '0.2.0'
 
 # Supported PSEditions (field not compatible with PS v3/4)
 # CompatiblePSEditions = @('Core', 'Desktop')

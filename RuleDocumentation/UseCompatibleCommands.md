@@ -46,9 +46,9 @@ Platforms bundled by default are:
 | 6.1                | Windows 10            | `win-48_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core`              |
 | 6.1                | Ubuntu 18.04 LTS      | `ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core`                     |
 
-Other profiles can be found [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityAnalyzer/optional_profiles).
+Other profiles can be found [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityCollector/optional_profiles).
 
-You can also generate your own platform profile using the [PSCompatibilityAnalyzer module](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityAnalyzer).
+You can also generate your own platform profile using the [PSCompatibilityCollector module](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityCollector).
 
 The compatibility profile settings takes a list of platforms to target under `TargetProfiles`.
 A platform can be specified as:

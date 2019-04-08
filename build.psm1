@@ -117,7 +117,7 @@ function Copy-CompatibilityProfiles
         Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
     }
 
-    $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityAnalyzer', 'profiles')
+    $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityCollector', 'profiles')
     $destinationDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer', "compatibility_profiles")
     if ( -not (Test-Path $destinationDir) ) {
         $null = New-Item -Type Directory $destinationDir
@@ -610,7 +610,7 @@ function Get-DotnetExe
 }
 $script:DotnetExe = Get-DotnetExe
 
-# Copies the built PSCompatibilityAnalyzer module to the output destination for PSSA
+# Copies the built PSCompatibilityCollector module to the output destination for PSSA
 function Copy-CrossCompatibilityModule
 {
     param(
@@ -634,11 +634,13 @@ function Copy-CrossCompatibilityModule
         New-Item -Path $Destination -ItemType Directory
     }
 
+    $compatCollectorModuleName = 'PSCompatibilityCollector'
+
     $outputAssets = @(
-        "$PSScriptRoot/PSCompatibilityAnalyzer/PSCompatibilityAnalyzer.psd1"
-        "$PSScriptRoot/PSCompatibilityAnalyzer/PSCompatibilityAnalyzer.psm1"
-        "$PSScriptRoot/PSCompatibilityAnalyzer/CrossCompatibilityBinary"
-        "$PSScriptRoot/PSCompatibilityAnalyzer/profiles"
+        "$PSScriptRoot/$compatCollectorModuleName/$compatCollectorModuleName.psd1"
+        "$PSScriptRoot/$compatCollectorModuleName/$compatCollectorModuleName.psm1"
+        "$PSScriptRoot/$compatCollectorModuleName/CrossCompatibilityBinary"
+        "$PSScriptRoot/$compatCollectorModuleName/profiles"
     )
 
     foreach ($assetPath in $outputAssets)

@@ -27,11 +27,13 @@ if ($IsWindows -eq $false) {
     $script:TargetFrameworks = 'netstandard2.0','net452'
 }
 
-$script:Psm1Path = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityAnalyzer.psm1')
-$script:Psd1Path = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityAnalyzer.psd1')
+$script:ModuleName = Split-Path $PSScriptRoot -Leaf
+
+$script:Psm1Path = [System.IO.Path]::Combine($PSScriptRoot, "$script:ModuleName.psm1")
+$script:Psd1Path = [System.IO.Path]::Combine($PSScriptRoot, "$script:ModuleName.psd1")
 $script:ProfileDirPath = [System.IO.Path]::Combine($PSScriptRoot, 'profiles')
 
-$script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSCompatibilityAnalyzer')
+$script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', "$script:ModuleName")
 $script:BinModSrcDir = Join-Path $PSScriptRoot 'Microsoft.PowerShell.CrossCompatibility'
 
 $script:PublishDlls = @{
@@ -89,8 +91,8 @@ function Publish-CrossCompatibilityModule
         throw "$DestinationDir exists but is not a directory. Aborting."
     }
 
-    Copy-Item -LiteralPath $script:Psd1Path -Destination (Join-Path $DestinationDir 'PSCompatibilityAnalyzer.psd1')
-    Copy-Item -LiteralPath $script:Psm1Path -Destination (Join-Path $DestinationDir 'PSCompatibilityAnalyzer.psm1')
+    Copy-Item -LiteralPath $script:Psd1Path -Destination (Join-Path $DestinationDir "$script:ModuleName.psd1")
+    Copy-Item -LiteralPath $script:Psm1Path -Destination (Join-Path $DestinationDir "$script:ModuleName.psm1")
     Copy-Item -Recurse -LiteralPath $script:ProfileDirPath -Destination $DestinationDir -ErrorAction Ignore
 
     foreach ($framework in $TargetFramework)
@@ -118,7 +120,7 @@ if ($Clean)
 }
 
 # Only build if the output directory does not exist
-if (-not (Test-Path "$PSScriptRoot/out/PSCompatibilityAnalyzer"))
+if (-not (Test-Path "$PSScriptRoot/out/$script:ModuleName"))
 {
     if ($Framework)
     {
@@ -136,7 +138,7 @@ if (-not (Test-Path "$PSScriptRoot/out/PSCompatibilityAnalyzer"))
 }
 else
 {
-    Write-Verbose "PSCompatibilityAnalyzer module already built -- skipping build"
+    Write-Verbose "$script:ModuleName module already built -- skipping build"
     Write-Verbose "Use '-Clean' to force building"
 }
 
