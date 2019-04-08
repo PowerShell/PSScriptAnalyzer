@@ -60,12 +60,23 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         [Parameter(ParameterSetName = "ProfileName")]
         public string ProfileName { get; set; }
 
+        /// <summary>
+        /// If set, validate the generated profile before returning it.
+        /// </summary>
         [Parameter]
         public SwitchParameter Validate { get; set; }
 
+        /// <summary>
+        /// Modules on paths starting with any of these will be excluded.
+        /// </summary>
+        /// <value></value>
         [Parameter]
         public string[] ExcludeModulePathPrefix { get; set; }
 
+        /// <summary>
+        /// Assemblies on paths starting with any of these will be excluded.
+        /// </summary>
+        /// <value></value>
         [Parameter]
         public string[] ExcludeAssemblyPathPrefix { get; set; }
 
