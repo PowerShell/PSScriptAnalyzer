@@ -31,6 +31,30 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         }
 
         /// <summary>
+        /// Writes a .NET exception as an error.
+        /// Has sensible defaults for optional parameters.
+        /// </summary>
+        /// <param name="cmdlet">The cmdlet writing the error.</param>
+        /// <param name="exception">The exception to write as an error.</param>
+        /// <param name="errorId">The error ID to associate with the exception.</param>
+        /// <param name="errorCategory">The category to assign the exception to.</param>
+        /// <param name="targetObject">The target object of the error, defaults to null.</param>
+        public static void WriteExceptionAsError(
+            this Cmdlet cmdlet,
+            Exception exception,
+            string errorId = "CompatibilityCollectionError",
+            ErrorCategory errorCategory = ErrorCategory.ReadError,
+            object targetObject = null)
+        {
+            cmdlet.WriteError(
+                new ErrorRecord(
+                    exception,
+                    errorId,
+                    errorCategory,
+                    targetObject));
+        }
+
+        /// <summary>
         /// Normalize a given path to an absolute path using PowerShell APIs
         /// available from within a cmdlet.
         /// </summary>
