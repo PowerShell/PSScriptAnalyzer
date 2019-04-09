@@ -69,13 +69,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>Returns null if command does not exists</returns>
         private static CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
-            if (cmdName == "?")
-            {
-                // 'Get-Command ?' would return % due to PowerShell interpreting is a single-character-wildcard search and not just the ? alias.
-                // For more details see https://github.com/PowerShell/PowerShell/issues/9308
-                // Using the escape character makes PowerShell interpret ? as a literal string.
-                cmdName = "`?";
-            }
+            // 'Get-Command ?' would return % for example due to PowerShell interpreting is a single-character-wildcard search and not just the ? alias.
+            // For more details see https://github.com/PowerShell/PowerShell/issues/9308
+            cmdName = WildcardPattern.Escape(cmdName);
 
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
