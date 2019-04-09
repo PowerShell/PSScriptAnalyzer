@@ -13,6 +13,11 @@ function Get-TypeNameAstFromScript
     return $typeExpAst.TypeName
 }
 
+function Get-TypeAccelerators
+{
+    [psobject].Assembly.GetType('System.Management.Automation.TypeAccelerators', 'nonpublic')::Get.GetEnumerator()
+}
+
 Describe "Type name serialization" {
     BeforeAll {
         $typeNameTestCases = @(
@@ -62,8 +67,8 @@ Describe "Type name serialization" {
 
 Describe "Type accelerator expansion" {
     BeforeAll {
-        $typeAccelerators = (Get-TypeAccelerators).GetEnumerator() `
-            | ForEach-Object { $d = New-Object 'System.Collections.Generic.Dictionary[string,string]' } { $d.Add($_.Key, $_.Value.FullName) } { $d }
+        $typeAccelerators = Get-TypeAccelerators |
+            ForEach-Object { $d = New-Object 'System.Collections.Generic.Dictionary[string,string]' } { $d.Add($_.Key, $_.Value.FullName) } { $d }
 
         $typeAcceleratorTestCases = @(
             @{ Raw = "[System.Exception]"; Expanded = "System.Exception" }
