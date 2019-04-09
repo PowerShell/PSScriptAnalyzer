@@ -18,6 +18,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
     /// Creates a new PowerShell compatibility profile for the current PowerShell session
     /// </summary>
     [Cmdlet(VerbsCommon.New, CommandUtilities.MODULE_PREFIX + "Profile", DefaultParameterSetName = "OutFile")]
+    [OutputType(typeof(CompatibilityProfileData))]
     public class NewPSCompatibilityProfileCommand : PSCmdlet
     {
         /// <summary>
@@ -30,6 +31,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         /// The path of the profile file to create.
         /// </summary>
         [Parameter(ParameterSetName = "OutFile", Position = 0)]
+        [ValidateNotNullOrEmpty]
         public string OutFile { get; set; }
 
         /// <summary>
@@ -58,6 +60,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         /// Sets the name of the profile file to be created in the default profile directory.
         /// </summary>
         [Parameter(ParameterSetName = "ProfileName")]
+        [ValidateNotNullOrEmpty]
         public string ProfileName { get; set; }
 
         /// <summary>
@@ -71,6 +74,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         /// </summary>
         /// <value></value>
         [Parameter]
+        [ValidateNotNullOrEmpty]
         public string[] ExcludeModulePathPrefix { get; set; }
 
         /// <summary>
@@ -78,6 +82,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         /// </summary>
         /// <value></value>
         [Parameter]
+        [ValidateNotNullOrEmpty]
         public string[] ExcludeAssemblyPathPrefix { get; set; }
 
         protected override void EndProcessing()

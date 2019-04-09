@@ -14,6 +14,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
     /// Gets the canonical profile ID of the current platform PowerShell is executing on.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, CommandUtilities.MODULE_PREFIX + "PlatformName")]
+    [OutputType(typeof(string))]
     public class GetPSCompatibilityPlatformNameCommand : Cmdlet
     {
         /// <summary>

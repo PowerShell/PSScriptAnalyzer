@@ -12,6 +12,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
     /// Assembles an object describing the current platform PowerShell is running on.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, CommandUtilities.MODULE_PREFIX + "PlatformData")]
+    [OutputType(typeof(PlatformData))]
     public class GetPSCompatibilityPlatformDataCommand : Cmdlet
     {
         /// <summary>

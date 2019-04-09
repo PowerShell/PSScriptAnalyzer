@@ -15,6 +15,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
     /// Turns given .NET objects into JSON strings.
     /// </summary>
     [Cmdlet(VerbsData.ConvertTo, CommandUtilities.MODULE_PREFIX + "Json")]
+    [OutputType(typeof(string))]
     public class ConvertToPSCompatibilityJsonCommand : PSCmdlet
     {
         private JsonProfileSerializer _serializer;
@@ -22,7 +23,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         /// <summary>
         /// The object to convert to JSON.
         /// </summary>
-        [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        [Parameter(Position = 0, Mandatory = true, ValueFromPipeline = true)]
         public object[] Item { get; set; }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
     /// Class defining the ConvertFrom-PSCompatibilityJson JSON.
     /// Turns given JSON into .NET compatibility profile objects.
     /// </summary>
-    [Cmdlet(VerbsData.ConvertFrom, CommandUtilities.MODULE_PREFIX + "Json")]
+    [Cmdlet(VerbsData.ConvertFrom, CommandUtilities.MODULE_PREFIX + "Json", DefaultParameterSetName = "JsonSource")]
     public class ConvertFromPSCompatibilityJsonCommand : PSCmdlet
     {
         private JsonProfileSerializer _serializer;
@@ -59,7 +60,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         /// <summary>
         /// The source of the JSON to convert from. Can be a JSON string, a FileInfo or a TextReader object.
         /// </summary>
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "JsonSource")]
+        [Parameter(Position = 0, Mandatory = true, ValueFromPipeline = true, ParameterSetName = "JsonSource")]
         public object[] JsonSource { get; set; }
 
         /// <summary>
