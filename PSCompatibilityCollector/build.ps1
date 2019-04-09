@@ -31,7 +31,6 @@ $script:ModuleName = Split-Path $PSScriptRoot -Leaf
 
 $script:Psm1Path = [System.IO.Path]::Combine($PSScriptRoot, "$script:ModuleName.psm1")
 $script:Psd1Path = [System.IO.Path]::Combine($PSScriptRoot, "$script:ModuleName.psd1")
-$script:ProfileDirPath = [System.IO.Path]::Combine($PSScriptRoot, 'profiles')
 
 $script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', "$script:ModuleName")
 $script:BinModSrcDir = Join-Path $PSScriptRoot 'Microsoft.PowerShell.CrossCompatibility'
@@ -93,7 +92,6 @@ function Publish-CrossCompatibilityModule
 
     Copy-Item -LiteralPath $script:Psd1Path -Destination (Join-Path $DestinationDir "$script:ModuleName.psd1")
     Copy-Item -LiteralPath $script:Psm1Path -Destination (Join-Path $DestinationDir "$script:ModuleName.psm1")
-    Copy-Item -Recurse -LiteralPath $script:ProfileDirPath -Destination $DestinationDir -ErrorAction Ignore
 
     foreach ($framework in $TargetFramework)
     {
