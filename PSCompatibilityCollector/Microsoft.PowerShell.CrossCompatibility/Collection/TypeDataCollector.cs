@@ -226,7 +226,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var asmData = new AssemblyData()
             {
                 AssemblyName = asmNameData,
-                Types = namespacedTypes.Count > 0 ? namespacedTypes : null,
+                Types = namespacedTypes != null && namespacedTypes.Count > 0 ? namespacedTypes : null,
             };
 
             return new KeyValuePair<string, AssemblyData>(asmName.Name, asmData);
