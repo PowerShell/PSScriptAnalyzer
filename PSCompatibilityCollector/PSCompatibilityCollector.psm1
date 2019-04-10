@@ -2,18 +2,11 @@
 # Licensed under the MIT License.
 
 # Add the relevant binary module
-try
+if ($PSVersionTable.PSVersion.Major -ge 6)
 {
-    if ($PSVersionTable.PSVersion.Major -ge 6)
-    {
-        Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'Microsoft.PowerShell.CrossCompatibility.dll')) -Force
-    }
-    else
-    {
-        Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'Microsoft.PowerShell.CrossCompatibility.dll')) -Force
-    }
+    Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'netstandard2.0', 'Microsoft.PowerShell.CrossCompatibility.dll')) -Force
 }
-catch
+else
 {
-    # Do nothing
+    Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'Microsoft.PowerShell.CrossCompatibility.dll')) -Force
 }
