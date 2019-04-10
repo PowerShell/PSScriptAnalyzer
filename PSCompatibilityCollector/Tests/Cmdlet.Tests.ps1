@@ -2,9 +2,7 @@
 # Licensed under the MIT License.
 
 Write-Verbose -Verbose ("Modules:`n" + (Get-Module -ListAvailable | Out-String))
-Write-Verbose -Verbose ("Exported cmdlets from PSCompatibilityCollector`n:" + (Get-Module -ListAvailable PSCompatibilityCollector | % { $_.ExportedCmdlets.Keys } | Out-String))
-
-$script:currentMachineProfile = New-PSCompatibilityProfile -PassThru
+Write-Verbose -Verbose ("Exported cmdlets from PSCompatibilityCollector:`n" + (Get-Module -ListAvailable PSCompatibilityCollector | % { $_.ExportedCmdlets.Keys } | Out-String))
 
 Describe "PSCompatiblityCollector cmdlets" {
     BeforeAll {
