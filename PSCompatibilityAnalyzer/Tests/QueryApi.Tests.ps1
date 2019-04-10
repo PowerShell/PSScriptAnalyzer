@@ -21,7 +21,7 @@ namespace PSScriptAnalyzerTests
 
         $typeQueryObject = New-Object 'Microsoft.PowerShell.CrossCompatibility.Query.TypeData' ('QueryApiTestObject', $typeData)
 
-        $typeData.Instance.Properties.Count | Should -Be 1
-        $typeData.Instance.Properties.Keys | Should -Contain 'jobid'
+        $typeQueryObject.Instance.Properties.Count | Should -Be 1
+        $typeQueryObject.Instance.Properties.Keys | Should -Contain 'jobid'
     }
 }
