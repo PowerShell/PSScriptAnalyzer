@@ -3,7 +3,10 @@
 
 # TODO: These tests don't work in-process; they load too much and in AppVeyor, the module doesn't load properly.
 #       They have been marked pending until we can work out how to run them and still merge their results into the XML.
-Describe "PSCompatiblityCollector cmdlets" -Pending {
+
+return
+
+Describe "PSCompatiblityCollector cmdlets" {
     BeforeAll {
         $compatModulePath = (Get-Module -ListAvailable 'PSCompatibilityCollector')[0].Path
         $pwshName = (Get-Process -Id $PID).Path
