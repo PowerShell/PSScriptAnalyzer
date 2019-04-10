@@ -56,8 +56,6 @@ function Invoke-AppveyorTest {
     Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
     Copy-Item "${CheckoutPath}\PSCompatibilityCollector\out\PSCompatibilityCollector" "$modulePath\" -Recurse -Force
 
-    Write-Verbose -Verbose (Get-Module -ListAvailable PSCompatibilityCollector | ForEach-Object { $_.ExportedCmdlets.Keys | ForEach-Object { $_.ToString() } } | Out-String)
-
     # Set up testing assets
     $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
     $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\PSCompatibilityCollector\Tests"
