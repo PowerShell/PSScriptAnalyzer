@@ -32,6 +32,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
+            bool isWindows = true;
+#if CORECLR
+            isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#endif
+
             // Iterates all CommandAsts and check the command name.
             foreach (CommandAst commandAst in commandAsts)
             {
@@ -55,11 +60,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var fullyqualifiedName = $"{commandInfo.ModuleName}\\{shortName}";
                 var isFullyQualified = commandName.Equals(fullyqualifiedName, StringComparison.OrdinalIgnoreCase);
                 var correctlyCasedCommandName = isFullyQualified ? fullyqualifiedName : shortName;
-                var isWindows = true;
-#if CORECLR
-                isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#endif
-                if (commandInfo.CommandType == CommandTypes.Application && isWindows)
+                if (commandInfo.CommandType == CommandTypes.Application && isWindows && !Path.HasExtension(commandName))
                 {
                     // For binaries that could exist on both Windows and Linux like e.g. git we do not want to expand
                     // git to git.exe to keep the script cross-platform compliant

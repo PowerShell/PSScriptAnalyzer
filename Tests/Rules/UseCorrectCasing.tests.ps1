@@ -20,6 +20,10 @@ Describe "UseCorrectCasing" {
         Invoke-Formatter 'Cmd' | Should -Be 'cmd'
     }
 
+    It "Preserves extension of applications on Windows" -Skip:($IsLinux -or $IsMacOS) {
+        Invoke-Formatter 'Cmd.exe' | Should -Be 'cmd.exe'
+    }
+
     It "corrects case of script function" {
         function Invoke-DummyFunction
         {
