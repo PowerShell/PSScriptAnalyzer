@@ -4,6 +4,8 @@
 Write-Verbose -Verbose ("Modules:`n" + (Get-Module -ListAvailable | Out-String))
 Write-Verbose -Verbose ("Exported cmdlets from PSCompatibilityCollector:`n" + (Get-Module -ListAvailable PSCompatibilityCollector | % { $_.ExportedCmdlets.Keys } | Out-String))
 
+Import-Module PSCompatibilityCollector -ErrorAction Stop
+
 Describe "PSCompatiblityCollector cmdlets" {
     BeforeAll {
         $compatModulePath = (Get-Module -ListAvailable 'PSCompatibilityCollector')[0].Path
