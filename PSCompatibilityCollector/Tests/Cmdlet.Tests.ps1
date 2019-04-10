@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+Write-Verbose -Verbose $env:PSModulePath
+
 $script:currentMachineProfile = New-PSCompatibilityProfile -PassThru
 
 Describe "Assert-PSCompatibilityProfileIsValid" {
@@ -16,7 +18,7 @@ Describe "JSON cmdlets" {
             ConvertTo-PSCompatibilityJson |
             ConvertFrom-PSCompatibilityJson |
             Assert-PSCompatibilityProfileIsValid
-        
+
         $? | Should -BeTrue
     }
 }
