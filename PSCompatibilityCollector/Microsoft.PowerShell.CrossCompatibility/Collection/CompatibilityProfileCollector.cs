@@ -76,7 +76,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
         }
 
-        private SMA.PowerShell _pwsh;
+        private static readonly Version s_currentProfileSchemaVersion = new Version(1, 1);
 
         private readonly PowerShellDataCollector _pwshDataCollector;
 
@@ -85,6 +85,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         private readonly PlatformInformationCollector _platformInfoCollector;
 
         private readonly Func<ApplicationInfo, Version> _getApplicationVersion;
+
+        private SMA.PowerShell _pwsh;
 
         private CompatibilityProfileCollector(
             SMA.PowerShell pwsh,
@@ -126,6 +128,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
             return new CompatibilityProfileData()
             {
+                ProfileSchemaVersion = s_currentProfileSchemaVersion,
                 Id = platformId ?? PlatformNaming.GetPlatformName(platformData),
                 Platform = platformData,
                 Runtime = GetRuntimeData(out errors)

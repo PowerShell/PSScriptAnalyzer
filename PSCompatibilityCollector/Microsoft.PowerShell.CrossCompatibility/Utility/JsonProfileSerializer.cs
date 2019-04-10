@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -197,7 +198,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         /// <returns>The hydrated compatibility profile as a .NET object.</returns>
         public CompatibilityProfileData Deserialize(TextReader textReader)
         {
-            return _serializer.Deserialize<CompatibilityProfileData>(new JsonTextReader(textReader));
+            CompatibilityProfileData profile = _serializer.Deserialize<CompatibilityProfileData>(new JsonTextReader(textReader));
+
+            if (profile.ProfileSchemaVersion == null)
+            {
+                profile.ProfileSchemaVersion = new Version(1, 0);
+            }
+
+            return profile;
         }
 
         private static IList<JsonConverter> GetFormatConverters()
