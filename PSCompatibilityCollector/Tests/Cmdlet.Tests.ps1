@@ -5,7 +5,7 @@ Write-Verbose -Verbose ("Modules:`n" + (Get-Module -ListAvailable | Out-String))
 Write-Verbose -Verbose ("Exported cmdlets from PSCompatibilityCollector:`n" + (Get-Module -ListAvailable PSCompatibilityCollector | % { $_.ExportedCmdlets.Keys } | Out-String))
 Write-Verbose -Verbose ("Commands:`n" + (Get-Command -Module PSCompatibilityCollector | Out-String))
 
-Import-Module PSCompatibilityCollector -ErrorAction Stop
+Get-Module PSCompatibilityCollector | Remove-Module
 
 Describe "PSCompatiblityCollector cmdlets" {
     BeforeAll {
