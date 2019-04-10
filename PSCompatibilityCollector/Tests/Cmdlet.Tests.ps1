@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-Write-Verbose -Verbose $env:PSModulePath
+Write-Verbose -Verbose (Get-Module -ListAvailable | Out-String)
 
 $script:currentMachineProfile = New-PSCompatibilityProfile -PassThru
 
