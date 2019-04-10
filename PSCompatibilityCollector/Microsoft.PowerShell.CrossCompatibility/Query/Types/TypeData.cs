@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using TypeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.TypeData;
+using TypeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.TypeData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

@@ -9,8 +9,6 @@ using System.Management.Automation;
 using System.Reflection;
 using Microsoft.PowerShell.Commands;
 using Microsoft.PowerShell.CrossCompatibility.Data;
-using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
-using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using SMA = System.Management.Automation;
 
@@ -144,7 +142,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         {
             // Need to ensure modules are imported before types are collected
             JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, ModuleData>> modules = _pwshDataCollector.AssembleModulesData(_pwshDataCollector.GetModulesData(out IEnumerable<Exception> moduleErrors));
-            Data.Types.AvailableTypeData availableTypeData = _typeDataCollector.GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> typeErrors);
+            Data.AvailableTypeData availableTypeData = _typeDataCollector.GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> typeErrors);
 
             var runtimeData = new RuntimeData()
             {

@@ -13,7 +13,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class ModuleData
     {
-        private readonly Data.Modules.ModuleData _moduleData;
+        private readonly Data.ModuleData _moduleData;
 
         private readonly Lazy<Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>, IReadOnlyDictionary<string, CommandData>>> _commands;
 
@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <param name="name">The name of the module.</param>
         /// <param name="version">The version of the module.</param>
         /// <param name="moduleData">The module data object.</param>
-        public ModuleData(string name, Version version, Data.Modules.ModuleData moduleData)
+        public ModuleData(string name, Version version, Data.ModuleData moduleData)
         {
             _moduleData = moduleData;
 
@@ -69,8 +69,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public IReadOnlyDictionary<string, CommandData> Aliases => _commands.Value.Item3;
 
         private static Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>, IReadOnlyDictionary<string, CommandData>> CreateCommandTables(
-            IReadOnlyDictionary<string, Data.Modules.FunctionData> functions,
-            IReadOnlyDictionary<string, Data.Modules.CmdletData> cmdlets,
+            IReadOnlyDictionary<string, Data.FunctionData> functions,
+            IReadOnlyDictionary<string, Data.CmdletData> cmdlets,
             IReadOnlyDictionary<string, string> aliases)
         {
             Dictionary<string, FunctionData> funcDict = null;
@@ -80,7 +80,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             if (functions != null)
             {
                 funcDict = new Dictionary<string, FunctionData>(functions.Count, StringComparer.OrdinalIgnoreCase);
-                foreach (KeyValuePair<string, Data.Modules.FunctionData> function in functions)
+                foreach (KeyValuePair<string, Data.FunctionData> function in functions)
                 {
                     funcDict[function.Key] = new FunctionData(function.Key, function.Value);
                 }
@@ -89,7 +89,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             if (cmdlets != null)
             {
                 cmdletDict = new Dictionary<string, CmdletData>(cmdlets.Count, StringComparer.OrdinalIgnoreCase);
-                foreach (KeyValuePair<string, Data.Modules.CmdletData> cmdlet in cmdlets)
+                foreach (KeyValuePair<string, Data.CmdletData> cmdlet in cmdlets)
                 {
                     cmdletDict[cmdlet.Key] = new CmdletData(cmdlet.Key, cmdlet.Value);
                 }

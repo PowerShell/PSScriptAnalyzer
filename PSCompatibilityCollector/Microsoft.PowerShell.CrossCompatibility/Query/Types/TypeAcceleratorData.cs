@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using TypeAcceleratorDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.TypeAcceleratorData;
+using TypeAcceleratorDataMut = Microsoft.PowerShell.CrossCompatibility.Data.TypeAcceleratorData;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
+namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     /// <summary>
     /// Readonly query object for a PowerShell type accelerator.

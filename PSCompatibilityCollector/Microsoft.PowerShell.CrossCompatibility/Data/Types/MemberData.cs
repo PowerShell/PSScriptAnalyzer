@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
+namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
     /// <summary>
     /// Describes either the instance or static members on a .NET type.

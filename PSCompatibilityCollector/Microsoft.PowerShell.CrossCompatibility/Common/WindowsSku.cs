@@ -3,7 +3,7 @@
 
 using System.Text;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Query
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     /// <summary>
     /// Enumeration of Windows OS SKUs corresponding

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using FieldDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.FieldData;
+using FieldDataMut = Microsoft.PowerShell.CrossCompatibility.Data.FieldData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

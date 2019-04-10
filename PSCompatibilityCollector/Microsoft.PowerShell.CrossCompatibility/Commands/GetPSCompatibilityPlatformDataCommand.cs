@@ -3,7 +3,7 @@
 
 using System.Management.Automation;
 using Microsoft.PowerShell.CrossCompatibility.Collection;
-using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
+using Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands
 {

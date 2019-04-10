@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using MethodDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.MethodData;
+using MethodDataMut = Microsoft.PowerShell.CrossCompatibility.Data.MethodData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

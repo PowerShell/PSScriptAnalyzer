@@ -8,7 +8,7 @@ using System.Linq;
 using System.Management.Automation.Language;
 using System.Text;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Utility
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     /// <summary>
     /// API for resolving PowerShell type names to .NET type names and vice versa.

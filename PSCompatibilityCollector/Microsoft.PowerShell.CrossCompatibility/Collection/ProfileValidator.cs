@@ -4,12 +4,10 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.PowerShell.CrossCompatibility.Query;
-using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
 using System.Linq;
 using Data = Microsoft.PowerShell.CrossCompatibility.Data;
-using Microsoft.PowerShell.CrossCompatibility.Query.Types;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Utility
+namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
     /// <summary>
     /// Object that takes a PowerShell compatibility profile and validates it.
@@ -183,7 +181,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private int _psVersionMajor;
 
-        private Data.Platform.DotnetRuntime _dotNetEdition;
+        private Data.DotnetRuntime _dotNetEdition;
 
         /// <summary>
         /// Create a new quick check validator.
@@ -192,7 +190,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             _errAcc = new ValidationErrorAccumulator();
             _psVersionMajor = -1;
-            _dotNetEdition = Data.Platform.DotnetRuntime.Other;
+            _dotNetEdition = Data.DotnetRuntime.Other;
         }
 
         /// <inheritdoc/>
@@ -243,7 +241,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
         {
             _errAcc.Clear();
             _psVersionMajor = -1;
-            _dotNetEdition = Data.Platform.DotnetRuntime.Other;
+            _dotNetEdition = Data.DotnetRuntime.Other;
         }
 
         private void ValidatePlatformData(string platformId, PlatformData platformData)
@@ -472,11 +470,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
                 switch (_dotNetEdition)
                 {
-                    case Data.Platform.DotnetRuntime.Core:
+                    case Data.DotnetRuntime.Core:
                         ValidateAssemblies(types.Assemblies, s_coreTypes);
                         break;
 
-                    case Data.Platform.DotnetRuntime.Framework:
+                    case Data.DotnetRuntime.Framework:
                         ValidateAssemblies(types.Assemblies, s_fxTypes);
                         break;
 

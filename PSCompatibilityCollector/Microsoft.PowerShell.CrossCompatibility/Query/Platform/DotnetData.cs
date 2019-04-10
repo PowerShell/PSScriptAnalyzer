@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 using System;
-using DotnetRuntime = Microsoft.PowerShell.CrossCompatibility.Data.Platform.DotnetRuntime;
-using DotnetDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Platform.DotnetData;
+using DotnetRuntime = Microsoft.PowerShell.CrossCompatibility.Data.DotnetRuntime;
+using DotnetDataMut = Microsoft.PowerShell.CrossCompatibility.Data.DotnetData;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
+namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     /// <summary>
     /// Readonly query object for .NET runtime data.

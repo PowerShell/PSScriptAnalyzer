@@ -12,7 +12,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class ParameterData
     {
-        private readonly Data.Modules.ParameterData _parameterData;
+        private readonly Data.ParameterData _parameterData;
 
         private readonly Lazy<IReadOnlyDictionary<string, ParameterSetData>> _parameterSets;
 
@@ -21,7 +21,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// </summary>
         /// <param name="name">The name of the parameter.</param>
         /// <param name="parameterData">The parameter data object.</param>
-        public ParameterData(string name, Data.Modules.ParameterData parameterData)
+        public ParameterData(string name, Data.ParameterData parameterData)
         {
             _parameterData = parameterData;
             _parameterSets = new Lazy<IReadOnlyDictionary<string, ParameterSetData>>(() => CreateParameterSetDictionary(_parameterData.ParameterSets));
@@ -50,10 +50,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public string Name { get; }
 
         private static IReadOnlyDictionary<string, ParameterSetData> CreateParameterSetDictionary(
-            IReadOnlyDictionary<string, Data.Modules.ParameterSetData> parameterSetData)
+            IReadOnlyDictionary<string, Data.ParameterSetData> parameterSetData)
         {
             var dict = new Dictionary<string, ParameterSetData>(parameterSetData.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, Data.Modules.ParameterSetData> parameterSet in parameterSetData)
+            foreach (KeyValuePair<string, Data.ParameterSetData> parameterSet in parameterSetData)
             {
                 dict[parameterSet.Key] = new ParameterSetData(parameterSet.Key, parameterSet.Value);
             }

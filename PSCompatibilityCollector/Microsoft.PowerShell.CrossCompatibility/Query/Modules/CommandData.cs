@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Modules = Microsoft.PowerShell.CrossCompatibility.Data.Modules;
+using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
@@ -13,14 +13,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public abstract class CommandData
     {
-        protected readonly Modules.CommandData _commandData;
+        protected readonly Data.CommandData _commandData;
 
         /// <summary>
         /// Create a new command data query object from the data object.
         /// </summary>
         /// <param name="name">The name of the command.</param>
         /// <param name="commandData">The command data object describing the command.</param>
-        protected CommandData(string name, Modules.CommandData commandData)
+        protected CommandData(string name, Data.CommandData commandData)
         {
             _commandData = commandData;
             Name = name;
@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
             if (commandData.Parameters != null)
             {
-                foreach (KeyValuePair<string, Microsoft.PowerShell.CrossCompatibility.Data.Modules.ParameterData> parameter in commandData.Parameters)
+                foreach (KeyValuePair<string, Microsoft.PowerShell.CrossCompatibility.Data.ParameterData> parameter in commandData.Parameters)
                 {
                     parameters.Add(parameter.Key, new ParameterData(parameter.Key, parameter.Value));
                 }

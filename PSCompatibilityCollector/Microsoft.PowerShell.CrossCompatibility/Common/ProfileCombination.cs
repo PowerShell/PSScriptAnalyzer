@@ -6,11 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerShell.CrossCompatibility.Data;
-using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
-using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
-using Microsoft.PowerShell.CrossCompatibility.Data.Types;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Utility
+namespace Microsoft.PowerShell.CrossCompatibility
 {
     /// <summary>
     /// API to combine PowerShell compatibility profiles together.

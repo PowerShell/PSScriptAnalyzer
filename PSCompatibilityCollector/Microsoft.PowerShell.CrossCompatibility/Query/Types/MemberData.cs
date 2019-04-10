@@ -29,7 +29,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// Create a new query object around a collected .NET member data.
         /// </summary>
         /// <param name="memberData">The collected .NET member data.</param>
-        public MemberData(Data.Types.MemberData memberData)
+        public MemberData(Data.MemberData memberData)
         {
             if (memberData.Constructors != null)
             {
@@ -102,57 +102,57 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// </summary>
         public IReadOnlyDictionary<string, TypeData> NestedTypes => _nestedtypes?.Value;
 
-        private static IReadOnlyDictionary<string, FieldData> CreateFieldTable(IReadOnlyDictionary<string, Data.Types.FieldData> fields)
+        private static IReadOnlyDictionary<string, FieldData> CreateFieldTable(IReadOnlyDictionary<string, Data.FieldData> fields)
         {
             var dict = new Dictionary<string, FieldData>(fields.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, Data.Types.FieldData> field in fields)
+            foreach (KeyValuePair<string, Data.FieldData> field in fields)
             {
                 dict[field.Key] = new FieldData(field.Key, field.Value);
             }
             return dict;
         }
 
-        private static IReadOnlyDictionary<string, PropertyData> CreatePropertyTable(IReadOnlyDictionary<string, Data.Types.PropertyData> properties)
+        private static IReadOnlyDictionary<string, PropertyData> CreatePropertyTable(IReadOnlyDictionary<string, Data.PropertyData> properties)
         {
             var dict = new Dictionary<string, PropertyData>(properties.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, Data.Types.PropertyData> property in properties)
+            foreach (KeyValuePair<string, Data.PropertyData> property in properties)
             {
                 dict[property.Key] = new PropertyData(property.Key, property.Value);
             }
             return dict;
         }
 
-        private static IReadOnlyDictionary<string, MethodData> CreateMethodTable(IReadOnlyDictionary<string, Data.Types.MethodData> methods)
+        private static IReadOnlyDictionary<string, MethodData> CreateMethodTable(IReadOnlyDictionary<string, Data.MethodData> methods)
         {
             var dict = new Dictionary<string, MethodData>(methods.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, Data.Types.MethodData> method in methods)
+            foreach (KeyValuePair<string, Data.MethodData> method in methods)
             {
                 dict[method.Key] = new MethodData(method.Key, method.Value);
             }
             return dict;
         }
 
-        private static IReadOnlyDictionary<string, EventData> CreateEventTable(IReadOnlyDictionary<string, Data.Types.EventData> events)
+        private static IReadOnlyDictionary<string, EventData> CreateEventTable(IReadOnlyDictionary<string, Data.EventData> events)
         {
             var dict = new Dictionary<string, EventData>(events.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, Data.Types.EventData> e in events)
+            foreach (KeyValuePair<string, Data.EventData> e in events)
             {
                 dict[e.Key] = new EventData(e.Key, e.Value);
             }
             return dict;
         }
 
-        private static IReadOnlyDictionary<string, TypeData> CreateNestedTypeTable(IReadOnlyDictionary<string, Data.Types.TypeData> nestedTypes)
+        private static IReadOnlyDictionary<string, TypeData> CreateNestedTypeTable(IReadOnlyDictionary<string, Data.TypeData> nestedTypes)
         {
             var dict = new Dictionary<string, TypeData>(nestedTypes.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, Data.Types.TypeData> type in nestedTypes)
+            foreach (KeyValuePair<string, Data.TypeData> type in nestedTypes)
             {
                 dict[type.Key] = new TypeData(type.Key, type.Value);
             }
             return dict;
         }
 
-        private static IReadOnlyList<IndexerData> CreateIndexerList(IReadOnlyList<Data.Types.IndexerData> indexers)
+        private static IReadOnlyList<IndexerData> CreateIndexerList(IReadOnlyList<Data.IndexerData> indexers)
         {
             var indexerList = new IndexerData[indexers.Count];
             for (int i = 0; i < indexerList.Length; i++)

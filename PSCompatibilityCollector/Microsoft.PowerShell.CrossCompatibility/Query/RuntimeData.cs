@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.PowerShell.CrossCompatibility.Query.Types;
 using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
@@ -59,13 +58,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// </summary>
         public CommonPowerShellData Common { get; }
 
-        private static IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> CreateModuleTable(IDictionary<string, JsonDictionary<Version, Data.Modules.ModuleData>> modules)
+        private static IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> CreateModuleTable(IDictionary<string, JsonDictionary<Version, Data.ModuleData>> modules)
         {
             var moduleDict = new Dictionary<string, IReadOnlyDictionary<Version, ModuleData>>(modules.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, JsonDictionary<Version, Data.Modules.ModuleData>> moduleVersions in modules)
+            foreach (KeyValuePair<string, JsonDictionary<Version, Data.ModuleData>> moduleVersions in modules)
             {
                 var moduleVersionDict = new Dictionary<Version, ModuleData>(moduleVersions.Value.Count);
-                foreach (KeyValuePair<Version, Data.Modules.ModuleData> module in moduleVersions.Value)
+                foreach (KeyValuePair<Version, Data.ModuleData> module in moduleVersions.Value)
                 {
                     moduleVersionDict[module.Key] = new ModuleData(name: moduleVersions.Key, version: module.Key, moduleData: module.Value);
                 }

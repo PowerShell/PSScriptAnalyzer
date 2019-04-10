@@ -3,7 +3,7 @@
 
 using System.Management.Automation;
 using Microsoft.PowerShell.CrossCompatibility.Collection;
-using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
+using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using SMA = System.Management.Automation;
 

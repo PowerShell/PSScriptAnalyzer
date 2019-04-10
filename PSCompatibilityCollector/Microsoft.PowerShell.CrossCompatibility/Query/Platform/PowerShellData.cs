@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using PowerShellDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Platform.PowerShellData;
+using PowerShellDataMut = Microsoft.PowerShell.CrossCompatibility.Data.PowerShellData;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
+namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     /// <summary>
     /// Readonly query object for PowerShell installation information.

@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
+namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
     /// <summary>
     /// Describes an event on a .NET type.

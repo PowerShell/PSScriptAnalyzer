@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
+namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
     /// <summary>
     /// Describes a PowerShell function

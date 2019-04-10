@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using System;
-using OperatingSystemDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Platform.OperatingSystemData;
+using OperatingSystemDataMut = Microsoft.PowerShell.CrossCompatibility.Data.OperatingSystemData;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
+namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     /// <summary>
     /// Readonly query object for platform operating system information.

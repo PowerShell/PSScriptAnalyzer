@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using PlatformDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Platform.PlatformData;
+using PlatformDataMut = Microsoft.PowerShell.CrossCompatibility.Data.PlatformData;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Query.Platform
+namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     /// <summary>
     /// Readonly query object for PowerShell platform data,

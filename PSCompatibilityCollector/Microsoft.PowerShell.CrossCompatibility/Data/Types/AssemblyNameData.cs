@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
+namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
     /// <summary>
     /// Holds a structured form of a full assembly name.

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using IndexerDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.IndexerData;
+using IndexerDataMut = Microsoft.PowerShell.CrossCompatibility.Data.IndexerData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

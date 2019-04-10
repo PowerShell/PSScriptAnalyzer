@@ -9,7 +9,7 @@ using Microsoft.PowerShell.CrossCompatibility.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Utility
+namespace Microsoft.PowerShell.CrossCompatibility.Retrieval
 {
     /// <summary>
     /// Handles conversion of PowerShell compatibility profiles to and from JSON.

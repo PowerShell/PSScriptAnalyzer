@@ -17,7 +17,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 #endif
 
-namespace Microsoft.PowerShell.CrossCompatibility.Utility
+namespace Microsoft.PowerShell.CrossCompatibility.Retrieval
 {
     /// <summary>
     /// Encapsulates loading and caching of compatibility profiles.

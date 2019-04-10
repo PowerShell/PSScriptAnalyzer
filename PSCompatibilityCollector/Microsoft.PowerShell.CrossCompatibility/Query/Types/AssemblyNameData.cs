@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using AsmNameDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.AssemblyNameData;
+using AsmNameDataMut = Microsoft.PowerShell.CrossCompatibility.Data.AssemblyNameData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

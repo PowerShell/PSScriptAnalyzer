@@ -9,9 +9,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Microsoft.PowerShell.CrossCompatibility.Data;
-using Microsoft.PowerShell.CrossCompatibility.Data.Modules;
-using Microsoft.PowerShell.CrossCompatibility.Data.Types;
-using Microsoft.PowerShell.CrossCompatibility.Data.Platform;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 
 using SMA = System.Management.Automation;

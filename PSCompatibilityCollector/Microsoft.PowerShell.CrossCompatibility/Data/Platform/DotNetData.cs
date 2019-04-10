@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Platform
+namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
     /// <summary>
     /// Denotes a particular .NET runtime that

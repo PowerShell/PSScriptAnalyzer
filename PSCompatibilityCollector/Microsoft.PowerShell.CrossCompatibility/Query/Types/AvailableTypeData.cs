@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
+namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     /// <summary>
     /// Readonly query object for all .NET type information in a PowerShell runtime.
@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
         /// Create a new query object around collected .NET type information.
         /// </summary>
         /// <param name="availableTypeData">The .NET type data object to query.</param>
-        public AvailableTypeData(Data.Types.AvailableTypeData availableTypeData)
+        public AvailableTypeData(Data.AvailableTypeData availableTypeData)
         {
             _assemblies = new Lazy<IReadOnlyDictionary<string, AssemblyData>>(() => CreateAssemblyTable(availableTypeData.Assemblies));
             _typeAccelerators = new Lazy<Tuple<IReadOnlyDictionary<string, TypeAcceleratorData>, IReadOnlyDictionary<string, string>>>(() => CreateTypeAcceleratorTables(availableTypeData.TypeAccelerators));
@@ -51,10 +51,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
         public IReadOnlyDictionary<string, string> TypeAcceleratorNames => _typeAccelerators.Value.Item2;
 
         private static IReadOnlyDictionary<string, AssemblyData> CreateAssemblyTable(
-            IReadOnlyDictionary<string, Data.Types.AssemblyData> assemblies)
+            IReadOnlyDictionary<string, Data.AssemblyData> assemblies)
         {
             var dict = new Dictionary<string, AssemblyData>(assemblies.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, Data.Types.AssemblyData> assembly in assemblies)
+            foreach (KeyValuePair<string, Data.AssemblyData> assembly in assemblies)
             {
                 dict[assembly.Key] = new AssemblyData(assembly.Value);
             }
@@ -62,12 +62,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query.Types
         }
 
         private static Tuple<IReadOnlyDictionary<string, TypeAcceleratorData>, IReadOnlyDictionary<string, string>> CreateTypeAcceleratorTables(
-            IReadOnlyDictionary<string, Data.Types.TypeAcceleratorData> typeAccelerators)
+            IReadOnlyDictionary<string, Data.TypeAcceleratorData> typeAccelerators)
         {
             var typeAcceleratorDict = new Dictionary<string, TypeAcceleratorData>(typeAccelerators.Count, StringComparer.OrdinalIgnoreCase);
             var typeAcceleratorNames = new Dictionary<string, string>(typeAccelerators.Count, StringComparer.OrdinalIgnoreCase);
 
-            foreach (KeyValuePair<string, Data.Types.TypeAcceleratorData> typeAccelerator in typeAccelerators)
+            foreach (KeyValuePair<string, Data.TypeAcceleratorData> typeAccelerator in typeAccelerators)
             {
                 typeAcceleratorDict[typeAccelerator.Key] = new TypeAcceleratorData(typeAccelerator.Key, typeAccelerator.Value);
                 typeAcceleratorNames[typeAccelerator.Key] = typeAccelerator.Value.Type;

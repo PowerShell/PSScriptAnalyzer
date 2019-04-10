@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Modules
+namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
     /// <summary>
     /// Describes a PowerShell cmdlet from a module.

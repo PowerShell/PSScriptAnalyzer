@@ -18,7 +18,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// Create a query object for assembly data from collected assembly data.
         /// </summary>
         /// <param name="assemblyData">Collected assembly data.</param>
-        public AssemblyData(Data.Types.AssemblyData assemblyData)
+        public AssemblyData(Data.AssemblyData assemblyData)
         {
             AssemblyName = new AssemblyNameData(assemblyData.AssemblyName);
 
@@ -38,13 +38,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// </summary>
         public IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> Types => _types?.Value;
 
-        private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> CreateTypeDictionary(IReadOnlyDictionary<string, JsonDictionary<string, Data.Types.TypeData>> typeData)
+        private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> CreateTypeDictionary(IReadOnlyDictionary<string, JsonDictionary<string, Data.TypeData>> typeData)
         {
             var namespaceDict = new Dictionary<string, IReadOnlyDictionary<string, TypeData>>(typeData.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, JsonDictionary<string, Data.Types.TypeData>> nspace in typeData)
+            foreach (KeyValuePair<string, JsonDictionary<string, Data.TypeData>> nspace in typeData)
             {
                 var typeDict = new Dictionary<string, TypeData>(nspace.Value.Count, StringComparer.OrdinalIgnoreCase);
-                foreach (KeyValuePair<string, Data.Types.TypeData> type in nspace.Value)
+                foreach (KeyValuePair<string, Data.TypeData> type in nspace.Value)
                 {
                     typeDict[type.Key] = new TypeData(type.Key, type.Value);
                 }

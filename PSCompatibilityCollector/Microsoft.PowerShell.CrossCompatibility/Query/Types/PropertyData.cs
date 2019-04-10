@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using PropertyDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Types.PropertyData;
+using PropertyDataMut = Microsoft.PowerShell.CrossCompatibility.Data.PropertyData;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

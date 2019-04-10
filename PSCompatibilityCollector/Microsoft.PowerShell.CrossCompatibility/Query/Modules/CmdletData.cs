@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Modules = Microsoft.PowerShell.CrossCompatibility.Data.Modules;
+using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
@@ -15,7 +15,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// </summary>
         /// <param name="name">The name of the cmdlet.</param>
         /// <param name="cmdletData">The cmdlet data.</param>
-        public CmdletData(string name, Modules.CmdletData cmdletData)
+        public CmdletData(string name, Data.CmdletData cmdletData)
             : base(name, cmdletData)
         {
         }

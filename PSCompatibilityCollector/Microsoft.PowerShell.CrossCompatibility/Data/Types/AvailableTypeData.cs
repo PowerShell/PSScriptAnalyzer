@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
+namespace Microsoft.PowerShell.CrossCompatibility.Data
 {
     /// <summary>
     /// Aggregator to hold all type data and the type accelerator

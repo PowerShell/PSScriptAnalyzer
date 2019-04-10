@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Management.Automation;
 using Microsoft.PowerShell.CrossCompatibility.Data;
+using Microsoft.PowerShell.CrossCompatibility.Retrieval;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using Newtonsoft.Json;
 

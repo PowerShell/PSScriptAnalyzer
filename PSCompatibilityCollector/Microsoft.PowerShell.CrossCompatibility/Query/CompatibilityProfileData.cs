@@ -3,8 +3,8 @@
 
 using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData;
 using RuntimeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData;
-using PlatformDataMut = Microsoft.PowerShell.CrossCompatibility.Data.Modules.ModuleData;
-using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
+using PlatformDataMut = Microsoft.PowerShell.CrossCompatibility.Data.ModuleData;
+using Microsoft.PowerShell.CrossCompatibility.Query;
 using System.Collections.Generic;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query

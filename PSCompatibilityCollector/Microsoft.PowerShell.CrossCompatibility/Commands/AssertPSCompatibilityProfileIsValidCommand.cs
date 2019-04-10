@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
+using Microsoft.PowerShell.CrossCompatibility.Collection;
 using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 

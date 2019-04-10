@@ -34,13 +34,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public IReadOnlyDictionary<string, ParameterData> ParameterAliases => _parameters.Value.Item2;
 
         private Tuple<IReadOnlyDictionary<string, ParameterData>, IReadOnlyDictionary<string, ParameterData>> CreateParameterTable(
-            IReadOnlyDictionary<string, Data.Modules.ParameterData> parameters,
+            IReadOnlyDictionary<string, Data.ParameterData> parameters,
             IReadOnlyDictionary<string, string> parameterAliases)
         {
             var parameterDict = new Dictionary<string, ParameterData>(parameters.Count + parameterAliases.Count, StringComparer.OrdinalIgnoreCase);
             var parameterAliasDict = new Dictionary<string, ParameterData>(parameterAliases.Count, StringComparer.OrdinalIgnoreCase);
 
-            foreach (KeyValuePair<string, Data.Modules.ParameterData> parameter in parameters)
+            foreach (KeyValuePair<string, Data.ParameterData> parameter in parameters)
             {
                 parameterDict[parameter.Key] = new ParameterData(parameter.Key, parameter.Value);
             }
