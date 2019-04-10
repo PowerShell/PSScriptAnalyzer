@@ -30,7 +30,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
         /// If set, do not include whitespace like indentation or newlines in the output JSON.
         /// </summary>
         [Parameter]
-        [Alias(new [] { "Compress" })]
+        [Alias("Compress")]
         public SwitchParameter NoWhitespace { get; set; }
 
         protected override void BeginProcessing()
