@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Management.Automation.Language;
+using Microsoft.PowerShell.CrossCompatibility;
 using Microsoft.PowerShell.CrossCompatibility.Query;
-using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
-using Microsoft.PowerShell.CrossCompatibility.Utility;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules

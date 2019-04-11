@@ -11,7 +11,7 @@ using System.Management.Automation.Language;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.PowerShell.CrossCompatibility.Query;
-using Microsoft.PowerShell.CrossCompatibility.Utility;
+using Microsoft.PowerShell.CrossCompatibility.Retrieval;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules

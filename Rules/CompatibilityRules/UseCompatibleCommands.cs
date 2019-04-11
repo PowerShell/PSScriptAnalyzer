@@ -11,7 +11,6 @@ using System;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Runtime.Serialization;
-using Microsoft.PowerShell.CrossCompatibility.Query.Platform;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
