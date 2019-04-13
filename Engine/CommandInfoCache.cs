@@ -40,9 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return null;
             }
 
-            // If alias name is given, we store the entry under that, but search with the command name
-            var key = new CommandLookupKey(aliasName ?? commandName, commandTypes);
-
+            var key = new CommandLookupKey(commandName, commandTypes);
             // Atomically either use PowerShell to query a command info object, or fetch it from the cache
             return _commandInfoCache.GetOrAdd(key, new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes))).Value;
         }
