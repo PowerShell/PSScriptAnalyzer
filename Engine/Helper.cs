@@ -306,9 +306,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
                 ps.RunspacePool = _runSpacePool;
-                ps.AddCommand("Test-ModuleManifest");
-                ps.AddParameter("Path", filePath);
-                ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                ps.AddCommand("Test-ModuleManifest")
+                  .AddParameter("Path", filePath)
+                  .AddParameter("WarningAction", ActionPreference.SilentlyContinue);
                 try
                 {
                     psObj = ps.Invoke();
