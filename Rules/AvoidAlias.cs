@@ -137,9 +137,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return CheckForImplicitGetAliasing(commandName, cmdAst, fileName);
                 }));
             }
-            foreach(var task in tasks)
+            foreach(Task<DiagnosticRecord> task in tasks)
             {
-                var diagnosticRecordResult = task.Result;
+                DiagnosticRecord diagnosticRecordResult = task.Result;
                 if (diagnosticRecordResult != null)
                 {
                     yield return task.Result;
@@ -156,7 +156,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         private DiagnosticRecord CheckForImplicitGetAliasing(string commandName, CommandAst commandAst, string fileName)
         {
-            var isNativeCommand = Helper.Instance.GetCommandInfo(commandName, CommandTypes.Application | CommandTypes.ExternalScript) != null;
+            bool isNativeCommand = Helper.Instance.GetCommandInfo(commandName, CommandTypes.Application | CommandTypes.ExternalScript) != null;
             if (!isNativeCommand)
             {
                 var commdNameWithGetPrefix = $"Get-{commandName}";
