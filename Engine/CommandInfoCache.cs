@@ -30,10 +30,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Retrieve a command info object about a command.
         /// </summary>
         /// <param name="commandName">Name of the command to get a commandinfo object for.</param>
-        /// <param name="aliasName">The alias of the command to be used in the cache key. If not given, uses the command name.</param>
         /// <param name="commandTypes">What types of command are needed. If omitted, all types are retrieved.</param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string commandName, string aliasName = null, CommandTypes? commandTypes = null)
+        public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null)
         {
             if (string.IsNullOrWhiteSpace(commandName))
             {
@@ -58,7 +57,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return string.IsNullOrEmpty(commandName)
                 ? GetCommandInfo(commandOrAliasName, commandTypes: commandTypes)
-                : GetCommandInfo(commandName, aliasName: commandOrAliasName, commandTypes: commandTypes);
+                : GetCommandInfo(commandName, commandTypes: commandTypes);
         }
 
         /// <summary>
