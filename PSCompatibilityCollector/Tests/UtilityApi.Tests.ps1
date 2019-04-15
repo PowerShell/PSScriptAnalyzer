@@ -47,20 +47,20 @@ Describe "Type name serialization" {
     It "Serializes the name of type <InputType> to <ExpectedName>" -TestCases $typeNameTestCases {
         param([type]$InputType, [string]$ExpectedName)
 
-        $name = [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetFullTypeName($InputType)
+        $name = [Microsoft.PowerShell.CrossCompatibility.TypeNaming]::GetFullTypeName($InputType)
         $name | Should -BeExactly $ExpectedName
     }
 
     It "Null type throws exception" {
         {
-            [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetFullTypeName($null)
+            [Microsoft.PowerShell.CrossCompatibility.TypeNaming]::GetFullTypeName($null)
         } | Should -Throw -ErrorId "ArgumentNullException"
     }
 
     It "Strips generic quantifiers from '<RawTypeName>' to return '<StrippedTypeName>'" -TestCases $genericStrippingTests {
         param([string]$RawTypeName, [string]$StrippedTypeName)
 
-        $stripped = [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::StripGenericQuantifiers($RawTypeName)
+        $stripped = [Microsoft.PowerShell.CrossCompatibility.TypeNaming]::StripGenericQuantifiers($RawTypeName)
         $stripped | Should -BeExactly $StrippedTypeName
     }
 }
@@ -90,7 +90,7 @@ Describe "Type accelerator expansion" {
 
         $typeName = Get-TypeNameAstFromScript -Script $Raw
 
-        $canonicalName = [Microsoft.PowerShell.CrossCompatibility.Utility.TypeNaming]::GetCanonicalTypeName($typeAccelerators, $typeName)
+        $canonicalName = [Microsoft.PowerShell.CrossCompatibility.TypeNaming]::GetCanonicalTypeName($typeAccelerators, $typeName)
 
         $canonicalName | Should -BeExactly $Expanded
 
