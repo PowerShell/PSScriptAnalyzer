@@ -157,24 +157,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private DiagnosticRecord CheckForImplicitGetAliasing(string commandName, CommandAst commandAst, string fileName)
         {
             bool isNativeCommand = Helper.Instance.GetCommandInfo(commandName, CommandTypes.Application | CommandTypes.ExternalScript) != null;
-            if (!isNativeCommand)
+            if (isNativeCommand)
             {
-                var commdNameWithGetPrefix = $"Get-{commandName}";
-                var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo($"Get-{commandName}");
-                if (cmdletNameIfCommandWasMissingGetPrefix != null)
-                {
-                    var diagnosticRecord = new DiagnosticRecord(
-                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
-                        GetCommandExtent(commandAst),
-                        GetName(),
-                        DiagnosticSeverity.Warning,
-                        fileName,
-                        commandName,
-                        suggestedCorrections: GetCorrectionExtent(commandAst, commdNameWithGetPrefix));
-                    return diagnosticRecord;
-                }
+                return null;
             }
-            return null;
+            var commdNameWithGetPrefix = $"Get-{commandName}";
+            var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo($"Get-{commandName}");
+            if (cmdletNameIfCommandWasMissingGetPrefix == null)
+            {
+                return null;
+            }
+
+            var diagnosticRecord = new DiagnosticRecord(
+                string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
+                GetCommandExtent(commandAst),
+                GetName(),
+                DiagnosticSeverity.Warning,
+                fileName,
+                commandName,
+                suggestedCorrections: GetCorrectionExtent(commandAst, commdNameWithGetPrefix));
+            return diagnosticRecord;
         }
 
         /// <summary>
