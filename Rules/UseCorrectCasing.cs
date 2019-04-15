@@ -60,7 +60,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var fullyqualifiedName = $"{commandInfo.ModuleName}\\{shortName}";
                 var isFullyQualified = commandName.Equals(fullyqualifiedName, StringComparison.OrdinalIgnoreCase);
                 var correctlyCasedCommandName = isFullyQualified ? fullyqualifiedName : shortName;
-                if (commandInfo.CommandType == CommandTypes.Application && isWindows && !Path.HasExtension(commandName))
+                if (isWindows && commandInfo.CommandType == CommandTypes.Application && !Path.HasExtension(commandName))
                 {
                     // For binaries that could exist on both Windows and Linux like e.g. git we do not want to expand
                     // git to git.exe to keep the script cross-platform compliant
