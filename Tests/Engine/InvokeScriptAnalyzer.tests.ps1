@@ -630,5 +630,12 @@ Describe "Test -EnableExit Switch" {
                 $warnings.RuleName | Should -Be 'TypeNotFound'
             }
         }
+
+        Describe "Handles static Singleton (issue 1182)" {
+            It "Does not throw or return diagnostic record" {
+                $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
+                Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
+            }
+        }
     }
 }
