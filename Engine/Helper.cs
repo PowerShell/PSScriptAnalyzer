@@ -402,7 +402,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<Ast> cmdAsts = ast.FindAll(item => item is CommandAst
                 && exportFunctionsCmdlet.Contains((item as CommandAst).GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
 
-            CommandInfo exportMM = Helper.Instance.GetCommandInfoLegacy("export-modulemember", CommandTypes.Cmdlet);
+            CommandInfo exportMM = Helper.Instance.GetCommandInfo("export-modulemember", CommandTypes.Cmdlet);
 
             // switch parameters
             IEnumerable<ParameterMetadata> switchParams = (exportMM != null) ? exportMM.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter) : Enumerable.Empty<ParameterMetadata>();
@@ -659,31 +659,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
-        }
-
-
-        /// <summary>
-        /// Get a CommandInfo object of the given command name
-        /// </summary>
-        /// <returns>Returns null if command does not exists</returns>
-        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
-        {
-            using (var ps = System.Management.Automation.PowerShell.Create())
-            {
-                var psCommand = ps.AddCommand("Get-Command")
-                    .AddParameter("Name", cmdName)
-                    .AddParameter("ErrorAction", "SilentlyContinue");
-
-                if(commandType!=null)
-                {
-                    psCommand.AddParameter("CommandType", commandType);
-                }
-
-                var commandInfo = psCommand.Invoke<CommandInfo>()
-                         .FirstOrDefault();
-
-                return commandInfo;
-            }
         }
 
         /// <summary>
