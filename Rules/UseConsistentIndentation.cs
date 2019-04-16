@@ -70,7 +70,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (String.IsNullOrWhiteSpace(value) ||
                     !Enum.TryParse(value, true, out pipelineIndentationStyle))
                 {
-                    pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline;
+                    pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationForFirstPipeline;
                 }
             }
         }
@@ -96,7 +96,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         // TODO make this configurable
         private IndentationKind indentationKind = IndentationKind.Space;
 
-        private PipelineIndentationStyle pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline;
+        private PipelineIndentationStyle pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationForFirstPipeline;
 
         /// <summary>
         /// Analyzes the given ast to find violations.
