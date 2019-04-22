@@ -12,6 +12,10 @@ using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using SMA = System.Management.Automation;
 
+#if CoreCLR
+using System.Runtime.InteropServices;
+#endif
+
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
     /// <summary>
@@ -209,7 +213,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     Path = command.Path
                 };
 
+#if CoreCLR
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+#else
                 if (_platformInfoCollector.PSVersion.Major >= 5)
+#endif
                 {
                     commandData.Version = _getApplicationVersion(command);
                 }
