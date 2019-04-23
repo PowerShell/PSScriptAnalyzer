@@ -38,10 +38,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// </summary>
         public IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> Types => _types?.Value;
 
-        private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> CreateTypeDictionary(IReadOnlyDictionary<string, JsonCaseInsensitiveStringDictionary<Data.Types.TypeData>> typeData)
+        private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> CreateTypeDictionary(IReadOnlyDictionary<string, JsonDictionary<string, Data.Types.TypeData>> typeData)
         {
             var namespaceDict = new Dictionary<string, IReadOnlyDictionary<string, TypeData>>(typeData.Count, StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, JsonCaseInsensitiveStringDictionary<Data.Types.TypeData>> nspace in typeData)
+            foreach (KeyValuePair<string, JsonDictionary<string, Data.Types.TypeData>> nspace in typeData)
             {
                 var typeDict = new Dictionary<string, TypeData>(nspace.Value.Count, StringComparer.OrdinalIgnoreCase);
                 foreach (KeyValuePair<string, Data.Types.TypeData> type in nspace.Value)

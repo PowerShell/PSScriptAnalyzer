@@ -24,7 +24,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// and then type name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>> Types { get; set; }
+        public JsonDictionary<string, JsonDictionary<string, TypeData>> Types { get; set; }
 
         /// <summary>
         /// Create a deep clone of the assembly data object.
@@ -34,7 +34,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
             return new AssemblyData()
             {
                 AssemblyName = (AssemblyNameData)AssemblyName.Clone(),
-                Types = (JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>>)Types?.Clone()
+                Types = (JsonDictionary<string, JsonDictionary<string, TypeData>>)Types?.Clone()
             };
         }
     }

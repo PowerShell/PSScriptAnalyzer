@@ -26,13 +26,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// Fields on the type, keyed by field name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonCaseInsensitiveStringDictionary<FieldData> Fields { get; set; }
+        public JsonDictionary<string, FieldData> Fields { get; set; }
 
         /// <summary>
         /// Properties on this type, keyed by property name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonCaseInsensitiveStringDictionary<PropertyData> Properties { get; set; }
+        public JsonDictionary<string, PropertyData> Properties { get; set; }
 
         /// <summary>
         /// Indexers on the type.
@@ -44,19 +44,19 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
         /// Methods on the type, keyed by method name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonCaseInsensitiveStringDictionary<MethodData> Methods { get; set; }
+        public JsonDictionary<string, MethodData> Methods { get; set; }
 
         /// <summary>
         /// Events on the type, keyed by event name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonCaseInsensitiveStringDictionary<EventData> Events { get; set; }
+        public JsonDictionary<string, EventData> Events { get; set; }
 
         /// <summary>
         /// Types nested within the type, keyed by type name.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public JsonCaseInsensitiveStringDictionary<TypeData> NestedTypes { get; set; }
+        public JsonDictionary<string, TypeData> NestedTypes { get; set; }
 
         /// <summary>
         /// Create a deep clone of the member data object.
@@ -66,12 +66,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data.Types
             return new MemberData()
             {
                 Constructors = Constructors?.Select(c => (string[])c.Clone()).ToArray(),
-                Events = (JsonCaseInsensitiveStringDictionary<EventData>)Events?.Clone(),
-                Fields = (JsonCaseInsensitiveStringDictionary<FieldData>)Fields?.Clone(),
+                Events = (JsonDictionary<string, EventData>)Events?.Clone(),
+                Fields = (JsonDictionary<string, FieldData>)Fields?.Clone(),
                 Indexers = Indexers?.Select(i => (IndexerData)i.Clone()).ToArray(),
-                Methods = (JsonCaseInsensitiveStringDictionary<MethodData>)Methods?.Clone(),
-                NestedTypes = (JsonCaseInsensitiveStringDictionary<TypeData>)NestedTypes?.Clone(),
-                Properties = (JsonCaseInsensitiveStringDictionary<PropertyData>)Properties?.Clone(),
+                Methods = (JsonDictionary<string, MethodData>)Methods?.Clone(),
+                NestedTypes = (JsonDictionary<string, TypeData>)NestedTypes?.Clone(),
+                Properties = (JsonDictionary<string, PropertyData>)Properties?.Clone(),
             };
         }
     }

@@ -122,7 +122,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
         private static object Union(AvailableTypeData thisTypes, AvailableTypeData thatTypes)
         {
-            thisTypes.Assemblies = StringDictionaryUnion(thisTypes.Assemblies, thatTypes.Assemblies, Union);
+            thisTypes.Assemblies = DictionaryUnion(thisTypes.Assemblies, thatTypes.Assemblies, Union);
             thisTypes.TypeAccelerators = StringDictionaryUnion(thisTypes.TypeAccelerators, thatTypes.TypeAccelerators);
 
             return thisTypes;
@@ -136,10 +136,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
             {
                 if (thisAssembly.Types == null)
                 {
-                    thisAssembly.Types = new JsonCaseInsensitiveStringDictionary<JsonCaseInsensitiveStringDictionary<TypeData>>();
+                    thisAssembly.Types = new JsonDictionary<string, JsonDictionary<string, TypeData>>();
                 }
 
-                foreach (KeyValuePair<string, JsonCaseInsensitiveStringDictionary<TypeData>> nspace in thatAssembly.Types)
+                foreach (KeyValuePair<string, JsonDictionary<string, TypeData>> nspace in thatAssembly.Types)
                 {
                     if (!thisAssembly.Types.ContainsKey(nspace.Key))
                     {
@@ -147,7 +147,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
                         continue;
                     }
 
-                    thisAssembly.Types[nspace.Key] = StringDictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
+                    thisAssembly.Types[nspace.Key] = DictionaryUnion(thisAssembly.Types[nspace.Key], nspace.Value, Union);
                 }
             }
 
@@ -192,11 +192,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Utility
 
             thisMembers.Constructors = ParameterUnion(thisMembers.Constructors, thatMembers.Constructors);
 
-            thisMembers.Events = StringDictionaryUnion(thisMembers.Events, thatMembers.Events);
-            thisMembers.Fields = StringDictionaryUnion(thisMembers.Fields, thatMembers.Fields);
-            thisMembers.Methods = StringDictionaryUnion(thisMembers.Methods, thatMembers.Methods, Union);
-            thisMembers.NestedTypes = StringDictionaryUnion(thisMembers.NestedTypes, thatMembers.NestedTypes, Union);
-            thisMembers.Properties = StringDictionaryUnion(thisMembers.Properties, thatMembers.Properties, Union);
+            thisMembers.Events = DictionaryUnion(thisMembers.Events, thatMembers.Events);
+            thisMembers.Fields = DictionaryUnion(thisMembers.Fields, thatMembers.Fields);
+            thisMembers.Methods = DictionaryUnion(thisMembers.Methods, thatMembers.Methods, Union);
+            thisMembers.NestedTypes = DictionaryUnion(thisMembers.NestedTypes, thatMembers.NestedTypes, Union);
+            thisMembers.Properties = DictionaryUnion(thisMembers.Properties, thatMembers.Properties, Union);
 
             return thisMembers;
         }
