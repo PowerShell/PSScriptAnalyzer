@@ -336,17 +336,20 @@ Describe 'UseCompatibleCommands' {
                     {
                         $group.Count | Should -Be 1
                         $group.Group[0].Command | Should -BeExactly 'Get-WmiObject'
+                        break
                     }
 
                     'New-SelfSignedCertificate'
                     {
                         $group.Count | Should -Be 1
                         $group.Group[0].Command | Should -BeExactly 'New-SelfSignedCertificate'
+                        break
                     }
 
                     default
                     {
                         $group | Should -Be $null
+                        break
                     }
                 }
             }

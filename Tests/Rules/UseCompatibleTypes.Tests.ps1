@@ -203,17 +203,20 @@ Describe 'UseCompatibleTypes' {
                         $group.Count | Should -Be 2
                         $group[0].Group.TargetPlatform.PowerShell.Version.Major | Should -Be 5
                         $group[1].Group.TargetPlatform.PowerShell.Version.Major | Should -Be 5
+                        break
                     }
 
                     'Microsoft.PowerShellToStringCodeMethods'
                     {
                         $group.Count | Should -Be 1
                         $group[0].Group.TargetPlatform.PowerShell.Version.Major | Should -Be 6
+                        break
                     }
 
                     default
                     {
                         $group | Should -Be $null
+                        break
                     }
                 }
             }
