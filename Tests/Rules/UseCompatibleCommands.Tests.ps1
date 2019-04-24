@@ -327,7 +327,7 @@ Describe 'UseCompatibleCommands' {
             '
 
             $diagnostics.Count | Should -Be 2
-            $diagnosticGroups = Group-Object $diagnostics -Property Command
+            $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Command
             foreach ($group in $diagnosticGroups)
             {
                 switch ($group.Name)

@@ -193,7 +193,7 @@ Describe 'UseCompatibleTypes' {
             '
 
             $diagnostics.Count | Should -Be 2
-            $diagnosticGroups = Group-Object $diagnostics -Property Type
+            $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Type
             foreach ($group in $diagnosticGroups)
             {
                 switch ($group.Name)
