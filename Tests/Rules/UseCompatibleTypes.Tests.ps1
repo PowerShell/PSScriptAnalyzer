@@ -215,7 +215,7 @@ Describe 'UseCompatibleTypes' {
 
                     default
                     {
-                        $group | Should -Be $null
+                        $group.Name | Should -Be $null
                         break
                     }
                 }
