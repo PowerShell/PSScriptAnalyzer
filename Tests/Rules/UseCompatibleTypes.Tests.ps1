@@ -212,13 +212,6 @@ Describe 'UseCompatibleTypes' {
                         $group[0].Group.TargetPlatform.PowerShell.Version.Major | Should -Be 6
                         break
                     }
-
-                    default
-                    {
-                        $group.Name | Should -BeNullOrEmpty
-                        $group.Count | Should -Be 0
-                        break
-                    }
                 }
             }
         }

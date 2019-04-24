@@ -345,13 +345,6 @@ Describe 'UseCompatibleCommands' {
                         $group.Group[0].Command | Should -BeExactly 'New-SelfSignedCertificate'
                         break
                     }
-
-                    default
-                    {
-                        $group.Name | Should -BeNullOrEmpty
-                        $group.Count | Should -Be 0
-                        break
-                    }
                 }
             }
         }
