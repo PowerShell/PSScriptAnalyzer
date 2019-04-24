@@ -13,7 +13,7 @@ due to those PowerShell versions not being able to parse the incompatible syntax
 @{
     Rules = @{
         UseCompatibleCommmands = @{
-            Enabled = $true
+            Enable = $true
             TargetedVersions = @(
                 "6.0",
                 "5.1",
