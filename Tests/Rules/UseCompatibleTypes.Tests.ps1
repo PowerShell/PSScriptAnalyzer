@@ -15,6 +15,9 @@ $script:Win10_5_profile = 'win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.4
 $script:Win10_6_1_profile = 'win-48_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core'
 $script:Ubuntu1804_6_1_profile = 'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
 
+$script:AzF_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azurefunctions.json").Path
+$script:AzA_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azureautomation.json").Path
+
 $script:TypeCompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = '[System.Management.Automation.ModuleIntrinsics]::GetModulePath("here", "there", "everywhere")'; Types = @('System.Management.Automation.ModuleIntrinsics'); Version = "3.0"; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = '$ast -is [System.Management.Automation.Language.FunctionMemberAst]'; Types = @('System.Management.Automation.Language.FunctionMemberAst'); Version = "3.0"; OS = 'Windows'; ProblemCount = 1 }
@@ -164,6 +167,55 @@ Describe 'UseCompatibleTypes' {
 
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/../../" -Settings $settings -IncludeRule PSUseCompatibleTypes
             $diagnostics.Count | Should -Be 0
+        }
+    }
+
+    Context 'Targeting new-form Az profiles alongside older profiles' {
+        BeforeAll {
+            $settings = @{
+                Rules = @{
+                    $script:RuleName = @{
+                        $script:TargetProfileConfigKey = @(
+                            $script:AzF_profile
+                            $script:AzA_profile
+                            $script:Win10_5_profile
+                        )
+                    }
+                }
+            }
+        }
+
+        It "Finds AzF problems with a script" {
+            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule $script:RuleName -Settings $settings -ScriptDefinition '
+            [System.Collections.Immutable.ImmutableList[string]]::Empty
+            [Microsoft.PowerShell.ToStringCodeMethods]::PropertyValueCollection($obj)
+            '
+
+            $diagnostics.Count | Should -Be 2
+            $diagnosticGroups = Group-Object $diagnostics -Property Type
+            foreach ($group in $diagnosticGroups)
+            {
+                switch ($group.Name)
+                {
+                    'System.Collections.Immutable.ImmutableList[System.String]'
+                    {
+                        $group.Count | Should -Be 2
+                        $group[0].Group.TargetPlatform.PowerShell.Version.Major | Should -Be 5
+                        $group[1].Group.TargetPlatform.PowerShell.Version.Major | Should -Be 5
+                    }
+
+                    'Microsoft.PowerShellToStringCodeMethods'
+                    {
+                        $group.Count | Should -Be 1
+                        $group[0].Group.TargetPlatform.PowerShell.Version.Major | Should -Be 6
+                    }
+
+                    default
+                    {
+                        $group | Should -Be $null
+                    }
+                }
+            }
         }
     }
 }
