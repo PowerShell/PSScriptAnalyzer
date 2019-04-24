@@ -308,6 +308,7 @@ Describe 'UseCompatibleCommands' {
             $settings = @{
                 Rules = @{
                     $script:RuleName = @{
+                        Enable = $true
                         $script:TargetProfileConfigKey = @(
                             $script:AzF_profile
                             $script:AzA_profile
