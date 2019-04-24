@@ -348,7 +348,8 @@ Describe 'UseCompatibleCommands' {
 
                     default
                     {
-                        $group.Name | Should -Be $null
+                        $group.Name | Should -BeNullOrEmpty
+                        $group.Count | Should -Be 0
                         break
                     }
                 }
