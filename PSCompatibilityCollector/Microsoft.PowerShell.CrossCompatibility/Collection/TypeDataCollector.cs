@@ -27,18 +27,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// </summary>
         public class Builder
         {
-            private IReadOnlyCollection<string> _excludedAssemblyPathPrefixes;
-
             /// <summary>
-            /// Exclude assemblies on paths starting with the given prefixes when collecting
-            /// .NET type information.
+            /// Assemblies on paths starting with these prefixes will be excluded
+            /// when collecting .NET type information.
             /// </summary>
-            /// <param name="assemblyPrefixes">The path prefixes to exclude assemblies with.</param>
-            public Builder ExcludedAssemblyPathPrefixes(IReadOnlyCollection<string> assemblyPrefixes)
-            {
-                _excludedAssemblyPathPrefixes = assemblyPrefixes;
-                return this;
-            }
+            public IReadOnlyCollection<string> ExcludedAssemblyPathPrefixes { get; set; }
 
             /// <summary>
             /// Build the configured TypeDataCollector object.
@@ -46,7 +39,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             /// <returns>The constructed TypeDataCollector object.</returns>
             public TypeDataCollector Build()
             {
-                return new TypeDataCollector(_excludedAssemblyPathPrefixes);
+                return new TypeDataCollector(ExcludedAssemblyPathPrefixes);
             }
         }
 
@@ -190,7 +183,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             if (types.Length > 0)
             {
                 namespacedTypes = new JsonDictionary<string, JsonDictionary<string, TypeData>>();
-                foreach (Type type in asm.GetTypes())
+                foreach (Type type in types)
                 {
                     if (!type.IsPublic)
                     {

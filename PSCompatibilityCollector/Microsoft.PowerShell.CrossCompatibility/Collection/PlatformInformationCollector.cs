@@ -143,7 +143,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     {
                         osData.ServicePack = Environment.OSVersion.ServicePack;
                     }
-                    osData.SkuId = GetSkuId();
+                    osData.SkuId = GetWinSkuId();
                     break;
 
                 case OSFamily.Linux:
@@ -265,8 +265,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// Get the Windows SKU ID of the current PowerShell session.
         /// </summary>
         /// <returns>An unsigned 32-bit integer representing the SKU of the current Windows OS.</returns>
-        private uint GetSkuId()
+        private uint GetWinSkuId()
         {
+            // There are a few ways to get this, with varying support on different systems.
+            // So we try them in order from least to most expensive.
+
             // If we have a cached value here, try this first
             if (_lazyWin32OperatingSystemInfo.IsValueCreated
                 && _lazyWin32OperatingSystemInfo.Value != null

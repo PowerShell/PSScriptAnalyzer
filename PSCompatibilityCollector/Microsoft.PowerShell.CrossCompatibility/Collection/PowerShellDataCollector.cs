@@ -27,17 +27,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// </summary>
         public class Builder
         {
-            private IReadOnlyCollection<string> _modulePrefixes;
-
             /// <summary>
-            /// Add path prefixes that modules should be excluded with.
+            /// Modules on paths underneath any of these will be excluded.
             /// </summary>
-            /// <param name="modulePrefixes">The path prefixes of modules to exclude.</param>
-            public Builder ExcludedModulePathPrefixes(IReadOnlyCollection<string> modulePrefixes)
-            {
-                _modulePrefixes = modulePrefixes;
-                return this;
-            }
+            public IReadOnlyCollection<string> ExcludedModulePathPrefixes { get; set; }
 
             /// <summary>
             /// Build a new PowerShellDataCollector with the given configuration.
@@ -47,7 +40,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             /// <returns>The constructed PowerShell data collector object.</returns>
             public PowerShellDataCollector Build(SMA.PowerShell pwsh, PowerShellVersion psVersion)
             {
-                return new PowerShellDataCollector(pwsh, psVersion, _modulePrefixes);
+                return new PowerShellDataCollector(pwsh, psVersion, ExcludedModulePathPrefixes);
             }
         }
 
@@ -57,7 +50,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private const string THIS_MODULE_NAME = "PSCompatibilityCollector";
 
-        private static readonly Regex s_typeDataRegex = new Regex("Error in TypeData \"([A-Za-z.]+)\"", RegexOptions.Compiled);
+        private static readonly Regex s_typeDataRegex = new Regex("Error in TypeData \"([A-Za-z\\.]+)\"", RegexOptions.Compiled);
 
         private static readonly CmdletInfo s_gmoInfo = new CmdletInfo("Get-Module", typeof(GetModuleCommand));
 
@@ -151,7 +144,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
                 Tuple<string, Version, ModuleData> moduleData = LoadAndGetModuleData(module, out Exception error);
 
-                if (moduleData == null)
+                if (moduleData == null && error != null)
                 {
                     errs.Add(error);
                     continue;
@@ -306,26 +299,30 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             // Get default variables and core aliases out of a fresh runspace
             using (SMA.PowerShell freshPwsh = SMA.PowerShell.Create(RunspaceMode.NewRunspace))
             {
-                Collection<PSVariable> defaultVariables = freshPwsh.AddCommand("Get-ChildItem")
-                    .AddParameter("Path", "variable:")
-                    .InvokeAndClear<PSVariable>();
+                Collection<PSObject> varsAndAliases = freshPwsh.AddCommand("Get-ChildItem")
+                    .AddParameter("Path", "variable:,alias:")
+                    .InvokeAndClear();
 
-                var variableArray = new string[defaultVariables.Count];
-                for (int i = 0; i < variableArray.Length; i++)
-                {
-                    variableArray[i] = defaultVariables[i].Name;
-                }
-                moduleData.Variables = variableArray;
-
-                IEnumerable<AliasInfo> coreAliases = freshPwsh.AddCommand("Get-ChildItem")
-                    .AddParameter("Path", "alias:")
-                    .InvokeAndClear<AliasInfo>();
-
+                var variables = new List<string>();
                 var aliases = new JsonCaseInsensitiveStringDictionary<string>();
-                foreach (AliasInfo aliasInfo in coreAliases)
+
+                foreach (PSObject returnedObject in varsAndAliases)
                 {
-                    aliases.Add(aliasInfo.Name, GetSingleAliasData(aliasInfo));
+                    switch (returnedObject.BaseObject)
+                    {
+                        case PSVariable variable:
+                            variables.Add(variable.Name);
+                            continue;
+
+                        case AliasInfo alias:
+                            aliases.Add(alias.Name, GetSingleAliasData(alias));
+                            continue;
+
+                        // Skip over other objects we get back, since there's no reason to throw
+                    }
                 }
+
+                moduleData.Variables = variables.ToArray();
                 moduleData.Aliases = aliases;
             }
 
@@ -676,8 +673,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private static ReadOnlySet<string> GetPowerShellCommonParameterNames()
         {
+            const BindingFlags propertyBindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
             var set = new List<string>();
-            foreach (PropertyInfo property in typeof(CommonParameters).GetProperties())
+            foreach (PropertyInfo property in typeof(CommonParameters).GetProperties(propertyBindingFlags))
             {
                 set.Add(property.Name);
             }

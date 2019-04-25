@@ -96,12 +96,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
 
                 if (ExcludeModulePathPrefix != null && ExcludeModulePathPrefix.Length > 0)
                 {
-                    collectorBuilder.ExcludedModulePathPrefixes(ExcludeModulePathPrefix);
+                    collectorBuilder.ExcludedModulePathPrefixes = ExcludeModulePathPrefix;
                 }
 
                 if (ExcludeAssemblyPathPrefix != null && ExcludeAssemblyPathPrefix.Length > 0)
                 {
-                    collectorBuilder.ExcludeAssemblyPathPrefixes(ExcludeAssemblyPathPrefix);
+                    collectorBuilder.ExcludedAssemblyPathPrefixes = ExcludeAssemblyPathPrefix;
                 }
 
                 using (var profileCollector = collectorBuilder.Build(pwsh))

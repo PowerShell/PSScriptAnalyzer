@@ -42,23 +42,27 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
 
             /// <summary>
-            /// Add path prefixes of modules to exclude.
+            /// Modules on paths starting with these prefixes will excluded from profile collection.
             /// </summary>
-            /// <param name="modulePrefixes">Path prefixes of modules to exclude.</param>
-            public Builder ExcludedModulePathPrefixes(IReadOnlyCollection<string> modulePrefixes)
+            public IReadOnlyCollection<string> ExcludedModulePathPrefixes
             {
-                _pwshDataCollectorBuilder.ExcludedModulePathPrefixes(modulePrefixes);
-                return this;
+                get => _pwshDataCollectorBuilder.ExcludedModulePathPrefixes;
+                set
+                {
+                    _pwshDataCollectorBuilder.ExcludedModulePathPrefixes = value;
+                }
             }
 
             /// <summary>
-            /// Add path prefixes of assemblies to exclude.
+            /// .NET assemblies on paths starting with these prefixes will excluded from profile collection.
             /// </summary>
-            /// <param name="assemblyPrefixes">Path prefixes of assemblies to exclude.</param>
-            public Builder ExcludeAssemblyPathPrefixes(IReadOnlyCollection<string> assemblyPrefixes)
+            public IReadOnlyCollection<string> ExcludedAssemblyPathPrefixes
             {
-                _typeDataColletorBuilder.ExcludedAssemblyPathPrefixes(assemblyPrefixes);
-                return this;
+                get => _typeDataColletorBuilder.ExcludedAssemblyPathPrefixes;
+                set
+                {
+                    _typeDataColletorBuilder.ExcludedAssemblyPathPrefixes = value;
+                }
             }
 
             /// <summary>
@@ -269,9 +273,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             {
                 if (disposing)
                 {
-                    _pwsh.Dispose();
-                    _platformInfoCollector.Dispose();
                     _pwshDataCollector.Dispose();
+                    _platformInfoCollector.Dispose();
+                    _pwsh.Dispose();
                 }
 
                 _pwsh = null;
