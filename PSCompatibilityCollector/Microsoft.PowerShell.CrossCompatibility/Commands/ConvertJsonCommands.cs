@@ -96,18 +96,22 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
                     {
                         case string jsonString:
                             WriteObject(_serializer.Deserialize(jsonString));
-                            return;
+                            continue;
 
                         case FileInfo jsonFile:
                             WriteObject(_serializer.Deserialize(jsonFile));
-                            return;
+                            continue;
 
                         case TextReader jsonReader:
                             WriteObject(_serializer.Deserialize(jsonReader));
-                            return;
+                            continue;
 
                         default:
-                            throw new ArgumentException($"Unsupported type for {nameof(JsonSource)} parameter. Should be a string, FileInfo or TextReader object.");
+                            this.WriteExceptionAsError(
+                                new ArgumentException($"Unsupported type for {nameof(JsonSource)} parameter. Should be a string, FileInfo or TextReader object."),
+                                errorId: "InvalidArgument",
+                                errorCategory: ErrorCategory.InvalidArgument);
+                            continue;
                     }
                 }
             }
