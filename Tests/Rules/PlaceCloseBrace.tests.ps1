@@ -80,19 +80,31 @@ $hashtable = @{a = 1; b = 2}
 
     Context "When there is a multi-line hashtable" {
         BeforeAll {
-            $def = @'
-$hashtable = @{
-    a = 1
-    b = 2}
-'@
+
             $ruleConfiguration.'NoEmptyLineBefore' = $false
             $ruleConfiguration.'IgnoreOneLineBlock' = $true
             $ruleConfiguration.'NewLineAfter' = $false
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         }
 
         It "Should find a violation" {
+            $def = @'
+            $hashtable = @{
+                a = 1
+                b = 2}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             $violations.Count | Should -Be 1
+        }
+
+        It "Should not crash when hashtable is defined on first token" {
+            $def = @'
+            @{
+                key = value }
+'@
+
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction Stop
+            $violations.Count | Should -Be 1
+            Invoke-Formatter -ScriptDefinition $def -ErrorAction Stop
         }
     }
 
