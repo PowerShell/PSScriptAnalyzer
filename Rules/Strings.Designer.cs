@@ -205,7 +205,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mandatory Parameter &apos;{0}&apos; is initialized in the Param block. To fix a violation of this rule, please leave it unintialized..
+        ///   Looks up a localized string similar to Mandatory Parameter &apos;{0}&apos; is initialized in the Param block. To fix a violation of this rule, please leave it uninitialized..
         /// </summary>
         internal static string AvoidDefaultValueForMandatoryParameterError {
             get {
