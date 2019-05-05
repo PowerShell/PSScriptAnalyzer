@@ -83,4 +83,58 @@ class ClassWithNoParent
             $violations.Count | Should -Be 0
         }
     }
+
+    Context "When a CIM class has no parent, but does contain a subclass which should not be processed" {
+        # regression test for #1192 - just check no uncaught exception
+        It "Should find no violations, and throw no exceptions" -Skip:($IsLinux -or $IsMacOS) {
+
+            # Arrange test content in testdrive
+            $dscResources = Join-Path -Path "TestDrive:" -ChildPath "DSCResources"
+            $noparentClassDir = Join-Path -Path $dscResources "ClassWithNoParent"
+
+            # need a fake module
+            $fakeModulePath = Join-Path -Path "TestDrive:" -ChildPath "test.psd1"
+            Set-Content -Path $fakeModulePath -Value @"
+@{
+    ModuleVersion = '1.0'
+    GUID = 'fe2acc06-d9e6-4ca6-b57d-068e8fc5ad57'
+    Author = 'DummyAuthor'
+}
+"@
+            # and under it a directory called dscresources\something
+            New-Item -ItemType Directory -Path $noParentClassDir
+            $noparentClassFilepath = Join-Path -Path $noParentClassDir -ChildPath 'MSFT_ClassWithNoParent.psm1'
+            $noparentClassMofFilepath = Join-Path -Path $noParentClassDir -ChildPath 'MSFT_ClassWithNoParent.schema.mof'
+
+            # containing a .psm1 file and a .schema.mof file with same base name
+            Set-Content -Path $noParentClassFilepath -Value @"
+#requires -Version 4.0 -Modules CimCmdlets
+function Get-TargetResource { }
+function Set-TargetResource { }
+function Test-TargetResource { }
+Export-ModuleMember -Function *-TargetResource
+"@
+
+            Set-Content -Path $noParentClassMofFilePath -Value @"
+[ClassVersion("1.0.0.0")]
+Class MSFT_SubClass
+{
+    [Key, Description("Key of the subclass")] String Name;
+    [Required, Description("Required parameter of the subclass")] String Description;
+    [Write, Description("Additional non-required parameter")] Boolean Enabled;
+};
+
+[ClassVersion("1.0.0"), FriendlyName("ClassWithNoParent")]
+class MSFT_ClassWithNoParent : OMI_BaseResource
+{
+    [write, Description("dummy subclass variable"), EmbeddedInstance("MSFT_SubClass")]
+    string Subclass;
+};
+"@
+
+            # Act - run scriptanalyzer
+            $violations = Invoke-ScriptAnalyzer -Path $noParentClassFilepath -IncludeRule $ruleName -ErrorAction Stop
+            $violations.Count | Should -Be 0
+        }
+    }
 }
