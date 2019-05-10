@@ -202,6 +202,10 @@ Describe "Resolve DSC Resource Dependency" {
             Copy-Item -Recurse -Path $modulePath -Destination $tempModulePath
         }
 
+        AfterAll {
+            $env:PSModulePath = $oldPSModulePath
+        }
+
         It "has a single parse error" -skip:$skipTest {
             # invoke script analyzer
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable analyzerErrors -ErrorAction SilentlyContinue

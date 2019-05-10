@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 $script:RuleName = 'PSUseCompatibleCommands'
@@ -14,6 +14,9 @@ $script:Srv2019_6_1_profile = 'win-8_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_
 $script:Win10_5_profile = 'win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
 $script:Win10_6_1_profile = 'win-48_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core'
 $script:Ubuntu1804_6_1_profile = 'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
+
+$script:AzF_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azurefunctions.json").Path
+$script:AzA_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azureautomation.json").Path
 
 $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = 'Write-Information "Information"'; Commands = @("Write-Information"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
@@ -297,6 +300,53 @@ Describe 'UseCompatibleCommands' {
 
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/../../" -IncludeRule $script:RuleName -Settings $settings
             $diagnostics.Count | Should -Be 0
+        }
+    }
+
+    Context 'Targeting new-form Az profiles alongside older profiles' {
+        BeforeAll {
+            $settings = @{
+                Rules = @{
+                    $script:RuleName = @{
+                        Enable = $true
+                        $script:TargetProfileConfigKey = @(
+                            $script:AzF_profile
+                            $script:AzA_profile
+                            $script:Win10_5_profile
+                        )
+                    }
+                }
+            }
+        }
+
+        It "Finds AzF problems with a script" {
+            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule $script:RuleName -Settings $settings -ScriptDefinition '
+                Get-WmiObject Win32_Process
+                New-SelfSignedCertificate
+                Invoke-MySpecialFunction
+            '
+
+            $diagnostics.Count | Should -Be 2
+            $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Command
+            foreach ($group in $diagnosticGroups)
+            {
+                switch ($group.Name)
+                {
+                    'Get-WmiObject'
+                    {
+                        $group.Count | Should -Be 1
+                        $group.Group[0].Command | Should -BeExactly 'Get-WmiObject'
+                        break
+                    }
+
+                    'New-SelfSignedCertificate'
+                    {
+                        $group.Count | Should -Be 1
+                        $group.Group[0].Command | Should -BeExactly 'New-SelfSignedCertificate'
+                        break
+                    }
+                }
+            }
         }
     }
 }

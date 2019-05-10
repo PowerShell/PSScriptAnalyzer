@@ -48,7 +48,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\PSCompatibilityAnalyzer\Microsoft.PowerShell.CrossCompatibility\Microsoft.PowerShell.CrossCompatibility.csproj" />
+    <ProjectReference Include="..\PSCompatibilityCollector\Microsoft.PowerShell.CrossCompatibility\Microsoft.PowerShell.CrossCompatibility.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
