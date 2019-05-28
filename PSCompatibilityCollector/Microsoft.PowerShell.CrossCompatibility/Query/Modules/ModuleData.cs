@@ -13,9 +13,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class ModuleData
     {
+        private readonly RuntimeData _parent;
+
         private readonly Data.ModuleData _moduleData;
 
-        private readonly Lazy<Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>, IReadOnlyDictionary<string, CommandData>>> _commands;
+        private readonly Lazy<Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>>> _lazyCommands;
+
+        private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>> _lazyAliases;
 
         /// <summary>
         /// Create a query object around a module data object.
@@ -23,14 +27,16 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <param name="name">The name of the module.</param>
         /// <param name="version">The version of the module.</param>
         /// <param name="moduleData">The module data object.</param>
-        public ModuleData(string name, Version version, Data.ModuleData moduleData)
+        public ModuleData(string name, Version version, RuntimeData parent, Data.ModuleData moduleData)
         {
             _moduleData = moduleData;
+            _parent = parent;
 
             Name = name;
             Version = version;
 
-            _commands = new Lazy<Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>, IReadOnlyDictionary<string, CommandData>>>(() => CreateCommandTables(moduleData.Functions, moduleData.Cmdlets, moduleData.Aliases));
+            _lazyCommands = new Lazy<Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>>>(() => CreateCommandTables(moduleData.Functions, moduleData.Cmdlets));
+            _lazyAliases = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateAliasTable(_moduleData.Aliases));
         }
 
         /// <summary>
@@ -51,12 +57,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// Functions exported by the module.
         /// </summary>
-        public IReadOnlyDictionary<string, FunctionData> Functions => _commands.Value.Item1;
+        public IReadOnlyDictionary<string, FunctionData> Functions => _lazyCommands.Value.Item1;
 
         /// <summary>
         /// Cmdlets exported by the module.
         /// </summary>
-        public IReadOnlyDictionary<string, CmdletData> Cmdlets => _commands.Value.Item2;
+        public IReadOnlyDictionary<string, CmdletData> Cmdlets => _lazyCommands.Value.Item2;
 
         /// <summary>
         /// Variables exported by the module.
@@ -66,16 +72,33 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// Aliases exported by the module.
         /// </summary>
-        public IReadOnlyDictionary<string, CommandData> Aliases => _commands.Value.Item3;
+        public IReadOnlyDictionary<string, IReadOnlyList<CommandData>> Aliases => _lazyAliases.Value;
 
-        private static Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>, IReadOnlyDictionary<string, CommandData>> CreateCommandTables(
+        private IReadOnlyDictionary<string, IReadOnlyList<CommandData>> CreateAliasTable(IReadOnlyDictionary<string, string> aliases)
+        {
+            if (aliases == null || aliases.Count == 0)
+            {
+                return null;
+            }
+
+            var aliasTable = new Dictionary<string, IReadOnlyList<CommandData>>(StringComparer.OrdinalIgnoreCase);
+            foreach (KeyValuePair<string, string> alias in aliases)
+            {
+                if (_parent.Aliases.TryGetValue(alias.Key, out IReadOnlyList<CommandData> aliasedCommands))
+                {
+                    aliasTable[alias.Key] = aliasedCommands;
+                }
+            }
+
+            return aliasTable;
+        }
+
+        private static Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>> CreateCommandTables(
             IReadOnlyDictionary<string, Data.FunctionData> functions,
-            IReadOnlyDictionary<string, Data.CmdletData> cmdlets,
-            IReadOnlyDictionary<string, string> aliases)
+            IReadOnlyDictionary<string, Data.CmdletData> cmdlets)
         {
             Dictionary<string, FunctionData> funcDict = null;
             Dictionary<string, CmdletData> cmdletDict = null;
-            Dictionary<string, CommandData> aliasDict = null;
 
             if (functions != null)
             {
@@ -95,29 +118,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
                 }
             }
 
-            if (aliases != null)
-            {
-                aliasDict = new Dictionary<string, CommandData>(aliases.Count, StringComparer.OrdinalIgnoreCase);
-                foreach (KeyValuePair<string, string> alias in aliases)
-                {
-                    if (funcDict != null && funcDict.TryGetValue(alias.Value, out FunctionData function))
-                    {
-                        aliasDict[alias.Key] = function;
-                        continue;
-                    }
-
-                    if (cmdletDict != null && cmdletDict.TryGetValue(alias.Value, out CmdletData cmdlet))
-                    {
-                        aliasDict[alias.Key] = cmdlet;
-                        continue;
-                    }
-                }
-            }
-
-            return new Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>, IReadOnlyDictionary<string, CommandData>>(
+            return new Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>>(
                 funcDict,
-                cmdletDict,
-                aliasDict);
+                cmdletDict);
         }
     }
 }

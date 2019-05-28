@@ -36,6 +36,8 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-FileHash $pshome\powershell.exe | Format-List'; Commands = @("Get-FileHash"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Save-Help -Module $m -DestinationPath "C:\SavedHelp"'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2012_3_profile; Script = 'gci .'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2012_3_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Srv2012r2_4_profile; Script = 'Write-Information "Information"'; Commands = @("Write-Information"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012r2_4_profile; Script = '"Hello World" | ConvertFrom-String | Get-Member'; Commands = @("ConvertFrom-String"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
@@ -51,11 +53,16 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012r2_4_profile; Script = 'Start-Job { Write-Host "Hello" } | Debug-Job'; Commands = @("Debug-Job"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012r2_4_profile; Script = 'Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine -Name ApplicationBase'; Commands = @("Get-ItemPropertyValue"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012r2_4_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'gci .'; Commands = @(); Version = "4.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "4.0"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Srv2019_5_profile; Script = "Remove-Alias gcm"; Commands = @("Remove-Alias"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_5_profile; Script = "Get-Uptime"; Commands = @("Get-Uptime"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_5_profile; Script = "Remove-Service 'MyService'"; Commands = @("Remove-Service"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_5_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_5_profile; Script = 'gci .'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_5_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_5_profile; Script = 'fhx $filePath'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Srv2019_6_1_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'ConvertFrom-String $str'; Commands = @("ConvertFrom-String"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
@@ -88,13 +95,17 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2019_6_1_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'curl $uri'; Commands = @("curl"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'gci .'; Commands = @(); Version = "6.1"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2016_6_1_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "6.1"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-AuthenticodeSignature ./script.ps1'; Commands = @("Get-AuthenticodeSignature"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-Service systemd'; Commands = @("Get-Service"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Start-Service -Name "sshd"'; Commands = @("Start-Service"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-PSSessionConfiguration -Name Full  | Format-List -Property *'; Commands = @("Get-PSSessionConfiguration"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-CimInstance Win32_StartupCommand'; Commands = @("Get-CimInstance"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
-    @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
+    @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'gci .'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
+    @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
 )
 
 $script:ParameterCompatibilityTestCases = @(
