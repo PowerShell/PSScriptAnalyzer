@@ -41,6 +41,7 @@ function Test-CompareWithNull
 ## Try it Yourself
 
 ``` PowerShell
-if (@() -eq $null) { 'true' } else { 'false' }  # Returns false
-if ($null -ne @()) { 'true' } else { 'false' }  # Returns true
+# Both expressions below return 'false' because the comparison does not return an object and therefore the if statement always falls through:
+if (@() -eq $null) { 'true' }else { 'false' }
+if (@() -ne $null) { 'true' }else { 'false' }
 ```
