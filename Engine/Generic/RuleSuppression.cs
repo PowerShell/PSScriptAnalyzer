@@ -74,7 +74,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             //    //    Error = String.Format(Strings.RuleSuppressionRuleNameNotFound, _ruleName);
             //    //}
             //}
-        }
+        //}
 
         /// <summary>
         /// ID of the violation instance
