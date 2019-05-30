@@ -43,5 +43,16 @@ function Test-CompareWithNull
 ``` PowerShell
 # Both expressions below return 'false' because the comparison does not return an object and therefore the if statement always falls through:
 if (@() -eq $null) { 'true' } else { 'false' }
-if (@() -ne $null) { 'true' }else { 'false' }
+if (@() -ne $null) { 'true' }else { 'false' } 
+```
+This is just the way how the comparison operator works (by design) but as demonstrated this can lead to unintuitive behaviour, especially when the intent is just a null check. The following example demonstrated the designed behaviour of the comparison operator, whereby for each element in the collection, the comparison with the right hand side is done, and where true, that element in the collection is returned.
+``` PowerShell
+PS> 1,2,3,1,2 -eq $null
+PS> 1,2,3,1,2 -eq 1    
+1
+1
+PS> (1,2,3,1,2 -eq $null).count            
+0
+PS> (1,2,$null,3,$null,1,2 -eq $null).count
+2
 ```
