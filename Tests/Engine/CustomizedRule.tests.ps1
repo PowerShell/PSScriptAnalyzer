@@ -192,15 +192,8 @@ Describe "Test importing correct customized rules" {
 				)
 
 				if ($ast.GetCommandName() -eq 'Invoke-Something') {
-					$correctionExtent = New-Object 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent' $ast.Extent.StartLineNumber,$ast.Extent.EndLineNumber,$ast.Extent.StartColumnNumber,$ast.Extent.EndColumnNumber,'correction','description'
-
-					# rule name has to match function name (1.18)
-					[Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord]@{
-						RuleName               = REPLACE_WITH_RULE_NAME_EXPRESSION
-						Message                = 'Message about usage of Invoke-Something'
-						Extent                 = $ast.Extent
-						"Severity"             = "Warning"
-					}
+					New-Object -Typename 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord' `
+								-ArgumentList 'This is help',$ast.Extent,REPLACE_WITH_RULE_NAME_EXPRESSION,Warning,$ast.Extent.File,$null,$null
 				}
 			}
 '@
