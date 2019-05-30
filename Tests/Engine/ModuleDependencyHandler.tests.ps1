@@ -3,7 +3,7 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 Describe "Resolve DSC Resource Dependency" {
     BeforeAll {
         $skipTest = $false
-        if ($IsLinux -or $IsMacOS -or $testingLibararyUsage -or ($PSversionTable.PSVersion -lt [Version]'5.0.0'))
+        if ($IsMacOS -or $testingLibararyUsage -or ($PSversionTable.PSVersion -lt [Version]'5.0.0'))
         {
             $skipTest = $true
             return
@@ -46,6 +46,9 @@ Describe "Resolve DSC Resource Dependency" {
             $depHandler.TempPath | Should -Be $expectedPath
 
             $expectedLocalAppDataPath = $env:LOCALAPPDATA
+            if ($IsLinux -or $IsMacOS) {
+                $expectedLocalAppDataPath = $env:HOME
+            }
             $depHandler.LocalAppDataPath | Should -Be $expectedLocalAppDataPath
 
             $expectedModuleRepository = "PSGallery"
