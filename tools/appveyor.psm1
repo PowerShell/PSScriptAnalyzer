@@ -51,10 +51,21 @@ function Invoke-AppveyorTest {
     Write-Verbose -Verbose ("Running tests on PowerShell version " + $PSVersionTable.PSVersion)
     Write-Verbose -Verbose "Language set to '${env:LANG}'"
 
-    # Copy the generated modules into the out directory
-    $modulePath = $env:PSModulePath.Split([System.IO.Path]::PathSeparator) | Where-Object { Test-Path $_} | Select-Object -First 1
-    Copy-Item "${CheckoutPath}\out\PSScriptAnalyzer" "$modulePath\" -Recurse -Force
-    Copy-Item "${CheckoutPath}\PSCompatibilityCollector\out\PSCompatibilityCollector" "$modulePath\" -Recurse -Force
+    # set up env:PSModulePath to the build location, don't copy it to the "normal place"
+    $analyzerVersion = ([xml](Get-Content "${CheckoutPath}\Engine\Engine.csproj")).SelectSingleNode(".//VersionPrefix")."#text".Trim()
+
+    if ( $analyzerVersion -lt 5 ) {
+        $versionModuleDir = "${CheckoutPath}\out\PSScriptAnalyzer\${analyzerVersion}"
+        Rename-Item "${versionModuleDir}" "${CheckoutPath}\out\PSScriptAnalyzer\PSScriptAnalyzer"
+        $moduleDir = "${CheckoutPath}\out\PSScriptAnalyzer"
+    }
+    else{
+        $moduleDir = "${CheckoutPath}\out"
+    }
+
+    $env:PSModulePath = "${moduleDir}","${env:PSModulePath}" -join [System.IO.Path]::PathSeparator
+    Write-Verbose -Verbose "module path: ${env:PSModulePath}"
+
 
     # Set up testing assets
     $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
