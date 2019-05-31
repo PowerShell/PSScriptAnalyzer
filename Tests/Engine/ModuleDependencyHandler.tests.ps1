@@ -41,7 +41,7 @@ Describe "Resolve DSC Resource Dependency" {
 
     Context "Module handler class" {
         BeforeAll {
-            if ( $skipTest ) { return }
+            if ($PSversionTable.PSVersion -lt [Version]'5.0.0') { return }
             $moduleHandlerType = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]
             $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
             $oldPSModulePath = $env:PSModulePath
