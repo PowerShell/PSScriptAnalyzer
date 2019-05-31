@@ -53,8 +53,10 @@ function Invoke-AppveyorTest {
 
     # set up env:PSModulePath to the build location, don't copy it to the "normal place"
     $analyzerVersion = ([xml](Get-Content "${CheckoutPath}\Engine\Engine.csproj")).SelectSingleNode(".//VersionPrefix")."#text".Trim()
+    $majorVersion = ([System.Version]$analyzerVersion).Major
 
-    if ( $analyzerVersion -lt 5 ) {
+    Get-ChildItem -rec -file -name "${CheckoutPath}/out" | Write-Verbose -Verbose
+    if ( $majorVersion -lt 5 ) {
         $versionModuleDir = "${CheckoutPath}\out\PSScriptAnalyzer\${analyzerVersion}"
         Rename-Item "${versionModuleDir}" "${CheckoutPath}\out\PSScriptAnalyzer\PSScriptAnalyzer"
         $moduleDir = "${CheckoutPath}\out\PSScriptAnalyzer"
