@@ -63,7 +63,7 @@ Describe "UseIdenticalMandatoryParametersForDSC" {
 }
 "@
             # and under it a directory called dscresources\something
-            New-Item -ItemType Directory -Path $noParentClassDir
+            New-Item -ItemType Directory -Path $noParentClassDir -force
             $noparentClassFilepath = Join-Path -Path $noParentClassDir -ChildPath 'ClassWithNoParent.psm1'
             $noparentClassMofFilepath = Join-Path -Path $noParentClassDir -ChildPath 'ClassWithNoParent.schema.mof'
 
@@ -102,7 +102,7 @@ class ClassWithNoParent
 }
 "@
             # and under it a directory called dscresources\something
-            New-Item -ItemType Directory -Path $noParentClassDir
+            New-Item -ItemType Directory -Path $noParentClassDir -force
             $noparentClassFilepath = Join-Path -Path $noParentClassDir -ChildPath 'MSFT_ClassWithNoParent.psm1'
             $noparentClassMofFilepath = Join-Path -Path $noParentClassDir -ChildPath 'MSFT_ClassWithNoParent.schema.mof'
 

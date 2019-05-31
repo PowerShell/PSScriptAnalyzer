@@ -3,7 +3,18 @@
 
 # Build module for PowerShell ScriptAnalyzer
 $projectRoot = $PSScriptRoot
-$destinationDir = Join-Path -Path $projectRoot -ChildPath (Join-Path -Path "out" -ChildPath "PSScriptAnalyzer")
+$analyzerName = "PSScriptAnalyzer"
+
+function Get-AnalyzerVersion
+{
+    $csprojPath = [io.path]::Combine($projectRoot,"Engine","Engine.csproj")
+    $xml = [xml](Get-Content "${csprojPath}")
+    $xml.SelectSingleNode(".//VersionPrefix")."#text"
+}
+
+$analyzerVersion = Get-AnalyzerVersion
+# location where analyzer goes
+$script:destinationDir = [io.path]::Combine($projectRoot,"out","${analyzerName}", $analyzerVersion)
 
 function Publish-File
 {
@@ -40,7 +51,7 @@ function Get-UserModulePath
 function Uninstall-ScriptAnalyzer
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath PSScriptAnalyzer) )
+    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
     END {
         if ( $PSCmdlet.ShouldProcess("$modulePath") ) {
             Remove-Item -Recurse -Path "$ModulePath" -Force
@@ -52,10 +63,10 @@ function Uninstall-ScriptAnalyzer
 function Install-ScriptAnalyzer
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath PSScriptAnalyzer) )
+    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
     END {
         if ( $PSCmdlet.ShouldProcess("$modulePath") ) {
-            Copy-Item -Recurse -Path "$destinationDir" -Destination "$ModulePath\." -Force
+            Copy-Item -Recurse -Path "$script:destinationDir" -Destination "$ModulePath\." -Force
         }
     }
 }
@@ -64,7 +75,7 @@ function Install-ScriptAnalyzer
 function Uninstall-ScriptAnalyzer
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath PSScriptAnalyzer) )
+    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
     END {
         if ((Test-Path $ModulePath) -and (Get-Item $ModulePath).PSIsContainer )
         {
@@ -79,9 +90,9 @@ function Remove-Build
     [CmdletBinding(SupportsShouldProcess=$true)]
     param ()
     END {
-        if ( $PSCmdlet.ShouldProcess("${destinationDir}")) {
-            if ( Test-Path ${destinationDir} ) {
-                Remove-Item -Force -Recurse ${destinationDir}
+        if ( $PSCmdlet.ShouldProcess("${script:destinationDir}")) {
+            if ( Test-Path ${script:destinationDir} ) {
+                Remove-Item -Force -Recurse ${script:destinationDir}
             }
         }
     }
@@ -92,7 +103,7 @@ function Start-DocumentationBuild
 {
     $docsPath = Join-Path $projectRoot docs
     $markdownDocsPath = Join-Path $docsPath markdown
-    $outputDocsPath = Join-Path $destinationDir en-US
+    $outputDocsPath = Join-Path $script:destinationDir en-US
     $platyPS = Get-Module -ListAvailable platyPS
     if ($null -eq $platyPS -or ($platyPS | Sort-Object Version -Descending | Select-Object -First 1).Version -lt [version]0.12)
     {
@@ -118,12 +129,12 @@ function Copy-CompatibilityProfiles
     }
 
     $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityCollector', 'profiles')
-    $destinationDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer', "compatibility_profiles")
-    if ( -not (Test-Path $destinationDir) ) {
-        $null = New-Item -Type Directory $destinationDir
+    $targetProfileDir = [io.path]::Combine($script:destinationDir,"compatibility_profiles")
+    if ( -not (Test-Path $targetProfileDir) ) {
+        $null = New-Item -Type Directory $targetProfileDir
     }
 
-    Copy-Item -Force $profileDir/* $destinationDir
+    Copy-Item -Force $profileDir/* $targetProfileDir
 }
 
 # build script analyzer (and optionally build everything with -All)
@@ -161,9 +172,6 @@ function Start-ScriptAnalyzerBuild
         {
             Start-DocumentationBuild
         }
-
-        # Destination for the composed module when built
-        $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
 
         if ( $All )
         {
@@ -205,24 +213,23 @@ function Start-ScriptAnalyzerBuild
             "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
 
-        $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
         switch ($PSVersion)
         {
             3
             {
-                $destinationDirBinaries = "$destinationDir\PSv3"
+                $destinationDirBinaries = "$script:destinationDir\PSv3"
             }
             4
             {
-                $destinationDirBinaries = "$destinationDir\PSv4"
+                $destinationDirBinaries = "$script:destinationDir\PSv4"
             }
             5
             {
-                $destinationDirBinaries = "$destinationDir"
+                $destinationDirBinaries = "$script:destinationDir"
             }
             6
             {
-                $destinationDirBinaries = "$destinationDir\coreclr"
+                $destinationDirBinaries = "$script:destinationDir\coreclr"
             }
             default
             {
@@ -252,7 +259,7 @@ function Start-ScriptAnalyzerBuild
             Pop-Location
         }
 
-        Publish-File $itemsToCopyCommon $destinationDir
+        Publish-File $itemsToCopyCommon $script:destinationDir
 
         $itemsToCopyBinaries = @(
             "$projectRoot\Engine\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
@@ -262,7 +269,7 @@ function Start-ScriptAnalyzerBuild
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
         $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
-        Publish-File $settingsFiles (Join-Path -Path $destinationDir -ChildPath Settings)
+        Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         if ($framework -eq 'net452') {
             Copy-Item -path "$projectRoot\Rules\bin\${config}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
