@@ -287,10 +287,38 @@ function Test-ScriptAnalyzer
     param ( [Parameter()][switch]$InProcess, [switch]$ShowAll )
 
     END {
-        $testModulePath = Join-Path "${projectRoot}" -ChildPath out
+        # versions 3 and 4 don't understand versioned module paths, so we need to rename the directory of the version to
+        # the module name, and then set the ModulePath to that
+        #
+        # the layout of the build location is
+        # .../out
+        #        /PSScriptAnalyzer
+        #                         /1.18.0
+        #                                /<modulefiles live here>
+        # and ".../out" is added to env:PSModulePath
+        # on v3 and v4, it will be
+        # .../out
+        #        /PSScriptAnalyzer
+        #                         /PSScriptAnalyzer
+        #                                          /<modulefiles live here>
+        # and ".../out/PSScriptAnalyzer" is added to env:PSModulePath
+        #
+        #
+        $major = $PSVersionTable.PSVersion.Major
+        if ( $major -lt 5 ) {
+            # get the directory name of the destination, we need to change it
+            $versionDirectoryRoot = Split-Path $script:destinationDir
+            $testModulePath = Join-Path $versionDirectoryRoot $analyzerName
+        }
+        else {
+            $testModulePath = Join-Path "${projectRoot}" -ChildPath out
+        }
         $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
         $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
         try {
+            if ( $major -lt 5 ) {
+                Rename-Item $script:destinationDir ${testModulePath}
+            }
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
             if ($ShowAll)
@@ -311,6 +339,9 @@ function Test-ScriptAnalyzer
         }
         finally {
             $env:PSModulePath = $savedModulePath
+            if ( $major -lt 5 ) {
+                Rename-Item ${testModulePath} ${script:destinationDir}
+            }
         }
     }
 }
