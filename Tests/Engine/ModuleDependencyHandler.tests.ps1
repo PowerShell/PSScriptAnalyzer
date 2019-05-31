@@ -2,15 +2,13 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "Resolve DSC Resource Dependency" {
     BeforeAll {
-        $skipTest = $false
-        $skipUnitTest = $false # Test that do not require DSC to be installed
-        if ($IsMacOS -or $testingLibararyUsage -or ($PSversionTable.PSVersion -lt [Version]'5.0.0'))
+        $skipTest = $false # Test that require DSC to be installed
+        if ($testingLibararyUsage -or ($PSversionTable.PSVersion -lt [Version]'5.0.0'))
         {
             $skipTest = $true
-            # $skipUnitTest = $true
             return
         }
-        if ($IsLinux)
+        if ($IsLinux -or $IsMacOS)
         {
             $dscIsInstalled = Test-Path /etc/opt/omi/conf/dsc/configuration
             if (-not $dscIsInstalled)
@@ -18,6 +16,7 @@ Describe "Resolve DSC Resource Dependency" {
                 $skipTest = $true
             }
         }
+
         $SavedPSModulePath = $env:PSModulePath
         $violationFileName = 'MissingDSCResource.ps1'
         $violationFilePath = Join-Path $directory $violationFileName
@@ -42,12 +41,12 @@ Describe "Resolve DSC Resource Dependency" {
 
     Context "Module handler class" {
         BeforeAll {
-            if ( $skipTest -and $skipUnitTest ) { return }
+            if ( $skipTest ) { return }
             $moduleHandlerType = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]
             $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
             $oldPSModulePath = $env:PSModulePath
         }
-        It "Sets defaults correctly" -skip:$skipUnitTest {
+        It "Sets defaults correctly" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
             $rsp = [runspacefactory]::CreateRunspace()
             $rsp.Open()
             $depHandler = $moduleHandlerType::new($rsp)
@@ -74,15 +73,15 @@ Describe "Resolve DSC Resource Dependency" {
             $rsp.Dispose()
         }
 
-        It "Keeps the environment variables unchanged" -skip:$skipUnitTest {
+        It "Keeps the environment variables unchanged" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
             Test-EnvironmentVariables($oldEnvVars)
         }
 
-        It "Throws if runspace is null" -skip:$skipUnitTest {
+        It "Throws if runspace is null" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
             {$moduleHandlerType::new($null)} | Should -Throw
         }
 
-        It "Throws if runspace is not opened" -skip:$skipUnitTest {
+        It "Throws if runspace is not opened" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
             $rsp = [runspacefactory]::CreateRunspace()
             {$moduleHandlerType::new($rsp)} | Should -Throw
             $rsp.Dispose()
