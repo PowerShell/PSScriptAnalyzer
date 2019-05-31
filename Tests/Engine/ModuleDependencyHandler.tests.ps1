@@ -8,7 +8,7 @@ Describe "Resolve DSC Resource Dependency" {
             $skipTest = $true
             return
         }
-        $SavedPSModulePath = $env:PSModulePath
+        $savedPSModulePath = $env:PSModulePath
         $violationFileName = 'MissingDSCResource.ps1'
         $violationFilePath = Join-Path $directory $violationFileName
         $testRootDirectory = Split-Path -Parent $directory
@@ -27,7 +27,7 @@ Describe "Resolve DSC Resource Dependency" {
     }
     AfterAll {
         if ( $skipTest ) { return }
-        $env:PSModulePath = $SavedPSModulePath
+        $env:PSModulePath = $savedPSModulePath
     }
 
     Context "Module handler class" {
@@ -58,7 +58,7 @@ Describe "Resolve DSC Resource Dependency" {
             $expectedPssaAppDataPath = Join-Path $depHandler.LocalAppDataPath "PSScriptAnalyzer"
             $depHandler.PSSAAppDataPath | Should -Be $expectedPssaAppDataPath
 
-            $expectedPSModulePath = $oldPSModulePath + [System.IO.Path]::PathSeparator + $depHandler.TempModulePath
+            $expectedPSModulePath = $savedPSModulePath + [System.IO.Path]::PathSeparator + $depHandler.TempModulePath
             $env:PSModulePath | Should -Be $expectedPSModulePath
 
             $depHandler.Dispose()
@@ -178,7 +178,7 @@ Describe "Resolve DSC Resource Dependency" {
             # Save the current environment variables
             $oldLocalAppDataPath = $env:LOCALAPPDATA
             $oldTempPath = $env:TEMP
-            $oldPSModulePath = $env:PSModulePath
+            $savedPSModulePath = $env:PSModulePath
 
             # set the environment variables
             $tempPath = Join-Path $oldTempPath ([guid]::NewGUID()).ToString()
@@ -208,7 +208,7 @@ Describe "Resolve DSC Resource Dependency" {
 
         AfterAll {
             if ( $skipTest ) { return }
-            $env:PSModulePath = $oldPSModulePath
+            $env:PSModulePath = $savedPSModulePath
         }
 
         It "has a single parse error" -skip:$skipTest {
@@ -222,7 +222,7 @@ Describe "Resolve DSC Resource Dependency" {
 
         It "Keeps PSModulePath unchanged before and after invocation" -skip:$skipTest {
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
-            $env:PSModulePath | Should -Be $oldPSModulePath
+            $env:PSModulePath | Should -Be $savedPSModulePath
         }
 
         if (!$skipTest)
