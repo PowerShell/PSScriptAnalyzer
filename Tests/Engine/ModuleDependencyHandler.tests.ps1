@@ -3,10 +3,20 @@ $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 Describe "Resolve DSC Resource Dependency" {
     BeforeAll {
         $skipTest = $false
+        $skipUnitTest = $false # Test that do not require DSC to be installed
         if ($IsMacOS -or $testingLibararyUsage -or ($PSversionTable.PSVersion -lt [Version]'5.0.0'))
         {
             $skipTest = $true
+            # $skipUnitTest = $true
             return
+        }
+        if ($IsLinux)
+        {
+            $dscIsInstalled = Test-Path /etc/opt/omi/conf/dsc/configuration
+            if (-not $dscIsInstalled)
+            {
+                $skipTest = $true
+            }
         }
         $SavedPSModulePath = $env:PSModulePath
         $violationFileName = 'MissingDSCResource.ps1'
@@ -32,12 +42,12 @@ Describe "Resolve DSC Resource Dependency" {
 
     Context "Module handler class" {
         BeforeAll {
-            if ( $skipTest ) { return }
+            if ( $skipTest -and $skipUnitTest ) { return }
             $moduleHandlerType = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]
             $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
             $oldPSModulePath = $env:PSModulePath
         }
-        It "Sets defaults correctly" -skip:$skipTest {
+        It "Sets defaults correctly" -skip:$skipUnitTest {
             $rsp = [runspacefactory]::CreateRunspace()
             $rsp.Open()
             $depHandler = $moduleHandlerType::new($rsp)
@@ -64,15 +74,15 @@ Describe "Resolve DSC Resource Dependency" {
             $rsp.Dispose()
         }
 
-        It "Keeps the environment variables unchanged" -skip:$skipTest {
+        It "Keeps the environment variables unchanged" -skip:$skipUnitTest {
             Test-EnvironmentVariables($oldEnvVars)
         }
 
-        It "Throws if runspace is null" -skip:$skipTest {
+        It "Throws if runspace is null" -skip:$skipUnitTest {
             {$moduleHandlerType::new($null)} | Should -Throw
         }
 
-        It "Throws if runspace is not opened" -skip:$skipTest {
+        It "Throws if runspace is not opened" -skip:$skipUnitTest {
             $rsp = [runspacefactory]::CreateRunspace()
             {$moduleHandlerType::new($rsp)} | Should -Throw
             $rsp.Dispose()
