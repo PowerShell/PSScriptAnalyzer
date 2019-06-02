@@ -56,14 +56,9 @@ function Invoke-AppveyorTest {
     $majorVersion = ([System.Version]$analyzerVersion).Major
     $psMajorVersion = $PSVersionTable.PSVersion.Major
 
-    Get-ChildItem -rec -file -name "${CheckoutPath}/out" | Write-Verbose -Verbose
-    Write-Verbose -verbose "version is $majorVersion"
     if ( $psMajorVersion -lt 5 ) {
         $versionModuleDir = "${CheckoutPath}\out\PSScriptAnalyzer\${analyzerVersion}"
         $renameTarget = "${CheckoutPath}\out\PSScriptAnalyzer\PSScriptAnalyzer"
-        Write-Verbose -Verbose "versionModuleDir: ${versionModuleDir}"
-        Write-Verbose -Verbose "renameTarget: ${renameTarget}"
-        Write-Verbose -Verbose "target exists: $(Test-Path $renameTarget)"
         Rename-Item "${versionModuleDir}" "${renameTarget}"
         $moduleDir = "${CheckoutPath}\out\PSScriptAnalyzer"
     }
@@ -73,7 +68,6 @@ function Invoke-AppveyorTest {
 
     $env:PSModulePath = "${moduleDir}","${env:PSModulePath}" -join [System.IO.Path]::PathSeparator
     Write-Verbose -Verbose "module path: ${env:PSModulePath}"
-
 
     # Set up testing assets
     $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
