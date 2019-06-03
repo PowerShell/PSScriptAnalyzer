@@ -17,7 +17,7 @@ Describe "Resolve DSC Resource Dependency" {
             }
         }
 
-        $SavedPSModulePath = $env:PSModulePath
+        $savedPSModulePath = $env:PSModulePath
         $violationFileName = 'MissingDSCResource.ps1'
         $violationFilePath = Join-Path $directory $violationFileName
         $testRootDirectory = Split-Path -Parent $directory
@@ -36,7 +36,7 @@ Describe "Resolve DSC Resource Dependency" {
     }
     AfterAll {
         if ( $skipTest ) { return }
-        $env:PSModulePath = $SavedPSModulePath
+        $env:PSModulePath = $savedPSModulePath
     }
 
     Context "Module handler class" {
@@ -44,7 +44,11 @@ Describe "Resolve DSC Resource Dependency" {
             if ($PSversionTable.PSVersion -lt [Version]'5.0.0') { return }
             $moduleHandlerType = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]
             $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
-            $oldPSModulePath = $env:PSModulePath
+            $savedPSModulePath = $env:PSModulePath
+        }
+        AfterAll {
+            if ( $skipTest ) { return }
+            $env:PSModulePath = $savedPSModulePath
         }
         It "Sets defaults correctly" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
             $rsp = [runspacefactory]::CreateRunspace()
@@ -66,7 +70,7 @@ Describe "Resolve DSC Resource Dependency" {
             $expectedPssaAppDataPath = Join-Path $depHandler.LocalAppDataPath "PSScriptAnalyzer"
             $depHandler.PSSAAppDataPath | Should -Be $expectedPssaAppDataPath
 
-            $expectedPSModulePath = $oldPSModulePath + [System.IO.Path]::PathSeparator + $depHandler.TempModulePath
+            $expectedPSModulePath = $savedPSModulePath + [System.IO.Path]::PathSeparator + $depHandler.TempModulePath
             $env:PSModulePath | Should -Be $expectedPSModulePath
 
             $depHandler.Dispose()
@@ -186,7 +190,7 @@ Describe "Resolve DSC Resource Dependency" {
             # Save the current environment variables
             $oldLocalAppDataPath = $env:LOCALAPPDATA
             $oldTempPath = $env:TEMP
-            $oldPSModulePath = $env:PSModulePath
+            $savedPSModulePath = $env:PSModulePath
 
             # set the environment variables
             $tempPath = Join-Path $oldTempPath ([guid]::NewGUID()).ToString()
@@ -196,8 +200,8 @@ Describe "Resolve DSC Resource Dependency" {
             $env:TEMP = $newTempPath
 
             # create the temporary directories
-            New-Item -Type Directory -Path $newLocalAppDataPath
-            New-Item -Type Directory -Path $newTempPath
+            New-Item -Type Directory -Path $newLocalAppDataPath -force
+            New-Item -Type Directory -Path $newTempPath -force
 
             # create and dispose module dependency handler object
             # to setup the temporary module
@@ -215,7 +219,8 @@ Describe "Resolve DSC Resource Dependency" {
         }
 
         AfterAll {
-            $env:PSModulePath = $oldPSModulePath
+            if ( $skipTest ) { return }
+            $env:PSModulePath = $savedPSModulePath
         }
 
         It "has a single parse error" -skip:$skipTest {
@@ -229,7 +234,7 @@ Describe "Resolve DSC Resource Dependency" {
 
         It "Keeps PSModulePath unchanged before and after invocation" -skip:$skipTest {
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
-            $env:PSModulePath | Should -Be $oldPSModulePath
+            $env:PSModulePath | Should -Be $savedPSModulePath
         }
 
         if (!$skipTest)
