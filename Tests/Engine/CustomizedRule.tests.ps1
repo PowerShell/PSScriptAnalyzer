@@ -12,12 +12,14 @@ try
     foreach ( $f in "file1","FILE2","fIlE3" ) {
         $null = new-item -type file (Join-Path $d.root $f)
     }
+    Write-Verbose -Verbose ("temp drive: " + $d.root)
     $count = @(get-childitem (Join-Path $d.root "file?")).Count
     if ( $count -eq 1 ) {
-        $CaseSensitiveFS = $true
-    }
-    else {
-        $CaseSensitiveFS = $false
+        Write-Verbose -Verbose "Case Sensitive FS"
+        $script:CaseSensitiveFS = $true
+    } else {
+        Write-Verbose -Verbose "Case Insensitive FS"
+        $script:CaseSensitiveFS = $false
     }
 }
 finally {
@@ -120,7 +122,7 @@ Describe "Test importing correct customized rules" {
 		It "will show the custom rules when given a glob" {
 			# needs fixing for Linux
 			$expectedNumRules = 4
-			if ($CaseSensitiveFS)
+			if ($script:CaseSensitiveFS)
 			{
 				$expectedNumRules = 3
 			}
@@ -135,7 +137,7 @@ Describe "Test importing correct customized rules" {
 
 		It "will show the custom rules when given glob with recurse switch" {
 			$expectedNumRules = 5
-			if ($CaseSensitiveFS)
+			if ($script:CaseSensitiveFS)
 			{
 				$expectedNumRules = 4
 			}
