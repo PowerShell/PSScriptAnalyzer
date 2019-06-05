@@ -177,3 +177,11 @@ Describe "TestWildCard" {
         $rules.Count | Should -Be 4
     }
 }
+
+Describe "TestImplementingType" {
+    It "retrieves rule which have an implementing type" {
+        $rule = Get-ScriptAnalyzerRule PSPlaceCloseBrace
+        $type = $rule.ImplementingType
+        $type.BaseType.Name | Should -Be "ConfigurableRule"
+    }
+}

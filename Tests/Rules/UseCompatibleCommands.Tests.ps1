@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 $script:RuleName = 'PSUseCompatibleCommands'
@@ -14,6 +14,9 @@ $script:Srv2019_6_1_profile = 'win-8_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_
 $script:Win10_5_profile = 'win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
 $script:Win10_6_1_profile = 'win-48_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core'
 $script:Ubuntu1804_6_1_profile = 'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
+
+$script:AzF_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azurefunctions.json").Path
+$script:AzA_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azureautomation.json").Path
 
 $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = 'Write-Information "Information"'; Commands = @("Write-Information"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
@@ -33,6 +36,8 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-FileHash $pshome\powershell.exe | Format-List'; Commands = @("Get-FileHash"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Save-Help -Module $m -DestinationPath "C:\SavedHelp"'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2012_3_profile; Script = 'gci .'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2012_3_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Srv2012r2_4_profile; Script = 'Write-Information "Information"'; Commands = @("Write-Information"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012r2_4_profile; Script = '"Hello World" | ConvertFrom-String | Get-Member'; Commands = @("ConvertFrom-String"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
@@ -48,11 +53,16 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012r2_4_profile; Script = 'Start-Job { Write-Host "Hello" } | Debug-Job'; Commands = @("Debug-Job"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012r2_4_profile; Script = 'Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Microsoft\PowerShell\3\PowerShellEngine -Name ApplicationBase'; Commands = @("Get-ItemPropertyValue"); Version = "4.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012r2_4_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'gci .'; Commands = @(); Version = "4.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2012r2_4_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "4.0"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Srv2019_5_profile; Script = "Remove-Alias gcm"; Commands = @("Remove-Alias"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_5_profile; Script = "Get-Uptime"; Commands = @("Get-Uptime"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_5_profile; Script = "Remove-Service 'MyService'"; Commands = @("Remove-Service"); Version = "5.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_5_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_5_profile; Script = 'gci .'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_5_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_5_profile; Script = 'fhx $filePath'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Srv2019_6_1_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'ConvertFrom-String $str'; Commands = @("ConvertFrom-String"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
@@ -85,13 +95,17 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2019_6_1_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'curl $uri'; Commands = @("curl"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'gci .'; Commands = @(); Version = "6.1"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2016_6_1_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "6.1"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-AuthenticodeSignature ./script.ps1'; Commands = @("Get-AuthenticodeSignature"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-Service systemd'; Commands = @("Get-Service"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Start-Service -Name "sshd"'; Commands = @("Start-Service"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-PSSessionConfiguration -Name Full  | Format-List -Property *'; Commands = @("Get-PSSessionConfiguration"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-CimInstance Win32_StartupCommand'; Commands = @("Get-CimInstance"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
-    @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
+    @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'gci .'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
+    @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
 )
 
 $script:ParameterCompatibilityTestCases = @(
@@ -297,6 +311,53 @@ Describe 'UseCompatibleCommands' {
 
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/../../" -IncludeRule $script:RuleName -Settings $settings
             $diagnostics.Count | Should -Be 0
+        }
+    }
+
+    Context 'Targeting new-form Az profiles alongside older profiles' {
+        BeforeAll {
+            $settings = @{
+                Rules = @{
+                    $script:RuleName = @{
+                        Enable = $true
+                        $script:TargetProfileConfigKey = @(
+                            $script:AzF_profile
+                            $script:AzA_profile
+                            $script:Win10_5_profile
+                        )
+                    }
+                }
+            }
+        }
+
+        It "Finds AzF problems with a script" {
+            $diagnostics = Invoke-ScriptAnalyzer -IncludeRule $script:RuleName -Settings $settings -ScriptDefinition '
+                Get-WmiObject Win32_Process
+                New-SelfSignedCertificate
+                Invoke-MySpecialFunction
+            '
+
+            $diagnostics.Count | Should -Be 2
+            $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Command
+            foreach ($group in $diagnosticGroups)
+            {
+                switch ($group.Name)
+                {
+                    'Get-WmiObject'
+                    {
+                        $group.Count | Should -Be 1
+                        $group.Group[0].Command | Should -BeExactly 'Get-WmiObject'
+                        break
+                    }
+
+                    'New-SelfSignedCertificate'
+                    {
+                        $group.Count | Should -Be 1
+                        $group.Group[0].Command | Should -BeExactly 'New-SelfSignedCertificate'
+                        break
+                    }
+                }
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Management.Automation;
 using System.Linq;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -14,16 +15,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     internal class CommandInfoCache
     {
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
-
         private readonly Helper _helperInstance;
+        private readonly RunspacePool _runspacePool;
 
         /// <summary>
         /// Create a fresh command info cache instance.
         /// </summary>
-        public CommandInfoCache(Helper pssaHelperInstance)
+        public CommandInfoCache(Helper pssaHelperInstance, RunspacePool runspacePool)
         {
             _commandInfoCache = new ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>>();
             _helperInstance = pssaHelperInstance;
+            _runspacePool = runspacePool;
         }
 
         /// <summary>
@@ -64,7 +66,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Get a CommandInfo object of the given command name
         /// </summary>
         /// <returns>Returns null if command does not exists</returns>
-        private static CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
+        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
             // 'Get-Command ?' would return % for example due to PowerShell interpreting is a single-character-wildcard search and not just the ? alias.
             // For more details see https://github.com/PowerShell/PowerShell/issues/9308
@@ -72,6 +74,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
+                ps.RunspacePool = _runspacePool;
+
                 ps.AddCommand("Get-Command")
                     .AddParameter("Name", cmdName)
                     .AddParameter("ErrorAction", "SilentlyContinue");

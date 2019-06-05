@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -29,6 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private PSVersionTable psVersionTable;
 
         private readonly Lazy<CommandInfoCache> _commandInfoCacheLazy;
+        private readonly RunspacePool _runSpacePool;
 
         #endregion
 
@@ -113,7 +115,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this));
+            // There are 5 rules that use the CommandInfo cache but one rule (AvoidAlias) makes parallel queries.
+            // Therefore 10 runspaces was a heuristic measure where no more speed improvement was seen.
+            _runSpacePool = RunspaceFactory.CreateRunspacePool(1, 10);
+            _runSpacePool.Open();
+            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this, runspacePool: _runSpacePool));
         }
 
         /// <summary>
@@ -299,11 +305,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Collection<PSObject> psObj = null;
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
+                ps.RunspacePool = _runSpacePool;
+                ps.AddCommand("Test-ModuleManifest")
+                  .AddParameter("Path", filePath)
+                  .AddParameter("WarningAction", ActionPreference.SilentlyContinue);
                 try
                 {
-                    ps.AddCommand("Test-ModuleManifest");
-                    ps.AddParameter("Path", filePath);
-                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
                     psObj = ps.Invoke();
                 }
                 catch (CmdletInvocationException e)

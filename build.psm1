@@ -3,7 +3,18 @@
 
 # Build module for PowerShell ScriptAnalyzer
 $projectRoot = $PSScriptRoot
-$destinationDir = Join-Path -Path $projectRoot -ChildPath (Join-Path -Path "out" -ChildPath "PSScriptAnalyzer")
+$analyzerName = "PSScriptAnalyzer"
+
+function Get-AnalyzerVersion
+{
+    $csprojPath = [io.path]::Combine($projectRoot,"Engine","Engine.csproj")
+    $xml = [xml](Get-Content "${csprojPath}")
+    $xml.SelectSingleNode(".//VersionPrefix")."#text"
+}
+
+$analyzerVersion = Get-AnalyzerVersion
+# location where analyzer goes
+$script:destinationDir = [io.path]::Combine($projectRoot,"out","${analyzerName}", $analyzerVersion)
 
 function Publish-File
 {
@@ -40,7 +51,7 @@ function Get-UserModulePath
 function Uninstall-ScriptAnalyzer
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath PSScriptAnalyzer) )
+    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
     END {
         if ( $PSCmdlet.ShouldProcess("$modulePath") ) {
             Remove-Item -Recurse -Path "$ModulePath" -Force
@@ -52,10 +63,10 @@ function Uninstall-ScriptAnalyzer
 function Install-ScriptAnalyzer
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath PSScriptAnalyzer) )
+    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
     END {
         if ( $PSCmdlet.ShouldProcess("$modulePath") ) {
-            Copy-Item -Recurse -Path "$destinationDir" -Destination "$ModulePath\." -Force
+            Copy-Item -Recurse -Path "$script:destinationDir" -Destination "$ModulePath\." -Force
         }
     }
 }
@@ -64,7 +75,7 @@ function Install-ScriptAnalyzer
 function Uninstall-ScriptAnalyzer
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath PSScriptAnalyzer) )
+    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
     END {
         if ((Test-Path $ModulePath) -and (Get-Item $ModulePath).PSIsContainer )
         {
@@ -79,9 +90,9 @@ function Remove-Build
     [CmdletBinding(SupportsShouldProcess=$true)]
     param ()
     END {
-        if ( $PSCmdlet.ShouldProcess("${destinationDir}")) {
-            if ( Test-Path ${destinationDir} ) {
-                Remove-Item -Force -Recurse ${destinationDir}
+        if ( $PSCmdlet.ShouldProcess("${script:destinationDir}")) {
+            if ( Test-Path ${script:destinationDir} ) {
+                Remove-Item -Force -Recurse ${script:destinationDir}
             }
         }
     }
@@ -92,7 +103,7 @@ function Start-DocumentationBuild
 {
     $docsPath = Join-Path $projectRoot docs
     $markdownDocsPath = Join-Path $docsPath markdown
-    $outputDocsPath = Join-Path $destinationDir en-US
+    $outputDocsPath = Join-Path $script:destinationDir en-US
     $platyPS = Get-Module -ListAvailable platyPS
     if ($null -eq $platyPS -or ($platyPS | Sort-Object Version -Descending | Select-Object -First 1).Version -lt [version]0.12)
     {
@@ -117,13 +128,13 @@ function Copy-CompatibilityProfiles
         Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
     }
 
-    $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityAnalyzer', 'profiles')
-    $destinationDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', 'PSScriptAnalyzer', "compatibility_profiles")
-    if ( -not (Test-Path $destinationDir) ) {
-        $null = New-Item -Type Directory $destinationDir
+    $profileDir = [System.IO.Path]::Combine($PSScriptRoot, 'PSCompatibilityCollector', 'profiles')
+    $targetProfileDir = [io.path]::Combine($script:destinationDir,"compatibility_profiles")
+    if ( -not (Test-Path $targetProfileDir) ) {
+        $null = New-Item -Type Directory $targetProfileDir
     }
 
-    Copy-Item -Force $profileDir/* $destinationDir
+    Copy-Item -Force $profileDir/* $targetProfileDir
 }
 
 # build script analyzer (and optionally build everything with -All)
@@ -161,9 +172,6 @@ function Start-ScriptAnalyzerBuild
         {
             Start-DocumentationBuild
         }
-
-        # Destination for the composed module when built
-        $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
 
         if ( $All )
         {
@@ -205,24 +213,23 @@ function Start-ScriptAnalyzerBuild
             "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
 
-        $destinationDir = "$projectRoot\out\PSScriptAnalyzer"
         switch ($PSVersion)
         {
             3
             {
-                $destinationDirBinaries = "$destinationDir\PSv3"
+                $destinationDirBinaries = "$script:destinationDir\PSv3"
             }
             4
             {
-                $destinationDirBinaries = "$destinationDir\PSv4"
+                $destinationDirBinaries = "$script:destinationDir\PSv4"
             }
             5
             {
-                $destinationDirBinaries = "$destinationDir"
+                $destinationDirBinaries = "$script:destinationDir"
             }
             6
             {
-                $destinationDirBinaries = "$destinationDir\coreclr"
+                $destinationDirBinaries = "$script:destinationDir\coreclr"
             }
             default
             {
@@ -252,7 +259,7 @@ function Start-ScriptAnalyzerBuild
             Pop-Location
         }
 
-        Publish-File $itemsToCopyCommon $destinationDir
+        Publish-File $itemsToCopyCommon $script:destinationDir
 
         $itemsToCopyBinaries = @(
             "$projectRoot\Engine\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
@@ -262,7 +269,7 @@ function Start-ScriptAnalyzerBuild
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
         $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
-        Publish-File $settingsFiles (Join-Path -Path $destinationDir -ChildPath Settings)
+        Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         if ($framework -eq 'net452') {
             Copy-Item -path "$projectRoot\Rules\bin\${config}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
@@ -280,10 +287,38 @@ function Test-ScriptAnalyzer
     param ( [Parameter()][switch]$InProcess, [switch]$ShowAll )
 
     END {
-        $testModulePath = Join-Path "${projectRoot}" -ChildPath out
+        # versions 3 and 4 don't understand versioned module paths, so we need to rename the directory of the version to
+        # the module name, and then set the ModulePath to that
+        #
+        # the layout of the build location is
+        # .../out
+        #        /PSScriptAnalyzer
+        #                         /1.18.0
+        #                                /<modulefiles live here>
+        # and ".../out" is added to env:PSModulePath
+        # on v3 and v4, it will be
+        # .../out
+        #        /PSScriptAnalyzer
+        #                         /PSScriptAnalyzer
+        #                                          /<modulefiles live here>
+        # and ".../out/PSScriptAnalyzer" is added to env:PSModulePath
+        #
+        #
+        $major = $PSVersionTable.PSVersion.Major
+        if ( $major -lt 5 ) {
+            # get the directory name of the destination, we need to change it
+            $versionDirectoryRoot = Split-Path $script:destinationDir
+            $testModulePath = Join-Path $versionDirectoryRoot $analyzerName
+        }
+        else {
+            $testModulePath = Join-Path "${projectRoot}" -ChildPath out
+        }
         $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
         $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
         try {
+            if ( $major -lt 5 ) {
+                Rename-Item $script:destinationDir ${testModulePath}
+            }
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
             if ($ShowAll)
@@ -304,6 +339,9 @@ function Test-ScriptAnalyzer
         }
         finally {
             $env:PSModulePath = $savedModulePath
+            if ( $major -lt 5 ) {
+                Rename-Item ${testModulePath} ${script:destinationDir}
+            }
         }
     }
 }
@@ -610,7 +648,7 @@ function Get-DotnetExe
 }
 $script:DotnetExe = Get-DotnetExe
 
-# Copies the built PSCompatibilityAnalyzer module to the output destination for PSSA
+# Copies the built PSCompatibilityCollector module to the output destination for PSSA
 function Copy-CrossCompatibilityModule
 {
     param(
@@ -634,11 +672,13 @@ function Copy-CrossCompatibilityModule
         New-Item -Path $Destination -ItemType Directory
     }
 
+    $compatCollectorModuleName = 'PSCompatibilityCollector'
+
     $outputAssets = @(
-        "$PSScriptRoot/PSCompatibilityAnalyzer/PSCompatibilityAnalyzer.psd1"
-        "$PSScriptRoot/PSCompatibilityAnalyzer/PSCompatibilityAnalyzer.psm1"
-        "$PSScriptRoot/PSCompatibilityAnalyzer/CrossCompatibilityBinary"
-        "$PSScriptRoot/PSCompatibilityAnalyzer/profiles"
+        "$PSScriptRoot/$compatCollectorModuleName/$compatCollectorModuleName.psd1"
+        "$PSScriptRoot/$compatCollectorModuleName/$compatCollectorModuleName.psm1"
+        "$PSScriptRoot/$compatCollectorModuleName/CrossCompatibilityBinary"
+        "$PSScriptRoot/$compatCollectorModuleName/profiles"
     )
 
     foreach ($assetPath in $outputAssets)

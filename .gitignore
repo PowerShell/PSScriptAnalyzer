@@ -216,5 +216,5 @@ PSScriptAnalyzer/
 # Test result file
 TestResults.xml
 
-# PSCompatibilityAnalyzer module
-PSCompatibilityAnalyzer/out/
+# PSCompatibilityCollector module
+PSCompatibilityCollector/out/

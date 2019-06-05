@@ -5,6 +5,6 @@
     <file src="__INPATHROOT__\PSScriptAnalyzer\PSScriptAnalyzer.cat" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\PSScriptAnalyzer.cat" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Compatibility Analyzer File Catalog" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\PSCompatibilityAnalyzer\PSCompatibilityAnalyzer.cat" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityAnalyzer\PSCompatibilityAnalzyer.cat" />
+    <file src="__INPATHROOT__\PSCompatibilityCollector\PSCompatibilityCollector.cat" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\PSCompatibilityAnalzyer.cat" />
  </job>
 </SignConfigXML>
