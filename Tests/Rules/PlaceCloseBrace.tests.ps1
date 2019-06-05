@@ -97,10 +97,7 @@ $hashtable = @{a = 1; b = 2}
         }
 
         It "Should not crash when hashtable is defined on first token" {
-            $def = @'
-            @{
-                key = value }
-'@
+            $def = "@{ `n Key = value }"
 
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings -ErrorAction Stop
             $violations.Count | Should -Be 1
