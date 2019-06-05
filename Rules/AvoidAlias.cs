@@ -136,7 +136,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 var commdNameWithGetPrefix = $"Get-{commandName}";
-                var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo($"Get-{commandName}");
+                var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo(commdNameWithGetPrefix);
                 if (cmdletNameIfCommandWasMissingGetPrefix != null)
                 {
                     yield return new DiagnosticRecord(
