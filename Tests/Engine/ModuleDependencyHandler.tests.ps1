@@ -33,6 +33,11 @@ Describe "Resolve DSC Resource Dependency" {
                 $newEnv[$index].Value | Should -Be $oldEnv[$index].Value
             }
         }
+
+        Function Get-LocalAppDataFolder
+        {
+            if ($IsLinux -or $IsMacOS) { $env:HOME } else { $env:LOCALAPPDATA }
+        }
     }
     AfterAll {
         if ( $skipTest ) { return }
@@ -58,11 +63,7 @@ Describe "Resolve DSC Resource Dependency" {
             $expectedPath = [System.IO.Path]::GetTempPath()
             $depHandler.TempPath | Should -Be $expectedPath
 
-            $expectedLocalAppDataPath = $env:LOCALAPPDATA
-            if ($IsLinux -or $IsMacOS) {
-                $expectedLocalAppDataPath = $env:HOME
-            }
-            $depHandler.LocalAppDataPath | Should -Be $expectedLocalAppDataPath
+            $depHandler.LocalAppDataPath | Should -Be (Get-LocalAppDataFolder)
 
             $expectedModuleRepository = "PSGallery"
             $depHandler.ModuleRepository | Should -Be $expectedModuleRepository
@@ -188,16 +189,19 @@ Describe "Resolve DSC Resource Dependency" {
             $modulePath = "$(Split-Path $directory)\Rules\DSCResourceModule\DSCResources\$moduleName"
 
             # Save the current environment variables
-            $oldLocalAppDataPath = $env:LOCALAPPDATA
+            $oldLocalAppDataPath = Get-LocalAppDataFolder
             $oldTempPath = $env:TEMP
             $savedPSModulePath = $env:PSModulePath
 
             # set the environment variables
-            $tempPath = Join-Path $oldTempPath ([guid]::NewGUID()).ToString()
+            $tempPath = Join-Path ([System.IO.Path]::GetTempPath()) ([guid]::NewGUID()).ToString()
             $newLocalAppDataPath = Join-Path $tempPath "LocalAppData"
             $newTempPath = Join-Path $tempPath "Temp"
-            $env:LOCALAPPDATA = $newLocalAppDataPath
-            $env:TEMP = $newTempPath
+            if (-not ($IsLinux -or $IsMacOS))
+            {
+                $env:LOCALAPPDATA = $newLocalAppDataPath
+                $env:TEMP = $newTempPath
+            }
 
             # create the temporary directories
             New-Item -Type Directory -Path $newLocalAppDataPath -force
@@ -224,7 +228,6 @@ Describe "Resolve DSC Resource Dependency" {
         }
 
         It "has a single parse error" -skip:$skipTest {
-            # invoke script analyzer
             $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable analyzerErrors -ErrorAction SilentlyContinue
             $analyzerErrors.Count | Should -Be 0
             $dr |
@@ -233,14 +236,22 @@ Describe "Resolve DSC Resource Dependency" {
         }
 
         It "Keeps PSModulePath unchanged before and after invocation" -skip:$skipTest {
-            $dr = Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
+            Invoke-ScriptAnalyzer -Path $violationFilePath -ErrorVariable parseErrors -ErrorAction SilentlyContinue
             $env:PSModulePath | Should -Be $savedPSModulePath
         }
 
         if (!$skipTest)
         {
-            $env:LOCALAPPDATA = $oldLocalAppDataPath
-            $env:TEMP = $oldTempPath
+            if ($IsLinux -or $IsMacOS)
+            {
+                $env:HOME = $oldLocalAppDataPath
+                # On Linux [System.IO.Path]::GetTempPath() does not use the TEMP env variable unlike on Windows
+            }
+            else
+            {
+                $env:LOCALAPPDATA = $oldLocalAppDataPath
+                $env:TEMP = $oldTempPath
+            }
             Remove-Item -Recurse -Path $tempModulePath -Force
             Remove-Item -Recurse -Path $tempPath -Force
         }
