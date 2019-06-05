@@ -1,4 +1,4 @@
-# UseCompatibleCommands
+# UseCompatibleTypes
 
 **Severity Level: Warning**
 
@@ -41,14 +41,14 @@ Platforms bundled by default are:
 | 5.1                | Windows Server 2016   | `win-8_x64_10.0.14393.0_5.1.14393.2791_x64_4.0.30319.42000_framework` |
 | 5.1                | Windows Server 2019   | `win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework`  |
 | 5.1                | Windows 10            | `win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework` |
-| 6.1                | Windows Server 2019   | `win-8_x64_10.0.14393.0_6.1.3_x64_4.0.30319.42000_core`               |
-| 6.1                | Windows Server 2016   | `win-8_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core`               |
+| 6.1                | Windows Server 2016   | `win-8_x64_10.0.14393.0_6.1.3_x64_4.0.30319.42000_core`               |
+| 6.1                | Windows Server 2019   | `win-8_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core`               |
 | 6.1                | Windows 10            | `win-48_x64_10.0.17763.0_6.1.3_x64_4.0.30319.42000_core`              |
 | 6.1                | Ubuntu 18.04 LTS      | `ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core`                     |
 
-Other profiles can be found [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityAnalyzer/optional_profiles).
+Other profiles can be found [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityCollector/optional_profiles).
 
-You can also generate your own platform profile using the [PSCompatibilityAnalyzer module](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityAnalyzer).
+You can also generate your own platform profile using the [PSCompatibilityCollector module](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityCollector).
 
 The compatibility profile settings takes a list of platforms to target under `TargetProfiles`.
 A platform can be specified as:
@@ -58,7 +58,7 @@ A platform can be specified as:
 - A file name (like `my_custom_platform.json`), which will be searched for the in the default profile directory.
 - An absolute path to a file (like `D:\PowerShellProfiles\TargetMachine.json`).
 
-The default profile directory is under the PSScriptAnalzyer module at `$PSScriptRoot/PSCompatibilityAnalyzer/profiles`
+The default profile directory is under the PSScriptAnalzyer module at `$PSScriptRoot/PSCompatibilityCollector/profiles`
 (where `$PSScriptRoot` here refers to the directory containing `PSScriptAnalyzer.psd1`).
 
 The compatibility analysis compares a type used to both a target profile
@@ -73,10 +73,10 @@ An example configuration might look like:
 @{
     Rules = @{
         UseCompatibleTypes = @{
-            Enabled = $true
+            Enable = $true
             TargetProfiles = @(
-                'ubuntu_x64_18.04_6.1.2_x64_4.0.30319.42000_core'
-                'win-4_x64_10.0.18312.0_6.1.1_x64_4.0.30319.42000_framework'
+                'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
+                'win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
                 'MyProfile'
                 'another_custom_profile_in_the_profiles_directory.json'
                 'D:\My Profiles\profile1.json'
@@ -88,4 +88,24 @@ An example configuration might look like:
         }
     }
 }
+```
+
+Alternatively, you could provide a settings object as follows:
+
+```PowerShell
+PS> $settings = @{
+      Rules = @{
+        PSUseCompatibleTypes = @{
+          Enable = $true
+          TargetProfiles = @("win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework")
+        }
+      }
+}
+PS> Invoke-ScriptAnalyzer -Settings $settings -ScriptDefinition '[System.Management.Automation.SemanticVersion]"1.18.0-rc1"'
+
+RuleName                            Severity     ScriptName Line  Message
+--------                            --------     ---------- ----  -------
+PSUseCompatibleTypes                Warning                 1     The type 'System.Management.Automation.SemanticVersion' is
+                                                                  not available by default in PowerShell version
+                                                                  '5.1.17763.316' on platform 'Microsoft Windows 10 Pro'
 ```

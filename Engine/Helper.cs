@@ -409,7 +409,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<Ast> cmdAsts = ast.FindAll(item => item is CommandAst
                 && exportFunctionsCmdlet.Contains((item as CommandAst).GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
 
-            CommandInfo exportMM = Helper.Instance.GetCommandInfoLegacy("export-modulemember", CommandTypes.Cmdlet);
+            CommandInfo exportMM = Helper.Instance.GetCommandInfo("export-modulemember", CommandTypes.Cmdlet);
 
             // switch parameters
             IEnumerable<ParameterMetadata> switchParams = (exportMM != null) ? exportMM.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter) : Enumerable.Empty<ParameterMetadata>();
@@ -612,18 +612,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
-        /// Given a commandast, checks if the command is a Cmdlet.
+        /// Given a commandast, checks if the command is a known cmdlet, function or ExternalScript. 
         /// </summary>
         /// <param name="cmdAst"></param>
         /// <returns></returns>
-        public bool IsCmdlet(CommandAst cmdAst) {
+        public bool IsKnownCmdletFunctionOrExternalScript(CommandAst cmdAst)
+        {
             if (cmdAst == null)
             {
                 return false;
             }
 
             var commandInfo = GetCommandInfo(cmdAst.GetCommandName());
-            return (commandInfo != null && commandInfo.CommandType == System.Management.Automation.CommandTypes.Cmdlet);
+            if (commandInfo == null)
+            {
+                return false;
+            }
+
+            return commandInfo.CommandType == CommandTypes.Cmdlet ||
+                   commandInfo.CommandType == CommandTypes.Alias ||
+                   commandInfo.CommandType == CommandTypes.ExternalScript;
         }
 
         /// <summary>
@@ -1067,8 +1075,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 if (details != null && classes != null)
                 {
-                    // Get the class that corresponds to the name of the type (if possible)
-                    psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
+                    // Get the class that corresponds to the name of the type (if possible, the type is not available in the case of a static Singleton)
+                    psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type?.FullName, StringComparison.OrdinalIgnoreCase));
                 }
 
 #endif

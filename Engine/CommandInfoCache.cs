@@ -32,19 +32,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Retrieve a command info object about a command.
         /// </summary>
         /// <param name="commandName">Name of the command to get a commandinfo object for.</param>
-        /// <param name="aliasName">The alias of the command to be used in the cache key. If not given, uses the command name.</param>
         /// <param name="commandTypes">What types of command are needed. If omitted, all types are retrieved.</param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string commandName, string aliasName = null, CommandTypes? commandTypes = null)
+        public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null)
         {
             if (string.IsNullOrWhiteSpace(commandName))
             {
                 return null;
             }
 
-            // If alias name is given, we store the entry under that, but search with the command name
-            var key = new CommandLookupKey(aliasName ?? commandName, commandTypes);
-
+            var key = new CommandLookupKey(commandName, commandTypes);
             // Atomically either use PowerShell to query a command info object, or fetch it from the cache
             return _commandInfoCache.GetOrAdd(key, new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes))).Value;
         }
@@ -62,7 +59,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             return string.IsNullOrEmpty(commandName)
                 ? GetCommandInfo(commandOrAliasName, commandTypes: commandTypes)
-                : GetCommandInfo(commandName, aliasName: commandOrAliasName, commandTypes: commandTypes);
+                : GetCommandInfo(commandName, commandTypes: commandTypes);
         }
 
         /// <summary>
@@ -71,6 +68,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>Returns null if command does not exists</returns>
         private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
         {
+            // 'Get-Command ?' would return % for example due to PowerShell interpreting is a single-character-wildcard search and not just the ? alias.
+            // For more details see https://github.com/PowerShell/PowerShell/issues/9308
+            cmdName = WildcardPattern.Escape(cmdName);
+
             using (var ps = System.Management.Automation.PowerShell.Create())
             {
                 ps.RunspacePool = _runspacePool;

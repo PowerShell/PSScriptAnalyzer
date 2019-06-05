@@ -129,7 +129,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true;
             }
 
-            if (mandParams.Count == 0 || (Helper.Instance.IsCmdlet(cmdAst) && Helper.Instance.PositionalParameterUsed(cmdAst)))
+            if (mandParams.Count == 0 || (Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst) && Helper.Instance.PositionalParameterUsed(cmdAst)))
             {
                 returnValue = true;
             }

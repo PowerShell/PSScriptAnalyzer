@@ -18,7 +18,7 @@ RUN Import-Module PackageManagement; `
     Install-ChocolateyPackage -PackageName nuget.commandline -Executable nuget.exe -Cleanup; `
     Install-Module -Force -Name platyPS; `
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1 -outfile C:/dotnet-install.ps1; `
-    C:/dotnet-install.ps1 -Channel Release -Version 2.2.3; `
+    C:/dotnet-install.ps1 -Channel Release -Version 2.1.4; `
     Add-Path C:/Users/ContainerAdministrator/AppData/Local/Microsoft/dotnet;
 
 RUN Import-Module ./containerFiles/dockerInstall.psm1; `

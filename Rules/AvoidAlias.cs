@@ -11,8 +11,6 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -97,8 +95,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all CommandAsts.
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
-            // Iterates all CommandAsts and check the command name. Expensive operations are run in background tasks
-            var tasks = new List<Task<DiagnosticRecord>>();
+            // Iterates all CommandAsts and check the command name.
             foreach (CommandAst cmdAst in foundAsts)
             {
                 // Check if the command ast should be ignored
@@ -129,54 +126,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         fileName,
                         commandName,
                         suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletNameIfCommandNameWasAlias));
+                    // do not continue the search, but go to the next command
+                    continue;
                 }
 
-                // Checking for implicit 'Get-' aliasing is done in a background task as it can be quite expensive during a cold-start
-                tasks.Add(Task<DiagnosticRecord>.Run(() =>
-                {
-                    return CheckForImplicitGetAliasing(commandName, cmdAst, fileName);
-                }));
-            }
-            foreach(Task<DiagnosticRecord> task in tasks)
-            {
-                DiagnosticRecord diagnosticRecordResult = task.Result;
-                if (diagnosticRecordResult != null)
-                {
-                    yield return task.Result;
+                // If we find match of any kind, do not continue with the Get-{commandname} check
+                if ( Helper.Instance.GetCommandInfo(commandName) != null ) {
+                    continue;
                 }
-            }
-        }
 
-        /// <summary>
-        /// If one omitts, 'Get-' for a command, PowerShell will pre-pend it if such a command exists, therefore relying on such implicit aliasing is not desirable.
-        /// </summary>
-        /// <param name="commandName"></param>
-        /// <param name="commandAst"></param>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        private DiagnosticRecord CheckForImplicitGetAliasing(string commandName, CommandAst commandAst, string fileName)
-        {
-            bool isNativeCommand = Helper.Instance.GetCommandInfo(commandName, CommandTypes.Application | CommandTypes.ExternalScript) != null;
-            if (isNativeCommand)
-            {
-                return null;
-            }
-            var commdNameWithGetPrefix = $"Get-{commandName}";
-            var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo($"Get-{commandName}");
-            if (cmdletNameIfCommandWasMissingGetPrefix == null)
-            {
-                return null;
-            }
+                var commdNameWithGetPrefix = $"Get-{commandName}";
+                var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo(commdNameWithGetPrefix);
+                if (cmdletNameIfCommandWasMissingGetPrefix != null)
+                {
+                    yield return new DiagnosticRecord(
+                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
+                        GetCommandExtent(cmdAst),
+                        GetName(),
+                        DiagnosticSeverity.Warning,
+                        fileName,
+                        commandName,
+                        suggestedCorrections: GetCorrectionExtent(cmdAst, commdNameWithGetPrefix));
+                }
 
-            var diagnosticRecord = new DiagnosticRecord(
-                string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
-                GetCommandExtent(commandAst),
-                GetName(),
-                DiagnosticSeverity.Warning,
-                fileName,
-                commandName,
-                suggestedCorrections: GetCorrectionExtent(commandAst, commdNameWithGetPrefix));
-            return diagnosticRecord;
+            }
         }
 
         /// <summary>

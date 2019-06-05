@@ -174,6 +174,23 @@ baz
             Test-CorrectionExtentFromContent @params
         }
 
+        It "Should preserve script when using PipelineIndentation <PipelineIndentation>" -TestCases @(
+                @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
+                @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
+                @{ PipelineIndentation = 'NoIndentation' }
+                ) {
+            param ($PipelineIndentation)
+            $idempotentScriptDefinition = @'
+function hello {
+    if ($true) {
+        "hello" | Out-Host
+    }
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+        }
+
         It "Should indent pipelines correctly using NoIndentation option" {
             $def = @'
 foo |

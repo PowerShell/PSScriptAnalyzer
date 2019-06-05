@@ -52,7 +52,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // MSDN: CommandAst.GetCommandName Method
                 if (cmdAst.GetCommandName() == null) continue;
                 
-                if ((Helper.Instance.IsCmdlet(cmdAst) || declaredFunctionNames.Contains(cmdAst.GetCommandName())) &&
+                if ((Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst) || declaredFunctionNames.Contains(cmdAst.GetCommandName())) &&
                     (Helper.Instance.PositionalParameterUsed(cmdAst, true)))
                 {
                     PipelineAst parent = cmdAst.Parent as PipelineAst;

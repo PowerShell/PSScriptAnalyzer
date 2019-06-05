@@ -347,6 +347,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 string message = string.Format(
                     CultureInfo.CurrentCulture,
+                    Strings.UseCompatibleSyntaxError,
                     "type definition",
                     "class MyClass { ... } | enum MyEnum { ... }",
                     "3,4");

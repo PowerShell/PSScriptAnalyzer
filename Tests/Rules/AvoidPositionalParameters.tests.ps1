@@ -15,6 +15,13 @@ Describe "AvoidPositionalParameters" {
             $violations[0].Message | Should -Match $violationMessage
         }
 
+        It "Triggers on alias" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition "gcm 'abc' 4 4.3"
+            $violations.Count | Should -Be 2
+            $violations.RuleName | Should -Contain $violationName
+            $violations.RuleName | Should -Contain 'PSAvoidUsingCmdletAliases'
+        }
+
     }
 
     Context "When there are no violations" {

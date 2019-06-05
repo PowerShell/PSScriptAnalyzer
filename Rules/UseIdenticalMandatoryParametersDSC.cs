@@ -256,7 +256,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // todo log the error
             }
 
-            var cimClass = cimClasses?.FirstOrDefault();
+            var cimClass = cimClasses?.FirstOrDefault(_cimClass => _cimClass.CimSuperClass != null);
             var cimSuperClassProperties = new HashSet<string>(
                 cimClass?.CimSuperClass?.CimClassProperties.Select(cimPropertyDeclaration => cimPropertyDeclaration.Name) ??
                 Enumerable.Empty<string>());
