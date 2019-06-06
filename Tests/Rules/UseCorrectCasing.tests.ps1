@@ -16,37 +16,39 @@ Describe "UseCorrectCasing" {
         Invoke-Formatter '?' | Should -Be '?'
     }
 
-    It "Corrects applications on Windows to not end in .exe" -Skip:($IsLinux -or $IsMacOS) {
-        Invoke-Formatter 'Cmd' | Should -Be 'cmd'
-        Invoke-Formatter 'Cmd' | Should -Be 'cmd'
-        Invoke-Formatter 'MORE' | Should -Be 'more'
-        Invoke-Formatter 'WinRM' | Should -Be 'winrm'
-        Invoke-Formatter 'CertMgr' | Should -Be 'certmgr'
+    It "Does not corrects applications on the PATH" -Skip:($IsLinux -or $IsMacOS) {
+        Invoke-Formatter 'Cmd' | Should -Be 'Cmd'
+        Invoke-Formatter 'MORE' | Should -Be 'MORE'
     }
 
     It "Preserves extension of applications on Windows" -Skip:($IsLinux -or $IsMacOS) {
-        Invoke-Formatter 'Cmd.exe' | Should -Be 'cmd.exe'
-        Invoke-Formatter 'MORE.com' | Should -Be 'more.com'
-        Invoke-Formatter 'WinRM.cmd' | Should -Be 'winrm.cmd'
-        Invoke-Formatter 'CertMgr.MSC' | Should -Be 'certmgr.msc'
+        Invoke-Formatter 'cmd.exe' | Should -Be 'cmd.exe'
+        Invoke-Formatter 'more.com' | Should -Be 'more.com'
     }
 
-    It "corrects case of script function" {
-        function Invoke-DummyFunction
-        {
-
+    It "Preserves full application path" {
+        if ($IsLinux -or $IsMacOS) {
+            $applicationPath = '. /bin/ls'
         }
+        else {
+            $applicationPath = 'C:\Windows\System32\cmd.exe'
+        }
+        Invoke-Formatter ". $applicationPath" | Should -Be ". $applicationPath"
+    }
+
+    It "Corrects case of script function" {
+        function Invoke-DummyFunction { }
         Invoke-Formatter 'invoke-dummyFunction' | Should -Be 'Invoke-DummyFunction'
     }
 
-    It "preserves script path" {
+    It "Preserves script path" {
         $path = Join-Path $TestDrive "$([guid]::NewGuid()).ps1"
         New-Item -ItemType File -Path $path
         $scriptDefinition = ". $path"
         Invoke-Formatter $scriptDefinition | Should -Be $scriptDefinition
     }
 
-    It "preserves UNC script path" -Skip:($IsLinux -or $IsMacOS) {
+    It "Preserves UNC script path" -Skip:($IsLinux -or $IsMacOS) {
         $uncPath = [System.IO.Path]::Combine("\\$(HOSTNAME.EXE)\C$\", $TestDrive, "$([guid]::NewGuid()).ps1")
         New-Item -ItemType File -Path $uncPath
         $scriptDefinition = ". $uncPath"
