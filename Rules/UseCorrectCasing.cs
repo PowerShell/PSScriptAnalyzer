@@ -51,7 +51,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 var commandInfo = Helper.Instance.GetCommandInfo(commandName);
-                if (commandInfo == null)
+                if (commandInfo == null || commandInfo.CommandType == CommandTypes.ExternalScript)
                 {
                     continue;
                 }
