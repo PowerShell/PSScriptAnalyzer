@@ -39,7 +39,14 @@ Describe "UseCorrectCasing" {
         Invoke-Formatter 'invoke-dummyFunction' | Should -Be 'Invoke-DummyFunction'
     }
 
-    It "preserves script paths" -Skip:($IsLinux -or $IsMacOS) {
+    It "preserves script path" {
+        $path = Join-Path $TestDrive "$([guid]::NewGuid()).ps1"
+        New-Item -ItemType File -Path $path
+        $scriptDefinition = ". $path"
+        Invoke-Formatter $scriptDefinition | Should -Be $scriptDefinition
+    }
+
+    It "preserves UNC script path" -Skip:($IsLinux -or $IsMacOS) {
         $uncPath = [System.IO.Path]::Combine("\\$(HOSTNAME.EXE)\C$\", $TestDrive, "$([guid]::NewGuid()).ps1")
         New-Item -ItemType File -Path $uncPath
         $scriptDefinition = ". $uncPath"
