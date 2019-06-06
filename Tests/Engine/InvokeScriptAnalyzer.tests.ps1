@@ -72,6 +72,10 @@ Describe "Test available parameters" {
             It "is a switch parameter" {
                 $params["SaveDscDependency"].ParameterType.FullName | Should -Be "System.Management.Automation.SwitchParameter"
             }
+
+            It 'does not throw when being applied against a dummy script with no DSC code' {
+                Invoke-ScriptAnalyzer -ScriptDefinition 'foo' -SaveDscDependency
+            }
         }
     }
 
