@@ -40,7 +40,7 @@ Describe "UseCorrectCasing" {
     }
 
     It "preserves script paths" -Skip:($IsLinux -or $IsMacOS) {
-        $uncPath = [System.IO.Path]::Combine("\\$(HOSTNAME.EXE)\C$\", $TestDrive, "$(New-Guid).ps1")
+        $uncPath = [System.IO.Path]::Combine("\\$(HOSTNAME.EXE)\C$\", $TestDrive, "$([guid]::NewGuid()).ps1")
         New-Item -ItemType File -Path $uncPath
         $scriptDefinition = ". $uncPath"
         Invoke-Formatter $scriptDefinition | Should -Be $scriptDefinition
