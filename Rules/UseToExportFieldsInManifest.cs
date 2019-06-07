@@ -51,7 +51,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // check if valid module manifest
             IEnumerable<ErrorRecord> errorRecord = null;
-            PSModuleInfo psModuleInfo = Helper.Instance.GetModuleManifest(fileName, out errorRecord);            
+            PSModuleInfo psModuleInfo = Helper.Instance.GetModuleManifestWithRetry(fileName, out errorRecord);            
             if ((errorRecord != null && errorRecord.Count() > 0) || psModuleInfo == null)
             {                
                 yield break;

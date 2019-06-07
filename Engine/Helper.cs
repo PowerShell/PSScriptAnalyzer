@@ -292,6 +292,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return false;
         }
 
+
+        /// <summary>
+        /// Gets the module manifest with retries to compensate for sporadic faiures to thread safety bugs in PowerShell.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="errorRecord"></param>
+        /// <returns>Returns a object of type PSModuleInfo</returns>
+        public PSModuleInfo GetModuleManifestWithRetry(string filePath, out IEnumerable<ErrorRecord> errorRecord)
+        {
+            CmdletInvocationException cmdletInvocationException = null;
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                try
+                {
+                    return GetModuleManifest(filePath, out errorRecord);
+                }
+                catch (CmdletInvocationException exception)
+                {
+                    cmdletInvocationException = exception;
+                    Console.WriteLine($"Catch: {attempt}");
+                }
+            }
+            throw cmdletInvocationException;
+        }
+
         /// <summary>
         /// Gets the module manifest
         /// </summary>

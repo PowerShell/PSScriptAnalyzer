@@ -40,7 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (Helper.IsModuleManifest(fileName))
             {
                 IEnumerable<ErrorRecord> errorRecords;
-                var psModuleInfo = Helper.Instance.GetModuleManifest(fileName, out errorRecords);
+                var psModuleInfo = Helper.Instance.GetModuleManifestWithRetry(fileName, out errorRecords);
                 if (errorRecords != null)
                 {
                     foreach (var errorRecord in errorRecords)
