@@ -311,7 +311,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 catch (CmdletInvocationException exception)
                 {
                     cmdletInvocationException = exception;
-                    Console.WriteLine($"Catch: {attempt}");
                 }
             }
             throw cmdletInvocationException;
