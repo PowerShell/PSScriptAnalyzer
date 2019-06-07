@@ -144,6 +144,8 @@ function Start-ScriptAnalyzerBuild
     param (
         [switch]$All,
 
+        # Note that 6 should also be chosen for PowerShell7 as both implement netstandard2.0
+        # and we do not use features from netstandard2.1
         [ValidateRange(3, 6)]
         [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
