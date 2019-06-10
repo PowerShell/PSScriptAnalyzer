@@ -31,6 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private readonly Lazy<CommandInfoCache> _commandInfoCacheLazy;
         private readonly RunspacePool _runSpacePool;
+        private readonly object _testModuleManifestLock = new object();
 
         #endregion
 
@@ -303,35 +304,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             errorRecord = null;
             PSModuleInfo psModuleInfo = null;
             Collection<PSObject> psObj = null;
-            using (var ps = System.Management.Automation.PowerShell.Create())
+            // Test-ModuleManifest is not thread safe
+            lock (_testModuleManifestLock)
             {
-                ps.RunspacePool = _runSpacePool;
-                ps.AddCommand("Test-ModuleManifest")
-                  .AddParameter("Path", filePath)
-                  .AddParameter("WarningAction", ActionPreference.SilentlyContinue);
-                try
+                using (var ps = System.Management.Automation.PowerShell.Create())
                 {
-                    psObj = ps.Invoke();
-                }
-                catch (CmdletInvocationException e)
-                {
-                    // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
-                    // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
-                    // we consume it to allow execution of the of this method.
-                    if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                    ps.RunspacePool = _runSpacePool;
+                    ps.AddCommand("Test-ModuleManifest")
+                      .AddParameter("Path", filePath)
+                      .AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                    try
                     {
-                        throw;
+                        psObj = ps.Invoke();
                     }
-                }
-                if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
-                {
-                    var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
-                    ps.Streams.Error.CopyTo(errorRecordArr, 0);
-                    errorRecord = errorRecordArr;
-                }
-                if (psObj != null && psObj.Any() && psObj[0] != null)
-                {
-                    psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
+                    catch (CmdletInvocationException e)
+                    {
+                        // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
+                        // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
+                        // we consume it to allow execution of the of this method.
+                        if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                        {
+                            throw;
+                        }
+                    }
+                    if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
+                    {
+                        var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
+                        ps.Streams.Error.CopyTo(errorRecordArr, 0);
+                        errorRecord = errorRecordArr;
+                    }
+                    if (psObj != null && psObj.Any() && psObj[0] != null)
+                    {
+                        psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
+                    }
                 }
             }
             return psModuleInfo;
