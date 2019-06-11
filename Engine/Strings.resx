@@ -165,9 +165,6 @@
   <data name="RuleSuppressionErrorFormat" xml:space="preserve">
     <value>Suppression Message Attribute error at line {0} in {1} : {2}</value>
   </data>
-  <data name="RuleSuppressionRuleNameNotFound" xml:space="preserve">
-    <value>Rule {0} cannot be found.</value>
-  </data>
   <data name="StringConstantArgumentsSuppressionAttributeError" xml:space="preserve">
     <value>All the arguments of the Suppress Message Attribute should be string constants.</value>
   </data>

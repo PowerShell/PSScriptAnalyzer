@@ -439,15 +439,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Rule {0} cannot be found..
-        /// </summary>
-        internal static string RuleSuppressionRuleNameNotFound {
-            get {
-                return ResourceManager.GetString("RuleSuppressionRuleNameNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Found {0}. Will use it to provide settings for this invocation..
         /// </summary>
         internal static string SettingsAutoDiscovered {
