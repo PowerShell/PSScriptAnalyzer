@@ -23,6 +23,7 @@
   - Instead of using the first cimClass and then having no superClass, use the first cimClass that has a non-null superClass (#1200) (by @bergmeister, thanks to @ykuijs! for the great collaboration)
   - Make `-SaveDscDependency` work on Linux (#1246) (by @bergmeister)
   
+- Enable suppression of custom rules when used together with `-IncludeDefaultRules` to allow all possible scenarios from 1.17.1 and 1.18.0. This removes also the check if the rule name in the suppression attribute can be found because this check is technically not possible in all scenarios (#1245) (by @bergmeister)
 - Fix NullReferenceException for class type (#1182) (by @bergmeister)
 
 ### Performance
