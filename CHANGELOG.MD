@@ -1,5 +1,61 @@
 ﻿# CHANGELOG
 
+## [1.18.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.1) - 2019-06-12
+
+### Fixes
+
+- Formatter
+  - UseCorrectCasing
+    - Do not use alias name as key for command info cache to fix the problem where UseCorrectCasing corrects aliases (#1216) (by @bergmeister)
+    - UseCorrectCasing: Fix wildcard lookups for command lookup and do not append .exe for applications on Windows (#1210) (by @bergmeister)
+  - Prevent PSCloseBrace crash if hashtable definition start on first token and there is a PSCloseBrace violation (#1235) (by @bergmeister)
+  - PipelineIndentationStyle
+    - Fix formatting regression in 1.18.0 whereby single-line pipeline reduces indentation level incorrectly (#1191) (by @bergmeister)
+    - Make IncreaseIndentationForFirstPipeline the true default option for PipelineIndentationStyle option (#1218) (by @bergmeister)
+
+- Compatibility Rules
+  - Fix UseCompatibleSyntax class error message (#1215) (by @rjmholt)
+  - Convert compatibility module to binary module, fix compatibility with Azure environments (#1212) (by @rjmholt)
+  - Prevent .NET members with names differing only by case from crashing the compatibility profiler (#1195) (by @rjmholt)
+  - Fix compatibility profile query API so that aliases referring to other modules appear (#1194) (by @rjmholt)
+  
+- DSC
+  - Instead of using the first cimClass and then having no superClass, use the first cimClass that has a non-null superClass (#1200) (by @bergmeister, thanks to @ykuijs! for the great collaboration)
+  - Make `-SaveDscDependency` work on Linux (#1246) (by @bergmeister)
+  
+- Fix NullReferenceException for class type (#1182) (by @bergmeister)
+
+### Performance
+
+2 improvements were made that make cold runs of ScriptAnalyzer twice as fast compared to `1.18.0`
+
+- Speedup cold runs by using a runspace pool (#1178) (by @bergmeister)
+- Fix logic errors in AvoidAlias rule to halve the amount of necessary calls to `Get-Command`, making the rule twice (#1251) (by @JamesWTruher)
+
+### General Improvements
+
+- Add ImplementingType to RuleInfo object for better settings file validation and settings template file creation (#1250) (by @JamesWTruher)
+- Fix typo in AvoidDefaultValueForMandatoryParameterError resource string (#1233) (Thanks @tnieto88!)
+- Change module root find function in CompatibilityRule (#1196) (by @rjmholt)
+
+### Documentation
+
+- Update PossibleIncorrectComparisonWithNull documentation with better example (#1244, #1226 and #1220) (by @bergmeister and thanks to @PrzemyslawKlys and @lesterw1!)
+- Compatibility rules documentation fixes (#1229, #1204, #1225 and #1221) (by @rjmholt, @bergmeister and thanks @skycommand!)
+- Update README.md on supported PowerShell Core version and update Docker examples (#1188) (Thanks @PrzemyslawKlys!)
+- Update UseConsistentWhitespace documentation to show all options (#1185) (by @bergmeister)
+
+### Build
+
+- Make it possible to build ScriptAnalyzer with PowerShell7 (#1256) (by @bergmeister)
+- Update signing file for versioned location of module (#1253) (by @JamesWTruher)
+- Bump version to 1.18.1 (#1248) (by @bergmeister)
+- Change build script to install into a versioned directory (#1247) (by @JamesWTruher)
+- Remove code for deprecated rules that is not used any more (#1232) (by @bergmeister)
+- Speedup CI builds by skipping the first time initialization of the bootstrapped dotnet CLI (#1211) (by @bergmeister)
+- Add suppression of warning for MS policy (#1205) (by @JamesWTruher)
+- Change logic for copying profiles into the 'install' directory (#1197) (by @JamesWTruher)
+
 ## [1.18.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.0) - 2019-03-21
 
 ### Breaking Changes
