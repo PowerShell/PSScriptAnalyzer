@@ -31,7 +31,7 @@ Describe "UseCorrectCasing" {
             $applicationPath = '. /bin/ls'
         }
         else {
-            $applicationPath = 'C:\Windows\System32\cmd.exe'
+            $applicationPath = "${env:WINDIR}\System32\cmd.exe"
         }
         Invoke-Formatter ". $applicationPath" | Should -Be ". $applicationPath"
     }
