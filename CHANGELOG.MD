@@ -7,7 +7,8 @@
 - Formatter
   - UseCorrectCasing
     - Do not use alias name as key for command info cache to fix the problem where UseCorrectCasing corrects aliases (#1216) (by @bergmeister)
-    - UseCorrectCasing: Fix wildcard lookups for command lookup and do not append .exe for applications on Windows (#1210) (by @bergmeister)
+    - Fix wildcard lookups for command lookup and do not append .exe for applications on Windows (#1210) (by @bergmeister)
+    - Do not correct applications or script paths at all (#1255) (by @bergmeister)
   - Prevent PSCloseBrace crash if hashtable definition start on first token and there is a PSCloseBrace violation (#1235) (by @bergmeister)
   - PipelineIndentationStyle
     - Fix formatting regression in 1.18.0 whereby single-line pipeline reduces indentation level incorrectly (#1191) (by @bergmeister)
