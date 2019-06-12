@@ -51,7 +51,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 var commandInfo = Helper.Instance.GetCommandInfo(commandName);
-                if (commandInfo == null)
+                if (commandInfo == null || commandInfo.CommandType == CommandTypes.ExternalScript || commandInfo.CommandType == CommandTypes.Application)
                 {
                     continue;
                 }
@@ -60,12 +60,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var fullyqualifiedName = $"{commandInfo.ModuleName}\\{shortName}";
                 var isFullyQualified = commandName.Equals(fullyqualifiedName, StringComparison.OrdinalIgnoreCase);
                 var correctlyCasedCommandName = isFullyQualified ? fullyqualifiedName : shortName;
-                if (isWindows && commandInfo.CommandType == CommandTypes.Application && !Path.HasExtension(commandName))
-                {
-                    // For binaries that could exist on both Windows and Linux like e.g. git we do not want to expand
-                    // git to git.exe to keep the script cross-platform compliant
-                    correctlyCasedCommandName = Path.GetFileNameWithoutExtension(correctlyCasedCommandName);
-                }
 
                 if (!commandName.Equals(correctlyCasedCommandName, StringComparison.Ordinal))
                 {
