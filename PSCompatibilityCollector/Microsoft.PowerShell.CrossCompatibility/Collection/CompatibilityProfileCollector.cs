@@ -82,6 +82,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
         }
 
+        // Increment the minor version if non-breaking additions have been made to the API
+        // Increment the major version if breaking changes have been made to the API
         private static readonly Version s_currentProfileSchemaVersion = new Version(1, 2);
 
         private readonly PowerShellDataCollector _pwshDataCollector;

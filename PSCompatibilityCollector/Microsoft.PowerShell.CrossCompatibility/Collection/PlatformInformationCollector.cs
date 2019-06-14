@@ -23,6 +23,36 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
     /// </summary>
     public class PlatformInformationCollector : IDisposable
     {
+        // Paths on Linux to search for key/value-paired information about the OS.
+        private static readonly IReadOnlyCollection<string> s_releaseInfoPaths = new string[]
+        {
+            "/etc/lsb-release",
+            "/etc/os-release",
+        };
+
+        private static readonly IReadOnlyList<string> s_distributionIdKeys = new string[]
+        {
+            "ID",
+            "DISTRIB_ID"
+        };
+
+        private static readonly IReadOnlyList<string> s_distributionVersionKeys = new string[]
+        {
+            "VERSION_ID",
+            "DISTRIB_RELEASE"
+        };
+
+        private static readonly IReadOnlyList<string> s_distributionPrettyNameKeys = new string[]
+        {
+            "PRETTY_NAME",
+            "DISTRIB_DESCRIPTION"
+        };
+
+        private static readonly Regex s_macOSNameRegex = new Regex(
+            @"System Version: (.*?)(\(|$)",
+            RegexOptions.Multiline | RegexOptions.Compiled);
+
+
         /// <summary>
         /// Collect all release info files into a lookup table in memory.
         /// Overrides pre-existing keys if there are duplicates.
@@ -55,41 +85,20 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 }
                 catch (IOException)
                 {
-                    // Do nothing - just continue
+                    // Different Linux distributions have different /etc/*-release files.
+                    // It's more efficient (and correct timing-wise) for us to try to read the file and catch the exception
+                    // than to test for its existence and then open it.
+                    //
+                    // See:
+                    //  - https://www.freedesktop.org/software/systemd/man/os-release.html
+                    //  - https://gist.github.com/natefoo/814c5bf936922dad97ff
+
+                    // Ignore that the file doesn't exist and just continue to the next one.
                 }
             }
 
             return dict;
         }
-
-        // Paths on Linux to search for key/value-paired information about the OS.
-        private static readonly IReadOnlyCollection<string> s_releaseInfoPaths = new string[]
-        {
-            "/etc/lsb-release",
-            "/etc/os-release",
-        };
-
-        private static readonly IReadOnlyList<string> s_distributionIdKeys = new string[]
-        {
-            "ID",
-            "DISTRIB_ID"
-        };
-
-        private static readonly IReadOnlyList<string> s_distributionVersionKeys = new string[]
-        {
-            "VERSION_ID",
-            "DISTRIB_RELEASE"
-        };
-
-        private static readonly IReadOnlyList<string> s_distributionPrettyNameKeys = new string[]
-        {
-            "PRETTY_NAME",
-            "DISTRIB_DESCRIPTION"
-        };
-
-        private static readonly Regex s_macOSNameRegex = new Regex(
-            @"System Version: (.*?)(\(|$)",
-            RegexOptions.Multiline | RegexOptions.Compiled);
 
         private readonly Lazy<Hashtable> _lazyPSVersionTable;
 
