@@ -60,7 +60,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// <returns>A dictionary with the keys and values of all the release info files on the machine.</returns>
         public static IReadOnlyDictionary<string, string> GetLinuxReleaseInfo()
         {
-            var dict = new Dictionary<string, string>();
+            var releaseInfoKeyValueEntries = new Dictionary<string, string>();
 
             foreach (string path in s_releaseInfoPaths)
             {
@@ -79,7 +79,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                             }
 
                             string[] elements = line.Split('=');
-                            dict[elements[0]] = Dequote(elements[1]);
+                            releaseInfoKeyValueEntries[elements[0]] = Dequote(elements[1]);
                         }
                     }
                 }
@@ -97,7 +97,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 }
             }
 
-            return dict;
+            return releaseInfoKeyValueEntries;
         }
 
         private readonly Lazy<Hashtable> _lazyPSVersionTable;
