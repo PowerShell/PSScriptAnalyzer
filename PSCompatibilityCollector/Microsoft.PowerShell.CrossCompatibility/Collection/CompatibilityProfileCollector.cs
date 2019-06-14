@@ -82,7 +82,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
         }
 
-        private static readonly Version s_currentProfileSchemaVersion = new Version(1, 1);
+        private static readonly Version s_currentProfileSchemaVersion = new Version(1, 2);
 
         private readonly PowerShellDataCollector _pwshDataCollector;
 
