@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Management.Infrastructure;
 using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
@@ -22,12 +23,73 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
     /// </summary>
     public class PlatformInformationCollector : IDisposable
     {
+        /// <summary>
+        /// Collect all release info files into a lookup table in memory.
+        /// Overrides pre-existing keys if there are duplicates.
+        /// </summary>
+        /// <returns>A dictionary with the keys and values of all the release info files on the machine.</returns>
+        public static IReadOnlyDictionary<string, string> GetLinuxReleaseInfo()
+        {
+            var dict = new Dictionary<string, string>();
+
+            foreach (string path in s_releaseInfoPaths)
+            {
+                try
+                {
+                    using (FileStream fileStream = File.OpenRead(path))
+                    using (var reader = new StreamReader(fileStream))
+                    {
+                        while (!reader.EndOfStream)
+                        {
+                            string line = reader.ReadLine();
+
+                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                            {
+                                continue;
+                            }
+
+                            string[] elements = line.Split('=');
+                            dict[elements[0]] = Dequote(elements[1]);
+                        }
+                    }
+                }
+                catch (IOException)
+                {
+                    // Do nothing - just continue
+                }
+            }
+
+            return dict;
+        }
+
         // Paths on Linux to search for key/value-paired information about the OS.
         private static readonly IReadOnlyCollection<string> s_releaseInfoPaths = new string[]
         {
             "/etc/lsb-release",
             "/etc/os-release",
         };
+
+        private static readonly IReadOnlyList<string> s_distributionIdKeys = new string[]
+        {
+            "ID",
+            "DISTRIB_ID"
+        };
+
+        private static readonly IReadOnlyList<string> s_distributionVersionKeys = new string[]
+        {
+            "VERSION_ID",
+            "DISTRIB_RELEASE"
+        };
+
+        private static readonly IReadOnlyList<string> s_distributionPrettyNameKeys = new string[]
+        {
+            "PRETTY_NAME",
+            "DISTRIB_DESCRIPTION"
+        };
+
+        private static readonly Regex s_macOSNameRegex = new Regex(
+            @"System Version: (.*?)(\(|$)",
+            RegexOptions.Multiline | RegexOptions.Compiled);
 
         private readonly Lazy<Hashtable> _lazyPSVersionTable;
 
@@ -129,9 +191,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         {
             var osData = new OperatingSystemData()
             {
+                Description = GetOSDescription(),
                 Architecture = GetOSArchitecture(),
                 Family = GetOSFamily(),
-                Name = GetOSName(),
                 Platform = GetOSPlatform(),
                 Version = GetOSVersion(),
             };
@@ -139,6 +201,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             switch (osData.Family)
             {
                 case OSFamily.Windows:
+                    osData.Name = osData.Description;
                     if (!string.IsNullOrEmpty(Environment.OSVersion.ServicePack))
                     {
                         osData.ServicePack = Environment.OSVersion.ServicePack;
@@ -147,53 +210,83 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     break;
 
                 case OSFamily.Linux:
-                    IReadOnlyDictionary<string, string> lsbInfo = GetLinuxReleaseInfo();
-                    osData.DistributionId = lsbInfo["DistributionId"];
-                    osData.DistributionVersion = lsbInfo["DistributionVersion"];
-                    osData.DistributionPrettyName = lsbInfo["DistributionPrettyName"];
+                    IReadOnlyDictionary<string, string> releaseInfo = GetLinuxReleaseInfo();
+
+                    osData.DistributionId = GetEntryFromReleaseInfo(releaseInfo, s_distributionIdKeys);
+                    osData.DistributionVersion = GetEntryFromReleaseInfo(releaseInfo, s_distributionVersionKeys);
+                    osData.DistributionPrettyName = GetEntryFromReleaseInfo(releaseInfo, s_distributionPrettyNameKeys);
+                    osData.Name = osData.DistributionPrettyName;
+                    break;
+
+                case OSFamily.MacOS:
+                    osData.Name = GetMacOSName();
                     break;
             }
 
             return osData;
         }
 
-        /// <summary>
-        /// Collect all release info files into a lookup table in memory.
-        /// Overrides pre-existing keys if there are duplicates.
-        /// </summary>
-        /// <returns>A dictionary with the keys and values of all the release info files on the machine.</returns>
-        public IReadOnlyDictionary<string, string> GetLinuxReleaseInfo()
+        private string GetMacOSName()
         {
-            var dict = new Dictionary<string, string>();
-
-            foreach (string path in s_releaseInfoPaths)
+            try
             {
-                try
+                using (var spProcess = new Process())
                 {
-                    using (FileStream fileStream = File.OpenRead(path))
-                    using (var reader = new StreamReader(fileStream))
-                    {
-                        while (!reader.EndOfStream)
-                        {
-                            string line = reader.ReadLine();
+                    spProcess.StartInfo.UseShellExecute = false;
+                    spProcess.StartInfo.RedirectStandardOutput = true;
+                    spProcess.StartInfo.CreateNoWindow = true;
+                    spProcess.StartInfo.FileName = "/usr/sbin/system_profiler";
+                    spProcess.StartInfo.Arguments = "SPSoftwareDataType";
 
-                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
-                            {
-                                continue;
-                            }
+                    spProcess.Start();
+                    spProcess.WaitForExit();
 
-                            string[] elements = line.Split('=');
-                            dict[elements[0]] = Dequote(elements[1]);
-                        }
-                    }
-                }
-                catch (IOException)
-                {
-                    // Do nothing - just continue
+                    string output = spProcess.StandardOutput.ReadToEnd();
+                    return s_macOSNameRegex.Match(output).Groups[1].Value;
                 }
             }
+            catch
+            {
+                return null;
+            }
+        }
 
-            return dict;
+        private string GetOSDescription()
+        {
+#if CoreCLR
+            // This key was introduced in PowerShell 6
+            return (string)PSVersionTable["OS"];
+#else
+            if (_lazyWin32OperatingSystemInfo.IsValueCreated)
+            {
+                return _lazyWin32OperatingSystemInfo.Value.OSName;
+            }
+
+            return RegistryCurrentVersionInfo.ProductName;
+#endif
+        }
+
+        private string GetOSVersion()
+        {
+#if CoreCLR
+            // On Linux, we want to record the kernel branch, since this can differentiate Azure
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return File.ReadAllText("/proc/sys/kernel/osrelease");
+            }
+#endif
+            return Environment.OSVersion.Version.ToString();
+        }
+
+        private string GetOSPlatform()
+        {
+#if CoreCLR
+            if (PSVersion.Major >= 6)
+            {
+                return (string)PSVersionTable["Platform"];
+            }
+#endif
+            return "Win32NT";
         }
 
         private OSFamily GetOSFamily()
@@ -310,46 +403,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return (uint)WindowsSku.Undefined;
         }
 
-        private string GetOSName()
-        {
-#if CoreCLR
-            // This key was introduced in PowerShell 6
-            if (PSVersion.Major >= 6)
-            {
-                return (string)PSVersionTable["OS"];
-            }
-#endif
-            if (_lazyWin32OperatingSystemInfo.IsValueCreated)
-            {
-                return _lazyWin32OperatingSystemInfo.Value.OSName;
-            }
-
-            return RegistryCurrentVersionInfo.ProductName;
-        }
-
-        private string GetOSVersion()
-        {
-#if CoreCLR
-            // On Linux, we want to record the kernel branch, since this can differentiate Azure
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return File.ReadAllText("/proc/sys/kernel/osrelease");
-            }
-#endif
-            return Environment.OSVersion.Version.ToString();
-        }
-
-        private string GetOSPlatform()
-        {
-#if CoreCLR
-            if (PSVersion.Major >= 6)
-            {
-                return (string)PSVersionTable["Platform"];
-            }
-#endif
-            return "Win32NT";
-        }
-
         private static CurrentVersionInfo ReadCurrentVersionFromRegistry()
         {
             using (RegistryKey currentVersion = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
@@ -360,13 +413,18 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
         }
 
-        [DllImport("kernel32.dll")]
-        private static extern bool GetProductInfo(
-            int dwOSMajorVersion,
-            int dwOSMinorVersion,
-            int dwSpMajorVersion,
-            int dwSpMinorVersion,
-            out uint pdwReturnedProductType);
+        private static string GetEntryFromReleaseInfo(IReadOnlyDictionary<string, string> releaseInfo, IEnumerable<string> possibleKeys)
+        {
+            foreach (string key in possibleKeys)
+            {
+                if (releaseInfo.TryGetValue(key, out string entry))
+                {
+                    return entry;
+                }
+            }
+
+            return null;
+        }
 
         private static Win32OSCimInfo GetWin32OperatingSystemInfo()
         {
@@ -442,6 +500,15 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
             return sb.ToString();
         }
+
+        [DllImport("kernel32.dll")]
+        private static extern bool GetProductInfo(
+            int dwOSMajorVersion,
+            int dwOSMinorVersion,
+            int dwSpMajorVersion,
+            int dwSpMinorVersion,
+            out uint pdwReturnedProductType);
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
