@@ -220,14 +220,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Check if the current token matches the end of a PipelineAst
                 var matchingPipeLineAstEnd = pipelineAsts.FirstOrDefault(pipelineAst =>
                         PositionIsEqual(pipelineAst.Extent.EndScriptPosition, token.Extent.EndScriptPosition)) as PipelineAst;
-
                 if (matchingPipeLineAstEnd == null)
                 {
                     continue;
                 }
-
-                bool pipelineSpansOnlyOneLine = matchingPipeLineAstEnd.Extent.StartLineNumber == matchingPipeLineAstEnd.Extent.EndLineNumber;
-                if (pipelineSpansOnlyOneLine)
+                bool pipelinesSpansOnlyOneLine = matchingPipeLineAstEnd.PipelineElements[0].Extent.StartLineNumber ==
+                    matchingPipeLineAstEnd.PipelineElements[matchingPipeLineAstEnd.PipelineElements.Count-1].Extent.StartLineNumber;
+                if (pipelinesSpansOnlyOneLine)
                 {
                     continue;
                 }
