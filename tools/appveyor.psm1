@@ -81,9 +81,11 @@ function Invoke-AppveyorTest {
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
 
     # Upload the test results
-    $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
-    Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
-    [byte[]]$response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+    if ($env:APPVEYOR) {
+        $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
+        Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
+        [byte[]]$response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+    }
 
     # Throw an error if any tests failed
     if ($testResults.FailedCount -gt 0) {
