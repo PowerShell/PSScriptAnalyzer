@@ -12,6 +12,8 @@ environment:
     PSVersion: 4
   - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     PowerShellEdition: PowerShellCore
+  - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    PowerShellEdition: PowerShellCore
 
 # cache Nuget packages and dotnet CLI cache
 cache:
