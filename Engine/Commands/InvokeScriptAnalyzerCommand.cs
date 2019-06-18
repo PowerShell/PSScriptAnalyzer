@@ -269,7 +269,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             Helper.Instance = new Helper(
                 SessionState.InvokeCommand,
                 this);
-            // NOTE Helper.Instance.Initialize() does *not* modify this.settings.
             Helper.Instance.Initialize();
 
             var psVersionTable = this.SessionState.PSVariable.GetValue("PSVersionTable") as Hashtable;
@@ -278,7 +277,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 Helper.Instance.SetPSVersionTable(psVersionTable);
             }
 
-            // NOTE Helper.ProcessCustomRulePaths does *not* modify this.settings.
             string[] rulePaths = Helper.ProcessCustomRulePaths(
                 customRulePath,
                 this.SessionState,
@@ -287,7 +285,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             if (IsFileParameterSet() && Path != null)
             {
                 // just used to obtain the directory to use to find settings below
-                // NOTE ProcessPath() does *not* modify this.settings.
                 ProcessPath();
             }
 
@@ -296,24 +293,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             var combIncludeDefaultRules = IncludeDefaultRules.IsPresent;
             try
             {
-                // THROW PSSASettings.Create(object, string, IOutputWriter, GetResolvedProviderPathFromPSPath) throws if ...
-                // NOTE Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings.Create(...) types the input, gets the input (if necessary), and parses it (if any).
                 var settingsObj = PSSASettings.Create(
-                    // NOTHROW A null this.settings results in returning an "empty" (but not null) settingsObj without exception.
-                    // NOTE this.settings is unmodified since start of BeginProcessing(). Thus, it is exactly the raw argument value, if any.
                     settings,
                     processedPaths == null || processedPaths.Count == 0 ? CurrentProviderLocation("FileSystem").ProviderPath : processedPaths[0],
                     this,
                     GetResolvedProviderPathFromPSPath);
-                // NOTE settingsObj cannot be null here since PSSASettings.Create(...) returns exactly `new Settings(settingsFound)`, which can never be null (but can throw).
                 if (settingsObj != null)
                 {
-                    // NOTHROW UpdateSettings(object) can throw an ArgumentNullException, but that will never happen since settingsObj is tested for non-nullity immediately above.
                     ScriptAnalyzer.Instance.UpdateSettings(settingsObj);
 
                     // For includeDefaultRules and RecurseCustomRulePath we override the value in the settings file by
                     // command line argument.
-                    // NOTHROW InvokeScriptAnalyzerCommand.OverrideSwitchParam(bool, string)
                     combRecurseCustomRulePath = OverrideSwitchParam(
                         settingsObj.RecurseCustomRulePath,
                         "RecurseCustomRulePath");
@@ -326,7 +316,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 // simultaneously. But since, this was done before with IncludeRules, ExcludeRules and Severity,
                 // we use the same strategy for CustomRulePath. So, we take the union of CustomRulePath provided in
                 // the settings file and if provided on command line.
-                // THROW Helper.ProcessCustomRulePaths(string[], SessionState, bool) throws one of six different exceptions if a settings' custom rule path is invalid somehow (e.g. drive doesn't exit; no wildcards but item doesn't exist; provider throws a lower-level exception; etc.). See the implementation of Helper.ProcessCustomRulePaths(string[], SessionState, bool) for details.
                 var settingsCustomRulePath = Helper.ProcessCustomRulePaths(
                         settingsObj?.CustomRulePath?.ToArray(),
                         this.SessionState,
@@ -339,7 +328,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
             catch (Exception e)
             {
-                // NOTE Any exception in resolving, getting, parsing, updating, etc. the settings herein results in an contextless WriteWarning(Strings.SettingsNotParsable), regardless of provenance.
                 string errorId;
                 ErrorCategory errorCategory;
                 switch (e)

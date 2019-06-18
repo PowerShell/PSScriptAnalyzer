@@ -73,12 +73,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (File.Exists(settingsFilePath))
                 {
                     filePath = settingsFilePath;
-                    // QUESTION When does parseSettingsFile(string) throw?
                     parseSettingsFile(settingsFilePath);
                 }
                 else
                 {
-                    // THROW ArgumentException(Strings.InvalidPath) if the resolution of the settings argument via GetResolvedProviderPathFromPSPathDelegate is non-null but not an existing file. (e.g. it may be a directory)
                     throw new ArgumentException(
                         String.Format(
                             CultureInfo.CurrentCulture,
@@ -91,12 +89,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 var settingsHashtable = settings as Hashtable;
                 if (settingsHashtable != null)
                 {
-                    // QUESTION When does parseSettingsHashtable(Hashtable) throw?
                     parseSettingsHashtable(settingsHashtable);
                 }
                 else
                 {
-                    // THROW ArgumentException(Strings.SettingsInvalidType) if settings is not convertible (`as` keyword) to Hashtable.
                     throw new ArgumentException(Strings.SettingsInvalidType);
                 }
             }
@@ -183,12 +179,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="outputWriter">An output writer.</param>
         /// <param name="getResolvedProviderPathFromPSPathDelegate">The GetResolvedProviderPathFromPSPath method from PSCmdlet to resolve relative path including wildcard support.</param>
         /// <returns>An object of Settings type.</returns>
-        // THROW Settings.Create(object, string, IOutputWriter, GetResolvedProviderPathFromPSPath) throws only because of the contained invocation to the Settings constructor, which does throw.
         internal static Settings Create(object settingsObj, string cwd, IOutputWriter outputWriter,
             PathResolver.GetResolvedProviderPathFromPSPath<string, ProviderInfo, Collection<string>> getResolvedProviderPathFromPSPathDelegate)
         {
             object settingsFound;
-            var settingsMode = FindSettingsMode(settingsObj, cwd, out settingsFound);  // NOTHROW
+            var settingsMode = FindSettingsMode(settingsObj, cwd, out settingsFound);
 
             switch (settingsMode)
             {
@@ -210,7 +205,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     var userProvidedSettingsString = settingsFound.ToString();
                     try
                     {
-                        // THROW ..Single() throws [System.InvalidOperationException] if the settings path does not resolve to exactly one item. (more or less)
                         var resolvedPath = getResolvedProviderPathFromPSPathDelegate(userProvidedSettingsString, out ProviderInfo providerInfo).Single();
                         settingsFound = resolvedPath;
                         outputWriter?.WriteVerbose(
@@ -219,11 +213,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 Strings.SettingsUsingFile,
                                 resolvedPath));
                     }
-                    // NOTE This catch block effectively makes *any* exception resulting from resolving the settings file path reduce to the case of no settings (by way of null settingsFound). Only a WriteVerbose(Strings.SettingsCannotFindFile) identifies what happened.
                     catch
                     {
-                        // TODO Upgrade WriteVerbose(Strings.SettingsCannotFindFile) to WriteWarning(Strings.SettingsCannotFindFile).
-                        // TODO Perform a ShouldContinue (?) confirmation check in the event that an exception occurred while resolving the settings file path.
                         outputWriter?.WriteVerbose(
                             String.Format(
                                 CultureInfo.CurrentCulture,
@@ -247,7 +238,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     return null;
             }
 
-            // THROW new Settings(object)
             return new Settings(settingsFound);
         }
 
@@ -466,19 +456,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        // NOTE parseSettingsFile concludes by calling parseSettingsHashtable if it (parseSettingsFile) is successful.
         private void parseSettingsFile(string settingsFilePath)
         {
             Token[] parserTokens = null;
             ParseError[] parserErrors = null;
-            // QUESTION Can Parser.ParseFile throw?
             Ast profileAst = Parser.ParseFile(settingsFilePath, out parserTokens, out parserErrors);
             IEnumerable<Ast> hashTableAsts = profileAst.FindAll(item => item is HashtableAst, false);
 
             // no hashtable, raise warning
             if (hashTableAsts.Count() == 0)
             {
-                // THROW parseSettingsFile throws ArgumentException(Strings.InvalidProfile) if no hashTableAst is detected in settings file.
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, settingsFilePath));
             }
 
@@ -488,18 +475,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 // ideally we should use HashtableAst.SafeGetValue() but since
                 // it is not available on PSv3, we resort to our own narrow implementation.
-                // QUESTION When does GetSafeValueFromHashtableAst(hashTableAst) throw?
                 hashtable = GetSafeValueFromHashtableAst(hashTableAst);
             }
             catch (InvalidOperationException e)
             {
-                // THROW parseSettingsFile throws ArgumentException(Strings.InvalidProfile) if GetSafeValueFromHashtableAst(hashTableAst) throws an InvalidOperationException.
                 throw new ArgumentException(Strings.InvalidProfile, e);
             }
 
             if (hashtable == null)
             {
-                // THROW parseSettingsFile throws ArgumentException if GetSafeValueFromHashtableAst(hashTableAst) returns null.
                 throw new ArgumentException(
                     String.Format(
                         CultureInfo.CurrentCulture,
@@ -507,7 +491,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         settingsFilePath));
             }
 
-            // QUESTION When does parseSettingsHashtable(Hashtable) throw?
             parseSettingsHashtable(hashtable);
         }
 
@@ -703,7 +686,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return false;
         }
 
-        // NOTHROW FindSettingsMode(object, string, out object)
         internal static SettingsMode FindSettingsMode(object settings, string path, out object settingsFound)
         {
             var settingsMode = SettingsMode.None;
@@ -724,7 +706,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         // if settings are not provided explicitly, look for it in the given path
                         // check if pssasettings.psd1 exists
-                        // COMBAK Refactor the magic string literal "PSScriptAnalyzerSettings.psd1" to a public const field on the class. (bare minimum... although will also help open possibility for user-configurable default name)
                         var settingsFilename = "PSScriptAnalyzerSettings.psd1";
                         var settingsFilePath = Path.Combine(directory, settingsFilename);
                         settingsFound = settingsFilePath;
