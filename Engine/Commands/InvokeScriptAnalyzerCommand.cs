@@ -328,48 +328,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
             catch (Exception e)
             {
-                string errorId;
-                ErrorCategory errorCategory;
-                switch (e)
-                {
-                    case ArgumentException _:
-                        errorId = "InvalidSettingsArgument";
-                        errorCategory = ErrorCategory.InvalidArgument;
-                        break;
-                    case InvalidDataException _:
-                        errorId = "InvalidSettingsData";
-                        errorCategory = ErrorCategory.InvalidData;
-                        break;
-                    case InvalidOperationException _:
-                        errorId = "InvalidPathForProvider";  // InvalidOperationException can arise from provider-specific limitations interacting with a settings path (e.g. wildcards, home, containers, etc.).
-                        errorCategory = ErrorCategory.InvalidOperation;
-                        break;
-                    case InternalBufferOverflowException _:
-                    case PathTooLongException _:
-                        errorId = "PathOrSettingsExceededLimits";
-                        errorCategory = ErrorCategory.LimitsExceeded;
-                        break;
-                    case NotSupportedException _:
-                        errorId = "PathOrSettingNotSupported";
-                        errorCategory = ErrorCategory.NotEnabled;
-                        break;
-                    case DirectoryNotFoundException _:
-                    case System.IO.DriveNotFoundException _:
-                    case System.Management.Automation.DriveNotFoundException _:
-                    case FileNotFoundException _:
-                    case ItemNotFoundException _:
-                    case ProviderNotFoundException _:
-                        errorId = "SettingsNotFound";
-                        errorCategory = ErrorCategory.ObjectNotFound;
-                        break;
-                    default:
-                        errorId = "SettingsNotLoadable";
-                        errorCategory = ErrorCategory.NotSpecified;
-                        break;
-                }
-                
-                var errorRecord = new ErrorRecord(e, errorId, errorCategory, this.settings);
-                this.ThrowTerminatingError(errorRecord);
+                this.ThrowTerminatingError(new ErrorRecord(
+                        e,
+                        "SettingsNotProcessable",
+                        ErrorCategory.NotSpecified,
+                        this.settings));
             }
 
             ScriptAnalyzer.Instance.Initialize(
