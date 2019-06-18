@@ -70,7 +70,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (String.IsNullOrWhiteSpace(value) ||
                     !Enum.TryParse(value, true, out pipelineIndentationStyle))
                 {
-                    pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline;
+                    pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationForFirstPipeline;
                 }
             }
         }
@@ -96,7 +96,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         // TODO make this configurable
         private IndentationKind indentationKind = IndentationKind.Space;
 
-        private PipelineIndentationStyle pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline;
+        private PipelineIndentationStyle pipelineIndentationStyle = PipelineIndentationStyle.IncreaseIndentationForFirstPipeline;
 
         /// <summary>
         /// Analyzes the given ast to find violations.
@@ -220,16 +220,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Check if the current token matches the end of a PipelineAst
                 var matchingPipeLineAstEnd = pipelineAsts.FirstOrDefault(pipelineAst =>
                         PositionIsEqual(pipelineAst.Extent.EndScriptPosition, token.Extent.EndScriptPosition)) as PipelineAst;
-                if (matchingPipeLineAstEnd != null)
+
+                if (matchingPipeLineAstEnd == null)
                 {
-                    if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
-                    {
-                        indentationLevel = ClipNegative(indentationLevel - 1);
-                    }
-                    else if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
-                    {
-                        indentationLevel = ClipNegative(indentationLevel - (matchingPipeLineAstEnd.PipelineElements.Count - 1));
-                    }
+                    continue;
+                }
+
+                bool pipelineSpansOnlyOneLine = matchingPipeLineAstEnd.Extent.StartLineNumber == matchingPipeLineAstEnd.Extent.EndLineNumber;
+                if (pipelineSpansOnlyOneLine)
+                {
+                    continue;
+                }
+
+                if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
+                {
+                    indentationLevel = ClipNegative(indentationLevel - 1);
+                }
+                else if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
+                {
+                    indentationLevel = ClipNegative(indentationLevel - (matchingPipeLineAstEnd.PipelineElements.Count - 1));
                 }
             }
 

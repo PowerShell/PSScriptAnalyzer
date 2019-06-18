@@ -4,12 +4,12 @@
 #if !PSV3
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
@@ -75,7 +75,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 #if CORECLR
                 localAppdataPath
                     = string.IsNullOrWhiteSpace(value)
-                    ? Environment.GetEnvironmentVariable("LOCALAPPDATA")
+                    ? Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "LOCALAPPDATA" : "HOME") //Environment.GetEnvironmentVariable("LOCALAPPDATA")
                     : value;
 #else
                 localAppdataPath
@@ -215,7 +215,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private void SetupPSModulePath()
         {
             oldPSModulePath = Environment.GetEnvironmentVariable("PSModulePath");
-            curPSModulePath = oldPSModulePath + ";" + tempModulePath;
+            curPSModulePath = oldPSModulePath + Path.PathSeparator + tempModulePath;
 #if CORECLR
             Environment.SetEnvironmentVariable("PSModulePath", curPSModulePath);
 #else

@@ -11,11 +11,47 @@ Describe "UseCorrectCasing" {
         Invoke-Formatter '"$(get-childitem)"' | Should -Be '"$(get-childitem)"'
     }
 
-    It "corrects case of script function" {
-        function Invoke-DummyFunction
-        {
+    It "Corrects alias correctly" {
+        Invoke-Formatter 'Gci' | Should -Be 'gci'
+        Invoke-Formatter '?' | Should -Be '?'
+    }
 
+    It "Does not corrects applications on the PATH" -Skip:($IsLinux -or $IsMacOS) {
+        Invoke-Formatter 'Cmd' | Should -Be 'Cmd'
+        Invoke-Formatter 'MORE' | Should -Be 'MORE'
+    }
+
+    It "Preserves extension of applications on Windows" -Skip:($IsLinux -or $IsMacOS) {
+        Invoke-Formatter 'cmd.exe' | Should -Be 'cmd.exe'
+        Invoke-Formatter 'more.com' | Should -Be 'more.com'
+    }
+
+    It "Preserves full application path" {
+        if ($IsLinux -or $IsMacOS) {
+            $applicationPath = '. /bin/ls'
         }
+        else {
+            $applicationPath = "${env:WINDIR}\System32\cmd.exe"
+        }
+        Invoke-Formatter ". $applicationPath" | Should -Be ". $applicationPath"
+    }
+
+    It "Corrects case of script function" {
+        function Invoke-DummyFunction { }
         Invoke-Formatter 'invoke-dummyFunction' | Should -Be 'Invoke-DummyFunction'
+    }
+
+    It "Preserves script path" {
+        $path = Join-Path $TestDrive "$([guid]::NewGuid()).ps1"
+        New-Item -ItemType File -Path $path
+        $scriptDefinition = ". $path"
+        Invoke-Formatter $scriptDefinition | Should -Be $scriptDefinition
+    }
+
+    It "Preserves UNC script path" -Skip:($IsLinux -or $IsMacOS) {
+        $uncPath = [System.IO.Path]::Combine("\\$(HOSTNAME.EXE)\C$\", $TestDrive, "$([guid]::NewGuid()).ps1")
+        New-Item -ItemType File -Path $uncPath
+        $scriptDefinition = ". $uncPath"
+        Invoke-Formatter $scriptDefinition | Should -Be $scriptDefinition
     }
 }

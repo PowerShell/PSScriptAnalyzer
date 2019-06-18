@@ -4,7 +4,7 @@
 
 ## Description
 
-# parameters
+# Parameters
 
 **Note**: This rule is not enabled by default. The user needs to enable it through settings.
 
@@ -12,12 +12,14 @@
 
 ```powershell
     Rules = @{
-        PSUseConsistentWhitespace = @{
-            Enable = $true
-            CheckOpenBrace = $true
-            CheckOpenParen = $true
-            CheckOperator = $true
-            CheckSeparator = $true
+        PSUseConsistentWhitespace  = @{
+            Enable          = $true
+            CheckInnerBrace = $true
+            CheckOpenBrace  = $true
+            CheckOpenParen  = $true
+            CheckOperator   = $true
+            CheckPipe       = $true
+            CheckSeparator  = $true
         }
     }
 ```

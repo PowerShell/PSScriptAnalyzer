@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
+using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -29,6 +30,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private PSVersionTable psVersionTable;
 
         private readonly Lazy<CommandInfoCache> _commandInfoCacheLazy;
+        private readonly RunspacePool _runSpacePool;
+        private readonly object _testModuleManifestLock = new object();
 
         #endregion
 
@@ -113,7 +116,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this));
+            // There are 5 rules that use the CommandInfo cache but one rule (AvoidAlias) makes parallel queries.
+            // Therefore 10 runspaces was a heuristic measure where no more speed improvement was seen.
+            _runSpacePool = RunspaceFactory.CreateRunspacePool(1, 10);
+            _runSpacePool.Open();
+            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this, runspacePool: _runSpacePool));
         }
 
         /// <summary>
@@ -297,34 +304,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             errorRecord = null;
             PSModuleInfo psModuleInfo = null;
             Collection<PSObject> psObj = null;
-            using (var ps = System.Management.Automation.PowerShell.Create())
+            // Test-ModuleManifest is not thread safe
+            lock (_testModuleManifestLock)
             {
-                try
+                using (var ps = System.Management.Automation.PowerShell.Create())
                 {
-                    ps.AddCommand("Test-ModuleManifest");
-                    ps.AddParameter("Path", filePath);
-                    ps.AddParameter("WarningAction", ActionPreference.SilentlyContinue);
-                    psObj = ps.Invoke();
-                }
-                catch (CmdletInvocationException e)
-                {
-                    // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
-                    // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
-                    // we consume it to allow execution of the of this method.
-                    if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                    ps.RunspacePool = _runSpacePool;
+                    ps.AddCommand("Test-ModuleManifest")
+                      .AddParameter("Path", filePath)
+                      .AddParameter("WarningAction", ActionPreference.SilentlyContinue);
+                    try
                     {
-                        throw;
+                        psObj = ps.Invoke();
                     }
-                }
-                if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
-                {
-                    var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
-                    ps.Streams.Error.CopyTo(errorRecordArr, 0);
-                    errorRecord = errorRecordArr;
-                }
-                if (psObj != null && psObj.Any() && psObj[0] != null)
-                {
-                    psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
+                    catch (CmdletInvocationException e)
+                    {
+                        // Invoking Test-ModuleManifest on a module manifest that doesn't have all the valid keys
+                        // throws a NullReferenceException. This is probably a bug in Test-ModuleManifest and hence
+                        // we consume it to allow execution of the of this method.
+                        if (e.InnerException == null || e.InnerException.GetType() != typeof(System.NullReferenceException))
+                        {
+                            throw;
+                        }
+                    }
+                    if (ps.HadErrors && ps.Streams != null && ps.Streams.Error != null)
+                    {
+                        var errorRecordArr = new ErrorRecord[ps.Streams.Error.Count];
+                        ps.Streams.Error.CopyTo(errorRecordArr, 0);
+                        errorRecord = errorRecordArr;
+                    }
+                    if (psObj != null && psObj.Any() && psObj[0] != null)
+                    {
+                        psModuleInfo = psObj[0].ImmediateBaseObject as PSModuleInfo;
+                    }
                 }
             }
             return psModuleInfo;
@@ -402,7 +414,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<Ast> cmdAsts = ast.FindAll(item => item is CommandAst
                 && exportFunctionsCmdlet.Contains((item as CommandAst).GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
 
-            CommandInfo exportMM = Helper.Instance.GetCommandInfoLegacy("export-modulemember", CommandTypes.Cmdlet);
+            CommandInfo exportMM = Helper.Instance.GetCommandInfo("export-modulemember", CommandTypes.Cmdlet);
 
             // switch parameters
             IEnumerable<ParameterMetadata> switchParams = (exportMM != null) ? exportMM.Parameters.Values.Where<ParameterMetadata>(pm => pm.SwitchParameter) : Enumerable.Empty<ParameterMetadata>();
@@ -659,31 +671,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
-        }
-
-
-        /// <summary>
-        /// Get a CommandInfo object of the given command name
-        /// </summary>
-        /// <returns>Returns null if command does not exists</returns>
-        private CommandInfo GetCommandInfoInternal(string cmdName, CommandTypes? commandType)
-        {
-            using (var ps = System.Management.Automation.PowerShell.Create())
-            {
-                var psCommand = ps.AddCommand("Get-Command")
-                    .AddParameter("Name", cmdName)
-                    .AddParameter("ErrorAction", "SilentlyContinue");
-
-                if(commandType!=null)
-                {
-                    psCommand.AddParameter("CommandType", commandType);
-                }
-
-                var commandInfo = psCommand.Invoke<CommandInfo>()
-                         .FirstOrDefault();
-
-                return commandInfo;
-            }
         }
 
         /// <summary>
@@ -1093,8 +1080,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 if (details != null && classes != null)
                 {
-                    // Get the class that corresponds to the name of the type (if possible)
-                    psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type.FullName, StringComparison.OrdinalIgnoreCase));
+                    // Get the class that corresponds to the name of the type (if possible, the type is not available in the case of a static Singleton)
+                    psClass = classes.FirstOrDefault(item => String.Equals(item.Name, details.Type?.FullName, StringComparison.OrdinalIgnoreCase));
                 }
 
 #endif

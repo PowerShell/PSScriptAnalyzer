@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Management.Automation;
+using System.IO;
+using System.Runtime.InteropServices;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -29,6 +32,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
+            bool isWindows = true;
+#if CORECLR
+            isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#endif
+
             // Iterates all CommandAsts and check the command name.
             foreach (CommandAst commandAst in commandAsts)
             {
@@ -43,7 +51,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 var commandInfo = Helper.Instance.GetCommandInfo(commandName);
-                if (commandInfo == null)
+                if (commandInfo == null || commandInfo.CommandType == CommandTypes.ExternalScript || commandInfo.CommandType == CommandTypes.Application)
                 {
                     continue;
                 }

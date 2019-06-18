@@ -288,7 +288,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             // if open brace on a new line by itself, use its indentation
             var openBraceToken = tokens[openBracePos];
-            if (tokens[openBracePos - 1].Kind == TokenKind.NewLine)
+            if (openBracePos > 0 && tokens[openBracePos - 1].Kind == TokenKind.NewLine)
             {
                 return new String(' ', openBraceToken.Extent.StartColumnNumber - 1);
             }

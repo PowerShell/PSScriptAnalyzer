@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
@@ -16,6 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private SourceType sourceType;
         private string sourceName;
         private RuleSeverity ruleSeverity;
+        private Type implementingType;
 
         /// <summary>
         /// Name: The name of the rule.
@@ -50,7 +52,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <summary>
         /// SourceType: The source type of the rule.
         /// </summary>
-        /// 
+        ///
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public SourceType SourceType
         {
@@ -79,6 +81,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
+        /// ImplementingType : The type which implements the rule.
+        /// </summary>
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        public Type ImplementingType
+        {
+            get { return implementingType; }
+            private set { implementingType = value; }
+        }
+
+        /// <summary>
         /// Constructor for a RuleInfo.
         /// </summary>
         /// <param name="name">Name of the rule.</param>
@@ -93,12 +105,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             Description = description;
             SourceType  = sourceType;
             SourceName  = sourceName;
-            Severity = severity;      
+            Severity = severity;
+        }
+
+        /// <summary>
+        /// Constructor for a RuleInfo.
+        /// </summary>
+        /// <param name="name">Name of the rule.</param>
+        /// <param name="commonName">Common Name of the rule.</param>
+        /// <param name="description">Description of the rule.</param>
+        /// <param name="sourceType">Source type of the rule.</param>
+        /// <param name="sourceName">Source name of the rule.</param>
+        /// <param name="implementingType">The dotnet type of the rule.</param>
+        public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity, Type implementingType)
+        {
+            RuleName        = name;
+            CommonName  = commonName;
+            Description = description;
+            SourceType  = sourceType;
+            SourceName  = sourceName;
+            Severity = severity;
+            ImplementingType = implementingType;
         }
 
         public override string ToString()
         {
             return RuleName;
-        }      
+        }
     }
 }

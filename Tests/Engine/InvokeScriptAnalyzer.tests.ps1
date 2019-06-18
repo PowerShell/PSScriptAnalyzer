@@ -72,6 +72,10 @@ Describe "Test available parameters" {
             It "is a switch parameter" {
                 $params["SaveDscDependency"].ParameterType.FullName | Should -Be "System.Management.Automation.SwitchParameter"
             }
+
+            It 'does not throw when being applied against a dummy script with no DSC code' {
+                Invoke-ScriptAnalyzer -ScriptDefinition 'foo' -SaveDscDependency
+            }
         }
     }
 
@@ -628,6 +632,13 @@ Describe "Test -EnableExit Switch" {
                 $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
                 $warnings.Count | Should -Be 1
                 $warnings.RuleName | Should -Be 'TypeNotFound'
+            }
+        }
+
+        Describe "Handles static Singleton (issue 1182)" {
+            It "Does not throw or return diagnostic record" {
+                $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
+                Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
             }
         }
     }

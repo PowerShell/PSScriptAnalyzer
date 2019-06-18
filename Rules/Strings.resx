@@ -682,7 +682,7 @@
     <value>Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block.</value>
   </data>
   <data name="AvoidDefaultValueForMandatoryParameterError" xml:space="preserve">
-    <value>Mandatory Parameter '{0}' is initialized in the Param block. To fix a violation of this rule, please leave it unintialized.</value>
+    <value>Mandatory Parameter '{0}' is initialized in the Param block. To fix a violation of this rule, please leave it uninitialized.</value>
   </data>
   <data name="AvoidDefaultValueForMandatoryParameterName" xml:space="preserve">
     <value>AvoidDefaultValueForMandatoryParameter</value>

@@ -23,8 +23,8 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
     }
 
     Context "When examples present" {
-        New-Item -Path $examplesPath -ItemType Directory
-        New-Item -Path "$examplesPath\FileResource_Example.psm1" -ItemType File
+        New-Item -Path $examplesPath -ItemType Directory -force
+        New-Item -Path "$examplesPath\FileResource_Example.psm1" -ItemType File -force
 
         $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $classResourcePath | Where-Object {$_.RuleName -eq $ruleName}
 
@@ -57,8 +57,8 @@ Describe "DscExamplesPresent rule in regular (non-class) based resource" {
     }
 
     Context "When examples present" {
-        New-Item -Path $examplesPath -ItemType Directory
-        New-Item -Path "$examplesPath\MSFT_WaitForAll_Example.psm1" -ItemType File
+        New-Item -Path $examplesPath -ItemType Directory -force
+        New-Item -Path "$examplesPath\MSFT_WaitForAll_Example.psm1" -ItemType File -force
 
         $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $resourcePath | Where-Object {$_.RuleName -eq $ruleName}
 

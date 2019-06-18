@@ -126,25 +126,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         fileName,
                         commandName,
                         suggestedCorrections: GetCorrectionExtent(cmdAst, cmdletNameIfCommandNameWasAlias));
+                    // do not continue the search, but go to the next command
+                    continue;
                 }
 
-                var isNativeCommand = Helper.Instance.GetCommandInfo(commandName, CommandTypes.Application | CommandTypes.ExternalScript) != null;
-                if (!isNativeCommand)
-                {
-                    var commdNameWithGetPrefix = $"Get-{commandName}";
-                    var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo($"Get-{commandName}");
-                    if (cmdletNameIfCommandWasMissingGetPrefix != null)
-                    {
-                        yield return new DiagnosticRecord(
-                            string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
-                            GetCommandExtent(cmdAst),
-                            GetName(),
-                            DiagnosticSeverity.Warning,
-                            fileName,
-                            commandName,
-                            suggestedCorrections: GetCorrectionExtent(cmdAst, commdNameWithGetPrefix));
-                    }
+                // If we find match of any kind, do not continue with the Get-{commandname} check
+                if ( Helper.Instance.GetCommandInfo(commandName) != null ) {
+                    continue;
                 }
+
+                var commdNameWithGetPrefix = $"Get-{commandName}";
+                var cmdletNameIfCommandWasMissingGetPrefix = Helper.Instance.GetCommandInfo(commdNameWithGetPrefix);
+                if (cmdletNameIfCommandWasMissingGetPrefix != null)
+                {
+                    yield return new DiagnosticRecord(
+                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
+                        GetCommandExtent(cmdAst),
+                        GetName(),
+                        DiagnosticSeverity.Warning,
+                        fileName,
+                        commandName,
+                        suggestedCorrections: GetCorrectionExtent(cmdAst, commdNameWithGetPrefix));
+                }
+
             }
         }
 
