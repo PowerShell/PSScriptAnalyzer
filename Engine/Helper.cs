@@ -1506,6 +1506,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Collection<PathInfo> pathInfo = new Collection<PathInfo>();
             foreach (string rulePath in rulePaths)
             {
+                // THROW PathIntrinsics.GetResolvedPSPathFromPSPath(rulePath) throws [System.Management.Automation.ProviderNotFoundException] if path is a provider-qualified path and the specified provider does not exist.
+                // THROW PathIntrinsics.GetResolvedPSPathFromPSPath(rulePath) throws [System.Management.Automation.DriveNotFoundException] if path is a drive-qualified path and the specified drive does not exist.
+                // THROW PathIntrinsics.GetResolvedPSPathFromPSPath(rulePath) throws [System.Management.Automation.ProviderInvocationException] if the provider throws an exception when its MakePath gets called.
+                // THROW PathIntrinsics.GetResolvedPSPathFromPSPath(rulePath) throws [System.NotSupportedException] if the provider does not support multiple items.
+                // THROW PathIntrinsics.GetResolvedPSPathFromPSPath(rulePath) throws [System.InvalidOperationException] the home location for the provider is not set and path starts with a "~".
+                // THROW PathIntrinsics.GetResolvedPSPathFromPSPath(rulePath) throws [System.Management.Automation.ItemNotFoundException] if path does not contain wildcard characters and could not be found.
                 Collection<PathInfo> pathInfosForRulePath = sessionState.Path.GetResolvedPSPathFromPSPath(rulePath);
                 if (null != pathInfosForRulePath)
                 {
