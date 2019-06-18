@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -339,11 +340,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             catch (Exception e)
             {
                 // NOTE Any exception in resolving, getting, parsing, updating, etc. the settings herein results in an contextless WriteWarning(Strings.SettingsNotParsable), regardless of provenance.
-                var errorRecord = new ErrorRecord(
-                        e,
-                        "SettingsInvalidOrNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand",
-                        ErrorCategory.InvalidArgument,
-                        settings);
+                string errorId;
+                ErrorCategory errorCategory;
+                switch (e)
+                {
+                    case ArgumentException _:
+                        errorId = "InvalidSettingsArgument";
+                        errorCategory = ErrorCategory.InvalidArgument;
+                        break;
+                    case InvalidDataException _:
+                        errorId = "InvalidSettingsData";
+                        errorCategory = ErrorCategory.InvalidData;
+                        break;
+                    case InvalidOperationException _:
+                        errorId = "InvalidPathForProvider";  // InvalidOperationException can arise from provider-specific limitations interacting with a settings path (e.g. wildcards, home, containers, etc.).
+                        errorCategory = ErrorCategory.InvalidOperation;
+                        break;
+                    case InternalBufferOverflowException _:
+                    case PathTooLongException _:
+                        errorId = "PathOrSettingsExceededLimits";
+                        errorCategory = ErrorCategory.LimitsExceeded;
+                        break;
+                    case NotSupportedException _:
+                        errorId = "PathOrSettingNotSupported";
+                        errorCategory = ErrorCategory.NotEnabled;
+                        break;
+                    case DirectoryNotFoundException _:
+                    case System.IO.DriveNotFoundException _:
+                    case System.Management.Automation.DriveNotFoundException _:
+                    case FileNotFoundException _:
+                    case ItemNotFoundException _:
+                    case ProviderNotFoundException _:
+                        errorId = "SettingsNotFound";
+                        errorCategory = ErrorCategory.ObjectNotFound;
+                        break;
+                    default:
+                        errorId = "SettingsNotLoadable";
+                        errorCategory = ErrorCategory.NotSpecified;
+                        break;
+                }
+                
+                var errorRecord = new ErrorRecord(e, errorId, errorCategory, this.settings);
                 this.ThrowTerminatingError(errorRecord);
             }
 
