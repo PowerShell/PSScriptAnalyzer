@@ -295,7 +295,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             var combIncludeDefaultRules = IncludeDefaultRules.IsPresent;
             try
             {
-                // THROW PSSASettings.Create(object, string, IOutputWriter, GetResolvedProviderPathFromPSPath) throws if TODO
+                // THROW PSSASettings.Create(object, string, IOutputWriter, GetResolvedProviderPathFromPSPath) throws if ...
                 // NOTE Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings.Create(...) types the input, gets the input (if necessary), and parses it (if any).
                 var settingsObj = PSSASettings.Create(
                     // NOTHROW A null this.settings results in returning an "empty" (but not null) settingsObj without exception.
@@ -307,7 +307,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 // NOTE settingsObj cannot be null here since PSSASettings.Create(...) returns exactly `new Settings(settingsFound)`, which can never be null (but can throw).
                 if (settingsObj != null)
                 {
-                    // NOTHROW UpdateSettings can throw an ArgumentNullException, but that will never happen since settingsObj is tested for non-nullity immediately above.
+                    // NOTHROW UpdateSettings(object) can throw an ArgumentNullException, but that will never happen since settingsObj is tested for non-nullity immediately above.
                     ScriptAnalyzer.Instance.UpdateSettings(settingsObj);
 
                     // For includeDefaultRules and RecurseCustomRulePath we override the value in the settings file by
@@ -336,12 +336,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                                                     ? rulePaths
                                                     : rulePaths.Concat(settingsCustomRulePath).ToArray();
             }
-            catch
+            catch (Exception e)
             {
                 // NOTE Any exception in resolving, getting, parsing, updating, etc. the settings herein results in an contextless WriteWarning(Strings.SettingsNotParsable), regardless of provenance.
-                this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
-                stopProcessing = true;
-                return;
+                var errorRecord = new ErrorRecord(
+                        e,
+                        "SettingsInvalidOrNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand",
+                        ErrorCategory.InvalidArgument,
+                        settings);
+                this.ThrowTerminatingError(errorRecord);
             }
 
             ScriptAnalyzer.Instance.Initialize(
@@ -369,7 +372,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 ProcessPath();
             }
-            
+
 #if !PSV3
             // TODO Support dependency resolution for analyzing script definitions
             if (saveDscDependency)
