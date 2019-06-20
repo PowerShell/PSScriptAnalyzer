@@ -5,5 +5,5 @@ steps:
 - template: templates/bootstrap.yaml
 - pwsh: |
     ./build.ps1 -Configuration 'Release' -All
-  displayName: 'PowerShell Script'
+  displayName: 'Full Build'
 - template: templates/test.yaml
