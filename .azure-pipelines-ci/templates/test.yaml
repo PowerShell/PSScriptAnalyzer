@@ -1,0 +1,4 @@
+- pwsh: |
+   Import-Module .\tools\appveyor.psm1
+   Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
+  displayName: 'Test'

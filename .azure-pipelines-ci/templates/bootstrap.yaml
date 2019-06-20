@@ -1,4 +1,3 @@
-steps:
 - pwsh: |
    Import-Module .\tools\appveyor.psm1
    Invoke-AppveyorInstall
