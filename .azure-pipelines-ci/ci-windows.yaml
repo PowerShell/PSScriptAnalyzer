@@ -1,5 +1,5 @@
 steps:
-- template: templates/bootstrap.yml
+- template: templates/bootstrap.yaml
 - pwsh: |
     ./build.ps1 -Configuration 'Release' -All
     ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
