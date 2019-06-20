@@ -3,3 +3,8 @@ steps:
    Import-Module .\tools\appveyor.psm1
    Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
   displayName: 'Test'
+- task: PublishTestResults@2
+    inputs:
+      testRunner: NUnit
+      testResultsFiles: 'TestResults.xml'
+    condition: succeededOrFailed()
