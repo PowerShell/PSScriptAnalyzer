@@ -1,11 +1,14 @@
 variables:
+  pwsh: true
   # Avoid expensive initialization of dotnet cli, see: https://donovanbrown.com/post/Stop-wasting-time-during-NET-Core-builds
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 steps:
 - template: templates/bootstrap.yaml
   parameters:
-    pwsh: true
+    pwsh: $(pwsh)
 - pwsh: |
     ./build.ps1 -Configuration 'Release' -All
   displayName: 'Full Build'
 - template: templates/test.yaml
+  parameters:
+    pwsh: $(pwsh)
