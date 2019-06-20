@@ -3,6 +3,8 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 steps:
 - template: templates/bootstrap.yaml
+  parameters:
+    pwsh: true
 - pwsh: |
     ./build.ps1 -Configuration 'Release' -All
   displayName: 'Full Build'

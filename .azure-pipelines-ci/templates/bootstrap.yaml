@@ -1,5 +1,6 @@
 steps:
-- pwsh: |
+- powershell: |
    Import-Module .\tools\appveyor.psm1
    Invoke-AppveyorInstall
   displayName: 'Bootstrap'
+  pwsh: ${{ parameters.pwsh }}
