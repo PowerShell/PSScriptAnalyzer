@@ -3,5 +3,5 @@ steps:
 - pwsh: |
     ./build.ps1 -Configuration 'Release' -All
     ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
-   Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
+    Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
   displayName: 'PowerShell Script'
