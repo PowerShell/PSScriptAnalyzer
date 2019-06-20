@@ -31,4 +31,13 @@ Describe "AvoidTrailingWhitespace" {
         $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         Test-CorrectionExtentFromContent $def $violations 1 $Whitespace ''
     }
+
+    It 'Should not find a violation when a line contains <Type>' -TestCases $testCases {
+        param (
+            [string] $Whitespace
+        )
+
+        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $Whitespace -Settings $settings
+        $violations.Count | Should -Be 0
+    }
 }
