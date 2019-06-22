@@ -345,16 +345,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return ruleArgsDict;
         }
 
-        private void parseSettingsHashtable(Hashtable settingsHashtable)
+        private void parseSettingsHashtable(Hashtable settings)
         {
-            // TODO Validate that every key is a string. (Strings.KeyNotString)
             // TODO Validate that no value is null. (Strings.WrongValueHashTable)
             // TODO Recurse on hashtable values.
             // TODO Validate that no two keys are case-insensitive duplicates.
-            foreach (var settingKey in settingsHashtable.Keys)
+            foreach (DictionaryEntry setting in settings)
             {
-                var key = (settingKey as string)?.ToLowerInvariant(); // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
-                object val = settingsHashtable[key];
+                if (!(setting.Key is string))
+                {
+                    throw new InvalidDataException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.KeyNotString,
+                            setting.Key));
+                }
+                string key = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
+
+                object val = setting.Value;
                 switch (key)
                 {
                     case "severity":
@@ -380,7 +388,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             throw new InvalidDataException(string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.SettingsValueTypeMustBeBool,
-                                settingKey));
+                                setting.Key));
                         }
 
                         var booleanVal = (bool)val;
@@ -394,6 +402,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         try
                         {
                             // TODO Validate that no key is null. (Strings.KeyNotString)
+                            // TODO Validate that every key is a string. (Strings.KeyNotString)
                             ruleArguments = ConvertToRuleArgumentType(val);
                         }
                         catch (ArgumentException argumentException)
@@ -406,22 +415,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     default:
-                        if ((key as string) is null)
-                        {
-                            throw new InvalidDataException(
-                                string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.KeyNotString,
-                                    key));
-                        }
-                        else
-                        {
-                            throw new InvalidDataException(
-                                string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.WrongKeyHashTable,
-                                    key));
-                        }
+                        throw new InvalidDataException(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.WrongKeyHashTable,
+                                key));
                 }
             }
         }
