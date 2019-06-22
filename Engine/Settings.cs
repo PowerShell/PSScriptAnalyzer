@@ -391,7 +391,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void parseSettingsHashtable(Hashtable settingsHashtable)
         {
-            HashSet<string> validKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var settings = GetDictionaryFromHashtable(settingsHashtable);
             foreach (var settingKey in settings.Keys)
             {
