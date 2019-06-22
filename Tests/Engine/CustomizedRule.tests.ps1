@@ -89,20 +89,13 @@ Describe "Test importing correct customized rules" {
 		}
 
         It "will show the custom rule when given a rule folder path with trailing backslash" -skip:$($IsLinux -or $IsMacOS) {
-			# needs fixing for linux
             $customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory/samplerule/ | Where-Object {$_.RuleName -eq $measure}
             $customizedRulePath.Count | Should -Be 1
 		}
 
 		It "will show the custom rules when given a glob" {
-			# needs fixing for Linux
-			$expectedNumRules = 4
-			if ($IsLinux)
-			{
-				$expectedNumRules = 3
-			}
 			$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.RuleName -match $measure}
-			$customizedRulePath.Count | Should -Be $expectedNumRules
+			$customizedRulePath.Count | Should -Be 4
 		}
 
 		It "will show the custom rules when given recurse switch" {
@@ -111,14 +104,8 @@ Describe "Test importing correct customized rules" {
 		}
 
 		It "will show the custom rules when given glob with recurse switch" {
-			# needs fixing for Linux
-			$expectedNumRules = 5
-			if ($IsLinux)
-			{
-				$expectedNumRules = 4
-			}
 			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.RuleName -eq $measure}
-			$customizedRulePath.Count | Should -Be $expectedNumRules
+			$customizedRulePath.Count | Should -Be 5
 		}
 
 		It "will show the custom rules when given glob with recurse switch" {
