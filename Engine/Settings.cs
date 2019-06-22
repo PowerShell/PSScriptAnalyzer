@@ -241,50 +241,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return new Settings(settingsFound);
         }
 
-        /// <summary>
-        /// Recursively convert hashtable to dictionary
-        /// </summary>
-        /// <param name="hashtable"></param>
-        /// <returns>Dictionary that maps string to object</returns>
-        private Dictionary<string, object> GetDictionaryFromHashtable(Hashtable hashtable)
-        {
-            var dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            foreach (var obj in hashtable.Keys)
-            {
-                string key = obj as string;
-                if (key == null)
-                {
-                    throw new InvalidDataException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.KeyNotString,
-                            key));
-                }
-
-                var valueHashtableObj = hashtable[obj];
-                if (valueHashtableObj == null)
-                {
-                    throw new InvalidDataException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.WrongValueHashTable,
-                            "",
-                            key));
-                }
-
-                var valueHashtable = valueHashtableObj as Hashtable;
-                if (valueHashtable == null)
-                {
-                    dictionary.Add(key, valueHashtableObj);
-                }
-                else
-                {
-                    dictionary.Add(key, GetDictionaryFromHashtable(valueHashtable));
-                }
-            }
-            return dictionary;
-        }
-
         private bool IsStringOrStringArray(object val)
         {
             if (val is string)
@@ -391,11 +347,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void parseSettingsHashtable(Hashtable settingsHashtable)
         {
-            var settings = GetDictionaryFromHashtable(settingsHashtable);
-            foreach (var settingKey in settings.Keys)
+            // TODO Validate that no key is null. (Strings.KeyNotString)
+            // TODO Validate that every key is a string. (Strings.KeyNotString)
+            // TODO Validate that no value is null. (Strings.WrongValueHashTable)
+            // TODO Recurse on hashtable values.
+            // TODO Validate that no two keys are case-insensitive duplicates.
+            foreach (var settingKey in settingsHashtable.Keys)
             {
-                var key = settingKey.ToLowerInvariant(); // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
-                object val = settings[key];
+                var key = (settingKey as string)?.ToLowerInvariant(); // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
+                object val = settingsHashtable[key];
                 switch (key)
                 {
                     case "severity":
