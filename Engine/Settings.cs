@@ -347,7 +347,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void parseSettingsHashtable(Hashtable settings)
         {
-            // TODO Validate that no value is null. (Strings.WrongValueHashTable)
             // TODO Recurse on hashtable values.
             // TODO Validate that no two keys are case-insensitive duplicates.
             foreach (DictionaryEntry setting in settings)
@@ -362,7 +361,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 string key = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
 
+                if (setting.Value is null)
+                {
+                    throw new InvalidDataException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.WrongValueHashTable,
+                            setting.Value,
+                            setting.Key));
+                }
                 object val = setting.Value;
+
                 switch (key)
                 {
                     case "severity":
@@ -403,6 +412,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         {
                             // TODO Validate that no key is null. (Strings.KeyNotString)
                             // TODO Validate that every key is a string. (Strings.KeyNotString)
+                            // TODO Validate that no value is null. (Strings.WrongValueHashTable)
                             ruleArguments = ConvertToRuleArgumentType(val);
                         }
                         catch (ArgumentException argumentException)
