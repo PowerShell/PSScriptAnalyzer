@@ -347,7 +347,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void parseSettingsHashtable(Hashtable settingsHashtable)
         {
-            // TODO Validate that no key is null. (Strings.KeyNotString)
             // TODO Validate that every key is a string. (Strings.KeyNotString)
             // TODO Validate that no value is null. (Strings.WrongValueHashTable)
             // TODO Recurse on hashtable values.
@@ -394,6 +393,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     case "rules":
                         try
                         {
+                            // TODO Validate that no key is null. (Strings.KeyNotString)
                             ruleArguments = ConvertToRuleArgumentType(val);
                         }
                         catch (ArgumentException argumentException)
@@ -406,11 +406,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     default:
-                        throw new InvalidDataException(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.WrongKeyHashTable,
-                                key));
+                        if ((key as string) is null)
+                        {
+                            throw new InvalidDataException(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.KeyNotString,
+                                    key));
+                        }
+                        else
+                        {
+                            throw new InvalidDataException(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.WrongKeyHashTable,
+                                    key));
+                        }
                 }
             }
         }
