@@ -434,6 +434,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     Strings.RuleSettingValuesShouldBeNonNull));
                             }
                         }
+
+                        foreach (DictionaryEntry rule in rules)
+                        {
+                            if (!(rule.Value is System.Collections.IDictionary))
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RuleSettingValueForKeyShouldBeDictionary,
+                                    rule.Key));
+                            }
+                        }
                     
                         var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
                         foreach (var ruleKey in rules.Keys.Cast<string>())
