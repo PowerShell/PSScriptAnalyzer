@@ -314,15 +314,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return values;
         }
 
-        /// <summary>
-        /// Sets the arguments for consumption by rules
-        /// </summary>
-        /// <param name="ruleArgs">A hashtable with rule names as keys</param>
-        private Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(Dictionary<string, object> ruleArgs)
-        {
-            return null;
-        }
-
         private void parseSettingsHashtable(Hashtable settings)
         {
             // TODO Recurse on hashtable values.
