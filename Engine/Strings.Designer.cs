@@ -544,11 +544,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Setting rule '{0}' argument key '{1}' should be string type.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}', argument key '{1}' is not a string type.
     /// </summary>
-    internal static string SettingRuleArgumentKeyShouldBeStringType {
+    internal static string SettingRuleArgumentKeyIsNotStringType {
         get {
-            return ResourceManager.GetString("SettingRuleArgumentKeyShouldBeStringType", resourceCulture);
+            return ResourceManager.GetString("SettingRuleArgumentKeyIsNotStringType", resourceCulture);
         }
     }
 

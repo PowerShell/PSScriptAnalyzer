@@ -443,16 +443,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                         ruleName));
                                 }
 
-                                // TODO Clean up each following validating parsing steps.
-                                
                                 if (!(argument.Key is string))
                                 {
                                     throw new InvalidDataException(string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.SettingRuleArgumentKeyShouldBeStringType,
+                                        Strings.SettingRuleArgumentKeyIsNotStringType,
                                         ruleName,
                                         argument.Key));
                                 }
+                                string argumentName = argument.Key as string;
+                                
+                                // TODO Clean up each following validating parsing steps.
 
                                 if (!uniqueArgumentKeys.Add(argument.Key as string))
                                 {

@@ -280,10 +280,10 @@
   <data name="SettingRuleArgumentKeyIsNull" xml:space="preserve">
     <value>A setting 'Rules', rule '{0}', argument key is null.</value>
   </data>
-
-  <data name="SettingRuleArgumentKeyShouldBeStringType" xml:space="preserve">
-    <value>Setting rule '{0}' argument key '{1}' should be string type.</value>
+  <data name="SettingRuleArgumentKeyIsNotStringType" xml:space="preserve">
+    <value>The setting 'Rules', rule '{0}', argument key '{1}' is not a string type.</value>
   </data>
+
   <data name="SettingRuleArgumentKeyShouldBeUniqueIgnoringCase" xml:space="preserve">
     <value>Setting rule '{0}' argument key '{1}' should be unique, ignoring case.</value>
   </data>
