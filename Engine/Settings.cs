@@ -463,7 +463,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 }
                             }
                             
-                            // TODO Validate that each key is of type string.
+                            foreach (DictionaryEntry ruleArg in ruleArgs)
+                            {
+                                if (!(ruleArg.Key is string))
+                                {
+                                    throw new InvalidDataException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.SettingRuleArgumentKeyShouldBeStringType,
+                                        ruleKey,
+                                        ruleArg.Key));
+                                }
+                            }
+                            
                             // TODO Validate that no two keys are case-insensitive duplicates.
                             // TODO Validate that no value is null. (Strings.WrongValueHashTable)
 
