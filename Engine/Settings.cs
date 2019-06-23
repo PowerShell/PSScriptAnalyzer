@@ -391,6 +391,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                         Hashtable rules = setting.Value as Hashtable;
 
+                        var parsedRules = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
                         ISet<string> uniqueRuleKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         foreach (DictionaryEntry rule in rules)
                         {
@@ -431,75 +432,55 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                             Hashtable arguments = rule.Value as Hashtable;
 
-                            // TODO Refactor successor loops into nested loops.
-                        }
-
-
-                    
-                        var typedRules = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-                        foreach (DictionaryEntry rule in rules)
-                        {
-                            string ruleKey = rule.Key as string;
-                            Hashtable ruleArgs = rule.Value as Hashtable;
-                            
-                            foreach (DictionaryEntry ruleArg in ruleArgs)
+                            var parsedArguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            ISet<string> uniqueArgumentKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            foreach (DictionaryEntry argument in arguments)
                             {
-                                if (ruleArg.Key is null)
+                                // TODO Clean up each following validating parsing step.
+                                
+                                if (argument.Key is null)
                                 {
                                     throw new InvalidDataException(string.Format(
                                         CultureInfo.CurrentCulture,
                                         Strings.SettingRuleArgumentKeyShouldBeNonNull,
-                                        ruleKey));
+                                        ruleName));
                                 }
-                            }
-                            
-                            foreach (DictionaryEntry ruleArg in ruleArgs)
-                            {
-                                if (!(ruleArg.Key is string))
+
+                                if (!(argument.Key is string))
                                 {
                                     throw new InvalidDataException(string.Format(
                                         CultureInfo.CurrentCulture,
                                         Strings.SettingRuleArgumentKeyShouldBeStringType,
-                                        ruleKey,
-                                        ruleArg.Key));
+                                        ruleName,
+                                        argument.Key));
                                 }
-                            }
-                            
-                            ISet<string> uniqueRuleArgKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                            foreach (string ruleArgKey in ruleArgs.Keys.Cast<string>())
-                            {
-                                if (!uniqueRuleArgKeys.Add(ruleArgKey))
+
+                                if (!uniqueArgumentKeys.Add(argument.Key as string))
                                 {
                                     throw new InvalidDataException(string.Format(
                                         CultureInfo.CurrentCulture,
                                         Strings.SettingRuleArgumentKeyShouldBeUniqueIgnoringCase,
-                                        ruleKey,
-                                        ruleArgKey));
+                                        ruleName,
+                                        argument.Key));
                                 }
-                            }
-                            
-                            // COMBAK Permit null setting rule argument values.
-                            foreach (DictionaryEntry ruleArg in ruleArgs)
-                            {
-                                if (ruleArg.Value is null)
+                                
+                                // COMBAK Permit null setting rule argument values.
+                                if (argument.Value is null)
                                 {
                                     throw new InvalidDataException(string.Format(
                                         CultureInfo.CurrentCulture,
                                         Strings.SettingRuleArgumentValueShouldBeNonNull,
-                                        ruleKey,
-                                        ruleArg.Key));
+                                        ruleName,
+                                        argument.Key));
                                 }
+
+                                parsedArguments[argument.Key as string] = argument.Value;
                             }
 
-                            var typedArguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                            foreach (DictionaryEntry ruleArg in ruleArgs)
-                            {
-                                typedArguments[ruleArg.Key as string] = ruleArg.Value;
-                            }
-                            typedRules[ruleKey] = typedArguments;
+                            parsedRules[ruleName] = parsedArguments;
                         }
 
-                        this.ruleArguments = typedRules;
+                        this.ruleArguments = parsedRules;
                         break;
 
                     default:
