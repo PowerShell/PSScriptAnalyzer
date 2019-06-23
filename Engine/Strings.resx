@@ -255,6 +255,9 @@
   <data name="RulesSettingDictionaryShouldBeCaseInsensitive" xml:space="preserve">
     <value>Dictionary value for key Rules should be indexable in a case-insensitive manner.</value>
   </data>
+  <data name="RulesSettingValuesShouldBeDictionaries" xml:space="preserve">
+    <value>Dictionary values for key Rules should be dictionary types.</value>
+  </data>
   <data name="SettingsDictionaryShouldBeCaseInsesitive" xml:space="preserve">
     <value>Dictionary should be indexable in a case-insensitive manner.</value>
   </data>
