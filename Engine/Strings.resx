@@ -237,9 +237,6 @@
   <data name="KeyNotString" xml:space="preserve">
     <value>Key {0} in the settings is not a string.</value>
   </data>
-  <data name="KeyNotUniqueIgnoringCase" xml:space="preserve">
-    <value>Key {0} in the settings is not unique, ignore casing.</value>
-  </data>
   <data name="WrongKeyHashTable" xml:space="preserve">
     <value>{0} is not a valid key in the settings hashtable. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
   </data>
@@ -254,6 +251,9 @@
   </data>
   <data name="SettingKeyIsNotStringType" xml:space="preserve">
     <value>The setting key '{0}' is not a string type.</value>
+  </data>
+  <data name="SettingKeyIsNotUniqueIgnoringCase" xml:space="preserve">
+    <value>The setting key '{0}' is not unique, ignoring case.</value>
   </data>
   <data name="RulesSettingShouldBeDictionary" xml:space="preserve">
     <value>Value for key Rules should be a dictionary type.</value>

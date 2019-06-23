@@ -334,11 +334,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 if (!uniqueSettingKeys.Add(typedSettingKey))
                 {
-                    throw new InvalidDataException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.KeyNotUniqueIgnoringCase,
-                            typedSettingKey));
+                    // setting.Key should be used instead of typedSettingKey because the former preserves information about the source casing.
+                    throw new InvalidDataException(string.Format(
+                        Strings.SettingKeyIsNotUniqueIgnoringCase,
+                        setting.Key));
                 }
 
                 if (setting.Value is null)

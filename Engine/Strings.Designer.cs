@@ -418,15 +418,6 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Key {0} in the settings is not unique, ignore casing.
-    /// </summary>
-    internal static string KeyNotUniqueIgnoringCase {
-        get {
-            return ResourceManager.GetString("KeyNotUniqueIgnoringCase", resourceCulture);
-        }
-    }
-
-    /// <summary>
     ///   Looks up a localized string similar to {0} is not a valid key in the settings hashtable. Valid keys are ExcludeRules, IncludeRules and Severity.
     /// </summary>
     internal static string WrongKeyHashTable {
@@ -468,6 +459,15 @@ internal class Strings {
     internal static string SettingKeyIsNotStringType {
         get {
             return ResourceManager.GetString("SettingKeyIsNotStringType", resourceCulture);
+        }
+    }
+
+    /// <summary>
+    ///   Looks up a localized string similar to The setting key '{0}' is not unique, ignoring case.
+    /// </summary>
+    internal static string SettingKeyIsNotUniqueIgnoringCase {
+        get {
+            return ResourceManager.GetString("SettingKeyIsNotUniqueIgnoringCase", resourceCulture);
         }
     }
 
