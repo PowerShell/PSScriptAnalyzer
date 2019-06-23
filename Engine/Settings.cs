@@ -320,11 +320,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="ruleArgs">A hashtable with rule names as keys</param>
         private Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(Dictionary<string, object> ruleArgs)
         {
-            if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
-            {
-                throw new ArgumentException(Strings.SettingsDictionaryShouldBeCaseInsesitive, nameof(ruleArgs));
-            }
-
             var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
             foreach (var rule in ruleArgs.Keys)
             {
@@ -417,6 +412,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             throw new InvalidDataException(string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.RulesSettingShouldBeDictionary));
+                        }
+
+                        if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
+                        {
+                            throw new InvalidDataException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.RulesSettingDictionaryShouldBeCaseInsensitive));
                         }
                         
                         try
