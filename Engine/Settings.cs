@@ -241,50 +241,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return new Settings(settingsFound);
         }
 
-        /// <summary>
-        /// Recursively convert hashtable to dictionary
-        /// </summary>
-        /// <param name="hashtable"></param>
-        /// <returns>Dictionary that maps string to object</returns>
-        private Dictionary<string, object> GetDictionaryFromHashtable(Hashtable hashtable)
-        {
-            var dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            foreach (var obj in hashtable.Keys)
-            {
-                string key = obj as string;
-                if (key == null)
-                {
-                    throw new InvalidDataException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.KeyNotString,
-                            key));
-                }
-
-                var valueHashtableObj = hashtable[obj];
-                if (valueHashtableObj == null)
-                {
-                    throw new InvalidDataException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.WrongValueHashTable,
-                            "",
-                            key));
-                }
-
-                var valueHashtable = valueHashtableObj as Hashtable;
-                if (valueHashtable == null)
-                {
-                    dictionary.Add(key, valueHashtableObj);
-                }
-                else
-                {
-                    dictionary.Add(key, GetDictionaryFromHashtable(valueHashtable));
-                }
-            }
-            return dictionary;
-        }
-
         private bool IsStringOrStringArray(object val)
         {
             if (val is string)
@@ -358,91 +314,201 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return values;
         }
 
-        /// <summary>
-        /// Sets the arguments for consumption by rules
-        /// </summary>
-        /// <param name="ruleArgs">A hashtable with rule names as keys</param>
-        private Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(object ruleArguments)
+        private void parseSettingsHashtable(Hashtable settings)
         {
-            var ruleArgs = ruleArguments as Dictionary<string, object>;
-            if (ruleArgs == null)
+            ISet<string> uniqueKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (DictionaryEntry setting in settings)
             {
-                throw new ArgumentException(Strings.SettingsInputShouldBeDictionary, nameof(ruleArguments));
-            }
-
-            if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
-            {
-                throw new ArgumentException(Strings.SettingsDictionaryShouldBeCaseInsesitive, nameof(ruleArguments));
-            }
-
-            var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-            foreach (var rule in ruleArgs.Keys)
-            {
-                var argsDict = ruleArgs[rule] as Dictionary<string, object>;
-                if (argsDict == null)
+                if (!(setting.Key is string))
                 {
-                    throw new InvalidDataException(Strings.SettingsInputShouldBeDictionary);
+                    throw new InvalidDataException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.KeyNotString,
+                            setting.Key));
                 }
-                ruleArgsDict[rule] = argsDict;
-            }
+                string settingKey = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
 
-            return ruleArgsDict;
-        }
+                if (!uniqueKeys.Add(settingKey))
+                {
+                    throw new InvalidDataException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.KeyNotUniqueIgnoringCase,
+                            settingKey));
+                }
 
-        private void parseSettingsHashtable(Hashtable settingsHashtable)
-        {
-            var settings = GetDictionaryFromHashtable(settingsHashtable);
-            foreach (var settingKey in settings.Keys)
-            {
-                var key = settingKey.ToLowerInvariant(); // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
-                object val = settings[key];
-                switch (key)
+                if (setting.Value is null)
+                {
+                    throw new InvalidDataException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.WrongValueHashTable,
+                            setting.Value,
+                            setting.Key));
+                }
+                object settingValue = setting.Value;
+
+                switch (settingKey)
                 {
                     case "severity":
-                        severities = GetData(val, key);
+                        severities = GetData(settingValue, settingKey);
                         break;
 
                     case "includerules":
-                        includeRules = GetData(val, key);
+                        includeRules = GetData(settingValue, settingKey);
                         break;
 
                     case "excluderules":
-                        excludeRules = GetData(val, key);
+                        excludeRules = GetData(settingValue, settingKey);
                         break;
 
                     case "customrulepath":
-                        customRulePath = GetData(val, key);
+                        customRulePath = GetData(settingValue, settingKey);
                         break;
 
                     case "includedefaultrules":
                     case "recursecustomrulepath":
-                        if (!(val is bool))
+                        if (!(settingValue is bool))
                         {
                             throw new InvalidDataException(string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.SettingsValueTypeMustBeBool,
-                                settingKey));
+                                setting.Key));
                         }
 
-                        var booleanVal = (bool)val;
+                        var booleanVal = (bool)settingValue;
                         var field = this.GetType().GetField(
-                            key,
+                            settingKey,
                             BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
                         field.SetValue(this, booleanVal);
                         break;
 
                     case "rules":
-                        try
+                        var rules = settingValue as Hashtable;
+                        if (rules == null)
                         {
-                            ruleArguments = ConvertToRuleArgumentType(val);
-                        }
-                        catch (ArgumentException argumentException)
-                        {
-                            throw new InvalidDataException(
-                                string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, "", key),
-                                argumentException);
+                            throw new InvalidDataException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.RulesSettingShouldBeDictionary));
                         }
 
+                        foreach (var ruleKey in rules.Keys)
+                        {
+                            if (ruleKey is null)
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RulesSettingKeysShouldBeNonNull));
+                            }
+                        }
+                    
+                        foreach (var ruleKey in rules.Keys)
+                        {
+                            if (!(ruleKey is string))
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RulesSettingKeysShouldBeStrings));
+                            }
+                        }
+
+                        var uniqueRuleKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var ruleKey in rules.Keys)
+                        {
+                            if (!uniqueRuleKeys.Add(ruleKey as string))
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RuleSettingKeysShouldBeUniqueIgnoringCase));
+                            }
+                        }
+
+                        foreach (var ruleValue in rules.Values)
+                        {
+                            if (ruleValue is null)
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RuleSettingValuesShouldBeNonNull));
+                            }
+                        }
+
+                        foreach (DictionaryEntry rule in rules)
+                        {
+                            if (!(rule.Value is System.Collections.IDictionary))
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RuleSettingValueForKeyShouldBeDictionary,
+                                    rule.Key));
+                            }
+                        }
+                    
+                        var typedRules = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+                        foreach (DictionaryEntry rule in rules)
+                        {
+                            string ruleKey = rule.Key as string;
+                            Hashtable ruleArgs = rule.Value as Hashtable;
+                            
+                            foreach (DictionaryEntry ruleArg in ruleArgs)
+                            {
+                                if (ruleArg.Key is null)
+                                {
+                                    throw new InvalidDataException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.SettingRuleArgumentKeyShouldBeNonNull,
+                                        ruleKey));
+                                }
+                            }
+                            
+                            foreach (DictionaryEntry ruleArg in ruleArgs)
+                            {
+                                if (!(ruleArg.Key is string))
+                                {
+                                    throw new InvalidDataException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.SettingRuleArgumentKeyShouldBeStringType,
+                                        ruleKey,
+                                        ruleArg.Key));
+                                }
+                            }
+                            
+                            ISet<string> uniqueRuleArgKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            foreach (string ruleArgKey in ruleArgs.Keys.Cast<string>())
+                            {
+                                if (!uniqueRuleArgKeys.Add(ruleArgKey))
+                                {
+                                    throw new InvalidDataException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.SettingRuleArgumentKeyShouldBeUniqueIgnoringCase,
+                                        ruleKey,
+                                        ruleArgKey));
+                                }
+                            }
+                            
+                            // COMBAK Permit null setting rule argument values.
+                            foreach (DictionaryEntry ruleArg in ruleArgs)
+                            {
+                                if (ruleArg.Value is null)
+                                {
+                                    throw new InvalidDataException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.SettingRuleArgumentValueShouldBeNonNull,
+                                        ruleKey,
+                                        ruleArg.Key));
+                                }
+                            }
+
+                            var typedArguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            foreach (DictionaryEntry ruleArg in ruleArgs)
+                            {
+                                typedArguments[ruleArg.Key as string] = ruleArg.Value;
+                            }
+                            typedRules[ruleKey] = typedArguments;
+                        }
+
+                        this.ruleArguments = typedRules;
                         break;
 
                     default:
@@ -450,7 +516,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.WrongKeyHashTable,
-                                key));
+                                settingKey));
                 }
             }
         }

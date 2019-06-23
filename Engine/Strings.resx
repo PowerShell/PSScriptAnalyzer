@@ -237,6 +237,9 @@
   <data name="KeyNotString" xml:space="preserve">
     <value>Key {0} in the settings is not a string.</value>
   </data>
+  <data name="KeyNotUniqueIgnoringCase" xml:space="preserve">
+    <value>Key {0} in the settings is not unique, ignore casing.</value>
+  </data>
   <data name="WrongKeyHashTable" xml:space="preserve">
     <value>{0} is not a valid key in the settings hashtable. Valid keys are ExcludeRules, IncludeRules and Severity.</value>
   </data>
@@ -245,6 +248,42 @@
   </data>
   <data name="SettingsInputShouldBeDictionary" xml:space="preserve">
     <value>Input should be a dictionary type.</value>
+  </data>
+  <data name="RulesSettingShouldBeDictionary" xml:space="preserve">
+    <value>Value for key Rules should be a dictionary type.</value>
+  </data>
+  <data name="RulesSettingKeysShouldBeNonNull" xml:space="preserve">
+    <value>Dictionary value for key Rules should not have any null keys.</value>
+  </data>
+  <data name="RulesSettingKeysShouldBeStrings" xml:space="preserve">
+    <value>Dictionary value for key Rules should have only string type keys.</value>
+  </data>
+  <data name="RuleSettingKeysShouldBeUniqueIgnoringCase" xml:space="preserve">
+    <value>Dictionary value for key Rules should have unique keys, ignoring case.</value>
+  </data>
+  <data name="RuleSettingValuesShouldBeNonNull" xml:space="preserve">
+    <value>Dictionary value for key Rules should not have any null values.</value>
+  </data>
+  <data name="RuleSettingValueForKeyShouldBeDictionary" xml:space="preserve">
+    <value>Dictionary value for Rules setting key {0} should be a dictionary type.</value>
+  </data>
+  <data name="RulesSettingDictionaryShouldBeCaseInsensitive" xml:space="preserve">
+    <value>Dictionary value for key Rules should be indexable in a case-insensitive manner.</value>
+  </data>
+  <data name="RulesSettingValuesShouldBeDictionaries" xml:space="preserve">
+    <value>Dictionary values for key Rules should be dictionary types.</value>
+  </data>
+  <data name="SettingRuleArgumentKeyShouldBeNonNull" xml:space="preserve">
+    <value>Setting rule '{0}' argument key should be nonnull.</value>
+  </data>
+  <data name="SettingRuleArgumentKeyShouldBeStringType" xml:space="preserve">
+    <value>Setting rule '{0}' argument key '{1}' should be string type.</value>
+  </data>
+  <data name="SettingRuleArgumentKeyShouldBeUniqueIgnoringCase" xml:space="preserve">
+    <value>Setting rule '{0}' argument key '{1}' should be unique, ignoring case.</value>
+  </data>
+  <data name="SettingRuleArgumentValueShouldBeNonNull" xml:space="preserve">
+    <value>Setting rule '{0}' argument value for key '{1}' should be nonnull.</value>
   </data>
   <data name="SettingsDictionaryShouldBeCaseInsesitive" xml:space="preserve">
     <value>Dictionary should be indexable in a case-insensitive manner.</value>
