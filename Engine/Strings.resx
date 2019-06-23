@@ -252,6 +252,9 @@
   <data name="RulesSettingShouldBeDictionary" xml:space="preserve">
     <value>Value for key Rules should be a dictionary type.</value>
   </data>
+  <data name="RulesSettingKeysShouldBeNonNull" xml:space="preserve">
+    <value>Dictionary value for key Rules should not have any null keys.</value>
+  </data>
   <data name="RulesSettingDictionaryShouldBeCaseInsensitive" xml:space="preserve">
     <value>Dictionary value for key Rules should be indexable in a case-insensitive manner.</value>
   </data>

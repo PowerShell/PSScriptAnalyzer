@@ -328,15 +328,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             Strings.KeyNotString,
                             setting.Key));
                 }
-                string key = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
+                string settingKey = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
 
-                if (!uniqueKeys.Add(key))
+                if (!uniqueKeys.Add(settingKey))
                 {
                     throw new InvalidDataException(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.KeyNotUniqueIgnoringCase,
-                            key));
+                            settingKey));
                 }
 
                 if (setting.Value is null)
@@ -348,29 +348,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             setting.Value,
                             setting.Key));
                 }
-                object val = setting.Value;
+                object settingValue = setting.Value;
 
-                switch (key)
+                switch (settingKey)
                 {
                     case "severity":
-                        severities = GetData(val, key);
+                        severities = GetData(settingValue, settingKey);
                         break;
 
                     case "includerules":
-                        includeRules = GetData(val, key);
+                        includeRules = GetData(settingValue, settingKey);
                         break;
 
                     case "excluderules":
-                        excludeRules = GetData(val, key);
+                        excludeRules = GetData(settingValue, settingKey);
                         break;
 
                     case "customrulepath":
-                        customRulePath = GetData(val, key);
+                        customRulePath = GetData(settingValue, settingKey);
                         break;
 
                     case "includedefaultrules":
                     case "recursecustomrulepath":
-                        if (!(val is bool))
+                        if (!(settingValue is bool))
                         {
                             throw new InvalidDataException(string.Format(
                                 CultureInfo.CurrentCulture,
@@ -378,25 +378,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 setting.Key));
                         }
 
-                        var booleanVal = (bool)val;
+                        var booleanVal = (bool)settingValue;
                         var field = this.GetType().GetField(
-                            key,
+                            settingKey,
                             BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
                         field.SetValue(this, booleanVal);
                         break;
 
                     case "rules":
-                        // TODO Validate that no key is null. (Strings.KeyNotString)
                         // TODO Validate that every key is a string. (Strings.KeyNotString)
                         // TODO Validate that no value is null. (Strings.WrongValueHashTable)
                         // TODO Validate that no two keys are case-insensitive duplicates.
                     
-                        var rules = val as Hashtable;
+                        var rules = settingValue as Hashtable;
                         if (rules == null)
                         {
                             throw new InvalidDataException(string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.RulesSettingShouldBeDictionary));
+                        }
+
+                        foreach (var ruleKey in rules.Keys)
+                        {
+                            if (ruleKey is null)
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RulesSettingKeysShouldBeNonNull));
+                            }
                         }
                     
                         var ruleArgs = rules as Dictionary<string, object>;
@@ -410,6 +419,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
                         foreach (var rule in ruleArgs.Keys)
                         {
+                            // TODO Validate that no key is null. (Strings.KeyNotString)
+
                             var argsDict = ruleArgs[rule] as Dictionary<string, object>;
                             if (argsDict == null)
                             {
@@ -428,7 +439,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.WrongKeyHashTable,
-                                key));
+                                settingKey));
                 }
             }
         }
