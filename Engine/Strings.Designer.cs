@@ -463,6 +463,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to The setting key '{0}' is not a string type.
+    /// </summary>
+    internal static string SettingKeyIsNotStringType {
+        get {
+            return ResourceManager.GetString("SettingKeyIsNotStringType", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to Value for key Rules should be a dictionary type.
     /// </summary>
     internal static string RulesSettingShouldBeDictionary {

@@ -252,6 +252,9 @@
   <data name="SettingKeyIsNull" xml:space="preserve">
     <value>A setting key is null.</value>
   </data>
+  <data name="SettingKeyIsNotStringType" xml:space="preserve">
+    <value>The setting key '{0}' is not a string type.</value>
+  </data>
   <data name="RulesSettingShouldBeDictionary" xml:space="preserve">
     <value>Value for key Rules should be a dictionary type.</value>
   </data>
