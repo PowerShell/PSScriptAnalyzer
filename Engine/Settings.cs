@@ -318,17 +318,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Sets the arguments for consumption by rules
         /// </summary>
         /// <param name="ruleArgs">A hashtable with rule names as keys</param>
-        private Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(object ruleArguments)
+        private Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(Dictionary<string, object> ruleArgs)
         {
-            var ruleArgs = ruleArguments as Dictionary<string, object>;
-            if (ruleArgs == null)
-            {
-                throw new ArgumentException(Strings.SettingsInputShouldBeDictionary, nameof(ruleArguments));
-            }
-
             if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
             {
-                throw new ArgumentException(Strings.SettingsDictionaryShouldBeCaseInsesitive, nameof(ruleArguments));
+                throw new ArgumentException(Strings.SettingsDictionaryShouldBeCaseInsesitive, nameof(ruleArgs));
             }
 
             var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
@@ -417,13 +411,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "rules":
+                        var ruleArgs = val as Dictionary<string, object>;
+                        if (ruleArgs == null)
+                        {
+                            throw new InvalidDataException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.RulesSettingShouldBeDictionary));
+                        }
+                        
                         try
                         {
                             // TODO Validate that no key is null. (Strings.KeyNotString)
                             // TODO Validate that every key is a string. (Strings.KeyNotString)
                             // TODO Validate that no value is null. (Strings.WrongValueHashTable)
                             // TODO Validate that no two keys are case-insensitive duplicates.
-                            ruleArguments = ConvertToRuleArgumentType(val);
+                            this.ruleArguments = ConvertToRuleArgumentType(ruleArgs);
                         }
                         catch (ArgumentException argumentException)
                         {

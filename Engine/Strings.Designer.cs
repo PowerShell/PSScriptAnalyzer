@@ -454,6 +454,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to Value for key Rules should be a dictionary type.
+    /// </summary>
+    internal static string RulesSettingShouldBeDictionary {
+        get {
+            return ResourceManager.GetString("RulesSettingShouldBeDictionary", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to Dictionary should be indexable in a case-insensitive manner.
     /// </summary>
     internal static string SettingsDictionaryShouldBeCaseInsesitive {

@@ -249,6 +249,9 @@
   <data name="SettingsInputShouldBeDictionary" xml:space="preserve">
     <value>Input should be a dictionary type.</value>
   </data>
+  <data name="RulesSettingShouldBeDictionary" xml:space="preserve">
+    <value>Value for key Rules should be a dictionary type.</value>
+  </data>
   <data name="SettingsDictionaryShouldBeCaseInsesitive" xml:space="preserve">
     <value>Dictionary should be indexable in a case-insensitive manner.</value>
   </data>
