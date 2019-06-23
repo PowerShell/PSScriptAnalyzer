@@ -472,6 +472,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to The value for the '{0}' setting is null.
+    /// </summary>
+    internal static string SettingValueIsNull {
+        get {
+            return ResourceManager.GetString("SettingValueIsNull", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to Value for key Rules should be a dictionary type.
     /// </summary>
     internal static string RulesSettingShouldBeDictionary {

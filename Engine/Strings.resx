@@ -255,6 +255,9 @@
   <data name="SettingKeyIsNotUniqueIgnoringCase" xml:space="preserve">
     <value>The setting key '{0}' is not unique, ignoring case.</value>
   </data>
+  <data name="SettingValueIsNull" xml:space="preserve">
+    <value>The value for the '{0}' setting is null.</value>
+  </data>
   <data name="RulesSettingShouldBeDictionary" xml:space="preserve">
     <value>Value for key Rules should be a dictionary type.</value>
   </data>

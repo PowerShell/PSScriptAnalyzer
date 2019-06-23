@@ -342,36 +342,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 if (setting.Value is null)
                 {
-                    throw new InvalidDataException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.WrongValueHashTable,
-                            setting.Value,
-                            setting.Key));
+                    throw new InvalidDataException(string.Format(
+                        Strings.SettingValueIsNull,
+                        typedSettingKey));
                 }
-                object settingValue = setting.Value;
 
                 switch (typedSettingKey)
                 {
                     case "severity":
-                        severities = GetData(settingValue, typedSettingKey);
+                        severities = GetData(setting.Value, typedSettingKey);
                         break;
 
                     case "includerules":
-                        includeRules = GetData(settingValue, typedSettingKey);
+                        includeRules = GetData(setting.Value, typedSettingKey);
                         break;
 
                     case "excluderules":
-                        excludeRules = GetData(settingValue, typedSettingKey);
+                        excludeRules = GetData(setting.Value, typedSettingKey);
                         break;
 
                     case "customrulepath":
-                        customRulePath = GetData(settingValue, typedSettingKey);
+                        customRulePath = GetData(setting.Value, typedSettingKey);
                         break;
 
                     case "includedefaultrules":
                     case "recursecustomrulepath":
-                        if (!(settingValue is bool))
+                        if (!(setting.Value is bool))
                         {
                             throw new InvalidDataException(string.Format(
                                 CultureInfo.CurrentCulture,
@@ -379,7 +375,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 setting.Key));
                         }
 
-                        var booleanVal = (bool)settingValue;
+                        var booleanVal = (bool)setting.Value;
                         var field = this.GetType().GetField(
                             typedSettingKey,
                             BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
@@ -387,7 +383,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "rules":
-                        var rules = settingValue as Hashtable;
+                        var rules = setting.Value as Hashtable;
                         if (rules == null)
                         {
                             throw new InvalidDataException(string.Format(
