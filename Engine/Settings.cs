@@ -475,7 +475,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 }
                             }
                             
-                            // TODO Validate that no two keys are case-insensitive duplicates.
+                            ISet<string> uniqueRuleArgKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            foreach (string ruleArgKey in ruleArgs.Keys.Cast<string>())
+                            {
+                                if (!uniqueRuleArgKeys.Add(ruleArgKey))
+                                {
+                                    throw new InvalidDataException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.SettingRuleArgumentKeyShouldBeUniqueIgnoringCase,
+                                        ruleKey,
+                                        ruleArgKey));
+                                }
+                            }
+                            
                             // TODO Validate that no value is null. (Strings.WrongValueHashTable)
 
                             var argsDict = rules[ruleKey] as Dictionary<string, object>;

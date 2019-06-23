@@ -544,6 +544,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to Setting rule '{0}' argument key '{1}' should be unique, ignoring case.
+    /// </summary>
+    internal static string SettingRuleArgumentKeyShouldBeUniqueIgnoringCase {
+        get {
+            return ResourceManager.GetString("SettingRuleArgumentKeyShouldBeUniqueIgnoringCase", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to Dictionary should be indexable in a case-insensitive manner.
     /// </summary>
     internal static string SettingsDictionaryShouldBeCaseInsesitive {
