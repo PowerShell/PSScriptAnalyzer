@@ -258,8 +258,8 @@
   <data name="SettingValueIsNull" xml:space="preserve">
     <value>The value for the '{0}' setting is null.</value>
   </data>
-  <data name="RulesSettingShouldBeDictionary" xml:space="preserve">
-    <value>Value for key Rules should be a dictionary type.</value>
+  <data name="SettingRulesValueIsNotDictionaryType" xml:space="preserve">
+    <value>The value for the 'Rules' setting is not a dictionary type.</value>
   </data>
   <data name="RulesSettingKeysShouldBeNonNull" xml:space="preserve">
     <value>Dictionary value for key Rules should not have any null keys.</value>

@@ -383,13 +383,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "rules":
-                        var rules = setting.Value as Hashtable;
-                        if (rules == null)
+                        if (!(setting.Value is System.Collections.IDictionary))
                         {
                             throw new InvalidDataException(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.RulesSettingShouldBeDictionary));
+                                Strings.SettingRulesValueIsNotDictionaryType,
+                                setting.Value));
                         }
+                        Hashtable rules = setting.Value as Hashtable;
 
                         foreach (var ruleKey in rules.Keys)
                         {
