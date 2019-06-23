@@ -391,14 +391,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         // TODO Validate that no value is null. (Strings.WrongValueHashTable)
                         // TODO Validate that no two keys are case-insensitive duplicates.
                     
-                        var ruleArgs = val as Dictionary<string, object>;
-                        if (ruleArgs == null)
+                        var rules = val as Hashtable;
+                        if (rules == null)
                         {
                             throw new InvalidDataException(string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.RulesSettingShouldBeDictionary));
                         }
-
+                    
+                        var ruleArgs = rules as Dictionary<string, object>;
                         if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
                         {
                             throw new InvalidDataException(string.Format(
