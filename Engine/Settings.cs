@@ -314,37 +314,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return values;
         }
 
-        /// <summary>
-        /// Sets the arguments for consumption by rules
-        /// </summary>
-        /// <param name="ruleArgs">A hashtable with rule names as keys</param>
-        private Dictionary<string, Dictionary<string, object>> ConvertToRuleArgumentType(object ruleArguments)
-        {
-            var ruleArgs = ruleArguments as Dictionary<string, object>;
-            if (ruleArgs == null)
-            {
-                throw new ArgumentException(Strings.SettingsInputShouldBeDictionary, nameof(ruleArguments));
-            }
-
-            if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
-            {
-                throw new ArgumentException(Strings.SettingsDictionaryShouldBeCaseInsesitive, nameof(ruleArguments));
-            }
-
-            var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-            foreach (var rule in ruleArgs.Keys)
-            {
-                var argsDict = ruleArgs[rule] as Dictionary<string, object>;
-                if (argsDict == null)
-                {
-                    throw new InvalidDataException(Strings.SettingsInputShouldBeDictionary);
-                }
-                ruleArgsDict[rule] = argsDict;
-            }
-
-            return ruleArgsDict;
-        }
-
         private void parseSettingsHashtable(Hashtable settings)
         {
             // TODO Recurse on hashtable values.
@@ -417,21 +386,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "rules":
-                        try
+                        // TODO Validate that no key is null. (Strings.KeyNotString)
+                        // TODO Validate that every key is a string. (Strings.KeyNotString)
+                        // TODO Validate that no value is null. (Strings.WrongValueHashTable)
+                        // TODO Validate that no two keys are case-insensitive duplicates.
+                    
+                        var ruleArgs = val as Dictionary<string, object>;
+                        if (ruleArgs == null)
                         {
-                            // TODO Validate that no key is null. (Strings.KeyNotString)
-                            // TODO Validate that every key is a string. (Strings.KeyNotString)
-                            // TODO Validate that no value is null. (Strings.WrongValueHashTable)
-                            // TODO Validate that no two keys are case-insensitive duplicates.
-                            ruleArguments = ConvertToRuleArgumentType(val);
-                        }
-                        catch (ArgumentException argumentException)
-                        {
-                            throw new InvalidDataException(
-                                string.Format(CultureInfo.CurrentCulture, Strings.WrongValueHashTable, "", key),
-                                argumentException);
+                            throw new InvalidDataException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.RulesSettingShouldBeDictionary));
                         }
 
+                        if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
+                        {
+                            throw new InvalidDataException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.RulesSettingDictionaryShouldBeCaseInsensitive));
+                        }
+
+                        var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var rule in ruleArgs.Keys)
+                        {
+                            var argsDict = ruleArgs[rule] as Dictionary<string, object>;
+                            if (argsDict == null)
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RulesSettingValuesShouldBeDictionaries));
+                            }
+                            ruleArgsDict[rule] = argsDict;
+                        }
+
+                        this.ruleArguments = ruleArgsDict;
                         break;
 
                     default:
