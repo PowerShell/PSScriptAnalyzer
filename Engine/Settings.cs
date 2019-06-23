@@ -436,16 +436,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             ISet<string> uniqueArgumentKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                             foreach (DictionaryEntry argument in arguments)
                             {
-                                // TODO Clean up each following validating parsing step.
-                                
                                 if (argument.Key is null)
                                 {
                                     throw new InvalidDataException(string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.SettingRuleArgumentKeyShouldBeNonNull,
+                                        Strings.SettingRuleArgumentKeyIsNull,
                                         ruleName));
                                 }
 
+                                // TODO Clean up each following validating parsing steps.
+                                
                                 if (!(argument.Key is string))
                                 {
                                     throw new InvalidDataException(string.Format(
