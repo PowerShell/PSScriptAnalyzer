@@ -445,7 +445,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The key for a setting is null.
+    ///   Looks up a localized string similar to A setting key is null.
     /// </summary>
     internal static string SettingKeyIsNull {
         get {
@@ -472,7 +472,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The value for the '{0}' setting is null.
+    ///   Looks up a localized string similar to The setting '{0}' value is null.
     /// </summary>
     internal static string SettingValueIsNull {
         get {
@@ -481,7 +481,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The value for the 'Rules' setting is not a dictionary type.
+    ///   Looks up a localized string similar to The setting 'Rules' value '{0}' is not a dictionary type.
     /// </summary>
     internal static string SettingRulesValueIsNotDictionaryType {
         get {
@@ -490,7 +490,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The key for a 'Rules' setting rule is null.
+    ///   Looks up a localized string similar to A setting 'Rules', rule key is null.
     /// </summary>
     internal static string SettingRuleKeyIsNull {
         get {
@@ -499,7 +499,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The key for the 'Rules' setting '{0}' rule is not a string type.
+    ///   Looks up a localized string similar to The setting 'Rules', rule key '{0}' is not a string type.
     /// </summary>
     internal static string SettingRuleKeyIsNotStringType {
         get {
@@ -508,7 +508,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The key for the 'Rules' setting '{0}' rule is not unique, ignoring case.
+    ///   Looks up a localized string similar to The setting 'Rules', rule key '{0}' is not unique, ignoring case.
     /// </summary>
     internal static string SettingRuleKeyIsNotUniqueIgnoringCase {
         get {
@@ -517,7 +517,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The value for the 'Rules' setting '{0}' rule is null.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}' value is null.
     /// </summary>
     internal static string SettingRuleValueIsNull {
         get {
@@ -526,29 +526,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The value '{1}' for the 'Rules' setting '{0}' rule is not a dictionary type.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}' value '{1}' is not a dictionary type.
     /// </summary>
     internal static string SettingRuleValueIsNotDictionaryType {
         get {
             return ResourceManager.GetString("SettingRuleValueIsNotDictionaryType", resourceCulture);
-        }
-    }
-
-    /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should be indexable in a case-insensitive manner.
-    /// </summary>
-    internal static string RulesSettingDictionaryShouldBeCaseInsensitive {
-        get {
-            return ResourceManager.GetString("RulesSettingDictionaryShouldBeCaseInsensitive", resourceCulture);
-        }
-    }
-
-    /// <summary>
-    ///   Looks up a localized string similar to Dictionary values for key Rules should be dictionary types.
-    /// </summary>
-    internal static string RulesSettingValuesShouldBeDictionaries {
-        get {
-            return ResourceManager.GetString("RulesSettingValuesShouldBeDictionaries", resourceCulture);
         }
     }
 
