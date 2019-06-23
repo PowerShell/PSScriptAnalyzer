@@ -422,20 +422,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     ruleName));
                             }
 
+                            if (!(rule.Value is System.Collections.IDictionary))
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    Strings.SettingRuleValueIsNotDictionaryType,
+                                    ruleName,
+                                    rule.Value));
+                            }
+                            Hashtable arguments = rule.Value as Hashtable;
+
                             // TODO Refactor successor loops into nested loops.
                         }
 
 
-                        foreach (DictionaryEntry rule in rules)
-                        {
-                            if (!(rule.Value is System.Collections.IDictionary))
-                            {
-                                throw new InvalidDataException(string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.RuleSettingValueForKeyShouldBeDictionary,
-                                    rule.Key));
-                            }
-                        }
                     
                         var typedRules = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
                         foreach (DictionaryEntry rule in rules)

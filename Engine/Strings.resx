@@ -273,8 +273,8 @@
   <data name="SettingRuleValueIsNull" xml:space="preserve">
     <value>The value for the 'Rules' setting '{0}' rule is null.</value>
   </data>
-  <data name="RuleSettingValueForKeyShouldBeDictionary" xml:space="preserve">
-    <value>Dictionary value for Rules setting key {0} should be a dictionary type.</value>
+  <data name="SettingRuleValueIsNotDictionaryType" xml:space="preserve">
+    <value>The value '{1}' for the 'Rules' setting '{0}' rule is not a dictionary type.</value>
   </data>
   <data name="RulesSettingDictionaryShouldBeCaseInsensitive" xml:space="preserve">
     <value>Dictionary value for key Rules should be indexable in a case-insensitive manner.</value>

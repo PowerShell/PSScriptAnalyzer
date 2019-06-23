@@ -526,11 +526,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for Rules setting key {0} should be a dictionary type.
+    ///   Looks up a localized string similar to The value '{1}' for the 'Rules' setting '{0}' rule is not a dictionary type.
     /// </summary>
-    internal static string RuleSettingValueForKeyShouldBeDictionary {
+    internal static string SettingRuleValueIsNotDictionaryType {
         get {
-            return ResourceManager.GetString("RuleSettingValueForKeyShouldBeDictionary", resourceCulture);
+            return ResourceManager.GetString("SettingRuleValueIsNotDictionaryType", resourceCulture);
         }
     }
 
