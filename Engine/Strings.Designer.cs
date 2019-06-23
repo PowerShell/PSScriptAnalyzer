@@ -517,11 +517,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should not have any null values.
+    ///   Looks up a localized string similar to The value for the 'Rules' setting '{0}' rule is null.
     /// </summary>
-    internal static string RuleSettingValuesShouldBeNonNull {
+    internal static string SettingRuleValueIsNull {
         get {
-            return ResourceManager.GetString("RuleSettingValuesShouldBeNonNull", resourceCulture);
+            return ResourceManager.GetString("SettingRuleValueIsNull", resourceCulture);
         }
     }
 

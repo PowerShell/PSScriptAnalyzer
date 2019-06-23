@@ -415,18 +415,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     rule.Key));
                             }
 
+                            if (rule.Value is null)
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    Strings.SettingRuleValueIsNull,
+                                    ruleName));
+                            }
+
                             // TODO Refactor successor loops into nested loops.
                         }
 
-                        foreach (var ruleValue in rules.Values)
-                        {
-                            if (ruleValue is null)
-                            {
-                                throw new InvalidDataException(string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.RuleSettingValuesShouldBeNonNull));
-                            }
-                        }
 
                         foreach (DictionaryEntry rule in rules)
                         {
