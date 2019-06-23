@@ -261,6 +261,9 @@
   <data name="RuleSettingKeysShouldBeUniqueIgnoringCase" xml:space="preserve">
     <value>Dictionary value for key Rules should have unique keys, ignoring case.</value>
   </data>
+  <data name="RuleSettingValuesShouldBeNonNull" xml:space="preserve">
+    <value>Dictionary value for key Rules should not have any null values.</value>
+  </data>
   <data name="RulesSettingDictionaryShouldBeCaseInsensitive" xml:space="preserve">
     <value>Dictionary value for key Rules should be indexable in a case-insensitive manner.</value>
   </data>

@@ -490,6 +490,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to Dictionary value for key Rules should not have any null values.
+    /// </summary>
+    internal static string RuleSettingValuesShouldBeNonNull {
+        get {
+            return ResourceManager.GetString("RuleSettingValuesShouldBeNonNull", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to Dictionary value for key Rules should be indexable in a case-insensitive manner.
     /// </summary>
     internal static string RulesSettingDictionaryShouldBeCaseInsensitive {
