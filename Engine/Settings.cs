@@ -316,9 +316,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void parseSettingsHashtable(Hashtable settings)
         {
-            ISet<string> uniqueKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            ISet<string> uniqueSettingKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (DictionaryEntry setting in settings)
             {
+                if (setting.Key is null)
+                {
+                    throw new InvalidDataException(Strings.SettingKeyIsNull);
+                }
+                
                 if (!(setting.Key is string))
                 {
                     throw new InvalidDataException(
@@ -329,7 +334,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
                 string settingKey = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
 
-                if (!uniqueKeys.Add(settingKey))
+                if (!uniqueSettingKeys.Add(settingKey))
                 {
                     throw new InvalidDataException(
                         string.Format(
