@@ -386,7 +386,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "rules":
-                        // TODO Validate that every key is a string. (Strings.KeyNotString)
                         // TODO Validate that no value is null. (Strings.WrongValueHashTable)
                         // TODO Validate that no two keys are case-insensitive duplicates.
                     
@@ -408,6 +407,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                         }
                     
+                        foreach (var ruleKey in rules.Keys)
+                        {
+                            if (!(ruleKey is string))
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RulesSettingKeysShouldBeStrings));
+                            }
+                        }
+                    
                         var ruleArgs = rules as Dictionary<string, object>;
                         if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
                         {
@@ -420,6 +429,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         foreach (var rule in ruleArgs.Keys)
                         {
                             // TODO Validate that no key is null. (Strings.KeyNotString)
+                            // TODO Validate that each key is of type string.
 
                             var argsDict = ruleArgs[rule] as Dictionary<string, object>;
                             if (argsDict == null)

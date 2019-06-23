@@ -472,6 +472,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to Dictionary value for key Rules should have only string type keys.
+    /// </summary>
+    internal static string RulesSettingKeysShouldBeStrings {
+        get {
+            return ResourceManager.GetString("RulesSettingKeysShouldBeStrings", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to Dictionary value for key Rules should be indexable in a case-insensitive manner.
     /// </summary>
     internal static string RulesSettingDictionaryShouldBeCaseInsensitive {
