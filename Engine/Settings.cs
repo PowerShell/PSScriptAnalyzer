@@ -330,9 +330,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         Strings.SettingKeyIsNotStringType,
                         setting.Key));
                 }
-                string typedSettingKey = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
+                string settingName = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
 
-                if (!uniqueSettingKeys.Add(typedSettingKey))
+                if (!uniqueSettingKeys.Add(settingName))
                 {
                     // setting.Key should be used instead of typedSettingKey because the former preserves information about the source casing.
                     throw new InvalidDataException(string.Format(
@@ -344,25 +344,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     throw new InvalidDataException(string.Format(
                         Strings.SettingValueIsNull,
-                        typedSettingKey));
+                        settingName));
                 }
 
-                switch (typedSettingKey)
+                switch (settingName)
                 {
                     case "severity":
-                        severities = GetData(setting.Value, typedSettingKey);
+                        severities = GetData(setting.Value, settingName);
                         break;
 
                     case "includerules":
-                        includeRules = GetData(setting.Value, typedSettingKey);
+                        includeRules = GetData(setting.Value, settingName);
                         break;
 
                     case "excluderules":
-                        excludeRules = GetData(setting.Value, typedSettingKey);
+                        excludeRules = GetData(setting.Value, settingName);
                         break;
 
                     case "customrulepath":
-                        customRulePath = GetData(setting.Value, typedSettingKey);
+                        customRulePath = GetData(setting.Value, settingName);
                         break;
 
                     case "includedefaultrules":
@@ -377,7 +377,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         var booleanVal = (bool)setting.Value;
                         var field = this.GetType().GetField(
-                            typedSettingKey,
+                            settingName,
                             BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
                         field.SetValue(this, booleanVal);
                         break;
@@ -398,19 +398,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 throw new InvalidDataException(Strings.SettingRuleKeyIsNull);
                             }
 
+                            if (!(rule.Key is string))
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    Strings.SettingRuleKeyIsNotStringType,
+                                    rule.Key));
+                            }
+                            string ruleName = rule.Key as string;
+
                             // TODO Refactor successor loops into nested loops.
                         }
 
                     
-                        foreach (var ruleKey in rules.Keys)
-                        {
-                            if (!(ruleKey is string))
-                            {
-                                throw new InvalidDataException(string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.RulesSettingKeysShouldBeStrings));
-                            }
-                        }
 
                         var uniqueRuleKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         foreach (var ruleKey in rules.Keys)
@@ -515,7 +514,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.WrongKeyHashTable,
-                                typedSettingKey));
+                                settingName));
                 }
             }
         }

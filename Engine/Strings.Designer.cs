@@ -499,11 +499,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should have only string type keys.
+    ///   Looks up a localized string similar to The key for the 'Rules' setting '{0}' rule is not a string type.
     /// </summary>
-    internal static string RulesSettingKeysShouldBeStrings {
+    internal static string SettingRuleKeyIsNotStringType {
         get {
-            return ResourceManager.GetString("RulesSettingKeysShouldBeStrings", resourceCulture);
+            return ResourceManager.GetString("SettingRuleKeyIsNotStringType", resourceCulture);
         }
     }
 

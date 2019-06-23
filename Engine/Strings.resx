@@ -264,8 +264,8 @@
   <data name="SettingRuleKeyIsNull" xml:space="preserve">
     <value>The key for a 'Rules' setting rule is null.</value>
   </data>
-  <data name="RulesSettingKeysShouldBeStrings" xml:space="preserve">
-    <value>Dictionary value for key Rules should have only string type keys.</value>
+  <data name="SettingRuleKeyIsNotStringType" xml:space="preserve">
+    <value>The key for the 'Rules' setting '{0}' rule is not a string type.</value>
   </data>
   <data name="RuleSettingKeysShouldBeUniqueIgnoringCase" xml:space="preserve">
     <value>Dictionary value for key Rules should have unique keys, ignoring case.</value>
