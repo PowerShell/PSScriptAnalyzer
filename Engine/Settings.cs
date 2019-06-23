@@ -447,9 +447,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                     
                         var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-                        foreach (var ruleKey in rules.Keys.Cast<string>())
+                        foreach (DictionaryEntry rule in rules)
                         {
-                            // TODO Validate that no key is null. (Strings.KeyNotString)
+                            string ruleKey = rule.Key as string;
+                            Hashtable ruleArgs = rule.Value as Hashtable;
+                            
+                            foreach (DictionaryEntry ruleArg in ruleArgs)
+                            {
+                                if (ruleArg.Key is null)
+                                {
+                                    throw new InvalidDataException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.SettingRuleArgumentKeyShouldBeNonNull,
+                                        ruleKey));
+                                }
+                            }
+                            
                             // TODO Validate that each key is of type string.
                             // TODO Validate that no two keys are case-insensitive duplicates.
                             // TODO Validate that no value is null. (Strings.WrongValueHashTable)
@@ -461,7 +474,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     CultureInfo.CurrentCulture,
                                     Strings.RulesSettingValuesShouldBeDictionaries));
                             }
-                            ruleArgsDict[ruleKey] = argsDict;
+                            
+                            // TODO Add ruleKey and ruleValue (converted) to ruleArgsDict.
                         }
 
                         this.ruleArguments = ruleArgsDict;
