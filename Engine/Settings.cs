@@ -334,7 +334,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 if (!uniqueSettingKeys.Add(settingName))
                 {
-                    // setting.Key should be used instead of typedSettingKey because the former preserves information about the source casing.
+                    // setting.Key should be used instead of settingName because the former preserves information about the source casing.
                     throw new InvalidDataException(string.Format(
                         Strings.SettingKeyIsNotUniqueIgnoringCase,
                         setting.Key));
@@ -391,6 +391,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                         Hashtable rules = setting.Value as Hashtable;
 
+                        ISet<string> uniqueRuleKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         foreach (DictionaryEntry rule in rules)
                         {
                             if (rule.Key is null)
@@ -406,20 +407,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                             string ruleName = rule.Key as string;
 
-                            // TODO Refactor successor loops into nested loops.
-                        }
-
-                    
-
-                        var uniqueRuleKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        foreach (var ruleKey in rules.Keys)
-                        {
-                            if (!uniqueRuleKeys.Add(ruleKey as string))
+                            if (!uniqueRuleKeys.Add(ruleName))
                             {
+                                // rule.Key should be used instead of ruleName because the former preserves information about the source casing.
                                 throw new InvalidDataException(string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.RuleSettingKeysShouldBeUniqueIgnoringCase));
+                                    Strings.SettingRuleKeyIsNotUniqueIgnoringCase,
+                                    rule.Key));
                             }
+
+                            // TODO Refactor successor loops into nested loops.
                         }
 
                         foreach (var ruleValue in rules.Values)

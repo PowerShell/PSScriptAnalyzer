@@ -508,11 +508,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should have unique keys, ignoring case.
+    ///   Looks up a localized string similar to The key for the 'Rules' setting '{0}' rule is not unique, ignoring case.
     /// </summary>
-    internal static string RuleSettingKeysShouldBeUniqueIgnoringCase {
+    internal static string SettingRuleKeyIsNotUniqueIgnoringCase {
         get {
-            return ResourceManager.GetString("RuleSettingKeysShouldBeUniqueIgnoringCase", resourceCulture);
+            return ResourceManager.GetString("SettingRuleKeyIsNotUniqueIgnoringCase", resourceCulture);
         }
     }
 
