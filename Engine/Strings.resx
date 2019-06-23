@@ -247,7 +247,7 @@
     <value>Input should be a dictionary type.</value>
   </data>
   <data name="SettingKeyIsNull" xml:space="preserve">
-    <value>A setting key is null.</value>
+    <value>The key for a setting is null.</value>
   </data>
   <data name="SettingKeyIsNotStringType" xml:space="preserve">
     <value>The setting key '{0}' is not a string type.</value>
@@ -261,8 +261,8 @@
   <data name="SettingRulesValueIsNotDictionaryType" xml:space="preserve">
     <value>The value for the 'Rules' setting is not a dictionary type.</value>
   </data>
-  <data name="RulesSettingKeysShouldBeNonNull" xml:space="preserve">
-    <value>Dictionary value for key Rules should not have any null keys.</value>
+  <data name="SettingRuleKeyIsNull" xml:space="preserve">
+    <value>The key for a 'Rules' setting rule is null.</value>
   </data>
   <data name="RulesSettingKeysShouldBeStrings" xml:space="preserve">
     <value>Dictionary value for key Rules should have only string type keys.</value>

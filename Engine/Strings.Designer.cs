@@ -445,7 +445,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to A setting key is null.
+    ///   Looks up a localized string similar to The key for a setting is null.
     /// </summary>
     internal static string SettingKeyIsNull {
         get {
@@ -490,11 +490,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should not have any null keys.
+    ///   Looks up a localized string similar to The key for a 'Rules' setting rule is null.
     /// </summary>
-    internal static string RulesSettingKeysShouldBeNonNull {
+    internal static string SettingRuleKeyIsNull {
         get {
-            return ResourceManager.GetString("RulesSettingKeysShouldBeNonNull", resourceCulture);
+            return ResourceManager.GetString("SettingRuleKeyIsNull", resourceCulture);
         }
     }
 

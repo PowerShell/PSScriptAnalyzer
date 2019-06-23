@@ -391,15 +391,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         }
                         Hashtable rules = setting.Value as Hashtable;
 
-                        foreach (var ruleKey in rules.Keys)
+                        foreach (DictionaryEntry rule in rules)
                         {
-                            if (ruleKey is null)
+                            if (rule.Key is null)
                             {
-                                throw new InvalidDataException(string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.RulesSettingKeysShouldBeNonNull));
+                                throw new InvalidDataException(Strings.SettingRuleKeyIsNull);
                             }
+
+                            // TODO Refactor successor loops into nested loops.
                         }
+
                     
                         foreach (var ruleKey in rules.Keys)
                         {
