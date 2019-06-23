@@ -387,7 +387,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     case "rules":
                         // TODO Validate that no value is null. (Strings.WrongValueHashTable)
-                        // TODO Validate that no two keys are case-insensitive duplicates.
                     
                         var rules = settingValue as Hashtable;
                         if (rules == null)
@@ -416,29 +415,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     Strings.RulesSettingKeysShouldBeStrings));
                             }
                         }
-                    
-                        var ruleArgs = rules as Dictionary<string, object>;
-                        if (ruleArgs.Comparer != StringComparer.OrdinalIgnoreCase)
-                        {
-                            throw new InvalidDataException(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.RulesSettingDictionaryShouldBeCaseInsensitive));
-                        }
 
+                        var uniqueRuleKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var ruleKey in rules.Keys)
+                        {
+                            if (!uniqueRuleKeys.Add(ruleKey as string))
+                            {
+                                throw new InvalidDataException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.RuleSettingKeysShouldBeUniqueIgnoringCase));
+                            }
+                        }
+                    
                         var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-                        foreach (var rule in ruleArgs.Keys)
+                        foreach (var ruleKey in rules.Keys.Cast<string>())
                         {
                             // TODO Validate that no key is null. (Strings.KeyNotString)
                             // TODO Validate that each key is of type string.
+                            // TODO Validate that no two keys are case-insensitive duplicates.
 
-                            var argsDict = ruleArgs[rule] as Dictionary<string, object>;
+                            var argsDict = rules[ruleKey] as Dictionary<string, object>;
                             if (argsDict == null)
                             {
                                 throw new InvalidDataException(string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.RulesSettingValuesShouldBeDictionaries));
                             }
-                            ruleArgsDict[rule] = argsDict;
+                            ruleArgsDict[ruleKey] = argsDict;
                         }
 
                         this.ruleArguments = ruleArgsDict;
