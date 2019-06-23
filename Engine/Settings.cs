@@ -488,7 +488,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 }
                             }
                             
-                            // TODO Validate that no value is null. (Strings.WrongValueHashTable)
+                            // COMBAK Permit null setting rule argument values.
+                            foreach (DictionaryEntry ruleArg in ruleArgs)
+                            {
+                                if (ruleArg.Value is null)
+                                {
+                                    throw new InvalidDataException(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.SettingRuleArgumentValueShouldBeNonNull,
+                                        ruleKey,
+                                        ruleArg.Key));
+                                }
+                            }
 
                             var argsDict = rules[ruleKey] as Dictionary<string, object>;
                             if (argsDict == null)

@@ -282,6 +282,9 @@
   <data name="SettingRuleArgumentKeyShouldBeUniqueIgnoringCase" xml:space="preserve">
     <value>Setting rule '{0}' argument key '{1}' should be unique, ignoring case.</value>
   </data>
+  <data name="SettingRuleArgumentValueShouldBeNonNull" xml:space="preserve">
+    <value>Setting rule '{0}' argument value for key '{1}' should be nonnull.</value>
+  </data>
   <data name="SettingsDictionaryShouldBeCaseInsesitive" xml:space="preserve">
     <value>Dictionary should be indexable in a case-insensitive manner.</value>
   </data>
