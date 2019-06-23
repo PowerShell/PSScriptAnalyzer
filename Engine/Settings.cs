@@ -316,7 +316,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void parseSettingsHashtable(Hashtable settings)
         {
-            // TODO Recurse on hashtable values.
             ISet<string> uniqueKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (DictionaryEntry setting in settings)
             {
@@ -446,7 +445,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             }
                         }
                     
-                        var ruleArgsDict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+                        var typedRules = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
                         foreach (DictionaryEntry rule in rules)
                         {
                             string ruleKey = rule.Key as string;
@@ -501,18 +500,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 }
                             }
 
-                            var argsDict = rules[ruleKey] as Dictionary<string, object>;
-                            if (argsDict == null)
+                            var typedArguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            foreach (DictionaryEntry ruleArg in ruleArgs)
                             {
-                                throw new InvalidDataException(string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.RulesSettingValuesShouldBeDictionaries));
+                                typedArguments[ruleArg.Key as string] = ruleArg.Value;
                             }
-                            
-                            // TODO Add ruleKey and ruleValue (converted) to ruleArgsDict.
+                            typedRules[ruleKey] = typedArguments;
                         }
 
-                        this.ruleArguments = ruleArgsDict;
+                        this.ruleArguments = typedRules;
                         break;
 
                     default:
