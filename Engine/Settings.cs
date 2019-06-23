@@ -406,7 +406,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     Strings.SettingRuleKeyIsNotStringType,
                                     rule.Key));
                             }
-                            string ruleName = rule.Key as string;
+                            string ruleName = (rule.Key as string).ToLowerInvariant();
 
                             if (!uniqueRuleKeys.Add(ruleName))
                             {
@@ -450,11 +450,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                         ruleName,
                                         argument.Key));
                                 }
-                                string argumentName = argument.Key as string;
+                                string argumentName = (argument.Key as string).ToLowerInvariant();
                                 
                                 // TODO Clean up each following validating parsing steps.
 
-                                if (!uniqueArgumentKeys.Add(argument.Key as string))
+                                if (!uniqueArgumentKeys.Add(argumentName))
                                 {
                                     throw new InvalidDataException(string.Format(
                                         CultureInfo.CurrentCulture,
