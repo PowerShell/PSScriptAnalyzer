@@ -461,19 +461,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                         argument.Key));
                                 }
                                 
-                                // TODO Clean up each following validating parsing steps.
-                                
-                                // COMBAK Permit null setting rule argument values.
                                 if (argument.Value is null)
                                 {
                                     throw new InvalidDataException(string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.SettingRuleArgumentValueShouldBeNonNull,
+                                        Strings.SettingRuleArgumentValueIsNull,
                                         ruleName,
-                                        argument.Key));
+                                        argumentName));
                                 }
 
-                                parsedArguments[argument.Key as string] = argument.Value;
+                                parsedArguments[argumentName] = argument.Value;
                             }
 
                             parsedRules[ruleName] = parsedArguments;

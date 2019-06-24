@@ -562,11 +562,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Setting rule '{0}' argument value for key '{1}' should be nonnull.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}', argument '{1}' value is null.
     /// </summary>
-    internal static string SettingRuleArgumentValueShouldBeNonNull {
+    internal static string SettingRuleArgumentValueIsNull {
         get {
-            return ResourceManager.GetString("SettingRuleArgumentValueShouldBeNonNull", resourceCulture);
+            return ResourceManager.GetString("SettingRuleArgumentValueIsNull", resourceCulture);
         }
     }
 
