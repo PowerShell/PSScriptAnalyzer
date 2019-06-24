@@ -318,7 +318,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         Strings.SettingKeyIsNotStringType,
                         setting.Key));
                 }
-                string settingName = (setting.Key as string).ToLowerInvariant();  // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
+                string settingName = setting.Key as string;
 
                 if (!uniqueSettingKeys.Add(settingName))
                 {
@@ -335,7 +335,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         settingName));
                 }
 
-                switch (settingName)
+                // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
+                switch (settingName.ToLowerInvariant())
                 {
                     case "severity":
                         this.severities = ParseSettingValueStringOrStrings(setting.Value, settingName);
