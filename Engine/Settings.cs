@@ -73,7 +73,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (File.Exists(settingsFilePath))
                 {
                     filePath = settingsFilePath;
-                    parseSettingsFile(settingsFilePath);
+                    ParseSettingsFile(settingsFilePath);
                 }
                 else
                 {
@@ -89,7 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 var settingsHashtable = settings as Hashtable;
                 if (settingsHashtable != null)
                 {
-                    parseSettingsHashtable(settingsHashtable);
+                    ParseSettingsHashtable(settingsHashtable);
                 }
                 else
                 {
@@ -302,7 +302,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return strings;
         }
 
-        private void parseSettingsHashtable(Hashtable settings)
+        private void ParseSettingsHashtable(Hashtable settings)
         {
             ISet<string> uniqueSettingKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (DictionaryEntry setting in settings)
@@ -484,7 +484,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private void parseSettingsFile(string settingsFilePath)
+        private void ParseSettingsFile(string settingsFilePath)
         {
             Token[] parserTokens = null;
             ParseError[] parserErrors = null;
@@ -519,7 +519,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         settingsFilePath));
             }
 
-            parseSettingsHashtable(hashtable);
+            ParseSettingsHashtable(hashtable);
         }
 
         /// <summary>
