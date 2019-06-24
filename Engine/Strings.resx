@@ -265,6 +265,9 @@
   <data name="SettingValueElementIsNull" xml:space="preserve">
     <value>The setting '{0}', index {1} element is null.</value>
   </data>
+  <data name="SettingValueElementIsNotStringType" xml:space="preserve">
+    <value>The setting '{0}', index {1} element, value '{2}' is not a string type.</value>
+  </data>
   <data name="SettingRulesValueIsNotDictionaryType" xml:space="preserve">
     <value>The setting 'Rules' value '{0}' is not a dictionary type.</value>
   </data>
