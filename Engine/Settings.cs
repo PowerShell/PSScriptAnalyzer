@@ -401,7 +401,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     Strings.SettingRuleKeyIsNotStringType,
                                     rule.Key));
                             }
-                            string ruleName = (rule.Key as string).ToLowerInvariant();
+                            string ruleName = rule.Key as string;
 
                             if (!uniqueRuleKeys.Add(ruleName))
                             {
@@ -445,7 +445,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                         ruleName,
                                         argument.Key));
                                 }
-                                string argumentName = (argument.Key as string).ToLowerInvariant();
+                                string argumentName = argument.Key as string;
                                 
                                 if (!uniqueArgumentKeys.Add(argumentName))
                                 {
