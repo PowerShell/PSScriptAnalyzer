@@ -246,6 +246,7 @@
   <data name="SettingsInputShouldBeDictionary" xml:space="preserve">
     <value>Input should be a dictionary type.</value>
   </data>
+
   <data name="SettingKeyIsNull" xml:space="preserve">
     <value>A setting key is null.</value>
   </data>
@@ -256,44 +257,39 @@
     <value>The setting key '{0}' is not unique, ignoring case.</value>
   </data>
   <data name="SettingValueIsNull" xml:space="preserve">
-    <value>The value for the '{0}' setting is null.</value>
+    <value>The setting '{0}' value is null.</value>
   </data>
   <data name="SettingRulesValueIsNotDictionaryType" xml:space="preserve">
-    <value>The value for the 'Rules' setting is not a dictionary type.</value>
+    <value>The setting 'Rules' value '{0}' is not a dictionary type.</value>
   </data>
-  <data name="RulesSettingKeysShouldBeNonNull" xml:space="preserve">
-    <value>Dictionary value for key Rules should not have any null keys.</value>
+  <data name="SettingRuleKeyIsNull" xml:space="preserve">
+    <value>A setting 'Rules', rule key is null.</value>
   </data>
-  <data name="RulesSettingKeysShouldBeStrings" xml:space="preserve">
-    <value>Dictionary value for key Rules should have only string type keys.</value>
+  <data name="SettingRuleKeyIsNotStringType" xml:space="preserve">
+    <value>The setting 'Rules', rule key '{0}' is not a string type.</value>
   </data>
-  <data name="RuleSettingKeysShouldBeUniqueIgnoringCase" xml:space="preserve">
-    <value>Dictionary value for key Rules should have unique keys, ignoring case.</value>
+  <data name="SettingRuleKeyIsNotUniqueIgnoringCase" xml:space="preserve">
+    <value>The setting 'Rules', rule key '{0}' is not unique, ignoring case.</value>
   </data>
-  <data name="RuleSettingValuesShouldBeNonNull" xml:space="preserve">
-    <value>Dictionary value for key Rules should not have any null values.</value>
+  <data name="SettingRuleValueIsNull" xml:space="preserve">
+    <value>The setting 'Rules', rule '{0}' value is null.</value>
   </data>
-  <data name="RuleSettingValueForKeyShouldBeDictionary" xml:space="preserve">
-    <value>Dictionary value for Rules setting key {0} should be a dictionary type.</value>
+  <data name="SettingRuleValueIsNotDictionaryType" xml:space="preserve">
+    <value>The setting 'Rules', rule '{0}' value '{1}' is not a dictionary type.</value>
   </data>
-  <data name="RulesSettingDictionaryShouldBeCaseInsensitive" xml:space="preserve">
-    <value>Dictionary value for key Rules should be indexable in a case-insensitive manner.</value>
+  <data name="SettingRuleArgumentKeyIsNull" xml:space="preserve">
+    <value>A setting 'Rules', rule '{0}', argument key is null.</value>
   </data>
-  <data name="RulesSettingValuesShouldBeDictionaries" xml:space="preserve">
-    <value>Dictionary values for key Rules should be dictionary types.</value>
+  <data name="SettingRuleArgumentKeyIsNotStringType" xml:space="preserve">
+    <value>The setting 'Rules', rule '{0}', argument key '{1}' is not a string type.</value>
   </data>
-  <data name="SettingRuleArgumentKeyShouldBeNonNull" xml:space="preserve">
-    <value>Setting rule '{0}' argument key should be nonnull.</value>
+  <data name="SettingRuleArgumentKeyIsNotUniqueIgnoringCase" xml:space="preserve">
+    <value>The setting 'Rules', rule '{0}', argument key '{1}' is not unique, ignoring case.</value>
   </data>
-  <data name="SettingRuleArgumentKeyShouldBeStringType" xml:space="preserve">
-    <value>Setting rule '{0}' argument key '{1}' should be string type.</value>
+  <data name="SettingRuleArgumentValueIsNull" xml:space="preserve">
+    <value>The setting 'Rules', rule '{0}', argument '{1}' value is null.</value>
   </data>
-  <data name="SettingRuleArgumentKeyShouldBeUniqueIgnoringCase" xml:space="preserve">
-    <value>Setting rule '{0}' argument key '{1}' should be unique, ignoring case.</value>
-  </data>
-  <data name="SettingRuleArgumentValueShouldBeNonNull" xml:space="preserve">
-    <value>Setting rule '{0}' argument value for key '{1}' should be nonnull.</value>
-  </data>
+
   <data name="SettingsDictionaryShouldBeCaseInsesitive" xml:space="preserve">
     <value>Dictionary should be indexable in a case-insensitive manner.</value>
   </data>

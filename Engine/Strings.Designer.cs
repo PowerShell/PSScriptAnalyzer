@@ -472,7 +472,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The value for the '{0}' setting is null.
+    ///   Looks up a localized string similar to The setting '{0}' value is null.
     /// </summary>
     internal static string SettingValueIsNull {
         get {
@@ -481,7 +481,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The value for the 'Rules' setting is not a dictionary type.
+    ///   Looks up a localized string similar to The setting 'Rules' value '{0}' is not a dictionary type.
     /// </summary>
     internal static string SettingRulesValueIsNotDictionaryType {
         get {
@@ -490,101 +490,83 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should not have any null keys.
+    ///   Looks up a localized string similar to A setting 'Rules', rule key is null.
     /// </summary>
-    internal static string RulesSettingKeysShouldBeNonNull {
+    internal static string SettingRuleKeyIsNull {
         get {
-            return ResourceManager.GetString("RulesSettingKeysShouldBeNonNull", resourceCulture);
+            return ResourceManager.GetString("SettingRuleKeyIsNull", resourceCulture);
         }
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should have only string type keys.
+    ///   Looks up a localized string similar to The setting 'Rules', rule key '{0}' is not a string type.
     /// </summary>
-    internal static string RulesSettingKeysShouldBeStrings {
+    internal static string SettingRuleKeyIsNotStringType {
         get {
-            return ResourceManager.GetString("RulesSettingKeysShouldBeStrings", resourceCulture);
+            return ResourceManager.GetString("SettingRuleKeyIsNotStringType", resourceCulture);
         }
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should have unique keys, ignoring case.
+    ///   Looks up a localized string similar to The setting 'Rules', rule key '{0}' is not unique, ignoring case.
     /// </summary>
-    internal static string RuleSettingKeysShouldBeUniqueIgnoringCase {
+    internal static string SettingRuleKeyIsNotUniqueIgnoringCase {
         get {
-            return ResourceManager.GetString("RuleSettingKeysShouldBeUniqueIgnoringCase", resourceCulture);
+            return ResourceManager.GetString("SettingRuleKeyIsNotUniqueIgnoringCase", resourceCulture);
         }
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should not have any null values.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}' value is null.
     /// </summary>
-    internal static string RuleSettingValuesShouldBeNonNull {
+    internal static string SettingRuleValueIsNull {
         get {
-            return ResourceManager.GetString("RuleSettingValuesShouldBeNonNull", resourceCulture);
+            return ResourceManager.GetString("SettingRuleValueIsNull", resourceCulture);
         }
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for Rules setting key {0} should be a dictionary type.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}' value '{1}' is not a dictionary type.
     /// </summary>
-    internal static string RuleSettingValueForKeyShouldBeDictionary {
+    internal static string SettingRuleValueIsNotDictionaryType {
         get {
-            return ResourceManager.GetString("RuleSettingValueForKeyShouldBeDictionary", resourceCulture);
+            return ResourceManager.GetString("SettingRuleValueIsNotDictionaryType", resourceCulture);
         }
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary value for key Rules should be indexable in a case-insensitive manner.
+    ///   Looks up a localized string similar to A setting 'Rules', rule '{0}', argument key is null.
     /// </summary>
-    internal static string RulesSettingDictionaryShouldBeCaseInsensitive {
+    internal static string SettingRuleArgumentKeyIsNull {
         get {
-            return ResourceManager.GetString("RulesSettingDictionaryShouldBeCaseInsensitive", resourceCulture);
+            return ResourceManager.GetString("SettingRuleArgumentKeyIsNull", resourceCulture);
         }
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Dictionary values for key Rules should be dictionary types.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}', argument key '{1}' is not a string type.
     /// </summary>
-    internal static string RulesSettingValuesShouldBeDictionaries {
+    internal static string SettingRuleArgumentKeyIsNotStringType {
         get {
-            return ResourceManager.GetString("RulesSettingValuesShouldBeDictionaries", resourceCulture);
+            return ResourceManager.GetString("SettingRuleArgumentKeyIsNotStringType", resourceCulture);
         }
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Setting rule '{0}' argument key should be nonnull.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}', argument key '{1}' is not unique, ignoring case.
     /// </summary>
-    internal static string SettingRuleArgumentKeyShouldBeNonNull {
+    internal static string SettingRuleArgumentKeyIsNotUniqueIgnoringCase {
         get {
-            return ResourceManager.GetString("SettingRuleArgumentKeyShouldBeNonNull", resourceCulture);
+            return ResourceManager.GetString("SettingRuleArgumentKeyIsNotUniqueIgnoringCase", resourceCulture);
         }
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Setting rule '{0}' argument key '{1}' should be string type.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}', argument '{1}' value is null.
     /// </summary>
-    internal static string SettingRuleArgumentKeyShouldBeStringType {
+    internal static string SettingRuleArgumentValueIsNull {
         get {
-            return ResourceManager.GetString("SettingRuleArgumentKeyShouldBeStringType", resourceCulture);
-        }
-    }
-
-    /// <summary>
-    ///   Looks up a localized string similar to Setting rule '{0}' argument key '{1}' should be unique, ignoring case.
-    /// </summary>
-    internal static string SettingRuleArgumentKeyShouldBeUniqueIgnoringCase {
-        get {
-            return ResourceManager.GetString("SettingRuleArgumentKeyShouldBeUniqueIgnoringCase", resourceCulture);
-        }
-    }
-
-    /// <summary>
-    ///   Looks up a localized string similar to Setting rule '{0}' argument value for key '{1}' should be nonnull.
-    /// </summary>
-    internal static string SettingRuleArgumentValueShouldBeNonNull {
-        get {
-            return ResourceManager.GetString("SettingRuleArgumentValueShouldBeNonNull", resourceCulture);
+            return ResourceManager.GetString("SettingRuleArgumentValueIsNull", resourceCulture);
         }
     }
 
