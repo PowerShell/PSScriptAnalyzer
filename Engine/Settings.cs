@@ -252,6 +252,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return val == null ? false : valArr.All(x => x is string);
         }
 
+        // TODO Clean up method GetData(object, string).
         private List<string> GetData(object val, string key)
         {
             // value must be either string or or an array of strings
@@ -349,23 +350,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 switch (settingName)
                 {
+                    // TODO Clean up "Severity" setting validating parsing.
                     case "severity":
                         severities = GetData(setting.Value, settingName);
                         break;
 
+                    // TODO Clean up "IncludeRules" setting validating parsing.
                     case "includerules":
                         includeRules = GetData(setting.Value, settingName);
                         break;
 
+                    // TODO Clean up "ExcludeRules" setting validating parsing.
                     case "excluderules":
                         excludeRules = GetData(setting.Value, settingName);
                         break;
 
+                    // TODO Clean up "CustomRulePath" setting validating parsing.
                     case "customrulepath":
                         customRulePath = GetData(setting.Value, settingName);
                         break;
 
+                    // TODO Clean up "IncludeDefaultRules" setting validating parsing.
                     case "includedefaultrules":
+
+                    // TODO Clean up "RecurseCustomRulePath" setting validating parsing.
                     case "recursecustomrulepath":
                         if (!(setting.Value is bool))
                         {
@@ -478,6 +486,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this.ruleArguments = parsedRules;
                         break;
 
+                    // TODO Clean up default setting validating parsing.
                     default:
                         throw new InvalidDataException(
                             string.Format(
