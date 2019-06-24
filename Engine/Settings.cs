@@ -379,7 +379,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "recursecustomrulepath":
-                        this.includeDefaultRules = ParseSettingValueBoolean(setting.Value, settingName);
+                        this.recurseCustomRulePath = ParseSettingValueBoolean(setting.Value, settingName);
                         break;
 
                     case "rules":
