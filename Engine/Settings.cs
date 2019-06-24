@@ -255,6 +255,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         // TODO Clean up method GetData(object, string).
         private List<string> ParseSettingValueAsStrings(object value, string settingName)
         {
+            // TODO Validate that value is not null.
+
+            // TODO Check if value is a string, and if so then convert it to a string array.
+            
+            // TODO Validate that value is an IList, and type it if so.
+
+            // TODO Validate that each element of the IList value is a string, and type it if so.
+            
             // value must be either string or or an array of strings
             if (value == null)
             {
