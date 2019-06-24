@@ -304,6 +304,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private bool ParseSettingValueBoolean(object value, string settingName)
         {
+            if (value == null)
+            {
+                throw new InvalidDataException(string.Format(
+                    Strings.SettingValueIsNull,
+                    settingName));
+            }
+            
             // TODO Clean up body of ParseSettingValueBoolean(object, string).
             if (!(value is bool))
             {
