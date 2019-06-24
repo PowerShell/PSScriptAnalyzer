@@ -302,6 +302,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return strings;
         }
 
+        private bool ParseSettingValueBoolean(object value, string settingName)
+        {
+            if (value == null)
+            {
+                throw new InvalidDataException(string.Format(
+                    Strings.SettingValueIsNull,
+                    settingName));
+            }
+            
+            if (!(value is bool))
+            {
+                throw new InvalidDataException(string.Format(
+                    Strings.SettingValueIsNotBooleanType,
+                    settingName,
+                    value));
+            }
+
+            return (bool) value;
+        }
+
         private void ParseSettingsHashtable(Hashtable settings)
         {
             ISet<string> uniqueSettingKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -354,24 +374,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this.customRulePath = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
-                    // TODO Clean up "IncludeDefaultRules" setting validating parsing.
                     case "includedefaultrules":
+                        this.includeDefaultRules = ParseSettingValueBoolean(setting.Value, settingName);
+                        break;
 
-                    // TODO Clean up "RecurseCustomRulePath" setting validating parsing.
                     case "recursecustomrulepath":
-                        if (!(setting.Value is bool))
-                        {
-                            throw new InvalidDataException(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.SettingsValueTypeMustBeBool,
-                                setting.Key));
-                        }
-
-                        var booleanVal = (bool)setting.Value;
-                        var field = this.GetType().GetField(
-                            settingName,
-                            BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
-                        field.SetValue(this, booleanVal);
+                        this.recurseCustomRulePath = ParseSettingValueBoolean(setting.Value, settingName);
                         break;
 
                     case "rules":
