@@ -262,7 +262,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     settingName));
             }
 
-            // TODO Check if value is a string, and if so then convert it to a string array.
+            if (value is string)
+            {
+                value = new[] { value };
+            }
             
             // TODO Validate that value is an IList, and type it if so.
 
