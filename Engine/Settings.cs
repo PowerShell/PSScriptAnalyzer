@@ -319,9 +319,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     value));
             }
 
-            // TODO Clean up body of ParseSettingValueBoolean(object, string).
-            var booleanVal = (bool)value;
-            return booleanVal;
+            return (bool) value;
         }
 
         private void ParseSettingsHashtable(Hashtable settings)
