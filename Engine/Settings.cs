@@ -255,7 +255,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         // TODO Clean up method GetData(object, string).
         private List<string> ParseSettingValueAsStrings(object value, string settingName)
         {
-            // TODO Validate that value is not null.
+            if (value == null)
+            {
+                throw new InvalidDataException(string.Format(
+                    Strings.SettingValueIsNull,
+                    settingName));
+            }
 
             // TODO Check if value is a string, and if so then convert it to a string array.
             
@@ -263,16 +268,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // TODO Validate that each element of the IList value is a string, and type it if so.
             
-            // value must be either string or or an array of strings
-            if (value == null)
-            {
-                throw new InvalidDataException(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.WrongValueHashTable,
-                        "",
-                        settingName));
-            }
+            
 
             List<string> values = new List<string>();
             var valueStr = value as string;
