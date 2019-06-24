@@ -302,6 +302,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return strings;
         }
 
+        private bool ParseSettingValueBoolean(object value, string settingName)
+        {
+            // TODO Clean up body of ParseSettingValueBoolean(object, string).
+            if (!(value is bool))
+            {
+                throw new InvalidDataException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.SettingsValueTypeMustBeBool,
+                    settingName));
+            }
+
+            var booleanVal = (bool)value;
+            return booleanVal;
+        }
+
         private void ParseSettingsHashtable(Hashtable settings)
         {
             ISet<string> uniqueSettingKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -359,19 +374,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                     // TODO Clean up "RecurseCustomRulePath" setting validating parsing.
                     case "recursecustomrulepath":
-                        if (!(setting.Value is bool))
-                        {
-                            throw new InvalidDataException(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.SettingsValueTypeMustBeBool,
-                                setting.Key));
-                        }
-
-                        var booleanVal = (bool)setting.Value;
-                        var field = this.GetType().GetField(
-                            settingName,
-                            BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.NonPublic);
-                        field.SetValue(this, booleanVal);
+                        
                         break;
 
                     case "rules":
