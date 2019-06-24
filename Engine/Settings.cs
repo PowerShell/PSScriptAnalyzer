@@ -253,32 +253,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         // TODO Clean up method GetData(object, string).
-        private List<string> GetData(object val, string key)
+        private List<string> ParseSettingValueAsStrings(object value, string settingName)
         {
             // value must be either string or or an array of strings
-            if (val == null)
+            if (value == null)
             {
                 throw new InvalidDataException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.WrongValueHashTable,
                         "",
-                        key));
+                        settingName));
             }
 
             List<string> values = new List<string>();
-            var valueStr = val as string;
+            var valueStr = value as string;
             if (valueStr != null)
             {
                 values.Add(valueStr);
             }
             else
             {
-                var valueArr = val as object[];
+                var valueArr = value as object[];
                 if (valueArr == null)
                 {
                     // check if it is an array of strings
-                    valueArr = val as string[];
+                    valueArr = value as string[];
                 }
 
                 if (valueArr != null)
@@ -296,8 +296,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.WrongValueHashTable,
-                                    val,
-                                    key));
+                                    value,
+                                    settingName));
                         }
                     }
                 }
@@ -307,8 +307,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             string.Format(
                                 CultureInfo.CurrentCulture,
                                 Strings.WrongValueHashTable,
-                                val,
-                                key));
+                                value,
+                                settingName));
                 }
             }
 
@@ -352,22 +352,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     // TODO Clean up "Severity" setting validating parsing.
                     case "severity":
-                        severities = GetData(setting.Value, settingName);
+                        this.severities = ParseSettingValueAsStrings(setting.Value, settingName);
                         break;
 
                     // TODO Clean up "IncludeRules" setting validating parsing.
                     case "includerules":
-                        includeRules = GetData(setting.Value, settingName);
+                        this.includeRules = ParseSettingValueAsStrings(setting.Value, settingName);
                         break;
 
                     // TODO Clean up "ExcludeRules" setting validating parsing.
                     case "excluderules":
-                        excludeRules = GetData(setting.Value, settingName);
+                        this.excludeRules = ParseSettingValueAsStrings(setting.Value, settingName);
                         break;
 
                     // TODO Clean up "CustomRulePath" setting validating parsing.
                     case "customrulepath":
-                        customRulePath = GetData(setting.Value, settingName);
+                        this.customRulePath = ParseSettingValueAsStrings(setting.Value, settingName);
                         break;
 
                     // TODO Clean up "IncludeDefaultRules" setting validating parsing.
