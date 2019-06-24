@@ -252,8 +252,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return val == null ? false : valArr.All(x => x is string);
         }
 
-        // TODO Clean up method GetData(object, string).
-        private List<string> ParseSettingValueAsStrings(object value, string settingName)
+        private List<string> ParseSettingValueStringOrStrings(object value, string settingName)
         {
             if (value == null)
             {
@@ -273,9 +272,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     Strings.SettingValueIsNotStringOrStringsType,
                     settingName));
             }
-            ICollection values = value as ICollection;
+            var values = value as ICollection;
 
-            IList<string> strings = new List<string>(values.Count);
+            var strings = new List<string>(values.Count);
             int elementIndex = 0;
             foreach (var element in values)
             {
@@ -299,56 +298,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 
                 elementIndex += 1;
             }
-            
 
-
-            List<string> values = new List<string>();
-            var valueStr = value as string;
-            if (valueStr != null)
-            {
-                values.Add(valueStr);
-            }
-            else
-            {
-                var valueArr = value as object[];
-                if (valueArr == null)
-                {
-                    // check if it is an array of strings
-                    valueArr = value as string[];
-                }
-
-                if (valueArr != null)
-                {
-                    foreach (var item in valueArr)
-                    {
-                        var itemStr = item as string;
-                        if (itemStr != null)
-                        {
-                            values.Add(itemStr);
-                        }
-                        else
-                        {
-                            throw new InvalidDataException(
-                                string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.WrongValueHashTable,
-                                    value,
-                                    settingName));
-                        }
-                    }
-                }
-                else
-                {
-                    throw new InvalidDataException(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.WrongValueHashTable,
-                                value,
-                                settingName));
-                }
-            }
-
-            return values;
+            return strings;
         }
 
         private void parseSettingsHashtable(Hashtable settings)
@@ -388,22 +339,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     // TODO Clean up "Severity" setting validating parsing.
                     case "severity":
-                        this.severities = ParseSettingValueAsStrings(setting.Value, settingName);
+                        this.severities = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
                     // TODO Clean up "IncludeRules" setting validating parsing.
                     case "includerules":
-                        this.includeRules = ParseSettingValueAsStrings(setting.Value, settingName);
+                        this.includeRules = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
                     // TODO Clean up "ExcludeRules" setting validating parsing.
                     case "excluderules":
-                        this.excludeRules = ParseSettingValueAsStrings(setting.Value, settingName);
+                        this.excludeRules = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
                     // TODO Clean up "CustomRulePath" setting validating parsing.
                     case "customrulepath":
-                        this.customRulePath = ParseSettingValueAsStrings(setting.Value, settingName);
+                        this.customRulePath = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
                     // TODO Clean up "IncludeDefaultRules" setting validating parsing.
