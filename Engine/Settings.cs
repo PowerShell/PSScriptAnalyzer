@@ -337,22 +337,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 switch (settingName)
                 {
-                    // TODO Clean up "Severity" setting validating parsing.
                     case "severity":
                         this.severities = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
-                    // TODO Clean up "IncludeRules" setting validating parsing.
                     case "includerules":
                         this.includeRules = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
-                    // TODO Clean up "ExcludeRules" setting validating parsing.
                     case "excluderules":
                         this.excludeRules = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
-                    // TODO Clean up "CustomRulePath" setting validating parsing.
                     case "customrulepath":
                         this.customRulePath = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
