@@ -481,6 +481,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to The setting '{0}' value '{1}' is not a boolean type.
+    /// </summary>
+    internal static string SettingValueIsNotBooleanType {
+        get {
+            return ResourceManager.GetString("SettingValueIsNotBooleanType", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to The setting '{0}' value '{1}' is not a string or collection of strings type.
     /// </summary>
     internal static string SettingValueIsNotStringOrStringsType {
@@ -490,7 +499,7 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to The setting '{0}' value, index {1} element is null.
+    ///   Looks up a localized string similar to The setting '{0}', index {1} element is null.
     /// </summary>
     internal static string SettingValueElementIsNull {
         get {

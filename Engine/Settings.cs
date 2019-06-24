@@ -311,15 +311,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     settingName));
             }
             
-            // TODO Clean up body of ParseSettingValueBoolean(object, string).
             if (!(value is bool))
             {
                 throw new InvalidDataException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.SettingsValueTypeMustBeBool,
-                    settingName));
+                    Strings.SettingValueIsNotBooleanType,
+                    settingName,
+                    value));
             }
 
+            // TODO Clean up body of ParseSettingValueBoolean(object, string).
             var booleanVal = (bool)value;
             return booleanVal;
         }

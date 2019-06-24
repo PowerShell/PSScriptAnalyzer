@@ -259,6 +259,9 @@
   <data name="SettingValueIsNull" xml:space="preserve">
     <value>The setting '{0}' value is null.</value>
   </data>
+  <data name="SettingValueIsNotBooleanType" xml:space="preserve">
+    <value>The setting '{0}' value '{1}' is not a boolean type.</value>
+  </data>
   <data name="SettingValueIsNotStringOrStringsType" xml:space="preserve">
     <value>The setting '{0}' value '{1}' is not a string or collection of strings type.</value>
   </data>
