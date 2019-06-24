@@ -267,7 +267,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 value = new[] { value };
             }
             
-            // TODO Validate that value is an IList, and type it if so.
+            if (!(value is ICollection))
+            {
+                throw new InvalidDataException(string.Format(
+                    Strings.SettingValueIsNotStringOrStringsType,
+                    settingName));
+            }
+            ICollection values = value as ICollection;
 
             // TODO Validate that each element of the IList value is a string, and type it if so.
             

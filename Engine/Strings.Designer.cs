@@ -481,6 +481,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to The setting '{0}' value '{1}' is not a string or collection of strings type.
+    /// </summary>
+    internal static string SettingValueIsNotStringOrStringsType {
+        get {
+            return ResourceManager.GetString("SettingValueIsNotStringOrStringsType", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to The setting 'Rules' value '{0}' is not a dictionary type.
     /// </summary>
     internal static string SettingRulesValueIsNotDictionaryType {
