@@ -490,6 +490,15 @@ internal class Strings {
     }
 
     /// <summary>
+    ///   Looks up a localized string similar to The setting '{0}' value, index {1} element is null.
+    /// </summary>
+    internal static string SettingValueElementIsNull {
+        get {
+            return ResourceManager.GetString("SettingValueElementIsNull", resourceCulture);
+        }
+    }
+
+    /// <summary>
     ///   Looks up a localized string similar to The setting 'Rules' value '{0}' is not a dictionary type.
     /// </summary>
     internal static string SettingRulesValueIsNotDictionaryType {

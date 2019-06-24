@@ -276,8 +276,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ICollection values = value as ICollection;
 
             // TODO Validate that each element of the IList value is a string, and type it if so.
+            IList<string> strings = new List<string>(values.Count);
+            int elementIndex = 0;
+            foreach (var element in values)
+            {
+                if (element is null)
+                {
+                    throw new InvalidDataException(string.Format(
+                        Strings.SettingValueElementIsNull,
+                        settingName,
+                        elementIndex));
+                }
+
+                // TODO Validate that each element is a string, and if so then add it to the strings list.
+                
+                elementIndex += 1;
+            }
             
-            
+
 
             List<string> values = new List<string>();
             var valueStr = value as string;
