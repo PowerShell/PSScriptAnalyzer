@@ -369,12 +369,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this.customRulePath = ParseSettingValueStringOrStrings(setting.Value, settingName);
                         break;
 
-                    // TODO Clean up "IncludeDefaultRules" setting validating parsing.
                     case "includedefaultrules":
+                        this.includeDefaultRules = ParseSettingValueBoolean(setting.Value, settingName);
+                        break;
 
-                    // TODO Clean up "RecurseCustomRulePath" setting validating parsing.
                     case "recursecustomrulepath":
-                        
+                        this.includeDefaultRules = ParseSettingValueBoolean(setting.Value, settingName);
                         break;
 
                     case "rules":
