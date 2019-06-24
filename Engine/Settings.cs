@@ -452,16 +452,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 }
                                 string argumentName = (argument.Key as string).ToLowerInvariant();
                                 
-                                // TODO Clean up each following validating parsing steps.
-
                                 if (!uniqueArgumentKeys.Add(argumentName))
                                 {
+                                    // argument.Key should be used instead of argumentName because the former preserves information about the source casing.
                                     throw new InvalidDataException(string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.SettingRuleArgumentKeyShouldBeUniqueIgnoringCase,
+                                        Strings.SettingRuleArgumentKeyIsNotUniqueIgnoringCase,
                                         ruleName,
                                         argument.Key));
                                 }
+                                
+                                // TODO Clean up each following validating parsing steps.
                                 
                                 // COMBAK Permit null setting rule argument values.
                                 if (argument.Value is null)

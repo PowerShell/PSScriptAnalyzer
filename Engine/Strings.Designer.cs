@@ -553,11 +553,11 @@ internal class Strings {
     }
 
     /// <summary>
-    ///   Looks up a localized string similar to Setting rule '{0}' argument key '{1}' should be unique, ignoring case.
+    ///   Looks up a localized string similar to The setting 'Rules', rule '{0}', argument key '{1}' is not unique, ignoring case.
     /// </summary>
-    internal static string SettingRuleArgumentKeyShouldBeUniqueIgnoringCase {
+    internal static string SettingRuleArgumentKeyIsNotUniqueIgnoringCase {
         get {
-            return ResourceManager.GetString("SettingRuleArgumentKeyShouldBeUniqueIgnoringCase", resourceCulture);
+            return ResourceManager.GetString("SettingRuleArgumentKeyIsNotUniqueIgnoringCase", resourceCulture);
         }
     }
 
