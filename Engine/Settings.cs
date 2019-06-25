@@ -252,13 +252,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return val == null ? false : valArr.All(x => x is string);
         }
 
-        private List<string> ParseSettingValueStringOrStrings(object value, string settingName)
+        private List<string> ParseSettingValueStringOrStrings(object value, string settingName, IList<Exception> exceptions)
         {
             if (value == null)
             {
-                throw new InvalidDataException(string.Format(
+                exceptions.Add(new InvalidDataException(string.Format(
                     Strings.SettingValueIsNull,
-                    settingName));
+                    settingName)));
+                return null;
             }
 
             if (value is string)
@@ -268,9 +269,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             
             if (!(value is ICollection))
             {
-                throw new InvalidDataException(string.Format(
+                exceptions.Add(new InvalidDataException(string.Format(
                     Strings.SettingValueIsNotStringOrStringsType,
-                    settingName));
+                    settingName)));
+                return null;
             }
             var values = value as ICollection;
 
@@ -280,19 +282,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 if (element is null)
                 {
-                    throw new InvalidDataException(string.Format(
+                    exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingValueElementIsNull,
                         settingName,
-                        elementIndex));
+                        elementIndex)));
+                    continue;
                 }
 
                 if (!(element is string))
                 {
-                    throw new InvalidDataException(string.Format(
+                    exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingValueElementIsNotStringType,
                         settingName,
                         elementIndex,
-                        element));
+                        element)));
+                    continue;
                 }
                 strings.Add(element as string);
                 
@@ -368,23 +372,43 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 switch (settingName.ToLowerInvariant())
                 {
                     case "severity":
-                        // TODO Aggregate exceptions.
-                        this.severities = ParseSettingValueStringOrStrings(setting.Value, settingName);
+                        var maybeSeverity = ParseSettingValueStringOrStrings(setting.Value, settingName, exceptions);
+                        if (maybeSeverity is null)
+                        {
+                            continue;
+                        }
+
+                        this.severities = maybeSeverity;
                         break;
 
                     case "includerules":
-                        // TODO Aggregate exceptions.
-                        this.includeRules = ParseSettingValueStringOrStrings(setting.Value, settingName);
+                        var maybeIncludeRules = ParseSettingValueStringOrStrings(setting.Value, settingName, exceptions);
+                        if (maybeIncludeRules is null)
+                        {
+                            continue;
+                        }
+
+                        this.includeRules = maybeIncludeRules;
                         break;
 
                     case "excluderules":
-                        // TODO Aggregate exceptions.
-                        this.excludeRules = ParseSettingValueStringOrStrings(setting.Value, settingName);
+                        var maybeExcludeRules = ParseSettingValueStringOrStrings(setting.Value, settingName, exceptions);
+                        if (maybeExcludeRules is null)
+                        {
+                            continue;
+                        }
+
+                        this.excludeRules = maybeExcludeRules;
                         break;
 
                     case "customrulepath":
-                        // TODO Aggregate exceptions.
-                        this.customRulePath = ParseSettingValueStringOrStrings(setting.Value, settingName);
+                        var maybeCustomRulePath = ParseSettingValueStringOrStrings(setting.Value, settingName, exceptions);
+                        if (maybeCustomRulePath is null)
+                        {
+                            continue;
+                        }
+
+                        this.customRulePath = maybeCustomRulePath;
                         break;
 
                     case "includedefaultrules":
