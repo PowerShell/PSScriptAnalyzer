@@ -478,13 +478,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this.ruleArguments = parsedRules;
                         break;
 
-                    // TODO Clean up default setting validating parsing.
                     default:
-                        throw new InvalidDataException(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.WrongKeyHashTable,
-                                settingName));
+                        throw new InvalidDataException(string.Format(
+                            Strings.WrongKeyHashTable,
+                            settingName));
                 }
             }
         }
