@@ -252,13 +252,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return val == null ? false : valArr.All(x => x is string);
         }
 
-        private List<string> ParseSettingValueStringOrStrings(object value, string settingName)
+        private List<string> ParseSettingValueStringOrStrings(object value, string settingName, IList<Exception> exceptions)
         {
             if (value == null)
             {
-                throw new InvalidDataException(string.Format(
+                exceptions.Add(new InvalidDataException(string.Format(
                     Strings.SettingValueIsNull,
-                    settingName));
+                    settingName)));
+                return null;
             }
 
             if (value is string)
@@ -268,9 +269,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             
             if (!(value is ICollection))
             {
-                throw new InvalidDataException(string.Format(
+                exceptions.Add(new InvalidDataException(string.Format(
                     Strings.SettingValueIsNotStringOrStringsType,
-                    settingName));
+                    settingName)));
+                return null;
             }
             var values = value as ICollection;
 
@@ -280,19 +282,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 if (element is null)
                 {
-                    throw new InvalidDataException(string.Format(
+                    exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingValueElementIsNull,
                         settingName,
-                        elementIndex));
+                        elementIndex)));
+                    continue;
                 }
 
                 if (!(element is string))
                 {
-                    throw new InvalidDataException(string.Format(
+                    exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingValueElementIsNotStringType,
                         settingName,
                         elementIndex,
-                        element));
+                        element)));
+                    continue;
                 }
                 strings.Add(element as string);
                 
@@ -302,21 +306,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return strings;
         }
 
-        private bool ParseSettingValueBoolean(object value, string settingName)
+        private bool? ParseSettingValueBoolean(object value, string settingName, IList<Exception> exceptions)
         {
             if (value == null)
             {
-                throw new InvalidDataException(string.Format(
+                exceptions.Add(new InvalidDataException(string.Format(
                     Strings.SettingValueIsNull,
-                    settingName));
+                    settingName)));
+                return null;
             }
             
             if (!(value is bool))
             {
-                throw new InvalidDataException(string.Format(
+                exceptions.Add(new InvalidDataException(string.Format(
                     Strings.SettingValueIsNotBooleanType,
                     settingName,
-                    value));
+                    value)));
+                return null;
             }
 
             return (bool) value;
@@ -324,70 +330,114 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private void ParseSettingsHashtable(Hashtable settings)
         {
+            IList<Exception> exceptions = new List<Exception>();
+            
             ISet<string> uniqueSettingKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (DictionaryEntry setting in settings)
             {
                 if (setting.Key is null)
                 {
-                    throw new InvalidDataException(Strings.SettingKeyIsNull);
+                    exceptions.Add(new InvalidDataException(
+                        Strings.SettingKeyIsNull));
+                    continue;
                 }
                 
                 if (!(setting.Key is string))
                 {
-                    throw new InvalidDataException(string.Format(
+                    exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingKeyIsNotStringType,
-                        setting.Key));
+                        setting.Key)));
+                    continue;
                 }
                 string settingName = setting.Key as string;
 
                 if (!uniqueSettingKeys.Add(settingName))
                 {
                     // setting.Key should be used instead of settingName because the former preserves information about the source casing.
-                    throw new InvalidDataException(string.Format(
+                    exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingKeyIsNotUniqueIgnoringCase,
-                        setting.Key));
+                        setting.Key)));
+                    continue;
                 }
 
                 if (setting.Value is null)
                 {
-                    throw new InvalidDataException(string.Format(
+                    exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingValueIsNull,
-                        settingName));
+                        settingName)));
+                    continue;
                 }
 
                 // ToLowerInvariant is important to also work with turkish culture, see https://github.com/PowerShell/PSScriptAnalyzer/issues/1095
                 switch (settingName.ToLowerInvariant())
                 {
                     case "severity":
-                        this.severities = ParseSettingValueStringOrStrings(setting.Value, settingName);
+                        var maybeSeverity = ParseSettingValueStringOrStrings(setting.Value, settingName, exceptions);
+                        if (maybeSeverity is null)
+                        {
+                            continue;
+                        }
+
+                        this.severities = maybeSeverity;
                         break;
 
                     case "includerules":
-                        this.includeRules = ParseSettingValueStringOrStrings(setting.Value, settingName);
+                        var maybeIncludeRules = ParseSettingValueStringOrStrings(setting.Value, settingName, exceptions);
+                        if (maybeIncludeRules is null)
+                        {
+                            continue;
+                        }
+
+                        this.includeRules = maybeIncludeRules;
                         break;
 
                     case "excluderules":
-                        this.excludeRules = ParseSettingValueStringOrStrings(setting.Value, settingName);
+                        var maybeExcludeRules = ParseSettingValueStringOrStrings(setting.Value, settingName, exceptions);
+                        if (maybeExcludeRules is null)
+                        {
+                            continue;
+                        }
+
+                        this.excludeRules = maybeExcludeRules;
                         break;
 
                     case "customrulepath":
-                        this.customRulePath = ParseSettingValueStringOrStrings(setting.Value, settingName);
+                        var maybeCustomRulePath = ParseSettingValueStringOrStrings(setting.Value, settingName, exceptions);
+                        if (maybeCustomRulePath is null)
+                        {
+                            continue;
+                        }
+
+                        this.customRulePath = maybeCustomRulePath;
                         break;
 
                     case "includedefaultrules":
-                        this.includeDefaultRules = ParseSettingValueBoolean(setting.Value, settingName);
+                        bool? maybeIncludeDefaultRules = ParseSettingValueBoolean(setting.Value, settingName, exceptions);
+                        if (maybeIncludeDefaultRules is null)
+                        {
+                            continue;
+                        }
+
+                        this.includeDefaultRules = (bool) maybeIncludeDefaultRules;
                         break;
 
                     case "recursecustomrulepath":
-                        this.recurseCustomRulePath = ParseSettingValueBoolean(setting.Value, settingName);
+                        bool? maybeRecurseCustomRulePath = ParseSettingValueBoolean(setting.Value, settingName, exceptions);
+                        if (maybeRecurseCustomRulePath is null)
+                        {
+                            continue;
+                        }
+                        
+                        this.recurseCustomRulePath = (bool) maybeRecurseCustomRulePath;
                         break;
 
                     case "rules":
                         if (!(setting.Value is System.Collections.IDictionary))
                         {
-                            throw new InvalidDataException(string.Format(
+                            exceptions.Add(new InvalidDataException(string.Format(
                                 Strings.SettingRulesValueIsNotDictionaryType,
-                                setting.Value));
+                                setting.Value)));
+                            continue;
                         }
                         Hashtable rules = setting.Value as Hashtable;
 
@@ -397,38 +447,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         {
                             if (rule.Key is null)
                             {
-                                throw new InvalidDataException(Strings.SettingRuleKeyIsNull);
+                                exceptions.Add(new InvalidDataException(
+                                    Strings.SettingRuleKeyIsNull));
+                                continue;
                             }
 
                             if (!(rule.Key is string))
                             {
-                                throw new InvalidDataException(string.Format(
+                                exceptions.Add(new InvalidDataException(string.Format(
                                     Strings.SettingRuleKeyIsNotStringType,
-                                    rule.Key));
+                                    rule.Key)));
+                                continue;
                             }
                             string ruleName = rule.Key as string;
 
                             if (!uniqueRuleKeys.Add(ruleName))
                             {
                                 // rule.Key should be used instead of ruleName because the former preserves information about the source casing.
-                                throw new InvalidDataException(string.Format(
+                                exceptions.Add(new InvalidDataException(string.Format(
                                     Strings.SettingRuleKeyIsNotUniqueIgnoringCase,
-                                    rule.Key));
+                                    rule.Key)));
+                                continue;
                             }
 
                             if (rule.Value is null)
                             {
-                                throw new InvalidDataException(string.Format(
+                                exceptions.Add(new InvalidDataException(string.Format(
                                     Strings.SettingRuleValueIsNull,
-                                    ruleName));
+                                    ruleName)));
+                                continue;
                             }
 
                             if (!(rule.Value is System.Collections.IDictionary))
                             {
-                                throw new InvalidDataException(string.Format(
+                                exceptions.Add(new InvalidDataException(string.Format(
                                     Strings.SettingRuleValueIsNotDictionaryType,
                                     ruleName,
-                                    rule.Value));
+                                    rule.Value)));
+                                continue;
                             }
                             Hashtable arguments = rule.Value as Hashtable;
 
@@ -438,35 +494,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             {
                                 if (argument.Key is null)
                                 {
-                                    throw new InvalidDataException(string.Format(
+                                    exceptions.Add(new InvalidDataException(string.Format(
                                         Strings.SettingRuleArgumentKeyIsNull,
-                                        ruleName));
+                                        ruleName)));
+                                    continue;
                                 }
 
                                 if (!(argument.Key is string))
                                 {
-                                    throw new InvalidDataException(string.Format(
+                                    exceptions.Add(new InvalidDataException(string.Format(
                                         Strings.SettingRuleArgumentKeyIsNotStringType,
                                         ruleName,
-                                        argument.Key));
+                                        argument.Key)));
+                                    continue;
                                 }
                                 string argumentName = argument.Key as string;
                                 
                                 if (!uniqueArgumentKeys.Add(argumentName))
                                 {
                                     // argument.Key should be used instead of argumentName because the former preserves information about the source casing.
-                                    throw new InvalidDataException(string.Format(
+                                    exceptions.Add(new InvalidDataException(string.Format(
                                         Strings.SettingRuleArgumentKeyIsNotUniqueIgnoringCase,
                                         ruleName,
-                                        argument.Key));
+                                        argument.Key)));
+                                    continue;
                                 }
                                 
                                 if (argument.Value is null)
                                 {
-                                    throw new InvalidDataException(string.Format(
+                                    exceptions.Add(new InvalidDataException(string.Format(
                                         Strings.SettingRuleArgumentValueIsNull,
                                         ruleName,
-                                        argumentName));
+                                        argumentName)));
+                                    continue;
                                 }
 
                                 parsedArguments[argumentName] = argument.Value;
@@ -479,10 +539,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     default:
-                        throw new InvalidDataException(string.Format(
+                        exceptions.Add(new InvalidDataException(string.Format(
                             Strings.WrongKeyHashTable,
-                            settingName));
+                            settingName)));
+                        continue;
                 }
+            }
+
+            if (exceptions.Count > 0)
+            {
+                throw new AggregateException(exceptions);
             }
         }
 
