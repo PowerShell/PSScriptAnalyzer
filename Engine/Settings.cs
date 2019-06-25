@@ -302,21 +302,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return strings;
         }
 
-        private bool ParseSettingValueBoolean(object value, string settingName)
+        private bool? ParseSettingValueBoolean(object value, string settingName, IList<Exception> exceptions)
         {
             if (value == null)
             {
-                throw new InvalidDataException(string.Format(
+                exceptions.Add(new InvalidDataException(string.Format(
                     Strings.SettingValueIsNull,
-                    settingName));
+                    settingName)));
+                return null;
             }
             
             if (!(value is bool))
             {
-                throw new InvalidDataException(string.Format(
+                exceptions.Add(new InvalidDataException(string.Format(
                     Strings.SettingValueIsNotBooleanType,
                     settingName,
-                    value));
+                    value)));
+                return null;
             }
 
             return (bool) value;
@@ -386,13 +388,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         break;
 
                     case "includedefaultrules":
-                        // TODO Aggregate exceptions.
-                        this.includeDefaultRules = ParseSettingValueBoolean(setting.Value, settingName);
+                        bool? maybeIncludeDefaultRules = ParseSettingValueBoolean(setting.Value, settingName, exceptions);
+                        if (maybeIncludeDefaultRules is null)
+                        {
+                            continue;
+                        }
+
+                        this.includeDefaultRules = (bool) maybeIncludeDefaultRules;
                         break;
 
                     case "recursecustomrulepath":
-                        // TODO Aggregate exceptions.
-                        this.recurseCustomRulePath = ParseSettingValueBoolean(setting.Value, settingName);
+                        bool? maybeRecurseCustomRulePath = ParseSettingValueBoolean(setting.Value, settingName, exceptions);
+                        if (maybeRecurseCustomRulePath is null)
+                        {
+                            continue;
+                        }
+                        
+                        this.recurseCustomRulePath = (bool) maybeRecurseCustomRulePath;
                         break;
 
                     case "rules":
