@@ -6,6 +6,7 @@
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer</AssemblyName>
     <PackageId>Engine</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
