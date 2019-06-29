@@ -238,7 +238,7 @@
     <value>Key {0} in the settings is not a string.</value>
   </data>
   <data name="WrongKeyHashTable" xml:space="preserve">
-    <value>{0} is not a valid key in the settings hashtable. Valid keys are Severity, IncludeRules, ExcludeRules, Rules, CustomRulePath, RecurseCustomRulePath, and IncludeDefaultRules.</value>
+    <value>{0} is not a valid key in the settings hashtable. Valid keys are CustomRulePath, ExcludeRules, IncludeRules, IncludeDefaultRules, RecurseCustomRulePath, Rules and Severity.</value>
   </data>
   <data name="WrongValueHashTable" xml:space="preserve">
     <value>Value {0} for key {1} has the wrong data type.</value>
