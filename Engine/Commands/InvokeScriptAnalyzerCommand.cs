@@ -325,11 +325,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                                                     ? rulePaths
                                                     : rulePaths.Concat(settingsCustomRulePath).ToArray();
             }
-            catch
+            catch (Exception exception)
             {
-                this.WriteWarning(String.Format(CultureInfo.CurrentCulture, Strings.SettingsNotParsable));
-                stopProcessing = true;
-                return;
+                this.ThrowTerminatingError(new ErrorRecord(
+                        exception,
+                        "SETTINGS_ERROR",
+                        ErrorCategory.InvalidData,
+                        this.settings));
             }
 
             ScriptAnalyzer.Instance.Initialize(
@@ -357,7 +359,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             {
                 ProcessPath();
             }
-            
+
 #if !PSV3
             // TODO Support dependency resolution for analyzing script definitions
             if (saveDscDependency)
