@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -326,12 +325,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                                                     ? rulePaths
                                                     : rulePaths.Concat(settingsCustomRulePath).ToArray();
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
                 this.ThrowTerminatingError(new ErrorRecord(
-                        e,
-                        "SettingsNotProcessable",
-                        ErrorCategory.NotSpecified,
+                        exception,
+                        "SETTINGS_ERROR",
+                        ErrorCategory.InvalidData,
                         this.settings));
             }
 
