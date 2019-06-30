@@ -41,7 +41,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 "PSUseConsistentWhitespace",
                 "PSUseConsistentIndentation",
                 "PSAlignAssignmentStatement",
-                "PSUseCorrectCasing"
+                "PSUseCorrectCasing",
+                "PSAvoidUsingCmdletAliases",
             };
 
             var text = new EditableText(scriptDefinition);
