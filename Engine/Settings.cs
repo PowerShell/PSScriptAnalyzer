@@ -278,14 +278,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             var strings = new List<string>(values.Count);
             int elementIndex = 0;
+            int currentElementIndex = elementIndex;
             foreach (var element in values)
             {
+                currentElementIndex = elementIndex++;
+                
                 if (element is null)
                 {
                     exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingValueElementIsNull,
                         settingName,
-                        elementIndex)));
+                        currentElementIndex)));
                     continue;
                 }
 
@@ -294,13 +297,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     exceptions.Add(new InvalidDataException(string.Format(
                         Strings.SettingValueElementIsNotStringType,
                         settingName,
-                        elementIndex,
+                        currentElementIndex,
                         element)));
                     continue;
                 }
+
                 strings.Add(element as string);
-                
-                elementIndex += 1;
             }
 
             return strings;
