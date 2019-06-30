@@ -326,12 +326,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                                                     ? rulePaths
                                                     : rulePaths.Concat(settingsCustomRulePath).ToArray();
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
                 this.ThrowTerminatingError(new ErrorRecord(
-                        e,
-                        "SettingsNotProcessable",
-                        ErrorCategory.NotSpecified,
+                        exception,
+                        "SETTINGS_ERROR",
+                        ErrorCategory.InvalidData,
                         this.settings));
             }
 
