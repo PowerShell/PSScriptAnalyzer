@@ -105,4 +105,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
         }
     }
+
+    internal struct CorrectionComparer : IComparer<CorrectionExtent>, IEqualityComparer<CorrectionExtent>
+    {
+        public int Compare(CorrectionExtent x, CorrectionExtent y)
+        {
+            if (x.StartLineNumber > y.StartLineNumber)
+            {
+                return 1;
+            }
+
+            if (x.StartLineNumber < y.StartLineNumber)
+            {
+                return -1;
+            }
+
+            if (x.StartColumnNumber > y.StartColumnNumber)
+            {
+                return 1;
+            }
+
+            if (x.StartColumnNumber < y.StartColumnNumber)
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+
+        public bool Equals(CorrectionExtent x, CorrectionExtent y)
+        {
+            return Compare(x, y) == 0;
+        }
+
+        public int GetHashCode(CorrectionExtent obj)
+        {
+            return obj != null
+                ? obj.GetHashCode()
+                : 0;
+        }
+    }
 }

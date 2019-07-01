@@ -29,6 +29,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     {
         #region Private members
 
+        private readonly CorrectionComparer s_correctionComparer = new CorrectionComparer();
+
         private IOutputWriter outputWriter;
         private Dictionary<string, object> settings;
         private readonly Regex s_aboutHelpRegex = new Regex("^about_.*help\\.txt$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -1574,22 +1576,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(text));
             }
 
-            var isRangeNull = range == null;
+            bool isRangeNull = range == null;
             if (!isRangeNull && !text.IsValidRange(range))
             {
                 this.outputWriter.ThrowTerminatingError(new ErrorRecord(
-                    new ArgumentException("Invalid Range", nameof(range)),
-                    "FIX_ERROR",
-                    ErrorCategory.InvalidArgument,
-                    range));
+                    new ArgumentException(
+                        "Invalid Range",
+                        nameof(range)),
+                        "FIX_ERROR",
+                        ErrorCategory.InvalidArgument,
+                        range));
             }
 
             range = isRangeNull ? null : SnapToEdges(text, range);
-            var previousLineCount = text.LineCount;
-            var previousUnusedCorrections = 0;
+            int previousLineCount = text.LineCount;
+            int previousUnusedCorrections = 0;
             do
             {
-                var records = AnalyzeScriptDefinition(text.ToString());
+                IEnumerable<DiagnosticRecord> records = AnalyzeScriptDefinition(text.ToString());
                 var corrections = records
                     .Select(r => r.SuggestedCorrections)
                     .Where(sc => sc != null && sc.Any())
@@ -1598,9 +1602,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     .ToList();
 
                 this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
-                int unusedCorrections;
-                Fix(text, corrections, out unusedCorrections);
-                var numberOfFixedViolatons = corrections.Count - unusedCorrections;
+                Fix(text, corrections, out int unusedCorrections);
+                int numberOfFixedViolatons = corrections.Count - unusedCorrections;
                 fixesWereApplied = numberOfFixedViolatons > 0;
                 this.outputWriter.WriteVerbose($"Fixed {numberOfFixedViolatons} violations.");
 
@@ -1616,7 +1619,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 previousUnusedCorrections = unusedCorrections;
-                var lineCount = text.LineCount;
+                int lineCount = text.LineCount;
                 if (!isRangeNull && lineCount != previousLineCount)
                 {
                     range = new Range(
@@ -1630,6 +1633,65 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             updatedRange = range;
             return text;
+        }
+
+        internal string Fix(string scriptContent, Range fixRange)
+        {
+            if (scriptContent == null)
+            {
+                throw new ArgumentNullException(nameof(scriptContent));
+            }
+
+            var scriptText = new TextDocumentBuilder(scriptContent);
+
+            if (fixRange != null)
+            {
+                var fixTextRange = new TextRange(
+                    new TextPosition(fixRange.Start.Line, fixRange.Start.Column),
+                    new TextPosition(fixRange.End.Line, fixRange.End.Column));
+
+                if (!scriptText.IsValidRange(fixTextRange))
+                {
+                    this.outputWriter.ThrowTerminatingError(new ErrorRecord(
+                        new ArgumentException(
+                            "Invalid Range",
+                            nameof(fixRange)),
+                            "FIX_ERROR",
+                            ErrorCategory.InvalidArgument,
+                            fixRange));
+                }
+            }
+
+            var uniqueCorrections = new HashSet<CorrectionExtent>(s_correctionComparer);
+            foreach (DiagnosticRecord record in AnalyzeScriptDefinition(scriptText.ToString()))
+            {
+                if (record.SuggestedCorrections == null
+                    || !record.SuggestedCorrections.Any())
+                {
+                    continue;
+                }
+
+                CorrectionExtent correction = record.SuggestedCorrections.First();
+
+                if (fixRange != null
+                    && (fixRange.Start < correction.Start || fixRange.End > correction.End))
+                {
+                    continue;
+                }
+
+                uniqueCorrections.Add(correction);
+            }
+
+            var corrections = new List<CorrectionExtent>(uniqueCorrections);
+            corrections.Sort(s_correctionComparer);
+
+            this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
+
+            scriptText.ApplyCorrections(corrections);
+
+            this.outputWriter.WriteVerbose($"Fixed {corrections.Count} violations.");
+
+            return scriptText.ToString();
         }
 
         private static Encoding GetFileEncoding(string path)

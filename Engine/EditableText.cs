@@ -61,7 +61,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             ValidateTextEdit(textEdit);
 
-            var editLines = textEdit.Lines;
+            string[] editLines = textEdit.Lines;
 
             // Get the first fragment of the first line
             string firstLineFragment =

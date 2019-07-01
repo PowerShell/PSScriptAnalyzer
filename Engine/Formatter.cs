@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
@@ -12,6 +13,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// </summary>
     public class Formatter
     {
+        private static readonly IEnumerable<string> s_formattingRulesInOrder = new []
+        {
+            "PSPlaceCloseBrace",
+            "PSPlaceOpenBrace",
+            "PSUseConsistentWhitespace",
+            "PSUseConsistentIndentation",
+            "PSAlignAssignmentStatement",
+            "PSUseCorrectCasing"
+        };
+
         /// <summary>
         /// Format a powershell script.
         /// </summary>
@@ -27,45 +38,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             TCmdlet cmdlet) where TCmdlet : PSCmdlet, IOutputWriter
         {
             // todo implement notnull attribute for such a check
-            ValidateNotNull(scriptDefinition, "scriptDefinition");
-            ValidateNotNull(settings, "settings");
-            ValidateNotNull(cmdlet, "cmdlet");
+            ValidateNotNull(scriptDefinition, nameof(scriptDefinition));
+            ValidateNotNull(settings, nameof(settings));
+            ValidateNotNull(cmdlet, nameof(cmdlet));
 
             Helper.Instance = new Helper(cmdlet.SessionState.InvokeCommand, cmdlet);
             Helper.Instance.Initialize();
 
-            var ruleOrder = new string[]
-            {
-                "PSPlaceCloseBrace",
-                "PSPlaceOpenBrace",
-                "PSUseConsistentWhitespace",
-                "PSUseConsistentIndentation",
-                "PSAlignAssignmentStatement",
-                "PSUseCorrectCasing"
-            };
+            Settings currentSettings = GetCurrentSettings(settings);
+            ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
+            ScriptAnalyzer.Instance.Initialize(cmdlet, includeDefaultRules: true);
 
-            var text = new EditableText(scriptDefinition);
-            foreach (var rule in ruleOrder)
-            {
-                if (!settings.RuleArguments.ContainsKey(rule))
-                {
-                    continue;
-                }
-
-                var currentSettings = GetCurrentSettings(settings, rule);
-                ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
-                ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
-
-                Range updatedRange;
-                bool fixesWereApplied;
-                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange, out fixesWereApplied);
-                range = updatedRange;
-            }
-
-            return text.ToString();
+            return ScriptAnalyzer.Instance.Fix(scriptDefinition, range);
         }
 
-        private static void ValidateNotNull<T>(T obj, string name)
+        private static void ValidateNotNull(object obj, string name)
         {
             if (obj == null)
             {
@@ -73,12 +60,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private static Settings GetCurrentSettings(Settings settings, string rule)
+        private static Settings GetCurrentSettings(Settings settings)
         {
+            var ruleSettings = new Hashtable();
+            foreach (string rule in s_formattingRulesInOrder)
+            {
+                ruleSettings[rule] = new Hashtable(settings.RuleArguments[rule]);
+            }
+
             return new Settings(new Hashtable()
             {
-                {"IncludeRules", new string[] {rule}},
-                {"Rules", new Hashtable() { { rule, new Hashtable(settings.RuleArguments[rule]) } } }
+                { "IncludeRules", s_formattingRulesInOrder },
+                { "Rules", ruleSettings }
             });
         }
     }
