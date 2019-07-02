@@ -1647,8 +1647,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if (fixRange != null)
             {
                 var fixTextRange = new TextRange(
-                    new TextPosition(fixRange.Start.Line, fixRange.Start.Column),
-                    new TextPosition(fixRange.End.Line, fixRange.End.Column));
+                    new TextPosition(fixRange.Start.Line - 1, fixRange.Start.Column - 1),
+                    new TextPosition(fixRange.End.Line - 1, fixRange.End.Column - 1));
 
                 if (!scriptText.IsValidRange(fixTextRange))
                 {
@@ -1662,34 +1662,77 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            var uniqueCorrections = new HashSet<CorrectionExtent>(s_correctionComparer);
-            foreach (DiagnosticRecord record in AnalyzeScriptDefinition(scriptText.ToString()))
+            int unappliedCorrectionCount = -1;
+            int previousUnappliedCorrections = -1;
+            int fixCount = 0;
+            do
             {
-                if (record.SuggestedCorrections == null
-                    || !record.SuggestedCorrections.Any())
+                previousUnappliedCorrections = unappliedCorrectionCount;
+                unappliedCorrectionCount = 0;
+
+                // First filter out diagnostics with no corrections,
+                // or ones not applied in the valid range
+                var possiblyOverlappingCorrections = new List<CorrectionExtent>();
+                foreach (DiagnosticRecord record in AnalyzeScriptDefinition(scriptText.ToString()))
                 {
-                    continue;
+                    if (record.SuggestedCorrections == null
+                        || !record.SuggestedCorrections.Any())
+                    {
+                        continue;
+                    }
+
+                    CorrectionExtent correction = record.SuggestedCorrections.First();
+
+                    if (fixRange != null
+                        && !(correction.Start >= fixRange.Start && correction.End <= fixRange.End))
+                    {
+                        continue;
+                    }
+
+                    possiblyOverlappingCorrections.Add(correction);
                 }
 
-                CorrectionExtent correction = record.SuggestedCorrections.First();
+                // We now need the list to be sorted for a second pass
+                possiblyOverlappingCorrections.Sort(s_correctionComparer);
 
-                if (fixRange != null
-                    && (fixRange.Start < correction.Start || fixRange.End > correction.End))
+                // Remove corrections that lie within the range of a predecessor.
+                // The sorting function we use 
+                CorrectionExtent previousCorrection = null;
+                var corrections = new List<CorrectionExtent>(possiblyOverlappingCorrections.Count);
+                var unappliedCorrections = new List<CorrectionExtent>();
+                foreach (CorrectionExtent correction in possiblyOverlappingCorrections)
                 {
-                    continue;
+                    if (previousCorrection != null
+                        && (correction.Start >= previousCorrection.Start && correction.Start <= previousCorrection.End
+                            || correction.End >= previousCorrection.Start && correction.End <= previousCorrection.End))
+                    {
+                        unappliedCorrectionCount++;
+                        continue;
+                    }
+
+                    corrections.Add(correction);
+                    previousCorrection = correction;
                 }
 
-                uniqueCorrections.Add(correction);
-            }
+                if (unappliedCorrectionCount > 0
+                    && unappliedCorrectionCount == previousUnappliedCorrections)
+                {
+                    throw new FormattingException(
+                        "Unable to apply all fixes to script",
+                        unappliedCorrections);
+                }
 
-            var corrections = new List<CorrectionExtent>(uniqueCorrections);
-            corrections.Sort(s_correctionComparer);
+                this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
 
-            this.outputWriter.WriteVerbose($"Found {corrections.Count} violations.");
+                if (corrections.Count > 0)
+                {
+                    fixCount += corrections.Count;
+                    scriptText.ApplyCorrections(corrections);
+                }
 
-            scriptText.ApplyCorrections(corrections);
+            } while (unappliedCorrectionCount > 0);
 
-            this.outputWriter.WriteVerbose($"Fixed {corrections.Count} violations.");
+            this.outputWriter.WriteVerbose($"Fixed {fixCount} violations.");
 
             return scriptText.ToString();
         }

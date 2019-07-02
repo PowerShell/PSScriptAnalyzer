@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -49,7 +50,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
             ScriptAnalyzer.Instance.Initialize(cmdlet, includeDefaultRules: true);
 
-            return ScriptAnalyzer.Instance.Fix(scriptDefinition, range);
+            try
+            {
+                return ScriptAnalyzer.Instance.Fix(scriptDefinition, range);
+            }
+            catch (FormattingException e)
+            {
+                cmdlet.ThrowTerminatingError(
+                    new ErrorRecord(
+                        e,
+                        "FIX_ERROR",
+                        ErrorCategory.InvalidOperation,
+                        e.Corrections));
+                return null;
+            }
         }
 
         private static void ValidateNotNull(object obj, string name)
@@ -65,7 +79,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var ruleSettings = new Hashtable();
             foreach (string rule in s_formattingRulesInOrder)
             {
-                ruleSettings[rule] = new Hashtable(settings.RuleArguments[rule]);
+                if (settings.RuleArguments.TryGetValue(rule, out Dictionary<string, object> ruleConfiguration))
+                {
+                    ruleSettings[rule] = ruleConfiguration;
+                }
             }
 
             return new Settings(new Hashtable()
@@ -74,5 +91,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 { "Rules", ruleSettings }
             });
         }
+    }
+
+    public class FormattingException : Exception
+    {
+        public FormattingException(
+            string message,
+            IReadOnlyList<CorrectionExtent> corrections)
+            : base(message)
+        {
+            Corrections = corrections;
+        }
+
+        public IReadOnlyList<CorrectionExtent> Corrections { get; }
     }
 }

@@ -130,6 +130,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 return -1;
             }
 
+            if (x.Text.Length > y.Text.Length)
+            {
+                return 1;
+            }
+
+            if (x.Text.Length < y.Text.Length)
+            {
+                return -1;
+            }
+
             return 0;
         }
 

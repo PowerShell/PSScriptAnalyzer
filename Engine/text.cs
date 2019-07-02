@@ -50,9 +50,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             public void CopyFrom(string content, int startIndex, int length)
             {
-                while (length > _charArray.Length)
+                if (length > _charArray.Length)
                 {
-                    _charArray = new char[_charArray.Length * 2];
+                    int newArrayLength = _charArray.Length;
+                    do
+                    {
+                        newArrayLength *= 2;
+                    } while (length > newArrayLength);
+
+                    _charArray = new char[newArrayLength];
                 }
 
                 content.CopyTo(startIndex, _charArray, 0, length);
@@ -106,28 +112,69 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             foreach (CorrectionExtent correction in corrections)
             {
                 var correctionStartPosition = new TextPosition(correction.StartLineNumber - 1, correction.StartColumnNumber - 1);
-                ReadNextSpan(ref currentIndex, effectiveOldPosition, correctionStartPosition);
-                _spanBuffer.CopyTo(newContent);
+                CopyNextSpan(ref currentIndex, newContent, effectiveOldPosition, correctionStartPosition);
                 newContent.Append(correction.Text);
-                currentIndex += correction.Text.Length;
+                currentIndex += GetContentReplacedLength(
+                    currentIndex,
+                    correctionStartPosition,
+                    new TextPosition(correction.EndLineNumber - 1, correction.EndColumnNumber - 1));
                 effectiveOldPosition = new TextPosition(correction.EndLineNumber - 1, correction.EndColumnNumber - 1);
             }
-            ReadToEnd(currentIndex);
-            _spanBuffer.CopyTo(newContent);
+            CopyToEnd(currentIndex, newContent);
             _content = newContent.ToString();
         }
 
-        private void ReadNextSpan(ref int index, TextPosition effectiveOldPosition, TextPosition correctionStartPosition)
+        private int GetContentReplacedLength(int startIndex, TextPosition startPosition, TextPosition endPosition)
         {
+            int linesToRead = endPosition.Line - startPosition.Line;
+            int index = startIndex;
+
+            if (linesToRead == 0)
+            {
+                return endPosition.Column - startPosition.Column;
+            }
+
+            for (int i = 0; i < linesToRead; i++)
+            {
+                index = _content.IndexOf(Environment.NewLine, index) + Environment.NewLine.Length;
+            }
+            return index - startIndex + endPosition.Column;
+        }
+
+        private void CopyNextSpan(
+            ref int index,
+            StringBuilder destinationBuffer,
+            TextPosition effectiveOldPosition,
+            TextPosition correctionStartPosition)
+        {
+            // Seek from the current index to the start of the next correction
+            int nextIndex = index;
             int linesToRead = correctionStartPosition.Line - effectiveOldPosition.Line;
-            int nextIndex = _content.IndexOf(Environment.NewLine, index, linesToRead) + correctionStartPosition.Column;
+            if (linesToRead == 0)
+            {
+                nextIndex += correctionStartPosition.Column - effectiveOldPosition.Column;
+            }
+            else
+            {
+                for (int i = 0; i < linesToRead; i++)
+                {
+                    nextIndex = _content.IndexOf(Environment.NewLine, nextIndex) + Environment.NewLine.Length;
+                }
+                nextIndex += correctionStartPosition.Column;
+            }
+
+            // Copy the characters over
             _spanBuffer.CopyFrom(_content, index, nextIndex - index);
+            _spanBuffer.CopyTo(destinationBuffer);
+
+            // Update the index
             index = nextIndex;
         }
 
-        private void ReadToEnd(int currentIndex)
+        private void CopyToEnd(int currentIndex, StringBuilder destinationBuffer)
         {
             _spanBuffer.CopyFrom(_content, currentIndex, _content.Length - currentIndex);
+            _spanBuffer.CopyTo(destinationBuffer);
         }
 
         private int GetColumnLength(int lineNumber)
@@ -153,7 +200,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         private int GetLineIndex(int lineNumber)
         {
-            return _content.IndexOf(Environment.NewLine, 0, lineNumber);
+            int index = 0;
+            for (int i = 0; i < lineNumber; i++)
+            {
+                index = _content.IndexOf(Environment.NewLine, index);
+            }
+            return index;
         }
     }
 }
