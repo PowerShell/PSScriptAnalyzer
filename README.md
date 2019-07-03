@@ -1,8 +1,4 @@
-[![Join the chat at https://gitter.im/PowerShell/PSScriptAnalyzer](https://badges.gitter.im/PowerShell/PSScriptAnalyzer.svg)](https://gitter.im/PowerShell/PSScriptAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-|Master   |  Development |
-|:------:|:------:|
-|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master)|[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/development?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/development) |
+[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master) [![Join the chat at https://gitter.im/PowerShell/PSScriptAnalyzer](https://badges.gitter.im/PowerShell/PSScriptAnalyzer.svg)](https://gitter.im/PowerShell/PSScriptAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Table of Contents
 =================
@@ -107,7 +103,7 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 
 * [.NET Core 2.2.104 SDK](https://www.microsoft.com/net/download/dotnet-core/2.2#sdk-2.2.104) or newer patch release
 * [PlatyPS 0.13.0 or greater](https://github.com/PowerShell/platyPS/releases)
-* Optionally but recommended for development: [Visual Studio 2017](https://www.visualstudio.com/downloads/)
+* Optionally but recommended for development: [Visual Studio 2017/2019](https://www.visualstudio.com/downloads/)
 
 #### Steps
 * Obtain the source
@@ -455,8 +451,6 @@ Creating a Release
 ```
 
 - Sign the binaries and PowerShell files in the release build and publish the module to [PowerShell Gallery](www.powershellgallery.com).
-- Create a PR on `development` branch, with all the changes made in the previous step.
-- Merge the changes to `development` and then merge `development` to `master` (Note that the `development` to `master` merge should be a `fast-forward` merge).
 - Draft a new release on github and tag `master` with the new version number.
 
 [Back to ToC](#table-of-contents)
