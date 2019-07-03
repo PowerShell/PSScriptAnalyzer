@@ -128,7 +128,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             IReadOnlyDictionary<string, JsonDictionary<Version, Data.ModuleData>> modules,
             IReadOnlyDictionary<string, IReadOnlyList<CommandData>> commands)
         {
-            var aliasTable = new Dictionary<string, IReadOnlyList<CommandData>>();
+            var aliasTable = new Dictionary<string, IReadOnlyList<CommandData>>(StringComparer.OrdinalIgnoreCase);
             foreach (KeyValuePair<string, JsonDictionary<Version, Data.ModuleData>> module in modules)
             {
                 foreach (KeyValuePair<Version, Data.ModuleData> moduleVersion in module.Value)

@@ -71,7 +71,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private readonly static char s_newlineStart = Environment.NewLine[0];
+        private static readonly char[] s_newlineStartChars = new []
+        {
+            '\r',
+            '\n'
+        };
 
         private readonly CharBuffer _spanBuffer;
 
@@ -136,7 +140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             for (int i = 0; i < linesToRead; i++)
             {
-                index = _content.IndexOf(Environment.NewLine, index) + Environment.NewLine.Length;
+                ScanToNextLine(ref index);
             }
             return index - startIndex + endPosition.Column;
         }
@@ -158,7 +162,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 for (int i = 0; i < linesToRead; i++)
                 {
-                    nextIndex = _content.IndexOf(Environment.NewLine, nextIndex) + Environment.NewLine.Length;
+                    ScanToNextLine(ref nextIndex);
                 }
                 nextIndex += correctionStartPosition.Column;
             }
@@ -171,6 +175,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             index = nextIndex;
         }
 
+        private void ScanToNextLine(ref int index)
+        {
+            index = _content.IndexOfAny(s_newlineStartChars, index);
+
+            char c = _content[index];
+            if (c == '\n')
+            {
+                index++;
+                return;
+            }
+
+            // Must be looking at "\r\n"
+            index += 2;
+            return;
+        }
+
         private void CopyToEnd(int currentIndex, StringBuilder destinationBuffer)
         {
             _spanBuffer.CopyFrom(_content, currentIndex, _content.Length - currentIndex);
@@ -180,12 +200,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private int GetColumnLength(int lineNumber)
         {
             int lineIndex = GetLineIndex(lineNumber);
-            return _content.IndexOf(Environment.NewLine, lineIndex);
+            return _content.IndexOfAny(s_newlineStartChars, lineIndex);
         }
 
         private int GetLastColumnLength()
         {
-            return _content.Length - _content.LastIndexOf(Environment.NewLine);
+            return _content.Length - _content.LastIndexOfAny(s_newlineStartChars);
         }
 
         private int GetLineCount()
@@ -203,7 +223,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             int index = 0;
             for (int i = 0; i < lineNumber; i++)
             {
-                index = _content.IndexOf(Environment.NewLine, index);
+                ScanToNextLine(ref index);
             }
             return index;
         }
