@@ -266,7 +266,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 value = new[] { value };
             }
-            
+
             if (!(value is ICollection))
             {
                 exceptions.Add(new InvalidDataException(string.Format(
@@ -282,7 +282,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             foreach (var element in values)
             {
                 currentElementIndex = elementIndex++;
-                
+
                 if (element is null)
                 {
                     exceptions.Add(new InvalidDataException(string.Format(
@@ -317,7 +317,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     settingName)));
                 return null;
             }
-            
+
             if (!(value is bool))
             {
                 exceptions.Add(new InvalidDataException(string.Format(
@@ -333,7 +333,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private void ParseSettingsHashtable(Hashtable settings)
         {
             IList<Exception> exceptions = new List<Exception>();
-            
+
             ISet<string> uniqueSettingKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (DictionaryEntry setting in settings)
             {
@@ -343,7 +343,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         Strings.SettingKeyIsNull));
                     continue;
                 }
-                
+
                 if (!(setting.Key is string))
                 {
                     exceptions.Add(new InvalidDataException(string.Format(
@@ -429,7 +429,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         {
                             continue;
                         }
-                        
+
                         this.recurseCustomRulePath = (bool) maybeRecurseCustomRulePath;
                         break;
 
@@ -511,7 +511,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                     continue;
                                 }
                                 string argumentName = argument.Key as string;
-                                
+
                                 if (!uniqueArgumentKeys.Add(argumentName))
                                 {
                                     // argument.Key should be used instead of argumentName because the former preserves information about the source casing.
@@ -521,7 +521,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                         argument.Key)));
                                     continue;
                                 }
-                                
+
                                 if (argument.Value is null)
                                 {
                                     exceptions.Add(new InvalidDataException(string.Format(
