@@ -172,7 +172,7 @@ Describe 'UseCompatibleCommands' {
             $diagnostics = Invoke-ScriptAnalyzer -IncludeRule $script:RuleName -ScriptDefinition $Script -Settings $settings `
                 | Where-Object { -not $_.Parameter } # Filter out diagnostics about incompatible parameters
 
-            $diagnostics.Count | Should -Be $ProblemCount
+            $diagnostics.Count | Should -Be $ProblemCount -Because ($diagnostics.RuleName -join ', ')
 
             for ($i = 0; $i -lt $diagnostics.Count; $i++)
             {
@@ -198,7 +198,7 @@ Describe 'UseCompatibleCommands' {
             $diagnostics = Invoke-ScriptAnalyzer -IncludeRule $script:RuleName -ScriptDefinition $Script -Settings $settings `
                 | Where-Object { $_.Parameter } # Filter out diagnostics about incompatible parameters
 
-            $diagnostics.Count | Should -Be $ProblemCount
+            $diagnostics.Count | Should -Be $ProblemCount -Because ($diagnostics.RuleName -join ', ')
 
             for ($i = 0; $i -lt $diagnostics.Count; $i++)
             {
@@ -230,7 +230,7 @@ Describe 'UseCompatibleCommands' {
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings `
                 | Where-Object { $_.RuleName -eq $script:RuleName }
 
-            $diagnostics.Count | Should -Be 14 -Because ($diagnostics.Name -join ', ')
+            $diagnostics.Count | Should -Be 14 -Because ($diagnostics.RuleName -join ', ')
 
             $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Command
 
@@ -310,7 +310,7 @@ Describe 'UseCompatibleCommands' {
             }
 
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/../../" -IncludeRule $script:RuleName -Settings $settings
-            $diagnostics.Count | Should -Be 0
+            $diagnostics.Count | Should -Be 0 -Because ($diagnostics.RuleName -join ', ')
         }
     }
 
@@ -337,7 +337,7 @@ Describe 'UseCompatibleCommands' {
                 Invoke-MySpecialFunction
             '
 
-            $diagnostics.Count | Should -Be 2
+            $diagnostics.Count | Should -Be 2 -Because ($diagnostics.RuleName -join ', ')
             $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Command
             foreach ($group in $diagnosticGroups)
             {
