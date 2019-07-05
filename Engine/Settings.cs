@@ -52,13 +52,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            includeRules = new List<string>();
-            excludeRules = new List<string>();
-            severities = new List<string>();
-            ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-            var settingsFilePath = settings as string;
+            this.includeRules = new List<string>();
+            this.excludeRules = new List<string>();
+            this.severities = new List<string>();
+            this.ruleArguments = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
 
-            //it can either be a preset or path to a file or a hashtable
+            // If `settings` is a string, then preprocess it by (1) resolving it to a file path, and (2) parsing the file to a Hashtable.
+            var settingsFilePath = settings as string;
             if (settingsFilePath != null)
             {
                 if (presetResolver != null)
@@ -68,34 +68,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     {
                         settingsFilePath = resolvedFilePath;
                     }
+                    // Do not throw an exception if `presetResolver` fails to resolve `settingsFilePath`. Rather, attempt to handle the issue
+                    // ourselves by acting simply as if no `presetResolver` was passed in the first place.
+                }
+                // Do not throw an exception if the `presetResolver` argument is null. This is because it is permitted for a file path `settings` to
+                // not have any associated `presetResolver`.
+
+                if (!File.Exists(settingsFilePath))
+                {
+                    throw new ArgumentException(String.Format(
+                        Strings.InvalidPath,
+                        settingsFilePath));
                 }
 
-                if (File.Exists(settingsFilePath))
-                {
-                    filePath = settingsFilePath;
-                    ParseSettingsFile(settingsFilePath);
-                }
-                else
-                {
-                    throw new ArgumentException(
-                        String.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.InvalidPath,
-                            settingsFilePath));
-                }
+                this.filePath = settingsFilePath;
+                settings = ParseSettingsFileToHashtable(settingsFilePath);
             }
-            else
+
+            // Do the real work of parsing the `settings` Hashtable (whether passed directly or first parsed from a resolved file path).
+            var settingsHashtable = settings as Hashtable;
+            if (settingsHashtable != null)
             {
-                var settingsHashtable = settings as Hashtable;
-                if (settingsHashtable != null)
-                {
-                    ParseSettingsHashtable(settingsHashtable);
-                }
-                else
-                {
-                    throw new ArgumentException(Strings.SettingsInvalidType);
-                }
+                ParseSettingsHashtable(settingsHashtable);
+                return;
             }
+
+            // The `settings` argument must be either a string or a Hashtable.
+            throw new ArgumentException(Strings.SettingsInvalidType);
         }
 
         /// <summary>
@@ -554,7 +553,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private void ParseSettingsFile(string settingsFilePath)
+        private static Hashtable ParseSettingsFileToHashtable(string settingsFilePath)
         {
             Token[] parserTokens = null;
             ParseError[] parserErrors = null;
@@ -564,7 +563,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // no hashtable, raise warning
             if (hashTableAsts.Count() == 0)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, settingsFilePath));
+                throw new ArgumentException(string.Format(
+                    Strings.InvalidProfile,
+                    settingsFilePath));
             }
 
             HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
@@ -575,21 +576,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // it is not available on PSv3, we resort to our own narrow implementation.
                 hashtable = GetSafeValueFromHashtableAst(hashTableAst);
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException exception)
             {
-                throw new ArgumentException(Strings.InvalidProfile, e);
+                throw new ArgumentException(Strings.InvalidProfile, exception);
             }
 
-            if (hashtable == null)
+            if (hashtable is null)
             {
-                throw new ArgumentException(
-                    String.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.InvalidProfile,
-                        settingsFilePath));
+                throw new ArgumentException(String.Format(
+                    Strings.InvalidProfile,
+                    settingsFilePath));
             }
 
-            ParseSettingsHashtable(hashtable);
+            return hashtable;
         }
 
         /// <summary>
