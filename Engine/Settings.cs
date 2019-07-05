@@ -469,7 +469,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 exceptions.Add(new InvalidDataException(string.Format(
                                     Strings.SettingRuleKeyIsNotUniqueIgnoringCase,
                                     rule.Key)));
-                                continue;
+                                // Do not `continue` because even if an element's key is non-unique, that element's value may still be checked.
                             }
 
                             if (rule.Value is null)
