@@ -77,11 +77,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (File.Exists(settingsFilePath))
                 {
                     this.filePath = settingsFilePath;
-
-                    // TODO Refactor the `ParseSettingsFile(string) => Settings` method to `ParseSettingsFiles(string) => Hashtable`, and then remove
-                    // the `return` statement in order to proceed to the call to `ParseSettingsHashtable(Hashtable) => Settings` on the result.
-                    ParseSettingsFile(settingsFilePath);
-                    return;
+                    settings = ParseSettingsFileToHashtable(settingsFilePath);
                 }
 
                 throw new ArgumentException(String.Format(
@@ -557,7 +553,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private void ParseSettingsFile(string settingsFilePath)
+        private static Hashtable ParseSettingsFileToHashtable(string settingsFilePath)
         {
             Token[] parserTokens = null;
             ParseError[] parserErrors = null;
@@ -567,7 +563,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // no hashtable, raise warning
             if (hashTableAsts.Count() == 0)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidProfile, settingsFilePath));
+                throw new ArgumentException(string.Format(
+                    Strings.InvalidProfile,
+                    settingsFilePath));
             }
 
             HashtableAst hashTableAst = hashTableAsts.First() as HashtableAst;
@@ -578,21 +576,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // it is not available on PSv3, we resort to our own narrow implementation.
                 hashtable = GetSafeValueFromHashtableAst(hashTableAst);
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException exception)
             {
-                throw new ArgumentException(Strings.InvalidProfile, e);
+                throw new ArgumentException(Strings.InvalidProfile, exception);
             }
 
-            if (hashtable == null)
+            if (hashtable is null)
             {
-                throw new ArgumentException(
-                    String.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.InvalidProfile,
-                        settingsFilePath));
+                throw new ArgumentException(String.Format(
+                    Strings.InvalidProfile,
+                    settingsFilePath));
             }
 
-            ParseSettingsHashtable(hashtable);
+            return hashtable;
         }
 
         /// <summary>
