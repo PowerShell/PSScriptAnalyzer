@@ -74,15 +74,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // Do not throw an exception if the `presetResolver` argument is null. This is because it is permitted for a file path `settings` to
                 // not have any associated `presetResolver`.
 
-                if (File.Exists(settingsFilePath))
+                if (!File.Exists(settingsFilePath))
                 {
-                    this.filePath = settingsFilePath;
-                    settings = ParseSettingsFileToHashtable(settingsFilePath);
+                    throw new ArgumentException(String.Format(
+                        Strings.InvalidPath,
+                        settingsFilePath));
                 }
 
-                throw new ArgumentException(String.Format(
-                    Strings.InvalidPath,
-                    settingsFilePath));
+                this.filePath = settingsFilePath;
+                settings = ParseSettingsFileToHashtable(settingsFilePath);
             }
 
             // Do the real work of parsing the `settings` Hashtable (whether passed directly or first parsed from a resolved file path).
