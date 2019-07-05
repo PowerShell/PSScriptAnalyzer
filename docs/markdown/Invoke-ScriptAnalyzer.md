@@ -437,12 +437,14 @@ If the path, the file's or hashtable's content are invalid, it is ignored.
 The parameters and values in the profile take precedence over the same parameter and values specified at the command line.
 
 A Script Analyzer profile file is a text file that contains a hash table with one or more of the following keys:
--- Severity
--- IncludeRules
--- ExcludeRules
--- Rules
+
 -- CustomRulePath
+-- ExcludeRules
 -- IncludeDefaultRules
+-- IncludeRules
+-- RecurseCustomRulePath
+-- Rules
+-- Severity
 
 The keys and values in the profile are interpreted as if they were standard parameters and parameter values of Invoke-ScriptAnalyzer.
 
