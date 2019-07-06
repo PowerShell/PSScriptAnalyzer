@@ -224,9 +224,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                bool pipelinesSpansOnlyOneLine = matchingPipeLineAstEnd.PipelineElements[0].Extent.StartLineNumber ==
+                bool pipelinesSpanOnlyOneLine = matchingPipeLineAstEnd.PipelineElements[0].Extent.StartLineNumber ==
                     matchingPipeLineAstEnd.PipelineElements[matchingPipeLineAstEnd.PipelineElements.Count-1].Extent.StartLineNumber;
-                if (pipelinesSpansOnlyOneLine)
+                if (pipelinesSpanOnlyOneLine)
                 {
                     continue;
                 }
