@@ -13,6 +13,9 @@ RootModule = 'PSScriptAnalyzer.psm1'
 # Version number of this module.
 ModuleVersion = '1.18.1'
 
+# Module work on Windows PowerShell and PowerShell Core
+CompatiblePSEditions = @('Desktop', 'Core')
+
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
 
