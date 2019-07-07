@@ -8,6 +8,7 @@ steps:
     pwsh: $(pwsh)
 - pwsh: |
     ./build.ps1 -Configuration 'Release' -All
+    ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
   displayName: 'Full Build'
 - template: templates/test.yaml
   parameters:
