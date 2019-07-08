@@ -104,6 +104,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
+        public bool CloseBraceBelongsToHashTable(Token token)
+        {
+            var hashtableAsts = ast.FindAll(oneAst => oneAst is HashtableAst, searchNestedScriptBlocks: true); // todo: cache
+            if (hashtableAsts.Any(oneAst =>
+                oneAst.Extent.EndLineNumber == token.Extent.EndLineNumber &&
+                oneAst.Extent.EndColumnNumber == token.Extent.EndColumnNumber))
+            {
+                return true;
+            }
+            return false;
+        }
+
         private IEnumerable<Token> GetBraceInCommandElement(TokenKind tokenKind)
         {
             var cmdElemAsts = ast.FindAll(x => x is CommandElementAst && x is ScriptBlockExpressionAst, true);

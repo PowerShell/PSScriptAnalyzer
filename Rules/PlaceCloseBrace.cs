@@ -25,6 +25,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private List<Func<Token[], int, int, string, DiagnosticRecord>> violationFinders
             = new List<Func<Token[], int, int, string, DiagnosticRecord>>();
 
+        private TokenOperations _tokenOperations;
+
         /// <summary>
         /// Indicates if there should or should not be an empty line before a close brace.
         ///
@@ -103,14 +105,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var curlyStack = new Stack<Tuple<Token, int>>();
 
             // TODO move part common with PlaceOpenBrace to one place
-            var tokenOps = new TokenOperations(tokens, ast);
-            tokensToIgnore = new HashSet<Token>(tokenOps.GetCloseBracesInCommandElements());
+            _tokenOperations = new TokenOperations(tokens, ast);
+            tokensToIgnore = new HashSet<Token>(_tokenOperations.GetCloseBracesInCommandElements());
 
             // Ignore close braces that are part of a one line if-else statement
             // E.g. $x = if ($true) { "blah" } else { "blah blah" }
             if (IgnoreOneLineBlock)
             {
-                foreach (var pair in tokenOps.GetBracePairsOnSameLine())
+                foreach (var pair in _tokenOperations.GetBracePairsOnSameLine())
                 {
                     tokensToIgnore.Add(pair.Item2);
                 }
@@ -409,7 +411,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 var closeBraceToken = tokens[closeBracePos];
                 if (tokens[closeBracePos - 1].Kind != TokenKind.NewLine
-                    && !tokensToIgnore.Contains(closeBraceToken))
+                    && !tokensToIgnore.Contains(closeBraceToken)
+                    && _tokenOperations.CloseBraceBelongsToHashTable(closeBraceToken)
+                   )
                 {
                     return new DiagnosticRecord(
                         GetError(Strings.PlaceCloseBraceErrorShouldBeOnNewLine),
