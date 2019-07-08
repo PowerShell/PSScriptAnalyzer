@@ -169,18 +169,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] severity = null,
             bool includeDefaultRules = false,
             bool suppressedOnly = false,
-            string profile = null)
+            string profile = null,
+            bool InitializeHelper = true)
         {
             if (runspace == null)
             {
                 throw new ArgumentNullException("runspace");
             }
 
-            //initialize helper
-            Helper.Instance = new Helper(
-                runspace.SessionStateProxy.InvokeCommand,
-                outputWriter);
-            Helper.Instance.Initialize();
+            // initialize helper if requested
+            if ( InitializeHelper ) {
+                Helper.Instance = new Helper(
+                    runspace.SessionStateProxy.InvokeCommand,
+                    outputWriter);
+                Helper.Instance.Initialize();
+            }
 
 
             this.Initialize(

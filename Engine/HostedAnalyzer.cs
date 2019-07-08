@@ -7,6 +7,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Management.Automation.Language;
 using System.IO;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
 {
@@ -36,26 +37,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>Reset the the analyzer and associated state</summary>
         public void Reset()
         {
+            analyzer.CleanUp();
+            Helper.Instance = new Helper(
+                    ps.Runspace.SessionStateProxy.InvokeCommand,
+                    writer);
             Helper.Instance.Initialize();
             analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-        }
-
-        /// <summary>
-        /// Analyze a script in the form of a string
-        /// <param name="ScriptDefinition">The script as a string</param>
-        /// <returns>The FixedScriptResult which encapsulates the fixed script</returns>
-        /// </summary>
-        public FixedScriptResult Fix(string ScriptDefinition)
-        {
-            writer.ClearWriter();
-            analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-            var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
-            bool fixesApplied;
-            return new FixedScriptResult() {
-                OriginalScript = ScriptDefinition,
-                FixedScript = analyzer.Fix(ScriptDefinition, out fixesApplied),
-                Analysis = new AnalyzerResult(AnalysisType.Script, analyzer.AnalyzeScriptDefinition(ScriptDefinition), this)
-            };
         }
 
         /// <summary>
@@ -72,7 +59,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             return new AnalyzerResult(AnalysisType.Ast, result, this);
         }
 
-        /// <summary>Analyze a script in the form of a string with additional Settings</summary>
+        /// <summary>
+        /// Analyze a script in the form of a string with additional Settings
+        /// <param name="ScriptDefinition">The script as a string</param>
+        /// <param name="settings">A hastable which includes the settings</param>
+        /// </summary>
+        public AnalyzerResult Analyze(string ScriptDefinition, Settings settings)
+        {
+            writer.ClearWriter();
+            analyzer.Initialize(ps.Runspace, writer, settings.CustomRulePath == null ? null : settings.CustomRulePath.ToArray(),
+                settings.IncludeRules == null ? null : settings.IncludeRules.ToArray(),
+                settings.ExcludeRules == null ? null : settings.ExcludeRules.ToArray(),
+                settings.Severities == null ? null : settings.Severities.ToArray(),
+                settings.IncludeDefaultRules,
+                false,
+                null);
+            var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+            return new AnalyzerResult(AnalysisType.Script, result, this);
+        }
+
+        /// <summary>
+        /// Analyze a script in the form of a string with additional Settings
+        /// <param name="ScriptDefinition">The script as a string</param>
+        /// <param name="settings">A hastable which includes the settings</param>
+        /// </summary>
         public AnalyzerResult Analyze(string ScriptDefinition, Hashtable settings)
         {
             writer.ClearWriter();
@@ -131,6 +141,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         }
 
         /// <summary>
+        /// Create a default settings object
+        /// </summary>
+        public Settings CreateSettings()
+        {
+            Settings s = Settings.Create(null, 
+                Directory.GetParent(Directory.GetParent(typeof(ScriptAnalyzer).Assembly.Location).FullName).FullName,
+                writer,  ps.Runspace.SessionStateProxy.Path.GetResolvedProviderPathFromPSPath);
+            s.IncludeDefaultRules = true;
+            return s;
+        }
+
+        /// <summary>
+        /// Create a standard settings object for Script Analyzer
+        /// This is the object used by analyzer internally
+        /// It is more functional than the AnalyzerSettings object because
+        /// it contains the Rule Arguments which are not passable to the Initialize method
+        /// </summary>
+        public Settings CreateSettings(Hashtable settings)
+        {
+            return Settings.Create(settings, "", writer, ps.Runspace.SessionStateProxy.Path.GetResolvedProviderPathFromPSPath);
+        }
+
+        /// <summary>
         /// Format a script according to the formatting rules
         ///     PSPlaceCloseBrace
         ///     PSPlaceOpenBrace
@@ -142,42 +175,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public string Format(string scriptDefinition, Settings settings)
         {
-            Helper.Instance = new Helper(ps.Runspace.SessionStateProxy.InvokeCommand, writer);
-            Helper.Instance.Initialize();
-
-            string[] ruleOrder = new string[]
-            {
-                "PSPlaceCloseBrace",
-                "PSPlaceOpenBrace",
-                "PSUseConsistentWhitespace",
-                "PSUseConsistentIndentation",
-                "PSAlignAssignmentStatement",
-                "PSUseCorrectCasing"
-            };
-
-            var text = new EditableText(scriptDefinition);
-            Range range = null;
-            foreach (var rule in ruleOrder)
-            {
-                if (!settings.RuleArguments.ContainsKey(rule))
-                {
-                    continue;
-                }
-
-                Settings currentSettings = new Settings(new Hashtable(){
-                    {"IncludeRules", new string[] { rule }},
-                    {"Rules", new Hashtable() { { rule, new Hashtable(settings.RuleArguments[rule]) } } }
-                });
-                analyzer.UpdateSettings(currentSettings);
-                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-
-                Range updatedRange;
-                bool fixesWereApplied;
-                text = analyzer.Fix(text, range, out updatedRange, out fixesWereApplied);
-                range = updatedRange;
-            }
-
-            return text.ToString();
+            string s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
+            analyzer.CleanUp();
+            return s;
         }
 
         /// <summary>
@@ -253,12 +253,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
     /// <summary>
     /// The encapsulated rules of fixing a script
     /// </summary>
-    public class FixedScriptResult
+    public class FormattedScriptResult
     {
         /// <summary>The original script that was fixed</summary>
         public string OriginalScript;
         /// <summary>The script which has all the fixes</summary>
-        public string FixedScript;
+        public string FormattedScript;
         /// <summary>
         /// The analysis results.
         /// This includes all the output streams as well as the diagnostic records
@@ -325,5 +325,68 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             Warning.AddRange(ha.writer.Warning);
             Debug.AddRange(ha.writer.Debug);
         }
+    }
+
+    /// <summary>A public settings object</summary>
+    public class PSSASettings
+    {
+        /// <summary>thing</summary>
+        public bool RecurseCustomRulePath { get; set;} = false;
+        /// <summary>thing</summary>
+        public bool IncludeDefaultRules { get; set; } = false;
+        /// <summary>thing</summary>
+        public string FilePath { get; set; }
+        /// <summary>thing</summary>
+        public List<RuleSeverity> Severities  { get; set; }
+        /// <summary>thing</summary>
+        public List<string> CustomRulePath { get; set; }
+        /// <summary>The rules which encapsulate an analyzer setting</summary>
+        public List<PSSARule>Rules;
+
+        /// <summary>Convert to hashtable so the analyzer method can use it</summary>
+        public Hashtable ConvertToHashtable()
+        {
+            Hashtable ht = new Hashtable();
+            return ht;
+        }
+    }
+
+    /// <summary>Whether the rule should be included or excluded</summary>
+    public enum RuleStatus {
+        /// <summary>Include the rule</summary>
+        Include,
+        /// <summary>Exclude the rule</summary>
+        Exclude
+    }
+
+    /// <summary>The encapsulation of a rule</summary>
+    public class PSSARule
+    {
+        /// <summary>the name for a rule</summary>
+        public string Name;
+        /// <summary>Is the rule included or excluded</summary>
+        public RuleStatus RuleAction;
+        /// <summary>the settings for a rule</summary>
+        public Dictionary<string, string>RuleSettings;
+
+        /// <summary>Create a new rule, the default status is to include it</summary>
+        public PSSARule(string name, RuleStatus status = RuleStatus.Include) {
+            Name = name;
+            RuleAction = status;
+            RuleSettings = new Dictionary<string,string>();
+        }
+
+        /// <summary>
+        /// Create a new rule, the default status is to include it
+        /// <param name="name" />
+        /// <param name="status" />
+        /// <param name="ruleSettings" />
+        /// </summary>
+        public PSSARule(string name, RuleStatus status, Dictionary<string, string>ruleSettings) {
+            Name = name;
+            RuleAction = status;
+            RuleSettings = ruleSettings;
+        }
+
     }
 }
