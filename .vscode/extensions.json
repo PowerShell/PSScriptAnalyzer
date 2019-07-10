@@ -3,6 +3,7 @@
     // for the documentation about the extensions.json format
     "recommendations": [
         "ms-vscode.PowerShell",
-        "ms-vscode.csharp"
+        "ms-vscode.csharp",
+        "ms-vscode-remote.remote-containers"
     ]
 }
