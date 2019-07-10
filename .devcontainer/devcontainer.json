@@ -1,0 +1,12 @@
+// See https://aka.ms/vscode-remote/devcontainer.json for format details.
+{
+	"name": "C# (.NET Core 2.2) and PowerShell Core with platyPS and Pester",
+	"dockerFile": "Dockerfile",
+
+	"postCreateCommand": "dotnet restore"
+
+	"extensions": [
+		"ms-vscode.csharp",
+		"ms-vscode.powershell"
+	]
+}
