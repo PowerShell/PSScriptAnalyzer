@@ -29,7 +29,5 @@ RUN apt-get update \
 
 RUN pwsh -c Install-Module platyPS -Force; Install-Module Pester -Force
 
-#ENV PATH="/root/.dotnet:${PATH}"
-
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
