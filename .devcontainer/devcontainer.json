@@ -3,7 +3,7 @@
 	"name": "C# (.NET Core 2.2) and PowerShell Core with platyPS and Pester",
 	"dockerFile": "Dockerfile",
 
-	"postCreateCommand": "dotnet restore"
+	"postCreateCommand": "dotnet restore",
 
 	"extensions": [
 		"ms-vscode.csharp",
