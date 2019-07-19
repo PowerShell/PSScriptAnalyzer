@@ -56,6 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             writer.ClearWriter();
             analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
             var result = analyzer.AnalyzeSyntaxTree(scriptast, tokens, filename);
+            analyzer.CleanUp();
             return new AnalyzerResult(AnalysisType.Ast, result, this);
         }
 
@@ -67,14 +68,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         public AnalyzerResult Analyze(string ScriptDefinition, Settings settings)
         {
             writer.ClearWriter();
-            analyzer.Initialize(ps.Runspace, writer, settings.CustomRulePath == null ? null : settings.CustomRulePath.ToArray(),
-                settings.IncludeRules == null ? null : settings.IncludeRules.ToArray(),
-                settings.ExcludeRules == null ? null : settings.ExcludeRules.ToArray(),
-                settings.Severities == null ? null : settings.Severities.ToArray(),
-                settings.IncludeDefaultRules,
-                false,
-                null);
+            analyzer.UpdateSettings(settings);
+            analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null, false);
+            // analyzer.Initialize(ps.Runspace, writer, null, null, null, null, false, false, null, false);
             var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+            analyzer.CleanUp();
             return new AnalyzerResult(AnalysisType.Script, result, this);
         }
 
@@ -90,6 +88,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             // var set = CreateSettings(settings);
             // analyzer.UpdateSettings(set);
             var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+            analyzer.CleanUp();
             return new AnalyzerResult(AnalysisType.Script, result, this);
         }
 
@@ -108,6 +107,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             writer.ClearWriter();
             analyzer.Initialize(ps.Runspace, writer, Settings.RulePath, Settings.IncludeRuleNames, Settings.ExcludeRuleNames, Settings.Severity, Settings.IncludeDefaultRules, Settings.SuppressedOnly); 
             var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+            analyzer.CleanUp();
             return new AnalyzerResult(AnalysisType.Script,  result, this);
         }
 
@@ -117,6 +117,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             writer.ClearWriter();
             analyzer.Initialize(ps.Runspace, writer, Settings.RulePath, Settings.IncludeRuleNames, Settings.ExcludeRuleNames, Settings.Severity, Settings.IncludeDefaultRules, Settings.SuppressedOnly); 
             var result = analyzer.AnalyzePath(File.FullName, (x, y) => { return true; }, false);
+            analyzer.CleanUp();
             return new AnalyzerResult(AnalysisType.File, result, this);
         }
 
@@ -126,6 +127,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             writer.ClearWriter();
             analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
             var result = analyzer.AnalyzePath(File.FullName, (x, y) => { return true; }, false);
+            analyzer.CleanUp();
             return new AnalyzerResult(AnalysisType.File, result, this);
         }
 
@@ -175,8 +177,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public string Format(string scriptDefinition, Settings settings)
         {
-            string s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
-            analyzer.CleanUp();
+            if ( settings == null ) {
+                throw new ArgumentException("settings may not be null");
+            }
+            string s;
+            try {
+                s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
+            }
+            finally {
+                analyzer.CleanUp();
+            }
             return s;
         }
 
