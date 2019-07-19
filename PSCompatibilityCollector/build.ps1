@@ -57,7 +57,13 @@ function Invoke-CrossCompatibilityModuleBuild
     Push-Location $script:BinModSrcDir
     try
     {
-        dotnet publish -f $Framework -c $Configuration
+        if ( test-path "$HOME/.dotnet/dotnet" ) {
+            $dotnet = "$HOME/.dotnet/dotnet"
+        }
+        else {
+            $dotnet = "dotnet"
+        }
+        & $dotnet publish -f $Framework -c $Configuration
     }
     finally
     {

@@ -267,6 +267,7 @@ function Start-ScriptAnalyzerBuild
             Pop-Location
         }
 
+        Write-Verbose -Verbose "Publish-File to ${script:destinationDir}"
         Publish-File $itemsToCopyCommon $script:destinationDir
 
         $itemsToCopyBinaries = @(
