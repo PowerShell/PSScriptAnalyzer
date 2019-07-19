@@ -250,7 +250,10 @@ function Start-ScriptAnalyzerBuild
                 $script:DotnetExe = Get-DotnetExe
             }
             $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$config" 2>&1
-            if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
+            if ( $LASTEXITCODE -ne 0 ) {
+                $buildOutput | Write-Verbose -Verbose
+                throw "$buildOutput"
+                }
         }
         catch {
             Write-Warning $_
@@ -640,8 +643,12 @@ function Get-DotnetExe
         $dotnetHuntPath = "$HOME/.dotnet/dotnet"
         Write-Verbose -Verbose "checking non-Windows $dotnetHuntPath"
         if ( test-path $dotnetHuntPath ) {
+            Write-Verbose -Verbose "$dotnetHuntPath found"
             $script:DotnetExe = $dotnetHuntPath
             return $dotnetHuntPath
+        }
+        else {
+            Write-Verbose -Verbose "$dotnetHuntPath not found"
         }
     }
 
