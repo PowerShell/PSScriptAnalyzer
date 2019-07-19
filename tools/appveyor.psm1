@@ -38,6 +38,7 @@ function Invoke-AppVeyorInstall {
     try {
         & "$buildScriptDir/build.ps1" -bootstrap
         Write-Verbose -Verbose "exiting Invoke-AppVeyorInstall ($LASTEXITCODE)"
+        $GLOBAL:LASTEXITCODE = $LASTEXITCODE = 0
         Write-Verbose -Verbose "bootstrap complete: $(get-date)"
     }
     catch {
