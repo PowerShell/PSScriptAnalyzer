@@ -37,7 +37,8 @@ function Invoke-AppVeyorInstall {
     Write-Verbose -Verbose "& $buildScriptDir/build.ps1 -bootstrap"
     try {
         & "$buildScriptDir/build.ps1" -bootstrap
-        Write-Verbose -Verbose "exiting Invoke-AppVeyorInstall"
+        Write-Verbose -Verbose "exiting Invoke-AppVeyorInstall ($LASTEXITCODE)"
+        Write-Verbose -Verbose "bootstrap complete: $(get-date)"
     }
     catch {
         Write-Warning "error in invocation of build.ps1 from Invoke-AppVeyorInstall"
