@@ -95,12 +95,19 @@ function Invoke-AppveyorTest {
 function Invoke-AppveyorFinish {
     $stagingDirectory = (Resolve-Path ..).Path
     $zipFile = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
-    Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
-    [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $pwd 'out'), $zipFile)
-    @(
-        # add test results as an artifact
-        (Get-ChildItem TestResults.xml)
-        # You can add other artifacts here
-        (Get-ChildItem $zipFile)
-    ) | ForEach-Object { Push-AppveyorArtifact $_.FullName }
+    $targetDir = Join-Path $pwd out
+    if ( ! ( test-path $targetDir ) ) {
+        # provide some additional data to help with debugging
+        Get-ChildItem $PWD | Write-Verbose -Verbose
+    }
+    else {
+        Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
+        [System.IO.Compression.ZipFile]::CreateFromDirectory($targetDir, $zipFile)
+        @(
+            # add test results as an artifact
+            (Get-ChildItem TestResults.xml)
+            # You can add other artifacts here
+            (Get-ChildItem $zipFile)
+        ) | ForEach-Object { Push-AppveyorArtifact $_.FullName }
+    }
 }
