@@ -159,7 +159,7 @@ function Start-ScriptAnalyzerBuild
         # don't allow the build to be started unless we have the proper Cli version
         # this will not actually install dotnet if it's already present, but it will
         # install the proper version
-        Install-Dotnet
+        Install-Dotnet -Verbose
         if ( -not (Test-SuitableDotnet) ) {
             $requiredVersion = Get-GlobalJsonSdkVersion
             $foundVersion = Get-InstalledCLIVersion
@@ -246,6 +246,7 @@ function Start-ScriptAnalyzerBuild
         try {
             Push-Location $projectRoot/Rules
             Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            Write-Verbose -verbose "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
             if ( -not $script:DotnetExe ) {
                 $script:DotnetExe = Get-DotnetExe
             }
@@ -403,6 +404,7 @@ function Install-Dotnet
         }
     }
     catch {
+        Write-Warning "Failure build.psm1 line 407"
         throw $_
     }
     finally {
@@ -546,6 +548,7 @@ function Get-InstalledCLIVersion {
         }
     }
     catch {
+        Write-Warning "${script:DotnetExe} --list-sdks"
         Write-Verbose -Verbose "$_"
         $installedVersions = & $script:DotnetExe --version 2>$null
     }
@@ -610,7 +613,9 @@ function Receive-DotnetInstallScript
     }
     $uri = "https://dot.net/v1/${installScriptName}"
 
+    Write-Verbose -Verbose "downloading $urt"
     $installScript = Receive-File -Uri $uri
+    Write-Verbose -Verbose "InstallScript is $installScript"
     return $installScript.FullName
 }
 
