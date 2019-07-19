@@ -33,9 +33,15 @@ function Invoke-AppVeyorInstall {
 
     # the build script sorts out the problems of WMF4 and earlier versions of dotnet CLI
     Write-Verbose -Verbose "Installing required .Net CORE SDK"
-    Write-Verbose "& $buildScriptDir/build.ps1 -bootstrap"
     $buildScriptDir = (Resolve-Path "$PSScriptRoot/..").Path
-    & "$buildScriptDir/build.ps1" -bootstrap
+    Write-Verbose -Verbose "& $buildScriptDir/build.ps1 -bootstrap"
+    try {
+        & "$buildScriptDir/build.ps1" -bootstrap
+        Write-Verbose -Verbose "exiting Invoke-AppVeyorInstall"
+    }
+    catch {
+        Write-Warning "error in invocation of build.ps1 from Invoke-AppVeyorInstall"
+    }
 }
 
 # Implements AppVeyor 'test_script' step

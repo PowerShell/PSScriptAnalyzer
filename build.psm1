@@ -156,6 +156,7 @@ function Start-ScriptAnalyzerBuild
         )
 
     BEGIN {
+        Write-Verbose -Verbose "Start-ScriptAnalyzerBuild BEGIN"
         # don't allow the build to be started unless we have the proper Cli version
         # this will not actually install dotnet if it's already present, but it will
         # install the proper version
@@ -168,6 +169,7 @@ function Start-ScriptAnalyzerBuild
     }
     END {
 
+        Write-Verbose -Verbose "Start-ScriptAnalyzerBuild END"
         # Build docs either when -Documentation switch is being specified or the first time in a clean repo
         $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out\PSScriptAnalyzer\en-us\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
         if ( $Documentation -or -not $documentationFileExists )
@@ -394,6 +396,7 @@ function Install-Dotnet
         Push-Location $PSScriptRoot
         $installScriptPath = Receive-DotnetInstallScript
         $installScriptName = [System.IO.Path]::GetFileName($installScriptPath)
+        Write-Verbose -Verbose "installscript is $installScriptPath"
         If ( $PSCmdlet.ShouldProcess("$installScriptName for $version")) {
             & "${installScriptPath}" -c release -version $version
         }
@@ -401,6 +404,7 @@ function Install-Dotnet
         # set up the executable variable
         if ( -not $script:DotnetExe ) {
             $script:DotnetExe = Get-DotnetExe
+            Write-Verbose -Verbose "Setting DotnetExe variable to ${script:DotnetExe}"
         }
     }
     catch {

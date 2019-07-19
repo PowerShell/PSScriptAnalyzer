@@ -34,7 +34,9 @@ build_script:
   - pwsh: |
       if ($env:PowerShellEdition -eq 'PowerShellCore') {
           Set-Location $env:APPVEYOR_BUILD_FOLDER
+          Write-Verbose -Verbose "calling build.ps1"
           ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 6
+          Write-Verbose -Verbose "calling PSCompatibility/build.ps1"
           ./PSCompatibilityCollector/build.ps1 -Configuration "$env:BuildConfiguration" -Framework 'netstandard2.0'
       }
 
