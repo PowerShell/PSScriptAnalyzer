@@ -97,10 +97,10 @@ Describe "Test importing correct customized rules" {
 		It "will show the custom rules when given a glob" {
 			# needs fixing for Linux
 			$expectedNumRules = 4
-			if ($IsLinux)
-			{
-				$expectedNumRules = 3
-			}
+			#if ($IsLinux)
+			#{
+			#	$expectedNumRules = 3
+			#}
 			$customizedRulePath = Get-ScriptAnalyzerRule  -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.RuleName -match $measure}
 			$customizedRulePath.Count | Should -Be $expectedNumRules
 		}
@@ -113,10 +113,10 @@ Describe "Test importing correct customized rules" {
 		It "will show the custom rules when given glob with recurse switch" {
 			# needs fixing for Linux
 			$expectedNumRules = 5
-			if ($IsLinux)
-			{
-				$expectedNumRules = 4
-			}
+			#if ($IsLinux)
+			#{
+			#	$expectedNumRules = 4
+			#}
 			$customizedRulePath = Get-ScriptAnalyzerRule  -RecurseCustomRulePath -CustomizedRulePath $directory\samplerule\samplerule* | Where-Object {$_.RuleName -eq $measure}
 			$customizedRulePath.Count | Should -Be $expectedNumRules
 		}
