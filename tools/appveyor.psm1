@@ -94,9 +94,10 @@ function Invoke-AppveyorTest {
 # Implements AppVeyor 'on_finish' step
 function Invoke-AppveyorFinish {
     $stagingDirectory = (Resolve-Path ..).Path
-    $zipFile = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
+    $zipFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath((Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"))
     Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
-    [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $pwd 'out'), $zipFile)
+    $sourceDirectory = (Resolve-Path -Path (Join-Path -Path $pwd -ChildPath 'out')).Path
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($sourceDirectory, $zipFile)
     @(
         # add test results as an artifact
         (Get-ChildItem TestResults.xml)
