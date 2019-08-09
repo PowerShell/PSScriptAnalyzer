@@ -121,6 +121,100 @@ Foo
         }
     }
 
+    Context "Where ShouldContinue is called by a downstream function" {
+        It "finds no violation for 1 level downstream call" {
+            $scriptDef = @'
+function Foo
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param()
+
+    Bar
+}
+
+function Bar
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param()
+
+    if ($PSCmdlet.ShouldContinue("", ""))
+    {
+        "Continue normally..."
+    }
+    else
+    {
+        "what would happen..."
+    }
+}
+
+Foo
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+            $violations.Count | Should -Be 0
+        }
+
+        It "finds violation if downstream function does not declare SupportsShouldProcess" {
+              $scriptDef = @'
+function Foo
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param()
+
+    Bar
+}
+
+function Bar
+{
+    if ($PSCmdlet.ShouldContinue("", ""))
+    {
+        "Continue normally..."
+    }
+    else
+    {
+        "what would happen..."
+    }
+}
+
+Foo
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+            $violations.Count | Should -Be 1
+        }
+
+        It "finds violation for 2 level downstream calls" {
+            $scriptDef = @'
+function Foo
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param()
+
+    Baz
+}
+
+function Baz
+{
+    Bar
+}
+
+function Bar
+{
+    if ($PSCmdlet.ShouldContinue("", ""))
+    {
+        "Continue normally..."
+    }
+    else
+    {
+        "what would happen..."
+    }
+}
+
+Foo
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+            $violations.Count | Should -Be 1
+        }
+    }
+
     Context "When nested function definition calls ShouldProcess" {
         It "finds no violation" {
             $scriptDef = @'
@@ -146,8 +240,33 @@ function Foo
         }
     }
 
-    Context "When a builtin command that supports ShouldProcess is called" {
-        It "finds no violation when caller declares SupportsShouldProcess and callee is a cmdlet with ShouldProcess" {
+    Context "When nested function definition calls ShouldContinue" {
+        It "finds no violation" {
+            $scriptDef = @'
+function Foo
+{
+   [CmdletBinding(SupportsShouldProcess)]
+   param()
+   begin
+   {
+       function Bar
+       {
+           if ($PSCmdlet.ShouldContinue('',''))
+           {
+
+           }
+       }
+       bar
+   }
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+            $violations.Count | Should -Be 0
+        }
+    }
+
+    Context "When a builtin command that supports ShouldProcess/ShouldContinue is called" {
+        It "finds no violation when caller declares SupportsShouldProcess and callee is a cmdlet with ShouldProcess/ShouldContinue" {
             $scriptDef = @'
 function Remove-Foo {
 [CmdletBinding(SupportsShouldProcess)]
@@ -278,5 +397,17 @@ function Foo
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
             $violations[0].Extent.Text | Should -Be 'ShouldProcess'
         }
-    }
+
+        It "should mark only the ShouldContinue call" {
+            $scriptDef = @'
+function Foo
+{
+  param()
+  if ($PSCmdlet.ShouldContinue('', '')) { Write-Output "Should Continue" }
+}
+'@
+           $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule PSShouldProcess
+           $violations[0].Extent.Text | Should -Be 'ShouldContinue'
+       }
+   }
 }
