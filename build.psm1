@@ -101,6 +101,7 @@ function Remove-Build
 # Build documentation using platyPS
 function Start-DocumentationBuild
 {
+    Write-Verbose -Verbose -Message "Buidling Documentation"
     $docsPath = Join-Path $projectRoot docs
     $markdownDocsPath = Join-Path $docsPath markdown
     $outputDocsPath = Join-Path $script:destinationDir en-US
@@ -123,6 +124,7 @@ function Start-DocumentationBuild
 
 function Copy-CompatibilityProfiles
 {
+    Write-Verbose -Verbose -Message "Copying Compatibility Profiles"
     if ($PSVersionTable.PSVersion.Major -le 5)
     {
         Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
@@ -156,6 +158,7 @@ function Start-ScriptAnalyzerBuild
         )
 
     BEGIN {
+        Write-Verbose "Running ScriptAnalyzerBuild for $PSVersion"
         # don't allow the build to be started unless we have the proper Cli version
         # this will not actually install dotnet if it's already present, but it will
         # install the proper version
@@ -169,7 +172,7 @@ function Start-ScriptAnalyzerBuild
     END {
 
         # Build docs either when -Documentation switch is being specified or the first time in a clean repo
-        $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out\PSScriptAnalyzer\en-us\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
+        $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out/PSScriptAnalyzer/en-us/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
         if ( $Documentation -or -not $documentationFileExists )
         {
             Start-DocumentationBuild
@@ -211,19 +214,19 @@ function Start-ScriptAnalyzerBuild
         }
 
         $itemsToCopyCommon = @(
-            "$projectRoot\Engine\PSScriptAnalyzer.psd1", "$projectRoot\Engine\PSScriptAnalyzer.psm1",
-            "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
+            "$projectRoot/Engine/PSScriptAnalyzer.psd1", "$projectRoot/Engine/PSScriptAnalyzer.psm1",
+            "$projectRoot/Engine/ScriptAnalyzer.format.ps1xml", "$projectRoot/Engine/ScriptAnalyzer.types.ps1xml"
             )
 
         switch ($PSVersion)
         {
             3
             {
-                $destinationDirBinaries = "$script:destinationDir\PSv3"
+                $destinationDirBinaries = "$script:destinationDir/PSv3"
             }
             4
             {
-                $destinationDirBinaries = "$script:destinationDir\PSv4"
+                $destinationDirBinaries = "$script:destinationDir/PSv4"
             }
             5
             {
@@ -231,7 +234,7 @@ function Start-ScriptAnalyzerBuild
             }
             6
             {
-                $destinationDirBinaries = "$script:destinationDir\coreclr"
+                $destinationDirBinaries = "$script:destinationDir/coreclr"
             }
             default
             {
@@ -246,6 +249,7 @@ function Start-ScriptAnalyzerBuild
         try {
             Push-Location $projectRoot/Rules
             Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            Write-Verbose -Verbose -Message "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
             if ( -not $script:DotnetExe ) {
                 $script:DotnetExe = Get-DotnetExe
             }
@@ -260,24 +264,25 @@ function Start-ScriptAnalyzerBuild
         finally {
             Pop-Location
         }
-
+        Write-Verbose -Verbose -Message "Publishing build artifacts"
         Publish-File $itemsToCopyCommon $script:destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
-            "$projectRoot\Rules\bin\${config}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
+            "$projectRoot/Engine/bin/${config}/${Framework}/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot/Rules/bin/${config}/${Framework}/Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot/Rules/bin/${config}/${framework}/Microsoft.PowerShell.CrossCompatibility.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
-        $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
+        $settingsFiles = Get-Childitem "$projectRoot/Engine/Settings" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         if ($framework -eq 'net452') {
-            Copy-Item -path "$projectRoot\Rules\bin\${config}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            Copy-Item -path "$projectRoot/Rules/bin/${config}/${framework}/Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
 
         Pop-Location
+        Write-Verbose -Verbose -Message 'ScriptAnalyzerBuild completed'
     }
 }
 

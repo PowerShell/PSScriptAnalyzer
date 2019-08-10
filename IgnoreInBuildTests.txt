@@ -1,0 +1,2 @@
+.\Tests\Engine\TestScriptWithFixableWarnings.ps1
+.\Tests\Rules\MisleadingBacktick.ps1
