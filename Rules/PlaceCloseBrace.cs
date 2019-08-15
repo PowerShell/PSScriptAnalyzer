@@ -412,7 +412,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var closeBraceToken = tokens[closeBracePos];
                 if (tokens[closeBracePos - 1].Kind != TokenKind.NewLine
                     && !tokensToIgnore.Contains(closeBraceToken)
-                    && _tokenOperations.CloseBraceBelongsToHashTable(closeBraceToken)
+                    && !_tokenOperations.CloseBraceBelongsToSingleLineHashTable(closeBraceToken)
                    )
                 {
                     return new DiagnosticRecord(
