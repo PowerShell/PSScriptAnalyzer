@@ -208,59 +208,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            // Detect usages of Get-Variable
-            var getVariableCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Get-Variable");
-            IEnumerable<Ast> getVariableCommandAsts = scriptBlockAst.FindAll(testAst => testAst is CommandAst commandAst &&
-                getVariableCmdletNamesAndAliases.Contains(commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
-            foreach (CommandAst getVariableCommandAst in getVariableCommandAsts)
-            {
-                var commandElements = getVariableCommandAst.CommandElements.ToList();
-                // The following extracts the variable name only in the simplest possible cases
-                // 'Get-Variable variableName' and 'Get-Variable variableName1, variableName2'
-
-                if (commandElements.Count < 2 || commandElements.Count > 3)
-                {
-                    continue;
-                }
-
-                var commandElementAstOfVariableName = commandElements[commandElements.Count - 1];
-                if (commandElements.Count == 3)
-                {
-                    if (commandElements[1] is CommandParameterAst commandParameterAst)
-                    {
-                        // Check if the named parameter -Name is used (PowerShell does not need the full
-                        // parameter name and there is no other parameter of Get-Variable starting with n).
-                        if (!commandParameterAst.ParameterName.StartsWith("n", StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-                    }
-                    continue;
-                }
-
-                if (commandElementAstOfVariableName is StringConstantExpressionAst constantExpressionAst)
-                {
-                    var variableName = constantExpressionAst.Value;
-                    if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
-                    {
-                        assignmentsDictionary_OrdinalIgnoreCase.Remove(variableName);
-                    }
-                }
-                if (commandElementAstOfVariableName is ArrayLiteralAst arrayLiteralAst)
-                {
-                    foreach (var expressionAst in arrayLiteralAst.Elements)
-                    {
-                        if (expressionAst is StringConstantExpressionAst constantExpressionAstOfArray)
-                        {
-                            var variableName = constantExpressionAstOfArray.Value;
-                            if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
-                            {
-                                assignmentsDictionary_OrdinalIgnoreCase.Remove(variableName);
-                            }
-                        }
-                    }
-                }
-            }
+            AnalyzeGetVariableCommands(scriptBlockAst, assignmentsDictionary_OrdinalIgnoreCase);
 
             foreach (string key in assignmentsDictionary_OrdinalIgnoreCase.Keys)
             {
@@ -271,6 +219,66 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     DiagnosticSeverity.Warning,
                     fileName,
                     key);
+            }
+        }
+
+        /// <summary>
+        /// Detects variables retrieved by usage of Get-Variable and remove those
+        /// variables from the entries in <paramref name="assignmentsDictionary_OrdinalIgnoreCase"/>.
+        /// </summary>
+        /// <param name="scriptBlockAst"></param>
+        /// <param name="assignmentsDictionary_OrdinalIgnoreCase"></param>
+        private void AnalyzeGetVariableCommands(
+            ScriptBlockAst scriptBlockAst,
+            Dictionary<string, AssignmentStatementAst> assignmentsDictionary_OrdinalIgnoreCase)
+        {
+            var getVariableCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Get-Variable");
+            IEnumerable<Ast> getVariableCommandAsts = scriptBlockAst.FindAll(testAst => testAst is CommandAst commandAst &&
+                getVariableCmdletNamesAndAliases.Contains(commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase), true);
+
+            foreach (CommandAst getVariableCommandAst in getVariableCommandAsts)
+            {
+                var commandElements = getVariableCommandAst.CommandElements.ToList();
+                // The following extracts the variable name(s) only in the simplest possible usage of Get-Variable.
+                // Usage of a named parameter and an array of variables is accounted for though.
+                if (commandElements.Count < 2 || commandElements.Count > 3) { continue; }
+
+                var commandElementAstOfVariableName = commandElements[commandElements.Count - 1];
+                if (commandElements.Count == 3)
+                {
+                    var commandParameterAst = commandElements[1] as CommandParameterAst;
+                    if (commandParameterAst == null) { continue; }
+                    // Check if the named parameter -Name is used (PowerShell does not need the full
+                    // parameter name and there is no other parameter of Get-Variable starting with n).
+                    if (!commandParameterAst.ParameterName.StartsWith("n", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                }
+
+                if (commandElementAstOfVariableName is StringConstantExpressionAst constantExpressionAst)
+                {
+                    MarkVariableAsAssigned(constantExpressionAst.Value);
+                    continue;
+                }
+
+                var arrayLiteralAst = commandElementAstOfVariableName as ArrayLiteralAst;
+                if (arrayLiteralAst == null) { continue; }
+                foreach (var expressionAst in arrayLiteralAst.Elements)
+                {
+                    if (expressionAst is StringConstantExpressionAst constantExpressionAstOfArray)
+                    {
+                        MarkVariableAsAssigned(constantExpressionAstOfArray.Value);
+                    }
+                }
+
+                void MarkVariableAsAssigned(string variableName)
+                {
+                    if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
+                    {
+                        assignmentsDictionary_OrdinalIgnoreCase.Remove(variableName);
+                    }
+                }
             }
         }
     }

@@ -88,7 +88,7 @@ function MyFunc2() {
             $results.Count | Should -Be 0
         }
 
-        It "No warning when using 'Get-Variable' with variables declaration '<DeclareVariables>' and command paramter <GetVariableCommandParameter>" -TestCases @(
+        It "No warning when using 'Get-Variable' with variables declaration '<DeclareVariables>' and command parameter <GetVariableCommandParameter>" -TestCases @(
             @{
                 DeclareVariables = '$a = 1'; GetVariableCommandParameter = 'a';
             }
@@ -118,6 +118,11 @@ function MyFunc2() {
             $scriptDefinition = "$DeclareVariables; Get-Variable $GetVariableCommandParameter"
             $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition
             $noViolations.Count | Should -Be 0 -Because $scriptDefinition
+        }
+
+        It "Does not misinterpret switch parameter of Get-Variable as variable" {
+            $scriptDefinition = '$ArbitrarySwitchParameter = 1; Get-Variable -ArbitrarySwitchParameter'
+            (Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition).Count | Should -Be 1 -Because $scriptDefinition
         }
     }
 }
