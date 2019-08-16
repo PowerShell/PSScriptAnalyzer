@@ -88,14 +88,36 @@ function MyFunc2() {
             $results.Count | Should -Be 0
         }
 
-        It "Using a variable via 'Get-Variable' does not trigger a warning" {
-            $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition '$a=4; get-variable a'
-            $noViolations.Count | Should -Be 0
-        }
-
-        It "Using a variable via 'Get-Variable' does not trigger a warning" {
-            $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition '$a=4; $b = 8; get-variable a, b'
-            $noViolations.Count | Should -Be 0
+        It "No warning when using 'Get-Variable' with variables declaration '<DeclareVariables>' and command paramter <GetVariableCommandParameter>" -TestCases @(
+            @{
+                DeclareVariables = '$a = 1'; GetVariableCommandParameter = 'a';
+            }
+            @{
+                DeclareVariables = '$a = 1'; GetVariableCommandParameter = '-Name a';
+            }
+            @{
+                DeclareVariables = '$a = 1'; GetVariableCommandParameter = '-n a';
+            }
+            @{
+                DeclareVariables = '$a = 1; $b = 2'; GetVariableCommandParameter = 'a,b'
+            }
+            @{
+                DeclareVariables = '$a = 1; $b = 2'; GetVariableCommandParameter = '-Name a,b'
+            }
+            @{
+                DeclareVariables = '$a = 1; $b = 2'; GetVariableCommandParameter = '-n a,b'
+            }
+            @{
+                DeclareVariables = '$a = 1; $b = 2'; GetVariableCommandParameter = 'A,B'
+            }
+        ) {
+            Param(
+                $DeclareVariables,
+                $GetVariableCommandParameter
+            )
+            $scriptDefinition = "$DeclareVariables; Get-Variable $GetVariableCommandParameter"
+            $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition
+            $noViolations.Count | Should -Be 0 -Because $scriptDefinition
         }
     }
 }

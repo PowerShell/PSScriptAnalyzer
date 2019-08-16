@@ -217,7 +217,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var commandElements = getVariableCommandAst.CommandElements.ToList();
                 // The following extracts the variable name only in the simplest possible cases
                 // 'Get-Variable variableName' and 'Get-Variable variableName1, variableName2'
-                if (commandElements.Count == 2 && commandElements[1] is StringConstantExpressionAst constantExpressionAst)
+
+                if (commandElements.Count < 2 || commandElements.Count > 3)
+                {
+                    continue;
+                }
+
+                var commandElementAstOfVariableName = commandElements[commandElements.Count - 1];
+                if (commandElements.Count == 3)
+                {
+                    if (commandElements[1] is CommandParameterAst commandParameterAst)
+                    {
+                        // Check if the named parameter -Name is used (PowerShell does not need the full
+                        // parameter name and there is no other parameter of Get-Variable starting with n).
+                        if (!commandParameterAst.ParameterName.StartsWith("n", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                    }
+                    continue;
+                }
+
+                if (commandElementAstOfVariableName is StringConstantExpressionAst constantExpressionAst)
                 {
                     var variableName = constantExpressionAst.Value;
                     if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
@@ -225,7 +246,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         assignmentsDictionary_OrdinalIgnoreCase.Remove(variableName);
                     }
                 }
-                if (commandElements.Count == 2 && commandElements[1] is ArrayLiteralAst arrayLiteralAst)
+                if (commandElementAstOfVariableName is ArrayLiteralAst arrayLiteralAst)
                 {
                     foreach (var expressionAst in arrayLiteralAst.Elements)
                     {
