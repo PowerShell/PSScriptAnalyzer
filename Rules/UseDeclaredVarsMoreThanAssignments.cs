@@ -215,13 +215,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (CommandAst getVariableCommandAst in getVariableCommandAsts)
             {
                 var commandElements = getVariableCommandAst.CommandElements.ToList();
-                // The following extracts the variable name only in the simplest possibe case 'Get-Variable variableName'
+                // The following extracts the variable name only in the simplest possible cases
+                // 'Get-Variable variableName' and 'Get-Variable variableName1, variableName2'
                 if (commandElements.Count == 2 && commandElements[1] is StringConstantExpressionAst constantExpressionAst)
                 {
                     var variableName = constantExpressionAst.Value;
                     if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
                     {
                         assignmentsDictionary_OrdinalIgnoreCase.Remove(variableName);
+                    }
+                }
+                if (commandElements.Count == 2 && commandElements[1] is ArrayLiteralAst arrayLiteralAst)
+                {
+                    foreach (var expressionAst in arrayLiteralAst.Elements)
+                    {
+                        if (expressionAst is StringConstantExpressionAst constantExpressionAstOfArray)
+                        {
+                            var variableName = constantExpressionAstOfArray.Value;
+                            if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
+                            {
+                                assignmentsDictionary_OrdinalIgnoreCase.Remove(variableName);
+                            }
+                        }
                     }
                 }
             }
