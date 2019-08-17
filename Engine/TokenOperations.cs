@@ -113,7 +113,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-
         private IEnumerable<Token> GetBraceInCommandElement(TokenKind tokenKind)
         {
             var cmdElemAsts = ast.FindAll(x => x is CommandElementAst && x is ScriptBlockExpressionAst, true);
