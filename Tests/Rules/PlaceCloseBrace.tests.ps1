@@ -80,14 +80,12 @@ $hashtable = @{a = 1; b = 2}
 
     Context "When there is a one line hashtable inside a one line statement" {
         BeforeAll {
-            $def = 'if ($true) { $test = @{ } }'
-            $ruleConfiguration.'NoEmptyLineBefore' = $false
+            $scriptDefinition = 'if ($true) { $test = @{ } }'
             $ruleConfiguration.'IgnoreOneLineBlock' = $true
-            $ruleConfiguration.'NewLineAfter' = $false
         }
 
         It "Should not find a violation" {
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 0
         }
     }

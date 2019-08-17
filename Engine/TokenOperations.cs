@@ -73,7 +73,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<Tuple<Token, Token>> GetBracePairs()
         {
             var openBraceStack = new Stack<Token>();
-            var hashtableAsts = ast.FindAll(oneAst => oneAst is HashtableAst, searchNestedScriptBlocks: true); // todo: cache
+            var hashtableAsts = ast.FindAll(oneAst => oneAst is HashtableAst, searchNestedScriptBlocks: true);
             foreach (var token in tokens)
             {
                 if (token.Kind == TokenKind.LCurly)
