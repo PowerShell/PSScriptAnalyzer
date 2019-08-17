@@ -17,6 +17,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly Token[] tokens;
         private LinkedList<Token> tokensLL;
         private readonly Ast ast;
+        private IEnumerable<Ast> hashtableAsts
+        {
+            get
+            {
+                if (_hashtableAsts == null)
+                {
+                    _hashtableAsts = ast.FindAll(oneAst => oneAst is HashtableAst, searchNestedScriptBlocks: true);
+                }
+                return _hashtableAsts;
+            }
+        }
+        private IEnumerable<Ast> _hashtableAsts;
 
         public Ast Ast { get { return ast; } }
 
@@ -73,6 +85,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<Tuple<Token, Token>> GetBracePairs()
         {
             var openBraceStack = new Stack<Token>();
+            var hashtableAsts = ast.FindAll(oneAst => oneAst is HashtableAst, searchNestedScriptBlocks: true); // todo: cache
             foreach (var token in tokens)
             {
                 if (token.Kind == TokenKind.LCurly)
@@ -84,7 +97,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (token.Kind == TokenKind.RCurly
                     && openBraceStack.Count > 0)
                 {
-                    yield return new Tuple<Token, Token>(openBraceStack.Pop(), token);
+                    var closeBraceBelongsToHashTable = hashtableAsts.Any(hashtableAst =>
+                    {
+                        return hashtableAst.Extent.EndLineNumber == token.Extent.EndLineNumber
+                            && hashtableAst.Extent.EndColumnNumber == token.Extent.EndColumnNumber;
+                    });
+                    if (!closeBraceBelongsToHashTable)
+                    {
+                        yield return new Tuple<Token, Token>(openBraceStack.Pop(), token);
+                    }
                 }
             }
         }
@@ -104,25 +125,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        public bool CloseBraceBelongsToSingleLineHashTable(Token token)
-        {
-            var hashtableAsts = ast.FindAll(oneAst => oneAst is HashtableAst, searchNestedScriptBlocks: true); // todo: cache
-
-            var closeBraceBelongsToSingleLineHashTable = hashtableAsts.Any(oneAst =>
-            {
-                bool closeBraceBelongsToHashTable = oneAst.Extent.EndLineNumber == token.Extent.EndLineNumber
-                                                 && oneAst.Extent.EndColumnNumber == token.Extent.EndColumnNumber;
-                if (!closeBraceBelongsToHashTable)
-                {
-                    return false;
-                }
-                bool isSingleLineHashtable = oneAst.Extent.StartLineNumber == oneAst.Extent.EndLineNumber;
-                return isSingleLineHashtable;
-            }
-            );
-
-            return closeBraceBelongsToSingleLineHashTable;
-        }
 
         private IEnumerable<Token> GetBraceInCommandElement(TokenKind tokenKind)
         {
