@@ -17,18 +17,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly Token[] tokens;
         private LinkedList<Token> tokensLL;
         private readonly Ast ast;
-        private IEnumerable<Ast> hashtableAsts
-        {
-            get
-            {
-                if (_hashtableAsts == null)
-                {
-                    _hashtableAsts = ast.FindAll(oneAst => oneAst is HashtableAst, searchNestedScriptBlocks: true);
-                }
-                return _hashtableAsts;
-            }
-        }
-        private IEnumerable<Ast> _hashtableAsts;
 
         public Ast Ast { get { return ast; } }
 
