@@ -72,7 +72,7 @@ function MyFunc2() {
         It "returns no violations" {
             $noViolations.Count | Should -Be 0
         }
-        
+
         It "Does not flag += operator" {
             $results = Invoke-ScriptAnalyzer -ScriptDefinition '$array=@(); $list | ForEach-Object { $array += $c }' | Where-Object { $_.RuleName -eq $violationName }
             $results.Count | Should -Be 0
@@ -88,9 +88,41 @@ function MyFunc2() {
             $results.Count | Should -Be 0
         }
 
-        It "Using a variable via 'Get-Variable' does not trigger a warning" {
-            $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition '$a=4; get-variable a'
-            $noViolations.Count | Should -Be 0
+        It "No warning when using 'Get-Variable' with variables declaration '<DeclareVariables>' and command parameter <GetVariableCommandParameter>" -TestCases @(
+            @{
+                DeclareVariables = '$a = 1'; GetVariableCommandParameter = 'a';
+            }
+            @{
+                DeclareVariables = '$a = 1'; GetVariableCommandParameter = '-Name a';
+            }
+            @{
+                DeclareVariables = '$a = 1'; GetVariableCommandParameter = '-n a';
+            }
+            @{
+                DeclareVariables = '$a = 1; $b = 2'; GetVariableCommandParameter = 'a,b'
+            }
+            @{
+                DeclareVariables = '$a = 1; $b = 2'; GetVariableCommandParameter = '-Name a,b'
+            }
+            @{
+                DeclareVariables = '$a = 1; $b = 2'; GetVariableCommandParameter = '-n a,b'
+            }
+            @{
+                DeclareVariables = '$a = 1; $b = 2'; GetVariableCommandParameter = 'A,B'
+            }
+        ) {
+            Param(
+                $DeclareVariables,
+                $GetVariableCommandParameter
+            )
+            $scriptDefinition = "$DeclareVariables; Get-Variable $GetVariableCommandParameter"
+            $noViolations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition
+            $noViolations.Count | Should -Be 0 -Because $scriptDefinition
+        }
+
+        It "Does not misinterpret switch parameter of Get-Variable as variable" {
+            $scriptDefinition = '$ArbitrarySwitchParameter = 1; Get-Variable -ArbitrarySwitchParameter'
+            (Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition).Count | Should -Be 1 -Because $scriptDefinition
         }
     }
 }
