@@ -201,9 +201,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 // Since the previous token is a newline token we start
                                 // looking for comments at the token before the newline token.
                                 int j = k - 2;
-                                while (j > 0 && tokens[j].Kind == TokenKind.Comment)
+                                if (j > 0 && tokens[j].Kind == TokenKind.Comment)
                                 {
-                                    --j;
+                                    ++tempIndentationLevel;
                                 }
                             }
 
