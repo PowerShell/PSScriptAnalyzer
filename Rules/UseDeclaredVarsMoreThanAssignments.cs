@@ -246,8 +246,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var commandElementAstOfVariableName = commandElements[commandElements.Count - 1];
                 if (commandElements.Count == 3)
                 {
-                    var commandParameterAst = commandElements[1] as CommandParameterAst;
-                    if (commandParameterAst == null) { continue; }
+                    if (!(commandElements[1] is CommandParameterAst commandParameterAst)) { continue; }
                     // Check if the named parameter -Name is used (PowerShell does not need the full
                     // parameter name and there is no other parameter of Get-Variable starting with n).
                     if (!commandParameterAst.ParameterName.StartsWith("n", StringComparison.OrdinalIgnoreCase))
@@ -258,25 +257,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (commandElementAstOfVariableName is StringConstantExpressionAst constantExpressionAst)
                 {
-                    MarkVariableAsAssigned(constantExpressionAst.Value);
+                    assignmentsDictionary_OrdinalIgnoreCase.Remove(constantExpressionAst.Value);
                     continue;
                 }
 
-                var arrayLiteralAst = commandElementAstOfVariableName as ArrayLiteralAst;
-                if (arrayLiteralAst == null) { continue; }
+                if (!(commandElementAstOfVariableName is ArrayLiteralAst arrayLiteralAst)) { continue; }
                 foreach (var expressionAst in arrayLiteralAst.Elements)
                 {
                     if (expressionAst is StringConstantExpressionAst constantExpressionAstOfArray)
                     {
-                        MarkVariableAsAssigned(constantExpressionAstOfArray.Value);
-                    }
-                }
-
-                void MarkVariableAsAssigned(string variableName)
-                {
-                    if (assignmentsDictionary_OrdinalIgnoreCase.ContainsKey(variableName))
-                    {
-                        assignmentsDictionary_OrdinalIgnoreCase.Remove(variableName);
+                        assignmentsDictionary_OrdinalIgnoreCase.Remove(constantExpressionAstOfArray.Value);
                     }
                 }
             }
