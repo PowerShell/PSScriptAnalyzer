@@ -224,8 +224,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                bool pipelinesSpanOnlyOneLine = matchingPipeLineAstEnd.PipelineElements[0].Extent.StartLineNumber ==
-                    matchingPipeLineAstEnd.PipelineElements[matchingPipeLineAstEnd.PipelineElements.Count-1].Extent.StartLineNumber;
+                IScriptExtent firstPipelineElementExtent = matchingPipeLineAstEnd.PipelineElements[0].Extent;
+                IScriptExtent lastPipelineElementExtent = matchingPipeLineAstEnd.PipelineElements[matchingPipeLineAstEnd.PipelineElements.Count - 1].Extent;
+                bool pipelinesSpanOnlyOneLine = firstPipelineElementExtent.EndLineNumber == lastPipelineElementExtent.EndLineNumber
+                                             || firstPipelineElementExtent.StartLineNumber == lastPipelineElementExtent.StartLineNumber;
                 if (pipelinesSpanOnlyOneLine)
                 {
                     continue;
