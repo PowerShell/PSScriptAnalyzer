@@ -73,6 +73,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public IEnumerable<Tuple<Token, Token>> GetBracePairs()
         {
             var openBraceStack = new Stack<Token>();
+            IEnumerable<Ast> hashtableAsts = ast.FindAll(oneAst => oneAst is HashtableAst, searchNestedScriptBlocks: true);
             foreach (var token in tokens)
             {
                 if (token.Kind == TokenKind.LCurly)
@@ -84,7 +85,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (token.Kind == TokenKind.RCurly
                     && openBraceStack.Count > 0)
                 {
-                    yield return new Tuple<Token, Token>(openBraceStack.Pop(), token);
+                    bool closeBraceBelongsToHashTable = hashtableAsts.Any(hashtableAst =>
+                    {
+                        return hashtableAst.Extent.EndLineNumber == token.Extent.EndLineNumber
+                            && hashtableAst.Extent.EndColumnNumber == token.Extent.EndColumnNumber;
+                    });
+
+                    if (!closeBraceBelongsToHashTable)
+                    {
+                        yield return new Tuple<Token, Token>(openBraceStack.Pop(), token);
+                    }
                 }
             }
         }
