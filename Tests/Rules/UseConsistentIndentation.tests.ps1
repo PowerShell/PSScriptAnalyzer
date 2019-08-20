@@ -107,6 +107,41 @@ function foo {
     }
 
     Context "When a multi-line command is given" {
+
+        It "When a comment is in the middle of a multi-line statement with line continuations" {
+            $scriptDefinition = @'
+foo `
+# comment
+-bar
+'@
+            $expected = @'
+foo `
+    # comment
+    -bar
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be 2
+            Invoke-Formatter -ScriptDefinition $scriptDefinition | Should -Be $expected
+        }
+
+        It "When a comment is in the middle of a multi-line statement with line continuations 2" {
+            $scriptDefinition = @'
+foo `
+# comment
+-bar
+-baz
+'@
+            $expected = @'
+foo `
+    # comment
+    -bar `
+    -baz
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be 2
+            Invoke-Formatter -ScriptDefinition $scriptDefinition | Should -Be $expected
+        }
+
         It "Should find a violation if a pipleline element is not indented correctly" {
             $def = @'
 get-process |

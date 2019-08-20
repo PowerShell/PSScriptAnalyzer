@@ -195,16 +195,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             {
                                 ++tempIndentationLevel;
                             }
-                            else
+
+                            // TODO: check if not just line before but further back
+                            if (k > 2 &&
+                                tokens[k - 1].Kind == TokenKind.NewLine &&
+                                tokens[k - 2].Kind == TokenKind.Comment &&
+                                tokens[k - 3].Kind == TokenKind.LineContinuation)
                             {
-                                // Ignore comments
-                                // Since the previous token is a newline token we start
-                                // looking for comments at the token before the newline token.
-                                int j = k - 2;
-                                if (j > 0 && tokens[j].Kind == TokenKind.Comment)
-                                {
-                                    ++tempIndentationLevel;
-                                }
+                                ++tempIndentationLevel;
                             }
 
                             var lineHasPipelineBeforeToken = tokens.Any(oneToken =>
