@@ -329,7 +329,7 @@ function Test-ScriptAnalyzer
             }
             else
             {
-                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary")
+                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary,Error")
             }
             if ( $InProcess ) {
                 & $scriptBlock

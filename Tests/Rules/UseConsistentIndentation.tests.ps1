@@ -209,6 +209,24 @@ function foo {
         Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
     }
 
+    It "Should preserve script when using PipelineIndentation <PipelineIndentation> for multi-line pipeline due to backtick" -TestCases @(
+        @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
+        @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
+        @{ PipelineIndentation = 'NoIndentation' }
+        ) {
+    param ($PipelineIndentation)
+    $idempotentScriptDefinition = @'
+Describe 'describe' {
+    It 'it' {
+        { 'To be,' -or `
+                -not 'to be' } | Should -Be 'the question'
+    }
+}
+'@
+    $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+    Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+}
+
         It "Should indent pipelines correctly using NoIndentation option" {
             $def = @'
 foo |
