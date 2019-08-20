@@ -121,6 +121,7 @@ foo `
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
             $violations.Count | Should -Be 2
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
             Invoke-Formatter -ScriptDefinition $scriptDefinition | Should -Be $expected
         }
 
@@ -128,7 +129,7 @@ foo `
             $scriptDefinition = @'
 foo `
 # comment
--bar
+-bar `
 -baz
 '@
             $expected = @'
@@ -138,7 +139,8 @@ foo `
     -baz
 '@
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
-            $violations.Count | Should -Be 2
+            $violations.Count | Should -Be 3
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected
             Invoke-Formatter -ScriptDefinition $scriptDefinition | Should -Be $expected
         }
 
