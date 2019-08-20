@@ -7,6 +7,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Collections.Concurrent;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -22,6 +23,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseCmdletCorrectly : IScriptRule
     {
+        private static readonly ConcurrentDictionary<string, IReadOnlyList<IReadOnlyList<string>>> s_pkgMgmtMandatoryParameters =
+            new ConcurrentDictionary<string, IReadOnlyList<IReadOnlyList<string>>>(new Dictionary<string, IReadOnlyList<IReadOnlyList<string>>>
+            {
+                { "Find-Package", Array.Empty<IReadOnlyList<string>>() },
+                { "Find-PackageProvider", Array.Empty<IReadOnlyList<string>>() },
+                { "Get-Package", Array.Empty<IReadOnlyList<string>>() },
+                { "Get-PackageProvider", Array.Empty<IReadOnlyList<string>>() },
+                { "Get-PackageSource", Array.Empty<IReadOnlyList<string>>() },
+                { "Import-PackageProvider", new string[][] { new [] { "Name" } } },
+                { "Install-Package", new string[][] { new [] { "Name" } } },
+                { "Install-PackageProvider", new string[][] { new [] { "Name" } } },
+                { "Register-PackageSource", new string[][] { new [] { "ProviderName" } } },
+                { "Save-Package", new string[][] { new [] { "Name" }, new [] { "InputObject" } } },
+                { "Set-PackageSource", new string[][] { new [] { "Name" }, new [] { "Location" } } },
+                { "Uninstall-Package", new string[][] { new [] { "Name" }, new [] { "InputObject" } } },
+                { "Unregister-PackageSource", new string[][] { new [] { "Name" }, new [] { "InputObject" } } },
+            });
+
         /// <summary>
         /// AnalyzeScript: Check that cmdlets are invoked with the correct mandatory parameter
         /// </summary>
@@ -61,41 +80,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         private bool MandatoryParameterExists(CommandAst cmdAst)
         {
-            CommandInfo cmdInfo = null;
-            List<ParameterMetadata> mandParams = new List<ParameterMetadata>();
-            IEnumerable<CommandElementAst> ceAsts = null;
-            bool returnValue = false;
-
-            #region Predicates
-
-            // Predicate to find ParameterAsts.
-            Func<CommandElementAst, bool> foundParamASTs = delegate(CommandElementAst ceAst)
-            {
-                if (ceAst is CommandParameterAst) return true;
-                return false;
-            };
-
-            #endregion
-
             #region Compares parameter list and mandatory parameter list.
 
-            cmdInfo = Helper.Instance.GetCommandInfoLegacy(cmdAst.GetCommandName());
+            CommandInfo cmdInfo = Helper.Instance.GetCommandInfoLegacy(cmdAst.GetCommandName());
+
+            // If we can't resolve the command or it's not a cmdlet, we are done
             if (cmdInfo == null || (cmdInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
             {
                 return true;
             }
 
-            // ignores if splatted variable is used
+            // We can't statically analyze splatted variables, so ignore them
             if (Helper.Instance.HasSplattedVariable(cmdAst))
             {
                 return true;
             }
 
-            // Gets parameters from command elements.
-            ceAsts = cmdAst.CommandElements.Where<CommandElementAst>(foundParamASTs);
+            // Positional parameters could be mandatory, so we assume all is well
+            if (Helper.Instance.PositionalParameterUsed(cmdAst) && Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst))
+            {
+                return true;
+            }
+
+            // If the command is piped to, this also precludes mandatory parameters
+            if (cmdAst.Parent is PipelineAst parentPipeline
+                && parentPipeline.PipelineElements.Count > 1
+                && parentPipeline.PipelineElements[0] != cmdAst)
+            {
+                return true;
+            }
+
+            // We now need to look at all explicit parameters in the given command AST
+            IEnumerable<CommandParameterAst> commandParameterAst = cmdAst.CommandElements.OfType<CommandParameterAst>();
 
             // Gets mandatory parameters from cmdlet.
             // If cannot find any mandatory parameter, it's not necessary to do a further check for current cmdlet.
+            var mandatoryParameters = new List<ParameterMetadata>();
             try
             {
                 int noOfParamSets = cmdInfo.ParameterSets.Count;
@@ -119,7 +139,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (count >= noOfParamSets)
                     {
-                        mandParams.Add(pm);
+                        mandatoryParameters.Add(pm);
                     }
                 }
             }
@@ -129,28 +149,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true;
             }
 
-            if (mandParams.Count == 0 || (Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst) && Helper.Instance.PositionalParameterUsed(cmdAst)))
+            if (mandatoryParameters.Count == 0)
             {
-                returnValue = true;
+                return true;
             }
-            else
+
+            // Compares parameter list and mandatory parameter list.
+            foreach (CommandElementAst commandElementAst in commandParameterAst)
             {
-                // Compares parameter list and mandatory parameter list.
-                foreach (CommandElementAst ceAst in ceAsts)
+                CommandParameterAst cpAst = (CommandParameterAst)commandElementAst;
+                if (mandatoryParameters.Count<ParameterMetadata>(item =>
+                    item.Name.Equals(cpAst.ParameterName, StringComparison.OrdinalIgnoreCase)) > 0)
                 {
-                    CommandParameterAst cpAst = (CommandParameterAst)ceAst;
-                    if (mandParams.Count<ParameterMetadata>(item =>
-                        item.Name.Equals(cpAst.ParameterName, StringComparison.OrdinalIgnoreCase)) > 0)
-                    {
-                        returnValue = true;
-                        break;
-                    }
+                    return true;
                 }
             }
 
             #endregion
 
-            return returnValue;
+            return false;
         }
 
         /// <summary>
