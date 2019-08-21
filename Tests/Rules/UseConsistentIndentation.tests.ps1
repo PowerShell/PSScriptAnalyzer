@@ -3,7 +3,25 @@ $testRootDirectory = Split-Path -Parent $directory
 
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
+
 Describe "UseConsistentIndentation" {
+    BeforeAll {
+        function Invoke-FormatterAssertion {
+            param(
+                [string] $ScriptDefinition,
+                [string] $ExcpectedScriptDefinition,
+                [int] $NumberOfExpectedWarnings,
+                [hashtable] $Settings
+            )
+
+            # Unit test just using this rule only
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be $NumberOfExpectedWarnings -Because $ScriptDefinition
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected -Because $ScriptDefinition
+            # Integration test with all default formatting rules
+            Invoke-Formatter -ScriptDefinition $scriptDefinition | Should -Be $expected -Because $ScriptDefinition
+        }
+    }
     BeforeEach {
         $indentationUnit = ' '
         $indentationSize = 4
@@ -107,6 +125,39 @@ function foo {
     }
 
     Context "When a multi-line command is given" {
+
+        It "When a comment is in the middle of a multi-line statement with preceding and succeeding line continuations" {
+            $scriptDefinition = @'
+foo `
+# comment
+-bar `
+-baz
+'@
+            $expected = @'
+foo `
+    # comment
+    -bar `
+    -baz
+'@
+            Invoke-FormatterAssertion $scriptDefinition $expected 3 $settings
+        }
+
+        It "When a comment is in the middle of a multi-line statement with preceding pipeline and succeeding line continuation " {
+            $scriptDefinition = @'
+foo |
+# comment
+bar `
+-baz
+'@
+            $expected = @'
+foo |
+    # comment
+    bar `
+        -baz
+'@
+            Invoke-FormatterAssertion $scriptDefinition $expected 3 $settings
+        }
+
         It "Should find a violation if a pipleline element is not indented correctly" {
             $def = @'
 get-process |
