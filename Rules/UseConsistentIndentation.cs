@@ -203,12 +203,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 int j = k - 2;
                                 while (j > 0 && tokens[j].Kind == TokenKind.Comment)
                                 {
-                                    --j;
+                                    j--;
                                 }
 
                                 if (j >= 0 && tokens[j].Kind == TokenKind.LineContinuation)
                                 {
-                                    ++tempIndentationLevel;
+                                    tempIndentationLevel++;
                                 }
                             }
 
