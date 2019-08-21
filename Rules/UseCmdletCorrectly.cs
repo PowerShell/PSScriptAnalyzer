@@ -23,22 +23,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseCmdletCorrectly : IScriptRule
     {
-        private static readonly ConcurrentDictionary<string, IReadOnlyList<IReadOnlyList<string>>> s_pkgMgmtMandatoryParameters =
-            new ConcurrentDictionary<string, IReadOnlyList<IReadOnlyList<string>>>(new Dictionary<string, IReadOnlyList<IReadOnlyList<string>>>
+        private static readonly ConcurrentDictionary<string, IReadOnlyList<string>> s_pkgMgmtMandatoryParameters =
+            new ConcurrentDictionary<string, IReadOnlyList<string>>(new Dictionary<string, IReadOnlyList<string>>
             {
-                { "Find-Package", Array.Empty<IReadOnlyList<string>>() },
-                { "Find-PackageProvider", Array.Empty<IReadOnlyList<string>>() },
-                { "Get-Package", Array.Empty<IReadOnlyList<string>>() },
-                { "Get-PackageProvider", Array.Empty<IReadOnlyList<string>>() },
-                { "Get-PackageSource", Array.Empty<IReadOnlyList<string>>() },
-                { "Import-PackageProvider", new string[][] { new [] { "Name" } } },
-                { "Install-Package", new string[][] { new [] { "Name" } } },
-                { "Install-PackageProvider", new string[][] { new [] { "Name" } } },
-                { "Register-PackageSource", new string[][] { new [] { "ProviderName" } } },
-                { "Save-Package", new string[][] { new [] { "Name" }, new [] { "InputObject" } } },
-                { "Set-PackageSource", new string[][] { new [] { "Name" }, new [] { "Location" } } },
-                { "Uninstall-Package", new string[][] { new [] { "Name" }, new [] { "InputObject" } } },
-                { "Unregister-PackageSource", new string[][] { new [] { "Name" }, new [] { "InputObject" } } },
+                { "Find-Package", Array.Empty<string>() },
+                { "Find-PackageProvider", Array.Empty<string>() },
+                { "Get-Package", Array.Empty<string>() },
+                { "Get-PackageProvider", Array.Empty<string>() },
+                { "Get-PackageSource", Array.Empty<string>() },
+                { "Import-PackageProvider", new string[] { "Name" } },
+                { "Install-Package", new string[] { "Name" } },
+                { "Install-PackageProvider", new string[] { "Name" } },
+                { "Register-PackageSource", new string[] { "ProviderName" } },
+                { "Save-Package", new string[] { "Name", "InputObject" } },
+                { "Set-PackageSource", new string[] { "Name", "Location" } },
+                { "Uninstall-Package", new string[] { "Name", "InputObject" } },
+                { "Unregister-PackageSource", new string[] { "Name", "InputObject" } },
             });
 
         /// <summary>
@@ -110,8 +110,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true;
             }
 
-            // We now need to look at all explicit parameters in the given command AST
-            IEnumerable<CommandParameterAst> commandParameterAst = cmdAst.CommandElements.OfType<CommandParameterAst>();
+            // We want to check cmdlets from PackageManagement separately because they experience a deadlock
+            // when cmdInfo.Parameters or cmdInfo.ParameterSets is accessed.
+            // See https://github.com/PowerShell/PSScriptAnalyzer/issues/1297
+            if (s_pkgMgmtMandatoryParameters.TryGetValue(cmdInfo.Name, out IReadOnlyList<string> pkgMgmtCmdletMandatoryParams))
+            {
+                // If the command has no parameter sets with mandatory parameters, we are done
+                if (pkgMgmtCmdletMandatoryParams.Count == 0)
+                {
+                    return true;
+                }
+
+                // We make the following simplifications here that all apply to the PackageManagement cmdlets:
+                //   - Only one mandatory parameter per parameter set
+                //   - Any part of the parameter prefix is valid
+                //   - There are no parameter sets without mandatory parameters
+                IEnumerable<CommandParameterAst> parameterAsts = cmdAst.CommandElements.OfType<CommandParameterAst>();
+                foreach (string mandatoryParameter in pkgMgmtCmdletMandatoryParams)
+                {
+                    foreach (CommandParameterAst parameterAst in parameterAsts)
+                    {
+                        if (mandatoryParameter.StartsWith(parameterAst.ParameterName))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
 
             // Gets mandatory parameters from cmdlet.
             // If cannot find any mandatory parameter, it's not necessary to do a further check for current cmdlet.
@@ -155,7 +182,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Compares parameter list and mandatory parameter list.
-            foreach (CommandElementAst commandElementAst in commandParameterAst)
+            foreach (CommandElementAst commandElementAst in cmdAst.CommandElements.OfType<CommandParameterAst>())
             {
                 CommandParameterAst cpAst = (CommandParameterAst)commandElementAst;
                 if (mandatoryParameters.Count<ParameterMetadata>(item =>
