@@ -36,7 +36,7 @@ function Invoke-AppVeyorInstall {
     Write-Verbose "& $buildScriptDir/build.ps1 -bootstrap"
     $buildScriptDir = (Resolve-Path "$PSScriptRoot/..").Path
     & "$buildScriptDir/build.ps1" -bootstrap
-    $GLOBAL:LASTEXITCODE = $LASTEXITCODE = 0 # needed to avoid a premature abortion of the ApVeyor Ubuntu build
+    $Global:LASTEXITCODE = $LASTEXITCODE = 0 # needed to avoid a premature abortion of the ApVeyor Ubuntu build
 }
 
 # Implements AppVeyor 'test_script' step
