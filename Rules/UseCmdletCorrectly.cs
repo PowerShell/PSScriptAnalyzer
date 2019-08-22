@@ -23,6 +23,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseCmdletCorrectly : IScriptRule
     {
+        // Cache of the mandatory parameters of cmdlets in PackageManagement
+        // Key:   Cmdlet name
+        // Value: List of mandatory parameters
         private static readonly ConcurrentDictionary<string, IReadOnlyList<string>> s_pkgMgmtMandatoryParameters =
             new ConcurrentDictionary<string, IReadOnlyList<string>>(new Dictionary<string, IReadOnlyList<string>>
             {

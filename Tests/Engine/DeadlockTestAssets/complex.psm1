@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# Copy of https://github.com/TravisEz13/PSPackageProject/blob/master/src/PSPackageProject.psm1
+# References to PackageManagement cmdlets in this file have reproduced deadlocks in PSSA most consistently
+# See https://github.com/PowerShell/PSScriptAnalyzer/issues/1297
+# For the specific lines in this file that can cause deadlocks, search NOTE in this file
+
 #region Private implementation functions
 
 function GetPowerShellName {
@@ -424,11 +429,13 @@ Describe "BinSkim" {
         }
 
         Write-Verbose "Finding binskim..." -Verbose
+        # NOTE: Deadlock occurs here on Find-Package
         $packageInfo = Find-Package -Name $packageName -Source $sourceName
         $dirName = $packageInfo.Name + '.' + $packageInfo.Version
         $toolLocation = Join-Path2 -Path $packageLocation -ChildPath $dirName -AdditionalChildPath 'tools', 'netcoreapp2.0', $rid, $binaryName
         if (!(test-path -path $toolLocation)) {
             Write-Verbose "Installing binskim..." -Verbose
+            # NOTE: Deadlock occurs here on Install-Package
             $packageInfo | Install-Package -Destination $packageLocation -Force
         }
 
@@ -674,8 +681,10 @@ function Save-Package2
     )
 
     if($RequiredVersion) {
+        # NOTE: Deadlock occurs here on Save-Package
         Save-Package -Name $Name -Source 'https://www.powershellgallery.com/api/v2' -Path $Location -ProviderName NuGet -RequiredVersion $RequiredVersion
     } else {
+        # NOTE: Deadlock occurs here on Save-Package
         Save-Package -Name $Name -Source 'https://www.powershellgallery.com/api/v2' -Path $Location -ProviderName NuGet
     }
 
