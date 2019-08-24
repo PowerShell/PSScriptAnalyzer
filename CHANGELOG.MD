@@ -3,6 +3,7 @@
 ## [1.18.2](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.2) - 2019-08-28
 
 This release mainly brings fixes and enhancements that are especially useful when being consumed by PowerShellEditorServices.
+The benefit to the user will be some enhancements and fixes in the formatter, especially around multiline commands. In addition to that, error messages emitted when using invalid syntax in the setting file are now much more meaningful and actionable.
 
 ### Fixes
 
