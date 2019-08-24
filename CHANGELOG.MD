@@ -16,7 +16,7 @@ This release mainly brings fixes and enhancements that are especially useful whe
     - Fix edge case when PipelineIndentationStyle is not set to NoIndentation (pipeline operator spanning only one line but PipelineAst spanning multiple lines) (#1261) (by @bergmeister)
 
 - Engine
-  - Work around runspacepool deadlock #1316 (by @rjmholt)
+  - Work around runspacepool deadlock (#1316) (by @rjmholt)
 
 ### Enhancements
 
