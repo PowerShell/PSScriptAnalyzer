@@ -7,6 +7,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Collections.Concurrent;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -22,6 +23,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseCmdletCorrectly : IScriptRule
     {
+        // Cache of the mandatory parameters of cmdlets in PackageManagement
+        // Key:   Cmdlet name
+        // Value: List of mandatory parameters
+        private static readonly ConcurrentDictionary<string, IReadOnlyList<string>> s_pkgMgmtMandatoryParameters =
+            new ConcurrentDictionary<string, IReadOnlyList<string>>(new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "Find-Package", new string[0] },
+                { "Find-PackageProvider", new string[0] },
+                { "Get-Package", new string[0] },
+                { "Get-PackageProvider", new string[0] },
+                { "Get-PackageSource", new string[0] },
+                { "Import-PackageProvider", new string[] { "Name" } },
+                { "Install-Package", new string[] { "Name" } },
+                { "Install-PackageProvider", new string[] { "Name" } },
+                { "Register-PackageSource", new string[] { "ProviderName" } },
+                { "Save-Package", new string[] { "Name", "InputObject" } },
+                { "Set-PackageSource", new string[] { "Name", "Location" } },
+                { "Uninstall-Package", new string[] { "Name", "InputObject" } },
+                { "Unregister-PackageSource", new string[] { "Name", "InputObject" } },
+            });
+
         /// <summary>
         /// AnalyzeScript: Check that cmdlets are invoked with the correct mandatory parameter
         /// </summary>
@@ -61,41 +83,69 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         private bool MandatoryParameterExists(CommandAst cmdAst)
         {
-            CommandInfo cmdInfo = null;
-            List<ParameterMetadata> mandParams = new List<ParameterMetadata>();
-            IEnumerable<CommandElementAst> ceAsts = null;
-            bool returnValue = false;
-
-            #region Predicates
-
-            // Predicate to find ParameterAsts.
-            Func<CommandElementAst, bool> foundParamASTs = delegate(CommandElementAst ceAst)
-            {
-                if (ceAst is CommandParameterAst) return true;
-                return false;
-            };
-
-            #endregion
-
             #region Compares parameter list and mandatory parameter list.
 
-            cmdInfo = Helper.Instance.GetCommandInfoLegacy(cmdAst.GetCommandName());
+            CommandInfo cmdInfo = Helper.Instance.GetCommandInfoLegacy(cmdAst.GetCommandName());
+
+            // If we can't resolve the command or it's not a cmdlet, we are done
             if (cmdInfo == null || (cmdInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
             {
                 return true;
             }
 
-            // ignores if splatted variable is used
+            // We can't statically analyze splatted variables, so ignore them
             if (Helper.Instance.HasSplattedVariable(cmdAst))
             {
                 return true;
             }
 
-            // Gets parameters from command elements.
-            ceAsts = cmdAst.CommandElements.Where<CommandElementAst>(foundParamASTs);
+            // Positional parameters could be mandatory, so we assume all is well
+            if (Helper.Instance.PositionalParameterUsed(cmdAst) && Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst))
+            {
+                return true;
+            }
+
+            // If the command is piped to, this also precludes mandatory parameters
+            if (cmdAst.Parent is PipelineAst parentPipeline
+                && parentPipeline.PipelineElements.Count > 1
+                && parentPipeline.PipelineElements[0] != cmdAst)
+            {
+                return true;
+            }
+
+            // We want to check cmdlets from PackageManagement separately because they experience a deadlock
+            // when cmdInfo.Parameters or cmdInfo.ParameterSets is accessed.
+            // See https://github.com/PowerShell/PSScriptAnalyzer/issues/1297
+            if (s_pkgMgmtMandatoryParameters.TryGetValue(cmdInfo.Name, out IReadOnlyList<string> pkgMgmtCmdletMandatoryParams))
+            {
+                // If the command has no parameter sets with mandatory parameters, we are done
+                if (pkgMgmtCmdletMandatoryParams.Count == 0)
+                {
+                    return true;
+                }
+
+                // We make the following simplifications here that all apply to the PackageManagement cmdlets:
+                //   - Only one mandatory parameter per parameter set
+                //   - Any part of the parameter prefix is valid
+                //   - There are no parameter sets without mandatory parameters
+                IEnumerable<CommandParameterAst> parameterAsts = cmdAst.CommandElements.OfType<CommandParameterAst>();
+                foreach (string mandatoryParameter in pkgMgmtCmdletMandatoryParams)
+                {
+                    foreach (CommandParameterAst parameterAst in parameterAsts)
+                    {
+                        if (mandatoryParameter.StartsWith(parameterAst.ParameterName))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
 
             // Gets mandatory parameters from cmdlet.
             // If cannot find any mandatory parameter, it's not necessary to do a further check for current cmdlet.
+            var mandatoryParameters = new List<ParameterMetadata>();
             try
             {
                 int noOfParamSets = cmdInfo.ParameterSets.Count;
@@ -119,7 +169,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     if (count >= noOfParamSets)
                     {
-                        mandParams.Add(pm);
+                        mandatoryParameters.Add(pm);
                     }
                 }
             }
@@ -129,28 +179,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return true;
             }
 
-            if (mandParams.Count == 0 || (Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst) && Helper.Instance.PositionalParameterUsed(cmdAst)))
+            if (mandatoryParameters.Count == 0)
             {
-                returnValue = true;
+                return true;
             }
-            else
+
+            // Compares parameter list and mandatory parameter list.
+            foreach (CommandElementAst commandElementAst in cmdAst.CommandElements.OfType<CommandParameterAst>())
             {
-                // Compares parameter list and mandatory parameter list.
-                foreach (CommandElementAst ceAst in ceAsts)
+                CommandParameterAst cpAst = (CommandParameterAst)commandElementAst;
+                if (mandatoryParameters.Count<ParameterMetadata>(item =>
+                    item.Name.Equals(cpAst.ParameterName, StringComparison.OrdinalIgnoreCase)) > 0)
                 {
-                    CommandParameterAst cpAst = (CommandParameterAst)ceAst;
-                    if (mandParams.Count<ParameterMetadata>(item =>
-                        item.Name.Equals(cpAst.ParameterName, StringComparison.OrdinalIgnoreCase)) > 0)
-                    {
-                        returnValue = true;
-                        break;
-                    }
+                    return true;
                 }
             }
 
             #endregion
 
-            return returnValue;
+            return false;
         }
 
         /// <summary>
