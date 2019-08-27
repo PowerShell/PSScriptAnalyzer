@@ -15,6 +15,7 @@ The benefit to the user will be some enhancements and fixes in the formatter, es
   - PipelineIndentationStyle (when not being set to NoIndentation)
     - PipelineIndentationStyle: Fix edge case where pipeline was incorrectly detected to span multiple lines due to backticks in the command leading up to the pipeline (#1312) (by @bergmeister)
     - Fix edge case when PipelineIndentationStyle is not set to NoIndentation (pipeline operator spanning only one line but PipelineAst spanning multiple lines) (#1261) (by @bergmeister)
+  - Allow formatter to optionally correct aliases (#1277) (by @bergmeister)
 
 - Engine
   - Work around runspacepool deadlock (#1316) (by @rjmholt)
@@ -28,12 +29,17 @@ The benefit to the user will be some enhancements and fixes in the formatter, es
 - Settings files
   - Actionable errors from incorrect settings files (#1263) (thanks @travis-c-lagrone!)
   - Update engine resource string 'WrongKeyHashTable' to include all valid settings hashtable keys (#1273) (thanks @travis-c-lagrone!)
+- Add icon and add reference in readme and manifest (#1291) (by @bergmeister, thanks @adilio for creating the logo!)
 
 ### Documentation
 
 - Update readme with changes to default branch being master now (#1265) (by @bergmeister)
 - UseApprovedVerbs.md: Improving Documentation (#1294) (Thanks @Banner-Keith!)
 - Update documentation for parameter "Settings" of command "Invoke-ScriptAnalyzer" to include the key "RecurseCustomRulesPath" - (#1272) (thanks @travis-c-lagrone!)
+
+### Build
+
+- Fix Ubuntu Appveyor build (#1320) (by @bergmeister, thanks @JamesWTruher for the initial investigation)
 
 ## [1.18.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.1) - 2019-06-12
 
