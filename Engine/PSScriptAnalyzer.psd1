@@ -85,7 +85,7 @@ PrivateData = @{
         Tags = 'lint', 'bestpractice'
         LicenseUri = 'https://github.com/PowerShell/PSScriptAnalyzer/blob/master/LICENSE'
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
-        IconUri = ''
+        IconUri = 'https://raw.githubusercontent.com/powershell/psscriptanalyzer/master/logo.png'
         ReleaseNotes = ''
     }
 }
