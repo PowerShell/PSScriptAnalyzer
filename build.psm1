@@ -108,7 +108,7 @@ function Start-DocumentationBuild
     if ($null -eq $platyPS -or ($platyPS | Sort-Object Version -Descending | Select-Object -First 1).Version -lt [version]0.12)
     {
         Write-Verbose -verbose "platyPS module not found or below required version of 0.12, installing the latest version."
-        Install-Module -Force -Name platyPS -Scope CurrentUser
+        Install-Module -Force -Name platyPS -Scope CurrentUser -Repository PSGallery
     }
     if (-not (Test-Path $markdownDocsPath))
     {

@@ -16,7 +16,7 @@ function Invoke-AppVeyorInstall {
         else {
             # Visual Studio 2017 build (has already Pester v3, therefore a different installation mechanism is needed to make it also use the new version 4)
             Write-Verbose -Verbose "Installing Pester via Install-Module"
-            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery
         }
     }
 
@@ -28,7 +28,7 @@ function Invoke-AppVeyorInstall {
     }
     else {
         Write-Verbose -Verbose "Installing platyPS via Install-Module"
-        Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion $platyPSVersion
+        Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion $platyPSVersion -Repository PSGallery
     }
 
     # the build script sorts out the problems of WMF4 and earlier versions of dotnet CLI
