@@ -39,6 +39,7 @@ The benefit to the user will be some enhancements and fixes in the formatter, es
 
 ### Build
 
+- Don't sign the compatability collector catalog so that PSScriptAnalyzer can ship with a catalog file again (#1328) (by @JamesWTruher)
 - Fix Ubuntu Appveyor build (#1320) (by @bergmeister, thanks @JamesWTruher for the initial investigation)
 
 ## [1.18.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.1) - 2019-06-12
