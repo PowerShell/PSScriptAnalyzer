@@ -158,6 +158,36 @@ foo |
             Invoke-FormatterAssertion $scriptDefinition $expected 3 $settings
         }
 
+        It "When a comment is in the middle of a multi-line statement with preceding pipeline and succeeding line continuation 2" {
+            $scriptDefinition = @'
+foo `
+-bar |
+baz
+'@
+            $expected = @'
+foo `
+    -bar |
+        baz
+'@
+            Invoke-FormatterAssertion $scriptDefinition $expected 2 $settings
+        }
+
+        It "When a comment is in the middle of a multi-line statement with preceding pipeline and succeeding line continuation 3" {
+            $scriptDefinition = @'
+foo `
+# comment
+-bar |
+baz
+'@
+            $expected = @'
+foo `
+    # comment
+    -bar |
+        baz
+'@
+            Invoke-FormatterAssertion $scriptDefinition $expected 3 $settings
+        }
+
         It "Should find a violation if a pipleline element is not indented correctly" {
             $def = @'
 get-process |
