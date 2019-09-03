@@ -904,10 +904,10 @@
     <value>Avoid long lines</value>
   </data>
   <data name="AvoidLongLinesDescription" xml:space="preserve">
-    <value>Each line should be no longer than 120 characters.</value>
+    <value>Each line should be not be too long.</value>
   </data>
   <data name="AvoidLongLinesError" xml:space="preserve">
-    <value>Line is longer than 120 characters which is too long</value>
+    <value>Line is too long</value>
   </data>
   <data name="PlaceOpenBraceName" xml:space="preserve">
     <value>PlaceOpenBrace</value>
