@@ -14,7 +14,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidTrailingWhitespace: Checks for trailing whitespaces
+    /// AvoidLongLines: Checks for lines longer than 120 characters
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]

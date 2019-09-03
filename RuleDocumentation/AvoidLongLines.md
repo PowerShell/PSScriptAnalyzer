@@ -4,4 +4,4 @@
 
 ## Description
 
-Lines should be longer than 120 characters, including leading whitespace (indentation).
+Lines should be no longer than 120 characters, including leading whitespace (indentation).
