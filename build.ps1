@@ -34,7 +34,12 @@ param(
     [switch] $InProcess,
 
     [Parameter(ParameterSetName='Bootstrap')]
-    [switch] $Bootstrap
+    [switch] $Bootstrap,
+
+    [Parameter(ParameterSetName='BuildOne')]
+    [Parameter(ParameterSetName='BuildAll')]
+    [switch] $Pack
+
 )
 BEGIN {
     if ($PSVersion -gt 6) {
@@ -78,5 +83,8 @@ END {
         default {
             throw "Unexpected parameter set '$setName'"
         }
+    }
+    if ( $Pack ) {
+        Export-NuPkg
     }
 }

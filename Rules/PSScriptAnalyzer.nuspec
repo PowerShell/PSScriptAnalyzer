@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>PSScriptAnalyzer.Library</id>
+    <version>1.18.2</version>
+    <title>PSScriptAnalyzer.Library</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft,PowerShellTeam</owners>
+    <projectUrl>https://github.com/PowerShell/PSScriptAnalyzer</projectUrl>
+    <iconUrl>https://github.com/PowerShell/PowerShell/blob/master/assets/Powershell_64.png</iconUrl>
+    <licenseUrl>https://github.com/PowerShell/PowerShell/blob/master/LICENSE.txt</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Contains hostable PowerShell Script Analyzer</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>PowerShell, reference, net452, netstandard2, netstandard2.0</tags>
+    <references>
+      <reference file="System.Management.Automation.dll" >
+        <private>False</private>
+      </reference>
+    </references>
+  </metadata>
+  <files>
+    <file src="bin/Release/netstandard2.0/Microsoft.PowerShell.CrossCompatibility.dll" target="lib/netstandard2.0" />
+    <file src="bin/Release/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" target="lib/netstandard2.0" />
+    <file src="bin/Release/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" target="lib/netstandard2.0" />
+    <file src="../Engine/PSScriptAnalyzer.psd1" target="lib/netstandard2.0" />
+  </files>
+</package>
