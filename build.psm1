@@ -696,3 +696,8 @@ function Copy-CrossCompatibilityModule
         }
     }
 }
+
+function Export-NuPkg
+{
+    dotnet pack
+}

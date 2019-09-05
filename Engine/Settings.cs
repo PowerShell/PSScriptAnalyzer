@@ -107,6 +107,67 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         /// <summary>
+        /// Add a configurable rule to the rule arguments
+        /// </summary>
+        public void AddRuleArgument(string name, Dictionary<string,object>setting)
+        {
+            Dictionary<string,object> currentSetting;
+            if (RuleArguments.TryGetValue(name, out currentSetting))
+            {
+                throw new ArgumentException(name + " already in settings");
+            }
+            RuleArguments.Add(name, setting);
+        }
+
+        /// <summary>
+        /// Add a configuration element to a rule
+        /// </summary>
+        public void AddRuleArgument(string rule, string setting, object value)
+        {
+            // the rule does not exist, that's a problem, first create it and then add the key/value pair
+            Dictionary<string, object> settingDictionary;
+            if ( ! RuleArguments.TryGetValue(rule, out settingDictionary))
+            {
+                Dictionary<string, object> newSetting = new Dictionary<string, object>();
+                newSetting.Add(setting, value);
+                RuleArguments.Add(rule, newSetting);
+                return;
+            }
+
+            // the setting exists, just change the value
+            object o;
+            if ( settingDictionary.TryGetValue(setting, out o))
+            {
+                SetRuleArgument(rule, setting, value);
+                return;
+            }
+
+            settingDictionary.Add(setting, value);
+            return;
+        }
+
+        /// <summary>
+        /// Allow for changing setting of an existing value
+        /// </summary>
+        public void SetRuleArgument(string rule, string setting, object value)
+        {
+            Dictionary<string, object> settingDictionary;
+            if ( ! RuleArguments.TryGetValue(rule, out settingDictionary))
+            {
+                throw new KeyNotFoundException(rule);
+            }
+
+            object o;
+            if ( ! settingDictionary.TryGetValue(setting, out o))
+            {
+                throw new KeyNotFoundException(setting);
+            }
+
+            settingDictionary[setting] = value;
+            return;
+        }
+
+        /// <summary>
         /// Retrieves the Settings directory from the Module directory structure
         /// </summary>
         public static string GetShippedSettingsDirectory()

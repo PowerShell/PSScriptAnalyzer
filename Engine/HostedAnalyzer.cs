@@ -38,9 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         public void Reset()
         {
             analyzer.CleanUp();
-            Helper.Instance = new Helper(
-                    ps.Runspace.SessionStateProxy.InvokeCommand,
-                    writer);
+            Helper.Instance = new Helper(ps.Runspace.SessionStateProxy.InvokeCommand, writer);
             Helper.Instance.Initialize();
             analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
         }
@@ -101,6 +99,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             return new AnalyzerResult(AnalysisType.Script, result, this);
         }
 
+        /*
         /// <summary>Analyze a script based on passed settings</summary>
         public AnalyzerResult Analyze(string ScriptDefinition, AnalyzerConfiguration Settings)
         {
@@ -120,6 +119,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             analyzer.CleanUp();
             return new AnalyzerResult(AnalysisType.File, result, this);
         }
+        */
 
         /// <summary>Analyze a script in the form of a file</summary>
         public AnalyzerResult Analyze(FileInfo File)
@@ -129,6 +129,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             var result = analyzer.AnalyzePath(File.FullName, (x, y) => { return true; }, false);
             analyzer.CleanUp();
             return new AnalyzerResult(AnalysisType.File, result, this);
+        }
+
+        /// <summary>Fix a script</summary>
+        public string Fix(string scriptDefinition)
+        {
+            bool fixesApplied;
+            return analyzer.Fix(scriptDefinition, out fixesApplied);
         }
 
         /// <summary>
@@ -143,12 +150,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         }
 
         /// <summary>
+        /// Create a standard settings object for Script Analyzer from an existing .psd1 file
+        /// </summary>
+        public Settings CreateSettingsFromFile(string settingsFile)
+        {
+            return new Settings(settingsFile);
+        }
+
+        /// <summary>
         /// Create a default settings object
         /// </summary>
         public Settings CreateSettings()
         {
-            Settings s = Settings.Create(null, 
-                Directory.GetParent(Directory.GetParent(typeof(ScriptAnalyzer).Assembly.Location).FullName).FullName,
+
+            Settings s = Settings.Create(new Hashtable(),
+                "",
                 writer,  ps.Runspace.SessionStateProxy.Path.GetResolvedProviderPathFromPSPath);
             s.IncludeDefaultRules = true;
             return s;
@@ -186,10 +202,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             }
             finally {
                 analyzer.CleanUp();
+                Reset();
             }
             return s;
         }
 
+/*
         /// <summary>
         /// An encapsulation of the arguments passed to Analyzer.Initialize
         /// they roughly equate to some of the parameters on the Invoke-ScriptAnalyzer
@@ -204,6 +222,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             public bool IncludeDefaultRules = true;
             public bool SuppressedOnly = false;
         }
+*/
 
         /// <summary>
         /// Analyzer usually requires a cmdlet to manage the output to the user.
@@ -258,22 +277,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
                 Warning = new List<string>();
             }
         }
-    }
-        
-    /// <summary>
-    /// The encapsulated rules of fixing a script
-    /// </summary>
-    public class FormattedScriptResult
-    {
-        /// <summary>The original script that was fixed</summary>
-        public string OriginalScript;
-        /// <summary>The script which has all the fixes</summary>
-        public string FormattedScript;
-        /// <summary>
-        /// The analysis results.
-        /// This includes all the output streams as well as the diagnostic records
-        /// </summary>
-        public AnalyzerResult Analysis;
+
+        /// <summary>Get the available builtin rules</summary>
+        /// <param name="ruleNames">A collection of strings which contain the wildcard pattern for the rule</param>
+        public List<RuleInfo> GetBuiltinRules(string[] ruleNames = null)
+        {
+            List<RuleInfo> builtinRules = new List<RuleInfo>();
+            IEnumerable<IRule> rules = ScriptAnalyzer.Instance.GetRule(null, ruleNames);
+            foreach ( IRule rule in rules )
+            {
+                builtinRules.Add(
+                    new RuleInfo(
+                        name: rule.GetName(),
+                        commonName: rule.GetCommonName(),
+                        description: rule.GetDescription(),
+                        sourceType: rule.GetSourceType(),
+                        sourceName: rule.GetSourceName(),
+                        severity: rule.GetSeverity(),
+                        implementingType: rule.GetType()
+                        )
+                    );
+            }
+            return builtinRules;
+        }
+
     }
 
     /// <summary>
@@ -337,6 +364,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         }
     }
 
+/*
     /// <summary>A public settings object</summary>
     public class PSSASettings
     {
@@ -360,6 +388,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             return ht;
         }
     }
+*/
 
     /// <summary>Whether the rule should be included or excluded</summary>
     public enum RuleStatus {
@@ -369,6 +398,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         Exclude
     }
 
+/*
     /// <summary>The encapsulation of a rule</summary>
     public class PSSARule
     {
@@ -399,4 +429,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         }
 
     }
+*/
+
 }
