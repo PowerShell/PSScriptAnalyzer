@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
     ///  - Analyze a script or file with any configuration which is supported by Invoke-ScriptAnalyzer
     ///  - Reformat a script as is done via Invoke-Formatter
     /// </summary>
-    public class HostedAnalyzer
+    public class HostedAnalyzer : IDisposable
     {
         private SMA.PowerShell ps;
         internal hostedWriter writer;
@@ -301,6 +301,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             return builtinRules;
         }
 
+        /// <summary>no</summary>
+        public void Dispose()
+        {
+            Helper.Instance.Dispose();
+        }
     }
 
     /// <summary>
