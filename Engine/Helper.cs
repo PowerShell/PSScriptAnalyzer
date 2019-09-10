@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// <summary>
     /// This Helper class contains utility/helper functions for classes in ScriptAnalyzer.
     /// </summary>
-    public class Helper
+    public class Helper : IDisposable
     {
         #region Private members
 
@@ -66,6 +66,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            _runSpacePool.Dispose();
+        }
 
         #region Properties
 
