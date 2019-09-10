@@ -37,7 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             s_v4,
             s_v5,
             s_v6,
-            s_v7
+            s_v7,
         };
 
         /// <summary>
