@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// <summary>
     /// This Helper class contains utility/helper functions for classes in ScriptAnalyzer.
     /// </summary>
-    public class Helper
+    public class Helper : IDisposable
     {
         #region Private members
 
@@ -30,8 +30,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private PSVersionTable psVersionTable;
 
         private readonly Lazy<CommandInfoCache> _commandInfoCacheLazy;
-        private readonly RunspacePool _runSpacePool;
         private readonly object _testModuleManifestLock = new object();
+        private readonly RunspacePool _runspacePool;
 
         #endregion
 
@@ -116,11 +116,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-            // There are 5 rules that use the CommandInfo cache but one rule (AvoidAlias) makes parallel queries.
-            // Therefore 10 runspaces was a heuristic measure where no more speed improvement was seen.
-            _runSpacePool = RunspaceFactory.CreateRunspacePool(1, 10);
-            _runSpacePool.Open();
-            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this, runspacePool: _runSpacePool));
+            _runspacePool = RunspaceFactory.CreateRunspacePool(1,10);
+            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this));
+        }
+
+        public void Dispose()
+        {
+            _runspacePool.Dispose();
         }
 
         /// <summary>
@@ -309,7 +311,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 using (var ps = System.Management.Automation.PowerShell.Create())
                 {
-                    ps.RunspacePool = _runSpacePool;
+                    ps.RunspacePool = _runspacePool;
                     ps.AddCommand("Test-ModuleManifest")
                       .AddParameter("Path", filePath)
                       .AddParameter("WarningAction", ActionPreference.SilentlyContinue);
