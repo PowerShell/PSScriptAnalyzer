@@ -17,6 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
         private readonly Helper _helperInstance;
         private readonly RunspacePool _runspacePool;
+        private bool disposed = false;
 
         /// <summary>
         /// Create a fresh command info cache instance.
@@ -29,9 +30,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             _runspacePool.Open();
         }
 
+        /// <summary>Dispose the runspace pool</summary>
         public void Dispose()
         {
-            _runspacePool.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if ( disposed )
+            {
+                return;
+            }
+
+            if ( disposing )
+            {
+                _runspacePool.Dispose();
+            }
+
+            disposed = true;
         }
 
         /// <summary>
