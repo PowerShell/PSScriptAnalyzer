@@ -29,7 +29,7 @@ Describe "Test Directed Graph" {
 
     Context "Runspaces should be disposed" {
         It "Running analyzer 100 times should not result in additional runspaces" -Skip ($PSVersionTable.PSVersion -le '4') {
-        $null = 1..100 | %{ Invoke-ScriptAnalyzer -ScriptDefinition 'gci' }
+            $null = 1..100 | ForEach-Object { Invoke-ScriptAnalyzer -ScriptDefinition 'gci' }
         (Get-Runspace).Count | Should -BeLessThan 10
         }
     }
