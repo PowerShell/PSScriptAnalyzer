@@ -301,10 +301,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             return builtinRules;
         }
 
-        /// <summary>no</summary>
+        /// <summary>Dispose the PowerShell instance</summary>
         public void Dispose()
         {
             Helper.Instance.Dispose();
+            ps.Runspace.Dispose();
+            ps.Dispose();
         }
     }
 
