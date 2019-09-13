@@ -86,12 +86,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 : GetCommandInfo(commandName, commandTypes: commandTypes);
         }
 
-        /// <summary>no</summary>
-        public void Dispose()
-        {
-            _runspacePool.Dispose();
-        }
-
         /// <summary>
         /// Get a CommandInfo object of the given command name
         /// </summary>
