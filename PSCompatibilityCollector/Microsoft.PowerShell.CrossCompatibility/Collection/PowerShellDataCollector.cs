@@ -84,7 +84,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         internal ReadOnlySet<string> CommonParameterNames => _lazyCommonParameters.Value;
 
         /// <summary>
-        /// Assembly module data objects into a lookup table.
+        /// Assemble module data objects into a lookup table.
         /// </summary>
         /// <param name="modules">An enumeration of module data objects to assemble</param>
         /// <returns>A case-insensitive dictionary of versioned module data objects.</returns>
@@ -96,7 +96,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             {
                 if (moduleDict.TryGetValue(module.Item1, out JsonDictionary<Version, ModuleData> versionDict))
                 {
-                    versionDict.Add(module.Item2, module.Item3);
+                    if (!versionDict.ContainsKey(module.Item2))
+                    {
+                        versionDict[module.Item2] = module.Item3;
+                    }
                     continue;
                 }
 
@@ -144,9 +147,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
                 Tuple<string, Version, ModuleData> moduleData = LoadAndGetModuleData(module, out Exception error);
 
-                if (moduleData == null && error != null)
+                if (moduleData == null)
                 {
-                    errs.Add(error);
+                    if (error != null)
+                    {
+                        errs.Add(error);
+                    }
                     continue;
                 }
 
@@ -173,6 +179,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     .AddParameter("ErrorAction", "Stop")
                     .InvokeAndClear<PSModuleInfo>()
                     .FirstOrDefault();
+
+                if (importedModule == null)
+                {
+                    error = null;
+                    return null;
+                }
 
                 Tuple<string, Version, ModuleData> moduleData = GetSingleModuleData(importedModule);
 
@@ -281,11 +293,26 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 switch (command)
                 {
                     case CmdletInfo cmdlet:
-                        cmdletData.Add(cmdlet.Name, GetSingleCmdletData(cmdlet));
+                        try
+                        {
+                            cmdletData.Add(cmdlet.Name, GetSingleCmdletData(cmdlet));
+                        }
+                        catch (RuntimeException)
+                        {
+                            // If we can't load the cmdlet, we just move on
+                        }
                         continue;
 
                     case FunctionInfo function:
-                        functionData.Add(function.Name, GetSingleFunctionData(function));
+                        try
+                        {
+                            functionData.Add(function.Name, GetSingleFunctionData(function));
+                        }
+                        catch (RuntimeException)
+                        {
+                            // Some functions have problems loading,
+                            // which likely means PowerShell wouldn't be able to run them
+                        }
                         continue;
 
                     default:
@@ -495,32 +522,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             try
             {
                 functionData.DefaultParameterSet = GetDefaultParameterSet(function.DefaultParameterSet);
-            }
-            catch (RuntimeException)
-            {
-                // This can fail when PowerShell can't resolve a type. So we just leave the field null
-            }
-
-            try
-            {
                 functionData.OutputType = GetOutputType(function.OutputType);
-            }
-            catch (RuntimeException)
-            {
-                // Also can fail
-            }
-
-            try
-            {
                 functionData.ParameterSets = GetParameterSets(function.ParameterSets);
-            }
-            catch (RuntimeException)
-            {
-                // Type resolution failure
-            }
-
-            try
-            {
                 AssembleParameters(
                     function.Parameters,
                     out JsonCaseInsensitiveStringDictionary<ParameterData> parameters,
@@ -532,7 +535,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
             catch (RuntimeException)
             {
-                // Can fail
+                // This can fail when PowerShell can't resolve a type. So we just leave the field null
             }
 
             return functionData;
