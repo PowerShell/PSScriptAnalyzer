@@ -31,6 +31,8 @@ function Invoke-AppVeyorInstall {
         Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion $platyPSVersion -Repository PSGallery
     }
 
+    # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
+    Write-Verbose -Verbose "Installing required .Net CORE SDK"
     # the legacy WMF4 image only has the old preview SDKs of dotnet
     $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
     $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
@@ -61,13 +63,6 @@ function Invoke-AppVeyorInstall {
             Remove-Item .\dotnet-install.*
         }
     }
-
-    # # the build script sorts out the problems of WMF4 and earlier versions of dotnet CLI
-    # Write-Verbose -Verbose "Installing required .Net CORE SDK"
-    # Write-Verbose "& $buildScriptDir/build.ps1 -bootstrap"
-    # $buildScriptDir = (Resolve-Path "$PSScriptRoot/..").Path
-    # & "$buildScriptDir/build.ps1" -bootstrap
-    # $Global:LASTEXITCODE = $LASTEXITCODE = 0 # needed to avoid a premature abortion of the AppVeyor Ubuntu build
 }
 
 # Implements AppVeyor 'test_script' step
