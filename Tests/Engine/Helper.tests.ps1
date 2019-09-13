@@ -30,7 +30,7 @@ Describe "Test Directed Graph" {
     Context "Runspaces should be disposed" {
         It "Running analyzer 100 times should only create a limited number of runspaces" -Skip:$($PSVersionTable.PSVersion.Major -le 4) {
             $null = 1..100 | ForEach-Object { Invoke-ScriptAnalyzer -ScriptDefinition 'gci' }
-            (Get-Runspace).Count | Should -BeLessOrEqual 10 -Because 'Number of Runspaces should not exceed size of runspace pool cache in CommandInfoCache'
+            (Get-Runspace).Count | Should -BeLessOrEqual 11 -Because 'Number of Runspaces should not exceed size of runspace pool cache (10) plus the the default runspace pool (1) in CommandInfoCache'
         }
     }
 }
