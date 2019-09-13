@@ -10,15 +10,15 @@ $script:Srv2012_3_profile = 'win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framew
 $script:Srv2012r2_4_profile = 'win-8_x64_6.3.9600.0_4.0_x64_4.0.30319.42000_framework'
 $script:Srv2016_5_profile = 'win-8_x64_10.0.14393.0_5.1.14393.2791_x64_4.0.30319.42000_framework'
 $script:Srv2016_6_2_profile = 'win-8_x64_10.0.14393.0_6.2.4_x64_4.0.30319.42000_core'
-$script:Srv2016_7_profile = 'win-8_x64_10.0.14393.0_7.0.0_x64_4.0.30319.42000_core'
+$script:Srv2016_7_profile = 'win-8_x64_10.0.14393.0_7.0.0_x64_3.1.2_core'
 $script:Srv2019_5_profile = 'win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
 $script:Srv2019_6_2_profile = 'win-8_x64_10.0.17763.0_6.2.4_x64_4.0.30319.42000_core'
-$script:Srv2019_7_profile = 'win-8_x64_10.0.17763.0_7.0.0_x64_4.0.30319.42000_core'
+$script:Srv2019_7_profile = 'win-8_x64_10.0.17763.0_7.0.0_x64_3.1.2_core'
 $script:Win10_5_profile = 'win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
-$script:Win10_6_2_profile = 'win-48_x64_10.0.17763.0_6.2.4_x64_4.0.30319.42000_core'
-$script:Win10_7_profile = 'win-48_x64_10.0.17763.0_7.0.0_x64_4.0.30319.42000_core'
+$script:Win10_6_2_profile = 'win-4_x64_10.0.18362.0_6.2.4_x64_4.0.30319.42000_core'
+$script:Win10_7_profile = 'win-4_x64_10.0.18362.0_7.0.0_x64_3.1.2_core'
 $script:Ubuntu1804_6_2_profile = 'ubuntu_x64_18.04_6.2.4_x64_4.0.30319.42000_core'
-$script:Ubuntu1804_7_profile = 'ubuntu_x64_18.04_7.0.0_x64_4.0.30319.42000_core'
+$script:Ubuntu1804_7_profile = 'ubuntu_x64_18.04_7.0.0_x64_3.1.2_core'
 
 $script:AzF_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azurefunctions.json").Path
 $script:AzA_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azureautomation.json").Path
@@ -68,6 +68,7 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2019_5_profile; Script = 'gci .'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_5_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_5_profile; Script = 'fhx $filePath'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
+
     @{ Target = $script:Srv2019_6_2_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "6.2"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_2_profile; Script = "Get-PSSnapIn MySnapIn"; Commands = @("Get-PSSnapIn"); Version = "6.2"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_2_profile; Script = "Get-Content $pshome\about_signing.help.txt | Out-Printer"; Commands = @("Out-Printer"); Version = "6.2"; OS = "Windows"; ProblemCount = 1 }
@@ -100,37 +101,36 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2019_6_2_profile; Script = 'Get-EventLog -Newest 5 -LogName "Application"'; Commands = @("Get-EventLog"); Version = "6.2"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_2_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @("Get-HotFix"); Version = "6.2"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_2_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "6.2"; OS = "Windows"; ProblemCount = 1 }
+
     @{ Target = $script:Srv2019_7_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = "Get-PSSnapIn MySnapIn"; Commands = @("Get-PSSnapIn"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = "Get-Content $pshome\about_signing.help.txt | Out-Printer"; Commands = @("Out-Printer"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_7_profile; Script = "Get-Content $pshome\about_signing.help.txt | Out-Printer"; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = 'New-PSWorkflowSession -ComputerName "ServerNode01" -Name "WorkflowTests" -SessionOption (New-PSSessionOption -OutputBufferingMode Drop)'; Commands = @("New-PSWorkflowSession"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = "Get-Process | Out-GridView"; Commands = @("Out-GridView"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = "Get-Process | ogv"; Commands = @("ogv"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_7_profile; Script = "Get-Process | Out-GridView"; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_7_profile; Script = "Get-Process | ogv"; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = "Remove-PSSnapIn MySnapIn"; Commands = @("Remove-PSSnapIn"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = "Show-Command"; Commands = @("Show-Command"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_7_profile; Script = "Show-Command"; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = '$composers | Convert-String -Example "first middle last=last, first"'; Commands = @("Convert-String"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Export-Console -Path $pshome\Consoles\ConsoleS1.psc1'; Commands = @("Export-Console"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = 'Get-Counter "\Processor(*)\% Processor Time" | Export-Counter -Path $home\Counters.blg'; Commands = @("Get-Counter", "Export-Counter"); Version = "7.0"; OS = "Windows"; ProblemCount = 2 }
-    @{ Target = $script:Srv2019_7_profile; Script = 'curl $uri'; Commands = @("curl"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_7_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = 'gci .'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2016_7_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = 'ConvertFrom-String $str'; Commands = @("ConvertFrom-String"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = "Get-WmiObject -Class Win32_Process"; Commands = @("Get-WmiObject"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = "Invoke-WmiMethod -Path win32_process -Name create -ArgumentList notepad.exe"; Commands = @("Invoke-WmiMethod"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = '$np | Remove-WmiObject'; Commands = @("Remove-WmiObject"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_7_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = "Set-WmiInstance -Class Win32_WMISetting -Argument @{LoggingLevel=2}"; Commands = @("Set-WmiInstance"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Add-Computer -DomainName "Domain01" -Restart'; Commands = @("Add-Computer"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Checkpoint-Computer -Description "Install MyApp"'; Commands = @("Checkpoint-Computer"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Clear-EventLog "Windows PowerShell"'; Commands = @("Clear-EventLog"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = 'Clear-RecycleBin'; Commands = @("Clear-RecycleBin"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_7_profile; Script = 'Clear-RecycleBin'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Start-Transaction; New-Item MyCompany -UseTransaction; Complete-Transaction'; Commands = @("Start-Transaction", "Complete-Transaction"); Version = "7.0"; OS = "Windows"; ProblemCount = 2 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Disable-ComputerRestore -Drive "C:\"'; Commands = @("Disable-ComputerRestore"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Enable-ComputerRestore -Drive "C:\", "D:\"'; Commands = @("Enable-ComputerRestore"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Get-ControlPanelItem -Name "*Program*", "*App*"'; Commands = @("Get-ControlPanelItem"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Get-EventLog -Newest 5 -LogName "Application"'; Commands = @("Get-EventLog"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_7_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @("Get-HotFix"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_7_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
 
     @{ Target = $script:Ubuntu1804_6_2_profile; Script = 'Get-AuthenticodeSignature ./script.ps1'; Commands = @("Get-AuthenticodeSignature"); Version = "6.2"; OS = "Linux"; ProblemCount = 1 }
@@ -141,6 +141,7 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Ubuntu1804_6_2_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "6.2"; OS = "Linux"; ProblemCount = 0 }
     @{ Target = $script:Ubuntu1804_6_2_profile; Script = 'gci .'; Commands = @(); Version = "6.2"; OS = "Linux"; ProblemCount = 0 }
     @{ Target = $script:Ubuntu1804_6_2_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "6.2"; OS = "Linux"; ProblemCount = 0 }
+
     @{ Target = $script:Ubuntu1804_7_profile; Script = 'Get-AuthenticodeSignature ./script.ps1'; Commands = @("Get-AuthenticodeSignature"); Version = "7.0"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_7_profile; Script = 'Get-Service systemd'; Commands = @("Get-Service"); Version = "7.0"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_7_profile; Script = 'Start-Service -Name "sshd"'; Commands = @("Start-Service"); Version = "7.0"; OS = "Linux"; ProblemCount = 1 }
@@ -175,18 +176,18 @@ $script:CompatibilityTestCases = @(
         @{ Target = $script:Srv2019_7_profile; Script = "Get-WmiObject -Class Win32_Process"; Commands = @("Get-WmiObject"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $script:Srv2019_7_profile; Script = "Invoke-WmiMethod -Path win32_process -Name create -ArgumentList notepad.exe"; Commands = @("Invoke-WmiMethod"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $script:Srv2019_7_profile; Script = '$np | Remove-WmiObject'; Commands = @("Remove-WmiObject"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-        @{ Target = $script:Srv2019_7_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_7_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
         @{ Target = $script:Srv2019_7_profile; Script = "Set-WmiInstance -Class Win32_WMISetting -Argument @{LoggingLevel=2}"; Commands = @("Set-WmiInstance"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $script:Srv2019_7_profile; Script = 'Add-Computer -DomainName "Domain01" -Restart'; Commands = @("Add-Computer"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $script:Srv2019_7_profile; Script = 'Checkpoint-Computer -Description "Install MyApp"'; Commands = @("Checkpoint-Computer"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $script:Srv2019_7_profile; Script = 'Clear-EventLog "Windows PowerShell"'; Commands = @("Clear-EventLog"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-        @{ Target = $script:Srv2019_7_profile; Script = 'Clear-RecycleBin'; Commands = @("Clear-RecycleBin"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_7_profile; Script = 'Clear-RecycleBin'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
         @{ Target = $script:Srv2019_7_profile; Script = 'Start-Transaction; New-Item MyCompany -UseTransaction; Complete-Transaction'; Commands = @("Start-Transaction", "Complete-Transaction"); Version = "7.0"; OS = "Windows"; ProblemCount = 2 }
         @{ Target = $script:Srv2019_7_profile; Script = 'Disable-ComputerRestore -Drive "C:\"'; Commands = @("Disable-ComputerRestore"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $script:Srv2019_7_profile; Script = 'Enable-ComputerRestore -Drive "C:\", "D:\"'; Commands = @("Enable-ComputerRestore"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $script:Srv2019_7_profile; Script = 'Get-ControlPanelItem -Name "*Program*", "*App*"'; Commands = @("Get-ControlPanelItem"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
         @{ Target = $script:Srv2019_7_profile; Script = 'Get-EventLog -Newest 5 -LogName "Application"'; Commands = @("Get-EventLog"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
-        @{ Target = $script:Srv2019_7_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @("Get-HotFix"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_7_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @(); Version = "7.0"; OS = "Windows"; ProblemCount = 0 }
         @{ Target = $script:Srv2019_7_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "7.0"; OS = "Windows"; ProblemCount = 1 }
     }
 )
@@ -237,7 +238,7 @@ $script:ParameterCompatibilityTestCases = @(
     @{ Target = $script:Srv2019_6_2_profile; Script = 'Get-Help "Invoke-WebRequest" -ShowWindow'; Commands = @('Get-Help'); Parameters = @('ShowWindow'); Version = "6.2"; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_2_profile; Script = 'Start-Service "eventlog" -ComputerName "MyComputer"'; Commands = @('Start-Service'); Parameters = @('ComputerName'); Version = "6.2"; OS = 'Windows'; ProblemCount = 1 }
 
-    @{ Target = $script:Srv2019_7_profile; Script = 'Get-Help "Invoke-WebRequest" -ShowWindow'; Commands = @('Get-Help'); Parameters = @('ShowWindow'); Version = "7.0"; OS = 'Windows'; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_7_profile; Script = 'Get-Help "Invoke-WebRequest" -ShowWindow'; Commands = @(); Parameters = @(); Version = "7.0"; OS = 'Windows'; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Start-Service "eventlog" -ComputerName "MyComputer"'; Commands = @('Start-Service'); Parameters = @('ComputerName'); Version = "7.0"; OS = 'Windows'; ProblemCount = 1 }
 )
 
@@ -245,6 +246,11 @@ Describe 'UseCompatibleCommands' {
     Context 'Targeting a single profile' {
         It "Reports <ProblemCount> command incompatibilties with '<Script>' on <OS> with PowerShell <Version>" -TestCases $script:CompatibilityTestCases -Skip:$script:RunningInCIOnUbuntu {
             param($Script, [string]$Target, [string[]]$Commands, [version]$Version, [string]$OS, [int]$ProblemCount)
+
+            if ($OS -eq 'Linux' -and 'Get-AuthenticodeSignature' -in $Commands -and $Version -eq '7.0')
+            {
+                Wait-Debugger
+            }
 
             $settings = @{
                 Rules = @{
@@ -315,10 +321,9 @@ Describe 'UseCompatibleCommands' {
                 }
             }
 
-            $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings `
-                | Where-Object { $_.RuleName -eq $script:RuleName }
+            $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings
 
-            $expectedNumber = 14
+            $expectedNumber = 17
 
             $diagnostics.Count | Should -Be $expectedNumber -Because "Got diagnostics: $($diagnostics.Message -join ", ")"
 
@@ -372,13 +377,13 @@ Describe 'UseCompatibleCommands' {
                             $script:Srv2012_3_profile
                             $script:Srv2012r2_4_profile
                             $script:Srv2016_5_profile
-                            $script:Srv2016_6_1_profile
+                            $script:Srv2016_6_2_profile
                             $script:Srv2019_5_profile
                             $script:Srv2019_6_2_profile
                             $script:Srv2019_7_profile
                             $script:Win10_5_profile
                             $script:Win10_6_2_profile
-                            $script:Win10_6_1_profile
+                            $script:Win10_7_profile
                             $script:Ubuntu1804_6_2_profile
                             $script:Ubuntu1804_7_profile
                         )

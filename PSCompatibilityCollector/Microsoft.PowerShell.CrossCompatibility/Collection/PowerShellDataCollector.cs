@@ -344,18 +344,21 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             moduleData.Cmdlets = cmdletData;
             moduleData.Functions = functionData;
 
-            IEnumerable<AliasInfo> resolvedAliases = _pwsh.AddCommand(GcmInfo)
-                .AddParameter("Name", aliasesToRequest)
-                .InvokeAndClear<AliasInfo>();
-
-            foreach (AliasInfo resolvedAlias in resolvedAliases)
+            if (aliasesToRequest != null && aliasesToRequest.Count > 0)
             {
-                if (resolvedAlias?.Definition == null)
-                {
-                    continue;
-                }
+                IEnumerable<AliasInfo> resolvedAliases = _pwsh.AddCommand(GcmInfo)
+                    .AddParameter("Name", aliasesToRequest)
+                    .InvokeAndClear<AliasInfo>();
 
-                aliases[resolvedAlias.Name] = resolvedAlias.Definition;
+                foreach (AliasInfo resolvedAlias in resolvedAliases)
+                {
+                    if (resolvedAlias?.Definition == null)
+                    {
+                        continue;
+                    }
+
+                    aliases[resolvedAlias.Name] = resolvedAlias.Definition;
+                }
             }
 
             // Get default variables and core aliases out of a fresh runspace
