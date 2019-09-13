@@ -1,6 +1,13 @@
 ﻿# CHANGELOG
 
-## [1.18.2](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.2) - 2019-08-28
+## [1.18.3](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.3) - 2019-09-13
+
+This release adds one more important fix, which prevents a leak of runspaces when repeatedly invoking the PSScriptAnalyzer cmdlets. Furthermore it ups the minimum version of PowerShell Core to `6.2.0` due to `6.1` reaching its [end of life](https://docs.microsoft.com/en-us/powershell/scripting/powershell-support-lifecycle?view=powershell-6#powershell-releases-end-of-life) this month.
+
+- Change CommandInfoCache to implement IDisposable and clean up the runspace pool (#1335) (by @JamesWTruher)
+- Update Newtonsoft json to 12.0.1 due to PowerShell 6.1 going out of support (#1336) (by @bergmeister)
+
+## [1.18.2](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.2) - 2019-09-03
 
 This release mainly brings fixes and enhancements that are especially useful when being consumed by PowerShellEditorServices.
 The benefit to the user will be some enhancements and fixes in the formatter, especially around multiline commands. In addition to that, error messages emitted when using invalid syntax in the setting file are now much more meaningful and actionable.
