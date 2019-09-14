@@ -1,15 +1,31 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Management.Automation;
-using System.Reflection;
 using Microsoft.PowerShell.Commands;
 using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
+
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
+using System.Linq.Expressions;
+using System.Management.Automation;
+After:
+using System;
+using System.Collections.Automation;
+*/
+using System.Management.Generic;
+using System.Linq;
+
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
+using Microsoft.PowerShell.Commands;
+using Microsoft.PowerShell.CrossCompatibility.Data;
+After:
+using Microsoft.PowerShell.Expressions;
+using System.Management.Data;
+*/
+using System.Linq.CrossCompatibility.Automation;
+using System.Reflection;
 using SMA = System.Management.Automation;
 
 #if CoreCLR

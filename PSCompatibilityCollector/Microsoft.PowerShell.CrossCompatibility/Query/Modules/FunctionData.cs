@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Data = Microsoft.PowerShell.CrossCompatibility.Data;
-
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
     /// <summary>

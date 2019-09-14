@@ -2,12 +2,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Management.Automation.Language;
 using System.Text;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -21,15 +21,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseCompatibleSyntax : ConfigurableRule
     {
-        private static readonly Version s_v3 = new Version(3,0);
+        private static readonly Version s_v3 = new Version(3, 0);
 
-        private static readonly Version s_v4 = new Version(4,0);
+        private static readonly Version s_v4 = new Version(4, 0);
 
-        private static readonly Version s_v5 = new Version(5,0);
+        private static readonly Version s_v5 = new Version(5, 0);
 
-        private static readonly Version s_v6 = new Version(6,0);
+        private static readonly Version s_v6 = new Version(6, 0);
 
-        private static readonly IReadOnlyList<Version> s_targetableVersions = new []
+        private static readonly IReadOnlyList<Version> s_targetableVersions = new[]
         {
             s_v3,
             s_v4,
@@ -40,7 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// The versions of PowerShell for the rule to target.
         /// </summary>
-        [ConfigurableRuleProperty(new string[]{})]
+        [ConfigurableRuleProperty(new string[] { })]
         public string[] TargetVersions { get; set; }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (versionSettings == null || versionSettings.Length <= 0)
             {
-                return new HashSet<Version>(){ s_v5, s_v6 };
+                return new HashSet<Version>() { s_v5, s_v6 };
             }
 
             var targetVersions = new HashSet<Version>();
@@ -265,7 +265,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         _rule.Severity,
                         _analyzedFilePath,
                         ruleId: null,
-                        suggestedCorrections: new [] { suggestedCorrection }
+                        suggestedCorrections: new[] { suggestedCorrection }
                     ));
 
                     return AstVisitAction.Continue;

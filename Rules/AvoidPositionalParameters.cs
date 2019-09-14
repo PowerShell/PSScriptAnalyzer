@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidPositionalParameters: Check to make sure that positional parameters are not used.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidPositionalParameters : IScriptRule
     {
@@ -51,7 +51,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // You can also review the remark section in following document,
                 // MSDN: CommandAst.GetCommandName Method
                 if (cmdAst.GetCommandName() == null) continue;
-                
+
                 if ((Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst) || declaredFunctionNames.Contains(cmdAst.GetCommandName())) &&
                     (Helper.Instance.PositionalParameterUsed(cmdAst, true)))
                 {

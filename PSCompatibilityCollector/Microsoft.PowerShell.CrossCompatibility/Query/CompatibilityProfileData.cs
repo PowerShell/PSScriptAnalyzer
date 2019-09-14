@@ -1,11 +1,23 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData;
-using RuntimeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData;
-using PlatformDataMut = Microsoft.PowerShell.CrossCompatibility.Data.ModuleData;
 using Microsoft.PowerShell.CrossCompatibility.Query;
 using System.Collections.Generic;
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
+using RuntimeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData;
+After:
+using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData;
+*/
+
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
+using Microsoft.PowerShell.CrossCompatibility.Query;
+using System.Collections.Generic;
+After:
+using RuntimeDataMut = Microsoft.PowerShell.CrossCompatibility.Data.RuntimeData;
+*/
+
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

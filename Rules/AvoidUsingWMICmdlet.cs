@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidUsingWMICmdlet: Avoid Using Get-WMIObject, Remove-WMIObject, Invoke-WmiMethod, Register-WmiEvent, Set-WmiInstance
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidUsingWMICmdlet : IScriptRule
     {
@@ -37,8 +37,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Iterate all CommandAsts and check the command name
                 foreach (CommandAst cmdAst in commandAsts)
                 {
-                    if (cmdAst.GetCommandName() != null && 
-                        (String.Equals(cmdAst.GetCommandName(), "get-wmiobject", StringComparison.OrdinalIgnoreCase) 
+                    if (cmdAst.GetCommandName() != null &&
+                        (String.Equals(cmdAst.GetCommandName(), "get-wmiobject", StringComparison.OrdinalIgnoreCase)
                             || String.Equals(cmdAst.GetCommandName(), "remove-wmiobject", StringComparison.OrdinalIgnoreCase)
                             || String.Equals(cmdAst.GetCommandName(), "invoke-wmimethod", StringComparison.OrdinalIgnoreCase)
                             || String.Equals(cmdAst.GetCommandName(), "register-wmievent", StringComparison.OrdinalIgnoreCase)
@@ -69,7 +69,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             IEnumerable<Ast> scriptBlockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);
-            
+
             foreach (ScriptBlockAst scriptBlockAst in scriptBlockAsts)
             {
                 if (null != scriptBlockAst.ScriptRequirements && null != scriptBlockAst.ScriptRequirements.RequiredPSVersion)

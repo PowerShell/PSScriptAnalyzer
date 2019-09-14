@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.PowerShell.CrossCompatibility;
+using Microsoft.PowerShell.CrossCompatibility.Query;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Management.Automation.Language;
-using Microsoft.PowerShell.CrossCompatibility;
-using Microsoft.PowerShell.CrossCompatibility.Query;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -24,7 +24,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Full names of types or type accelerators to ignore the compatibility of.
         /// </summary>
-        [ConfigurableRuleProperty(new string[] {})]
+        [ConfigurableRuleProperty(new string[] { })]
         public string[] IgnoreTypes { get; set; }
 
         /// <summary>
@@ -143,7 +143,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
 
                     // We need the PowerShell parser to turn this into something structured now
-                    TypeExpressionAst typeNameAst = (TypeExpressionAst)Parser.ParseInput("["+typeNameStringExp.Value+"]", out Token[] tokens, out ParseError[] errors)
+                    TypeExpressionAst typeNameAst = (TypeExpressionAst)Parser.ParseInput("[" + typeNameStringExp.Value + "]", out Token[] tokens, out ParseError[] errors)
                         .Find(ast => ast is TypeExpressionAst, true);
 
                     if (typeNameAst == null)

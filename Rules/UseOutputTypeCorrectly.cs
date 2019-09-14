@@ -18,15 +18,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseOutputTypeCorrectly: Checks that objects returned in a cmdlet have their types declared in OutputType Attribute.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class UseOutputTypeCorrectly : SkipTypeDefinition, IScriptRule
     {
-        #if !(PSV3||PSV4)
+#if !(PSV3 || PSV4)
 
         private IEnumerable<TypeDefinitionAst> _classes;
 
-        #endif
+#endif
 
         /// <summary>
         /// AnalyzeScript: Checks that objects returned in a cmdlet have their types declared in OutputType Attribute
@@ -41,11 +41,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             DiagnosticRecords.Clear();
             this.fileName = fileName;
 
-            #if !(PSV3||PSV4)
+#if !(PSV3 || PSV4)
 
             _classes = ast.FindAll(item => item is TypeDefinitionAst && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
 
-            #endif
+#endif
 
             ast.Visit(this);
 
@@ -103,15 +103,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            #if PSV3
+#if PSV3
 
             List<Tuple<string, StatementAst>> returnTypes = FindPipelineOutput.OutputTypes(funcAst);
 
-            #else
+#else
 
             List<Tuple<string, StatementAst>> returnTypes = FindPipelineOutput.OutputTypes(funcAst, _classes);
 
-            #endif
+#endif
 
             HashSet<string> specialTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             specialTypes.Add(typeof(Unreached).FullName);

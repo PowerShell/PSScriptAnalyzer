@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidDefaultValueForMandatoryParameter: Check if a mandatory parameter does not have a default value.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidDefaultValueForMandatoryParameter : IScriptRule
     {

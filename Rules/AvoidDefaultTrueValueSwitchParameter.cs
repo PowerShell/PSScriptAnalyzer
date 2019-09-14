@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidDefaultTrueValueSwitchParameter: Check that switch parameter does not default to true.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidDefaultTrueValueSwitchParameter : IScriptRule
     {

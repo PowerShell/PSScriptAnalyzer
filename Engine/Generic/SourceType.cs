@@ -21,6 +21,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <summary>
         /// MODULE: Indicates the script analyzer rule is contributed as a Windows PowerShell module rule.
         /// </summary>
-        Module  = 2,
+        Module = 2,
     };
 }

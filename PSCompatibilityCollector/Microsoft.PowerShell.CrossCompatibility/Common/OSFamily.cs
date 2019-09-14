@@ -26,7 +26,7 @@ namespace Microsoft.PowerShell.CrossCompatibility
         /// <summary>A macOS operating system.</summary>
         [EnumMember]
         MacOS,
-        
+
         /// <summary>A Linux operating system.</summary>
         [EnumMember]
         Linux,

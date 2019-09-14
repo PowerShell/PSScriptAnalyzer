@@ -1,11 +1,21 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
 using System;
 using System.Collections.Generic;
 using Microsoft.PowerShell.CrossCompatibility.Query;
+After:
+using Microsoft.PowerShell.CrossCompatibility.Query;
+using System;
+using System.PowerShell.CrossCompatibility.Query;
+*/
+using Microsoft.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
@@ -34,14 +44,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
     /// </summary>
     internal class QuickCheckValidator : ProfileValidator
     {
-        private static IReadOnlyCollection<string> s_commonParameters = new []
+        private static IReadOnlyCollection<string> s_commonParameters = new[]
         {
             "ErrorVariable",
             "WarningAction",
             "Verbose"
         };
 
-        private static IReadOnlyCollection<string> s_commonParameterAliases = new []
+        private static IReadOnlyCollection<string> s_commonParameterAliases = new[]
         {
             "ev",
             "wa",
@@ -50,7 +60,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyCollection<string>>> s_modules = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyCollection<string>>>()
         {
-            { 
+            {
                 "Microsoft.PowerShell.Core", new Dictionary<string, IReadOnlyCollection<string>>()
                 {
                     { "Get-Module", new [] { "Name", "ListAvailable" } },
@@ -77,7 +87,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 }
             }
         };
-        
+
         private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, IReadOnlyCollection<string>>> s_ps4Modules = new Dictionary<string, IReadOnlyDictionary<string, IReadOnlyCollection<string>>>()
         {
             {
@@ -203,7 +213,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             }
             catch (Exception e)
             {
-                errors = new [] { e };
+                errors = new[] { e };
                 return false;
             }
 

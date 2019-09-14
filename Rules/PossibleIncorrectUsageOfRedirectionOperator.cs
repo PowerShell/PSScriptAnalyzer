@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// The origin of this rule is that people often forget that operators change when switching between different languages such as C# and PowerShell.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class PossibleIncorrectUsageOfRedirectionOperator : AstVisitor, IScriptRule
     {

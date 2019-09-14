@@ -48,7 +48,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (Helper.IsMissingManifestMemberException(errorRecord))
                         {
                             System.Diagnostics.Debug.Assert(
-                                errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message), 
+                                errorRecord.Exception != null && !String.IsNullOrWhiteSpace(errorRecord.Exception.Message),
                                 Strings.NullErrorMessage);
                             var hashTableAst = ast.Find(x => x is HashtableAst, false);
                             if (hashTableAst == null)
@@ -56,12 +56,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 yield break;
                             }
                             yield return new DiagnosticRecord(
-                                errorRecord.Exception.Message, 
-                                hashTableAst.Extent, 
-                                GetName(), 
-                                DiagnosticSeverity.Warning, 
+                                errorRecord.Exception.Message,
+                                hashTableAst.Extent,
+                                GetName(),
+                                DiagnosticSeverity.Warning,
                                 fileName,
-                                suggestedCorrections:GetCorrectionExtent(hashTableAst as HashtableAst));
+                                suggestedCorrections: GetCorrectionExtent(hashTableAst as HashtableAst));
                         }
 
                     }
@@ -134,7 +134,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             correctionExtents.Add(correctionExtent);
             return correctionExtents;
         }
-        
+
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>

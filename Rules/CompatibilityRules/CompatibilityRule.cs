@@ -1,18 +1,36 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+
+/* Unmerged change from project 'Rules (net452)'
+Before:
+using System;
+After:
+using Microsoft.PowerShell.CrossCompatibility.Query;
+using Microsoft.PowerShell.CrossCompatibility.Retrieval;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System;
+*/
+using Microsoft.PowerShell.CrossCompatibility.Query;
+using Microsoft.PowerShell.CrossCompatibility.Retrieval;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Management.Automation.Language;
-using System.Text;
+
+/* Unmerged change from project 'Rules (net452)'
+Before:
 using System.Text.RegularExpressions;
 using Microsoft.PowerShell.CrossCompatibility.Query;
 using Microsoft.PowerShell.CrossCompatibility.Retrieval;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+After:
+using System.Text.RegularExpressions;
+*/
+using System.IO;
+using System.Linq;
+using System.Management.Automation.Language;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -67,7 +85,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// The profile names or filenames of profiles to load from the profile directory,
         /// as well as absolute paths to other profiles.
         /// </summary>
-        [ConfigurableRuleProperty(defaultValue: new string[] {})]
+        [ConfigurableRuleProperty(defaultValue: new string[] { })]
         public string[] TargetProfiles { get; set; }
 
         /// <summary>

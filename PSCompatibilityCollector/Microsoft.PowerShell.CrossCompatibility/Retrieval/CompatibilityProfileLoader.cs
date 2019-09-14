@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,9 +12,26 @@ using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
+After:
+using Microsoft.PowerShell.CrossCompatibility.Query;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using Microsoft.IO;
+using CompatibilityProfileDataMut = Microsoft.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+*/
+using Microsoft.PowerShell.CrossCompatibility.Query;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CompatibilityProfileDataMut = Microsoft.PowerShell.CrossCompatibility.Data.CompatibilityProfileData;
 
 #if CORECLR
 using System.Runtime.InteropServices;
@@ -118,7 +138,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Retrieval
                 throw new ArgumentNullException(nameof(path));
             }
 
-            return _profileCache.GetOrAdd(path, new Lazy<Task<CompatibilityProfileCacheEntry>>(() => Task.Run(() => {
+            return _profileCache.GetOrAdd(path, new Lazy<Task<CompatibilityProfileCacheEntry>>(() => Task.Run(() =>
+            {
                 CompatibilityProfileDataMut compatibilityProfileMut = _jsonSerializer.DeserializeFromFile(path);
 
                 var compatibilityProfile = new CompatibilityProfileData(compatibilityProfileMut);
@@ -140,7 +161,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Retrieval
             string unionId = GetUnionIdFromProfiles(profiles);
             string unionPath = Path.Combine(profileDir.FullName, unionId + ".json");
 
-            return _profileCache.GetOrAdd(unionPath, new Lazy<Task<CompatibilityProfileCacheEntry>>(() => Task.Run(() => {
+            return _profileCache.GetOrAdd(unionPath, new Lazy<Task<CompatibilityProfileCacheEntry>>(() => Task.Run(() =>
+            {
                 try
                 {
                     // We read the ID first to avoid needing to rehydrate MBs of unneeded JSON
@@ -169,7 +191,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Retrieval
                 CompatibilityProfileDataMut generatedUnionProfile = ProfileCombination.UnionMany(unionId, profiles.Select(p => p.MutableProfileData));
 
                 // Write the union to the filesystem for faster startup later
-                Task.Run(() => {
+                Task.Run(() =>
+                {
                     _jsonSerializer.SerializeToFile(generatedUnionProfile, unionPath);
                 });
 

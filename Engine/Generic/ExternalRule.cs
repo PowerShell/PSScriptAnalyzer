@@ -9,10 +9,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     {
         #region Methods
 
-        string name    = string.Empty;
+        string name = string.Empty;
         string commonName = string.Empty;
-        string desc    = string.Empty;
-        string param   = string.Empty;
+        string desc = string.Empty;
+        string param = string.Empty;
         string srcName = string.Empty;
         string modPath = string.Empty;
         string paramType = string.Empty;
@@ -71,7 +71,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         #endregion
 
         #region Constructors
-        
+
         public ExternalRule()
         {
 
@@ -79,10 +79,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 
         public ExternalRule(string name, string commonName, string desc, string param, string paramType, string srcName, string modPath)
         {
-            this.name    = name;
+            this.name = name;
             this.commonName = commonName;
-            this.desc    = desc;
-            this.param   = param;
+            this.desc = desc;
+            this.param = param;
             this.srcName = srcName;
             this.modPath = modPath;
             this.paramType = paramType;

@@ -374,7 +374,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private void ResetCurCmdletCompatibilityMap()
         {
             // cannot iterate over collection and change the values, hence the conversion to list
-            foreach(var key in curCmdletCompatibilityMap.Keys.ToList())
+            foreach (var key in curCmdletCompatibilityMap.Keys.ToList())
             {
                 curCmdletCompatibilityMap[key] = true;
             }

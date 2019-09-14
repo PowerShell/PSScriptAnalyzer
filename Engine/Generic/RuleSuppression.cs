@@ -333,12 +333,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     {
                         targetAsts = scopeAst.FindAll(ast => ast is FunctionDefinitionAst && reg.IsMatch((ast as FunctionDefinitionAst).Name), true);
                     }
-                    #if !(PSV3 || PSV4)
+#if !(PSV3 || PSV4)
                     else if (scope.Equals("class", StringComparison.OrdinalIgnoreCase))
                     {
                         targetAsts = scopeAst.FindAll(ast => ast is TypeDefinitionAst && reg.IsMatch((ast as TypeDefinitionAst).Name), true);
                     }
-                    #endif
+#endif
 
                     if (targetAsts != null)
                     {

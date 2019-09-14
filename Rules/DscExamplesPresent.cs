@@ -22,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// Examples folder should contain sample configuration for given resource - file name should contain resource's name.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IDSCResourceRule))]
+    [Export(typeof(IDSCResourceRule))]
 #endif
     public class DscExamplesPresent : IDSCResourceRule
     {
@@ -43,8 +43,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             String fileNameOnly = Path.GetFileName(fileName);
             String resourceName = Path.GetFileNameWithoutExtension(fileNameOnly);
             String examplesQuery = String.Format("*{0}*", resourceName);
-            Boolean examplesPresent = false; 
-            String expectedExamplesPath = Path.Combine(new String[] {fileName, "..", "..", "..", "Examples"});
+            Boolean examplesPresent = false;
+            String expectedExamplesPath = Path.Combine(new String[] { fileName, "..", "..", "..", "Examples" });
 
             // Verify examples are present
             if (Directory.Exists(expectedExamplesPath))
@@ -65,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        #if !(PSV3||PSV4)
+#if !(PSV3 || PSV4)
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes given DSC class
@@ -94,7 +94,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 String examplesQuery = String.Format("*{0}*", resourceName);
                 Boolean examplesPresent = false;
-                String expectedExamplesPath = Path.Combine(new String[] {fileName, "..", "Examples"});
+                String expectedExamplesPath = Path.Combine(new String[] { fileName, "..", "Examples" });
 
                 // Verify examples are present
                 if (Directory.Exists(expectedExamplesPath))
@@ -113,10 +113,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.DscExamplesPresentNoExamplesError, resourceName),
                                 dscClass.Extent, GetName(), DiagnosticSeverity.Information, fileName);
                 }
-            }       
+            }
         }
 
-        #endif
+#endif
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.

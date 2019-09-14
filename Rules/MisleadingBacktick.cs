@@ -18,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// MisleadingBacktick: Checks that lines don't end with a backtick followed by whitespace
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class MisleadingBacktick : IScriptRule
     {
@@ -34,7 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             string[] lines = NewlineRegex.Split(ast.Extent.Text);
 
-            if((ast.Extent.EndLineNumber - ast.Extent.StartLineNumber + 1) != lines.Length)
+            if ((ast.Extent.EndLineNumber - ast.Extent.StartLineNumber + 1) != lines.Length)
             {
                 // Did not match the number of lines that the extent indicated
                 yield break;
@@ -46,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 Match match = TrailingEscapedWhitespaceRegex.Match(line);
 
-                if(match.Success)
+                if (match.Success)
                 {
                     int lineNumber = ast.Extent.StartLineNumber + i;
 
@@ -74,7 +74,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var corrections = new List<CorrectionExtent>();
             string description = "Remove trailing whilespace";
             corrections.Add(new CorrectionExtent(
-                violationExtent.StartLineNumber ,
+                violationExtent.StartLineNumber,
                 violationExtent.EndLineNumber,
                 violationExtent.StartColumnNumber + 1,
                 violationExtent.EndColumnNumber,

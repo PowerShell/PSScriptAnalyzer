@@ -16,10 +16,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidUsingNullOrEmptyHelpMessageAttribute: Check if the HelpMessage parameter is set to a non-empty string.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidNullOrEmptyHelpMessageAttribute : IScriptRule
-    {               
+    {
         /// <summary>
         /// AvoidUsingNullOrEmptyHelpMessageAttribute: Check if the HelpMessage parameter is set to a non-empty string.
         /// </summary>
@@ -36,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                                           
+
                 foreach (ParameterAst paramAst in funcAst.Body.ParamBlock.Parameters)
                 {
                     if (paramAst == null)
@@ -57,19 +57,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         {
                             continue;
                         }
-                                               
+
                         foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
                         {
                             if (namedArgument == null || !(namedArgument.ArgumentName.Equals("HelpMessage", StringComparison.OrdinalIgnoreCase)))
                             {
                                 continue;
+
+/* Unmerged change from project 'Rules (net452)'
+Before:
                             }
                             
+                            string errCondition;
+After:
+                            }
+
+                            string errCondition;
+*/
+                            }
+
                             string errCondition;
                             if (namedArgument.ExpressionOmitted || HasEmptyStringInExpression(namedArgument.Argument))
                             {
                                 errCondition = "empty";
-                            }                                                        
+                            }
                             else if (HasNullInExpression(namedArgument.Argument))
                             {
                                 errCondition = "null";
@@ -84,16 +95,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                                                 Strings.AvoidNullOrEmptyHelpMessageAttributeError,
                                                                 paramAst.Name.VariablePath.UserPath);
                                 yield return new DiagnosticRecord(message,
-                                                                    paramAst.Extent, 
-                                                                    GetName(), 
-                                                                    DiagnosticSeverity.Warning, 
-                                                                    fileName, 
+                                                                    paramAst.Extent,
+                                                                    GetName(),
+                                                                    DiagnosticSeverity.Warning,
+                                                                    fileName,
                                                                     paramAst.Name.VariablePath.UserPath);
-                            }                            
-                        }                                                
+                            }
+                        }
                     }
                 }
-                
+
             }
         }
 

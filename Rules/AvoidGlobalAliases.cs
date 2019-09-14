@@ -104,7 +104,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public string GetCommonName()
         {
-             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalAliasesCommonName);
         }
 
         public string GetDescription()

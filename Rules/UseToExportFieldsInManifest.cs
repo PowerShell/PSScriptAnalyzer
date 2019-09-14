@@ -29,7 +29,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private const string functionsToExport = "FunctionsToExport";
         private const string cmdletsToExport = "CmdletsToExport";
         private const string aliasesToExport = "AliasesToExport";
-                   
+
         /// <summary>
         /// AnalyzeScript: Analyzes the AST to check if AliasToExport, CmdletsToExport, FunctionsToExport 
         /// and VariablesToExport fields do not use wildcards and $null in their entries. 
@@ -43,7 +43,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
-            
+
             if (fileName == null || !Helper.IsModuleManifest(fileName))
             {
                 yield break;
@@ -51,31 +51,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // check if valid module manifest
             IEnumerable<ErrorRecord> errorRecord = null;
-            PSModuleInfo psModuleInfo = Helper.Instance.GetModuleManifest(fileName, out errorRecord);            
+            PSModuleInfo psModuleInfo = Helper.Instance.GetModuleManifest(fileName, out errorRecord);
             if ((errorRecord != null && errorRecord.Count() > 0) || psModuleInfo == null)
-            {                
+            {
                 yield break;
             }
-            
+
             var hashtableAst = ast.Find(x => x is HashtableAst, false) as HashtableAst;
-            
+
             if (hashtableAst == null)
-            {                                
+            {
                 yield break;
             }
 
             string[] manifestFields = { functionsToExport, cmdletsToExport, aliasesToExport };
 
-            foreach(string field in manifestFields)
+            foreach (string field in manifestFields)
             {
                 IScriptExtent extent;
                 if (!HasAcceptableExportField(field, hashtableAst, ast.Extent.Text, out extent) && extent != null)
                 {
                     yield return new DiagnosticRecord(
-                        GetError(field), 
-                        extent, 
-                        GetName(), 
-                        DiagnosticSeverity.Warning, 
+                        GetError(field),
+                        extent,
+                        GetName(),
+                        DiagnosticSeverity.Warning,
                         fileName,
                         suggestedCorrections: GetCorrectionExtent(field, extent, psModuleInfo));
                 }
@@ -83,8 +83,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
 
                 }
-            }                               
-                        
+            }
+
         }
 
         private string GetListLiteral<T>(Dictionary<string, T> exportedItemsDict)
@@ -124,7 +124,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private List<CorrectionExtent> GetCorrectionExtent(string field, IScriptExtent extent, PSModuleInfo psModuleInfo)
         {
-            Debug.Assert(field != null);            
+            Debug.Assert(field != null);
             Debug.Assert(psModuleInfo != null);
             Debug.Assert(extent != null);
             var corrections = new List<CorrectionExtent>();
@@ -194,7 +194,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && varExprAst.VariablePath.IsUnqualified
                     && varExprAst.VariablePath.UserPath.Equals("null", StringComparison.OrdinalIgnoreCase);
         }
-                
+
         /// <summary>
         /// Checks if the *ToExport fields are explicitly set to arrays, eg. @(...), and the array entries do not contain any wildcard.
         /// </summary>
@@ -209,7 +209,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var pair in hast.KeyValuePairs)
             {
                 var keyStrConstAst = pair.Item1 as StringConstantExpressionAst;
-                if (keyStrConstAst != null && keyStrConstAst.Value.Equals(key, StringComparison.OrdinalIgnoreCase))                    
+                if (keyStrConstAst != null && keyStrConstAst.Value.Equals(key, StringComparison.OrdinalIgnoreCase))
                 {
                     // Checks for wildcard character in the entry.
                     var astWithWildcard = pair.Item2.Find(HasWildcardInExpression, false);
@@ -235,9 +235,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
             return true;
-        }       
+        }
 
-        
+
         /// <summary>
         /// Gets the error string of the rule.
         /// </summary>

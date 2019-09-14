@@ -14,34 +14,34 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     [DataContract]
     public class ModuleData : ICloneable
     {
-	/// <summary>
-	/// The GUID of the module.
-	/// </summary>
+        /// <summary>
+        /// The GUID of the module.
+        /// </summary>
         [DataMember]
         public Guid Guid { get; set; }
 
-	/// <summary>
-	/// Cmdlets exported by the module, keyed by name.
-	/// </summary>
+        /// <summary>
+        /// Cmdlets exported by the module, keyed by name.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public JsonCaseInsensitiveStringDictionary<CmdletData> Cmdlets { get; set; }
 
-	/// <summary>
-	/// Functions exported by the module, keyed by name.
-	/// </summary>
+        /// <summary>
+        /// Functions exported by the module, keyed by name.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public JsonCaseInsensitiveStringDictionary<FunctionData> Functions { get; set; }
 
-	/// <summary>
-	/// Variables exported by the module.
-	/// </summary>
+        /// <summary>
+        /// Variables exported by the module.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string[] Variables { get; set; }
 
-	/// <summary>
-	/// Aliases exported by the module, keyed by alias
-	/// name, with values being the resolved commands.
-	/// </summary>
+        /// <summary>
+        /// Aliases exported by the module, keyed by alias
+        /// name, with values being the resolved commands.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public JsonCaseInsensitiveStringDictionary<string> Aliases { get; set; }
 

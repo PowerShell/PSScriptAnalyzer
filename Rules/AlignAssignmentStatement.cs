@@ -298,7 +298,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             keyStartOffSetReached = true;
                         }
                         return false;
-                        }).FirstOrDefault();
+                    }).FirstOrDefault();
                 if (keyTokenNode == null || keyTokenNode.Value == null)
                 {
                     continue;

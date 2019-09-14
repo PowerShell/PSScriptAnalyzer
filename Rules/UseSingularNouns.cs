@@ -10,13 +10,13 @@
 // THE SOFTWARE.
 //
 
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Management.Automation.Language;
-using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Linq;
+using System.Management.Automation.Language;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
@@ -26,7 +26,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// 
     /// </summary>
     [Export(typeof(IScriptRule))]
-    public class CmdletSingularNoun : IScriptRule {
+    public class CmdletSingularNoun : IScriptRule
+    {
 
         private readonly string[] nounWhiteList =
         {
@@ -39,7 +40,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        {
             if (ast == null) throw new ArgumentNullException(Strings.NullCommandInfoError);
 
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
@@ -57,7 +59,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     // Convert the noun part of the function into a series of space delimited words
                     // This helps the PluralizationService to provide an accurate determination about the plurality of the string
                     nounPart = SplitCamelCaseString(nounPart);
-                    var words = nounPart.Split(new char [] { ' ' });
+                    var words = nounPart.Split(new char[] { ' ' });
                     var noun = words.LastOrDefault();
                     if (noun == null)
                     {
@@ -106,7 +108,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() {
+        public string GetDescription()
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsDescription);
         }
 

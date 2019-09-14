@@ -1,11 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
 using System;
-using System.Collections;
+After:
+using Microsoft.PowerShell.CrossCompatibility.Data;
+using System;
+*/
+using Microsoft.PowerShell.CrossCompatibility.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility
 {
@@ -221,7 +228,7 @@ namespace Microsoft.PowerShell.CrossCompatibility
 
             CompatibilityProfileData mutProfileBase = (CompatibilityProfileData)profileEnumerator.Current.Clone();
 
-            while(profileEnumerator.MoveNext())
+            while (profileEnumerator.MoveNext())
             {
                 mutProfileBase = (CompatibilityProfileData)combinator(mutProfileBase, profileEnumerator.Current);
             }
@@ -319,7 +326,7 @@ namespace Microsoft.PowerShell.CrossCompatibility
 
         private static JsonDictionary<K, V> DictionaryUnion<K, V>(
             JsonDictionary<K, V> thisDict,
-            JsonDictionary<K, V> thatDict, 
+            JsonDictionary<K, V> thatDict,
             Func<V, V, object> valueUnionizer = null)
             where K : ICloneable where V : ICloneable
         {

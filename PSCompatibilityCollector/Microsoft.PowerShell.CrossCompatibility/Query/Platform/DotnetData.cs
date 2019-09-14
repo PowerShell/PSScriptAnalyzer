@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using System;
-using DotnetRuntime = Microsoft.PowerShell.CrossCompatibility.Data.DotnetRuntime;
 using DotnetDataMut = Microsoft.PowerShell.CrossCompatibility.Data.DotnetData;
+using DotnetRuntime = Microsoft.PowerShell.CrossCompatibility.Data.DotnetRuntime;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

@@ -1,15 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.PowerShell.CrossCompatibility.Collection;
+using Microsoft.PowerShell.CrossCompatibility.Data;
+using Microsoft.PowerShell.CrossCompatibility.Retrieval;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Management.Automation;
-using Microsoft.PowerShell.CrossCompatibility.Collection;
-using Microsoft.PowerShell.CrossCompatibility.Data;
-using Microsoft.PowerShell.CrossCompatibility.Retrieval;
-using Microsoft.PowerShell.CrossCompatibility.Utility;
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Management.Automation;
 using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Commands

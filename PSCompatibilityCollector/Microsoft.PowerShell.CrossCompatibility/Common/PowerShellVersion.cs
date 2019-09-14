@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Newtonsoft.Json;
 using System;
 using System.Text;
-using Newtonsoft.Json;
 
 namespace Microsoft.PowerShell.CrossCompatibility
 {
@@ -325,7 +325,7 @@ namespace Microsoft.PowerShell.CrossCompatibility
         /// <returns>True if the type can be converted, false otherwise.</returns>
         public override bool CanConvert(Type objectType)
         {
-            return 
+            return
                 objectType == typeof(Version)
                 || objectType == typeof(PowerShellVersion)
                 || objectType.FullName == "System.Management.Automation.SemanticVersion";

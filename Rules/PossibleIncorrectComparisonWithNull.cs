@@ -17,24 +17,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// NullComparisonRule: Analyzes the ast to check that $null is on the left side of any equality comparisons.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
-    public class PossibleIncorrectComparisonWithNull : IScriptRule {
+    public class PossibleIncorrectComparisonWithNull : IScriptRule
+    {
         /// <summary>
         /// AnalyzeScript: Analyzes the ast to check that $null is on the left side of any equality comparisons.
         /// <param name="ast">The script's ast</param>
         /// <param name="fileName">The script's file name</param>
         /// <returns>The diagnostic results of this rule</returns>
         /// </summary>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             IEnumerable<Ast> binExpressionAsts = ast.FindAll(testAst => testAst is BinaryExpressionAst, false);
 
-            foreach (BinaryExpressionAst binExpressionAst in binExpressionAsts) {
-                if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq) 
+            foreach (BinaryExpressionAst binExpressionAst in binExpressionAsts)
+            {
+                if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq)
                     || binExpressionAst.Operator.Equals(TokenKind.Cne) || binExpressionAst.Operator.Equals(TokenKind.Ine) || binExpressionAst.Operator.Equals(TokenKind.Ieq))
-                    && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase)) 
+                    && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase))
                 {
                     if (IncorrectComparisonWithNull(binExpressionAst, ast))
                     {
@@ -44,15 +47,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            #if PSV3
+#if PSV3
 
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
-            #else
+#else
 
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true).Union(ast.FindAll(item => item is FunctionMemberAst, true));
 
-            #endif
+#endif
 
             foreach (Ast funcAst in funcAsts)
             {
@@ -70,9 +73,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IncorrectComparisonWithNull(BinaryExpressionAst binExpressionAst, Ast ast)
         {
-            if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq) 
+            if ((binExpressionAst.Operator.Equals(TokenKind.Equals) || binExpressionAst.Operator.Equals(TokenKind.Ceq)
                 || binExpressionAst.Operator.Equals(TokenKind.Cne) || binExpressionAst.Operator.Equals(TokenKind.Ine) || binExpressionAst.Operator.Equals(TokenKind.Ieq))
-                && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase)) 
+                && binExpressionAst.Right.Extent.Text.Equals("$null", StringComparison.OrdinalIgnoreCase))
             {
                 if (binExpressionAst.Left.StaticType.IsArray)
                 {
@@ -122,7 +125,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName() {
+        public string GetName()
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.PossibleIncorrectComparisonWithNullName);
         }
 
@@ -139,7 +143,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() {
+        public string GetDescription()
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.PossibleIncorrectComparisonWithNullDescription);
         }
 

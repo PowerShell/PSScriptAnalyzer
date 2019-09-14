@@ -14,23 +14,23 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     [DataContract]
     public class OperatingSystemData : ICloneable
     {
-	/// <summary>
-	/// The name of the operating system.
-	/// </summary>
+        /// <summary>
+        /// The name of the operating system.
+        /// </summary>
         [DataMember]
         public string Name { get; set; }
 
-	/// <summary>
-	/// The description of the operating system as
-	/// reported by $PSVersionTable.
-	/// </summary>
+        /// <summary>
+        /// The description of the operating system as
+        /// reported by $PSVersionTable.
+        /// </summary>
         [DataMember]
         public string Description { get; set; }
 
-	/// <summary>
-	/// The platform as reported by
-	/// $PSVersionTable.
-	/// </summary>
+        /// <summary>
+        /// The platform as reported by
+        /// $PSVersionTable.
+        /// </summary>
         [DataMember]
         public string Platform { get; set; }
 
@@ -42,27 +42,27 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         [DataMember]
         public Architecture Architecture { get; set; }
 
-	/// <summary>
-	/// The broad kind of operating system
-	/// the target PowerShell runtime runs on.
-	/// </summary>
+        /// <summary>
+        /// The broad kind of operating system
+        /// the target PowerShell runtime runs on.
+        /// </summary>
         [DataMember]
         public OSFamily Family { get; set; }
 
-	/// <summary>
-	/// The version of the operating system.
-	/// On Windows and macOS this is given by
-	/// System.Environment.OSVersion.Version.
-	/// On Linux, this takes the output of uname -r
-	/// to track the kernel SKU.
-	/// </summary>
+        /// <summary>
+        /// The version of the operating system.
+        /// On Windows and macOS this is given by
+        /// System.Environment.OSVersion.Version.
+        /// On Linux, this takes the output of uname -r
+        /// to track the kernel SKU.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string Version { get; set; }
 
-	/// <summary>
-	/// If specified, the Windows Service Pack
-	/// of the operating system.
-	/// </summary>
+        /// <summary>
+        /// If specified, the Windows Service Pack
+        /// of the operating system.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string ServicePack { get; set; }
 
@@ -74,26 +74,26 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         [DataMember(EmitDefaultValue = false)]
         public uint? SkuId { get; set; }
 
-	/// <summary>
-	/// On Linux, the name of the distribution
-	/// family (e.g. "Ubuntu"). Taken from
-	/// "ID" in /etc/*-release
-	/// </summary>
+        /// <summary>
+        /// On Linux, the name of the distribution
+        /// family (e.g. "Ubuntu"). Taken from
+        /// "ID" in /etc/*-release
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string DistributionId { get; set; }
 
-	/// <summary>
-	/// On Linux, the version of the particular
-	/// distribtion. Taken from "VERSION_ID" in
-	/// /etc/*-release.
-	/// </summary>
+        /// <summary>
+        /// On Linux, the version of the particular
+        /// distribtion. Taken from "VERSION_ID" in
+        /// /etc/*-release.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string DistributionVersion { get; set; }
 
-	/// <summary>
-	/// On Linux, the full name of the distribution
-	/// version. Taken from "PRETTY_NAME" in /etc/*-release.
-	/// </summary>
+        /// <summary>
+        /// On Linux, the full name of the distribution
+        /// version. Taken from "PRETTY_NAME" in /etc/*-release.
+        /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public string DistributionPrettyName { get; set; }
 

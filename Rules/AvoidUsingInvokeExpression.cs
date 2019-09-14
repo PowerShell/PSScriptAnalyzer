@@ -14,7 +14,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// InvokeExpressionRule: Check to make sure that Invoke-Expression is not used.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class InvokeExpressionRule : AvoidCmdletGeneric
     {

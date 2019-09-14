@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidUsingWriteHost: Check that Write-Host or Console.Write are not used
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidUsingWriteHost : AstVisitor, IScriptRule
     {

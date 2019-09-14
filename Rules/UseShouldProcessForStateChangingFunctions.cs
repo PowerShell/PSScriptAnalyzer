@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseShouldProcessForStateChangingFunctions: Analyzes the ast to check if ShouldProcess is included in Advanced functions if the Verb of the function could change system state.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class UseShouldProcessForStateChangingFunctions : IScriptRule
     {
@@ -32,17 +32,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
-            IEnumerable<Ast> funcDefWithNoShouldProcessAttrAsts = ast.FindAll(IsStateChangingFunctionWithNoShouldProcessAttribute, true);            
+            IEnumerable<Ast> funcDefWithNoShouldProcessAttrAsts = ast.FindAll(IsStateChangingFunctionWithNoShouldProcessAttribute, true);
             foreach (FunctionDefinitionAst funcDefAst in funcDefWithNoShouldProcessAttrAsts)
             {
                 yield return new DiagnosticRecord(
-                    string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcDefAst.Name), 
-                    Helper.Instance.GetScriptExtentForFunctionName(funcDefAst),                    
-                    this.GetName(), 
-                    DiagnosticSeverity.Warning, 
+                    string.Format(CultureInfo.CurrentCulture, Strings.UseShouldProcessForStateChangingFunctionsError, funcDefAst.Name),
+                    Helper.Instance.GetScriptExtentForFunctionName(funcDefAst),
+                    this.GetName(),
+                    DiagnosticSeverity.Warning,
                     fileName);
             }
-                            
+
         }
         /// <summary>
         /// Checks if the ast defines a state changing function
@@ -57,7 +57,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return false;
             }
-            return Helper.Instance.IsStateChangingFunctionName(funcDefAst.Name) 
+            return Helper.Instance.IsStateChangingFunctionName(funcDefAst.Name)
                     && (funcDefAst.Body.ParamBlock == null
                         || funcDefAst.Body.ParamBlock.Attributes == null
                         || !HasShouldProcessTrue(funcDefAst.Body.ParamBlock.Attributes));

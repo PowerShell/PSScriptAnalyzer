@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Management.Infrastructure;
+using Microsoft.PowerShell.CrossCompatibility.Data;
+using Microsoft.PowerShell.CrossCompatibility.Utility;
+using Microsoft.Win32;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,10 +14,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Management.Infrastructure;
-using Microsoft.PowerShell.CrossCompatibility.Data;
-using Microsoft.PowerShell.CrossCompatibility.Utility;
-using Microsoft.Win32;
 using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection

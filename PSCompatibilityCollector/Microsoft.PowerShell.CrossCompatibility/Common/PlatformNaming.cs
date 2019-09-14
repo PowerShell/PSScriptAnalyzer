@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
 using Microsoft.PowerShell.CrossCompatibility.Data;
+using System;
 
 namespace Microsoft.PowerShell.CrossCompatibility
 {
@@ -51,23 +51,23 @@ namespace Microsoft.PowerShell.CrossCompatibility
 
                     uint skuId = platform.OperatingSystem.SkuId.Value;
 
-                    platformNameComponents = new [] { $"win-{skuId}", osArch, osVersion, psVersion, pArch, dotnetVersion, dotnetEdition };
+                    platformNameComponents = new[] { $"win-{skuId}", osArch, osVersion, psVersion, pArch, dotnetVersion, dotnetEdition };
                     break;
 
                 case OSFamily.MacOS:
-                    platformNameComponents = new [] { "macos", osArch, osVersion, psVersion, pArch, dotnetVersion, dotnetEdition };
+                    platformNameComponents = new[] { "macos", osArch, osVersion, psVersion, pArch, dotnetVersion, dotnetEdition };
                     break;
 
                 case OSFamily.Linux:
                     string distroId = platform.OperatingSystem.DistributionId;
                     string distroVersion = platform.OperatingSystem.DistributionVersion;
 
-                    platformNameComponents = new [] { distroId, osArch, distroVersion, psVersion, pArch, dotnetVersion, dotnetEdition };
+                    platformNameComponents = new[] { distroId, osArch, distroVersion, psVersion, pArch, dotnetVersion, dotnetEdition };
                     break;
 
                 default:
                     // We shouldn't ever see anything like this
-                    platformNameComponents = new [] { "unknown", osArch, osVersion ?? "?", psVersion, pArch, dotnetVersion, dotnetEdition };
+                    platformNameComponents = new[] { "unknown", osArch, osVersion ?? "?", psVersion, pArch, dotnetVersion, dotnetEdition };
                     break;
             }
 

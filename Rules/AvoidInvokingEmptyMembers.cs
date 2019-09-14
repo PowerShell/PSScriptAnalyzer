@@ -18,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidInvokingEmptyMembers: Analyzes the script to check if any non-constant members have been invoked.
     /// </summary>    
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidInvokingEmptyMembers : IScriptRule
     {
@@ -54,11 +54,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
                     }
                 }
+
+/* Unmerged change from project 'Rules (net452)'
+Before:
             }
         
         }
+After:
+            }
 
-        
+        }
+*/
+            }
+
+        }
+
+
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>

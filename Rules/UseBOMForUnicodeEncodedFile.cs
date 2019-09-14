@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseBOMForUnicodeEncodedFile: Checks if a file with missing BOM is ASCII encoded.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class UseBOMForUnicodeEncodedFile : IScriptRule
     {
@@ -41,9 +41,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Did not detect the presence of BOM
                 // Make sure there is no byte > 127 (0x7F) to ensure file is ASCII encoded
                 // Else emit rule violation
-                                
+
                 if (0 != byteStream.Count(o => o > 0x7F))
-                { 
+                {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseBOMForUnicodeEncodedFileError, System.IO.Path.GetFileName(fileName), null),
                                 null, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
@@ -89,7 +89,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Did not detect BOM OR Unknown File encoding
             return null;
-            
+
         }
 
         /// <summary>

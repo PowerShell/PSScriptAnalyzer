@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
     // TODO Support for verbose mode    
     public class ModuleDependencyHandler : IDisposable
     {
-#region Private Variables
+        #region Private Variables
         private Runspace runspace;
         private string moduleRepository;
         private string tempPath; // path to the user temporary directory 
@@ -30,9 +30,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private string symLinkPath;
         private string oldPSModulePath;
         private string curPSModulePath;
-#endregion Private Variables
+        #endregion Private Variables
 
-#region Properties
+        #region Properties
         /// <summary>
         /// Path where the object stores the modules
         /// </summary>
@@ -84,7 +84,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     : value;
 #endif
             }
-        }        
+        }
 
         /// <summary>
         /// Module Respository
@@ -114,7 +114,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             {
                 return pssaAppDataPath;
             }
-        }        
+        }
 
         /// <summary>
         /// Module Paths
@@ -123,26 +123,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             get { return curPSModulePath; }
         }
-       
+
         /// <summary>
         /// Runspace in which the object invokes powershell cmdlets
         /// </summary>
-        public Runspace Runspace    
+        public Runspace Runspace
         {
             get { return runspace; }
             set { runspace = value; }
         }
 
 
-#endregion Properties
+        #endregion Properties
 
-#region Private Methods
+        #region Private Methods
         private static void ThrowIfNull<T>(T obj, string name)
         {
             if (obj == null)
             {
                 throw new ArgumentNullException(name);
-            }            
+            }
         }
 
         private void SetupPSSAAppData()
@@ -154,17 +154,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 if (File.Exists(symLinkPath))
                 {
                     tempModulePath = GetTempModulePath(symLinkPath);
-                    
+
                     // check if the temp dir exists
                     if (Directory.Exists(tempModulePath))
                     {
                         return;
                     }
-                }                          
+                }
             }
             else
             {
-                Directory.CreateDirectory(pssaAppDataPath);                
+                Directory.CreateDirectory(pssaAppDataPath);
             }
             SetupTempDir();
         }
@@ -203,7 +203,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         // Return the first line of the file
         private string GetTempModulePath(string symLinkPath)
         {
-            string line; 
+            string line;
             using (var file = File.Open(symLinkPath, FileMode.Open))
             using (var fileStream = new StreamReader(file))
             {
@@ -232,9 +232,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             Environment.SetEnvironmentVariable("PSModulePath", oldPSModulePath, EnvironmentVariableTarget.Process);
 #endif
         }
-#endregion Private Methods
+        #endregion Private Methods
 
-#region Public Methods
+        #region Public Methods
 
         /// <summary>
         /// Creates an instance of the ModuleDependencyHandler class
@@ -271,13 +271,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                         ? "PSScriptAnalyzer"
                         : pssaAppDataPath);
 
-            modulesFound = new Dictionary<string, PSObject>(StringComparer.OrdinalIgnoreCase);            
+            modulesFound = new Dictionary<string, PSObject>(StringComparer.OrdinalIgnoreCase);
 
             // TODO Add PSSA Version in the path
             symLinkPath = Path.Combine(pssaAppDataPath, symLinkName);
             SetupPSSAAppData();
             SetupPSModulePath();
-            
+
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
             ThrowIfNull(moduleName, "moduleName");
             if (IsModulePresentInTempModulePath(moduleName))
-            {                
+            {
                 return;
             }
             using (var ps = System.Management.Automation.PowerShell.Create())
@@ -411,7 +411,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             ThrowIfNull(ast, "ast");
             var statement = ast.Find(x => x.Extent.Equals(error.Extent), true);
             var dynamicKywdAst = statement as DynamicKeywordStatementAst;
-                if (dynamicKywdAst == null)
+            if (dynamicKywdAst == null)
             {
                 return null;
             }
@@ -455,14 +455,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                     continue;
                 }
             }
-            
+
             var modules = new List<string>();
-            
+
             var paramValAst = dynamicKywdAst.CommandElements[positionOfModuleNameParamter];
 
             // import-dscresource -ModuleName module1
             if (paramValAst is StringConstantExpressionAst paramValStrConstExprAst)
-            {                
+            {
                 modules.Add(paramValStrConstExprAst.Value);
 
                 // import-dscresource -ModuleName module1 -ModuleVersion major.minor.patch.build
@@ -520,7 +520,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             RestorePSModulePath();
         }
 
-#endregion Public Methods
+        #endregion Public Methods
     }
 }
 #endif // !PSV3

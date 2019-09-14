@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.PowerShell.Commands;
+using Microsoft.PowerShell.CrossCompatibility.Data;
+using Microsoft.PowerShell.CrossCompatibility.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,9 +13,6 @@ using System.Management.Automation.Internal;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using Microsoft.PowerShell.Commands;
-using Microsoft.PowerShell.CrossCompatibility.Data;
-using Microsoft.PowerShell.CrossCompatibility.Utility;
 using SMA = System.Management.Automation;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
@@ -189,12 +189,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 if (e.ErrorRecord.FullyQualifiedErrorId.Equals("FormatXmlUpdateException,Microsoft.PowerShell.Commands.ImportModuleCommand")
                     || e.ErrorRecord.FullyQualifiedErrorId.Equals("ErrorsUpdatingTypes"))
                 {
-                   foreach (string typeDataName in GetTypeDataNamesFromErrorMessage(e.Message))
-                   {
-                       _pwsh.AddCommand("Remove-TypeData")
-                            .AddParameter("TypeName", typeDataName)
-                            .InvokeAndClear();
-                   }
+                    foreach (string typeDataName in GetTypeDataNamesFromErrorMessage(e.Message))
+                    {
+                        _pwsh.AddCommand("Remove-TypeData")
+                             .AddParameter("TypeName", typeDataName)
+                             .InvokeAndClear();
+                    }
                 }
 
                 // Attempt to load the module in a new runspace instead
@@ -318,7 +318,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                             aliases.Add(alias.Name, GetSingleAliasData(alias));
                             continue;
 
-                        // Skip over other objects we get back, since there's no reason to throw
+                            // Skip over other objects we get back, since there's no reason to throw
                     }
                 }
 
@@ -440,7 +440,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var parameterSetFlags = new List<ParameterSetFlag>();
 
             if (parameterSet.IsMandatory)
-            { 
+            {
                 parameterSetFlags.Add(ParameterSetFlag.Mandatory);
             }
 

@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Management.Automation;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
@@ -39,12 +39,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         protected virtual void Dispose(bool disposing)
         {
-            if ( disposed )
+            if (disposed)
             {
                 return;
             }
 
-            if ( disposing )
+            if (disposing)
             {
                 _runspacePool.Dispose();
             }

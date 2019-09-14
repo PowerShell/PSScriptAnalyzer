@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseShouldProcessCorrectly: Analyzes the ast to check that if the ShouldProcess attribute is present, the function calls ShouldProcess and vice versa.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class UseShouldProcessCorrectly : IScriptRule
     {
@@ -87,7 +87,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture,Strings.ShouldProcessDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.ShouldProcessDescription);
         }
 
         /// <summary>
@@ -366,7 +366,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (commandsWithSupportShouldProcess.Count > 0)
             {
                 funcDigraph.AddVertex(implicitShouldProcessVertex);
-                foreach(var v in commandsWithSupportShouldProcess)
+                foreach (var v in commandsWithSupportShouldProcess)
                 {
                     funcDigraph.AddEdge(v, implicitShouldProcessVertex);
                 }
@@ -379,7 +379,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// </summary>
     class Vertex
     {
-        public string Name {get { return name;}}
+        public string Name { get { return name; } }
         public Ast Ast
         {
             get
@@ -392,7 +392,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        public bool IsNestedFunctionDefinition {get {return isNestedFunctionDefinition;}}
+        public bool IsNestedFunctionDefinition { get { return isNestedFunctionDefinition; } }
 
         private string name;
         private Ast ast;
@@ -403,7 +403,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             name = String.Empty;
         }
 
-        public Vertex (string name, Ast ast)
+        public Vertex(string name, Ast ast)
         {
             if (name == null)
             {
@@ -413,9 +413,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             this.ast = ast;
         }
 
-        public Vertex (String name, Ast ast, bool isNestedFunctionDefinition)
+        public Vertex(String name, Ast ast, bool isNestedFunctionDefinition)
             : this(name, ast)
-            {
+        {
             this.isNestedFunctionDefinition = isNestedFunctionDefinition;
         }
 
@@ -507,7 +507,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // if the graph contains a vertex with name equal to that
             // of the input vertex, then update the vertex's ast if the
             // input vertex's ast is of FunctionDefinitionAst type
-            foreach(Vertex v in digraph.GetVertices())
+            foreach (Vertex v in digraph.GetVertices())
             {
                 if (v.Equals(vertex))
                 {
@@ -574,7 +574,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-            var vertex = new Vertex (cmdName, ast);
+            var vertex = new Vertex(cmdName, ast);
             AddVertex(vertex);
             if (IsWithinFunctionDefinition())
             {
@@ -612,7 +612,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // necessarily a function, we do it because we are mainly interested in
             // finding connection between a function and ShouldProcess and this approach
             // prevents any unnecessary complexity.
-            var memberVertex = new Vertex (memberExprAst.Value, memberExprAst);
+            var memberVertex = new Vertex(memberExprAst.Value, memberExprAst);
             AddVertex(memberVertex);
             if (IsWithinFunctionDefinition())
             {

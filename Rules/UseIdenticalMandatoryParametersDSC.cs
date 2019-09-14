@@ -65,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         return importClassesMethod.Invoke(
                             null,
-                            new object[] { path, moduleInfo, errors}) as List<CimClass>;
+                            new object[] { path, moduleInfo, errors }) as List<CimClass>;
                     };
                 }
             }

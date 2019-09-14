@@ -22,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// Tests folder should contain test script for given resource - file name should contain resource's name.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IDSCResourceRule))]
+    [Export(typeof(IDSCResourceRule))]
 #endif
     public class DscTestsPresent : IDSCResourceRule
     {
@@ -65,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        #if !(PSV3||PSV4)
+#if !(PSV3 || PSV4)
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes given DSC class
@@ -116,7 +116,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        #endif
+#endif
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands;
+using System;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {

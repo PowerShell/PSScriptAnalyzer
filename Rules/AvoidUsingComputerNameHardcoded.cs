@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidUsingComputerNameHardcoded: Check that parameter ComputerName is not hardcoded.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidUsingComputerNameHardcoded : AvoidParameterGeneric
     {

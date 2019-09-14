@@ -16,7 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidGlobalVars: Analyzes the ast to check that global variables are not used.
     /// </summary>
 #if !CORECLR
-    [Export(typeof (IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidGlobalVars : IScriptRule
     {

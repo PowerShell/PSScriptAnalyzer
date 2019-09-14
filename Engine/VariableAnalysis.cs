@@ -84,7 +84,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             foreach (NamedAttributeArgumentAst arg in args)
                             {
                                 if (String.Equals(arg.ArgumentName, "mandatory", StringComparison.OrdinalIgnoreCase))
-                               {
+                                {
                                     // check for the case mandatory=$true and just mandatory
                                     if (arg.ExpressionOmitted || (!arg.ExpressionOmitted && String.Equals(arg.Argument.Extent.Text, "$true", StringComparison.OrdinalIgnoreCase)))
                                     {
@@ -134,15 +134,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public void AnalyzeImpl(Ast ast, VariableAnalysis outerAnalysis)
         {
 
-            #if PSV3
+#if PSV3
 
             if (!(ast is ScriptBlockAst || ast is FunctionDefinitionAst))
             
-            #else            
+#else
 
             if (!(ast is ScriptBlockAst || ast is FunctionMemberAst || ast is FunctionDefinitionAst))
 
-            #endif
+#endif
             {
                 return;
             }
@@ -151,15 +151,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             Init();
 
-            #if PSV3
+#if PSV3
 
             if (ast is FunctionDefinitionAst)
 
-            #else
+#else
 
             if (ast is FunctionMemberAst || ast is FunctionDefinitionAst)
 
-            #endif
+#endif
             {
                 IEnumerable<ParameterAst> parameters = FindParameters(ast, ast.GetType());
                 if (parameters != null)
@@ -176,19 +176,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            #if PSV3
+#if PSV3
 
             if (ast is FunctionDefinitionAst)
 
-            #else
+#else
 
             if (ast is FunctionMemberAst)
             {
                 (ast as FunctionMemberAst).Body.Visit(this.Decorator);
             }
             else if (ast is FunctionDefinitionAst)
-            
-            #endif
+
+#endif
 
             {
                 (ast as FunctionDefinitionAst).Body.Visit(this.Decorator);
@@ -205,13 +205,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 parent = parent.Parent;
             }
 
-            #if !(PSV3||PSV4)
+#if !(PSV3 || PSV4)
 
             List<TypeDefinitionAst> classes = parent.FindAll(item =>
                 item is TypeDefinitionAst && (item as TypeDefinitionAst).IsClass, true)
                 .Cast<TypeDefinitionAst>().ToList();
 
-            #endif
+#endif
 
             if (outerAnalysis != null)
             {
@@ -250,15 +250,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            #if PSV3
+#if PSV3
 
             var dictionaries = Block.SparseSimpleConstants(_variables, Entry);
 
-            #else
+#else
 
             var dictionaries = Block.SparseSimpleConstants(_variables, Entry, classes);
 
-            #endif
+#endif
             VariablesDictionary = dictionaries.Item1;
             InternalVariablesDictionary = new Dictionary<string, VariableAnalysisDetails>(StringComparer.OrdinalIgnoreCase);
 
@@ -365,8 +365,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             return analysis.DefinedBlock == null
-                && !(SpecialVars.InitializedVariables.Contains(analysis.Name, StringComparer.OrdinalIgnoreCase) || 
-                SpecialVars.InitializedVariables.Contains(analysis.RealName, StringComparer.OrdinalIgnoreCase)) 
+                && !(SpecialVars.InitializedVariables.Contains(analysis.Name, StringComparer.OrdinalIgnoreCase) ||
+                SpecialVars.InitializedVariables.Contains(analysis.RealName, StringComparer.OrdinalIgnoreCase))
                 && !IsGlobalOrEnvironment(varTarget);
         }
 

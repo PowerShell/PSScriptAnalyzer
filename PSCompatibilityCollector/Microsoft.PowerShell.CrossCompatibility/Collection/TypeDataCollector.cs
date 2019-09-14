@@ -1,19 +1,44 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
 using System;
 using System.Collections.Generic;
+After:
+using Microsoft.PowerShell.CrossCompatibility.Data;
+using Microsoft.Collections.CrossCompatibility.Utility;
+*/
+using Microsoft.PowerShell.CrossCompatibility.Data;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Management.Automation;
-using System.Reflection;
-using System.Text;
+
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
 using System.Threading;
 using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 
 using SMA = System.Management.Automation;
+After:
+using System.Management.Automation;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using SMA = System.Text;
+*/
+using System.Management.Automation;
+using System.Reflection;
+using System.Threading;
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
 using System.IO;
+After:
+using SMA = System.Management.Automation;
+*/
+
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
@@ -326,7 +351,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
                         properties.Add(property.Name, AssembleProperty(property));
                         break;
-                    
+
                     case MethodInfo method:
                         if (!methods.TryGetValue(method.Name, out List<MethodInfo> overloads))
                         {
@@ -548,7 +573,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             // there's no need to override and we can just add the new overload
             existingMembers.Add(newMember);
         }
-        
+
         private static AccessorType[] GetAccessors(PropertyInfo propertyInfo)
         {
             var accessors = new List<AccessorType>();

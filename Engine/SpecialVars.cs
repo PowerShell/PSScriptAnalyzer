@@ -46,23 +46,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 OtherInitializedVariables))).ToArray();
         }
 
-        internal static readonly string[] AutomaticVariables = new string[]  
-                                                               {  
-                                                                   Underbar,  
-                                                                   Args,  
-                                                                   This,  
-                                                                   Input,  
-                                                                   PSCmdlet,  
-                                                                   PSBoundParameters,  
-                                                                   MyInvocation,  
-                                                                   PSScriptRoot,  
+        internal static readonly string[] AutomaticVariables = new string[]
+                                                               {
+                                                                   Underbar,
+                                                                   Args,
+                                                                   This,
+                                                                   Input,
+                                                                   PSCmdlet,
+                                                                   PSBoundParameters,
+                                                                   MyInvocation,
+                                                                   PSScriptRoot,
                                                                    PSCommandPath,
                                                                    ExecutionContext,
                                                                    Matches,
                                                                    PSVersionTable,
                                                                    OFS
                                                                };
-        internal static readonly Type[] AutomaticVariableTypes = new Type[]  
+        internal static readonly Type[] AutomaticVariableTypes = new Type[]
                                                                  {  
                                                                    /* Underbar */          typeof(object),  
                                                                    /* Args */              typeof(object[]),  

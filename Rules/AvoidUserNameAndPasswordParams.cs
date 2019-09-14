@@ -34,8 +34,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             // Finds all functionAst
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
 
-            List<String> passwords = new List<String>() {"Password", "Passphrase"};
-            List<String> usernames = new List<String>() { "Username", "User"};
+            List<String> passwords = new List<String>() { "Password", "Passphrase" };
+            List<String> usernames = new List<String>() { "Username", "User" };
             Type[] typeWhiteList = {typeof(CredentialAttribute),
                                             typeof(PSCredential),
                                             typeof(System.Security.SecureString),
@@ -55,7 +55,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (ParameterAst paramAst in paramAsts)
                 {
                     var attributes = typeWhiteList.Select(x => GetAttributeOfType(paramAst.Attributes, x));
-                    String paramName = paramAst.Name.VariablePath.ToString();                    
+                    String paramName = paramAst.Name.VariablePath.ToString();
                     foreach (String password in passwords)
                     {
                         if (paramName.IndexOf(password, StringComparison.OrdinalIgnoreCase) != -1)
@@ -116,7 +116,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var usrExt = usernameAst.Extent;
             var pwdExt = passwordAst.Extent;
             IScriptExtent startExt, endExt;
-            var usrBeforePwd 
+            var usrBeforePwd
                 = (usrExt.StartLineNumber == pwdExt.StartLineNumber
                     && usrExt.StartColumnNumber < pwdExt.StartColumnNumber)
                     || usrExt.StartLineNumber < pwdExt.StartLineNumber;

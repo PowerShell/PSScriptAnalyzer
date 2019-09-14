@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// Use CmdletCorrectly: Check that cmdlets are invoked with the correct mandatory parameter
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class UseCmdletCorrectly : IScriptRule
     {

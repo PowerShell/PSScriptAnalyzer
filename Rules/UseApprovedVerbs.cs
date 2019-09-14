@@ -19,16 +19,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseApprovedVerbs: Analyzes scripts to check that all defined functions use approved verbs.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
-    public class UseApprovedVerbs : IScriptRule {
+    public class UseApprovedVerbs : IScriptRule
+    {
         /// <summary>
         /// Analyze script to check that all defined functions use approved verbs
         /// </summary>
         /// <param name="ast"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             List<string> approvedVerbs = typeof(VerbsCommon).GetFields().Concat<FieldInfo>(
@@ -92,7 +94,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() {
+        public string GetDescription()
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseApprovedVerbsDescription);
         }
 

@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidReservedCharInCmdlet: Analyzes script to check for reserved characters in cmdlet names.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidReservedCharInCmdlet : IScriptRule
     {
@@ -55,16 +55,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.ReservedCmdletCharError, funcAst.Name),
                             funcAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                    }                
+                    }
                 }
-            }            
+            }
         }
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName() {
+        public string GetName()
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.ReservedCmdletCharName);
         }
 
@@ -81,7 +82,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() {
+        public string GetDescription()
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.ReservedCmdletCharDescription);
         }
 

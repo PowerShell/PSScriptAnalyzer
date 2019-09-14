@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Data = Microsoft.PowerShell.CrossCompatibility.Data;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {

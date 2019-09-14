@@ -45,9 +45,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 #if !PSV3
         ModuleDependencyHandler moduleHandler;
 #endif
-#endregion
+        #endregion
 
-#region Singleton
+        #region Singleton
         private static object syncRoot = new Object();
         private static ScriptAnalyzer instance;
         public static ScriptAnalyzer Instance
@@ -91,7 +91,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal List<ExternalRule> ExternalRules { get; set; }
 
 #if !PSV3
-        public ModuleDependencyHandler ModuleHandler {
+        public ModuleDependencyHandler ModuleHandler
+        {
             get
             {
                 return moduleHandler;
@@ -104,9 +105,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 #endif
 
-#endregion
+        #endregion
 
-#region Methods
+        #region Methods
 
         /// <summary>
         /// Initialize : Initializes default rules, loggers and helper.
@@ -684,7 +685,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             this.outputWriter = outputWriter;
 
-#region Verifies rule extensions
+            #region Verifies rule extensions
 
             List<string> paths = this.GetValidCustomRulePaths(customizedRulePath, path);
 
@@ -794,9 +795,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         ErrorCategory.NotSpecified, this));
             }
 
-#endregion
+            #endregion
 
-#region Verify rules
+            #region Verify rules
 
             // Safely get one non-duplicated list of rules
             IEnumerable<IRule> rules =
@@ -819,7 +820,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                         this));
             }
 
-#endregion
+            #endregion
         }
 
         private List<string> GetValidCustomRulePaths(string[] customizedRulePath, PathIntrinsics path)
@@ -1118,7 +1119,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             // Retrieve "Description" field in the help content
                             string desc = String.Empty;
 
-                            if ((null != helpContent) && ( 1 == helpContent.Count))
+                            if ((null != helpContent) && (1 == helpContent.Count))
                             {
                                 dynamic description = helpContent[0].Properties["Description"];
 
@@ -1184,7 +1185,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 // Defines the command results.
                 List<IAsyncResult> powerShellCommandResults = new List<IAsyncResult>();
 
-#region Builds and invokes commands list
+                #region Builds and invokes commands list
 
                 foreach (KeyValuePair<string, List<ExternalRule>> tokenRuleGroup in tokenRuleGroups)
                 {
@@ -1237,8 +1238,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-#endregion
-#region Collects the results from commands.
+                #endregion
+                #region Collects the results from commands.
                 List<DiagnosticRecord> diagnostics = new List<DiagnosticRecord>();
                 try
                 {
@@ -1303,7 +1304,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
 
                 return diagnostics;
-#endregion
+                #endregion
             }
         }
 
@@ -1350,7 +1351,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 && loadedModules.Count > 0
                                 && loadedModules.First().ExportedFunctions.Count > 0)
                         {
-                                validModPaths.Add(resolvedPath);
+                            validModPaths.Add(resolvedPath);
                         }
                     }
                 }
@@ -1520,10 +1521,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
 
             // Add parse errors first if requested!
-            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
+            if (relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
             {
                 var results = new List<DiagnosticRecord>();
-                foreach ( ParseError parseError in relevantParseErrors )
+                foreach (ParseError parseError in relevantParseErrors)
                 {
                     string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
                     results.Add(new DiagnosticRecord(
@@ -1805,7 +1806,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 {
                     continue;
                 }
-                foreach(var moduleName in moduleNames)
+                foreach (var moduleName in moduleNames)
                 {
                     this.outputWriter.WriteVerbose(
                         String.Format(
@@ -1836,7 +1837,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var diagnosticRecords = new List<DiagnosticRecord>();
 
             // If the file doesn't exist, return
-            if (! File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
                 this.outputWriter.ThrowTerminatingError(new ErrorRecord(new FileNotFoundException(),
                     string.Format(CultureInfo.CurrentCulture, Strings.InvalidPath, filePath),
@@ -1847,7 +1848,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // short-circuited processing for a help file
             // no parsing can really be done, but there are other rules to run (specifically encoding).
-            if ( s_aboutHelpRegex.IsMatch(Path.GetFileName(filePath)) )
+            if (s_aboutHelpRegex.IsMatch(Path.GetFileName(filePath)))
             {
                 return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, filePath));
             }
@@ -1872,10 +1873,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             IEnumerable<ParseError> relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out diagnosticRecords);
 
             // First, add all parse errors if they've been requested
-            if ( relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
+            if (relevantParseErrors != null && (severity == null || severity.Contains("ParseError", StringComparer.OrdinalIgnoreCase)))
             {
                 List<DiagnosticRecord> results = new List<DiagnosticRecord>();
-                foreach ( ParseError parseError in relevantParseErrors )
+                foreach (ParseError parseError in relevantParseErrors)
                 {
                     string parseErrorMessage = String.Format(CultureInfo.CurrentCulture, Strings.ParseErrorFormatForScriptDefinition, parseError.Message.TrimEnd('.'), parseError.Extent.StartLineNumber, parseError.Extent.StartColumnNumber);
                     results.Add(new DiagnosticRecord(
@@ -2024,7 +2025,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             Token[] scriptTokens,
             string filePath)
         {
-            Dictionary<string, List<RuleSuppression>> ruleSuppressions = new Dictionary<string,List<RuleSuppression>>();
+            Dictionary<string, List<RuleSuppression>> ruleSuppressions = new Dictionary<string, List<RuleSuppression>>();
             ConcurrentBag<DiagnosticRecord> diagnostics = new ConcurrentBag<DiagnosticRecord>();
             ConcurrentBag<SuppressedRecord> suppressed = new ConcurrentBag<SuppressedRecord>();
             BlockingCollection<List<object>> verboseOrErrors = new BlockingCollection<List<object>>();
@@ -2053,18 +2054,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-#region Run VariableAnalysis
+                #region Run VariableAnalysis
                 try
                 {
                     Helper.Instance.InitializeVariableAnalysis(scriptAst);
                 }
                 catch { }
-#endregion
+                #endregion
 
                 Helper.Instance.Tokens = scriptTokens;
             }
 
-#region Run ScriptRules
+            #region Run ScriptRules
             //Trim down to the leaf element of the filePath and pass it to Diagnostic Record
             string fileName = filePathIsNullOrWhiteSpace ? String.Empty : System.IO.Path.GetFileName(filePath);
             if (this.ScriptRules != null)
@@ -2142,9 +2143,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-#endregion
+            #endregion
 
-#region Run Token Rules
+            #region Run Token Rules
 
             if (this.TokenRules != null && !helpFile)
             {
@@ -2177,9 +2178,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-#endregion
+            #endregion
 
-#region DSC Resource Rules
+            #region DSC Resource Rules
             if (this.DSCResourceRules != null && !helpFile)
             {
                 // Invoke AnalyzeDSCClass only if the ast is a class based resource
@@ -2258,9 +2259,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 }
             }
-#endregion
+            #endregion
 
-#region Run External Rules
+            #region Run External Rules
 
             if (this.ExternalRules != null && !helpFile)
             {

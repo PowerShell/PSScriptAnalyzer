@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// ReturnCorrectTypeDSCFunctions: Check that DSC functions return the correct type.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IDSCResourceRule))]
+    [Export(typeof(IDSCResourceRule))]
 #endif
     public class ReturnCorrectTypesForDSCFunctions : IDSCResourceRule
     {
@@ -35,27 +35,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
-            #if !(PSV3||PSV4)
+#if !(PSV3 || PSV4)
 
             IEnumerable<TypeDefinitionAst> classes = ast.FindAll(item =>
                 item is TypeDefinitionAst
                 && ((item as TypeDefinitionAst).IsClass), true).Cast<TypeDefinitionAst>();
 
-            #endif
+#endif
 
             foreach (FunctionDefinitionAst func in functionDefinitionAsts)
             {
 
-                #if PSV3 || PSV4
+#if PSV3 || PSV4
 
                 List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func);
 
-                #else
+#else
 
                 List<Tuple<string, StatementAst>> outputTypes = FindPipelineOutput.OutputTypes(func, classes);
 
+
+/* Unmerged change from project 'Rules (net452)'
+Before:
                 #endif
                 
+
+                if (String.Equals(func.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase))
+After:
+                #endif
+
+
+                if (String.Equals(func.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase))
+*/
+#endif
+
 
                 if (String.Equals(func.Name, "Set-TargetResource", StringComparison.OrdinalIgnoreCase))
                 {
@@ -93,7 +106,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        #if !(PSV3||PSV4)
+#if !(PSV3 || PSV4)
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes given DSC Resource
@@ -184,15 +197,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        #endif
-        
+#endif
+
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
         public string GetName()
-        {            
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.ReturnCorrectTypeDSCFunctionsName);
         }
 

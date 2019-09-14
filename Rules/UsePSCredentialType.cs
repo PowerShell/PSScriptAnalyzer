@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UsePSCredentialType: Checks if a parameter named Credential is of type PSCredential. Also checks if there is a credential transformation attribute defined after the PSCredential type attribute. The order between credential transformation attribute and PSCredential type attribute is applicable only to Poweshell 4.0 and earlier.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class UsePSCredentialType : IScriptRule
     {
@@ -50,7 +50,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 && sbAst.ScriptRequirements.RequiredPSVersion.Major == 5
                 && requiresTransformationAttribute)
             {
-                        yield break;
+                yield break;
             }
 
             IEnumerable<Ast> funcDefAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
@@ -112,18 +112,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             string fileName,
             bool requiresTransformationAttribute)
         {
-                foreach (ParameterAst parameter in parameterAsts)
+            foreach (ParameterAst parameter in parameterAsts)
+            {
+                if (WrongCredentialUsage(parameter, requiresTransformationAttribute))
                 {
-                    if (WrongCredentialUsage(parameter, requiresTransformationAttribute))
-                    {
-                        yield return new DiagnosticRecord(
-                            errorMessage,
-                            parameter.Extent,
-                            GetName(),
-                            DiagnosticSeverity.Warning,
-                            fileName);
-                    }
+                    yield return new DiagnosticRecord(
+                        errorMessage,
+                        parameter.Extent,
+                        GetName(),
+                        DiagnosticSeverity.Warning,
+                        fileName);
                 }
+            }
         }
 
         private bool WrongCredentialUsage(ParameterAst parameter, bool requiresTransformationAttribute)

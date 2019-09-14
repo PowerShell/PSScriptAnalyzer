@@ -80,7 +80,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private int indentationLevelMultiplier;
 
         // TODO Enable auto when the rule is able to detect indentation
-        private enum IndentationKind {
+        private enum IndentationKind
+        {
             Space,
             Tab,
             // Auto
@@ -201,7 +202,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 && tokens[tokenIndex - 2].Kind == TokenKind.Comment)
                             {
                                 int searchForPrecedingLineContinuationIndex = tokenIndex - 2;
-                                while (searchForPrecedingLineContinuationIndex  > 0 && tokens[searchForPrecedingLineContinuationIndex].Kind == TokenKind.Comment)
+                                while (searchForPrecedingLineContinuationIndex > 0 && tokens[searchForPrecedingLineContinuationIndex].Kind == TokenKind.Comment)
                                 {
                                     searchForPrecedingLineContinuationIndex--;
                                 }

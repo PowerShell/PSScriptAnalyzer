@@ -10,7 +10,6 @@ using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using System.Linq;
-using System.Management.Automation;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -131,7 +130,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 // If we find match of any kind, do not continue with the Get-{commandname} check
-                if ( Helper.Instance.GetCommandInfo(commandName) != null ) {
+                if (Helper.Instance.GetCommandInfo(commandName) != null)
+                {
                     continue;
                 }
 

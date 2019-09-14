@@ -41,7 +41,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// </summary>
         [DataMember]
         public Version RemotingProtocolVersion { get; set; }
-        
+
         /// <summary>
         /// The PowerShell serialization protocol version
         /// supported, from $PSVersionTable.SerializationVersion.

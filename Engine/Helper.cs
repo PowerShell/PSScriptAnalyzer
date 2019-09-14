@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
-using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -99,9 +98,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Dictionary<Ast, VariableAnalysis> VariableAnalysisDictionary;
 
-        private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:"};
+        private string[] functionScopes = new string[] { "global:", "local:", "script:", "private:" };
 
-        private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":"};
+        private string[] variableScopes = new string[] { "global:", "local:", "script:", "private:", "variable:", ":" };
 
         /// <summary>
         /// Store of command info objects for commands. Memoizes results.
@@ -518,7 +517,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            #if !(PSV3||PSV4)
+#if !(PSV3 || PSV4)
 
             List<string> dscResourceFunctionNames = new List<string>(new string[] { "Test", "Get", "Set" });
 
@@ -534,7 +533,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return true;
             }
 
-            #endif
+#endif
 
             return false;
         }
@@ -650,8 +649,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             int argumentsWithoutProcedingParameters = 0;
 
             var commandElementCollection = cmdAst.CommandElements;
-            for (int i = 1; i < commandElementCollection.Count(); i++) {
-                if (!(commandElementCollection[i] is CommandParameterAst) && !(commandElementCollection[i-1] is CommandParameterAst))
+            for (int i = 1; i < commandElementCollection.Count(); i++)
+            {
+                if (!(commandElementCollection[i] is CommandParameterAst) && !(commandElementCollection[i - 1] is CommandParameterAst))
                 {
                     argumentsWithoutProcedingParameters++;
                 }
@@ -1087,7 +1087,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
 #else
 
-                return GetTypeFromMemberExpressionAstHelper(memberAst, psClass, details);
+            return GetTypeFromMemberExpressionAstHelper(memberAst, psClass, details);
 
 #endif
         }
@@ -1433,9 +1433,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return result;
         }
 
-        private Tuple<int,int>[] GetOffsetArray(List<DiagnosticRecord> diagnostics)
+        private Tuple<int, int>[] GetOffsetArray(List<DiagnosticRecord> diagnostics)
         {
-            Func<int,int,Tuple<int,int>> GetTuple = (x, y) => new Tuple<int, int>(x, y);
+            Func<int, int, Tuple<int, int>> GetTuple = (x, y) => new Tuple<int, int>(x, y);
             Func<Tuple<int, int>> GetDefaultTuple = () => GetTuple(0, 0);
             var offsets = new Tuple<int, int>[diagnostics.Count];
             for (int k = 0; k < diagnostics.Count; k++)
@@ -1867,7 +1867,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return psVersionTable == null ? null : psVersionTable.PSVersion;
         }
 
-#endregion Methods
+        #endregion Methods
     }
 
 
@@ -3752,11 +3752,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return true;
             }
 
-            foreach(var vertexIdx in graph[fromIdx])
+            foreach (var vertexIdx in graph[fromIdx])
             {
                 if (!visited[vertexIdx])
                 {
-                    if(IsConnected(vertexIdx, toIdx, ref visited))
+                    if (IsConnected(vertexIdx, toIdx, ref visited))
                     {
                         return true;
                     }

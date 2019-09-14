@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseVerboseMessageInDSCResource: Analyzes the ast to check that Write-Verbose is called for DSC Resources.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IDSCResourceRule))]
+    [Export(typeof(IDSCResourceRule))]
 #endif
     public class UseVerboseMessageInDSCResource : SkipNamedBlock, IDSCResourceRule
     {
@@ -31,7 +31,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null)
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
-            }            
+            }
 
             IEnumerable<Ast> functionDefinitionAsts = Helper.Instance.DscResourceFunctions(ast);
 
@@ -56,7 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             }
         }
-        
+
         /// <summary>
         /// AnalyzeDSCClass: This function returns nothing in the case of dsc class.
         /// </summary>

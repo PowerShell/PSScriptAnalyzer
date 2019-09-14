@@ -100,11 +100,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="sourceName">Source name of the rule.</param>
         public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity)
         {
-            RuleName        = name;
-            CommonName  = commonName;
+            RuleName = name;
+            CommonName = commonName;
             Description = description;
-            SourceType  = sourceType;
-            SourceName  = sourceName;
+            SourceType = sourceType;
+            SourceName = sourceName;
             Severity = severity;
         }
 
@@ -119,11 +119,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <param name="implementingType">The dotnet type of the rule.</param>
         public RuleInfo(string name, string commonName, string description, SourceType sourceType, string sourceName, RuleSeverity severity, Type implementingType)
         {
-            RuleName        = name;
-            CommonName  = commonName;
+            RuleName = name;
+            CommonName = commonName;
             Description = description;
-            SourceType  = sourceType;
-            SourceName  = sourceName;
+            SourceType = sourceType;
+            SourceName = sourceName;
             Severity = severity;
             ImplementingType = implementingType;
         }

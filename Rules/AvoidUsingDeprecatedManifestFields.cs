@@ -99,7 +99,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         result = ps.Invoke();
                     }
                     catch
-                    {}
+                    { }
 
                     if (result != null)
                     {

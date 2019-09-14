@@ -18,7 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// Set-TargetResource have identical parameters.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IDSCResourceRule))]
+    [Export(typeof(IDSCResourceRule))]
 #endif
     public class UseIdenticalParametersDSC : IDSCResourceRule
     {
@@ -62,7 +62,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         || !CompareParamAsts(paramAst, paramNames[paramAst.Name.VariablePath.UserPath]))
                     {
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseIdenticalParametersDSCError),
-                            paramAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);   
+                            paramAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                     }
                 }
             }
@@ -117,15 +117,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return true;
+
+/* Unmerged change from project 'Rules (net452)'
+Before:
         }
         
+
+        /// <summary>
+After:
+        }
+
+
+        /// <summary>
+*/
+        }
+
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
         public string GetName()
-        {            
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseIdenticalParametersDSCName);
         }
 

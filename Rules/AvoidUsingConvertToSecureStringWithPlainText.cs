@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// AvoidUsingConvertToSecureStringWithPlainText: Check that convertto-securestring does not use plaintext.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IScriptRule))]
+    [Export(typeof(IScriptRule))]
 #endif
     public class AvoidUsingConvertToSecureStringWithPlainText : AvoidParameterGeneric
     {

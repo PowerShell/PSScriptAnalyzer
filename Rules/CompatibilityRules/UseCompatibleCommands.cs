@@ -1,16 +1,42 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Collections.Generic;
+using Microsoft.PowerShell.
+/* Unmerged change from project 'Rules (net452)'
+Before:
 using System.Globalization;
 using System.Management.Automation.Language;
+After:
+using System.Query;
+using Microsoft.PowerShell.CrossCompatibility.Utility;
+*/
+CrossCompatibility.Query;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+
+/* Unmerged change from project 'Rules (net452)'
+Before:
 using Microsoft.PowerShell.CrossCompatibility.Query;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
+After:
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+*/
+using System.IO;
+
+/* Unmerged change from project 'Rules (net452)'
+Before:
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Runtime.Serialization;
+After:
+using System.Management.Automation.Language;
+using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
+*/
+using System.Collections.Generic;
+using System.Globalization;
+using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -27,7 +53,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// List of commands to ignore the compatibility of.
         /// </summary>
-        [ConfigurableRuleProperty(new string[] {})]
+        [ConfigurableRuleProperty(new string[] { })]
         public string[] IgnoreCommands { get; set; }
 
         /// <summary>

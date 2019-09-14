@@ -319,11 +319,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         settingsObj?.CustomRulePath?.ToArray(),
                         this.SessionState,
                         combRecurseCustomRulePath);
-                    combRulePaths = rulePaths == null
-                                                ? settingsCustomRulePath
-                                                : settingsCustomRulePath == null
-                                                    ? rulePaths
-                                                    : rulePaths.Concat(settingsCustomRulePath).ToArray();
+                combRulePaths = rulePaths == null
+                                            ? settingsCustomRulePath
+                                            : settingsCustomRulePath == null
+                                                ? rulePaths
+                                                : rulePaths.Concat(settingsCustomRulePath).ToArray();
             }
             catch (Exception exception)
             {

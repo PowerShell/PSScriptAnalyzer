@@ -24,8 +24,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
         }
 
-       private string file;
-       private string description;
+        private string file;
+        private string description;
 
         public CorrectionExtent(
             int startLineNumber,

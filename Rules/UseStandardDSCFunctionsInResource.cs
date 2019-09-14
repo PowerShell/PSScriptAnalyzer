@@ -17,7 +17,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// UseStandardDSCFunctionsInResource: Checks if the DSC resource uses standard Get/Set/Test TargetResource functions.
     /// </summary>
 #if !CORECLR
-[Export(typeof(IDSCResourceRule))]
+    [Export(typeof(IDSCResourceRule))]
 #endif
     public class UseStandardDSCFunctionsInResource : IDSCResourceRule
     {
@@ -30,9 +30,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public IEnumerable<DiagnosticRecord> AnalyzeDSCResource(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
-                        
+
             // Expected TargetResource functions in the DSC Resource module
-            List<string> expectedTargetResourceFunctionNames = new List<string>(new string[]  { "Get-TargetResource", "Set-TargetResource", "Test-TargetResource" });
+            List<string> expectedTargetResourceFunctionNames = new List<string>(new string[] { "Get-TargetResource", "Set-TargetResource", "Test-TargetResource" });
 
             // Retrieve a list of Asts where the function name contains TargetResource            
             IEnumerable<Ast> functionDefinitionAsts = (ast.FindAll(dscAst => dscAst is FunctionDefinitionAst && ((dscAst as FunctionDefinitionAst).Name.IndexOf("targetResource", StringComparison.OrdinalIgnoreCase) != -1), true));
@@ -42,17 +42,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 targetResourceFunctionNamesInAst.Add(functionDefinitionAst.Name);
             }
-            
+
             foreach (string expectedTargetResourceFunctionName in expectedTargetResourceFunctionNames)
             {
                 // If the Ast does not contain the expected functions, provide a Rule violation message
                 if (!targetResourceFunctionNamesInAst.Contains(expectedTargetResourceFunctionName, StringComparer.OrdinalIgnoreCase))
                 {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseStandardDSCFunctionsInResourceError, expectedTargetResourceFunctionName),
-                        ast.Extent, GetName(), DiagnosticSeverity.Error, fileName);      
+                        ast.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                 }
             }
-        }        
+        }
 
         /// <summary>
         /// AnalyzeDSCClass: Analyzes dsc classes and the file and check that they have get, set and test
@@ -64,13 +64,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            #if (PSV3||PSV4)
+#if (PSV3 || PSV4)
 
             return null;
 
-            #else
+#else
 
-            List<string> resourceFunctionNames = new List<string>(new string[] {"Test", "Get", "Set"});
+            List<string> resourceFunctionNames = new List<string>(new string[] { "Test", "Get", "Set" });
 
             IEnumerable<Ast> dscClasses = ast.FindAll(item =>
                 item is TypeDefinitionAst
@@ -91,15 +91,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
 
-            #endif
-        }        
+#endif
+        }
 
         /// <summary>
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
         public string GetName()
-        {            
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseStandardDSCFunctionsInResourceName);
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public string GetSourceName()
         {
-            return string.Format(CultureInfo.CurrentCulture,Strings.DSCSourceName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.DSCSourceName);
         }
     }
 

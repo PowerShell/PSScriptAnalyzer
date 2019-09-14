@@ -1,10 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
-using Data = Microsoft.PowerShell.CrossCompatibility.Data;
+using System;
+/* Unmerged change from project 'Microsoft.PowerShell.CrossCompatibility (net452)'
+Before:
+using Microsoft.PowerShell.CrossCompatibility.Utility;
+After:
+using System.Collections.Generic;
+*/
+
 
 namespace Microsoft.PowerShell.CrossCompatibility.Query
 {
