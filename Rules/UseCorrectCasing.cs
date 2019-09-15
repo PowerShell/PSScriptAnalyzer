@@ -32,11 +32,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
 
-            bool isWindows = true;
-#if CORECLR
-            isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#endif
-
             // Iterates all CommandAsts and check the command name.
             foreach (CommandAst commandAst in commandAsts)
             {

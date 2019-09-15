@@ -23,9 +23,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         }
 
         /// <summary>
-        /// The name of the operating system as reported by $PSVersionTable.OS.
+        /// The name of the operating system.
         /// </summary>
         public string Name => _operatingSystemData.Name;
+
+        /// <summary>
+        /// The description of the operating system as reported by $PSVersionTable.OS.
+        /// </summary>
+        public string Description => _operatingSystemData.Description;
 
         /// <summary>
         /// The name of the platform as reported by $PSVersionTable.Platform.

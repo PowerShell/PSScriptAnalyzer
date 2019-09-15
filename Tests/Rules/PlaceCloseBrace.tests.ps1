@@ -78,6 +78,18 @@ $hashtable = @{a = 1; b = 2}
         }
     }
 
+    Context "When there is a one line hashtable inside a one line statement" {
+        BeforeAll {
+            $scriptDefinition = 'if ($true) { $test = @{ } }'
+            $ruleConfiguration.'IgnoreOneLineBlock' = $true
+        }
+
+        It "Should not find a violation" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be 0
+        }
+    }
+
     Context "When there is a multi-line hashtable" {
         BeforeAll {
 

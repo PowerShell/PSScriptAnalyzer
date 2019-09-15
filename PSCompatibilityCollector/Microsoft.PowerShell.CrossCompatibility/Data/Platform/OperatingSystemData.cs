@@ -15,11 +15,17 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
     public class OperatingSystemData : ICloneable
     {
 	/// <summary>
-	/// The name of the operating system as
-	/// reported by $PSVersionTable.
+	/// The name of the operating system.
 	/// </summary>
         [DataMember]
         public string Name { get; set; }
+
+	/// <summary>
+	/// The description of the operating system as
+	/// reported by $PSVersionTable.
+	/// </summary>
+        [DataMember]
+        public string Description { get; set; }
 
 	/// <summary>
 	/// The platform as reported by

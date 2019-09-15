@@ -16,7 +16,7 @@ function Invoke-AppVeyorInstall {
         else {
             # Visual Studio 2017 build (has already Pester v3, therefore a different installation mechanism is needed to make it also use the new version 4)
             Write-Verbose -Verbose "Installing Pester via Install-Module"
-            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery
         }
     }
 
@@ -28,14 +28,41 @@ function Invoke-AppVeyorInstall {
     }
     else {
         Write-Verbose -Verbose "Installing platyPS via Install-Module"
-        Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion $platyPSVersion
+        Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion $platyPSVersion -Repository PSGallery
     }
 
-    # the build script sorts out the problems of WMF4 and earlier versions of dotnet CLI
+    # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
     Write-Verbose -Verbose "Installing required .Net CORE SDK"
-    Write-Verbose "& $buildScriptDir/build.ps1 -bootstrap"
-    $buildScriptDir = (Resolve-Path "$PSScriptRoot/..").Path
-    & "$buildScriptDir/build.ps1" -bootstrap
+    # the legacy WMF4 image only has the old preview SDKs of dotnet
+    $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
+    $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
+    if ($PSVersionTable.PSVersion.Major -gt 4) {
+        $requiredDotNetCoreSDKVersionPresent = (dotnet --list-sdks) -match $requiredDotNetCoreSDKVersion
+    }
+    else {
+        # WMF 4 image has old SDK that does not have --list-sdks parameter
+        $requiredDotNetCoreSDKVersionPresent = (dotnet --version).StartsWith($requiredDotNetCoreSDKVersion)
+    }
+    if (-not $requiredDotNetCoreSDKVersionPresent) {
+        Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
+        $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+            if ($IsLinux -or $isMacOS) {
+                Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
+                bash dotnet-install.sh --version $requiredDotNetCoreSDKVersion
+                [System.Environment]::SetEnvironmentVariable('PATH', "/home/appveyor/.dotnet$([System.IO.Path]::PathSeparator)$PATH")
+            }
+            else {
+                Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
+                .\dotnet-install.ps1 -Version $requiredDotNetCoreSDKVersion
+            }
+        }
+        finally {
+            [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
+            Remove-Item .\dotnet-install.*
+        }
+    }
 }
 
 # Implements AppVeyor 'test_script' step
