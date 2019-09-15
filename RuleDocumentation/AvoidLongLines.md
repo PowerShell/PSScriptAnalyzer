@@ -4,4 +4,27 @@
 
 ## Description
 
-Lines should be no longer than 120 characters, including leading whitespace (indentation).
+Lines should be no longer than a configured number of characters (default: 120), including leading whitespace (indentation).
+
+**Note**: This rule is not enabled by default. The user needs to enable it through settings.
+
+## Configuration
+
+```powershell
+    Rules = @{
+        PSAvoidLongLines  = @{
+            Enable     = $true
+            LineLength = 120
+        }
+    }
+```
+
+### Parameters
+
+#### Enable: bool (Default value is `$false`)
+
+Enable or disable the rule during ScriptAnalyzer invocation.
+
+#### LineLength: int (Default value is 120)
+
+Optional parameter do override the default line length.
