@@ -283,11 +283,14 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var moduleData = new ModuleData();
 
             IEnumerable<CommandInfo> coreCommands = _pwsh.AddCommand(GcmInfo)
-                .AddParameter("Module", CORE_MODULE_NAME)
-                .InvokeAndClear<CommandInfo>();
+                .AddParameter("Type", CommandTypes.Alias | CommandTypes.Cmdlet | CommandTypes.Function)
+                .InvokeAndClear<CommandInfo>()
+                .Where(commandInfo => string.IsNullOrEmpty(commandInfo.ModuleName) || CORE_MODULE_NAME.Equals(commandInfo.ModuleName, StringComparison.OrdinalIgnoreCase));
 
             var cmdletData = new JsonCaseInsensitiveStringDictionary<CmdletData>();
             var functionData = new JsonCaseInsensitiveStringDictionary<FunctionData>();
+            var aliases = new JsonCaseInsensitiveStringDictionary<string>();
+            var aliasesToRequest = new List<string>();
             foreach (CommandInfo command in coreCommands)
             {
                 switch (command)
@@ -315,6 +318,24 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                         }
                         continue;
 
+                    case AliasInfo alias:
+                        try
+                        {
+                            // Some aliases won't resolve unless specified specifically
+                            if (alias.Definition == null)
+                            {
+                                aliasesToRequest.Add(alias.Name);
+                                continue;
+                            }
+
+                            aliases.Add(alias.Name, alias.Definition);
+                        }
+                        catch (RuntimeException)
+                        {
+                            // Ignore aliases that have trouble loading
+                        }
+                        continue;
+
                     default:
                         throw new CompatibilityAnalysisException($"Command {command.Name} in core module is of unsupported type {command.CommandType}");
                 }
@@ -323,15 +344,28 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             moduleData.Cmdlets = cmdletData;
             moduleData.Functions = functionData;
 
+            IEnumerable<AliasInfo> resolvedAliases = _pwsh.AddCommand(GcmInfo)
+                .AddParameter("Name", aliasesToRequest)
+                .InvokeAndClear<AliasInfo>();
+
+            foreach (AliasInfo resolvedAlias in resolvedAliases)
+            {
+                if (resolvedAlias?.Definition == null)
+                {
+                    continue;
+                }
+
+                aliases[resolvedAlias.Name] = resolvedAlias.Definition;
+            }
+
             // Get default variables and core aliases out of a fresh runspace
             using (SMA.PowerShell freshPwsh = SMA.PowerShell.Create(RunspaceMode.NewRunspace))
             {
                 Collection<PSObject> varsAndAliases = freshPwsh.AddCommand("Get-ChildItem")
-                    .AddParameter("Path", "variable:,alias:")
+                    .AddParameter("Path", "variable:")
                     .InvokeAndClear();
 
                 var variables = new List<string>();
-                var aliases = new JsonCaseInsensitiveStringDictionary<string>();
 
                 foreach (PSObject returnedObject in varsAndAliases)
                 {
@@ -339,10 +373,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     {
                         case PSVariable variable:
                             variables.Add(variable.Name);
-                            continue;
-
-                        case AliasInfo alias:
-                            aliases.Add(alias.Name, GetSingleAliasData(alias));
                             continue;
 
                         // Skip over other objects we get back, since there's no reason to throw
