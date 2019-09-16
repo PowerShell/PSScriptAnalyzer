@@ -222,7 +222,12 @@ if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 }
 else {
 	$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
-	$commands = Get-Command -FullyQualifiedModule $ms -CommandType Cmdlet,Function,Workflow # Not alias
+    if ( $PSVersionTable.PSVersion -ge [Version]'7.0.0' ) {
+        $commands = Get-Command -FullyQualifiedModule $ms -CommandType Cmdlet,Function # Not alias
+    }
+    else {
+        $commands = Get-Command -FullyQualifiedModule $ms -CommandType Cmdlet,Function,Workflow # Not alias
+    }
 }
 
 ## When testing help, remember that help is cached at the beginning of each session.

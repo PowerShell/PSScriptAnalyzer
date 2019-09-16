@@ -39,9 +39,9 @@
     <file src="__INPATHROOT__\out\PSCompatibilityCollector\PSCompatibilityCollector.psd1" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\PSCompatibilityCollector.psd1" />
     <file src="__INPATHROOT__\out\PSCompatibilityCollector\PSCompatibilityCollector.psm1" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\PSCompatibilityCollector.psm1" />
  </job>
- <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Compatibility Analyzer netstandard2.0 DLLs" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSCompatibilityCollector\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" />
-    <file src="__INPATHROOT__\out\PSCompatibilityCollector\netstandard2.0\Newtonsoft.Json.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\netstandard2.0\Newtonsoft.Json.dll" />
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Compatibility Analyzer netstandard2.1 DLLs" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\out\PSCompatibilityCollector\netstandard2.1\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\netstandard2.1\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSCompatibilityCollector\netstandard2.1\Newtonsoft.Json.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\netstandard2.1\Newtonsoft.Json.dll" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Compatibility Analyzer net452 DLLs" approvers="vigarg;gstolt">
     <file src="__INPATHROOT__\out\PSCompatibilityCollector\net452\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\net452\Microsoft.PowerShell.CrossCompatibility.dll" />
