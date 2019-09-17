@@ -16,13 +16,19 @@ Describe "AvoidLongLines" {
     }
 
     it 'Should find a violation when a line is longer than 120 characters (no whitespace)' {
-        $def = "a" * 125
+        $def = @"
+$("a" * 500)
+this line is short enough
+"@
         $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         $violations.Count | Should -Be 1
     }
 
     it 'Should find a violation when a line is longer than 120 characters (leading whitespace)' {
-        $def = " " * 100 + "a" * 25
+        $def = @"
+$(" " * 100 + "a" * 25)
+this line is short enough
+"@
         $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
         $violations.Count | Should -Be 1
     }
@@ -34,7 +40,7 @@ Describe "AvoidLongLines" {
     }
 
     it 'Should find a violation with a configured line length' {
-        $ruleSettings.Add('LineLength', 10)
+        $ruleSettings.Add('MaximumLineLength', 10)
         $settings['Rules'] = @{ $ruleName = $ruleSettings }
         $def = "a" * 15
         $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings

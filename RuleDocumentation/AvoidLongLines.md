@@ -25,6 +25,6 @@ Lines should be no longer than a configured number of characters (default: 120),
 
 Enable or disable the rule during ScriptAnalyzer invocation.
 
-#### LineLength: int (Default value is 120)
+#### MaximumLineLength: int (Default value is 120)
 
-Optional parameter do override the default line length.
+Optional parameter to override the default maximum line length.

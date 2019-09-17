@@ -24,14 +24,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Construct an object of AvoidLongLines type.
         /// </summary>
-        public AvoidLongLines() : base()
-        {
-            // Enable the rule by default
-            Enable = false;
-        }
+        public AvoidLongLines()
+        { }
 
         [ConfigurableRuleProperty(defaultValue: 120)]
-        public int LineLength { get; set; }
+        public int MaximumLineLength { get; set; }
+
+        private readonly string[] s_lineSeparators = new[] { "\r\n", "\n" };
+
         /// <summary>
         /// Analyzes the given ast to find violations.
         /// </summary>
@@ -42,48 +42,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null)
             {
-                throw new ArgumentNullException("ast");
+                throw new ArgumentNullException(nameof(ast));
             }
 
             var diagnosticRecords = new List<DiagnosticRecord>();
 
-            string[] lines = Regex.Split(ast.Extent.Text, @"\r?\n");
+            string[] lines = ast.Extent.Text.Split(s_lineSeparators, StringSplitOptions.None);
 
             for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
             {
-                var line = lines[lineNumber];
+                string line = lines[lineNumber];
 
-                if (line.Length > LineLength)
+                if (line.Length <= MaximumLineLength)
                 {
-                    var startLine = lineNumber + 1;
-                    var endLine = startLine;
-                    var startColumn = 1;
-                    var endColumn = line.Length;
-
-                    var violationExtent = new ScriptExtent(
-                        new ScriptPosition(
-                            ast.Extent.File,
-                            startLine,
-                            startColumn,
-                            line
-                        ),
-                        new ScriptPosition(
-                            ast.Extent.File,
-                            endLine,
-                            endColumn,
-                            line
-                        ));
-
-                    var record = new DiagnosticRecord(
-                            String.Format(CultureInfo.CurrentCulture, Strings.AvoidLongLinesError),
-                            violationExtent,
-                            GetName(),
-                            GetDiagnosticSeverity(),
-                            ast.Extent.File,
-                            null
-                        );
-                    diagnosticRecords.Add(record);
+                    continue;
                 }
+
+                int startLine = lineNumber + 1;
+                int endLine = startLine;
+                int startColumn = 1;
+                int endColumn = line.Length;
+
+                var violationExtent = new ScriptExtent(
+                    new ScriptPosition(
+                        ast.Extent.File,
+                        startLine,
+                        startColumn,
+                        line
+                    ),
+                    new ScriptPosition(
+                        ast.Extent.File,
+                        endLine,
+                        endColumn,
+                        line
+                    ));
+
+                var record = new DiagnosticRecord(
+                        String.Format(CultureInfo.CurrentCulture, 
+                            String.Format(Strings.AvoidLongLinesError, MaximumLineLength)),
+                        violationExtent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        ast.Extent.File,
+                        null
+                    );
+                diagnosticRecords.Add(record);
             }
 
             return diagnosticRecords;
