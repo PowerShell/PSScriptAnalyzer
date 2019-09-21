@@ -67,12 +67,21 @@ If a type is not present in the union profile, it is assumed to be locally creat
 Otherwise, if a type is present in the union profile but not present in a target,
 it is deemed to be incompatible with that target.
 
+## Configuration settings
+
+| Configuration key | Meaning | Accepted values | Mandatory | Example |
+| ----------------- | ------- | --------------- | --------- | ------- |
+| `Enable`          | Activates the rule | bool (`$true`/`$false`) | No (default: `$false`) | `$true` |
+| `TargetProfiles`  | The list of PowerShell profiles to target | string[]: absolute paths to profile files or names of profiles in the profile directory | No (default: `@()`) | `@('ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core', 'win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework')` |
+| `ProfileDirPath` | The location to search for profiles by name and use for union profile generation | string: absolute path to new profile dir | No (defaults to `compatibility_profiles` directory in PSScriptAnalyzer module | `C:\Users\me\Documents\pssaCompatProfiles` |
+| `IgnoreTypes` | Full names of types or type accelerators to ignore compatibility of in scripts | string[]: names of types to ignore | No (default: `@()`) | `@('System.Collections.ArrayList','string')` |
+
 An example configuration might look like:
 
 ```PowerShell
 @{
     Rules = @{
-        UseCompatibleTypes = @{
+        PSUseCompatibleTypes = @{
             Enable = $true
             TargetProfiles = @(
                 'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
