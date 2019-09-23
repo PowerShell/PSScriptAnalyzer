@@ -6,6 +6,7 @@ using System.Collections;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Management.Automation.Language;
+using System.Threading;
 using System.IO;
 using System.Linq;
 
@@ -22,6 +23,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         private SMA.PowerShell ps;
         internal hostedWriter writer;
         private ScriptAnalyzer analyzer;
+        private bool disposed = false;
+
+        object hostedAnalyzerLock = new object();
+        bool lockWasTaken = false;
+
         /// <summary>
         /// Create an instance of the hosted analyzer
         /// </summary>
@@ -37,10 +43,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>Reset the the analyzer and associated state</summary>
         public void Reset()
         {
-            analyzer.CleanUp();
-            Helper.Instance = new Helper(ps.Runspace.SessionStateProxy.InvokeCommand, writer);
-            Helper.Instance.Initialize();
-            analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+
+            lock (hostedAnalyzerLock) {
+                analyzer.CleanUp();
+                Helper.Instance = new Helper(ps.Runspace.SessionStateProxy.InvokeCommand, writer);
+                Helper.Instance.Initialize();
+                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+            }
         }
 
         /// <summary>
@@ -51,11 +60,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public AnalyzerResult Analyze(ScriptBlockAst scriptast, Token[] tokens, string filename = null)
         {
-            writer.ClearWriter();
-            analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-            var result = analyzer.AnalyzeSyntaxTree(scriptast, tokens, filename);
-            analyzer.CleanUp();
-            return new AnalyzerResult(AnalysisType.Ast, result, this);
+            try
+            {
+                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
+                writer.ClearWriter();
+                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+                var result = analyzer.AnalyzeSyntaxTree(scriptast, tokens, filename);
+                return new AnalyzerResult(AnalysisType.Ast, result, this);
+            }
+            finally
+            {
+                analyzer.CleanUp();
+                Monitor.Exit(hostedAnalyzerLock);
+            }
         }
 
         /// <summary>
@@ -65,13 +82,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public AnalyzerResult Analyze(string ScriptDefinition, Settings settings)
         {
-            writer.ClearWriter();
-            analyzer.UpdateSettings(settings);
-            analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null, false);
-            // analyzer.Initialize(ps.Runspace, writer, null, null, null, null, false, false, null, false);
-            var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
-            analyzer.CleanUp();
-            return new AnalyzerResult(AnalysisType.Script, result, this);
+            try {
+                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
+                writer.ClearWriter();
+                analyzer.UpdateSettings(settings);
+                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null, false);
+                var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+                return new AnalyzerResult(AnalysisType.Script, result, this);
+            }
+            finally {
+                analyzer.CleanUp();
+                Monitor.Exit(hostedAnalyzerLock);
+            }
         }
 
         /// <summary>
@@ -81,61 +103,72 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public AnalyzerResult Analyze(string ScriptDefinition, Hashtable settings)
         {
-            writer.ClearWriter();
-            analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-            // var set = CreateSettings(settings);
-            // analyzer.UpdateSettings(set);
-            var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
-            analyzer.CleanUp();
-            return new AnalyzerResult(AnalysisType.Script, result, this);
+            try
+            {
+                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
+                writer.ClearWriter();
+                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+                analyzer.UpdateSettings(CreateSettings(settings));
+                var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+                return new AnalyzerResult(AnalysisType.Script, result, this);
+            }
+            finally
+            {
+                analyzer.CleanUp();
+                Monitor.Exit(hostedAnalyzerLock);
+            }
         }
 
         /// <summary>Analyze a script in the form of a string, based on default</summary>
         public AnalyzerResult Analyze(string ScriptDefinition)
         {
-            writer.ClearWriter();
-            analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-            var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
-            return new AnalyzerResult(AnalysisType.Script, result, this);
+            try
+            {
+                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
+                writer.ClearWriter();
+                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+                var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+                return new AnalyzerResult(AnalysisType.Script, result, this);
+            }
+            finally
+            {
+                analyzer.CleanUp();
+                Monitor.Exit(hostedAnalyzerLock);
+            }
         }
-
-        /*
-        /// <summary>Analyze a script based on passed settings</summary>
-        public AnalyzerResult Analyze(string ScriptDefinition, AnalyzerConfiguration Settings)
-        {
-            writer.ClearWriter();
-            analyzer.Initialize(ps.Runspace, writer, Settings.RulePath, Settings.IncludeRuleNames, Settings.ExcludeRuleNames, Settings.Severity, Settings.IncludeDefaultRules, Settings.SuppressedOnly); 
-            var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
-            analyzer.CleanUp();
-            return new AnalyzerResult(AnalysisType.Script,  result, this);
-        }
-
-        /// <summary>Analyze a file based on passed settings</summary>
-        public AnalyzerResult Analyze(FileInfo File, AnalyzerConfiguration Settings)
-        {
-            writer.ClearWriter();
-            analyzer.Initialize(ps.Runspace, writer, Settings.RulePath, Settings.IncludeRuleNames, Settings.ExcludeRuleNames, Settings.Severity, Settings.IncludeDefaultRules, Settings.SuppressedOnly); 
-            var result = analyzer.AnalyzePath(File.FullName, (x, y) => { return true; }, false);
-            analyzer.CleanUp();
-            return new AnalyzerResult(AnalysisType.File, result, this);
-        }
-        */
 
         /// <summary>Analyze a script in the form of a file</summary>
         public AnalyzerResult Analyze(FileInfo File)
         {
-            writer.ClearWriter();
-            analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-            var result = analyzer.AnalyzePath(File.FullName, (x, y) => { return true; }, false);
-            analyzer.CleanUp();
-            return new AnalyzerResult(AnalysisType.File, result, this);
+            try {
+                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
+                writer.ClearWriter();
+                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+                var result = analyzer.AnalyzePath(File.FullName, (x, y) => { return true; }, false);
+                return new AnalyzerResult(AnalysisType.File, result, this);
+            }
+            finally
+            {
+                analyzer.CleanUp();
+                Monitor.Exit(hostedAnalyzerLock);
+            }
         }
 
         /// <summary>Fix a script</summary>
         public string Fix(string scriptDefinition)
         {
-            bool fixesApplied;
-            return analyzer.Fix(scriptDefinition, out fixesApplied);
+            try
+            {
+                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
+                bool fixesApplied;
+                return analyzer.Fix(scriptDefinition, out fixesApplied);
+            }
+            finally
+            {
+                analyzer.CleanUp();
+                Reset();
+                Monitor.Exit(hostedAnalyzerLock);
+            }
         }
 
         /// <summary>
@@ -162,10 +195,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public Settings CreateSettings()
         {
-
-            Settings s = Settings.Create(new Hashtable(),
-                "",
-                writer,  ps.Runspace.SessionStateProxy.Path.GetResolvedProviderPathFromPSPath);
+            Settings s = Settings.Create(new Hashtable(), "", writer, ps.Runspace.SessionStateProxy.Path.GetResolvedProviderPathFromPSPath);
             s.IncludeDefaultRules = true;
             return s;
         }
@@ -198,31 +228,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             }
             string s;
             try {
+                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
                 s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
             }
             finally {
                 analyzer.CleanUp();
+                // Reset is required because formatting leaves a number of settings behind which
+                // should be cleared.
                 Reset();
+                Monitor.Exit(hostedAnalyzerLock);
             }
             return s;
         }
-
-/*
-        /// <summary>
-        /// An encapsulation of the arguments passed to Analyzer.Initialize
-        /// they roughly equate to some of the parameters on the Invoke-ScriptAnalyzer
-        /// cmdlet, but encapsulated to improve the experience.
-        /// </summary>
-        public class AnalyzerConfiguration
-        {
-            public string[] RulePath;
-            public string[] IncludeRuleNames;
-            public string[] ExcludeRuleNames;
-            public string[] Severity;
-            public bool IncludeDefaultRules = true;
-            public bool SuppressedOnly = false;
-        }
-*/
 
         /// <summary>
         /// Analyzer usually requires a cmdlet to manage the output to the user.
@@ -304,9 +321,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>Dispose the PowerShell instance</summary>
         public void Dispose()
         {
-            Helper.Instance.Dispose();
-            ps.Runspace.Dispose();
-            ps.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if ( disposed )
+            {
+                return;
+            }
+
+            if ( disposing )
+            {
+                Helper.Instance.Dispose();
+                ps.Runspace.Dispose();
+                ps.Dispose();
+            }
+
+            disposed = true;
         }
     }
 
@@ -370,72 +403,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             Debug.AddRange(ha.writer.Debug);
         }
     }
-
-/*
-    /// <summary>A public settings object</summary>
-    public class PSSASettings
-    {
-        /// <summary>thing</summary>
-        public bool RecurseCustomRulePath { get; set;} = false;
-        /// <summary>thing</summary>
-        public bool IncludeDefaultRules { get; set; } = false;
-        /// <summary>thing</summary>
-        public string FilePath { get; set; }
-        /// <summary>thing</summary>
-        public List<RuleSeverity> Severities  { get; set; }
-        /// <summary>thing</summary>
-        public List<string> CustomRulePath { get; set; }
-        /// <summary>The rules which encapsulate an analyzer setting</summary>
-        public List<PSSARule>Rules;
-
-        /// <summary>Convert to hashtable so the analyzer method can use it</summary>
-        public Hashtable ConvertToHashtable()
-        {
-            Hashtable ht = new Hashtable();
-            return ht;
-        }
-    }
-*/
-
-    /// <summary>Whether the rule should be included or excluded</summary>
-    public enum RuleStatus {
-        /// <summary>Include the rule</summary>
-        Include,
-        /// <summary>Exclude the rule</summary>
-        Exclude
-    }
-
-/*
-    /// <summary>The encapsulation of a rule</summary>
-    public class PSSARule
-    {
-        /// <summary>the name for a rule</summary>
-        public string Name;
-        /// <summary>Is the rule included or excluded</summary>
-        public RuleStatus RuleAction;
-        /// <summary>the settings for a rule</summary>
-        public Dictionary<string, string>RuleSettings;
-
-        /// <summary>Create a new rule, the default status is to include it</summary>
-        public PSSARule(string name, RuleStatus status = RuleStatus.Include) {
-            Name = name;
-            RuleAction = status;
-            RuleSettings = new Dictionary<string,string>();
-        }
-
-        /// <summary>
-        /// Create a new rule, the default status is to include it
-        /// <param name="name" />
-        /// <param name="status" />
-        /// <param name="ruleSettings" />
-        /// </summary>
-        public PSSARule(string name, RuleStatus status, Dictionary<string, string>ruleSettings) {
-            Name = name;
-            RuleAction = status;
-            RuleSettings = ruleSettings;
-        }
-
-    }
-*/
 
 }
