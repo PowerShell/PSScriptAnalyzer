@@ -31,14 +31,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Construct an object of AvoidOverwritingBuiltInCmdlets type.
         /// </summary>
-        public AvoidOverwritingBuiltInCmdlets()
+        public AvoidOverwritingBuiltInCmdlets() : base()
         {
             initialized = false;
+            cmdletMap = new Dictionary<string, HashSet<string>>();
+            Enable = true;  // Enable rule by default
         }
 
 
         [ConfigurableRuleProperty(defaultValue: "core-6.1.0-windows")]
-        public object PowerShellVersion { get; set; }
+        public string PowerShellVersion { get; set; }
 
         private Dictionary<string, HashSet<string>> cmdletMap;
         private bool initialized;
@@ -70,6 +72,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!initialized)
                 {
                     Initialize();
+                    if (!initialized)
+                    {
+                        throw new Exception("Failed to initialize rule " + GetName());
+                    }
                 }
 
                 foreach (var functionDef in functionDefinitions)
@@ -112,30 +118,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private void Initialize()
         {
-            var psVerObjectArray = PowerShellVersion as object[];
-            var psVerList = new List<string>();
-
-            if (psVerObjectArray == null)
-            {
-                psVerList = PowerShellVersion as List<string>;
-                if (psVerList == null)
-                {
-                    return;
-                }
-            }
-            else
-            {
-                foreach (var psVer in psVerObjectArray)
-                {
-                    var psVerString = psVer as string;
-                    if (psVerString == null)
-                    {
-                        // Ignore non-string invalid entries
-                        continue;
-                    }
-                    psVerList.Add(psVerString);
-                }
-            }
+            var psVerList = PowerShellVersion.Split(',').ToList();
 
             string settingsPath = Settings.GetShippedSettingsDirectory();
 
@@ -179,7 +162,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                cmdletMap[fileNameWithoutExt] = GetCmdletsFromData(JObject.Parse(File.ReadAllText(filePath)));
+                cmdletMap.Add(fileNameWithoutExt, GetCmdletsFromData(JObject.Parse(File.ReadAllText(filePath))));
             }
         }
 
