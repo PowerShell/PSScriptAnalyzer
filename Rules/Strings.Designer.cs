@@ -2103,6 +2103,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("UseCompatibleCmdletsName", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsCommonName
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsCommonName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsDescription
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is a cmdlet that is included with PowerShell whose definition should not be overridden.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsError
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidOverwritingBuiltInCmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsName
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsName", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to The command &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
