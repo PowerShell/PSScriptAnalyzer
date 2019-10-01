@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -18,7 +19,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidLongLines: Checks if a script overwrites a cmdlet that comes with PowerShell
+    /// AvoidOverwritingBuiltInCmdlets: Checks if a script overwrites a cmdlet that comes with PowerShell
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
@@ -28,6 +29,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// </summary>
     public class AvoidOverwritingBuiltInCmdlets : ConfigurableRule
     {
+        [ConfigurableRuleProperty(defaultValue: "")]
+        public string[] PowerShellVersion { get; set; }
+        private Dictionary<string, HashSet<string>> cmdletMap;
+        private bool initialized;
+
+
         /// <summary>
         /// Construct an object of AvoidOverwritingBuiltInCmdlets type.
         /// </summary>
@@ -36,14 +43,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             initialized = false;
             cmdletMap = new Dictionary<string, HashSet<string>>();
             Enable = true;  // Enable rule by default
+            
+            string versionTest = string.Join("", PowerShellVersion);
+
+            if (versionTest != "core-6.1.0-windows" && versionTest != "desktop-5.1.14393.206-windows")
+            {
+                // PowerShellVersion is not already set to one of the acceptable defaults
+                // Try launching `pwsh -v` to see if PowerShell 6+ is installed, and use those cmdlets
+                // as a default. If 6+ is not installed this will throw an error, which when caught will
+                // allow us to use the PowerShell 5 cmdlets as a default.
+                try
+                {
+                    var testProcess = new Process();
+                    testProcess.StartInfo.FileName = "pwsh";
+                    testProcess.StartInfo.Arguments = "-v";
+                    testProcess.StartInfo.CreateNoWindow = true;
+                    testProcess.StartInfo.UseShellExecute = false;
+                    testProcess.Start();
+                    PowerShellVersion = new[] {"core-6.1.0-windows"};
+                }
+                catch
+                {
+                    PowerShellVersion = new[] {"desktop-5.1.14393.206-windows"};
+                }
+            }
         }
-
-
-        [ConfigurableRuleProperty(defaultValue: "core-6.1.0-windows")]
-        public string PowerShellVersion { get; set; }
-
-        private Dictionary<string, HashSet<string>> cmdletMap;
-        private bool initialized;
 
 
         /// <summary>
@@ -118,29 +142,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private void Initialize()
         {
-            var psVerList = PowerShellVersion.Split(',').ToList();
+            var psVerList = PowerShellVersion;
 
             string settingsPath = Settings.GetShippedSettingsDirectory();
 
-            if (settingsPath == null || !ContainsReferenceFile(settingsPath))
+            foreach (string reference in psVerList)
             {
-                return;
+                if (settingsPath == null || !ContainsReferenceFile(settingsPath, reference))
+                {
+                    return;
+                }
             }
-            
+
             ProcessDirectory(settingsPath, psVerList);
 
             if (cmdletMap.Keys.Count != psVerList.Count())
             {
                 return;
             }
-            
+
             initialized = true;
         }
 
 
-        private bool ContainsReferenceFile(string directory)
+        private bool ContainsReferenceFile(string directory, string reference)
         {
-            return File.Exists(Path.Combine(directory, PowerShellVersion + ".json"));
+            return File.Exists(Path.Combine(directory, reference + ".json"));
         }
 
 
@@ -190,39 +217,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return cmdlets;
-        }
-
-
-        private bool IsValidPlatformString(string fileNameWithoutExt)
-        {
-            string psedition, psversion, os;
-            return GetVersionInfoFromPlatformString(
-                fileNameWithoutExt,
-                out psedition,
-                out psversion,
-                out os);
-        }
-
-
-        private bool GetVersionInfoFromPlatformString(
-            string fileName,
-            out string psedition,
-            out string psversion,
-            out string os)
-        {
-            psedition = null;
-            psversion = null;
-            os = null;
-            const string pattern = @"^(?<psedition>core|desktop)-(?<psversion>[\S]+)-(?<os>windows|linux|macos)$";
-            var match = Regex.Match(fileName, pattern, RegexOptions.IgnoreCase);
-            if (match == Match.Empty)
-            {
-                return false;
-            }
-            psedition = match.Groups["psedition"].Value;
-            psversion = match.Groups["psversion"].Value;
-            os = match.Groups["os"].Value;
-            return true;
         }
 
 
