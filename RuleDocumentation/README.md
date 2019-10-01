@@ -12,6 +12,7 @@
 |[AvoidGlobalFunctions](./AvoidGlobalFunctions.md) | Warning | |
 |[AvoidGlobalVars](./AvoidGlobalVars.md) | Warning | |
 |[AvoidInvokingEmptyMembers](./AvoidInvokingEmptyMembers.md) | Warning | |
+|[AvoidOverwritingBuiltInCmdlets](./AvoidOverwritingBuiltInCmdlets.md) | Warning | |
 |[AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md) | Warning | |
 |[AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md) | Warning | |
 |[AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md) | Warning | Yes |
