@@ -897,6 +897,18 @@
   <data name="AvoidTrailingWhitespaceError" xml:space="preserve">
     <value>Line has trailing whitespace</value>
   </data>
+  <data name="AvoidLongLinesName" xml:space="preserve">
+    <value>AvoidLongLines</value>
+  </data>
+  <data name="AvoidLongLinesCommonName" xml:space="preserve">
+    <value>Avoid long lines</value>
+  </data>
+  <data name="AvoidLongLinesDescription" xml:space="preserve">
+    <value>Line lengths should be less than the configured maximum</value>
+  </data>
+  <data name="AvoidLongLinesError" xml:space="preserve">
+    <value>Line exceeds the configured maximum length of {0} characters</value>
+  </data>
   <data name="PlaceOpenBraceName" xml:space="preserve">
     <value>PlaceOpenBrace</value>
   </data>
