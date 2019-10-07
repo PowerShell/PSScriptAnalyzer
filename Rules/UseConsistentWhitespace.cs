@@ -243,6 +243,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || !IsPreviousTokenOnSameLine(lCurly)
                     || lCurly.Next.Value.Kind == TokenKind.NewLine
                     || lCurly.Next.Value.Kind == TokenKind.LineContinuation
+                    || lCurly.Next.Value.Kind == TokenKind.RCurly
                     )
                 {
                     continue;
@@ -268,6 +269,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || rCurly.Previous.Value.Kind == TokenKind.LCurly
                     || rCurly.Previous.Value.Kind == TokenKind.NewLine
                     || rCurly.Previous.Value.Kind == TokenKind.LineContinuation
+                    || rCurly.Previous.Value.Kind == TokenKind.AtCurly
                     )
                 {
                     continue;
