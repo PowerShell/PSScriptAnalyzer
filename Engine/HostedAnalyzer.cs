@@ -60,18 +60,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public AnalyzerResult Analyze(ScriptBlockAst scriptast, Token[] tokens, string filename = null)
         {
-            try
+            lock(hostedAnalyzerLock)
             {
-                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
-                writer.ClearWriter();
-                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-                var result = analyzer.AnalyzeSyntaxTree(scriptast, tokens, filename);
-                return new AnalyzerResult(AnalysisType.Ast, result, this);
-            }
-            finally
-            {
-                analyzer.CleanUp();
-                Monitor.Exit(hostedAnalyzerLock);
+                try
+                {
+                    writer.ClearWriter();
+                    analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+                    var result = analyzer.AnalyzeSyntaxTree(scriptast, tokens, filename);
+                    return new AnalyzerResult(AnalysisType.Ast, result, this);
+                }
+                finally
+                {
+                    analyzer.CleanUp();
+                }
             }
         }
 
@@ -82,17 +83,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public AnalyzerResult Analyze(string ScriptDefinition, Settings settings)
         {
-            try {
-                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
-                writer.ClearWriter();
-                analyzer.UpdateSettings(settings);
-                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null, false);
-                var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
-                return new AnalyzerResult(AnalysisType.Script, result, this);
-            }
-            finally {
-                analyzer.CleanUp();
-                Monitor.Exit(hostedAnalyzerLock);
+            lock(hostedAnalyzerLock)
+            {
+                try
+                {
+                    writer.ClearWriter();
+                    analyzer.UpdateSettings(settings);
+                    analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null, false);
+                    var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+                    return new AnalyzerResult(AnalysisType.Script, result, this);
+                }
+                finally
+                {
+                    analyzer.CleanUp();
+                }
             }
         }
 
@@ -103,71 +107,75 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         public AnalyzerResult Analyze(string ScriptDefinition, Hashtable settings)
         {
-            try
+            lock(hostedAnalyzerLock)
             {
-                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
-                writer.ClearWriter();
-                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-                analyzer.UpdateSettings(CreateSettings(settings));
-                var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
-                return new AnalyzerResult(AnalysisType.Script, result, this);
-            }
-            finally
-            {
-                analyzer.CleanUp();
-                Monitor.Exit(hostedAnalyzerLock);
+                try
+                {
+                    writer.ClearWriter();
+                    analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+                    analyzer.UpdateSettings(CreateSettings(settings));
+                    var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+                    return new AnalyzerResult(AnalysisType.Script, result, this);
+                }
+                finally
+                {
+                    analyzer.CleanUp();
+                }
             }
         }
 
         /// <summary>Analyze a script in the form of a string, based on default</summary>
         public AnalyzerResult Analyze(string ScriptDefinition)
         {
-            try
+            lock(hostedAnalyzerLock)
             {
-                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
-                writer.ClearWriter();
-                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-                var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
-                return new AnalyzerResult(AnalysisType.Script, result, this);
-            }
-            finally
-            {
-                analyzer.CleanUp();
-                Monitor.Exit(hostedAnalyzerLock);
+                try
+                {
+                    writer.ClearWriter();
+                    analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+                    var result = analyzer.AnalyzeScriptDefinition(ScriptDefinition);
+                    return new AnalyzerResult(AnalysisType.Script, result, this);
+                }
+                finally
+                {
+                    analyzer.CleanUp();
+                }
             }
         }
 
         /// <summary>Analyze a script in the form of a file</summary>
         public AnalyzerResult Analyze(FileInfo File)
         {
-            try {
-                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
-                writer.ClearWriter();
-                analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
-                var result = analyzer.AnalyzePath(File.FullName, (x, y) => { return true; }, false);
-                return new AnalyzerResult(AnalysisType.File, result, this);
-            }
-            finally
+            lock(hostedAnalyzerLock)
             {
-                analyzer.CleanUp();
-                Monitor.Exit(hostedAnalyzerLock);
+                try {
+                    writer.ClearWriter();
+                    analyzer.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+                    var result = analyzer.AnalyzePath(File.FullName, (x, y) => { return true; }, false);
+                    return new AnalyzerResult(AnalysisType.File, result, this);
+                }
+                finally
+                {
+                    analyzer.CleanUp();
+                }
             }
         }
 
         /// <summary>Fix a script</summary>
         public string Fix(string scriptDefinition)
         {
-            try
+            lock(hostedAnalyzerLock)
             {
-                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
-                bool fixesApplied;
-                return analyzer.Fix(scriptDefinition, out fixesApplied);
-            }
-            finally
-            {
-                analyzer.CleanUp();
-                Reset();
-                Monitor.Exit(hostedAnalyzerLock);
+                try
+                {
+                    Reset();
+                    bool fixesApplied;
+                    return analyzer.Fix(scriptDefinition, out fixesApplied);
+                }
+                finally
+                {
+                    Reset();
+                }
             }
         }
 
@@ -227,16 +235,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
                 throw new ArgumentException("settings may not be null");
             }
             string s;
-            try {
-                Monitor.Enter(hostedAnalyzerLock, ref lockWasTaken);
-                s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
-            }
-            finally {
-                analyzer.CleanUp();
-                // Reset is required because formatting leaves a number of settings behind which
-                // should be cleared.
-                Reset();
-                Monitor.Exit(hostedAnalyzerLock);
+            lock(hostedAnalyzerLock)
+            {
+                try {
+                    s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
+                }
+                finally {
+                    analyzer.CleanUp();
+                    // Reset is required because formatting leaves a number of settings behind which
+                    // should be cleared.
+                    Reset();
+                }
             }
             return s;
         }
@@ -318,13 +327,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             return builtinRules;
         }
 
-        /// <summary>Dispose the PowerShell instance</summary>
+        /// <summary>Dispose the Hosted Analyzer resources</summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
         
+        /// <summary>Dispose the Helper, runspace, and Powershell instance </summary>
         protected virtual void Dispose(bool disposing)
         {
             if ( disposed )
