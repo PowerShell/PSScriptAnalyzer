@@ -335,7 +335,7 @@ foo
         }
 
         It "Should find a violation if there is more than 1 space before closing brace" {
-            $def = 'if($true) {  Get-Item }'
+            $def = 'if($true) { Get-Item  }'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
         }
