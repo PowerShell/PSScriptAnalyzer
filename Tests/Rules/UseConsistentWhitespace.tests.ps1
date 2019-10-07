@@ -327,9 +327,15 @@ foo
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
-        
-        It "Should find a violation if there is more than 1 space inside empty curly braces" {
-            $def = 'if($true) {  }'
+
+        It "Should find a violation if there is more than 1 space after opening brace" {
+            $def = 'if($true) {  Get-Item }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+        }
+
+        It "Should find a violation if there is more than 1 space before closing brace" {
+            $def = 'if($true) { Get-Item  }'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
         }
@@ -341,6 +347,11 @@ foo
 
         It "Should not find a violation if there is 1 space inside empty curly braces" {
             $def = 'if($true) { }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation for an empty hashtable" {
+            $def = '$hashtable = @{}'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
