@@ -371,19 +371,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
     public class AnalyzerResult
     {
         /// <summary>The type of entity which was analyzed</summary>
-        public AnalysisType Type;
+        public AnalysisType Type { get; set; }
         /// <summary>The diagnostic records found during analysis</summary>
-        public List<DiagnosticRecord> Result;
+        public List<DiagnosticRecord> Result { get; set; }
         /// <summary>The terminating errors which occurred during analysis</summary>
-        public List<SMA.ErrorRecord> TerminatingErrors;
+        public List<SMA.ErrorRecord> TerminatingErrors { get; set; }
         /// <summary>The non-terminating errors which occurred during analysis</summary>
-        public List<SMA.ErrorRecord> Errors;
+        public List<SMA.ErrorRecord> Errors { get; set; }
         /// <summary>The verbose messages delivered during analysis</summary>
-        public List<string> Verbose;
+        public List<string> Verbose { get; set; }
         /// <summary>The warning messages delivered during analysis</summary>
-        public List<string> Warning;
+        public List<string> Warning { get; set; }
         /// <summary>The debug messages delivered during analysis</summary>
-        public List<string> Debug;
+        public List<string> Debug { get; set; }
 
         /// <summary>
         /// initialize storage
