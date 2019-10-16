@@ -29,44 +29,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// </summary>
     public class AvoidOverwritingBuiltInCmdlets : ConfigurableRule
     {
+        /// <summary>
+        /// Specify the version of PowerShell to compare against since different versions of PowerShell
+        /// ship with different sets of built in cmdlets. The default value for PowerShellVersion is
+        /// "core-6.1.0-windows" if PowerShell 6 or later is installed, and "desktop-5.1.14393.206-windows"
+        /// if it is not. The version specified aligns with a JSON file in `/path/to/PSScriptAnalyzerModule/Settings`.
+        /// These files are of the form, `PSEDITION-PSVERSION-OS.json` where `PSEDITION` can be either `Core` or
+        /// `Desktop`, `OS` can be either `Windows`, `Linux` or `MacOS`, and `Version` is the PowerShell version.
+        /// </summary>
         [ConfigurableRuleProperty(defaultValue: "")]
         public string[] PowerShellVersion { get; set; }
-        private Dictionary<string, HashSet<string>> cmdletMap;
-        private bool initialized;
+        private readonly Dictionary<string, HashSet<string>> _cmdletMap;
 
 
         /// <summary>
         /// Construct an object of AvoidOverwritingBuiltInCmdlets type.
         /// </summary>
-        public AvoidOverwritingBuiltInCmdlets() : base()
+        public AvoidOverwritingBuiltInCmdlets()
         {
-            initialized = false;
-            cmdletMap = new Dictionary<string, HashSet<string>>();
+            _cmdletMap = new Dictionary<string, HashSet<string>>();
             Enable = true;  // Enable rule by default
-            
-            string versionTest = string.Join("", PowerShellVersion);
-
-            if (versionTest != "core-6.1.0-windows" && versionTest != "desktop-5.1.14393.206-windows")
-            {
-                // PowerShellVersion is not already set to one of the acceptable defaults
-                // Try launching `pwsh -v` to see if PowerShell 6+ is installed, and use those cmdlets
-                // as a default. If 6+ is not installed this will throw an error, which when caught will
-                // allow us to use the PowerShell 5 cmdlets as a default.
-                try
-                {
-                    var testProcess = new Process();
-                    testProcess.StartInfo.FileName = "pwsh";
-                    testProcess.StartInfo.Arguments = "-v";
-                    testProcess.StartInfo.CreateNoWindow = true;
-                    testProcess.StartInfo.UseShellExecute = false;
-                    testProcess.Start();
-                    PowerShellVersion = new[] {"core-6.1.0-windows"};
-                }
-                catch
-                {
-                    PowerShellVersion = new[] {"desktop-5.1.14393.206-windows"};
-                }
-            }
         }
 
 
@@ -83,7 +65,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException(nameof(ast));
             }
 
-            var functionDefinitions = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
+            IEnumerable<FunctionDefinitionAst> functionDefinitions = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true).OfType<FunctionDefinitionAst>();
             if (functionDefinitions.Count() < 1)
             {
                 // There are no function definitions in this AST and so it's not worth checking the rest of this rule
@@ -93,29 +75,61 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             else
             {
                 var diagnosticRecords = new List<DiagnosticRecord>();
-                if (!initialized)
+                string versionTest = string.Join("", PowerShellVersion);
+
+                if (string.IsNullOrEmpty(versionTest))
                 {
-                    Initialize();
-                    if (!initialized)
+                    // PowerShellVersion is not already set to one of the acceptable defaults
+                    // Try launching `pwsh -v` to see if PowerShell 6+ is installed, and use those cmdlets
+                    // as a default. If 6+ is not installed this will throw an error, which when caught will
+                    // allow us to use the PowerShell 5 cmdlets as a default.
+                    var testProcess = new Process();
+                    testProcess.StartInfo.FileName = "pwsh";
+                    testProcess.StartInfo.Arguments = "-v";
+                    testProcess.StartInfo.CreateNoWindow = true;
+                    testProcess.StartInfo.UseShellExecute = false;
+
+                    try
                     {
-                        throw new Exception("Failed to initialize rule " + GetName());
+                        testProcess.Start();
+                        PowerShellVersion = new[] { "core-6.1.0-windows" };
+                    }
+                    catch
+                    {
+                        PowerShellVersion = new[] { "desktop-5.1.14393.206-windows" };
+                    }
+                    finally
+                    {
+                        testProcess.Dispose();
                     }
                 }
 
-                foreach (var functionDef in functionDefinitions)
-                {
-                    FunctionDefinitionAst funcDef = functionDef as FunctionDefinitionAst;
-                    if (funcDef == null)
-                    {
-                        continue;
-                    }
+                var psVerList = PowerShellVersion;
+                string settingsPath = Settings.GetShippedSettingsDirectory();
 
-                    string functionName = funcDef.Name;
-                    foreach (var map in cmdletMap)
+                foreach (string reference in psVerList)
+                {
+                    if (settingsPath == null || !ContainsReferenceFile(settingsPath, reference))
                     {
-                        if (map.Value.Contains(functionName))
+                        throw new ArgumentException(nameof(PowerShellVersion));
+                    }
+                }
+
+                ProcessDirectory(settingsPath, psVerList);
+
+                if (_cmdletMap.Keys.Count != psVerList.Count())
+                {
+                    throw new ArgumentException(nameof(PowerShellVersion));
+                }
+
+                foreach (FunctionDefinitionAst functionDef in functionDefinitions)
+                {
+                    string functionName = functionDef.Name;
+                    foreach (KeyValuePair<string, HashSet<string>> cmdletSet in _cmdletMap)
+                    {
+                        if (cmdletSet.Value.Contains(functionName))
                         {
-                            diagnosticRecords.Add(CreateDiagnosticRecord(functionName, map.Key, functionDef.Extent));
+                            diagnosticRecords.Add(CreateDiagnosticRecord(functionName, cmdletSet.Key, functionDef.Extent));
                         }
                     }
                 }
@@ -137,31 +151,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 null
             );
             return record;
-        }
-
-
-        private void Initialize()
-        {
-            var psVerList = PowerShellVersion;
-
-            string settingsPath = Settings.GetShippedSettingsDirectory();
-
-            foreach (string reference in psVerList)
-            {
-                if (settingsPath == null || !ContainsReferenceFile(settingsPath, reference))
-                {
-                    return;
-                }
-            }
-
-            ProcessDirectory(settingsPath, psVerList);
-
-            if (cmdletMap.Keys.Count != psVerList.Count())
-            {
-                return;
-            }
-
-            initialized = true;
         }
 
 
@@ -189,7 +178,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                cmdletMap.Add(fileNameWithoutExt, GetCmdletsFromData(JObject.Parse(File.ReadAllText(filePath))));
+                _cmdletMap.Add(fileNameWithoutExt, GetCmdletsFromData(JObject.Parse(File.ReadAllText(filePath))));
             }
         }
 
