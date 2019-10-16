@@ -72,70 +72,68 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return null;
             }
 
-            else
+
+            var diagnosticRecords = new List<DiagnosticRecord>();
+            string versionTest = string.Join("", PowerShellVersion);
+
+            if (string.IsNullOrEmpty(versionTest))
             {
-                var diagnosticRecords = new List<DiagnosticRecord>();
-                string versionTest = string.Join("", PowerShellVersion);
+                // PowerShellVersion is not already set to one of the acceptable defaults
+                // Try launching `pwsh -v` to see if PowerShell 6+ is installed, and use those cmdlets
+                // as a default. If 6+ is not installed this will throw an error, which when caught will
+                // allow us to use the PowerShell 5 cmdlets as a default.
+                var testProcess = new Process();
+                testProcess.StartInfo.FileName = "pwsh";
+                testProcess.StartInfo.Arguments = "-v";
+                testProcess.StartInfo.CreateNoWindow = true;
+                testProcess.StartInfo.UseShellExecute = false;
 
-                if (string.IsNullOrEmpty(versionTest))
+                try
                 {
-                    // PowerShellVersion is not already set to one of the acceptable defaults
-                    // Try launching `pwsh -v` to see if PowerShell 6+ is installed, and use those cmdlets
-                    // as a default. If 6+ is not installed this will throw an error, which when caught will
-                    // allow us to use the PowerShell 5 cmdlets as a default.
-                    var testProcess = new Process();
-                    testProcess.StartInfo.FileName = "pwsh";
-                    testProcess.StartInfo.Arguments = "-v";
-                    testProcess.StartInfo.CreateNoWindow = true;
-                    testProcess.StartInfo.UseShellExecute = false;
-
-                    try
-                    {
-                        testProcess.Start();
-                        PowerShellVersion = new[] { "core-6.1.0-windows" };
-                    }
-                    catch
-                    {
-                        PowerShellVersion = new[] { "desktop-5.1.14393.206-windows" };
-                    }
-                    finally
-                    {
-                        testProcess.Dispose();
-                    }
+                    testProcess.Start();
+                    PowerShellVersion = new[] { "core-6.1.0-windows" };
                 }
-
-                var psVerList = PowerShellVersion;
-                string settingsPath = Settings.GetShippedSettingsDirectory();
-
-                foreach (string reference in psVerList)
+                catch
                 {
-                    if (settingsPath == null || !ContainsReferenceFile(settingsPath, reference))
-                    {
-                        throw new ArgumentException(nameof(PowerShellVersion));
-                    }
+                    PowerShellVersion = new[] { "desktop-5.1.14393.206-windows" };
                 }
+                finally
+                {
+                    testProcess.Dispose();
+                }
+            }
 
-                ProcessDirectory(settingsPath, psVerList);
+            var psVerList = PowerShellVersion;
+            string settingsPath = Settings.GetShippedSettingsDirectory();
 
-                if (_cmdletMap.Keys.Count != psVerList.Count())
+            foreach (string reference in psVerList)
+            {
+                if (settingsPath == null || !ContainsReferenceFile(settingsPath, reference))
                 {
                     throw new ArgumentException(nameof(PowerShellVersion));
                 }
+            }
 
-                foreach (FunctionDefinitionAst functionDef in functionDefinitions)
+            ProcessDirectory(settingsPath, psVerList);
+
+            if (_cmdletMap.Keys.Count != psVerList.Count())
+            {
+                throw new ArgumentException(nameof(PowerShellVersion));
+            }
+
+            foreach (FunctionDefinitionAst functionDef in functionDefinitions)
+            {
+                string functionName = functionDef.Name;
+                foreach (KeyValuePair<string, HashSet<string>> cmdletSet in _cmdletMap)
                 {
-                    string functionName = functionDef.Name;
-                    foreach (KeyValuePair<string, HashSet<string>> cmdletSet in _cmdletMap)
+                    if (cmdletSet.Value.Contains(functionName))
                     {
-                        if (cmdletSet.Value.Contains(functionName))
-                        {
-                            diagnosticRecords.Add(CreateDiagnosticRecord(functionName, cmdletSet.Key, functionDef.Extent));
-                        }
+                        diagnosticRecords.Add(CreateDiagnosticRecord(functionName, cmdletSet.Key, functionDef.Extent));
                     }
                 }
-
-                return diagnosticRecords;
             }
+
+            return diagnosticRecords;
         }
 
 
