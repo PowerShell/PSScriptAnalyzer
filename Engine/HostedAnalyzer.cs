@@ -38,6 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             ps = SMA.PowerShell.Create(iss);
             writer = new hostedWriter();
             ScriptAnalyzer.Instance.Initialize(ps.Runspace, writer, null, null, null, null, true, false, null);
+            // This is the static singleton
             analyzer = ScriptAnalyzer.Instance;
         }
 
@@ -252,8 +253,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Analyze a script asynchronously in the form of a string, based on default
         /// </summary>
-        /// <param name="ScriptDefinition">The script (as a string) to analyze</param>
         /// <param name="File">The file that contains the script</param>
+        /// <param name="settings">The settings to use when analyzing the script</param>
         /// <returns>A Task which encapsulates an AnalyzerResult</returns>
         public Task<AnalyzerResult> AnalyzeAsync(FileInfo File, Settings settings) => 
             Task.Run(() => Analyze(File, settings));
@@ -309,6 +310,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <returns>The fixed script as a string</returns>
         public Task<string> FixAsync(string scriptDefinition) => Task.Run(() => Fix(scriptDefinition));
 
+        /// <summary>Fix a script</summary>
+        /// <param name="scriptDefinition">The script to fix</param>
+        /// <param name="settings">The settings to use when fixing</param>
+        /// <returns>The fixed script as a string</returns>
+        public string Fix(string scriptDefinition, Settings settings)
+        {
+            lock(hostedAnalyzerLock)
+            {
+                try
+                {
+                    Reset();
+                    analyzer.UpdateSettings(settings);
+                    // First we run the normal rules
+                    string fixedScript = Fix(scriptDefinition);
+                    // now analyze the script according to the provided settings
+                    var analysisResult = Analyze(fixedScript, settings);
+
+                    // Replicate the way analyzer fixes a script
+                    // it seems that we can't just call the fix api as the settings
+                    // don't persist in the helper singleton
+                    var corrections = analysisResult.Result
+                        .Select(r => r.SuggestedCorrections)
+                        .Where(sc => sc != null && sc.Any())
+                        .Select(sc => sc.First())
+                        .ToList();
+                    EditableText t = new EditableText(fixedScript);
+                    var orderedList = corrections.OrderByDescending(r => r.StartLineNumber).ThenByDescending(r => r.StartColumnNumber);
+
+                    foreach ( CorrectionExtent ce in orderedList ) {
+                        t = t.ApplyEdit(ce);
+                    }
+                    return t.ToString();
+                }
+                finally
+                {
+                    Reset();
+                }
+            }
+        }
+
+        /// <summary>Fix a script</summary>
+        /// <param name="scriptDefinition">The script to fix</param>
+        /// <returns>The fixed script as a string</returns>
+        /// <param name="settings">The settings to use when fixing</param>
+        public Task<string> FixAsync(string scriptDefinition, Settings settings) => Task.Run(() => Fix(scriptDefinition, settings));
 
 
         /// <summary>
@@ -502,6 +548,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             }
 
             disposed = true;
+        }
+
+        /// <summary>A simple ToString</summary>
+        public override string ToString()
+        {
+            return this.ps.Runspace.InstanceId?.ToString();
         }
     }
 
