@@ -553,7 +553,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>A simple ToString</summary>
         public override string ToString()
         {
-            return this.ps.Runspace.InstanceId?.ToString();
+            return this?.ps.Runspace.InstanceId.ToString();
         }
     }
 
