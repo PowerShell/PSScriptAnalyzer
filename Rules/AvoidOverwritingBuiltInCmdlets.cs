@@ -83,25 +83,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Try launching `pwsh -v` to see if PowerShell 6+ is installed, and use those cmdlets
                 // as a default. If 6+ is not installed this will throw an error, which when caught will
                 // allow us to use the PowerShell 5 cmdlets as a default.
-                var testProcess = new Process();
-                testProcess.StartInfo.FileName = "pwsh";
-                testProcess.StartInfo.Arguments = "-v";
-                testProcess.StartInfo.CreateNoWindow = true;
-                testProcess.StartInfo.UseShellExecute = false;
 
-                try
-                {
-                    testProcess.Start();
-                    PowerShellVersion = new[] { "core-6.1.0-windows" };
-                }
-                catch
-                {
-                    PowerShellVersion = new[] { "desktop-5.1.14393.206-windows" };
-                }
-                finally
-                {
-                    testProcess.Dispose();
-                }
+                PowerShellVersion = new[] { "desktop-5.1.14393.206-windows" };
+#if CORECLR
+                PowerShellVersion = new[] { "core-6.1.0-windows" };
+#endif
+
             }
 
             var psVerList = PowerShellVersion;

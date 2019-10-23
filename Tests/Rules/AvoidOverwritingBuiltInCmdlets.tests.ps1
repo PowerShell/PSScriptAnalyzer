@@ -1,8 +1,8 @@
 ﻿$ruleName = "PSAvoidOverwritingBuiltInCmdlets"
 
-$ruleSettingsWindows = @{$ruleName = @{PowerShellVersion = @('desktop-5.1.14393.206-windows')}}
-$ruleSettingsCore = @{$ruleName = @{PowerShellVersion = @('core-6.1.0-windows')}}
-$ruleSettingsBoth = @{$ruleName = @{PowerShellVersion = @('core-6.1.0-windows', 'desktop-5.1.14393.206-windows')}}
+$ruleSettingsWindows = @{$ruleName = @{PowerShellVersion = @('desktop-5.1.14393.206-windows') } }
+$ruleSettingsCore = @{$ruleName = @{PowerShellVersion = @('core-6.1.0-windows') } }
+$ruleSettingsBoth = @{$ruleName = @{PowerShellVersion = @('core-6.1.0-windows', 'desktop-5.1.14393.206-windows') } }
 
 $settings = @{
     IncludeRules = @($ruleName)
@@ -27,19 +27,15 @@ function Get-Clipboard {
 
 describe 'AvoidOverwritingBuiltInCmdlets' {
     context 'No settings specified' {
-        it 'should default to core-6.1.0-windows if pwsh is present and desktop-5.1.14393.206-windows if it is not' {
+        it 'should default to core-6.1.0-windows if running PS 6+ and desktop-5.1.14393.206-windows if it is not' {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
 
-            # Detecting the presence of pwsh this way because this is how the rule does it
-            try {
-                if (-not $IsLinux) {
-                    Start-Process -FilePath 'pwsh' -ArgumentList '-v' -WindowStyle Hidden
-                }
+            if ($PSVersionTable.PSVersion.Major -gt 5) {
                 $violations.Count | Should -Be 1
                 $violations.Extent.StartLineNumber | Should -Be 5
             }
 
-            catch {
+            else {
                 $violations.Count | Should -Be 2
                 $violations[1].Extent.StartLineNumber | Should -Be 9
             }
