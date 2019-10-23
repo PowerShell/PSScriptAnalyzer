@@ -176,6 +176,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                if (_cmdletMap.Keys.Contains(fileNameWithoutExt))
+                {
+                    continue;
+                }
+
                 _cmdletMap.Add(fileNameWithoutExt, GetCmdletsFromData(JObject.Parse(File.ReadAllText(filePath))));
             }
         }
