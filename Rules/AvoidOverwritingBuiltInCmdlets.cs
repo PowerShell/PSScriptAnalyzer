@@ -65,15 +65,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException(nameof(ast));
             }
 
+            var diagnosticRecords = new List<DiagnosticRecord>();
+
             IEnumerable<FunctionDefinitionAst> functionDefinitions = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true).OfType<FunctionDefinitionAst>();
             if (functionDefinitions.Count() < 1)
             {
                 // There are no function definitions in this AST and so it's not worth checking the rest of this rule
-                return null;
+                return diagnosticRecords;
             }
 
 
-            var diagnosticRecords = new List<DiagnosticRecord>();
             string versionTest = string.Join("", PowerShellVersion);
 
             if (string.IsNullOrEmpty(versionTest))
