@@ -32,7 +32,9 @@ describe 'AvoidOverwritingBuiltInCmdlets' {
 
             # Detecting the presence of pwsh this way because this is how the rule does it
             try {
-                Start-Process -FilePath 'pwsh' -ArgumentList '-v' -WindowStyle Hidden
+                if (-not $IsLinux) {
+                    Start-Process -FilePath 'pwsh' -ArgumentList '-v' -WindowStyle Hidden
+                }
                 $violations.Count | Should -Be 1
                 $violations.Extent.StartLineNumber | Should -Be 5
             }
