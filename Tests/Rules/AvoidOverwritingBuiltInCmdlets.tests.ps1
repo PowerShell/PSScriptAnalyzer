@@ -27,10 +27,20 @@ function Get-Clipboard {
 
 describe 'AvoidOverwritingBuiltInCmdlets' {
     context 'No settings specified' {
-        it 'should default to core-6.1.0-windows' {
+        it 'should default to core-6.1.0-windows if pwsh is present and desktop-5.1.14393.206-windows if it is not' {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
-            $violations.Count | Should -Be 1
-            $violations.Extent.StartLineNumber | Should -Be 5
+
+            # Detecting the presence of pwsh this way because this is how the rule does it
+            try {
+                Start-Process -FilePath 'pwsh' -ArgumentList '-v' -WindowStyle Hidden
+                $violations.Count | Should -Be 1
+                $violations.Extent.StartLineNumber | Should -Be 5
+            }
+
+            catch {
+                $violations.Count | Should -Be 2
+                $violations[1].Extent.StartLineNumber | Should -Be 9
+            }
         }
     }
 
