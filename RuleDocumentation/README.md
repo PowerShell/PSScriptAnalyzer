@@ -12,10 +12,7 @@
 |[AvoidGlobalFunctions](./AvoidGlobalFunctions.md) | Warning | |
 |[AvoidGlobalVars](./AvoidGlobalVars.md) | Warning | |
 |[AvoidInvokingEmptyMembers](./AvoidInvokingEmptyMembers.md) | Warning | |
-<<<<<<< HEAD
 |[AvoidLongLines](./AvoidLongLines.md) | Warning | |
-=======
->>>>>>> 07825ce9bbcca8dfb0d5df65b8f1cd0d34d93d8c
 |[AvoidOverwritingBuiltInCmdlets](./AvoidOverwritingBuiltInCmdlets.md) | Warning | |
 |[AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md) | Warning | |
 |[AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md) | Warning | |
