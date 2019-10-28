@@ -137,6 +137,19 @@ function Copy-CompatibilityProfiles
     Copy-Item -Force $profileDir/* $targetProfileDir
 }
 
+function Start-ReferenceBuild
+{
+    try {
+        Push-Location Reference
+        dotnet build --configuration Release
+        dotnet pack --configuration Release
+        Copy-Item bin/Release/Microsoft.Windows.PowerShell.ScriptAnalyzer.1.18.4.nupkg .
+    }
+    finally {
+        Pop-Location
+    }
+}
+
 # build script analyzer (and optionally build everything with -All)
 function Start-ScriptAnalyzerBuild
 {

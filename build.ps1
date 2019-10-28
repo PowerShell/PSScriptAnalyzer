@@ -38,7 +38,10 @@ param(
 
     [Parameter(ParameterSetName='BuildOne')]
     [Parameter(ParameterSetName='BuildAll')]
-    [switch] $Pack
+    [switch] $Pack,
+
+    [Parameter()]
+    [switch] $reference
 
 )
 BEGIN {
@@ -86,5 +89,8 @@ END {
     }
     if ( $Pack ) {
         Export-NuPkg
+    }
+    if ( $Reference ) {
+        Start-ReferenceBuild
     }
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.PowerShell.ScriptAnalyzer.Library</id>
+    <version>1.0.0</version>
+    <title>Microsoft.PowerShell.ScriptAnalyzer.Library</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft,PowerShellTeam</owners>
+    <projectUrl>https://github.com/PowerShell/PSScriptAnalyzer</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/powershell/psscriptanalyzer/master/logo.png</iconUrl>
+    <licenseUrl>https://github.com/PowerShell/PowerShell/blob/master/LICENSE.txt</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Contains reference assembly for hosting PowerShell Script Analyzer</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>PowerShell, ScriptAnalyzer, reference, netstandard2.0</tags>
+    <!--
+    <references>
+      <reference file="System.Management.Automation.dll" >
+        <private>False</private>
+      </reference>
+    </references>
+    -->
+  </metadata>
+  <files>
+    <file src="obj/Release/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" target="lib/netstandard2.0">
+      <copyToOutput>false</copyToOutput>
+    </file>
+  </files>
+</package>

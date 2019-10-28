@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.18.3</VersionPrefix>
+    <VersionPrefix>1.18.4</VersionPrefix>
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
     <PackageId>Rules</PackageId>

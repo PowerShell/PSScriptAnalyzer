@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>PSScriptAnalyzer.Library</id>
-    <version>1.18.2</version>
+    <version>1.18.3</version>
     <title>PSScriptAnalyzer.Library</title>
     <authors>Microsoft</authors>
     <owners>Microsoft,PowerShellTeam</owners>
@@ -22,13 +22,13 @@
     -->
   </metadata>
   <files>
-    <file src="bin/Release/netstandard2.0/Microsoft.PowerShell.CrossCompatibility.dll" target="lib/netstandard2.0" />
-    <file src="bin/Release/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" target="lib/netstandard2.0" />
-    <file src="bin/Release/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" target="lib/netstandard2.0" />
+    <file src="bin/PSV6Debug/netstandard2.0/Microsoft.PowerShell.CrossCompatibility.dll" target="lib/netstandard2.0" />
+    <file src="bin/PSV6Debug/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" target="lib/netstandard2.0" />
+    <file src="bin/PSV6Debug/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" target="lib/netstandard2.0" />
     <file src="../Engine/PSScriptAnalyzer.psd1" target="lib/netstandard2.0" />
-    <file src="bin/Release/netstandard2.0/Microsoft.PowerShell.CrossCompatibility.dll" target="lib/netcoreapp2.1" />
-    <file src="bin/Release/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" target="lib/netcoreapp2.1" />
-    <file src="bin/Release/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" target="lib/netcoreapp2.1" />
+    <file src="bin/PSV6Debug/netstandard2.0/Microsoft.PowerShell.CrossCompatibility.dll" target="lib/netcoreapp2.1" />
+    <file src="bin/PSV6Debug/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" target="lib/netcoreapp2.1" />
+    <file src="bin/PSV6Debug/netstandard2.0/Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" target="lib/netcoreapp2.1" />
     <file src="../Engine/PSScriptAnalyzer.psd1" target="lib/netcoreapp2.1" />
   </files>
 </package>

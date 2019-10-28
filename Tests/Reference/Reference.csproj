@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RestoreSources>$(RestoreSources);../../Reference</RestoreSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" />
+    <PackageReference Include="Microsoft.Windows.PowerShell.ScriptAnalyzer" Version="1.18.4" />
+  </ItemGroup>
+
+</Project>

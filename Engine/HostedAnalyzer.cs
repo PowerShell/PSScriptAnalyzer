@@ -405,7 +405,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         ///     PSUseConsistentIndentation
         ///     PSAlignAssignmentStatement
         ///     PSUseCorrectCasing
-        /// and the union of the actual settings which are passed to it.
+        /// </summary>
+        /// <param name="scriptDefinition">The script to format</param>
+        /// <returns>The formatted script</returns>
+        public string Format(string scriptDefinition)
+        {
+            Settings settings = CreateSettings("CodeFormatting");
+            string s;
+            lock(hostedAnalyzerLock)
+            {
+                try {
+                    s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
+                }
+                finally {
+                    analyzer.CleanUp();
+                    // Reset is required because formatting leaves a number of settings behind which
+                    // should be cleared.
+                    Reset();
+                }
+            }
+            return s;
+        }
+
+        /// <summary>
+        /// Format a script according to the formatting rules
+        ///     PSPlaceCloseBrace
+        ///     PSPlaceOpenBrace
+        ///     PSUseConsistentWhitespace
+        ///     PSUseConsistentIndentation
+        ///     PSAlignAssignmentStatement
+        ///     PSUseCorrectCasing
+        /// </summary>
+        /// <param name="scriptDefinition">The script to format</param>
+        /// <returns>The formatted script</returns>
+        public Task<string> FormatAsync(string scriptDefinition) =>
+            Task.Run(() => Format(scriptDefinition));
+
+        /// <summary>
+        /// Format a script based on settings
         /// </summary>
         /// <param name="scriptDefinition">The script to format</param>
         /// <param name="settings">The settings to use when formatting</param>
