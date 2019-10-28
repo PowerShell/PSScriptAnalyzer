@@ -4,7 +4,7 @@
 
 ## Description
 
-This rule flags cmdlets that are available in a given Edition/Version of PowerShell on a given Operating System which are overwritten by a function declaration. It works by comparing function declarations against a set of whitelists which ship with PSScriptAnalyzer. They can be found at `/path/to/PSScriptAnalyzerModule/Settings`. These files are of the form, `PSEDITION-PSVERSION-OS.json` where `PSEDITION` can be either `Core` or `Desktop`, `OS` can be either `Windows`, `Linux` or `MacOS`, and `Version` is the PowerShell version.
+This rule flags cmdlets that are available in a given Edition/Version of PowerShell on a given Operating System which are overwritten by a function declaration. It works by comparing function declarations against a set of whitelists which ship with PSScriptAnalyzer. These whitelist files are used by other PSScriptAnalyzer rules. More information can be found [in the documentation for the UseCompatibleCmdlets rule](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseCompatibleCmdlets.md).
 
 ## Configuration
 
