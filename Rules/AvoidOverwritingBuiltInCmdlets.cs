@@ -75,9 +75,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
 
-            string versionTest = string.Join("", PowerShellVersion);
-
-            if (string.IsNullOrEmpty(versionTest))
+            if (PowerShellVersion.Length == 0 || string.IsNullOrEmpty(PowerShellVersion[0]))
             {
                 // PowerShellVersion is not already set to one of the acceptable defaults
                 // Try launching `pwsh -v` to see if PowerShell 6+ is installed, and use those cmdlets
@@ -190,7 +188,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     var name = cmdlet.Name as string;
                     if (name == null)
                     {
-                        name = cmdlet.Name.ToObject<string>();
+                        name = cmdlet.Name.ToString();
                     }
                     cmdlets.Add(name);
                 }

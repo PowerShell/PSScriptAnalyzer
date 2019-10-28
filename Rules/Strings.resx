@@ -817,7 +817,7 @@
     <value>Avoid overwriting built in cmdlets</value>
   </data>
   <data name="AvoidOverwritingBuiltInCmdletsDescription" xml:space="preserve">
-    <value>Do not overwrite the definition of cmdlets that are included with PowerShell</value>
+    <value>Do not overwrite the definition of a cmdlet that is included with PowerShell</value>
   </data>
   <data name="AvoidOverwritingBuiltInCmdletsError" xml:space="preserve">
     <value>'{0}' is a cmdlet that is included with PowerShell (version {1}) whose definition should not be overridden</value>
