@@ -41,7 +41,7 @@ param(
     [switch] $Pack,
 
     [Parameter()]
-    [switch] $reference
+    [switch] $ReferenceOnly
 
 )
 BEGIN {
@@ -60,10 +60,16 @@ END {
         }
     }
 
+    if ( $ReferenceOnly ) {
+        Start-ReferenceBuild
+        return
+    }
+
     $setName = $PSCmdlet.ParameterSetName
     switch ( $setName ) {
         "BuildAll" {
             Start-ScriptAnalyzerBuild -All -Configuration $Configuration
+            Start-ReferenceBuild
         }
         "BuildDocumentation" {
             Start-ScriptAnalyzerBuild -Documentation
@@ -74,6 +80,7 @@ END {
                 Configuration = $Configuration
             }
             Start-ScriptAnalyzerBuild @buildArgs
+            Start-ReferenceBuild
         }
         "Bootstrap" {
             Install-DotNet
@@ -90,7 +97,5 @@ END {
     if ( $Pack ) {
         Export-NuPkg
     }
-    if ( $Reference ) {
-        Start-ReferenceBuild
-    }
+
 }

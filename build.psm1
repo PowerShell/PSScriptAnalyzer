@@ -141,8 +141,14 @@ function Start-ReferenceBuild
 {
     try {
         Push-Location Reference
-        dotnet build --configuration Release
-        dotnet pack --configuration Release
+        $buildOutput  = dotnet build --configuration Release
+        if ( ! $? ) {
+            throw $buildOutput
+        }
+        $buildOutput += dotnet pack --configuration Release
+        if ( ! $? ) {
+            throw $buildOutput
+        }
         Copy-Item bin/Release/Microsoft.Windows.PowerShell.ScriptAnalyzer.1.18.4.nupkg .
     }
     finally {
@@ -329,7 +335,8 @@ function Test-ScriptAnalyzer
             $testModulePath = Join-Path "${projectRoot}" -ChildPath out
         }
         $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
-        $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
+        $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules',
+            '${projectRoot}\Tests\Reference','${projectRoot}\Tests\Documentation'"
         try {
             if ( $major -lt 5 ) {
                 Rename-Item $script:destinationDir ${testModulePath}
@@ -547,7 +554,7 @@ function Get-InstalledCLIVersion {
         # earlier versions of dotnet do not support --list-sdks, so we'll check the output
         # and use dotnet --version as a fallback
         $sdkList = & $script:DotnetExe --list-sdks 2>&1
-        $sdkList = "Unknown option"
+        # $sdkList = "Unknown option"
         if ( $sdkList -match "Unknown option" ) {
             $installedVersions = & $script:DotnetExe --version 2>$null
         }
