@@ -69,7 +69,6 @@ END {
     switch ( $setName ) {
         "BuildAll" {
             Start-ScriptAnalyzerBuild -All -Configuration $Configuration
-            Start-ReferenceBuild
         }
         "BuildDocumentation" {
             Start-ScriptAnalyzerBuild -Documentation
@@ -80,7 +79,6 @@ END {
                 Configuration = $Configuration
             }
             Start-ScriptAnalyzerBuild @buildArgs
-            Start-ReferenceBuild
         }
         "Bootstrap" {
             Install-DotNet

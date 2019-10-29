@@ -335,8 +335,8 @@ function Test-ScriptAnalyzer
             $testModulePath = Join-Path "${projectRoot}" -ChildPath out
         }
         $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
-        $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules',
-            '${projectRoot}\Tests\Reference','${projectRoot}\Tests\Documentation'"
+        $testRoot = "${projectRoot}\Tests"
+        $testScripts = "'${testRoot}\Engine','${testRoot}\Rules','${testRoot}\Documentation'"
         try {
             if ( $major -lt 5 ) {
                 Rename-Item $script:destinationDir ${testModulePath}
