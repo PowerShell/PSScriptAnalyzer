@@ -4,7 +4,7 @@
 
 ## Description
 
-This rule flags cmdlets that are available in a given Edition/Version of PowerShell on a given Operating System which are overwritten by a function declaration. It works by comparing function declarations against a set of whitelists which ship with PSScriptAnalyzer. These whitelist files are used by other PSScriptAnalyzer rules. More information can be found in the documentation for the [UseCompatibleCmdlets](./UseCompatibleCmdlets.md) rule.
+This rule flags cmdlets that are available in a given edition/version of PowerShell on a given operating system which are overwritten by a function declaration. It works by comparing function declarations against a set of whitelists which ship with PSScriptAnalyzer. These whitelist files are used by other PSScriptAnalyzer rules. More information can be found in the documentation for the [UseCompatibleCmdlets](./UseCompatibleCmdlets.md) rule.
 
 ## Configuration
 
@@ -25,16 +25,7 @@ To enable the rule to check if your script is compatible on PowerShell Core on W
 
 #### PowerShellVersion
 
-The parameter `PowerShellVersion` is a list that contain any of the following
-
-- desktop-2.0-windows
-- desktop-3.0-windows
-- desktop-4.0-windows (taken from Windows Server 2012R2)
-- desktop-5.1.14393.206-windows
-- core-6.1.0-windows (taken from Windows 10 - 1803)
-- core-6.1.0-linux (taken from Ubuntu 18.04)
-- core-6.1.0-linux-arm (taken from Raspbian)
-- core-6.1.0-macos
+The parameter `PowerShellVersion` is a list of whitelists that ship with PSScriptAnalyzer.
 
 **Note**: The default value for `PowerShellVersion` is `"core-6.1.0-windows"` if PowerShell 6 or later is installed, and `"desktop-5.1.14393.206-windows"` if it is not.
 

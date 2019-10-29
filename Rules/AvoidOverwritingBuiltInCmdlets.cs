@@ -68,7 +68,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var diagnosticRecords = new List<DiagnosticRecord>();
 
             IEnumerable<FunctionDefinitionAst> functionDefinitions = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true).OfType<FunctionDefinitionAst>();
-            if (functionDefinitions.Count() < 1)
+            if (!functionDefinitions.Any())
             {
                 // There are no function definitions in this AST and so it's not worth checking the rest of this rule
                 return diagnosticRecords;
