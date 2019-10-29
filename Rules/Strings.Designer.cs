@@ -536,6 +536,61 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidTrailingWhitespaceName", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidLongLines.
+        /// </summary>
+        internal static string AvoidLongLinesName
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidLongLinesName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid long lines.
+        /// </summary>
+        internal static string AvoidLongLinesCommonName
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidLongLinesCommonName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Each line should be under 120 characters.
+        /// </summary>
+        internal static string AvoidLongLinesDescription
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidLongLinesDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Line is longer than 120 characters.
+        /// </summary>
+        internal static string AvoidLongLinesError
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidLongLinesError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidLongLines.
+        /// </summary>
+        internal static string AvoidLongLinesWhitespaceName
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidLongLinesName", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Module Must Be Loadable.

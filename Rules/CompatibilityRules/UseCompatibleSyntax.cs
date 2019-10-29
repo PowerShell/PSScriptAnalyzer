@@ -29,12 +29,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static readonly Version s_v6 = new Version(6,0);
 
+        private static readonly Version s_v7 = new Version(7,0);
+
         private static readonly IReadOnlyList<Version> s_targetableVersions = new []
         {
             s_v3,
             s_v4,
             s_v5,
-            s_v6
+            s_v6,
+            s_v7,
         };
 
         /// <summary>
@@ -123,7 +126,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (versionSettings == null || versionSettings.Length <= 0)
             {
-                return new HashSet<Version>(){ s_v5, s_v6 };
+                return new HashSet<Version>(){ s_v5, s_v6, s_v7 };
             }
 
             var targetVersions = new HashSet<Version>();
@@ -278,7 +281,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 // Look for PowerShell workflows in the script
 
-                if (!_targetVersions.Contains(s_v6))
+                if (!(_targetVersions.Contains(s_v6) || _targetVersions.Contains(s_v7)))
                 {
                     return AstVisitAction.Continue;
                 }
