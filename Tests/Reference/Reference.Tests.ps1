@@ -30,13 +30,15 @@ Describe "Compiling a hosted analyzer" {
         It "Should be able to analyze for Test2" {
             $result = $HostedAnalyzer.Test2()
             $result.Result.Count | Should -Be 2
-            ($result.Result.RuleName -join ":")| Should -Be "PSAvoidUsingCmdletAliases:PSAvoidUsingCmdletAliases"
+            $expected =  "PSAvoidUsingCmdletAliases","PSAvoidUsingCmdletAliases" | Sort-Object
+            $result.Result.RuleName | Sort-Object | Should -Be $expected
         }
 
         It "Should be able to analyze for Test3" {
             $result = $HostedAnalyzer.Test3()
             $result.Result.Count | Should -Be 3
-            ($result.Result.RuleName -join ":")| Should -Be "PSAvoidUsingCmdletAliases:PSAvoidUsingCmdletAliases:PSUseDeclaredVarsMoreThanAssignments"
+            $expected = "PSAvoidUsingCmdletAliases","PSAvoidUsingCmdletAliases","PSUseDeclaredVarsMoreThanAssignments" | Sort-Object
+            $result.Result.RuleName | Sort-Object | Should -Be $expected
         }
 
         It "Should be able to analyze for Test4" {

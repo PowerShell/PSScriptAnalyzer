@@ -31,8 +31,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private List<string> customRulePath;
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
 
-        public bool RecurseCustomRulePath { get; set;} = false;
-        public bool IncludeDefaultRules { get; set; } = false;
+        public bool RecurseCustomRulePath
+        {
+            get { return recurseCustomRulePath; }
+            set { recurseCustomRulePath = value; }
+        }
+        public bool IncludeDefaultRules
+        {
+            get { return includeDefaultRules; }
+            set { includeDefaultRules = value; }
+        }
         public string FilePath => filePath;
         public IEnumerable<string> IncludeRules => includeRules;
         public IEnumerable<string> ExcludeRules => excludeRules;
