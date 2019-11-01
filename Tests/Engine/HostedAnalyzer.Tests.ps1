@@ -3,7 +3,7 @@
 
 Describe "Hosted Analyzer Tests" {
     BeforeAll {
-        $HostedAnalyzer = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer]::new()
+        $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
         $RunspaceCount = (Get-Runspace).Count
     }
     AfterAll {
@@ -153,7 +153,7 @@ Describe "Hosted Analyzer Tests" {
 
 Describe "Async Hosted Analyzer Tests" {
     BeforeAll {
-        $HostedAnalyzer = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer]::new()
+        $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
         $RunspaceCount = (Get-Runspace).Count
     }
     AfterAll {
@@ -303,7 +303,7 @@ Describe "Async Hosted Analyzer Tests" {
 
 Describe "Create Settings APIs" {
     BeforeAll {
-        $HostedAnalyzer = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer]::new()
+        $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
         $RunspaceCount = (Get-Runspace).Count
     }
     AfterAll {
@@ -383,7 +383,7 @@ Describe "Create Settings APIs" {
 
 Describe "Get Rule Apis" {
     BeforeAll {
-        $HostedAnalyzer = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer]::new()
+        $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
         $RunspaceCount = (Get-Runspace).Count
         $AnalyzerRules = Get-ScriptAnalyzerRule
         $UsePattern = '*use*'
@@ -412,7 +412,7 @@ Describe "Get Rule Apis" {
 
 Describe "Fix Api" {
     BeforeAll {
-        $HostedAnalyzer = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer]::new()
+        $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
         $Setting1 = $HostedAnalyzer.CreateSettings()
         $Setting1.ExcludeRules.Add("PSAvoidUsingCmdletAliases")
     }
