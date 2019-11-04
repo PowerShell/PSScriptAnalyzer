@@ -23,7 +23,6 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = '"Hello World" | ConvertFrom-String | Get-Member'; Commands = @("ConvertFrom-String"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Compress-Archive -LiteralPath C:\Reference\Draftdoc.docx, C:\Reference\Images\diagram2.vsd -CompressionLevel Optimal -DestinationPath C:\Archives\Draft.Zip'; Commands = @("Compress-Archive"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-Runspace -Id 2'; Commands = @("Get-Runspace"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2012_3_profile; Script = '$Protected = "Hello World" | Protect-CmsMessage -To "*youralias@emailaddress.com*"'; Commands = @("Protect-CmsMessage"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Format-Hex -Path "C:\temp\temp.t7f"'; Commands = @("Format-Hex"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Clear-RecycleBin -Force'; Commands = @("Clear-RecycleBin"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
@@ -120,10 +119,7 @@ $script:ParameterCompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = 'Save-Help -FullyQualifiedModule @{ ModuleName = "MyModule"; MaximumVersion = "2.7" }'; Commands = @('Save-Help'); Parameters = @('FullyQualifiedModule'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Export-PSSession -FullyQualifiedModule @{ ModuleName = "MyModule"; RequiredVersion = $reqVer }'; Commands = @('Export-PSSession'); Parameters = @('FullyQualifiedModule'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-Command -FullyQualifiedModule @{ ModuleName = $m; MaximumVersion = $maxVer }'; Commands = @('Get-Command'); Parameters = @('FullyQualifiedModule'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
-    @{ Target = $script:Srv2012_3_profile; Script = 'Register-ScheduledJob -RunNow -Trigger $t'; Commands = @('Register-ScheduledJob'); Parameters = @('RunNow'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-Module -FullyQualifiedName @{ ModuleName = $m; ModuleVersion = $v }'; Commands = @('Get-Module'); Parameters = @('FullyQualifiedName'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
-    @{ Target = $script:Srv2012_3_profile; Script = 'New-JobTrigger -At "1/20/2012 3:00 AM" -RepeatIndefinitely'; Commands = @('New-JobTrigger'); Parameters = @('RepeatIndefinitely'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
-    @{ Target = $script:Srv2012_3_profile; Script = '$t = Get-ScheduledJob | Get-JobTrigger | Enable-JobTrigger -PassThru'; Commands = @('Enable-JobTrigger'); Parameters = @('PassThru'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-Process -PipelineVariable proc | ForEach-Object { Format-Table $Proc }'; Commands = @('Get-Process'); Parameters = @('PipelineVariable'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-Process -IncludeUserName'; Commands = @('Get-Process'); Parameters = @('IncludeUserName'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
 
@@ -154,6 +150,20 @@ $script:ParameterCompatibilityTestCases = @(
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-Help "Invoke-WebRequest" -ShowWindow'; Commands = @('Get-Help'); Parameters = @('ShowWindow'); Version = '6.1'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Start-Service "eventlog" -ComputerName "MyComputer"'; Commands = @('Start-Service'); Parameters = @('ComputerName'); Version = '6.1'; OS = 'Windows'; ProblemCount = 1 }
 )
+
+# Disabled on Linux until fixed
+if (-not $IsLinux) {
+    $script:CompatibilityTestCases += @(
+        @{ Target = $script:Srv2012_3_profile; Script = '$Protected = "Hello World" | Protect-CmsMessage -To "*youralias@emailaddress.com*"'; Commands = @("Protect-CmsMessage"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
+    )
+
+    $script:ParameterCompatibilityTestCases += @(
+        @{ Target = $script:Srv2012_3_profile; Script = 'Register-ScheduledJob -RunNow -Trigger $t'; Commands = @('Register-ScheduledJob'); Parameters = @('RunNow'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
+        @{ Target = $script:Srv2012_3_profile; Script = 'New-JobTrigger -At "1/20/2012 3:00 AM" -RepeatIndefinitely'; Commands = @('New-JobTrigger'); Parameters = @('RepeatIndefinitely'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
+        @{ Target = $script:Srv2012_3_profile; Script = '$t = Get-ScheduledJob | Get-JobTrigger | Enable-JobTrigger -PassThru'; Commands = @('Enable-JobTrigger'); Parameters = @('PassThru'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
+    )
+}
+
 
 Describe 'UseCompatibleCommands' {
     Context 'Targeting a single profile' {
