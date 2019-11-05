@@ -567,7 +567,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        
+
         /// <summary>Dispose the Helper, runspace, and Powershell instance </summary>
         protected virtual void Dispose(bool disposing)
         {

@@ -85,7 +85,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 CommandInfoCache.Dispose();
             }
-            
+
             disposed = true;
         }
 
