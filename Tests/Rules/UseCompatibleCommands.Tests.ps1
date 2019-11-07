@@ -151,8 +151,8 @@ $script:ParameterCompatibilityTestCases = @(
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Start-Service "eventlog" -ComputerName "MyComputer"'; Commands = @('Start-Service'); Parameters = @('ComputerName'); Version = '6.1'; OS = 'Windows'; ProblemCount = 1 }
 )
 
-# Disabled on Linux until fixed
-if (-not $IsLinux) {
+# Disabled on AppVeyor's Ubuntu image until fixed
+if (-not $IsLinux -and $env:APPVEYOR) {
     $script:CompatibilityTestCases += @(
         @{ Target = $script:Srv2012_3_profile; Script = '$Protected = "Hello World" | Protect-CmsMessage -To "*youralias@emailaddress.com*"'; Commands = @("Protect-CmsMessage"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     )
