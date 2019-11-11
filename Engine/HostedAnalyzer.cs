@@ -42,10 +42,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             analyzer = ScriptAnalyzer.Instance;
         }
 
-        /// <summary>Reset the the analyzer and associated state</summary>
+        /// <summary>Reset the the analyzer and associated state.</summary>
         public void Reset()
         {
-
             lock (hostedAnalyzerLock) {
                 analyzer.CleanUp();
                 Helper.Instance = new Helper(ps.Runspace.SessionStateProxy.InvokeCommand, writer);
@@ -57,11 +56,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Analyze a script in the form of an AST
         /// </summary>
-        /// <param name="scriptast">A scriptblockast which represents the script to analyze</param>
-        /// <param name="tokens">The tokens in the ast</param>
-        /// <param name="settings">A settings object which defines which rules to run</param>
-        /// <param name="filename">The name of the file which held the script, if there was one</param>
-        /// <returns>An AnalyzerResult which encapsulates the analysis of the ast</returns>
+        /// <param name="scriptast">A scriptblockast which represents the script to analyze.</param>
+        /// <param name="tokens">The tokens in the ast.</param>
+        /// <param name="settings">A settings object which defines which rules to run.</param>
+        /// <param name="filename">The name of the file which held the script, if there was one.</param>
+        /// <returns>An AnalyzerResult which encapsulates the analysis of the ast.</returns>
         public AnalyzerResult Analyze(ScriptBlockAst scriptast, Token[] tokens, Settings settings, string filename = null)
         {
             lock(hostedAnalyzerLock)
@@ -84,21 +83,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Analyze a script in the form of an AST
         /// </summary>
-        /// <param name="scriptast">A scriptblockast which represents the script to analyze</param>
-        /// <param name="tokens">The tokens in the ast</param>
-        /// <param name="settings">A settings object which defines which rules to run</param>
-        /// <param name="filename">The name of the file which held the script, if there was one</param>
-        /// <returns>An AnalyzerResult which encapsulates the analysis of the ast</returns>
+        /// <param name="scriptast">A scriptblockast which represents the script to analyze.</param>
+        /// <param name="tokens">The tokens in the ast.</param>
+        /// <param name="settings">A settings object which defines which rules to run.</param>
+        /// <param name="filename">The name of the file which held the script, if there was one.</param>
+        /// <returns>An AnalyzerResult which encapsulates the analysis of the ast.</returns>
         public Task<AnalyzerResult> AnalyzeAsync(ScriptBlockAst scriptast, Token[] tokens, Settings settings, string filename = null) =>
                 Task.Run(() => Analyze(scriptast, tokens, settings, filename));
 
         /// <summary>
         /// Analyze a script in the form of an AST
         /// </summary>
-        /// <param name="scriptast">A scriptblockast which represents the script to analyze</param>
-        /// <param name="tokens">The tokens in the ast</param>
-        /// <param name="filename">The name of the file which held the script, if there was one</param>
-        /// <returns>An AnalyzerResult which encapsulates the analysis of the ast</returns>
+        /// <param name="scriptast">A scriptblockast which represents the script to analyze.</param>
+        /// <param name="tokens">The tokens in the ast.</param>
+        /// <param name="filename">The name of the file which held the script, if there was one.</param>
+        /// <returns>An AnalyzerResult which encapsulates the analysis of the ast.</returns>
         public AnalyzerResult Analyze(ScriptBlockAst scriptast, Token[] tokens, string filename = null)
         {
             lock(hostedAnalyzerLock)
@@ -120,20 +119,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Analyze a script in the form of an AST
         /// </summary>
-        /// <param name="scriptast">A scriptblockast which represents the script to analyze</param>
-        /// <param name="tokens">The tokens in the ast</param>
-        /// <param name="filename">The name of the file which held the script, if there was one</param>
-        /// <returns>An AnalyzerResult which encapsulates the analysis of the ast</returns>
+        /// <param name="scriptast">A scriptblockast which represents the script to analyze.</param>
+        /// <param name="tokens">The tokens in the ast.</param>
+        /// <param name="filename">The name of the file which held the script, if there was one.</param>
+        /// <returns>An AnalyzerResult which encapsulates the analysis of the ast.</returns>
         public Task<AnalyzerResult> AnalyzeAsync(ScriptBlockAst scriptast, Token[] tokens, string filename = null) =>
                 Task.Run(() => Analyze(scriptast, tokens, filename));
-
 
         /// <summary>
         /// Analyze a script in the form of a string with additional Settings
         /// </summary>
-        /// <param name="ScriptDefinition">The script as a string</param>
-        /// <param name="settings">A hastable which includes the settings</param>
-        /// <returns>An AnalyzerResult which encapsulates the analysis of the script definition</returns>
+        /// <param name="ScriptDefinition">The script as a string.</param>
+        /// <param name="settings">A hastable which includes the settings.</param>
+        /// <returns>An AnalyzerResult which encapsulates the analysis of the script definition.</returns>
         public AnalyzerResult Analyze(string ScriptDefinition, Settings settings)
         {
             lock(hostedAnalyzerLock)
@@ -156,18 +154,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Analyze a script in the form of a string with additional Settings
         /// </summary>
-        /// <param name="ScriptDefinition">The script as a string</param>
-        /// <param name="settings">A hastable which includes the settings</param>
-        /// <returns>An AnalyzerResult which encapsulates the analysis of the script definition</returns>
+        /// <param name="ScriptDefinition">The script as a string.</param>
+        /// <param name="settings">A hastable which includes the settings.</param>
+        /// <returns>An AnalyzerResult which encapsulates the analysis of the script definition.</returns>
         public Task<AnalyzerResult> AnalyzeAsync(string ScriptDefinition, Settings settings) =>
             Task.Run(() => Analyze(ScriptDefinition, settings));
 
         /// <summary>
         /// Analyze a script in the form of a string with additional Settings
         /// </summary>
-        /// <param name="ScriptDefinition">The script as a string</param>
-        /// <param name="settings">A hastable which includes the settings</param>
-        /// <returns>An AnalyzerResult which encapsulates the analysis of the script definition</returns>
+        /// <param name="ScriptDefinition">The script as a string.</param>
+        /// <param name="settings">A hastable which includes the settings.</param>
+        /// <returns>An AnalyzerResult which encapsulates the analysis of the script definition.</returns>
         public AnalyzerResult Analyze(string ScriptDefinition, Hashtable settings)
         {
             lock(hostedAnalyzerLock)
@@ -190,17 +188,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Analyze a script in the form of a string with additional Settings
         /// </summary>
-        /// <param name="ScriptDefinition">The script as a string</param>
-        /// <param name="settings">A hastable which includes the settings</param>
-        /// <returns>An AnalyzerResult which encapsulates the analysis of the script definition</returns>
+        /// <param name="ScriptDefinition">The script as a string.</param>
+        /// <param name="settings">A hastable which includes the settings.</param>
+        /// <returns>An AnalyzerResult which encapsulates the analysis of the script definition.</returns>
         public Task<AnalyzerResult> AnalyzeAsync(string ScriptDefinition, Hashtable settings) =>
             Task.Run(() => Analyze(ScriptDefinition, settings));
 
         /// <summary>
         /// Analyze a script asynchronously in the form of a string, based on default settings
         /// </summary>
-        /// <param name="ScriptDefinition">The script (as a string) to analyze</param>
-        /// <returns>An AnalyzerResult</returns>
+        /// <param name="ScriptDefinition">The script (as a string) to analyze.</param>
+        /// <returns>An AnalyzerResult.</returns>
         public AnalyzerResult Analyze(string ScriptDefinition)
         {
             lock(hostedAnalyzerLock)
@@ -222,16 +220,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Analyze a script asynchronously in the form of a string, based on default
         /// </summary>
-        /// <param name="ScriptDefinition">The script (as a string) to analyze</param>
-        /// <returns>A Task which encapsulates an AnalyzerResult</returns>
+        /// <param name="ScriptDefinition">The script (as a string) to analyze.</param>
+        /// <returns>A Task which encapsulates an AnalyzerResult.</returns>
         public Task<AnalyzerResult> AnalyzeAsync(string ScriptDefinition) => 
             Task.Run(() => Analyze(ScriptDefinition));
 
-
-        /// <summary>Analyze a script in the form of a file</summary>
-        /// <param name="File">The file as a FileInfo object to analyze</param>
-        /// <param name="settings">A settings object which defines which rules to run</param>
-        /// <returns>An AnalyzerResult</returns>
+        /// <summary>Analyze a script in the form of a file.</summary>
+        /// <param name="File">The file as a FileInfo object to analyze.</param>
+        /// <param name="settings">A settings object which defines which rules to run.</param>
+        /// <returns>An AnalyzerResult.</returns>
         public AnalyzerResult Analyze(FileInfo File, Settings settings)
         {
             lock(hostedAnalyzerLock)
@@ -253,15 +250,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Analyze a script asynchronously in the form of a string, based on default
         /// </summary>
-        /// <param name="File">The file that contains the script</param>
-        /// <param name="settings">The settings to use when analyzing the script</param>
-        /// <returns>A Task which encapsulates an AnalyzerResult</returns>
+        /// <param name="File">The file that contains the script.</param>
+        /// <param name="settings">The settings to use when analyzing the script.</param>
+        /// <returns>A Task which encapsulates an AnalyzerResult.</returns>
         public Task<AnalyzerResult> AnalyzeAsync(FileInfo File, Settings settings) => 
             Task.Run(() => Analyze(File, settings));
 
-        /// <summary>Analyze a script in the form of a file</summary>
-        /// <param name="File">The file as a FileInfo object to analyze</param>
-        /// <returns>An AnalyzerResult</returns>
+        /// <summary>Analyze a script in the form of a file.</summary>
+        /// <param name="File">The file as a FileInfo object to analyze.</param>
+        /// <returns>An AnalyzerResult.</returns>
         public AnalyzerResult Analyze(FileInfo File)
         {
             lock(hostedAnalyzerLock)
@@ -279,15 +276,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             }
         }
 
-        /// <summary>Analyze a script in the form of a file</summary>
-        /// <param name="File">The file as a FileInfo object to analyze</param>
-        /// <returns>An AnalyzerResult</returns>
+        /// <summary>Analyze a script in the form of a file.</summary>
+        /// <param name="File">The file as a FileInfo object to analyze.</param>
+        /// <returns>An AnalyzerResult.</returns>
         public Task<AnalyzerResult> AnalyzeAsync(FileInfo File) =>
             Task.Run(() => Analyze(File));
 
-        /// <summary>Fix a script</summary>
-        /// <param name="scriptDefinition">The script to fix</param>
-        /// <returns>The fixed script as a string</returns>
+        /// <summary>Fix a script.</summary>
+        /// <param name="scriptDefinition">The script to fix.</param>
+        /// <returns>The fixed script as a string.</returns>
         public string Fix(string scriptDefinition)
         {
             lock(hostedAnalyzerLock)
@@ -305,15 +302,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             }
         }
 
-        /// <summary>Fix a script</summary>
-        /// <param name="scriptDefinition">The script to fix</param>
-        /// <returns>The fixed script as a string</returns>
+        /// <summary>Fix a script.</summary>
+        /// <param name="scriptDefinition">The script to fix.</param>
+        /// <returns>The fixed script as a string.</returns>
         public Task<string> FixAsync(string scriptDefinition) => Task.Run(() => Fix(scriptDefinition));
 
-        /// <summary>Fix a script</summary>
-        /// <param name="scriptDefinition">The script to fix</param>
-        /// <param name="settings">The settings to use when fixing</param>
-        /// <returns>The fixed script as a string</returns>
+        /// <summary>Fix a script.</summary>
+        /// <param name="scriptDefinition">The script to fix.</param>
+        /// <param name="settings">The settings to use when fixing.</param>
+        /// <returns>The fixed script as a string.</returns>
         public string Fix(string scriptDefinition, Settings settings)
         {
             lock(hostedAnalyzerLock)
@@ -350,12 +347,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             }
         }
 
-        /// <summary>Fix a script</summary>
-        /// <param name="scriptDefinition">The script to fix</param>
-        /// <returns>The fixed script as a string</returns>
-        /// <param name="settings">The settings to use when fixing</param>
+        /// <summary>Fix a script.</summary>
+        /// <param name="scriptDefinition">The script to fix.</param>
+        /// <returns>The fixed script as a string.</returns>
+        /// <param name="settings">The settings to use when fixing.</param>
         public Task<string> FixAsync(string scriptDefinition, Settings settings) => Task.Run(() => Fix(scriptDefinition, settings));
-
 
         /// <summary>
         /// Create a standard settings object for Script Analyzer
@@ -406,16 +402,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         ///     PSAlignAssignmentStatement
         ///     PSUseCorrectCasing
         /// </summary>
-        /// <param name="scriptDefinition">The script to format</param>
-        /// <returns>The formatted script</returns>
+        /// <param name="scriptDefinition">The script to format.</param>
+        /// <returns>The formatted script.</returns>
         public string Format(string scriptDefinition)
         {
             Settings settings = CreateSettings("CodeFormatting");
-            string s;
+            string formattedScript;
             lock(hostedAnalyzerLock)
             {
                 try {
-                    s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
+                    formattedScript = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
                 }
                 finally {
                     analyzer.CleanUp();
@@ -424,7 +420,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
                     Reset();
                 }
             }
-            return s;
+            return formattedScript;
         }
 
         /// <summary>
@@ -436,27 +432,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         ///     PSAlignAssignmentStatement
         ///     PSUseCorrectCasing
         /// </summary>
-        /// <param name="scriptDefinition">The script to format</param>
-        /// <returns>The formatted script</returns>
+        /// <param name="scriptDefinition">The script to format.</param>
+        /// <returns>The formatted script.</returns>
         public Task<string> FormatAsync(string scriptDefinition) =>
             Task.Run(() => Format(scriptDefinition));
 
         /// <summary>
         /// Format a script based on settings
         /// </summary>
-        /// <param name="scriptDefinition">The script to format</param>
-        /// <param name="settings">The settings to use when formatting</param>
-        /// <returns>The formatted script</returns>
+        /// <param name="scriptDefinition">The script to format.</param>
+        /// <param name="settings">The settings to use when formatting.</param>
+        /// <returns>The formatted script.</returns>
         public string Format(string scriptDefinition, Settings settings)
         {
             if ( settings == null ) {
                 throw new ArgumentException("settings may not be null");
             }
-            string s;
+            string formattedScript;
             lock(hostedAnalyzerLock)
             {
                 try {
-                    s = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
+                    formattedScript = Formatter.Format(scriptDefinition, settings, null, ps.Runspace, writer);
                 }
                 finally {
                     analyzer.CleanUp();
@@ -465,7 +461,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
                     Reset();
                 }
             }
-            return s;
+            return formattedScript;
         }
 
         /// <summary>
@@ -478,9 +474,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         ///     PSUseCorrectCasing
         /// and the union of the actual settings which are passed to it.
         /// </summary>
-        /// <param name="scriptDefinition">The script to format</param>
-        /// <param name="settings">The settings to use when formatting</param>
-        /// <returns>The formatted script</returns>
+        /// <param name="scriptDefinition">The script to format.</param>
+        /// <param name="settings">The settings to use when formatting.</param>
+        /// <returns>The formatted script.</returns>
         public Task<string> FormatAsync(string scriptDefinition, Settings settings) =>
             Task.Run(() => Format(scriptDefinition, settings));
 
@@ -491,26 +487,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// </summary>
         internal class hostedWriter : IOutputWriter
         {
-            /// <summary>The terminating errors emitted during the invocation of the analyzer</summary>
+            /// <summary>The terminating errors emitted during the invocation of the analyzer.</summary>
             public IList<SMA.ErrorRecord> TerminatingErrors;
-            /// <summary>The non-terminating errors emitted during the invocation of the analyzer</summary>
+            /// <summary>The non-terminating errors emitted during the invocation of the analyzer.</summary>
             public IList<SMA.ErrorRecord> Errors;
-            /// <summary>The verbose messages emitted during the invocation of the analyzer</summary>
+            /// <summary>The verbose messages emitted during the invocation of the analyzer.</summary>
             public IList<string> Verbose;
-            /// <summary>The debug messages emitted during the invocation of the analyzer</summary>
+            /// <summary>The debug messages emitted during the invocation of the analyzer.</summary>
             public IList<string> Debug;
-            /// <summary>The warning messages emitted during the invocation of the analyzer</summary>
+            /// <summary>The warning messages emitted during the invocation of the analyzer.</summary>
             public IList<string> Warning;
-            /// <summary>Add a terminating error the ccollection</summary>
-            public void ThrowTerminatingError(SMA.ErrorRecord er) { TerminatingErrors.Add(er); }
-            /// <summary>Add a non-terminating error the ccollection</summary>
-            public void WriteError(SMA.ErrorRecord er) { Errors.Add(er); }
-            /// <summary>Add a verbose message to the verbose collection</summary>
-            public void WriteVerbose(string m) { Verbose.Add(m); }
-            /// <summary>Add a debug message to the debug collection</summary>
-            public void WriteDebug(string m) { Debug.Add(m); }
-            /// <summary>Add a warning message to the warning collection</summary>
-            public void WriteWarning(string m) { Warning.Add(m); }
+            /// <summary>Add a terminating error the ccollection.</summary>
+            public void ThrowTerminatingError(SMA.ErrorRecord errorRecord) { TerminatingErrors.Add(errorRecord); }
+            /// <summary>Add a verbose message to the verbose collection.</summary>
+            public void WriteVerbose(string message) { Verbose.Add(message); }
+            /// <summary>Add a debug message to the debug collection.</summary>
+            public void WriteDebug(string message) { Debug.Add(message); }
+            /// <summary>Add a warning message to the warning collection.</summary>
+            public void WriteWarning(string warning) { Warning.Add(warning); }
 
             /// <summary>
             /// Clear the writer collections to avoid getting output from
@@ -538,8 +532,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             }
         }
 
-        /// <summary>Get the available builtin rules</summary>
-        /// <param name="ruleNames">A collection of strings which contain the wildcard pattern for the rule</param>
+        /// <summary>Get the available builtin rules.</summary>
+        /// <param name="ruleNames">A collection of strings which contain the wildcard pattern for the rule.</param>
         public List<RuleInfo> GetBuiltinRules(string[] ruleNames = null)
         {
             List<RuleInfo> builtinRules = new List<RuleInfo>();
@@ -558,10 +552,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
                         )
                     );
             }
+
             return builtinRules;
         }
 
-        /// <summary>Dispose the Hosted Analyzer resources</summary>
+        /// <summary>Dispose the Hosted Analyzer resources.</summary>
         public void Dispose()
         {
             Dispose(true);
@@ -578,8 +573,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
 
             if ( disposing )
             {
-                // Don't dispose the helper instance
-                // Helper.Instance.Dispose();
+                // Don't dispose the helper instance, just dispose the PowerShell and it's runspace
                 ps.Runspace.Dispose();
                 ps.Dispose();
             }
@@ -587,7 +581,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             disposed = true;
         }
 
-        /// <summary>A simple ToString</summary>
+        /// <summary>A simple ToString, knowing the runspace can help with debugging.</summary>
         public override string ToString()
         {
             return this?.ps.Runspace.InstanceId.ToString();
@@ -598,11 +592,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
     /// Type of entity that was passed to the analyzer
     /// </summary>
     public enum AnalysisType {
-        /// <summary>An Ast was passed to the analyzer</summary>
+        /// <summary>An Ast was passed to the analyzer.</summary>
         Ast,
-        /// <summary>An FileInfo was passed to the analyzer</summary>
+        /// <summary>An FileInfo was passed to the analyzer.</summary>
         File,
-        /// <summary>An script (as a string) was passed to the analyzer</summary>
+        /// <summary>An script (as a string) was passed to the analyzer.</summary>
         Script
     }
 
@@ -611,19 +605,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
     /// </summary>
     public class AnalyzerResult
     {
-        /// <summary>The type of entity which was analyzed</summary>
+        /// <summary>The type of entity which was analyzed.</summary>
         public AnalysisType Type { get; set; }
-        /// <summary>The diagnostic records found during analysis</summary>
+        /// <summary>The diagnostic records found during analysis.</summary>
         public List<DiagnosticRecord> Result { get; set; }
-        /// <summary>The terminating errors which occurred during analysis</summary>
+        /// <summary>The terminating errors which occurred during analysis.</summary>
         public List<SMA.ErrorRecord> TerminatingErrors { get; set; }
-        /// <summary>The non-terminating errors which occurred during analysis</summary>
+        /// <summary>The non-terminating errors which occurred during analysis.</summary>
         public List<SMA.ErrorRecord> Errors { get; set; }
-        /// <summary>The verbose messages delivered during analysis</summary>
+        /// <summary>The verbose messages delivered during analysis.</summary>
         public List<string> Verbose { get; set; }
-        /// <summary>The warning messages delivered during analysis</summary>
+        /// <summary>The warning messages delivered during analysis.</summary>
         public List<string> Warning { get; set; }
-        /// <summary>The debug messages delivered during analysis</summary>
+        /// <summary>The debug messages delivered during analysis.</summary>
         public List<string> Debug { get; set; }
 
         /// <summary>
@@ -643,15 +637,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>
         /// Create results from an invocation of the analyzer
         /// </summary>
-        public AnalyzerResult(AnalysisType type, IEnumerable<DiagnosticRecord>records, HostedAnalyzer ha) : this()
+        public AnalyzerResult(AnalysisType type, IEnumerable<DiagnosticRecord>records, HostedAnalyzer hostedAnalyzer) : this()
         {
             Type = type;
             Result.AddRange(records);
-            TerminatingErrors.AddRange(ha.writer.TerminatingErrors);
-            Errors.AddRange(ha.writer.Errors);
-            Verbose.AddRange(ha.writer.Verbose);
-            Warning.AddRange(ha.writer.Warning);
-            Debug.AddRange(ha.writer.Debug);
+            TerminatingErrors.AddRange(hostedAnalyzer.writer.TerminatingErrors);
+            Errors.AddRange(hostedAnalyzer.writer.Errors);
+            Verbose.AddRange(hostedAnalyzer.writer.Verbose);
+            Warning.AddRange(hostedAnalyzer.writer.Warning);
+            Debug.AddRange(hostedAnalyzer.writer.Debug);
         }
     }
 
