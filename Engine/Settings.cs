@@ -42,10 +42,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             set { includeDefaultRules = value; }
         }
         public string FilePath => filePath;
-        public IEnumerable<string> IncludeRules => includeRules;
-        public IEnumerable<string> ExcludeRules => excludeRules;
-        public IEnumerable<string> Severities => severities;
-        public IEnumerable<string> CustomRulePath => customRulePath;
+        public List<string> IncludeRules => includeRules;
+        public List<string> ExcludeRules => excludeRules;
+        public List<string> Severities => severities;
+        public List<string> CustomRulePath => customRulePath;
         public Dictionary<string, Dictionary<string, object>> RuleArguments => ruleArguments;
 
         /// <summary>

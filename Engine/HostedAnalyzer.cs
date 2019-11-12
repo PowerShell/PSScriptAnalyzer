@@ -359,6 +359,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// It is more functional than the AnalyzerSettings object because
         /// it contains the Rule Arguments which are not passable to the Initialize method
         /// </summary>
+        public Settings CreateSettings(string[] ruleNames)
+        {
+            var s = CreateSettings();
+            s.IncludeRules.AddRange(ruleNames);
+            return s;
+        }
+
+        /// <summary>
+        /// Create a standard settings object for Script Analyzer
+        /// This is the object used by analyzer internally
+        /// It is more functional than the AnalyzerSettings object because
+        /// it contains the Rule Arguments which are not passable to the Initialize method
+        /// </summary>
         public Settings CreateSettings(string SettingsName)
         {
             return Settings.Create(SettingsName, "", writer, ps.Runspace.SessionStateProxy.Path.GetResolvedProviderPathFromPSPath);
@@ -438,6 +451,52 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             Task.Run(() => Format(scriptDefinition));
 
         /// <summary>
+        /// Format a script according to the formatting rules
+        ///     PSPlaceCloseBrace
+        ///     PSPlaceOpenBrace
+        ///     PSUseConsistentWhitespace
+        ///     PSUseConsistentIndentation
+        ///     PSAlignAssignmentStatement
+        ///     PSUseCorrectCasing
+        /// </summary>
+        /// <param name="scriptDefinition">The script to format.</param>
+        /// <param name="range">The range of the script to format</param>
+        /// <returns>The formatted script.</returns>
+        public string Format(string scriptDefinition, Range range)
+        {
+            Settings settings = CreateSettings("CodeFormatting");
+            string formattedScript;
+            lock(hostedAnalyzerLock)
+            {
+                try {
+                    formattedScript = Formatter.Format(scriptDefinition, settings, range, ps.Runspace, writer);
+                }
+                finally {
+                    analyzer.CleanUp();
+                    // Reset is required because formatting leaves a number of settings behind which
+                    // should be cleared.
+                    Reset();
+                }
+            }
+            return formattedScript;
+        }
+
+        /// <summary>
+        /// Format a script according to the formatting rules
+        ///     PSPlaceCloseBrace
+        ///     PSPlaceOpenBrace
+        ///     PSUseConsistentWhitespace
+        ///     PSUseConsistentIndentation
+        ///     PSAlignAssignmentStatement
+        ///     PSUseCorrectCasing
+        /// </summary>
+        /// <param name="scriptDefinition">The script to format.</param>
+        /// <param name="range">The range of the script to format</param>
+        /// <returns>The formatted script.</returns>
+        public Task<string> FormatAsync(string scriptDefinition, Range range) =>
+            Task.Run(() => Format(scriptDefinition, range));
+
+        /// <summary>
         /// Format a script based on settings
         /// </summary>
         /// <param name="scriptDefinition">The script to format.</param>
@@ -497,6 +556,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             public IList<string> Debug;
             /// <summary>The warning messages emitted during the invocation of the analyzer.</summary>
             public IList<string> Warning;
+            /// <summary>Add a nonterminating error the ccollection.</summary>
+            public void WriteError(SMA.ErrorRecord errorRecord) { TerminatingErrors.Add(errorRecord); }
             /// <summary>Add a terminating error the ccollection.</summary>
             public void ThrowTerminatingError(SMA.ErrorRecord errorRecord) { TerminatingErrors.Add(errorRecord); }
             /// <summary>Add a verbose message to the verbose collection.</summary>
