@@ -258,7 +258,10 @@ function Start-ScriptAnalyzerBuild
             }
         }
 
-        $config = "PSV${PSVersion}${Configuration}"
+        $buildConfiguration = $Configuration
+        if ((3, 4) -contains $PSVersion) {
+            $buildConfiguration = "PSV${PSVersion}${Configuration}"
+        }
 
         # Build ScriptAnalyzer
         # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
@@ -268,7 +271,7 @@ function Start-ScriptAnalyzerBuild
             if ( -not $script:DotnetExe ) {
                 $script:DotnetExe = Get-DotnetExe
             }
-            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$config" 2>&1
+            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$buildConfiguration" 2>&1
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
@@ -283,9 +286,9 @@ function Start-ScriptAnalyzerBuild
         Publish-File $itemsToCopyCommon $script:destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
-            "$projectRoot\Rules\bin\${config}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
+            "$projectRoot\Engine\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot\Rules\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
@@ -293,7 +296,7 @@ function Start-ScriptAnalyzerBuild
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         if ($framework -eq 'net452') {
-            Copy-Item -path "$projectRoot\Rules\bin\${config}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            Copy-Item -path "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
 
         Pop-Location
