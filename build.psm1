@@ -537,7 +537,6 @@ function Get-InstalledCLIVersion {
         # earlier versions of dotnet do not support --list-sdks, so we'll check the output
         # and use dotnet --version as a fallback
         $sdkList = & $script:DotnetExe --list-sdks 2>&1
-        $sdkList = "Unknown option"
         if ( $sdkList -match "Unknown option" ) {
             $installedVersions = & $script:DotnetExe --version 2>$null
         }
@@ -621,9 +620,15 @@ function Get-DotnetExe
         # it's possible that there are multiples. Take the highest version we find
         # the problem is that invoking dotnet on a version which is lower than the specified
         # version in global.json will produce an error, so we can only take the dotnet which executes
+        #
+        # dotnet --version has changed its output, so we have to work much harder to determine what's installed.
+        # dotnet --version can now emit a list of installed sdks as output *and* an error if the global.json
+        # file points to a version of the sdk which is *not* installed. However, the format of the new list
+        # with --version has a couple of spaces at the beginning of the line, so we need to be resilient
+        # against that.
         $latestDotnet = $discoveredDotNet |
             Where-Object { try { & $_ --version 2>$null } catch { } } |
-            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null); "$pv" } |
+            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null| %{$_.Trim().Split()[0]}); "$pv" } |
             Select-Object -Last 1
         if ( $latestDotnet ) {
             $script:DotnetExe = $latestDotnet
