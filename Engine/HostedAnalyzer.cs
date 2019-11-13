@@ -557,7 +557,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             /// <summary>The warning messages emitted during the invocation of the analyzer.</summary>
             public IList<string> Warning;
             /// <summary>Add a nonterminating error the ccollection.</summary>
-            public void WriteError(SMA.ErrorRecord errorRecord) { TerminatingErrors.Add(errorRecord); }
+            public void WriteError(SMA.ErrorRecord errorRecord) { Errors.Add(errorRecord); }
             /// <summary>Add a terminating error the ccollection.</summary>
             public void ThrowTerminatingError(SMA.ErrorRecord errorRecord) { TerminatingErrors.Add(errorRecord); }
             /// <summary>Add a verbose message to the verbose collection.</summary>
