@@ -4,6 +4,14 @@
 Describe "Hosted Analyzer Tests" {
     BeforeAll {
         $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
+        # PowerShell V4 isn't able to disambiguate calling this method, so we have to work a bit harder
+        function invoke-analyze ( [string]$methodName, [object[]]$methodArguments)
+        {
+            [type[]]$argTypes = $methodArguments | Foreach-Object { $_.GetType() }
+            $method = $HostedAnalyzer.GetType().GetMethod($methodName, $argTypes)
+            $result = $method.Invoke($HostedAnalyzer, $methodArguments)
+            return $result
+        }
     }
     AfterAll {
         $HostedAnalyzer.Dispose()
@@ -22,7 +30,12 @@ Describe "Hosted Analyzer Tests" {
 
             It "Should correctly identify errors in '<script>' without settings"  -testcase $defaultAnalyzerTests {
                 param ( $script, $expectedResultCount, $expectedRuleViolation )
-                $result = $HostedAnalyzer.Analyze($script)
+                try {
+                    $result = $HostedAnalyzer.Analyze($script)
+                }
+                catch {
+                    $_.Exception.StackTrace | Should -BeNullOrEmpty
+                }
                 $result.Type | Should -Be "Script"
                 $result.Errors | Should -BeNullOrEmpty
                 $result.TerminatingErrors | Should -BeNullOrEmpty
@@ -36,7 +49,12 @@ Describe "Hosted Analyzer Tests" {
                 param ( $script, $expectedResultCount, $expectedRuleViolation )
                 $tokens = $errs = $null
                 $ast = [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$tokens, [ref]$errs)
-                $result = $HostedAnalyzer.Analyze($ast, $t, "")
+                if( $PSVersionTable.PSVersion.Major -eq 4) {
+                    $result = invoke-analyze -methodname Analyze -methodArguments @($ast, $t, "")
+                }
+                else {
+                    $result = $HostedAnalyzer.Analyze($ast, $t, "")
+                }
                 $result.Type | Should -Be "Ast"
                 $result.Errors | Should -BeNullOrEmpty
                 $result.TerminatingErrors | Should -BeNullOrEmpty
@@ -75,7 +93,12 @@ Describe "Hosted Analyzer Tests" {
             It "Should correctly identify errors in an AST without settings" {
                 $tokens = $errs = $null
                 $ast = [System.Management.Automation.Language.Parser]::ParseInput('wjb', [ref]$tokens, [ref]$errs)
-                $result = $HostedAnalyzer.Analyze($ast, $tokens, "")
+                if ( $PSVersionTable.PSVersion.Major -eq 4) {
+                    $result = invoke-analyze -methodname Analyze -methodArguments @($ast, $t, "")
+                }
+                else {
+                    $result = $HostedAnalyzer.Analyze($ast, $tokens, "")
+                }
                 $result.Result.Count | Should -Be 1
                 $result.Result.RuleName | Should -Be 'PSAvoidUsingCmdletAliases'
             }
@@ -153,6 +176,13 @@ Describe "Hosted Analyzer Tests" {
 Describe "Async Hosted Analyzer Tests" {
     BeforeAll {
         $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
+        function invoke-analyze ( [string]$methodName, [object[]]$methodArguments)
+        {
+            [type[]]$argTypes = $methodArguments | Foreach-Object { $_.GetType() }
+            $method = $HostedAnalyzer.GetType().GetMethod($methodName, $argTypes)
+            $result = $method.Invoke($HostedAnalyzer, $methodArguments)
+            return $result
+        }
     }
     AfterAll {
         $HostedAnalyzer.Dispose()
@@ -171,7 +201,12 @@ Describe "Async Hosted Analyzer Tests" {
 
             It "Should correctly identify errors in '<script>' without settings"  -testcase $defaultAnalyzerTests {
                 param ( $script, $expectedResultCount, $expectedRuleViolation )
-                $result = $HostedAnalyzer.AnalyzeAsync($script).GetAwaiter().GetResult()
+                try {
+                    $result = $HostedAnalyzer.AnalyzeAsync($script).GetAwaiter().GetResult()
+                }
+                catch {
+                    $_.Exception.StackTrace | Should -BeNullOrEmpty
+                }
                 $result.Type | Should -Be "Script"
                 $result.Errors | Should -BeNullOrEmpty
                 $result.TerminatingErrors | Should -BeNullOrEmpty
@@ -185,14 +220,20 @@ Describe "Async Hosted Analyzer Tests" {
                 param ( $script, $expectedResultCount, $expectedRuleViolation )
                 $tokens = $errs = $null
                 $ast = [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$tokens, [ref]$errs)
-                $result = $HostedAnalyzer.AnalyzeAsync($ast, $t, "").GetAwaiter().GetResult()
+                if ( $PSVersionTable.PSVersion.Major -eq 4) {
+                    $result = (invoke-analyze -methodName AnalyzeAsync -methodArguments @($ast, $tokens, "")).GetAwaiter().GetResult()
+                }
+                else {
+                    $result = $HostedAnalyzer.AnalyzeAsync($ast, $tokens, "").GetAwaiter().GetResult()
+                }
+
                 $result.Type | Should -Be "Ast"
                 $result.Errors | Should -BeNullOrEmpty
                 $result.TerminatingErrors | Should -BeNullOrEmpty
                 $result.Result.Count + $errs.Count| Should -Be $expectedResultCount
                 $observedRules = ($result.Result.RuleName | Sort-Object) -join ":"
                 # the AST analysis does not include parse errors, so those must be removed
-                $expectedRules = ($ExpectedRuleViolation |?{$_ -ne "ExpectedValueExpression"}| Sort-Object) -join ":"
+                $expectedRules = ($ExpectedRuleViolation | Where-Object {$_ -ne "ExpectedValueExpression"} | Sort-Object) -join ":"
                 $observedRules | Should -Be $expectedRules
             }
 
@@ -224,7 +265,12 @@ Describe "Async Hosted Analyzer Tests" {
             It "Should correctly identify errors in an AST without settings" {
                 $tokens = $errs = $null
                 $ast = [System.Management.Automation.Language.Parser]::ParseInput('wjb', [ref]$tokens, [ref]$errs)
-                $result = $HostedAnalyzer.AnalyzeAsync($ast, $tokens, "").GetAwaiter().GetResult()
+                if ( $PSVersionTable.PSVersion.Major -eq 4) {
+                    $result = (invoke-analyze -methodName AnalyzeAsync -methodArguments @($ast, $tokens, "")).GetAwaiter().GetResult()
+                }
+                else {
+                    $result = $HostedAnalyzer.AnalyzeAsync($ast, $tokens, "").GetAwaiter().GetResult()
+                }
                 $result.Result.Count | Should -Be 1
                 $result.Result.RuleName | Should -Be 'PSAvoidUsingCmdletAliases'
             }
