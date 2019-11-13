@@ -4,14 +4,13 @@
 Describe "Hosted Analyzer Tests" {
     BeforeAll {
         $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
-        $RunspaceCount = (Get-Runspace).Count
     }
     AfterAll {
         $HostedAnalyzer.Dispose()
     }
 
     Context "Analyze Method Tests" {
-        $defaultAnalyzerTests = 
+        $defaultAnalyzerTests =
             @{ Script = 'gci'; ExpectedResultCount = 1; ExpectedRuleViolation = @('PSAvoidUsingCmdletAliases') },
             @{ Script = 'gc'; ExpectedResultCount = 1; ExpectedRuleViolation = @('PSAvoidUsingCmdletAliases') },
             @{ Script = 'get-command;gc'; ExpectedResultCount = 1; ExpectedRuleViolation = @('PSAvoidUsingCmdletAliases') },
@@ -85,7 +84,7 @@ Describe "Hosted Analyzer Tests" {
 
         Context "Tests with Settings" {
 
-            $settingsAnalyzerTests = 
+            $settingsAnalyzerTests =
                 @{ Script = 'write-host no1'; ExpectedResultCount = 0; ExpectedRuleViolation = @(); Settings = $HostedAnalyzer.CreateSettings('PSGallery') },
                 @{ Script = 'write-host no2'; ExpectedResultCount = 1; ExpectedRuleViolation = @('PSAvoidUsingWriteHost'); Settings = $HostedAnalyzer.CreateSettings() },
                 @{ Script = 'write-host no3'; ExpectedResultCount = 0; ExpectedRuleViolation = @(); Settings = $($s = $HostedAnalyzer.CreateSettings(); $null = $s.ExcludeRules.Add('PSAvoidUsingWriteHost'); $s) },
@@ -154,14 +153,13 @@ Describe "Hosted Analyzer Tests" {
 Describe "Async Hosted Analyzer Tests" {
     BeforeAll {
         $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
-        $RunspaceCount = (Get-Runspace).Count
     }
     AfterAll {
         $HostedAnalyzer.Dispose()
     }
 
     Context "Async Analyze Method Tests" {
-        $defaultAnalyzerTests = 
+        $defaultAnalyzerTests =
             @{ Script = 'gci'; ExpectedResultCount = 1; ExpectedRuleViolation = @('PSAvoidUsingCmdletAliases') },
             @{ Script = 'gc'; ExpectedResultCount = 1; ExpectedRuleViolation = @('PSAvoidUsingCmdletAliases') },
             @{ Script = 'get-command;gc'; ExpectedResultCount = 1; ExpectedRuleViolation = @('PSAvoidUsingCmdletAliases') },
@@ -235,7 +233,7 @@ Describe "Async Hosted Analyzer Tests" {
 
         Context "Async Tests with Settings" {
 
-            $settingsAnalyzerTests = 
+            $settingsAnalyzerTests =
                 @{ Script = 'write-host no1'; ExpectedResultCount = 0; ExpectedRuleViolation = @(); Settings = $HostedAnalyzer.CreateSettings('PSGallery') },
                 @{ Script = 'write-host no2'; ExpectedResultCount = 1; ExpectedRuleViolation = @('PSAvoidUsingWriteHost'); Settings = $HostedAnalyzer.CreateSettings() },
                 @{ Script = 'write-host no3'; ExpectedResultCount = 0; ExpectedRuleViolation = @(); Settings = $($s = $HostedAnalyzer.CreateSettings(); $null = $s.ExcludeRules.Add('PSAvoidUsingWriteHost'); $s) },
@@ -304,7 +302,6 @@ Describe "Async Hosted Analyzer Tests" {
 Describe "Create Settings APIs" {
     BeforeAll {
         $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
-        $RunspaceCount = (Get-Runspace).Count
     }
     AfterAll {
         $HostedAnalyzer.Dispose()
@@ -319,7 +316,7 @@ Describe "Create Settings APIs" {
             $settings | Should -BeOfType [Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings]
         }
 
-        $settingsPropertyValues = 
+        $settingsPropertyValues =
             @{ Name = "RecurseCustomRulePath"; Value = $false; type = "bool" },
             @{ Name = "IncludeDefaultRules";   Value = $true;  type = "bool" },
             @{ Name = "FilePath";              Value = $null;  type = "string" },
@@ -368,7 +365,7 @@ Describe "Create Settings APIs" {
             $createdRules = ($setting.IncludeRules | Sort-Object) -join ":"
             $expectedRules = "PSAlignAssignmentStatement:PSPlaceCloseBrace:PSPlaceOpenBrace:PSUseConsistentIndentation:PSUseConsistentWhitespace:PSUseCorrectCasing"
             $createdRules | Should -Be $expectedRules
-            
+
         }
 
         It "Should create settings which can be used in analyze" {
@@ -384,7 +381,6 @@ Describe "Create Settings APIs" {
 Describe "Get Rule Apis" {
     BeforeAll {
         $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
-        $RunspaceCount = (Get-Runspace).Count
         $AnalyzerRules = Get-ScriptAnalyzerRule
         $UsePattern = '*use*'
         $UseRules = Get-ScriptAnalyzerRule -Name $UsePattern
