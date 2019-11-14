@@ -174,6 +174,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting {
 
 
     public Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings CreateSettings ( string SettingsName ) { return default(Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings); }
+    public Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings CreateSettings ( string[] ruleNames ) { return default(Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings); }
     public Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings CreateSettings (  ) { return default(Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings); }
     public Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings CreateSettings ( System.Collections.Hashtable settings ) { return default(Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings); }
     public Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings CreateSettingsFromFile ( string settingsFile ) { return default(Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings); }
@@ -188,7 +189,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting {
 
     public string Format ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(string); }
     public string Format ( string scriptDefinition ) { return default(string); }
+    public string Format ( string scriptDefinition, Range range ) { return default(string); }
     public System.Threading.Tasks.Task<string> FormatAsync ( string scriptDefinition ) { return default(System.Threading.Tasks.Task<string>); }
+    public System.Threading.Tasks.Task<string> FormatAsync ( string scriptDefinition, Range range ) { return default(System.Threading.Tasks.Task<string>); }
     public System.Threading.Tasks.Task<string> FormatAsync ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(System.Threading.Tasks.Task<string>); }
 
     public System.Collections.Generic.List<Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleInfo> GetBuiltinRules ( string[] ruleNames ) { return default(System.Collections.Generic.List<Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleInfo>); }
