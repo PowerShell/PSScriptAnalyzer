@@ -142,14 +142,14 @@ function Start-ReferenceBuild
     try {
         Push-Location Reference
         $buildOutput  = dotnet build --configuration Release
-        if ( ! $? ) {
+        if ( -not $? ) {
             throw $buildOutput
         }
         $buildOutput += dotnet pack --configuration Release
         if ( ! $? ) {
             throw $buildOutput
         }
-        Copy-Item bin/Release/Microsoft.Windows.PowerShell.ScriptAnalyzer.1.18.4.nupkg .
+        Copy-Item bin/Release/Microsoft.Windows.PowerShell.ScriptAnalyzer.*.nupkg .
     }
     finally {
         Pop-Location
@@ -723,9 +723,4 @@ function Copy-CrossCompatibilityModule
             Write-Warning $_
         }
     }
-}
-
-function Export-NuPkg
-{
-    dotnet pack
 }

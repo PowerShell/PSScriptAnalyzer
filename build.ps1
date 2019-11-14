@@ -93,7 +93,13 @@ END {
         }
     }
     if ( $Pack ) {
-        Export-NuPkg
+        Push-Location "$PSScriptRoot/Reference"
+        try {
+            dotnet pack
+        }
+        finally {
+            Pop-Location
+        }
     }
 
 }
