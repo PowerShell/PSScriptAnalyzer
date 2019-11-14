@@ -50,7 +50,7 @@ Describe "Hosted Analyzer Tests" {
                 $tokens = $errs = $null
                 $ast = [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$tokens, [ref]$errs)
                 if( $PSVersionTable.PSVersion.Major -eq 4) {
-                    $result = invoke-analyze -methodname Analyze -methodArguments @($ast, $t, "")
+                    $result = invoke-analyze -methodname Analyze -methodArguments @($ast, $tokens, "")
                 }
                 else {
                     $result = $HostedAnalyzer.Analyze($ast, $t, "")
@@ -94,7 +94,7 @@ Describe "Hosted Analyzer Tests" {
                 $tokens = $errs = $null
                 $ast = [System.Management.Automation.Language.Parser]::ParseInput('wjb', [ref]$tokens, [ref]$errs)
                 if ( $PSVersionTable.PSVersion.Major -eq 4) {
-                    $result = invoke-analyze -methodname Analyze -methodArguments @($ast, $t, "")
+                    $result = invoke-analyze -methodname Analyze -methodArguments @($ast, $tokens, "")
                 }
                 else {
                     $result = $HostedAnalyzer.Analyze($ast, $tokens, "")
