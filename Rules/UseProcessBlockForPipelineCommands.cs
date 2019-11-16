@@ -24,44 +24,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if
                 (
-                    funcAst.Body != null
-                    && funcAst.Body.ParamBlock != null
-                    && funcAst.Body.ParamBlock.Attributes != null
-                    && funcAst.Body.ParamBlock.Parameters != null
-                    && funcAst.Body.ProcessBlock == null
+                    funcAst.Body.ParamBlock == null
+                    || funcAst.Body.ParamBlock.Attributes == null
+                    || funcAst.Body.ParamBlock.Parameters == null
+                    || funcAst.Body.ProcessBlock != null
                 )
+                { continue; }
+
+                foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
                 {
-                    foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
+                    foreach (var paramAstAttribute in paramAst.Attributes)
                     {
-                        foreach (var paramAstAttribute in paramAst.Attributes)
+                        foreach (NamedAttributeArgumentAst namedArgument in (paramAstAttribute as AttributeAst).NamedArguments)
                         {
-                            if (paramAstAttribute is AttributeAst)
-                            {
-                                var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
-                                if (namedArguments != null)
-                                {
-                                    foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
-                                    {
-                                        if
-                                        (
-                                            String.Equals(namedArgument.ArgumentName, "valuefrompipeline", StringComparison.OrdinalIgnoreCase)
-                                            || String.Equals(namedArgument.ArgumentName, "valuefrompipelinebypropertyname", StringComparison.OrdinalIgnoreCase)
-                                        )
-                                        {
-                                            yield return new DiagnosticRecord(
-                                                string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandsError, paramAst.Name.VariablePath.UserPath),
-                                                paramAst.Name.Extent,
-                                                GetName(),
-                                                DiagnosticSeverity.Warning,
-                                                fileName,
-                                                paramAst.Name.VariablePath.UserPath
-                                            );
-                                        }
-                                    }
-                                }
-                            }
+                            if
+                            (
+                                !String.Equals(namedArgument.ArgumentName, "valuefrompipeline", StringComparison.OrdinalIgnoreCase)
+                                && !String.Equals(namedArgument.ArgumentName, "valuefrompipelinebypropertyname", StringComparison.OrdinalIgnoreCase)
+                            )
+                            { continue; }
                         }
                     }
+
+                    yield return new DiagnosticRecord(
+                        string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandsError, paramAst.Name.VariablePath.UserPath),
+                        paramAst.Name.Extent,
+                        GetName(),
+                        DiagnosticSeverity.Warning,
+                        fileName,
+                        paramAst.Name.VariablePath.UserPath
+                    );
                 }
             }
         }
