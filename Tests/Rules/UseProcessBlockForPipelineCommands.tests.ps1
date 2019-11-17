@@ -1,18 +1,19 @@
 ﻿Describe "UseProcessBlockForPipelineCommands" {
     BeforeAll {
         $RuleName = 'PSUseProcessBlockForPipelineCommands'
-        $WithoutProcessBlock = 'function BadFunc1 { [CmdletBinding()] param ([Parameter(ValueFromPipeline)]$Param1) }'
-        $WithoutProcessBlockByPropertyName = 'function $BadFunc2 { [CmdletBinding()] param ([Parameter(ValueFromPipelineByPropertyName)]$Param1) }'
-        $WithProcessBlock = 'function GoodFunc1 { [CmdletBinding()] param ([Parameter(ValueFromPipeline)]$Param1) process { } }'
-        $WithProcessBlockByPropertyName = 'function GoodFunc2 { [CmdletBinding()] param ([Parameter(ValueFromPipelineByPropertyName)]$Param1) process { } }'
+        $NoProcessBlock = 'function BadFunc1 { [CmdletBinding()] param ([Parameter(ValueFromPipeline)]$Param1) }'
+        $NoProcessBlockByPropertyName = 'function $BadFunc2 { [CmdletBinding()] param ([Parameter(ValueFromPipelineByPropertyName)]$Param1) }'
+        $HasProcessBlock = 'function GoodFunc1 { [CmdletBinding()] param ([Parameter(ValueFromPipeline)]$Param1) process { } }'
+        $HasProcessBlockByPropertyName = 'function GoodFunc2 { [CmdletBinding()] param ([Parameter(ValueFromPipelineByPropertyName)]$Param1) process { } }'
+        $NoAttribute = 'function GoodFunc3 { [CmdletBinding()] param ([Parameter()]$Param1) }'
     }
 
     Context "When there are violations" {
         $Cases = @(
-            @{ScriptDefinition = $WithoutProcessBlock}
-            @{ScriptDefinition = $WithoutProcessBlockByPropertyName}
+            @{ScriptDefinition = $NoProcessBlock; Name = "NoProcessBlock"}
+            @{ScriptDefinition = $NoProcessBlockByPropertyName; Name = "NoProcessBlockByPropertyName"}
         )
-        It "has 1 violation for function <ScriptDefinition>" {
+        It "has 1 violation for function <Name>" {
             param ($ScriptDefinition)
 
             Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName | Should Not BeNullOrEmpty
@@ -21,10 +22,11 @@
 
     Context "When there are no violations" {
         $Cases = @(
-            @{ScriptDefinition = $WithProcessBlock }
-            @{ScriptDefinition = $WithProcessBlockByPropertyName }
+            @{ScriptDefinition = $HasProcessBlock; Name = "HasProcessBlock" }
+            @{ScriptDefinition = $HasProcessBlockByPropertyName; Name = "HasProcessBlockByPropertyName" }
+            @{ScriptDefinition = $NoAttribute; Name = "NoAttribute" }
         )
-        It "has no violations for function <ScriptDefinition>" {
+        It "has no violations for function <Name>" {
             param ($ScriptDefinition)
 
             Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName | Should BeNullOrEmpty

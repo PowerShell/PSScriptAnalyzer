@@ -30,12 +30,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || funcAst.Body.ProcessBlock != null
                 )
                 { continue; }
-
+                
                 foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
                 {
                     foreach (var paramAstAttribute in paramAst.Attributes)
                     {
-                        foreach (NamedAttributeArgumentAst namedArgument in (paramAstAttribute as AttributeAst).NamedArguments)
+                        var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
+                        if (namedArguments == null) { continue; }
+
+                        foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
                         {
                             if
                             (
@@ -43,17 +46,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 && !String.Equals(namedArgument.ArgumentName, "valuefrompipelinebypropertyname", StringComparison.OrdinalIgnoreCase)
                             )
                             { continue; }
+
+                            yield return new DiagnosticRecord(
+                                string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandsError, paramAst.Name.VariablePath.UserPath),
+                                paramAst.Name.Extent,
+                                GetName(),
+                                DiagnosticSeverity.Warning,
+                                fileName,
+                                paramAst.Name.VariablePath.UserPath
+                            );
                         }
                     }
-
-                    yield return new DiagnosticRecord(
-                        string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandsError, paramAst.Name.VariablePath.UserPath),
-                        paramAst.Name.Extent,
-                        GetName(),
-                        DiagnosticSeverity.Warning,
-                        fileName,
-                        paramAst.Name.VariablePath.UserPath
-                    );
                 }
             }
         }
