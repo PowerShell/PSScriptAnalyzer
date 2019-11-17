@@ -35,6 +35,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (var paramAstAttribute in paramAst.Attributes)
                     {
+                        if (!(paramAstAttribute is AttributeAst)) { continue;  }
+
                         var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
                         if (namedArguments == null) { continue; }
 

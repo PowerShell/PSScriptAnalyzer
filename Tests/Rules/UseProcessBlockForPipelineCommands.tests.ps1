@@ -6,6 +6,7 @@
         $HasProcessBlock = 'function GoodFunc1 { [CmdletBinding()] param ([Parameter(ValueFromPipeline)]$Param1) process { } }'
         $HasProcessBlockByPropertyName = 'function GoodFunc2 { [CmdletBinding()] param ([Parameter(ValueFromPipelineByPropertyName)]$Param1) process { } }'
         $NoAttribute = 'function GoodFunc3 { [CmdletBinding()] param ([Parameter()]$Param1) }'
+		$HasTypeDeclaration = 'function GoodFunc3 { [CmdletBinding()] param ([Parameter()][string]$Param1) }'
     }
 
     Context "When there are violations" {
@@ -25,6 +26,7 @@
             @{ScriptDefinition = $HasProcessBlock; Name = "HasProcessBlock" }
             @{ScriptDefinition = $HasProcessBlockByPropertyName; Name = "HasProcessBlockByPropertyName" }
             @{ScriptDefinition = $NoAttribute; Name = "NoAttribute" }
+			@{ScriptDefinition = $HasTypeDeclaration; Name = "HasTypeDeclaration"}
         )
         It "has no violations for function <Name>" {
             param ($ScriptDefinition)
