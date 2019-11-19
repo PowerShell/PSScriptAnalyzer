@@ -12,7 +12,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class UseProcessBlockForPipelineCommands : IScriptRule
+    public class UseProcessBlockForPipelineCommand : IScriptRule
     {
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
@@ -35,7 +35,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (var paramAstAttribute in paramAst.Attributes)
                     {
-                        if (!(paramAstAttribute is AttributeAst)) { continue;  }
+                        if (!(paramAstAttribute is AttributeAst)) { continue; }
 
                         var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
                         if (namedArguments == null) { continue; }
@@ -44,13 +44,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         {
                             if
                             (
-                                !String.Equals(namedArgument.ArgumentName, "valuefrompipeline", StringComparison.OrdinalIgnoreCase)
-                                && !String.Equals(namedArgument.ArgumentName, "valuefrompipelinebypropertyname", StringComparison.OrdinalIgnoreCase)
+                                !namedArgument.ArgumentName.Equals("valuefrompipeline", StringComparison.OrdinalIgnoreCase)
+                                && !namedArgument.ArgumentName.Equals("valuefrompipelinebypropertyname", StringComparison.OrdinalIgnoreCase)
                             )
                             { continue; }
 
                             yield return new DiagnosticRecord(
-                                string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandsError, paramAst.Name.VariablePath.UserPath),
+                                string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandError, paramAst.Name.VariablePath.UserPath),
                                 paramAst.Name.Extent,
                                 GetName(),
                                 DiagnosticSeverity.Warning,
@@ -65,17 +65,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseProcessBlockForPipelineCommandsName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.UseProcessBlockForPipelineCommandName);
         }
 
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandsCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandCommonName);
         }
 
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandsDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandDescription);
         }
 
         public SourceType GetSourceType()

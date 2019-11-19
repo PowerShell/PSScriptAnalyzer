@@ -2599,38 +2599,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use process block for pipeline commands.
+        ///   Looks up a localized string similar to Use process block for pipeline commands..
         /// </summary>
-        internal static string UseProcessBlockForPipelineCommandsCommonName {
+        internal static string UseProcessBlockForPipelineCommandCommonName {
             get {
-                return ResourceManager.GetString("UseProcessBlockForPipelineCommandsCommonName", resourceCulture);
+                return ResourceManager.GetString("UseProcessBlockForPipelineCommandCommonName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to If a parameter accepts input via the pipeline, the function should use at least a process block to correctly support pipeline features..
         /// </summary>
-        internal static string UseProcessBlockForPipelineCommandsDescription {
+        internal static string UseProcessBlockForPipelineCommandDescription {
             get {
-                return ResourceManager.GetString("UseProcessBlockForPipelineCommandsDescription", resourceCulture);
+                return ResourceManager.GetString("UseProcessBlockForPipelineCommandDescription", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Commands that support pipeline input should return output in a process block..
         /// </summary>
-        internal static string UseProcessBlockForPipelineCommandsError {
+        internal static string UseProcessBlockForPipelineCommandError {
             get {
-                return ResourceManager.GetString("UseProcessBlockForPipelineCommandsError", resourceCulture);
+                return ResourceManager.GetString("UseProcessBlockForPipelineCommandError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UseProcessBlockForPipelineCommands.
+        ///   Looks up a localized string similar to UseProcessBlockForPipelineCommand.
         /// </summary>
-        internal static string UseProcessBlockForPipelineCommandsName {
+        internal static string UseProcessBlockForPipelineCommandName {
             get {
-                return ResourceManager.GetString("UseProcessBlockForPipelineCommandsName", resourceCulture);
+                return ResourceManager.GetString("UseProcessBlockForPipelineCommandName", resourceCulture);
             }
         }
         

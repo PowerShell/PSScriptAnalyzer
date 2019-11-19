@@ -1,4 +1,4 @@
-# UseProcessBlockForPipelineCommands
+# UseProcessBlockForPipelineCommand
 
 **Severity Level: Warning**
 
@@ -27,7 +27,7 @@ Function Get-Number
 #### Result
 
 ```
-PS C:\> 1..5 | Broken
+PS C:\> 1..5 | Get-Number
 5
 ```
 
@@ -53,7 +53,7 @@ Function Get-Number
 #### Result
 
 ```
-PS C:\> 1..5 | Correct
+PS C:\> 1..5 | Get-Number
 1
 2
 3
