@@ -39,13 +39,31 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
 
                         bool unusableName = false;
+                        string paramName = paramAst.Name.VariablePath.UserPath;
 
-                        // TODO: Modify code below
-                        //   Check parameter name if fits in any of the categories
+                        // check if name contains only digits
+                        bool digitsOnly = ! (paramName.IsNullOrEmpty);
+                        foreach (char c in paramName)
+                        {
+                            if (c < '0' || c > '9')
+                                digitsOnly = false;
+                        }
+                        if (digitsOnly)
+                        {
+                            unusableName = true;
+                        }
+
+                        // check if name starts with |
+                        if (!unusableName && (paramName.StartsWith("|")))
+                        {
+                            unusableName = true;
+                        }
+
+                        // yield warning
                         if (unusableName) 
                         {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUnusableParameterError, paramAst.Name.VariablePath.UserPath),
-                            paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUnusableParameterError, paramName),
+                            paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramName);
                         }
 
                     }
