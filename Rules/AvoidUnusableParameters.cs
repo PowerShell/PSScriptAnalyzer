@@ -37,14 +37,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
                     {
-                        
 
+                        bool unusableName = false;
 
-                        //if (paramAst.DefaultValue != null)
-                        //{
-                        //    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidDefaultValueForMandatoryParameterError, paramAst.Name.VariablePath.UserPath),
-                        //    paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
-                        //}
+                        // TODO: Modify code below
+                        //   Check parameter name if fits in any of the categories
+                        if (unusableName) 
+                        {
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUnusableParameterError, paramAst.Name.VariablePath.UserPath),
+                            paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramAst.Name.VariablePath.UserPath);
+                        }
 
                     }
                 } // sd
