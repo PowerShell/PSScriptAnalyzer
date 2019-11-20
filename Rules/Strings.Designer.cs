@@ -185,7 +185,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidComputerNameHardcodedName", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Avoid Default Value For Mandatory Parameter.
         /// </summary>
@@ -194,7 +194,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterCommonName", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block..
         /// </summary>
@@ -203,7 +203,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterDescription", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Mandatory Parameter &apos;{0}&apos; is initialized in the Param block. To fix a violation of this rule, please leave it uninitialized..
         /// </summary>
@@ -212,7 +212,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterError", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to AvoidDefaultValueForMandatoryParameter.
         /// </summary>
@@ -221,7 +221,43 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidDefaultValueForMandatoryParameterName", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid Default Value For Mandatory Parameter.
+        /// </summary>
+        internal static string AvoidUnusableParameterCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUnusableParameterCommonName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Mandatory parameter should not be initialized with a default value in the param block because this value will be ignored.. To fix a violation of this rule, please avoid initializing a value for the mandatory parameter in the param block..
+        /// </summary>
+        internal static string AvoidUnusableParameterDescription {
+            get {
+                return ResourceManager.GetString("AvoidUnusableParameterDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Mandatory Parameter &apos;{0}&apos; is initialized in the Param block. To fix a violation of this rule, please leave it uninitialized..
+        /// </summary>
+        internal static string AvoidUnusableParameterError {
+            get {
+                return ResourceManager.GetString("AvoidUnusableParameterError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidDefaultValueForMandatoryParameter.
+        /// </summary>
+        internal static string AvoidUnusableParameterName {
+            get {
+                return ResourceManager.GetString("AvoidUnusableParameterName", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Switch Parameters Should Not Default To True.
         /// </summary>
