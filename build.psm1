@@ -149,7 +149,11 @@ function Start-ReferenceBuild
         if ( ! $? ) {
             throw $buildOutput
         }
-        Copy-Item bin/Release/Microsoft.Windows.PowerShell.ScriptAnalyzer.*.nupkg .
+        $target = Join-Path $PSScriptRoot "out"
+        if ( -not (Test-Path $target)) {
+            $null = New-Item -Type Directory -Path $target
+        }
+        Copy-Item bin/Release/Microsoft.Windows.PowerShell.ScriptAnalyzer.*.nupkg $target
     }
     finally {
         Pop-Location
@@ -200,6 +204,7 @@ function Start-ScriptAnalyzerBuild
             foreach($psVersion in 3..6) {
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
             }
+            Start-ReferenceBuild
             return
         }
 
