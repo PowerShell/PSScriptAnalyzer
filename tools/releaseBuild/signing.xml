@@ -47,4 +47,7 @@
     <file src="__INPATHROOT__\out\PSCompatibilityCollector\net452\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\net452\Microsoft.PowerShell.CrossCompatibility.dll" />
     <file src="__INPATHROOT__\out\PSCompatibilityCollector\net452\Newtonsoft.Json.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\net452\Newtonsoft.Json.dll" />
  </job>
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="ScriptAnalyzer reference nuget package" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\out\Microsoft.Windows.PowerShell.ScriptAnalyzer.1.18.4.nupkg" signType="NuGet" dest="__OUTPATHROOT__\Microsoft.Windows.PowerShell.ScriptAnalyzer.1.18.4.nupkg" />
+ </job>
 </SignConfigXML>
