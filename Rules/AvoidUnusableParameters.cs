@@ -9,6 +9,7 @@ using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -29,6 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Finds all functionAst
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
+            var regex = new Regex(@"^\d+$");
 
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
@@ -37,21 +39,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
                     {
-
                         bool unusableName = false;
                         string paramName = paramAst.Name.VariablePath.UserPath;
 
                         // check if name contains only digits
-                        bool digitsOnly = ! (paramName.IsNullOrEmpty);
-                        foreach (char c in paramName)
-                        {
-                            if (c < '0' || c > '9')
-                                digitsOnly = false;
-                        }
-                        if (digitsOnly)
+
+                        if (regex.Match(paramName).Success) 
                         {
                             unusableName = true;
                         }
+
+                        //bool digitsOnly = true;
+                        //    foreach (char c in paramName)
+                        //{
+                        //    if (c < '0' || c > '9') 
+                        //    {
+                        //        digitsOnly = false;
+                        //        break;
+                        //    }
+                        //}
+                        //if (digitsOnly)
+                        //{
+                        //    unusableName = true;
+                        //}
 
                         // check if name starts with |
                         if (!unusableName && (paramName.StartsWith("|")))
@@ -67,7 +77,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
 
                     }
-                } // sd
+                }
             }
         }
 
