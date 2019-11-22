@@ -1081,7 +1081,7 @@
     <value>UseCorrectCasing</value>
   </data>
   <data name="UseProcessBlockForPipelineCommandCommonName" xml:space="preserve">
-    <value>Use process block for pipeline commands.</value>
+    <value>Use process block for command that accepts input from pipeline.</value>
   </data>
   <data name="UseProcessBlockForPipelineCommandDescription" xml:space="preserve">
     <value>If a parameter accepts input via the pipeline, the function should use at least a process block to correctly support pipeline features.</value>
