@@ -687,18 +687,6 @@
   <data name="AvoidDefaultValueForMandatoryParameterName" xml:space="preserve">
     <value>AvoidDefaultValueForMandatoryParameter</value>
   </data>
-  <data name="AvoidUnusableParameterCommonName" xml:space="preserve">
-    <value>Avoid Unusable Parameter Name</value>
-  </data>
-  <data name="AvoidUnusableParameterDescription" xml:space="preserve">
-    <value>Parameter name should not contain characters which cannot be used in command line. To fix a violation of this rule, please rename parameter to regular name.</value>
-  </data>
-  <data name="AvoidUnusableParameterError" xml:space="preserve">
-    <value>Parameter '{0}' has unusable name. To fix a violation of this rule, please rename it.</value>
-  </data>
-  <data name="AvoidUnusableParameterName" xml:space="preserve">
-    <value>AvoidUnusableParameter</value>
-  </data>
   <data name="AvoidUsingDeprecatedManifestFieldsCommonName" xml:space="preserve">
     <value>Avoid Using Deprecated Manifest Fields</value>
   </data>
