@@ -15,6 +15,7 @@
 |[AvoidLongLines](./AvoidLongLines.md) | Warning | |
 |[AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md) | Warning | |
 |[AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md) | Warning | |
+|[AvoidUnusableParameters](./AvoidUnusableParameters.md) | Warning | Yes |
 |[AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md) | Warning | Yes |
 |[AvoidUsingComputerNameHardcoded](./AvoidUsingComputerNameHardcoded.md) | Error | |
 |[AvoidUsingConvertToSecureStringWithPlainText](./AvoidUsingConvertToSecureStringWithPlainText.md) | Error | |
