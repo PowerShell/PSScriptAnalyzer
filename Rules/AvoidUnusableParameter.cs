@@ -29,7 +29,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             // Finds all functionAst
-            IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
+            IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);            
             var regex = new Regex(@"^\d+$");
 
             foreach (FunctionDefinitionAst funcAst in functionAsts)
@@ -38,6 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     && funcAst.Body.ParamBlock.Attributes != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
                     foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
+                    // TODO: We need to iterate also EndBlock for statement parameters
                     {
                         bool unusableName = false;
                         string paramName = paramAst.Name.VariablePath.UserPath;
@@ -48,23 +49,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         {
                             unusableName = true;
                         }
-
-                        //bool digitsOnly = true;
-                        //    foreach (char c in paramName)
-                        //{
-                        //    if (c < '0' || c > '9') 
-                        //    {
-                        //        digitsOnly = false;
-                        //        break;
-                        //    }
-                        //}
-                        //if (digitsOnly)
-                        //{
-                        //    unusableName = true;
-                        //}
-
-                        // check if name starts with |
-                        if (!unusableName && (paramName.StartsWith("|")))
+                        else if (paramName.StartsWith("|"))
                         {
                             unusableName = true;
                         }
