@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -421,6 +421,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid long lines.
+        /// </summary>
+        internal static string AvoidLongLinesCommonName {
+            get {
+                return ResourceManager.GetString("AvoidLongLinesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line lengths should be less than the configured maximum.
+        /// </summary>
+        internal static string AvoidLongLinesDescription {
+            get {
+                return ResourceManager.GetString("AvoidLongLinesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line exceeds the configured maximum length of {0} characters.
+        /// </summary>
+        internal static string AvoidLongLinesError {
+            get {
+                return ResourceManager.GetString("AvoidLongLinesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidLongLines.
+        /// </summary>
+        internal static string AvoidLongLinesName {
+            get {
+                return ResourceManager.GetString("AvoidLongLinesName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid using null or empty HelpMessage parameter attribute..
         /// </summary>
         internal static string AvoidNullOrEmptyHelpMessageAttributeCommonName {
@@ -536,61 +572,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidTrailingWhitespaceName", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidLongLines.
-        /// </summary>
-        internal static string AvoidLongLinesName
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidLongLinesName", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Avoid long lines.
-        /// </summary>
-        internal static string AvoidLongLinesCommonName
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidLongLinesCommonName", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Each line should be under 120 characters.
-        /// </summary>
-        internal static string AvoidLongLinesDescription
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidLongLinesDescription", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Line is longer than 120 characters.
-        /// </summary>
-        internal static string AvoidLongLinesError
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidLongLinesError", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidLongLines.
-        /// </summary>
-        internal static string AvoidLongLinesWhitespaceName
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidLongLinesName", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to Module Must Be Loadable.
@@ -625,6 +606,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string AvoidUnloadableModuleName {
             get {
                 return ResourceManager.GetString("AvoidUnloadableModuleName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid Unusable Parameter Name.
+        /// </summary>
+        internal static string AvoidUnusableParameterCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUnusableParameterCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter name should not contain characters which cannot be used in command line. To fix a violation of this rule, please rename parameter to regular name..
+        /// </summary>
+        internal static string AvoidUnusableParameterDescription {
+            get {
+                return ResourceManager.GetString("AvoidUnusableParameterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; has unusable name. To fix a violation of this rule, please rename it..
+        /// </summary>
+        internal static string AvoidUnusableParameterError {
+            get {
+                return ResourceManager.GetString("AvoidUnusableParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUnusableParameter.
+        /// </summary>
+        internal static string AvoidUnusableParameterName {
+            get {
+                return ResourceManager.GetString("AvoidUnusableParameterName", resourceCulture);
             }
         }
         
