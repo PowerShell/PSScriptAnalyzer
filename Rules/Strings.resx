@@ -810,18 +810,6 @@
   <data name="UseCompatibleCmdletsError" xml:space="preserve">
     <value>'{0}' is not compatible with PowerShell edition '{1}', version '{2}' and OS '{3}'</value>
   </data>
-  <data name="AvoidOverwritingBuiltInCmdletsName" xml:space="preserve">
-    <value>AvoidOverwritingBuiltInCmdlets</value>
-  </data>
-  <data name="AvoidOverwritingBuiltInCmdletsCommonName" xml:space="preserve">
-    <value>Avoid overwriting built in cmdlets</value>
-  </data>
-  <data name="AvoidOverwritingBuiltInCmdletsDescription" xml:space="preserve">
-    <value>Do not overwrite the definition of a cmdlet that is included with PowerShell</value>
-  </data>
-  <data name="AvoidOverwritingBuiltInCmdletsError" xml:space="preserve">
-    <value>'{0}' is a cmdlet that is included with PowerShell (version {1}) whose definition should not be overridden</value>
-  </data>
   <data name="UseCompatibleCommandsName" xml:space="preserve">
     <value>UseCompatibleCommands</value>
   </data>
@@ -1092,16 +1080,16 @@
   <data name="UseCorrectCasingName" xml:space="preserve">
     <value>UseCorrectCasing</value>
   </data>
-  <data name="UseProcessBlockForPipelineCommandCommonName" xml:space="preserve">
-    <value>Use process block for command that accepts input from pipeline.</value>
+  <data name="AvoidUnusableParameterCommonName" xml:space="preserve">
+    <value>Avoid Unusable Parameter Name</value>
   </data>
-  <data name="UseProcessBlockForPipelineCommandDescription" xml:space="preserve">
-    <value>If a command parameter takes its value from the pipeline, the command must use a process block to bind the input objects from the pipeline to that parameter.</value>
+  <data name="AvoidUnusableParameterDescription" xml:space="preserve">
+    <value>Parameter name should not contain characters which cannot be used in command line. To fix a violation of this rule, please rename parameter to regular name.</value>
   </data>
-  <data name="UseProcessBlockForPipelineCommandError" xml:space="preserve">
-    <value>Command accepts pipeline input but has not defined a process block.</value>
+  <data name="AvoidUnusableParameterError" xml:space="preserve">
+    <value>Parameter '{0}' has unusable name. To fix a violation of this rule, please rename it.</value>
   </data>
-  <data name="UseProcessBlockForPipelineCommandName" xml:space="preserve">
-    <value>UseProcessBlockForPipelineCommand</value>
+  <data name="AvoidUnusableParameterName" xml:space="preserve">
+    <value>AvoidUnusableParameter</value>
   </data>
 </root>
