@@ -1,4 +1,4 @@
-# AvoidUnusableParameters
+# AvoidUnusableParameter
 
 **Severity Level: Warning**
 
