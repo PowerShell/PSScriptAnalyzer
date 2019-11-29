@@ -4,7 +4,7 @@
 
 ## Description
 
-Parameter name should follow good naming practices. If parameter name cannot be parsed properly, then it can not be used in a standard way.
+Parameter name should follow good naming practices, i.e. start with letter and contain only letters and digits. If parameter name cannot be parsed properly, then in certain scenarios, parsing can fail.
 
 ## Example
 
@@ -13,17 +13,16 @@ Parameter name should follow good naming practices. If parameter name cannot be 
 ``` PowerShell
 function Test
 {
-
-    [CmdletBinding()]
     Param
     (
         [switch]$1
     )
 
-    if ($1) {Write-Output "1"}
+    if ($1) {'Yes'} else {'No'}
 }
 
-Test -1 # parsed as integer "minus one", not as switch parameter
+PS:\> Test -1 # not parsed as a switch
+No
 ```
 
 ### Correct
@@ -37,8 +36,19 @@ function Test
         [switch]$Parameter1
     )
 
-    if ($Parameter1) {Write-Output "1"}
+    if ($Parameter1) {'Yes'} else {'No'}
 }
 
-Test -Parameter1 # parsed properly
+PS:\> Test -Parameter1 # parsed properly
+Yes
+```
+
+### Splatting
+
+Strictly speaking, these parameters are not prohibited. They are just not intuitive to follow, and hard to use. They can be used with splatting.
+Using the first (not recommended) example, you can do this:
+``` PowerShell
+PS:\> $splat1 = @{'1'=$true}
+PS:\> Test @splat1
+Yes
 ```

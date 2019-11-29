@@ -30,7 +30,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Finds all functionAst
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);            
-            var regex = new Regex(@"^\d+$");
 
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
@@ -43,9 +42,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         bool unusableName = false;
                         string paramName = paramAst.Name.VariablePath.UserPath;
 
-                        // check if name contains only digits
-
-                        if (regex.Match(paramName).Success) 
+                        if (string.IsNullOrEmpty(paramName))
+                        {
+                            unusableName = true;
+                        }
+                        else if (char.IsDigit(paramName[0]))
                         {
                             unusableName = true;
                         }
@@ -54,7 +55,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             unusableName = true;
                         }
 
-                        // yield warning
                         if (unusableName) 
                         {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUnusableParameterError, paramName),
