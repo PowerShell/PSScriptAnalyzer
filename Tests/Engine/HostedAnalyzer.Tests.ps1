@@ -483,3 +483,56 @@ Describe "Fix Api" {
     }
 
 }
+
+Describe "Format API" {
+
+    BeforeAll {
+        $HostedAnalyzer = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting.HostedAnalyzer
+        $def = @"
+function foo {
+"xyz"
+"abc"
+}
+"@
+    }
+    AfterAll {
+        $HostedAnalyzer.Dispose()
+    }
+    It "Should format only within the range when a range list is given" {
+
+        $expected = @"
+function foo {
+"xyz"
+    "abc"
+}
+"@
+
+        $range = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Range 3,1,4,1
+        $result = $HostedAnalyzer.Format($def, $range)
+        $result |  Should -Be $expected
+    }
+
+    It "should apply custom settings" {
+        $expected = @"
+function foo {
+"xyz"
+            "abc"
+}
+"@
+
+        $setting = $HostedAnalyzer.CreateSettings("CodeFormatting")
+        $setting.RuleArguments.PSUseConsistentIndentation.IndentationSize = 12
+
+        $range = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Range 3,1,4,1
+        $result = $HostedAnalyzer.Format($def,$setting, $range)
+        $result |  Should -Be $expected
+    }
+
+    It "should format according to settings and range" {
+        $setting = $HostedAnalyzer.CreateSettings("CodeFormatting")
+        $setting.RuleArguments.PSUseConsistentIndentation.Enable = $false
+        $range = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Range 3,1,4,1
+        $result = $HostedAnalyzer.Format($def, $setting, $range)
+        $result | Should -Be $def
+    }
+}

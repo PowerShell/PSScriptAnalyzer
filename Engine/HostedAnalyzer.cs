@@ -540,6 +540,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
             Task.Run(() => Format(scriptDefinition, settings));
 
         /// <summary>
+        /// Format a script based on settings
+        /// </summary>
+        /// <param name="scriptDefinition">The script to format.</param>
+        /// <param name="settings">The settings to use when formatting.</param>
+        /// <param name="range">The range over which to apply the formatting.</param>
+        /// <returns>The formatted script.</returns>
+        public string Format(string scriptDefinition, Settings settings, Range range)
+        {
+            if ( settings == null ) {
+                throw new ArgumentException("settings may not be null");
+            }
+            string formattedScript;
+            lock(hostedAnalyzerLock)
+            {
+                try {
+                    formattedScript = Formatter.Format(scriptDefinition, settings, range, ps.Runspace, writer);
+                }
+                finally {
+                    analyzer.CleanUp();
+                    // Reset is required because formatting leaves a number of settings behind which
+                    // should be cleared.
+                    Reset();
+                }
+            }
+            return formattedScript;
+        }
+
+        /// <summary>
+        /// Format a script according to the formatting rules
+        ///     PSPlaceCloseBrace
+        ///     PSPlaceOpenBrace
+        ///     PSUseConsistentWhitespace
+        ///     PSUseConsistentIndentation
+        ///     PSAlignAssignmentStatement
+        ///     PSUseCorrectCasing
+        /// and the union of the actual settings which are passed to it.
+        /// </summary>
+        /// <param name="scriptDefinition">The script to format.</param>
+        /// <param name="settings">The settings to use when formatting.</param>
+        /// <param name="range">The range over which to apply the formatting.</param>
+        /// <returns>The formatted script.</returns>
+        public Task<string> FormatAsync(string scriptDefinition, Settings settings, Range range) =>
+            Task.Run(() => Format(scriptDefinition, settings, range));
+
+        /// <summary>
         /// Analyzer usually requires a cmdlet to manage the output to the user.
         /// This class is provided to collect the non-diagnostic record output
         /// when invoking the methods in the HostedAnalyzer.
