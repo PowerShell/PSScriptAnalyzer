@@ -342,7 +342,7 @@ that does not output an Error or Warning diagnostic record.
 Then invoke that settings file when using `Invoke-ScriptAnalyzer`:
 
 ``` PowerShell
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting PSScriptAnalyzerSettings.psd1
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 ```
 
 The next example selects a few rules to execute instead of all the default rules.
@@ -357,7 +357,7 @@ The next example selects a few rules to execute instead of all the default rules
 
 Then invoke that settings file:
 ``` PowerShell
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting PSScriptAnalyzerSettings.psd1
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 ```
 
 ## Implicit
