@@ -355,9 +355,9 @@ The next example selects a few rules to execute instead of all the default rules
 }
 ```
 
-Then invoke that settings file when using:
+Then invoke that settings file:
 ``` PowerShell
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting ScriptAnalyzerSettings.psd1
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting PSScriptAnalyzerSettings.psd1
 ```
 
 ## Implicit
