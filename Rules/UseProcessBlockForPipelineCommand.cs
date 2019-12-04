@@ -28,32 +28,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             
             foreach (ScriptBlockAst scriptblockAst in scriptblockAsts)
             {
-                if
-                (
-                    scriptblockAst.ParamBlock == null
-                    || scriptblockAst.ParamBlock.Attributes == null
-                    || scriptblockAst.ParamBlock.Parameters == null
-                    || scriptblockAst.ProcessBlock != null
-                )
-                { continue; }
+                if (scriptblockAst.ProcessBlock != null
+                    || scriptblockAst.ParamBlock?.Attributes == null
+                    || scriptblockAst.ParamBlock.Parameters == null)
+                {
+                    continue;
+                }
                 
                 foreach (var paramAst in scriptblockAst.ParamBlock.Parameters)
                 {
                     foreach (var paramAstAttribute in paramAst.Attributes)
                     {
-                        if (!(paramAstAttribute is AttributeAst)) { continue; }
+                        if (!(paramAstAttribute is AttributeAst paramAttributeAst)) { continue; }
 
-                        var namedArguments = (paramAstAttribute as AttributeAst).NamedArguments;
-                        if (namedArguments == null) { continue; }
+                        if (paramAttributeAst.NamedArguments == null) { continue; }
 
-                        foreach (NamedAttributeArgumentAst namedArgument in namedArguments)
+                        foreach (NamedAttributeArgumentAst namedArgument in paramAttributeAst.NamedArguments)
                         {
-                            if
-                            (
-                                !namedArgument.ArgumentName.Equals("valuefrompipeline", StringComparison.OrdinalIgnoreCase)
-                                && !namedArgument.ArgumentName.Equals("valuefrompipelinebypropertyname", StringComparison.OrdinalIgnoreCase)
-                            )
-                            { continue; }
+                            if (!namedArgument.ArgumentName.Equals("valuefrompipeline", StringComparison.OrdinalIgnoreCase)
+                                && !namedArgument.ArgumentName.Equals("valuefrompipelinebypropertyname", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
 
                             yield return new DiagnosticRecord(
                                 string.Format(CultureInfo.CurrentCulture, Strings.UseProcessBlockForPipelineCommandError, paramAst.Name.VariablePath.UserPath),
