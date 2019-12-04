@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
@@ -16,22 +19,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     {
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            if (ast == null)
+            {
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            }
 
-            IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
-
-            foreach (FunctionDefinitionAst funcAst in functionAsts)
+            IEnumerable<Ast> scriptblockAsts = ast.FindAll(testAst => testAst is ScriptBlockAst, true);
+            
+            foreach (ScriptBlockAst scriptblockAst in scriptblockAsts)
             {
                 if
                 (
-                    funcAst.Body.ParamBlock == null
-                    || funcAst.Body.ParamBlock.Attributes == null
-                    || funcAst.Body.ParamBlock.Parameters == null
-                    || funcAst.Body.ProcessBlock != null
+                    scriptblockAst.ParamBlock == null
+                    || scriptblockAst.ParamBlock.Attributes == null
+                    || scriptblockAst.ParamBlock.Parameters == null
+                    || scriptblockAst.ProcessBlock != null
                 )
                 { continue; }
                 
-                foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
+                foreach (var paramAst in scriptblockAst.ParamBlock.Parameters)
                 {
                     foreach (var paramAstAttribute in paramAst.Attributes)
                     {
