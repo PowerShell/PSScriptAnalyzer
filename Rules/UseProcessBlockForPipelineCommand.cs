@@ -35,9 +35,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
                 
-                foreach (var paramAst in scriptblockAst.ParamBlock.Parameters)
+                foreach (ParameterAst paramAst in scriptblockAst.ParamBlock.Parameters)
                 {
-                    foreach (var paramAstAttribute in paramAst.Attributes)
+                    foreach (AttributeBaseAst paramAstAttribute in paramAst.Attributes)
                     {
                         if (!(paramAstAttribute is AttributeAst paramAttributeAst)) { continue; }
 
