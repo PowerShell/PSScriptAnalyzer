@@ -1084,7 +1084,7 @@
     <value>Use process block for command that accepts input from pipeline.</value>
   </data>
   <data name="UseProcessBlockForPipelineCommandDescription" xml:space="preserve">
-    <value>If a function parameter takes its value from the pipeline, the function must use a process block to bind the input objects from the pipeline to that parameter.</value>
+    <value>If a command parameter takes its value from the pipeline, the command must use a process block to bind the input objects from the pipeline to that parameter.</value>
   </data>
   <data name="UseProcessBlockForPipelineCommandError" xml:space="preserve">
     <value>Command accepts pipeline input but has not defined a process block.</value>

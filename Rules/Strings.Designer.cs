@@ -2599,7 +2599,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use process block for pipeline commands..
+        ///   Looks up a localized string similar to Use process block for command that accepts input from pipeline..
         /// </summary>
         internal static string UseProcessBlockForPipelineCommandCommonName {
             get {
@@ -2608,7 +2608,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a parameter accepts input via the pipeline, the function should use at least a process block to correctly support pipeline features..
+        ///   Looks up a localized string similar to If a command parameter takes its value from the pipeline, the command must use a process block to bind the input objects from the pipeline to that parameter..
         /// </summary>
         internal static string UseProcessBlockForPipelineCommandDescription {
             get {
@@ -2617,7 +2617,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Commands that support pipeline input should return output in a process block..
+        ///   Looks up a localized string similar to Command accepts pipeline input but has not defined a process block..
         /// </summary>
         internal static string UseProcessBlockForPipelineCommandError {
             get {
