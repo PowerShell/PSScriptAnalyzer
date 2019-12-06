@@ -117,7 +117,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// Add a configurable rule to the rule arguments
         /// </summary>
-        public void AddRuleArgument(string name, Dictionary<string,object>setting)
+        public Settings AddRuleArgument(string name, Dictionary<string,object>setting)
         {
             Dictionary<string,object> currentSetting;
             if (RuleArguments.TryGetValue(name, out currentSetting))
@@ -125,12 +125,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentException(name + " already in settings");
             }
             RuleArguments.Add(name, setting);
+            return this;
         }
 
         /// <summary>
         /// Add a configuration element to a rule
         /// </summary>
-        public void AddRuleArgument(string rule, string setting, object value)
+        public Settings AddRuleArgument(string rule, string setting, object value)
         {
             // the rule does not exist, that's a problem, first create it and then add the key/value pair
             Dictionary<string, object> settingDictionary;
@@ -139,7 +140,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 Dictionary<string, object> newSetting = new Dictionary<string, object>();
                 newSetting.Add(setting, value);
                 RuleArguments.Add(rule, newSetting);
-                return;
+                return this;
             }
 
             // the setting exists, just change the value
@@ -147,17 +148,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             if ( settingDictionary.TryGetValue(setting, out o))
             {
                 SetRuleArgument(rule, setting, value);
-                return;
+                return this;
             }
 
             settingDictionary.Add(setting, value);
-            return;
+            return this;
         }
 
         /// <summary>
         /// Allow for changing setting of an existing value
         /// </summary>
-        public void SetRuleArgument(string rule, string setting, object value)
+        public Settings SetRuleArgument(string rule, string setting, object value)
         {
             Dictionary<string, object> settingDictionary;
             if ( ! RuleArguments.TryGetValue(rule, out settingDictionary))
@@ -172,7 +173,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             settingDictionary[setting] = value;
-            return;
+            return this;
         }
 
         /// <summary>

@@ -27,7 +27,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         private bool disposed = false;
 
         object hostedAnalyzerLock = new object();
-        bool lockWasTaken = false;
+        // bool lockWasTaken = false;
 
         /// <summary>
         /// Create an instance of the hosted analyzer
@@ -279,13 +279,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>Analyze a script in the form of a file.</summary>
         /// <param name="File">The file as a FileInfo object to analyze.</param>
         /// <returns>An AnalyzerResult.</returns>
-        public Task<AnalyzerResult> AnalyzeAsync(FileInfo File) =>
-            Task.Run(() => Analyze(File));
+        public Task<AnalyzerResult> AnalyzeAsync(FileInfo File) => Task.Run(() => Analyze(File));
 
         /// <summary>Fix a script.</summary>
         /// <param name="scriptDefinition">The script to fix.</param>
+        /// <param name="range">The range of the script to fix. If not supplied, the entire script will be fixed.false</param>
         /// <returns>The fixed script as a string.</returns>
-        public string Fix(string scriptDefinition)
+        public string Fix(string scriptDefinition, Range range = null)
         {
             lock(hostedAnalyzerLock)
             {
@@ -293,7 +293,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
                 {
                     Reset();
                     bool fixesApplied;
-                    return analyzer.Fix(scriptDefinition, out fixesApplied);
+
+                    if ( range != null ) {
+                        Range outRange;
+                        EditableText script = new EditableText(scriptDefinition);
+                        return analyzer.Fix(script, range, out outRange, out fixesApplied).Text;
+                    }
+                    else {
+                        return analyzer.Fix(scriptDefinition, out fixesApplied);
+                    }
                 }
                 finally
                 {
@@ -352,6 +360,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <returns>The fixed script as a string.</returns>
         /// <param name="settings">The settings to use when fixing.</param>
         public Task<string> FixAsync(string scriptDefinition, Settings settings) => Task.Run(() => Fix(scriptDefinition, settings));
+
+        /// <summary>Fix a script.</summary>
+        /// <param name="scriptDefinition">The script to fix.</param>
+        /// <param name="range">The range of the script to fix.</param>
+        /// <param name="settings">The settings to use when fixing.</param>
+        /// <returns>The fixed script as a string.</returns>
+        public string Fix(string scriptDefinition, Range range, Settings settings)
+        {
+            lock(hostedAnalyzerLock)
+            {
+                try
+                {
+                    Reset();
+                    // Set the rules up
+                    analyzer.UpdateSettings(settings);
+                    string fixedScript = Fix(scriptDefinition, range);
+                    return fixedScript;
+                }
+                finally
+                {
+                    Reset();
+                }
+            }
+        }
+
+        /// <summary>Fix a script.</summary>
+        /// <param name="scriptDefinition">The script to fix.</param>
+        /// <returns>The fixed script as a string.</returns>
+        /// <param name="range">The range of the script to use when fixing.</param>
+        /// <param name="settings">The settings to use when fixing.</param>
+        public Task<string> FixAsync(string scriptDefinition, Range range, Settings settings) => Task.Run(() => Fix(scriptDefinition, range, settings));
 
         /// <summary>
         /// Create a standard settings object for Script Analyzer
