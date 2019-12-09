@@ -129,6 +129,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var indentationLevel = 0;
+            var currentIndenationLevelIncreaseDueToPipelines = 0;
             var onNewLine = true;
             var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true);
             for (int tokenIndex = 0; tokenIndex < tokens.Length; tokenIndex++)
@@ -160,6 +161,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
                         {
                             AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                            currentIndenationLevelIncreaseDueToPipelines++;
                             break;
                         }
                         if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
@@ -168,6 +170,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             if (isFirstPipeInPipeline)
                             {
                                 AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                                currentIndenationLevelIncreaseDueToPipelines++;
                             }
                         }
                         break;
@@ -238,13 +241,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
+                if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline ||
+                    pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
                 {
-                    indentationLevel = ClipNegative(indentationLevel - 1);
-                }
-                else if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
-                {
-                    indentationLevel = ClipNegative(indentationLevel - (matchingPipeLineAstEnd.PipelineElements.Count - 1));
+                    indentationLevel = ClipNegative(indentationLevel - currentIndenationLevelIncreaseDueToPipelines);
+                    currentIndenationLevelIncreaseDueToPipelines = 0;
                 }
             }
 

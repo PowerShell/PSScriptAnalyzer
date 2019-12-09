@@ -1092,4 +1092,16 @@
   <data name="UseCorrectCasingName" xml:space="preserve">
     <value>UseCorrectCasing</value>
   </data>
+  <data name="UseProcessBlockForPipelineCommandCommonName" xml:space="preserve">
+    <value>Use process block for command that accepts input from pipeline.</value>
+  </data>
+  <data name="UseProcessBlockForPipelineCommandDescription" xml:space="preserve">
+    <value>If a command parameter takes its value from the pipeline, the command must use a process block to bind the input objects from the pipeline to that parameter.</value>
+  </data>
+  <data name="UseProcessBlockForPipelineCommandError" xml:space="preserve">
+    <value>Command accepts pipeline input but has not defined a process block.</value>
+  </data>
+  <data name="UseProcessBlockForPipelineCommandName" xml:space="preserve">
+    <value>UseProcessBlockForPipelineCommand</value>
+  </data>
 </root>

@@ -105,7 +105,7 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 
 #### Requirements
 
-* [.NET Core 2.2.104 SDK](https://www.microsoft.com/net/download/dotnet-core/2.2#sdk-2.2.104) or newer patch release
+* [.NET Core 2.2.402 SDK](https://www.microsoft.com/net/download/dotnet-core/2.2#sdk-2.2.402) or newer patch release
 * [PlatyPS 0.13.0 or greater](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017/2019](https://www.visualstudio.com/downloads/)
 
@@ -342,7 +342,7 @@ that does not output an Error or Warning diagnostic record.
 Then invoke that settings file when using `Invoke-ScriptAnalyzer`:
 
 ``` PowerShell
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting PSScriptAnalyzerSettings.psd1
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 ```
 
 The next example selects a few rules to execute instead of all the default rules.
@@ -355,9 +355,9 @@ The next example selects a few rules to execute instead of all the default rules
 }
 ```
 
-Then invoke that settings file when using:
+Then invoke that settings file:
 ``` PowerShell
-Invoke-ScriptAnalyzer -Path MyScript.ps1 -Setting ScriptAnalyzerSettings.psd1
+Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 ```
 
 ## Implicit

@@ -51,6 +51,7 @@
 |[UseDeclaredVarsMoreThanAssignments](./UseDeclaredVarsMoreThanAssignments.md) | Warning | |
 |[UseLiteralInitializerForHashtable](./UseLiteralInitializerForHashtable.md) | Warning | |
 |[UseOutputTypeCorrectly](./UseOutputTypeCorrectly.md) | Information | |
+|[UseProcessBlockForPipelineCommand](./UseProcessBlockForPipelineCommand.md) | Warning | |
 |[UsePSCredentialType](./UsePSCredentialType.md) | Warning | |
 |[UseShouldProcessForStateChangingFunctions](./UseShouldProcessForStateChangingFunctions.md) | Warning | |
 |[UseSingularNouns<sup>*</sup>](./UseSingularNouns.md) | Warning | |
