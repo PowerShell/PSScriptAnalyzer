@@ -810,6 +810,18 @@
   <data name="UseCompatibleCmdletsError" xml:space="preserve">
     <value>'{0}' is not compatible with PowerShell edition '{1}', version '{2}' and OS '{3}'</value>
   </data>
+  <data name="AvoidOverwritingBuiltInCmdletsName" xml:space="preserve">
+    <value>AvoidOverwritingBuiltInCmdlets</value>
+  </data>
+  <data name="AvoidOverwritingBuiltInCmdletsCommonName" xml:space="preserve">
+    <value>Avoid overwriting built in cmdlets</value>
+  </data>
+  <data name="AvoidOverwritingBuiltInCmdletsDescription" xml:space="preserve">
+    <value>Do not overwrite the definition of a cmdlet that is included with PowerShell</value>
+  </data>
+  <data name="AvoidOverwritingBuiltInCmdletsError" xml:space="preserve">
+    <value>'{0}' is a cmdlet that is included with PowerShell (version {1}) whose definition should not be overridden</value>
+  </data>
   <data name="UseCompatibleCommandsName" xml:space="preserve">
     <value>UseCompatibleCommands</value>
   </data>
