@@ -18,7 +18,7 @@ Describe "AvoidUnusableParameter" {
         It "returns violations when there is more than 1 unusable parameter" {
 			$violations = Invoke-ScriptAnalyzer -ScriptDefinition 'function p2 { param([switch]$2,[switch]$3) if ($2 -or $3) {"Yes"} else {"No"}}'
                 Where-Object { $_.RuleName -eq $ruleName }
-            $violations.Count | Should -Be 1
+            $violations.Count | Should -Be 2
         }
 
         It "returns violations when the parameter name is specified as using $`{variable} syntax" {
