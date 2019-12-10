@@ -29,40 +29,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             // Finds all functionAst
-            IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);            
+            IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
+            IEnumerable<ParameterAst> paramList;          
 
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
                 if (funcAst.Body != null && funcAst.Body.ParamBlock != null
                     && funcAst.Body.ParamBlock.Attributes != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
-                    foreach (var paramAst in funcAst.Body.ParamBlock.Parameters)
-                    // TODO: We need to iterate also EndBlock for statement parameters
-                    {
-                        bool unusableName = false;
-                        string paramName = paramAst.Name.VariablePath.UserPath;
-
-                        if (string.IsNullOrEmpty(paramName))
-                        {
-                            unusableName = true;
-                        }
-                        else if (char.IsDigit(paramName[0]))
-                        {
-                            unusableName = true;
-                        }
-                        else if (paramName.StartsWith("|"))
-                        {
-                            unusableName = true;
-                        }
-
-                        if (unusableName) 
-                        {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUnusableParameterError, paramName),
-                            paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramName);
-                        }
-
-                    }
+                    paramList.AddRange(funcAst.Body.ParamBlock.Parameters);
                 }
+                if (funcAst.Parameters != null)
+                {
+                    paramList.AddRange(funcAst.Parameters);
+                }
+            }
+
+            foreach (var paramAst in paramList)
+            {
+                bool unusableName = false;
+                string paramName = paramAst.Name.VariablePath.UserPath;
+
+                if (string.IsNullOrEmpty(paramName))
+                {
+                    unusableName = true;
+                }
+                else if (char.IsDigit(paramName[0]))
+                {
+                    unusableName = true;
+                }
+                else if (paramName.StartsWith("|"))
+                {
+                    unusableName = true;
+                }
+
+                if (unusableName) 
+                {
+                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUnusableParameterError, paramName),
+                    paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName, paramName);
+                }
+
             }
         }
 
