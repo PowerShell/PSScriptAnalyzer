@@ -3,7 +3,7 @@
 Describe "AvoidUnusableParameter" {
     Context "When there are violations" {
 
-        It "returns violations when the parameter name is 1 defined in function header" {
+        It "returns violation when the parameter name is 1 defined in function header" {
 			$violations = Invoke-ScriptAnalyzer -ScriptDefinition 'function p1([switch]$1) {if ($1) {"Yes"} else {"No"}}'
                 Where-Object { $_.RuleName -eq $ruleName }
             $violations.Count | Should -Be 1
@@ -16,7 +16,7 @@ Describe "AvoidUnusableParameter" {
         }
 
         It "returns violations when there is more than 1 unusable parameter" {
-			$violations = Invoke-ScriptAnalyzer -ScriptDefinition 'function p2 { param([switch]$2,[switch]$3) if ($2 -or $3) {"Yes"} else {"No"}}'
+			$violations = Invoke-ScriptAnalyzer -ScriptDefinition 'function p3 { param([switch]$2,[switch]$3) if ($2 -or $3) {"Yes"} else {"No"}}'
                 Where-Object { $_.RuleName -eq $ruleName }
             $violations.Count | Should -Be 2
         }
@@ -31,7 +31,7 @@ Describe "AvoidUnusableParameter" {
     Context "When there are no violations" {
 
         It "returns no violations when the parameter name is p1" {
-			$violations = Invoke-ScriptAnalyzer -ScriptDefinition 'function p1([switch]$p1) {if ($p1) {"Yes"} else {"No"}}'
+			$violations = Invoke-ScriptAnalyzer -ScriptDefinition 'function p4([switch]$p1) {if ($p1) {"Yes"} else {"No"}}'
                 Where-Object { $_.RuleName -eq $ruleName }
             $violations.Count | Should -Be 0
         }
