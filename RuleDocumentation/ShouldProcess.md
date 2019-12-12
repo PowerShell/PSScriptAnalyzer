@@ -4,7 +4,7 @@
 
 ## Description
 
-If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also call `ShouldProcess`. A violation is any function which either declares `SupportsShouldProcess` attribute but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not does not declare `SupportsShouldProcess`
+If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also call `ShouldProcess`. A violation is any function which either declares `SupportsShouldProcess` attribute but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not declare `SupportsShouldProcess`
 
 For more information, please refer to `about_Functions_Advanced_Methods` and `about_Functions_CmdletBindingAttribute`
 
