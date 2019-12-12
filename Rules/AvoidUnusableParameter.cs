@@ -10,6 +10,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -30,18 +31,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             // Finds all functionAst
             IEnumerable<Ast> functionAsts = ast.FindAll(testAst => testAst is FunctionDefinitionAst, true);
-            IEnumerable<ParameterAst> paramList;          
+            IEnumerable<ParameterAst> paramList = null;          
 
             foreach (FunctionDefinitionAst funcAst in functionAsts)
             {
                 if (funcAst.Body != null && funcAst.Body.ParamBlock != null
                     && funcAst.Body.ParamBlock.Attributes != null && funcAst.Body.ParamBlock.Parameters != null)
                 {
-                    paramList.AddRange(funcAst.Body.ParamBlock.Parameters);
+                    paramList.Concat(funcAst.Body.ParamBlock.Parameters);
+                    
                 }
                 if (funcAst.Parameters != null)
                 {
-                    paramList.AddRange(funcAst.Parameters);
+                    paramList.Concat(funcAst.Parameters);
                 }
             }
 
