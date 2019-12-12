@@ -524,7 +524,7 @@ function foo {
         $setting.RuleArguments.PSUseConsistentIndentation.IndentationSize = 12
 
         $range = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Range 3,1,4,1
-        $result = $HostedAnalyzer.Format($def,$setting, $range)
+        $result = $HostedAnalyzer.Format($def,$range,$setting)
         $result |  Should -Be $expected
     }
 
@@ -532,7 +532,7 @@ function foo {
         $setting = $HostedAnalyzer.CreateSettings("CodeFormatting")
         $setting.RuleArguments.PSUseConsistentIndentation.Enable = $false
         $range = new-object Microsoft.Windows.PowerShell.ScriptAnalyzer.Range 3,1,4,1
-        $result = $HostedAnalyzer.Format($def, $setting, $range)
+        $result = $HostedAnalyzer.Format($def, $range, $setting)
         $result | Should -Be $def
     }
 }

@@ -180,23 +180,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting {
 
     public void Dispose (  ) { }
 
-    public string Fix ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(string); }
-    public string Fix ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(string); }
+    public string Fix ( string scriptDefinition ) { return default(string); }
     public string Fix ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range ) { return default(string); }
+    public string Fix ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(string); }
+    public string Fix ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(string); }
 
     public System.Threading.Tasks.Task<string> FixAsync ( string scriptDefinition ) { return default(System.Threading.Tasks.Task<string>); }
+    public System.Threading.Tasks.Task<string> FixAsync ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range ) { return default(System.Threading.Tasks.Task<string>); }
     public System.Threading.Tasks.Task<string> FixAsync ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(System.Threading.Tasks.Task<string>); }
     public System.Threading.Tasks.Task<string> FixAsync ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(System.Threading.Tasks.Task<string>); }
 
     public string Format ( string scriptDefinition ) { return default(string); }
     public string Format ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range ) { return default(string); }
+    public string Format ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings) { return default(string); }
     public string Format ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(string); }
-    public string Format ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range ) { return default(string); }
 
     public System.Threading.Tasks.Task<string> FormatAsync ( string scriptDefinition ) { return default(System.Threading.Tasks.Task<string>); }
     public System.Threading.Tasks.Task<string> FormatAsync ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range ) { return default(System.Threading.Tasks.Task<string>); }
+    public System.Threading.Tasks.Task<string> FormatAsync ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings) { return default(System.Threading.Tasks.Task<string>); }
     public System.Threading.Tasks.Task<string> FormatAsync ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings ) { return default(System.Threading.Tasks.Task<string>); }
-    public System.Threading.Tasks.Task<string> FormatAsync ( string scriptDefinition, Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings settings, Microsoft.Windows.PowerShell.ScriptAnalyzer.Range range ) { return default(System.Threading.Tasks.Task<string>); }
+
     public System.Collections.Generic.List<Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleInfo> GetBuiltinRules ( string[] ruleNames ) { return default(System.Collections.Generic.List<Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.RuleInfo>); }
     public void Reset (  ) { }
     public override string ToString (  ) { return default(string); }

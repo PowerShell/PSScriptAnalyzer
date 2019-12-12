@@ -61,7 +61,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// Severity: Array of the severity types to be enabled.
         /// </summary>
-        /// </summary>
         [ValidateSet("Warning", "Error", "Information", IgnoreCase = true)]
         [Parameter(Mandatory = false)]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]

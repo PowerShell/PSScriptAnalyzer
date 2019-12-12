@@ -281,11 +281,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <returns>An AnalyzerResult.</returns>
         public Task<AnalyzerResult> AnalyzeAsync(FileInfo File) => Task.Run(() => Analyze(File));
 
+        /// <summary>Uses the default rules to fix a script.</summary>
+        /// <param name="scriptDefinition">The script to fix.</param>
+        /// <returns>The fixed script as a string.</returns>
+        public string Fix(string scriptDefinition)
+        {
+            lock(hostedAnalyzerLock)
+            {
+                try
+                {
+                    Reset();
+                    bool fixesApplied;
+                    return analyzer.Fix(scriptDefinition, out fixesApplied);
+                }
+                finally
+                {
+                    Reset();
+                }
+            }
+        }
+
+        /// <summary>Uses the default rules to fix a script.</summary>
+        /// <param name="scriptDefinition">The script to fix.</param>
+        /// <returns>The task to fix a script as a string.</returns>
+        public Task<string> FixAsync(string scriptDefinition) => Task.Run(() => Fix(scriptDefinition));
+
         /// <summary>Fix a script.</summary>
         /// <param name="scriptDefinition">The script to fix.</param>
         /// <param name="range">The range of the script to fix. If not supplied, the entire script will be fixed.false</param>
         /// <returns>The fixed script as a string.</returns>
-        public string Fix(string scriptDefinition, Range range = null)
+        public string Fix(string scriptDefinition, Range range)
         {
             lock(hostedAnalyzerLock)
             {
@@ -313,7 +338,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <summary>Fix a script.</summary>
         /// <param name="scriptDefinition">The script to fix.</param>
         /// <returns>The fixed script as a string.</returns>
-        public Task<string> FixAsync(string scriptDefinition) => Task.Run(() => Fix(scriptDefinition));
+        public Task<string> FixAsync(string scriptDefinition, Range range) => Task.Run(() => Fix(scriptDefinition, range));
 
         /// <summary>Fix a script.</summary>
         /// <param name="scriptDefinition">The script to fix.</param>
@@ -585,7 +610,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <param name="settings">The settings to use when formatting.</param>
         /// <param name="range">The range over which to apply the formatting.</param>
         /// <returns>The formatted script.</returns>
-        public string Format(string scriptDefinition, Settings settings, Range range)
+        public string Format(string scriptDefinition, Range range, Settings settings)
         {
             if ( settings == null ) {
                 throw new ArgumentException("settings may not be null");
@@ -620,8 +645,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Hosting
         /// <param name="settings">The settings to use when formatting.</param>
         /// <param name="range">The range over which to apply the formatting.</param>
         /// <returns>The formatted script.</returns>
-        public Task<string> FormatAsync(string scriptDefinition, Settings settings, Range range) =>
-            Task.Run(() => Format(scriptDefinition, settings, range));
+        public Task<string> FormatAsync(string scriptDefinition, Range range, Settings settings) =>
+            Task.Run(() => Format(scriptDefinition, range, settings));
 
         /// <summary>
         /// Analyzer usually requires a cmdlet to manage the output to the user.
