@@ -85,7 +85,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             #region Compares parameter list and mandatory parameter list.
 
-            CommandInfo cmdInfo = Helper.Instance.GetCommandInfoLegacy(cmdAst.GetCommandName());
+            CommandInfo cmdInfo = Helper.Instance.GetCommandInfo(cmdAst.GetCommandName());
 
             // If we can't resolve the command or it's not a cmdlet, we are done
             if (cmdInfo == null || (cmdInfo.CommandType != System.Management.Automation.CommandTypes.Cmdlet))
