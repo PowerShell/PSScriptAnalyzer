@@ -52,14 +52,14 @@ Describe "AvoidAssignmentToAutomaticVariables" {
         It "Using Variable <VariableName> as parameter name in param block produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity)
 
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}"
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}" -ExcludeRule PSReviewUnusedParameter
             $warnings.Count | Should -Be 1
             $warnings.Severity | Should -Be $ExpectedSeverity
             $warnings.RuleName | Should -Be $ruleName
         }
 
         It "Does not flag parameter attributes" {
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'function foo{Param([Parameter(Mandatory=$true)]$param1)}'
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'function foo{Param([Parameter(Mandatory=$true)]$param1)}' -ExcludeRule PSReviewUnusedParameter
             $warnings.Count | Should -Be 0
         }
 
@@ -86,7 +86,7 @@ Describe "AvoidAssignmentToAutomaticVariables" {
                 Set-Variable -Name $VariableName -Value 'foo'
                 continue
             }
-            
+
             # Setting the $Error variable has the side effect of the ErrorVariable to contain only the exception message string, therefore exclude this case.
             # For the library test in WMF 4, assigning a value $PSEdition does not seem to throw an error, therefore this special case is excluded as well.
             if ($VariableName -ne 'Error' -and ($VariableName -ne 'PSEdition' -and $PSVersionTable.PSVersion.Major -ne 4))
