@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
 
-            var scriptBlockAsts = ast.FindAll(x => x is ScriptBlockAst, true);
+            var scriptBlockAsts = ast.FindAll(oneAst => oneAst is ScriptBlockAst, true);
             if (scriptBlockAsts == null)
             {
                 yield break;
@@ -37,22 +37,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (ScriptBlockAst scriptBlockAst in scriptBlockAsts)
             {
                 // find all declared parameters
-                IEnumerable<Ast> parameterAsts = scriptBlockAst.FindAll(a => a is ParameterAst, false);
+                IEnumerable<Ast> parameterAsts = scriptBlockAst.FindAll(oneAst => oneAst is ParameterAst, false);
 
                 // list all variables
-                List<string> variables = scriptBlockAst.FindAll(a => a is VariableExpressionAst, false)
+                IEnumerable<string> variables = scriptBlockAst.FindAll(oneAst => oneAst is VariableExpressionAst, false)
                     .Cast<VariableExpressionAst>()
-                    .Select(v => v.VariablePath.ToString())
-                    .ToList();
+                    .Select(variableExpressionAst => variableExpressionAst.VariablePath.ToString());
 
                 foreach (ParameterAst parameterAst in parameterAsts)
                 {
                     // compare the list of variables to the parameter name
                     // there should be at least two matches of the variable name since the parameter declaration counts as one
                     int matchCount = variables
-                        .Where(x => x == parameterAst.Name.VariablePath.ToString())
-                        .Count();
-                    if (matchCount > 1)
+                        .Where(variable => variable == parameterAst.Name.VariablePath.ToString())
+                        .Take(2).Count();
+                    if (matchCount == 2)
                     {
                         continue;
                     }
@@ -72,7 +71,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         parameterAst.Name.VariablePath.UserPath
                     );
                 }
-            }    
+            }
         }
 
         /// <summary>
