@@ -43,7 +43,7 @@ Describe "AvoidAssignmentToAutomaticVariables" {
         It "Using Variable <VariableName> as parameter name produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity)
 
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}"
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}" -ExcludeRule PSReviewUnusedParameter
             $warnings.Count | Should -Be 1
             $warnings.Severity | Should -Be $ExpectedSeverity
             $warnings.RuleName | Should -Be $ruleName
@@ -52,7 +52,7 @@ Describe "AvoidAssignmentToAutomaticVariables" {
         It "Using Variable <VariableName> as parameter name in param block produces warning of Severity error" -TestCases $testCases_ReadOnlyVariables {
             param ($VariableName, $ExpectedSeverity)
 
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}" -ExcludeRule PSReviewUnusedParameter
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}"
             $warnings.Count | Should -Be 1
             $warnings.Severity | Should -Be $ExpectedSeverity
             $warnings.RuleName | Should -Be $ruleName

@@ -45,7 +45,7 @@ Describe "AvoidPositionalParameters" {
                     [Parameter(Position=3)]$C)
                 }
                 Foo "a" "b" "c"}
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "$sb"
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "$sb" -ExcludeRule PSReviewUnusedParameter
             $warnings.Count | Should -Be 1
             $warnings.RuleName | Should -BeExactly $violationName
         }
