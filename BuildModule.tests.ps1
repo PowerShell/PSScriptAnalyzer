@@ -141,10 +141,10 @@ Describe "Build Module Tests" {
             $results.Count | Should -Be 2
         }
         It "Get-TestResults finds 1 pass" {
-            @($results | ?{ $_.result -eq "Success" }).Count |Should -Be 1
+            @($results | Where-Object -FilterScript { $_.result -eq "Success" }).Count | Should -Be 1
         }
         It "Get-TestResults finds 1 failure" {
-            @($results | ?{ $_.result -eq "Failure" }).Count |Should -Be 1
+            @($results | Where-Object -FilterScript { $_.result -eq "Failure" }).Count | Should -Be 1
         }
         It "Get-TestFailures finds 1 failure" {
             $failures.Count | Should -Be 1
