@@ -17,8 +17,8 @@ Describe "ReviewUnusedParameter" {
                 NumberOfViolations = 2
             }
             @{
-                ScriptDefinition = '{ param ($Param1) }'
-                Name             = "scriptblock with unused parameter"
+                ScriptDefinition   = '{ param ($Param1) }'
+                Name               = "scriptblock with unused parameter"
                 NumberOfViolations = 1
             }
             @{
@@ -40,8 +40,8 @@ Describe "ReviewUnusedParameter" {
     Context "When there are no violations" {
         $Cases = @(
             @{
-                ScriptDefinition   = 'function GoodFunc1 { param ($Param1, $Param2) $Param1; $Param2}'
-                Name               = "function with 0 unused parameters"
+                ScriptDefinition = 'function GoodFunc1 { param ($Param1, $Param2) $Param1; $Param2}'
+                Name             = "function with 0 unused parameters"
             }
             @{
                 ScriptDefinition = 'function GoodFunc1 { param ($Param1) $Splat = @{InputObject = $Param1}}'
