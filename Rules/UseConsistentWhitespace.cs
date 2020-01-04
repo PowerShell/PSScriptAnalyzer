@@ -110,6 +110,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 diagnosticRecords = diagnosticRecords.Concat(violationFinder(tokenOperations));
             }
 
+            var commandParameterAsts = ast.FindAll(
+                    testAst => testAst is CommandParameterAst, true);
+            foreach (CommandParameterAst commandParameterAst in commandParameterAsts)
+            {
+                var commandParameterAstElements = commandParameterAst.FindAll(testAst => true, false).ToList(); // no recursive option to avoid getting children from the colon syntax
+                for (int i = 1; i < commandParameterAstElements.Count - 1; i++)
+                {
+                    var leftExtent = commandParameterAstElements[i].Extent;
+                    var rightExtent = commandParameterAstElements[i + 1].Extent;
+                    var extentsAreOnSameLine = leftExtent.EndLineNumber == rightExtent.StartLineNumber;
+                    if (!extentsAreOnSameLine)
+                    {
+                        continue;
+                    }
+                }
+            }
+
             return diagnosticRecords.ToArray(); // force evaluation here
         }
 
