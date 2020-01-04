@@ -54,4 +54,15 @@ Describe "UseCorrectCasing" {
         $scriptDefinition = ". $uncPath"
         Invoke-Formatter $scriptDefinition | Should -Be $scriptDefinition
     }
+
+    It "Corrects parameter casing" {
+        function Invoke-DummyFunction ($ParameterName) { }
+
+        Invoke-Formatter 'Invoke-DummyFunction -parametername $parameterValue' |
+            Should -Be 'Invoke-DummyFunction -ParameterName $parameterValue'
+        Invoke-Formatter 'Invoke-DummyFunction -parametername:$parameterValue' |
+            Should -Be 'Invoke-DummyFunction -ParameterName:$parameterValue'
+        Invoke-Formatter 'Invoke-DummyFunction -parametername: $parameterValue' |
+            Should -Be 'Invoke-DummyFunction -ParameterName: $parameterValue'
+    }
 }
