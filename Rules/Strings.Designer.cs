@@ -493,6 +493,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsCommonName {
+            get {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do not overwrite the definition of a cmdlet that is included with PowerShell.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsDescription {
+            get {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is a cmdlet that is included with PowerShell (version {1}) whose definition should not be overridden.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsError {
+            get {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidOverwritingBuiltInCmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsName {
+            get {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ShouldContinue Without Boolean Force Parameter.
         /// </summary>
         internal static string AvoidShouldContinueWithoutForceCommonName {
@@ -2084,50 +2120,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("UseCompatibleCmdletsName", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
-        /// </summary>
-        internal static string AvoidOverwritingBuiltInCmdletsCommonName
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsCommonName", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
-        /// </summary>
-        internal static string AvoidOverwritingBuiltInCmdletsDescription
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsDescription", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is a cmdlet that is included with PowerShell whose definition should not be overridden.
-        /// </summary>
-        internal static string AvoidOverwritingBuiltInCmdletsError
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsError", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidOverwritingBuiltInCmdlets.
-        /// </summary>
-        internal static string AvoidOverwritingBuiltInCmdletsName
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsName", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to The command &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
@@ -2427,7 +2419,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use exact casing of cmdlet/function name..
+        ///   Looks up a localized string similar to Use exact casing of cmdlet/function/parameter name..
         /// </summary>
         internal static string UseCorrectCasingCommonName {
             get {
@@ -2436,7 +2428,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to For better readability and consistency, use the exact casing of the cmdlet/function..
+        ///   Looks up a localized string similar to For better readability and consistency, use the exact casing of the cmdlet/function/parameter..
         /// </summary>
         internal static string UseCorrectCasingDescription {
             get {
@@ -2445,7 +2437,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cmdlet/Function does not match its exact casing &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Cmdlet/Function/Parameter does not match its exact casing &apos;{0}&apos;..
         /// </summary>
         internal static string UseCorrectCasingError {
             get {
