@@ -13,8 +13,12 @@ $binaryModuleRoot = $PSModuleRoot
 
 if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')) {
     $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'coreclr'
-    if ($PSVersionTable.PSVersion -lt [Version]'6.1.0') {
-        throw "Minimum supported version of PSScriptAnalyzer for PowerShell Core is 6.1.0 but current version is '$($PSVersionTable.PSVersion)'. Please update PowerShell Core."
+    # Minimum PowerShell Core version given by PowerShell Core support itself and
+    # also the version of NewtonSoft.Json implicitly that PSSA ships with,
+    # which cannot be higher than the one that PowerShell ships with.
+    [Version] $minimumPowerShellCoreVersion = '6.2.1'
+    if ($PSVersionTable.PSVersion -lt $minimumPowerShellCoreVersion) {
+        throw "Minimum supported version of PSScriptAnalyzer for PowerShell Core is $minimumPowerShellCoreVersion but current version is '$($PSVersionTable.PSVersion)'. Please update PowerShell Core."
     }
 }
 elseif ($PSVersionTable.PSVersion.Major -eq 5) {

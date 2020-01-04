@@ -11,7 +11,7 @@ Author = 'Microsoft Corporation'
 RootModule = 'PSScriptAnalyzer.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.18.1'
+ModuleVersion = '1.18.3'
 
 # ID used to uniquely identify this module
 GUID = 'd6245802-193d-4068-a631-8863a4342a18'
@@ -85,7 +85,7 @@ PrivateData = @{
         Tags = 'lint', 'bestpractice'
         LicenseUri = 'https://github.com/PowerShell/PSScriptAnalyzer/blob/master/LICENSE'
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
-        IconUri = ''
+        IconUri = 'https://raw.githubusercontent.com/powershell/psscriptanalyzer/master/logo.png'
         ReleaseNotes = ''
     }
 }

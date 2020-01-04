@@ -12,20 +12,44 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// <summary>
     /// Provides threadsafe caching around CommandInfo lookups with `Get-Command -Name ...`.
     /// </summary>
-    internal class CommandInfoCache
+    internal class CommandInfoCache : IDisposable
     {
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
         private readonly Helper _helperInstance;
         private readonly RunspacePool _runspacePool;
+        private bool disposed = false;
 
         /// <summary>
         /// Create a fresh command info cache instance.
         /// </summary>
-        public CommandInfoCache(Helper pssaHelperInstance, RunspacePool runspacePool)
+        public CommandInfoCache(Helper pssaHelperInstance)
         {
             _commandInfoCache = new ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>>();
             _helperInstance = pssaHelperInstance;
-            _runspacePool = runspacePool;
+            _runspacePool = RunspaceFactory.CreateRunspacePool(1, 10);
+            _runspacePool.Open();
+        }
+
+        /// <summary>Dispose the runspace pool</summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if ( disposed )
+            {
+                return;
+            }
+
+            if ( disposing )
+            {
+                _runspacePool.Dispose();
+            }
+
+            disposed = true;
         }
 
         /// <summary>
@@ -46,21 +70,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return _commandInfoCache.GetOrAdd(key, new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes))).Value;
         }
 
-        /// <summary>
-        /// Retrieve a command info object about a command.
-        /// </summary>
-        /// <param name="commandName">Name of the command to get a commandinfo object for.</param>
-        /// <param name="commandTypes">What types of command are needed. If omitted, all types are retrieved.</param>
-        /// <returns></returns>
-        [Obsolete("Alias lookup is expensive and should not be relied upon for command lookup")]
-        public CommandInfo GetCommandInfoLegacy(string commandOrAliasName, CommandTypes? commandTypes = null)
-        {
-            string commandName = _helperInstance.GetCmdletNameFromAlias(commandOrAliasName);
-
-            return string.IsNullOrEmpty(commandName)
-                ? GetCommandInfo(commandOrAliasName, commandTypes: commandTypes)
-                : GetCommandInfo(commandName, commandTypes: commandTypes);
-        }
 
         /// <summary>
         /// Get a CommandInfo object of the given command name

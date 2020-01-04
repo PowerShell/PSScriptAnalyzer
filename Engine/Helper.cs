@@ -30,7 +30,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private PSVersionTable psVersionTable;
 
         private readonly Lazy<CommandInfoCache> _commandInfoCacheLazy;
-        private readonly RunspacePool _runSpacePool;
         private readonly object _testModuleManifestLock = new object();
 
         #endregion
@@ -116,11 +115,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-            // There are 5 rules that use the CommandInfo cache but one rule (AvoidAlias) makes parallel queries.
-            // Therefore 10 runspaces was a heuristic measure where no more speed improvement was seen.
-            _runSpacePool = RunspaceFactory.CreateRunspacePool(1, 10);
-            _runSpacePool.Open();
-            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this, runspacePool: _runSpacePool));
+            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this));
         }
 
         /// <summary>
@@ -309,7 +304,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 using (var ps = System.Management.Automation.PowerShell.Create())
                 {
-                    ps.RunspacePool = _runSpacePool;
                     ps.AddCommand("Test-ModuleManifest")
                       .AddParameter("Path", filePath)
                       .AddParameter("WarningAction", ActionPreference.SilentlyContinue);
@@ -673,20 +667,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
         }
 
-        /// <summary>
-        ///  Legacy method, new callers should use <see cref="GetCommandInfo"/> instead.
-        ///  Given a command's name, checks whether it exists. It does not use the passed in CommandTypes parameter, which is a bug.
-        ///  But existing method callers are already depending on this behaviour and therefore this could not be simply fixed.
-        ///  It also populates the commandInfoCache which can have side effects in some cases.
-        /// </summary>
-        /// <param name="name">Command Name.</param>
-        /// <param name="commandType">Not being used.</param>
-        /// <returns></returns>
-        [Obsolete]
-        public CommandInfo GetCommandInfoLegacy(string name, CommandTypes? commandType = null)
-        {
-            return CommandInfoCache.GetCommandInfoLegacy(commandOrAliasName: name, commandTypes: commandType);
-        }
 
         /// <summary>
         /// Given a command's name, checks whether it exists.

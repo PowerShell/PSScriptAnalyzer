@@ -129,11 +129,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var tokens = Helper.Instance.Tokens;
             var diagnosticRecords = new List<DiagnosticRecord>();
             var indentationLevel = 0;
+            var currentIndenationLevelIncreaseDueToPipelines = 0;
             var onNewLine = true;
             var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true);
-            for (int k = 0; k < tokens.Length; k++)
+            for (int tokenIndex = 0; tokenIndex < tokens.Length; tokenIndex++)
             {
-                var token = tokens[k];
+                var token = tokens[tokenIndex];
 
                 if (token.Kind == TokenKind.EndOfInput)
                 {
@@ -151,8 +152,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.Pipe:
-                        bool pipelineIsFollowedByNewlineOrLineContinuation = k < tokens.Length - 1 && k > 0 &&
-                              (tokens[k + 1].Kind == TokenKind.NewLine || tokens[k + 1].Kind == TokenKind.LineContinuation);
+                        bool pipelineIsFollowedByNewlineOrLineContinuation = tokenIndex < tokens.Length - 1 && tokenIndex > 0 &&
+                              (tokens[tokenIndex + 1].Kind == TokenKind.NewLine || tokens[tokenIndex + 1].Kind == TokenKind.LineContinuation);
                         if (!pipelineIsFollowedByNewlineOrLineContinuation)
                         {
                             break;
@@ -160,14 +161,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
                         {
                             AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                            currentIndenationLevelIncreaseDueToPipelines++;
                             break;
                         }
                         if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
                         {
-                            bool isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst => PositionIsEqual(((PipelineAst)pipelineAst).PipelineElements[0].Extent.EndScriptPosition, tokens[k - 1].Extent.EndScriptPosition));
+                            bool isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst => PositionIsEqual(((PipelineAst)pipelineAst).PipelineElements[0].Extent.EndScriptPosition, tokens[tokenIndex - 1].Extent.EndScriptPosition));
                             if (isFirstPipeInPipeline)
                             {
                                 AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                                currentIndenationLevelIncreaseDueToPipelines++;
                             }
                         }
                         break;
@@ -191,19 +194,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             var tempIndentationLevel = indentationLevel;
 
                             // Check if the preceding character is an escape character
-                            if (k > 0 && tokens[k - 1].Kind == TokenKind.LineContinuation)
+                            if (tokenIndex > 0 && tokens[tokenIndex - 1].Kind == TokenKind.LineContinuation)
                             {
                                 ++tempIndentationLevel;
                             }
-                            else
+
+                            // check for comments in between multi-line commands with line continuation
+                            if (tokenIndex > 2 && tokens[tokenIndex - 1].Kind == TokenKind.NewLine
+                                && tokens[tokenIndex - 2].Kind == TokenKind.Comment)
                             {
-                                // Ignore comments
-                                // Since the previous token is a newline token we start
-                                // looking for comments at the token before the newline token.
-                                int j = k - 2;
-                                while (j > 0 && tokens[j].Kind == TokenKind.Comment)
+                                int searchForPrecedingLineContinuationIndex = tokenIndex - 2;
+                                while (searchForPrecedingLineContinuationIndex  > 0 && tokens[searchForPrecedingLineContinuationIndex].Kind == TokenKind.Comment)
                                 {
-                                    --j;
+                                    searchForPrecedingLineContinuationIndex--;
+                                }
+
+                                if (searchForPrecedingLineContinuationIndex >= 0 && tokens[searchForPrecedingLineContinuationIndex].Kind == TokenKind.LineContinuation)
+                                {
+                                    tempIndentationLevel++;
                                 }
                             }
 
@@ -224,20 +232,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                bool pipelinesSpanOnlyOneLine = matchingPipeLineAstEnd.PipelineElements[0].Extent.StartLineNumber ==
-                    matchingPipeLineAstEnd.PipelineElements[matchingPipeLineAstEnd.PipelineElements.Count-1].Extent.StartLineNumber;
+                IScriptExtent firstPipelineElementExtent = matchingPipeLineAstEnd.PipelineElements[0].Extent;
+                IScriptExtent lastPipelineElementExtent = matchingPipeLineAstEnd.PipelineElements[matchingPipeLineAstEnd.PipelineElements.Count - 1].Extent;
+                bool pipelinesSpanOnlyOneLine = firstPipelineElementExtent.EndLineNumber == lastPipelineElementExtent.EndLineNumber
+                                             || firstPipelineElementExtent.StartLineNumber == lastPipelineElementExtent.StartLineNumber;
                 if (pipelinesSpanOnlyOneLine)
                 {
                     continue;
                 }
 
-                if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
+                if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline ||
+                    pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
                 {
-                    indentationLevel = ClipNegative(indentationLevel - 1);
-                }
-                else if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationAfterEveryPipeline)
-                {
-                    indentationLevel = ClipNegative(indentationLevel - (matchingPipeLineAstEnd.PipelineElements.Count - 1));
+                    indentationLevel = ClipNegative(indentationLevel - currentIndenationLevelIncreaseDueToPipelines);
+                    currentIndenationLevelIncreaseDueToPipelines = 0;
                 }
             }
 

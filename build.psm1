@@ -108,7 +108,7 @@ function Start-DocumentationBuild
     if ($null -eq $platyPS -or ($platyPS | Sort-Object Version -Descending | Select-Object -First 1).Version -lt [version]0.12)
     {
         Write-Verbose -verbose "platyPS module not found or below required version of 0.12, installing the latest version."
-        Install-Module -Force -Name platyPS -Scope CurrentUser
+        Install-Module -Force -Name platyPS -Scope CurrentUser -Repository PSGallery
     }
     if (-not (Test-Path $markdownDocsPath))
     {
@@ -239,7 +239,10 @@ function Start-ScriptAnalyzerBuild
             }
         }
 
-        $config = "PSV${PSVersion}${Configuration}"
+        $buildConfiguration = $Configuration
+        if ((3, 4) -contains $PSVersion) {
+            $buildConfiguration = "PSV${PSVersion}${Configuration}"
+        }
 
         # Build ScriptAnalyzer
         # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
@@ -249,7 +252,7 @@ function Start-ScriptAnalyzerBuild
             if ( -not $script:DotnetExe ) {
                 $script:DotnetExe = Get-DotnetExe
             }
-            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$config" 2>&1
+            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$buildConfiguration" 2>&1
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
@@ -264,9 +267,9 @@ function Start-ScriptAnalyzerBuild
         Publish-File $itemsToCopyCommon $script:destinationDir
 
         $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${config}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
-            "$projectRoot\Rules\bin\${config}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
+            "$projectRoot\Engine\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+            "$projectRoot\Rules\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+            "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
             )
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
@@ -274,7 +277,7 @@ function Start-ScriptAnalyzerBuild
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         if ($framework -eq 'net452') {
-            Copy-Item -path "$projectRoot\Rules\bin\${config}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            Copy-Item -path "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
         }
 
         Pop-Location
@@ -329,7 +332,7 @@ function Test-ScriptAnalyzer
             }
             else
             {
-                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary")
+                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary,Failed")
             }
             if ( $InProcess ) {
                 & $scriptBlock
@@ -534,7 +537,6 @@ function Get-InstalledCLIVersion {
         # earlier versions of dotnet do not support --list-sdks, so we'll check the output
         # and use dotnet --version as a fallback
         $sdkList = & $script:DotnetExe --list-sdks 2>&1
-        $sdkList = "Unknown option"
         if ( $sdkList -match "Unknown option" ) {
             $installedVersions = & $script:DotnetExe --version 2>$null
         }
@@ -618,9 +620,15 @@ function Get-DotnetExe
         # it's possible that there are multiples. Take the highest version we find
         # the problem is that invoking dotnet on a version which is lower than the specified
         # version in global.json will produce an error, so we can only take the dotnet which executes
+        #
+        # dotnet --version has changed its output, so we have to work much harder to determine what's installed.
+        # dotnet --version can now emit a list of installed sdks as output *and* an error if the global.json
+        # file points to a version of the sdk which is *not* installed. However, the format of the new list
+        # with --version has a couple of spaces at the beginning of the line, so we need to be resilient
+        # against that.
         $latestDotnet = $discoveredDotNet |
             Where-Object { try { & $_ --version 2>$null } catch { } } |
-            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null); "$pv" } |
+            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null| %{$_.Trim().Split()[0]}); "$pv" } |
             Select-Object -Last 1
         if ( $latestDotnet ) {
             $script:DotnetExe = $latestDotnet

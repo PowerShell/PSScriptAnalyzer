@@ -3,7 +3,25 @@ $testRootDirectory = Split-Path -Parent $directory
 
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
+
 Describe "UseConsistentIndentation" {
+    BeforeAll {
+        function Invoke-FormatterAssertion {
+            param(
+                [string] $ScriptDefinition,
+                [string] $ExcpectedScriptDefinition,
+                [int] $NumberOfExpectedWarnings,
+                [hashtable] $Settings
+            )
+
+            # Unit test just using this rule only
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violations.Count | Should -Be $NumberOfExpectedWarnings -Because $ScriptDefinition
+            Invoke-Formatter -ScriptDefinition $scriptDefinition -Settings $settings | Should -Be $expected -Because $ScriptDefinition
+            # Integration test with all default formatting rules
+            Invoke-Formatter -ScriptDefinition $scriptDefinition | Should -Be $expected -Because $ScriptDefinition
+        }
+    }
     BeforeEach {
         $indentationUnit = ' '
         $indentationSize = 4
@@ -107,6 +125,39 @@ function foo {
     }
 
     Context "When a multi-line command is given" {
+
+        It "When a comment is in the middle of a multi-line statement with preceding and succeeding line continuations" {
+            $scriptDefinition = @'
+foo `
+# comment
+-bar `
+-baz
+'@
+            $expected = @'
+foo `
+    # comment
+    -bar `
+    -baz
+'@
+            Invoke-FormatterAssertion $scriptDefinition $expected 3 $settings
+        }
+
+        It "When a comment is in the middle of a multi-line statement with preceding pipeline and succeeding line continuation " {
+            $scriptDefinition = @'
+foo |
+# comment
+bar `
+-baz
+'@
+            $expected = @'
+foo |
+    # comment
+    bar `
+        -baz
+'@
+            Invoke-FormatterAssertion $scriptDefinition $expected 3 $settings
+        }
+
         It "Should find a violation if a pipleline element is not indented correctly" {
             $def = @'
 get-process |
@@ -208,6 +259,41 @@ function foo {
         $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
         Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
     }
+
+    It "Should preserve script when using PipelineIndentation <PipelineIndentation> for multi-line pipeline due to backtick" -TestCases @(
+        @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
+        @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
+        @{ PipelineIndentation = 'NoIndentation' }
+        ) {
+    param ($PipelineIndentation)
+    $idempotentScriptDefinition = @'
+Describe 'describe' {
+    It 'it' {
+        { 'To be,' -or `
+                -not 'to be' } | Should -Be 'the question'
+    }
+}
+'@
+    $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+    Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+}
+        It "Should preserve script when using PipelineIndentation <PipelineIndentation> for complex multi-line pipeline" -TestCases @(
+            @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
+            @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
+            @{ PipelineIndentation = 'NoIndentation' }
+        ) {
+            param ($PipelineIndentation)
+            $idempotentScriptDefinition = @'
+function foo {
+    bar | baz {
+        Get-Item
+    } | Invoke-Item
+    $iShouldStayAtTheSameIndentationLevel
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+        }
 
         It "Should indent pipelines correctly using NoIndentation option" {
             $def = @'

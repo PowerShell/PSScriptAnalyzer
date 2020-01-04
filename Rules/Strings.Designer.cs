@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -417,6 +417,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string AvoidInvokingEmptyMembersName {
             get {
                 return ResourceManager.GetString("AvoidInvokingEmptyMembersName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid long lines.
+        /// </summary>
+        internal static string AvoidLongLinesCommonName {
+            get {
+                return ResourceManager.GetString("AvoidLongLinesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line lengths should be less than the configured maximum.
+        /// </summary>
+        internal static string AvoidLongLinesDescription {
+            get {
+                return ResourceManager.GetString("AvoidLongLinesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line exceeds the configured maximum length of {0} characters.
+        /// </summary>
+        internal static string AvoidLongLinesError {
+            get {
+                return ResourceManager.GetString("AvoidLongLinesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidLongLines.
+        /// </summary>
+        internal static string AvoidLongLinesName {
+            get {
+                return ResourceManager.GetString("AvoidLongLinesName", resourceCulture);
             }
         }
         
@@ -2048,6 +2084,50 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("UseCompatibleCmdletsName", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsCommonName
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsCommonName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsDescription
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is a cmdlet that is included with PowerShell whose definition should not be overridden.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsError
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidOverwritingBuiltInCmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsName
+        {
+            get
+            {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsName", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to The command &apos;{0}&apos; is not available by default in PowerShell version &apos;{1}&apos; on platform &apos;{2}&apos;.
@@ -2559,6 +2639,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseOutputTypeCorrectlyName {
             get {
                 return ResourceManager.GetString("UseOutputTypeCorrectlyName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use process block for command that accepts input from pipeline..
+        /// </summary>
+        internal static string UseProcessBlockForPipelineCommandCommonName {
+            get {
+                return ResourceManager.GetString("UseProcessBlockForPipelineCommandCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a command parameter takes its value from the pipeline, the command must use a process block to bind the input objects from the pipeline to that parameter..
+        /// </summary>
+        internal static string UseProcessBlockForPipelineCommandDescription {
+            get {
+                return ResourceManager.GetString("UseProcessBlockForPipelineCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command accepts pipeline input but has not defined a process block..
+        /// </summary>
+        internal static string UseProcessBlockForPipelineCommandError {
+            get {
+                return ResourceManager.GetString("UseProcessBlockForPipelineCommandError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseProcessBlockForPipelineCommand.
+        /// </summary>
+        internal static string UseProcessBlockForPipelineCommandName {
+            get {
+                return ResourceManager.GetString("UseProcessBlockForPipelineCommandName", resourceCulture);
             }
         }
         

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.18.1</VersionPrefix>
+    <VersionPrefix>1.18.3</VersionPrefix>
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
     <PackageId>Rules</PackageId>
@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
   </ItemGroup>
 

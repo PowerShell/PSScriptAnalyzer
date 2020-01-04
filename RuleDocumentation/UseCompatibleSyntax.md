@@ -12,9 +12,9 @@ due to those PowerShell versions not being able to parse the incompatible syntax
 ```PowerShell
 @{
     Rules = @{
-        UseCompatibleCommmands = @{
+        PSUseCompatibleSyntax = @{
             Enable = $true
-            TargetedVersions = @(
+            TargetVersions = @(
                 "6.0",
                 "5.1",
                 "4.0"
