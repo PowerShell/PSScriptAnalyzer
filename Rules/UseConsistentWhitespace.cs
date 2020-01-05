@@ -56,6 +56,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckSeparator { get; protected set; }
 
+        [ConfigurableRuleProperty(defaultValue: true)]
+        public bool CheckParameter { get; protected set; }
+
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
             base.ConfigureRule(paramValueMap);
@@ -110,43 +113,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 diagnosticRecords = diagnosticRecords.Concat(violationFinder(tokenOperations));
             }
 
-            var commandAsts = ast.FindAll(
-                    testAst => testAst is CommandAst, true).ToArray();
-            foreach (CommandAst commandAst in commandAsts)
+            if (CheckParameter)
             {
-                var commandParameterAstElements = commandAst.FindAll(testAst => true, searchNestedScriptBlocks: false).ToList();
-                for (int i = 0; i < commandParameterAstElements.Count - 1; i++)
-                {
-                    var leftExtent = commandParameterAstElements[i].Extent;
-                    var rightExtent = commandParameterAstElements[i + 1].Extent;
-                    var extentsAreOnSameLine = leftExtent.EndLineNumber == rightExtent.StartLineNumber;
-                    if (!extentsAreOnSameLine)
-                    {
-                        continue;
-                    }
-                    var expectedStartColumnNumberOfRightExtent = leftExtent.EndColumnNumber + 1;
-                    if (rightExtent.StartColumnNumber > expectedStartColumnNumberOfRightExtent)
-                    {
-                        int numberOfRedundantWhiteSpaces = rightExtent.StartColumnNumber - expectedStartColumnNumberOfRightExtent;
-                        var correction = new CorrectionExtent(
-                            leftExtent.StartLineNumber,
-                            leftExtent.EndLineNumber,
-                            leftExtent.EndColumnNumber + 1,
-                            leftExtent.EndColumnNumber + 1 + numberOfRedundantWhiteSpaces,
-                            string.Empty,
-                            rightExtent.File,
-                            "description TODO");
-
-                        diagnosticRecords = diagnosticRecords.Concat(Enumerable.Repeat<DiagnosticRecord>(new DiagnosticRecord(
-                            GetError(ErrorKind.BeforeOpeningBrace),
-                            rightExtent,
-                            GetName(),
-                            GetDiagnosticSeverity(),
-                            tokenOperations.Ast.Extent.File,
-                            null,
-                            Enumerable.Repeat<CorrectionExtent>(correction, 1)), 1));
-                    }
-                }
+                diagnosticRecords = diagnosticRecords.Concat(FindParameterViolations(ast));
             }
 
             return diagnosticRecords.ToArray(); // force evaluation here
@@ -399,6 +368,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         tokenOperations.Ast.Extent.File,
                         null,
                         GetCorrections(lparen.Previous.Value, lparen.Value, lparen.Next.Value, false, true).ToList());
+                }
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> FindParameterViolations(Ast ast)
+        {
+            var commandAsts = ast.FindAll(
+                    testAst => testAst is CommandAst, true).ToArray();
+            foreach (CommandAst commandAst in commandAsts)
+            {
+                var commandParameterAstElements = commandAst.FindAll(testAst => true, searchNestedScriptBlocks: false).ToList();
+                for (int i = 0; i < commandParameterAstElements.Count - 1; i++)
+                {
+                    var leftExtent = commandParameterAstElements[i].Extent;
+                    var rightExtent = commandParameterAstElements[i + 1].Extent;
+                    var extentsAreOnSameLine = leftExtent.EndLineNumber == rightExtent.StartLineNumber;
+                    if (!extentsAreOnSameLine)
+                    {
+                        continue;
+                    }
+                    var expectedStartColumnNumberOfRightExtent = leftExtent.EndColumnNumber + 1;
+                    if (rightExtent.StartColumnNumber > expectedStartColumnNumberOfRightExtent)
+                    {
+                        int numberOfRedundantWhiteSpaces = rightExtent.StartColumnNumber - expectedStartColumnNumberOfRightExtent;
+                        var correction = new CorrectionExtent(
+                            leftExtent.StartLineNumber,
+                            leftExtent.EndLineNumber,
+                            leftExtent.EndColumnNumber + 1,
+                            leftExtent.EndColumnNumber + 1 + numberOfRedundantWhiteSpaces,
+                            string.Empty,
+                            leftExtent.File,
+                            "description TODO");
+
+                        yield return new DiagnosticRecord(
+                            GetError(ErrorKind.BeforeOpeningBrace),
+                            leftExtent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            leftExtent.File,
+                            null,
+                            Enumerable.Repeat<CorrectionExtent>(correction, 1));
+                    }
                 }
             }
         }

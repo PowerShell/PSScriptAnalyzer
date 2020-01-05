@@ -12,6 +12,7 @@ $ruleConfiguration = @{
     CheckOperator   = $false
     CheckPipe       = $false
     CheckSeparator  = $false
+    CheckParameter  = $false
 }
 
 $settings = @{
@@ -388,4 +389,46 @@ if ($true) { Get-Item `
         }
     }
 
+
+    Context "CheckParameter" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $true
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $false
+            $ruleConfiguration.CheckParameter = $true
+        }
+
+        It "Should not find no violation if there is always 1 space between parameters except when using colon syntax" {
+            $def = 'foo -bar $baz -bat -parameterName:$parameterValue'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should find 1 violation if there is 1 space too much before a parameter" {
+            $def = 'foo  -bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'foo'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be ([string]::Empty)
+        }
+
+        It "Should find 1 violation if there is 1 space too much before a parameter value" {
+            $def = 'foo  $bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'foo'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be ([string]::Empty)
+        }
+
+        It "Should fix script to always have 1 space between parameters except when using colon syntax but not by default" {
+            $def = 'foo  -bar   $baz  -ParameterName:  $ParameterValue'
+            Invoke-Formatter -ScriptDefinition $def |
+                Should -BeExactly $def -Because 'CheckParameter configuration is not turned on by default (yet) as the setting is new'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings |
+                Should -BeExactly 'foo -bar $baz -ParameterName:  $ParameterValue'
+        }
+
+    }
 }
