@@ -22,7 +22,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseConsistentWhitespace : ConfigurableRule
     {
-        private enum ErrorKind { BeforeOpeningBrace, Paren, Operator, SeparatorComma, SeparatorSemi, AfterOpeningBrace, BeforeClosingBrace, BeforePipe, AfterPipe };
+        private enum ErrorKind { BeforeOpeningBrace, Paren, Operator, SeparatorComma, SeparatorSemi,
+            AfterOpeningBrace, BeforeClosingBrace, BeforePipe, AfterPipe, BetweenParameter };
         private const int whiteSpaceSize = 1;
         private const string whiteSpace = " ";
         private readonly SortedSet<TokenKind> openParenKeywordWhitelist = new SortedSet<TokenKind>()
@@ -211,6 +212,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSeparatorComma);
                 case ErrorKind.SeparatorSemi:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSeparatorSemi);
+                case ErrorKind.BetweenParameter:
+                    return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorSpaceBetweenParameter);
                 default:
                     return string.Format(CultureInfo.CurrentCulture, Strings.UseConsistentWhitespaceErrorBeforeParen);
             }
@@ -398,11 +401,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             leftExtent.EndColumnNumber + 1,
                             leftExtent.EndColumnNumber + 1 + numberOfRedundantWhiteSpaces,
                             string.Empty,
-                            leftExtent.File,
-                            "description TODO");
+                            leftExtent.File);
 
                         yield return new DiagnosticRecord(
-                            GetError(ErrorKind.BeforeOpeningBrace),
+                            GetError(ErrorKind.BetweenParameter),
                             leftExtent,
                             GetName(),
                             GetDiagnosticSeverity(),
