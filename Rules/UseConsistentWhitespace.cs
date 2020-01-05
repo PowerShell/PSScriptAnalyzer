@@ -110,12 +110,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 diagnosticRecords = diagnosticRecords.Concat(violationFinder(tokenOperations));
             }
 
-            var commandParameterAsts = ast.FindAll(
-                    testAst => testAst is CommandParameterAst, true);
-            foreach (CommandParameterAst commandParameterAst in commandParameterAsts)
+            var commandAsts = ast.FindAll(
+                    testAst => testAst is CommandAst, true).ToArray();
+            foreach (CommandAst commandAst in commandAsts)
             {
-                var commandParameterAstElements = commandParameterAst.FindAll(testAst => true, false).ToList(); // no recursive option to avoid getting children from the colon syntax
-                for (int i = 1; i < commandParameterAstElements.Count - 1; i++)
+                var commandParameterAstElements = commandAst.FindAll(testAst => true, searchNestedScriptBlocks: false).ToList();
+                for (int i = 0; i < commandParameterAstElements.Count - 1; i++)
                 {
                     var leftExtent = commandParameterAstElements[i].Extent;
                     var rightExtent = commandParameterAstElements[i + 1].Extent;
@@ -123,6 +123,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (!extentsAreOnSameLine)
                     {
                         continue;
+                    }
+                    var expectedStartColumnNumberOfRightExtent = leftExtent.EndColumnNumber + 1;
+                    if (rightExtent.StartColumnNumber > expectedStartColumnNumberOfRightExtent)
+                    {
+                        int numberOfRedundantWhiteSpaces = rightExtent.StartColumnNumber - expectedStartColumnNumberOfRightExtent;
+                        var correction = new CorrectionExtent(
+                            leftExtent.StartLineNumber,
+                            leftExtent.EndLineNumber,
+                            leftExtent.EndColumnNumber + 1,
+                            leftExtent.EndColumnNumber + 1 + numberOfRedundantWhiteSpaces,
+                            string.Empty,
+                            rightExtent.File,
+                            "description TODO");
+
+                        diagnosticRecords = diagnosticRecords.Concat(Enumerable.Repeat<DiagnosticRecord>(new DiagnosticRecord(
+                            GetError(ErrorKind.BeforeOpeningBrace),
+                            rightExtent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            tokenOperations.Ast.Extent.File,
+                            null,
+                            Enumerable.Repeat<CorrectionExtent>(correction, 1)), 1));
                     }
                 }
             }
