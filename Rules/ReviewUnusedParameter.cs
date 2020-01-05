@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
 
-            var scriptBlockAsts = ast.FindAll(oneAst => oneAst is ScriptBlockAst, true);
+            IEnumerable<Ast> scriptBlockAsts = ast.FindAll(oneAst => oneAst is ScriptBlockAst, true);
             if (scriptBlockAsts == null)
             {
                 yield break;
@@ -42,7 +42,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // list all variables
                 IEnumerable<string> variables = scriptBlockAst.FindAll(oneAst => oneAst is VariableExpressionAst, false)
                     .Cast<VariableExpressionAst>()
-                    .Select(variableExpressionAst => variableExpressionAst.VariablePath.ToString());
+                    .Select(variableExpressionAst => variableExpressionAst.VariablePath.UserPath);
+
+                // all bets are off if the script uses PSBoundParameters
+                if (variables.Contains("PSBoundParameters"))
+                {
+                    continue;
+                }
 
                 foreach (ParameterAst parameterAst in parameterAsts)
                 {
@@ -52,12 +58,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         .Where(variable => variable == parameterAst.Name.VariablePath.ToString())
                         .Take(2).Count();
                     if (matchCount == 2)
-                    {
-                        continue;
-                    }
-
-                    // all bets are off if the script uses PSBoundParameters
-                    if (variables.Contains("PSBoundParameters"))
                     {
                         continue;
                     }

@@ -1870,7 +1870,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The parameter {0} has been declared but not used. .
+        ///   Looks up a localized string similar to The parameter &apos;{0}&apos; has been declared but not used. .
         /// </summary>
         internal static string ReviewUnusedParameterError {
             get {
