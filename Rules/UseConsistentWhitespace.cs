@@ -375,7 +375,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private IEnumerable<DiagnosticRecord> FindParameterViolations(Ast ast)
         {
             var commandAsts = ast.FindAll(
-                    testAst => testAst is CommandAst, true).ToArray();
+                    testAst => testAst is CommandAst, true);
             foreach (CommandAst commandAst in commandAsts)
             {
                 var commandParameterAstElements = commandAst.FindAll(testAst => true, searchNestedScriptBlocks: false).ToList();
