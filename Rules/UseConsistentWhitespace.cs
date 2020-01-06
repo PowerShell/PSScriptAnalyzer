@@ -396,12 +396,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         int numberOfRedundantWhiteSpaces = rightExtent.StartColumnNumber - expectedStartColumnNumberOfRightExtent;
                         var correction = new CorrectionExtent(
-                            leftExtent.StartLineNumber,
-                            leftExtent.EndLineNumber,
-                            leftExtent.EndColumnNumber + 1,
-                            leftExtent.EndColumnNumber + 1 + numberOfRedundantWhiteSpaces,
-                            string.Empty,
-                            leftExtent.File);
+                            startLineNumber: leftExtent.StartLineNumber,
+                            endLineNumber: leftExtent.EndLineNumber,
+                            startColumnNumber: leftExtent.EndColumnNumber + 1,
+                            endColumnNumber: leftExtent.EndColumnNumber + 1 + numberOfRedundantWhiteSpaces,
+                            text: string.Empty,
+                            file: leftExtent.File);
 
                         yield return new DiagnosticRecord(
                             GetError(ErrorKind.BetweenParameter),
