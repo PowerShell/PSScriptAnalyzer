@@ -377,22 +377,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindParameterViolations(Ast ast)
         {
-            var commandAsts = ast.FindAll(
+            IEnumerable<Ast> commandAsts = ast.FindAll(
                     testAst => testAst is CommandAst, true);
             foreach (CommandAst commandAst in commandAsts)
             {
-                var commandParameterAstElements = commandAst.FindAll(testAst => true, searchNestedScriptBlocks: false).ToList();
+                List<Ast> commandParameterAstElements = commandAst.FindAll(testAst => true, searchNestedScriptBlocks: false).ToList();
                 for (int i = 0; i < commandParameterAstElements.Count - 1; i++)
                 {
-                    var leftExtent = commandParameterAstElements[i].Extent;
-                    var rightExtent = commandParameterAstElements[i + 1].Extent;
-                    var extentsAreOnSameLine = leftExtent.EndLineNumber == rightExtent.StartLineNumber;
-                    if (!extentsAreOnSameLine)
+                    IScriptExtent leftExtent = commandParameterAstElements[i].Extent;
+                    IScriptExtent rightExtent = commandParameterAstElements[i + 1].Extent;
+                    if (leftExtent.EndLineNumber != rightExtent.StartLineNumber)
                     {
                         continue;
                     }
-                    var expectedStartColumnNumberOfRightExtent = leftExtent.EndColumnNumber + 1;
-                    if (rightExtent.StartColumnNumber > expectedStartColumnNumberOfRightExtent)
+
+                    if (rightExtent.StartColumnNumber > leftExtent.EndColumnNumber + 1)
                     {
                         int numberOfRedundantWhiteSpaces = rightExtent.StartColumnNumber - expectedStartColumnNumberOfRightExtent;
                         var correction = new CorrectionExtent(
