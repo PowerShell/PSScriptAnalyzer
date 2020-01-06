@@ -409,8 +409,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             GetName(),
                             GetDiagnosticSeverity(),
                             leftExtent.File,
-                            null,
-                            Enumerable.Repeat<CorrectionExtent>(correction, 1));
+                            suggestedCorrections: new CorrectionExtent[] { correction });
                     }
                 }
             }

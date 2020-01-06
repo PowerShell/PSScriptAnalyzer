@@ -401,8 +401,17 @@ if ($true) { Get-Item `
             $ruleConfiguration.CheckParameter = $true
         }
 
+        It "Should not find no violation when newlines are involved" {
+            $def = {foo -a $b `
+-c d -d $e -f g `
+-h i |
+bar -h i `
+-switch}
+            Invoke-ScriptAnalyzer -ScriptDefinition "$def" -Settings $settings | Should -Be $null
+        }
+
         It "Should not find no violation if there is always 1 space between parameters except when using colon syntax" {
-            $def = 'foo -bar $baz -bat -parameterName:$parameterValue'
+            $def = 'foo -bar $baz @splattedVariable -bat -parameterName:$parameterValue'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
@@ -430,5 +439,19 @@ if ($true) { Get-Item `
                 Should -BeExactly 'foo -bar $baz -ParameterName:  $ParameterValue'
         }
 
+        It "Should fix script when newlines are involved" {
+            $def = {foo  -a  $b `
+-c  d -d  $e  -f  g `
+-h  i |
+bar  -h  i `
+-switch}
+            $expected = {foo -a $b `
+-c d -d $e -f g `
+-h i |
+bar -h i `
+-switch}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
     }
 }
