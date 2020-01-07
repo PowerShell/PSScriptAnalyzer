@@ -12,6 +12,8 @@
 |[AvoidGlobalFunctions](./AvoidGlobalFunctions.md) | Warning | |
 |[AvoidGlobalVars](./AvoidGlobalVars.md) | Warning | |
 |[AvoidInvokingEmptyMembers](./AvoidInvokingEmptyMembers.md) | Warning | |
+|[AvoidLongLines](./AvoidLongLines.md) | Warning | |
+|[AvoidOverwritingBuiltInCmdlets](./AvoidOverwritingBuiltInCmdlets.md) | Warning | |
 |[AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md) | Warning | |
 |[AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md) | Warning | |
 |[AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md) | Warning | Yes |
@@ -49,6 +51,7 @@
 |[UseDeclaredVarsMoreThanAssignments](./UseDeclaredVarsMoreThanAssignments.md) | Warning | |
 |[UseLiteralInitializerForHashtable](./UseLiteralInitializerForHashtable.md) | Warning | |
 |[UseOutputTypeCorrectly](./UseOutputTypeCorrectly.md) | Information | |
+|[UseProcessBlockForPipelineCommand](./UseProcessBlockForPipelineCommand.md) | Warning | |
 |[UsePSCredentialType](./UsePSCredentialType.md) | Warning | |
 |[UseShouldProcessForStateChangingFunctions](./UseShouldProcessForStateChangingFunctions.md) | Warning | |
 |[UseSingularNouns<sup>*</sup>](./UseSingularNouns.md) | Warning | |

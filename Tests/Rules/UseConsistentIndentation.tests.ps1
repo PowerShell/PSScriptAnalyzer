@@ -277,6 +277,23 @@ Describe 'describe' {
     $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
     Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
 }
+        It "Should preserve script when using PipelineIndentation <PipelineIndentation> for complex multi-line pipeline" -TestCases @(
+            @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
+            @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
+            @{ PipelineIndentation = 'NoIndentation' }
+        ) {
+            param ($PipelineIndentation)
+            $idempotentScriptDefinition = @'
+function foo {
+    bar | baz {
+        Get-Item
+    } | Invoke-Item
+    $iShouldStayAtTheSameIndentationLevel
+}
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            Invoke-Formatter -ScriptDefinition $idempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+        }
 
         It "Should indent pipelines correctly using NoIndentation option" {
             $def = @'

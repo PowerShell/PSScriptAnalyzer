@@ -39,6 +39,7 @@
             CheckOperator   = $true
             CheckPipe       = $true
             CheckSeparator  = $true
+            CheckParameter  = $false
         }
 
         PSAlignAssignmentStatement = @{

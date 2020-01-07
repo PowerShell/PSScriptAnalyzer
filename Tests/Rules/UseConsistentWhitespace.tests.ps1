@@ -12,6 +12,7 @@ $ruleConfiguration = @{
     CheckOperator   = $false
     CheckPipe       = $false
     CheckSeparator  = $false
+    CheckParameter  = $false
 }
 
 $settings = @{
@@ -327,9 +328,15 @@ foo
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
-        
-        It "Should find a violation if there is more than 1 space inside empty curly braces" {
-            $def = 'if($true) {  }'
+
+        It "Should find a violation if there is more than 1 space after opening brace" {
+            $def = 'if($true) {  Get-Item }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+        }
+
+        It "Should find a violation if there is more than 1 space before closing brace" {
+            $def = 'if($true) { Get-Item  }'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
         }
@@ -341,6 +348,11 @@ foo
 
         It "Should not find a violation if there is 1 space inside empty curly braces" {
             $def = 'if($true) { }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation for an empty hashtable" {
+            $def = '$hashtable = @{}'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
@@ -377,4 +389,69 @@ if ($true) { Get-Item `
         }
     }
 
+
+    Context "CheckParameter" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $true
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $false
+            $ruleConfiguration.CheckParameter = $true
+        }
+
+        It "Should not find no violation when newlines are involved" {
+            $def = {foo -a $b `
+-c d -d $e -f g `
+-h i |
+bar -h i `
+-switch}
+            Invoke-ScriptAnalyzer -ScriptDefinition "$def" -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find no violation if there is always 1 space between parameters except when using colon syntax" {
+            $def = 'foo -bar $baz @splattedVariable -bat -parameterName:$parameterValue'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should find 1 violation if there is 1 space too much before a parameter" {
+            $def = 'foo  -bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'foo'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be ([string]::Empty)
+        }
+
+        It "Should find 1 violation if there is 1 space too much before a parameter value" {
+            $def = 'foo  $bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+            $violations[0].Extent.Text | Should -Be 'foo'
+            $violations[0].SuggestedCorrections[0].Text | Should -Be ([string]::Empty)
+        }
+
+        It "Should fix script to always have 1 space between parameters except when using colon syntax but not by default" {
+            $def = 'foo  -bar   $baz  -ParameterName:  $ParameterValue'
+            Invoke-Formatter -ScriptDefinition $def |
+                Should -BeExactly $def -Because 'CheckParameter configuration is not turned on by default (yet) as the setting is new'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings |
+                Should -BeExactly 'foo -bar $baz -ParameterName:  $ParameterValue'
+        }
+
+        It "Should fix script when newlines are involved" {
+            $def = {foo  -a  $b `
+-c  d -d  $e  -f  g `
+-h  i |
+bar  -h  i `
+-switch}
+            $expected = {foo -a $b `
+-c d -d $e -f g `
+-h i |
+bar -h i `
+-switch}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+    }
 }
