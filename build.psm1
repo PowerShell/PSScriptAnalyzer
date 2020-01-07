@@ -620,7 +620,7 @@ function Get-DotnetExe
         # version in global.json will produce an error, so we can only take the dotnet which executes
         $latestDotnet = $discoveredDotNet |
             Where-Object { try { & $_ --version 2>$null } catch { } } |
-            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null); "$pv" } |
+            Sort-Object { $pv = ConvertTo-PortableVersion ( try { & $_ --version 2>$null } catch { } ); "$pv" } |
             Select-Object -Last 1
         if ( $latestDotnet ) {
             $script:DotnetExe = $latestDotnet
