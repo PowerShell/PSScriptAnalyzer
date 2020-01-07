@@ -1104,4 +1104,7 @@
   <data name="UseProcessBlockForPipelineCommandName" xml:space="preserve">
     <value>UseProcessBlockForPipelineCommand</value>
   </data>
+  <data name="UseConsistentWhitespaceErrorSpaceBetweenParameter" xml:space="preserve">
+    <value>Use only 1 whitespace between parameter names or values.</value>
+  </data>
 </root>
