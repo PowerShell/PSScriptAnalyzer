@@ -40,24 +40,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 IEnumerable<Ast> parameterAsts = scriptBlockAst.FindAll(oneAst => oneAst is ParameterAst, false);
 
                 // list all variables
-                IEnumerable<string> variables = scriptBlockAst.FindAll(oneAst => oneAst is VariableExpressionAst, false)
-                    .Cast<VariableExpressionAst>()
-                    .Select(variableExpressionAst => variableExpressionAst.VariablePath.UserPath);
+                IDictionary<string, int> variableCount = scriptBlockAst.FindAll(oneAst => oneAst is VariableExpressionAst, false)
+                    .Select(variableExpressionAst => ((VariableExpressionAst)variableExpressionAst).VariablePath.UserPath)
+                    .GroupBy(variableName => variableName)
+                    .ToDictionary(variableName => variableName.Key, variableName => variableName.Count());
 
                 // all bets are off if the script uses PSBoundParameters
-                if (variables.Contains("PSBoundParameters"))
+                if (variableCount.ContainsKey("PSBoundParameters"))
                 {
                     continue;
                 }
 
                 foreach (ParameterAst parameterAst in parameterAsts)
                 {
-                    // compare the list of variables to the parameter name
-                    // there should be at least two matches of the variable name since the parameter declaration counts as one
-                    int matchCount = variables
-                        .Where(variable => variable == parameterAst.Name.VariablePath.ToString())
-                        .Take(2).Count();
-                    if (matchCount == 2)
+                    // there should be at least two usages of the variable since the parameter declaration counts as one
+                    variableCount.TryGetValue(parameterAst.Name.VariablePath.UserPath, out int variableUsageCount);
+                    if (variableUsageCount >= 2)
                     {
                         continue;
                     }
