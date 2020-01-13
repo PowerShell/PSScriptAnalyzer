@@ -1107,7 +1107,7 @@
   <data name="UseConsistentWhitespaceErrorSpaceBetweenParameter" xml:space="preserve">
     <value>Use only 1 whitespace between parameter names or values.</value>
   </data>
-    <data name="ReviewUnusedParameterCommonName" xml:space="preserve">
+  <data name="ReviewUnusedParameterCommonName" xml:space="preserve">
     <value>ReviewUnusedParameter</value>
   </data>
   <data name="ReviewUnusedParameterDescription" xml:space="preserve">
