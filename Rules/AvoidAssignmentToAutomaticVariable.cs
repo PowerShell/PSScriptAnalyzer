@@ -33,6 +33,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             "IsCoreCLR", "IsLinux", "IsMacOS", "IsWindows"
         };
 
+        private static readonly IList<string> _automaticVariablesThatCouldBeProblematicToAssignTo = new List<string>()
+        {
+            // Attempting to assign to any of those could cause issues, only in some special cases could assignment be by design
+            "_", "AllNodes", "Args", "ConsoleFilename", "Event", "EventArgs", "EventSubscriber", "ForEach", "Input", "Matches", "MyInvocation",
+            "NestedPromptLevel", "Profile", "PSBoundParameters", "PsCmdlet", "PSCommandPath", "PSDebugContext",
+            "PSItem", "PSScriptRoot", "PSSenderInfo", "Pwd", "PSCommandPath", "ReportErrorShowExceptionClass",
+            "ReportErrorShowInnerException", "ReportErrorShowSource", "ReportErrorShowStackTrace", "Sender",
+            "StackTrace", "This"
+        };
+
         /// <summary>
         /// Checks for assignment to automatic variables.
         /// <param name="ast">The script's ast</param>
@@ -61,6 +71,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error, variableName),
                                                       variableExpressionAst.Extent, GetName(), severity, fileName);
                 }
+
+                if (_automaticVariablesThatCouldBeProblematicToAssignTo.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                {
+                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToWritableAutomaticVariableError, variableName),
+                                                      variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                }
             }
 
             IEnumerable<Ast> parameterAsts = ast.FindAll(testAst => testAst is ParameterAst, searchNestedScriptBlocks: true);
@@ -79,11 +95,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableError, variableName),
                                                       variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Error, fileName);
                 }
+
                 if (_readOnlyAutomaticVariablesIntroducedInVersion6_0.Contains(variableName, StringComparer.OrdinalIgnoreCase))
                 {
                     var severity = IsPowerShellVersion6OrGreater() ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning;
                     yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToReadOnlyAutomaticVariableIntroducedInPowerShell6_0Error, variableName),
                                                       variableExpressionAst.Extent, GetName(), severity, fileName);
+                }
+
+                if (_automaticVariablesThatCouldBeProblematicToAssignTo.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                {
+                    yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToWritableAutomaticVariableError, variableName),
+                                                      variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
             }
         }

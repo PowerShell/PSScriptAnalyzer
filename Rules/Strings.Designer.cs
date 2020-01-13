@@ -151,6 +151,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Variable &apos;{0}&apos; is an automatic variable that is built into PowerShell, assigning to it might have undesired side effects. If assignment is not by design, please use a different name..
+        /// </summary>
+        internal static string AvoidAssignmentToWritableAutomaticVariableError {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToWritableAutomaticVariableError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ComputerName Hardcoded.
         /// </summary>
         internal static string AvoidComputerNameHardcodedCommonName {
@@ -489,6 +498,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string AvoidNullOrEmptyHelpMessageAttributeName {
             get {
                 return ResourceManager.GetString("AvoidNullOrEmptyHelpMessageAttributeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsCommonName {
+            get {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do not overwrite the definition of a cmdlet that is included with PowerShell.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsDescription {
+            get {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is a cmdlet that is included with PowerShell (version {1}) whose definition should not be overridden.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsError {
+            get {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidOverwritingBuiltInCmdlets.
+        /// </summary>
+        internal static string AvoidOverwritingBuiltInCmdletsName {
+            get {
+                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsName", resourceCulture);
             }
         }
         
@@ -2082,50 +2127,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseCompatibleCmdletsName {
             get {
                 return ResourceManager.GetString("UseCompatibleCmdletsName", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
-        /// </summary>
-        internal static string AvoidOverwritingBuiltInCmdletsCommonName
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsCommonName", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Avoid overwriting built in cmdlets.
-        /// </summary>
-        internal static string AvoidOverwritingBuiltInCmdletsDescription
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsDescription", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is a cmdlet that is included with PowerShell whose definition should not be overridden.
-        /// </summary>
-        internal static string AvoidOverwritingBuiltInCmdletsError
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsError", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidOverwritingBuiltInCmdlets.
-        /// </summary>
-        internal static string AvoidOverwritingBuiltInCmdletsName
-        {
-            get
-            {
-                return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsName", resourceCulture);
             }
         }
         
