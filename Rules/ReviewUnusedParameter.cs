@@ -43,7 +43,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 IDictionary<string, int> variableCount = scriptBlockAst.FindAll(oneAst => oneAst is VariableExpressionAst, false)
                     .Select(variableExpressionAst => ((VariableExpressionAst)variableExpressionAst).VariablePath.UserPath)
                     .GroupBy(variableName => variableName)
-                    .ToDictionary(variableName => variableName.Key, variableName => variableName.Count());
+                    .ToDictionary(variableName => variableName.Key, variableName => variableName.Count(), StringComparer.OrdinalIgnoreCase);
 
                 // all bets are off if the script uses PSBoundParameters
                 if (variableCount.ContainsKey("PSBoundParameters"))

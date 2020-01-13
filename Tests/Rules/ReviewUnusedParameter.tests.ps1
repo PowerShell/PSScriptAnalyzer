@@ -57,7 +57,13 @@ Describe "ReviewUnusedParameter" {
         }
 
         It "has no violations when parameter is called in child scope" -skip {
-            $ScriptDefinition = 'function Param { param ($Param1) function Child { $Param1 } }'
+            $ScriptDefinition = 'function foo { param ($Param1) function Child { $Param1 } }'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+        It "has no violations when case of parameter and variable usage do not match" -skip {
+            $ScriptDefinition = 'function foo { param ($Param1, $param2) $param1; $Param2}'
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
             $Violations.Count | Should -Be 0
         }
