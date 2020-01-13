@@ -1107,4 +1107,7 @@
   <data name="AvoidAssignmentToWritableAutomaticVariableError" xml:space="preserve">
     <value>The Variable '{0}' is an automatic variable that is built into PowerShell, assigning to it might have undesired side effects. If assignment is not by design, please use a different name.</value>
   </data>
+  <data name="UseConsistentWhitespaceErrorSpaceBetweenParameter" xml:space="preserve">
+    <value>Use only 1 whitespace between parameter names or values.</value>
+  </data>
 </root>

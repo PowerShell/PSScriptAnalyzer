@@ -2419,6 +2419,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use only 1 whitespace between parameter names or values..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorSpaceBetweenParameter {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorSpaceBetweenParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to UseConsistentWhitespace.
         /// </summary>
         internal static string UseConsistentWhitespaceName {

@@ -227,13 +227,13 @@ PSUseApprovedVerbs Warning             1    The cmdlet 'eliminate-file' uses an
 Suppressing Rules
 =================
 
-You can suppress a rule by decorating a script/function or script/function parameter with .NET's [SuppressMessageAttribute](https://msdn.microsoft.com/en-us/library/system.diagnostics.codeanalysis.suppressmessageattribute.aspx).
+You can suppress a rule by decorating a script/function or script/function parameter with .NET's [SuppressMessageAttribute](https://docs.microsoft.com/dotnet/api/system.diagnostics.codeanalysis.suppressmessageattribute).
 `SuppressMessageAttribute`'s constructor takes two parameters: a category and a check ID. Set the `categoryID` parameter to the name of the rule you want to suppress and set the `checkID` parameter to a null or empty string. You can optionally add a third named parameter with a justification for suppressing the message:
 
 ``` PowerShell
 function SuppressMe()
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp", "", Justification="Just an example")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Justification='Just an example')]
     param()
 
     Write-Verbose -Message "I'm making a difference!"
@@ -247,8 +247,8 @@ To suppress a message on a specific parameter, set the `SuppressMessageAttribute
 ``` PowerShell
 function SuppressTwoVariables()
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "b")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideDefaultParameterValue", "a")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideDefaultParameterValue', 'b')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideDefaultParameterValue', 'a')]
     param([string]$a, [int]$b)
     {
     }
@@ -260,7 +260,7 @@ Use the `SuppressMessageAttribute`'s `Scope` property to limit rule suppression 
 Use the value `Function` to suppress violations on all functions within the attribute's scope. Use the value `Class` to suppress violations on all classes within the attribute's scope:
 
 ``` PowerShell
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSProvideCommentHelp", "", Scope="Function")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Scope='Function')]
 param(
 )
 
@@ -297,13 +297,13 @@ function start-bam {
 
 Suppress violations in all the functions:
 ``` PowerShell
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", Scope="Function", Target="*")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', Scope='Function', Target='*')]
 Param()
 ```
 
 Suppress violation in `start-bar`, `start-baz` and `start-bam` but not in `start-foo`:
 ``` PowerShell
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", Scope="Function", Target="start-b*")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', Scope='Function', Target='start-b*')]
 Param()
 ```
 
