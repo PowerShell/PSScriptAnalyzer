@@ -42,7 +42,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // list all variables
                 IDictionary<string, int> variableCount = scriptBlockAst.FindAll(oneAst => oneAst is VariableExpressionAst, false)
                     .Select(variableExpressionAst => ((VariableExpressionAst)variableExpressionAst).VariablePath.UserPath)
-                    .GroupBy(variableName => variableName)
+                    .GroupBy(variableName => variableName, StringComparer.OrdinalIgnoreCase)
                     .ToDictionary(variableName => variableName.Key, variableName => variableName.Count(), StringComparer.OrdinalIgnoreCase);
 
                 // all bets are off if the script uses PSBoundParameters
