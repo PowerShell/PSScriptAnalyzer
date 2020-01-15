@@ -33,7 +33,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             "IsCoreCLR", "IsLinux", "IsMacOS", "IsWindows"
         };
 
-        private static readonly IReadOnlyList<string> _automaticVariablesThatCouldBeProblematicToAssignTo = new List<string>()
+        private static readonly IReadOnlyList<string> _writableAutomaticVariables = new List<string>()
         {
             // Attempting to assign to any of those could cause issues, only in some special cases could assignment be by design
             "_", "AllNodes", "Args", "ConsoleFilename", "Event", "EventArgs", "EventSubscriber", "ForEach", "Input", "Matches", "MyInvocation",
@@ -72,7 +72,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                                       variableExpressionAst.Extent, GetName(), severity, fileName);
                 }
 
-                if (_automaticVariablesThatCouldBeProblematicToAssignTo.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                if (_writableAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
                 {
                     yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToWritableAutomaticVariableError, variableName),
                                                       variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
@@ -103,7 +103,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                                       variableExpressionAst.Extent, GetName(), severity, fileName);
                 }
 
-                if (_automaticVariablesThatCouldBeProblematicToAssignTo.Contains(variableName, StringComparer.OrdinalIgnoreCase))
+                if (_writableAutomaticVariables.Contains(variableName, StringComparer.OrdinalIgnoreCase))
                 {
                     yield return new DiagnosticRecord(DiagnosticRecordHelper.FormatError(Strings.AvoidAssignmentToWritableAutomaticVariableError, variableName),
                                                       variableExpressionAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
