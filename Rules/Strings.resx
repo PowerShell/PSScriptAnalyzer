@@ -1107,4 +1107,16 @@
   <data name="UseConsistentWhitespaceErrorSpaceBetweenParameter" xml:space="preserve">
     <value>Use only 1 whitespace between parameter names or values.</value>
   </data>
+  <data name="ReviewUnusedParameterCommonName" xml:space="preserve">
+    <value>ReviewUnusedParameter</value>
+  </data>
+  <data name="ReviewUnusedParameterDescription" xml:space="preserve">
+    <value>Ensure all parameters are used within the same script, scriptblock, or function where they are declared.</value>	
+  </data>	
+  <data name="ReviewUnusedParameterError" xml:space="preserve">	
+    <value>The parameter '{0}' has been declared but not used. </value>	
+  </data>	
+  <data name="ReviewUnusedParameterName" xml:space="preserve">	
+    <value>ReviewUnusedParameter</value>	
+  </data>
 </root>

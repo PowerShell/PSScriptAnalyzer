@@ -1852,6 +1852,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ReviewUnusedParameter.
+        /// </summary>
+        internal static string ReviewUnusedParameterCommonName {
+            get {
+                return ResourceManager.GetString("ReviewUnusedParameterCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ensure all parameters are used within the same script, scriptblock, or function where they are declared..
+        /// </summary>
+        internal static string ReviewUnusedParameterDescription {
+            get {
+                return ResourceManager.GetString("ReviewUnusedParameterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The parameter &apos;{0}&apos; has been declared but not used. .
+        /// </summary>
+        internal static string ReviewUnusedParameterError {
+            get {
+                return ResourceManager.GetString("ReviewUnusedParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ReviewUnusedParameter.
+        /// </summary>
+        internal static string ReviewUnusedParameterName {
+            get {
+                return ResourceManager.GetString("ReviewUnusedParameterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ScriptDefinition.
         /// </summary>
         internal static string ScriptDefinitionName {
