@@ -299,48 +299,98 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
-            var cmdInfo = Helper.Instance.GetCommandInfo(cmdName);
+            CommandInfo cmdInfo = Helper.Instance.GetCommandInfo(cmdName);
             if (cmdInfo == null)
             {
                 return false;
             }
 
-            var cmdletInfo = cmdInfo as CmdletInfo;
-            if (cmdletInfo == null)
+            switch (cmdInfo)
             {
-                // check if it is of functioninfo type
-                var funcInfo = cmdInfo as FunctionInfo;
-                if (funcInfo != null
-                    && funcInfo.CmdletBinding
-                    && funcInfo.ScriptBlock != null
-                    && funcInfo.ScriptBlock.Attributes != null)
-                {
-                    foreach (var attr in funcInfo.ScriptBlock.Attributes)
+                case CmdletInfo cmdletInfo:
+                    return cmdletInfo.ImplementingType.GetCustomAttribute<CmdletAttribute>(inherit: true).SupportsShouldProcess;
+
+                case FunctionInfo functionInfo:
+                    try
                     {
-                        var cmdletBindingAttr = attr as CmdletBindingAttribute;
-                        if (cmdletBindingAttr != null)
+                        if (!functionInfo.CmdletBinding
+                            || functionInfo.ScriptBlock?.Attributes == null)
                         {
-                            return cmdletBindingAttr.SupportsShouldProcess;
+                            break;
+                        }
+
+                        foreach (CmdletBindingAttribute cmdletBindingAttribute in functionInfo.ScriptBlock.Attributes.OfType<CmdletBindingAttribute>())
+                        {
+                            return cmdletBindingAttribute.SupportsShouldProcess;
                         }
                     }
-                }
+                    catch
+                    {
+                        // functionInfo.ScriptBlock.Attributes may throw if it cannot resolve an attribute type
+                        // Instead we fall back to AST analysis
+                        // See: https://github.com/PowerShell/PSScriptAnalyzer/issues/1217
+                        if (TryGetShouldProcessValueFromAst(functionInfo, out bool hasShouldProcessSet))
+                        {
+                            return hasShouldProcessSet;
+                        }
+                    }
 
-                return false;
+                    break;
             }
 
-            var attributes = cmdletInfo.ImplementingType.GetTypeInfo().GetCustomAttributes(
-                typeof(System.Management.Automation.CmdletCommonMetadataAttribute),
-                true);
+            return false;
+        }
 
-            foreach (var attr in attributes)
+        /// <summary>
+        /// Attempt to find whether a function has SupportsShouldProcess set based on its AST
+        /// </summary>
+        /// <param name="functionInfo">The function info object referring to the function.</param>
+        /// <param name="hasShouldProcessSet">True if SupportsShouldProcess is set, false if not. Value is not valid if this method returns false.</param>
+        /// <returns>True if a value for SupportsShouldProcess was found, false otherwise.</returns>
+        private bool TryGetShouldProcessValueFromAst(FunctionInfo functionInfo, out bool hasShouldProcessSet)
+        {
+            // Get the body of the function
+            ScriptBlockAst functionBodyAst = (ScriptBlockAst)functionInfo.ScriptBlock.Ast.Find(ast => ast is ScriptBlockAst, searchNestedScriptBlocks: false);
+
+            // Go through attributes on the parameter block, since this is where [CmdletBinding()] will be
+            foreach (AttributeAst attributeAst in functionBodyAst.ParamBlock.Attributes)
             {
-                var cmdletAttribute = attr as System.Management.Automation.CmdletAttribute;
-                if (cmdletAttribute != null)
+                // We're looking for [CmdletBinding()]
+                if (!String.Equals(attributeAst.TypeName.FullName, "CmdletBinding", StringComparison.OrdinalIgnoreCase))
                 {
-                    return cmdletAttribute.SupportsShouldProcess;
+                    continue;
+                }
+
+                foreach (NamedAttributeArgumentAst namedArgumentAst in attributeAst.NamedArguments)
+                {
+                    // We want [CmdletBinding(SupportsShouldProcess)]
+                    if (!String.Equals(namedArgumentAst.ArgumentName, "SupportsShouldProcess", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    // [CmdletBinding(SupportsShouldProcess)] is the same as [CmdletBinding(SupportsShouldProcess = $true)]
+                    if (namedArgumentAst.ExpressionOmitted)
+                    {
+                        hasShouldProcessSet = true;
+                        return true;
+                    }
+
+                    // Otherwise try to get the value assigned to the parameter, and assume false if value cannot be determined
+                    try
+                    {
+                        hasShouldProcessSet = LanguagePrimitives.IsTrue(namedArgumentAst.Argument.SafeGetValue());
+                    }
+                    catch
+                    {
+                        hasShouldProcessSet = false;
+                    }
+
+                    return true;
                 }
             }
 
+            hasShouldProcessSet = false;
             return false;
         }
 
