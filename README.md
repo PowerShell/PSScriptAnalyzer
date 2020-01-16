@@ -106,7 +106,7 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 #### Requirements
 
 * [.NET Core 3.1.100 SDK](https://www.microsoft.com/net/download/dotnet-core/3.1#sdk-3.1.100) or newer patch release
-* [PlatyPS 0.13.0 or greater](https://github.com/PowerShell/platyPS/releases)
+* [PlatyPS PowerShell module, available on PowerShell Gallery](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017/2019](https://www.visualstudio.com/downloads/)
 
 #### Steps
