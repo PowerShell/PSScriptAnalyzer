@@ -179,34 +179,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return _diagnosticAccumulator;
             }
 
-            public override AstVisitAction VisitMemberExpression(MemberExpressionAst memberExpressionAst)
-            {
-                if (!_targetVersions.Contains(s_v3))
-                {
-                    return AstVisitAction.Continue;
-                }
-
-                if (!(memberExpressionAst.Member is StringConstantExpressionAst))
-                {
-                    string message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.UseCompatibleSyntaxError,
-                        "dynamic member invocation",
-                        memberExpressionAst.Extent.Text,
-                        "3");
-
-                    _diagnosticAccumulator.Add(new DiagnosticRecord(
-                        message,
-                        memberExpressionAst.Extent,
-                        _rule.GetName(),
-                        _rule.Severity,
-                        _analyzedFilePath
-                    ));
-                }
-
-                return AstVisitAction.Continue;
-            }
-
             public override AstVisitAction VisitInvokeMemberExpression(InvokeMemberExpressionAst methodCallAst)
             {
                 // Look for [typename]::new(...) and [typename]::$dynamicMethodName syntax
