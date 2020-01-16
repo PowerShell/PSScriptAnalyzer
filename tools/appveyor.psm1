@@ -20,15 +20,14 @@ function Invoke-AppVeyorInstall {
         }
     }
 
-    $platyPSVersion = '0.13.0'
     if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
         # WMF 4 image build
         Write-Verbose -Verbose "Installing platyPS via nuget"
-        nuget install platyPS -Version $platyPSVersion -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+        nuget install platyPS -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
     }
     else {
         Write-Verbose -Verbose "Installing platyPS via Install-Module"
-        Install-Module -Name platyPS -Force -Scope CurrentUser -RequiredVersion $platyPSVersion -Repository PSGallery
+        Install-Module -Name platyPS -Force -Scope CurrentUser -Repository PSGallery
     }
 
     # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image

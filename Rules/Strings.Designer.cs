@@ -151,6 +151,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Variable &apos;{0}&apos; is an automatic variable that is built into PowerShell, assigning to it might have undesired side effects. If assignment is not by design, please use a different name..
+        /// </summary>
+        internal static string AvoidAssignmentToWritableAutomaticVariableError {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToWritableAutomaticVariableError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ComputerName Hardcoded.
         /// </summary>
         internal static string AvoidComputerNameHardcodedCommonName {
@@ -1852,6 +1861,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ReviewUnusedParameter.
+        /// </summary>
+        internal static string ReviewUnusedParameterCommonName {
+            get {
+                return ResourceManager.GetString("ReviewUnusedParameterCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ensure all parameters are used within the same script, scriptblock, or function where they are declared..
+        /// </summary>
+        internal static string ReviewUnusedParameterDescription {
+            get {
+                return ResourceManager.GetString("ReviewUnusedParameterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The parameter &apos;{0}&apos; has been declared but not used. .
+        /// </summary>
+        internal static string ReviewUnusedParameterError {
+            get {
+                return ResourceManager.GetString("ReviewUnusedParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ReviewUnusedParameter.
+        /// </summary>
+        internal static string ReviewUnusedParameterName {
+            get {
+                return ResourceManager.GetString("ReviewUnusedParameterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ScriptDefinition.
         /// </summary>
         internal static string ScriptDefinitionName {
@@ -2406,6 +2451,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseConsistentWhitespaceErrorSpaceBeforePipe {
             get {
                 return ResourceManager.GetString("UseConsistentWhitespaceErrorSpaceBeforePipe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use only 1 whitespace between parameter names or values..
+        /// </summary>
+        internal static string UseConsistentWhitespaceErrorSpaceBetweenParameter {
+            get {
+                return ResourceManager.GetString("UseConsistentWhitespaceErrorSpaceBetweenParameter", resourceCulture);
             }
         }
         

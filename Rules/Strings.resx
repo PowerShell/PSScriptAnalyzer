@@ -1104,4 +1104,22 @@
   <data name="UseProcessBlockForPipelineCommandName" xml:space="preserve">
     <value>UseProcessBlockForPipelineCommand</value>
   </data>
+  <data name="AvoidAssignmentToWritableAutomaticVariableError" xml:space="preserve">
+    <value>The Variable '{0}' is an automatic variable that is built into PowerShell, assigning to it might have undesired side effects. If assignment is not by design, please use a different name.</value>
+  </data>
+  <data name="UseConsistentWhitespaceErrorSpaceBetweenParameter" xml:space="preserve">
+    <value>Use only 1 whitespace between parameter names or values.</value>
+  </data>
+  <data name="ReviewUnusedParameterCommonName" xml:space="preserve">
+    <value>ReviewUnusedParameter</value>
+  </data>
+  <data name="ReviewUnusedParameterDescription" xml:space="preserve">
+    <value>Ensure all parameters are used within the same script, scriptblock, or function where they are declared.</value>	
+  </data>	
+  <data name="ReviewUnusedParameterError" xml:space="preserve">	
+    <value>The parameter '{0}' has been declared but not used. </value>	
+  </data>	
+  <data name="ReviewUnusedParameterName" xml:space="preserve">	
+    <value>ReviewUnusedParameter</value>	
+  </data>
 </root>
