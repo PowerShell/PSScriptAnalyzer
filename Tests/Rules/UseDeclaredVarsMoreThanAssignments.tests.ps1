@@ -82,6 +82,21 @@ Write-Output $flag
             $diagnostics[0].Extent.Text | Should -BeExactly '$flag'
         }
 
+        It "Understands when variables are not used in child scopes" {
+$script = @'
+$duck = $true
+& {
+    $duck = $false
+    Write-Output $duck
+}
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script
+            $diagnostics | Should -HaveCount 1
+            $diagnostics[0].Extent.StartLineNumber | Should -Be 1
+            $diagnostics[0].Extent.Text | Should -BeExactly '$duck'
+        }
+
     }
 
     Context "When there are no violations" {
