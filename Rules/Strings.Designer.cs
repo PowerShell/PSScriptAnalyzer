@@ -2473,7 +2473,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use exact casing of cmdlet/function name..
+        ///   Looks up a localized string similar to Use exact casing of cmdlet/function/parameter name..
         /// </summary>
         internal static string UseCorrectCasingCommonName {
             get {
@@ -2482,7 +2482,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to For better readability and consistency, use the exact casing of the cmdlet/function..
+        ///   Looks up a localized string similar to For better readability and consistency, use the exact casing of the cmdlet/function/parameter..
         /// </summary>
         internal static string UseCorrectCasingDescription {
             get {
@@ -2491,7 +2491,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cmdlet/Function does not match its exact casing &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Cmdlet/Function/Parameter does not match its exact casing &apos;{0}&apos;..
         /// </summary>
         internal static string UseCorrectCasingError {
             get {

@@ -6,8 +6,7 @@ using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Management.Automation;
-using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -67,6 +66,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         commandName,
                         suggestedCorrections: GetCorrectionExtent(commandAst, correctlyCasedCommandName));
                 }
+
+                var commandParameterAsts = commandAst.FindAll(
+                    testAst => testAst is CommandParameterAst, true).Cast<CommandParameterAst>();
+                var availableParameters = commandInfo.Parameters;
+                foreach (var commandParameterAst in commandParameterAsts)
+                {
+                    var parameterName = commandParameterAst.ParameterName;
+                    var parameterMetaData = availableParameters[parameterName];
+                    if (parameterMetaData != null)
+                    {
+                        var correctlyCasedParameterName = parameterMetaData.Name;
+                        if (!parameterName.Equals(correctlyCasedParameterName, StringComparison.Ordinal))
+                        {
+                            yield return new DiagnosticRecord(
+                                string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingError, commandName, parameterName),
+                                GetCommandExtent(commandAst),
+                                GetName(),
+                                DiagnosticSeverity.Warning,
+                                fileName,
+                                commandName,
+                                suggestedCorrections: GetCorrectionExtent(commandParameterAst, correctlyCasedParameterName));
+                        }
+                    }
+                }
             }
         }
 
@@ -105,6 +128,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 cmdExtent.EndColumnNumber,
                 correctlyCaseName,
                 commandAst.Extent.File,
+                description);
+            yield return correction;
+        }
+
+        private IEnumerable<CorrectionExtent> GetCorrectionExtent(CommandParameterAst commandParameterAst, string correctlyCaseName)
+        {
+            var description = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.UseCorrectCasingDescription,
+                correctlyCaseName,
+                correctlyCaseName);
+            var cmdExtent = commandParameterAst.Extent;
+            var correction = new CorrectionExtent(
+                cmdExtent.StartLineNumber,
+                cmdExtent.EndLineNumber,
+                // +1 because of the dash before the parameter name
+                cmdExtent.StartColumnNumber + 1,
+                // do not use EndColumnNumber property as it would not cover the case where the colon syntax: -ParameterName:$ParameterValue
+                cmdExtent.StartColumnNumber + 1 + commandParameterAst.ParameterName.Length,
+                correctlyCaseName,
+                commandParameterAst.Extent.File,
                 description);
             yield return correction;
         }
