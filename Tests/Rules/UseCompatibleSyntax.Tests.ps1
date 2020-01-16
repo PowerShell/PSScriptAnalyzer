@@ -11,7 +11,7 @@ Describe "PSUseCompatibleSyntax" {
             @{ Script = 'Write-Host "Banana"'; Versions = @() }
             @{ Script = '[System.VeryInnocuousType]::RunApiMethod($obj)'; Versions = @() }
             @{ Script = '$y.$methodWithAVeryLongName()'; Versions = @(3) }
-            @{ Script = '$typeExpression::$staticMember'; Versions = @(3) }
+            @{ Script = '$typeExpression::$staticMember'; Versions = @() }
             @{ Script = '$typeExpression::$dynamicStaticMethodName()'; Versions = @(3) }
         )
 
