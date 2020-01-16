@@ -689,20 +689,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return moreThanTwoPositional ? argumentsWithoutProcedingParameters > 2 : argumentsWithoutProcedingParameters > 0;
         }
 
-        /// <summary>
-        ///  Legacy method, new callers should use <see cref="GetCommandInfo"/> instead.
-        ///  Given a command's name, checks whether it exists. It does not use the passed in CommandTypes parameter, which is a bug.
-        ///  But existing method callers are already depending on this behaviour and therefore this could not be simply fixed.
-        ///  It also populates the commandInfoCache which can have side effects in some cases.
-        /// </summary>
-        /// <param name="name">Command Name.</param>
-        /// <param name="commandType">Not being used.</param>
-        /// <returns></returns>
-        [Obsolete]
-        public CommandInfo GetCommandInfoLegacy(string name, CommandTypes? commandType = null)
-        {
-            return CommandInfoCache.GetCommandInfoLegacy(commandOrAliasName: name, commandTypes: commandType);
-        }
 
         /// <summary>
         /// Given a command's name, checks whether it exists.
