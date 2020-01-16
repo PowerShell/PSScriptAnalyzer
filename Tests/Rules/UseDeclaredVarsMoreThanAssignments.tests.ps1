@@ -67,6 +67,18 @@ function MyFunc2() {
             $results[0].Extent | Should -Be '$mySecondvar'
         }
 
+        It "Flags when variables are assigned after use" {
+            $script = @'
+Write-Output $moo
+$moo = "Hi"
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script
+            $diagnostics | Should -HaveCount 1
+            $diagnostics[0].Extent.StartLineNumber | Should -Be 2
+            $diagnostics[0].Extent.Text | Should -BeExactly '$moo'
+        }
+
         It "Understands that variables set in a child scope are not the same" {
             $script = @'
 $flag = $true
