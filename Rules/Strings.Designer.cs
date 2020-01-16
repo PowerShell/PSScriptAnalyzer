@@ -151,6 +151,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Variable &apos;{0}&apos; is an automatic variable that is built into PowerShell, assigning to it might have undesired side effects. If assignment is not by design, please use a different name..
+        /// </summary>
+        internal static string AvoidAssignmentToWritableAutomaticVariableError {
+            get {
+                return ResourceManager.GetString("AvoidAssignmentToWritableAutomaticVariableError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using ComputerName Hardcoded.
         /// </summary>
         internal static string AvoidComputerNameHardcodedCommonName {
