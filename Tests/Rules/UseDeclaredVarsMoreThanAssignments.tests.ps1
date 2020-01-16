@@ -66,6 +66,22 @@ function MyFunc2() {
             $results | Get-Count | Should -Be 1
             $results[0].Extent | Should -Be '$mySecondvar'
         }
+
+        It "Understands that variables set in a child scope are not the same" {
+            $script = @'
+$flag = $true
+& {
+    $flag = $false
+}
+Write-Output $flag
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script
+            $diagnostics | Should -HaveCount 1
+            $diagnostics[0].Extent.StartLineNumber | Should -Be 3
+            $diagnostics[0].Extent.Text | Should -BeExactly '$flag'
+        }
+
     }
 
     Context "When there are no violations" {
@@ -123,6 +139,33 @@ function MyFunc2() {
         It "Does not misinterpret switch parameter of Get-Variable as variable" {
             $scriptDefinition = '$ArbitrarySwitchParameter = 1; Get-Variable -ArbitrarySwitchParameter'
             (Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition).Count | Should -Be 1 -Because $scriptDefinition
+        }
+
+        It "Understands that variables immediately dot-sourced in a script block are the same" {
+            $script = @'
+$flag = $true
+. {
+    $flag = $false
+}
+Write-Output $flag
+'@
+
+            Invoke-ScriptAnalyzer -ScriptDefinition $script | Should -HaveCount 0
+        }
+
+        It "Understands that variables used in a ForEach-Object script block are the same" {
+            $script = @'
+$flag = $false
+1,2,3 | foreach-object {
+    if ($_ -eq 2)
+    {
+        $flag = $true
+    }
+}
+Write-Host $flag
+'@
+
+            Invoke-ScriptAnalyzer -ScriptDefinition $script | Should -HaveCount 0
         }
     }
 }
