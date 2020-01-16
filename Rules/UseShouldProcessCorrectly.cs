@@ -342,7 +342,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Attempt to find whether a function has SupportsShouldProcess set based on its AST
+        /// Attempt to find whether a function has SupportsShouldProcess set based on its AST.
         /// </summary>
         /// <param name="functionInfo">The function info object referring to the function.</param>
         /// <param name="hasShouldProcessSet">True if SupportsShouldProcess is set, false if not. Value is not valid if this method returns false.</param>
