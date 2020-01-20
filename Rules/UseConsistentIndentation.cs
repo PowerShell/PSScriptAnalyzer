@@ -90,7 +90,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             IncreaseIndentationForFirstPipeline,
             IncreaseIndentationAfterEveryPipeline,
-            NoIndentation
+            NoIndentation,
+            None
         }
 
         // TODO make this configurable
@@ -152,6 +153,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.Pipe:
+                        if (pipelineIndentationStyle == PipelineIndentationStyle.None) { break; }
                         bool pipelineIsFollowedByNewlineOrLineContinuation = tokenIndex < tokens.Length - 1 && tokenIndex > 0 &&
                               (tokens[tokenIndex + 1].Kind == TokenKind.NewLine || tokens[tokenIndex + 1].Kind == TokenKind.LineContinuation);
                         if (!pipelineIsFollowedByNewlineOrLineContinuation)
@@ -225,6 +227,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
                 }
 
+                if (pipelineIndentationStyle == PipelineIndentationStyle.None) { break; }
                 // Check if the current token matches the end of a PipelineAst
                 var matchingPipeLineAstEnd = pipelineAsts.FirstOrDefault(pipelineAst =>
                         PositionIsEqual(pipelineAst.Extent.EndScriptPosition, token.Extent.EndScriptPosition)) as PipelineAst;

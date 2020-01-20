@@ -225,10 +225,29 @@ baz
             Test-CorrectionExtentFromContent @params
         }
 
+        It 'Should preserve script when using PipelineIndentation None' -TestCases @(
+            @{ IdempotentScriptDefinition = @'
+foo |
+bar
+'@
+            }
+            @{ IdempotentScriptDefinition = @'
+foo |
+    bar
+'@
+            }
+            ) {
+        param ($IdempotentScriptDefinition)
+
+        $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = 'None'
+        Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition -Settings $settings | Should -Be $idempotentScriptDefinition
+    }
+
         It "Should preserve script when using PipelineIndentation <PipelineIndentation>" -TestCases @(
                 @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
                 @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
                 @{ PipelineIndentation = 'NoIndentation' }
+                @{ PipelineIndentation = 'None' }
                 ) {
             param ($PipelineIndentation)
             $idempotentScriptDefinition = @'
@@ -246,6 +265,7 @@ function hello {
             @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
             @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
             @{ PipelineIndentation = 'NoIndentation' }
+            @{ PipelineIndentation = 'None' }
             ) {
         param ($PipelineIndentation)
         $idempotentScriptDefinition = @'
@@ -264,6 +284,7 @@ function foo {
         @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
         @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
         @{ PipelineIndentation = 'NoIndentation' }
+        @{ PipelineIndentation = 'None' }
         ) {
     param ($PipelineIndentation)
     $idempotentScriptDefinition = @'
@@ -281,6 +302,7 @@ Describe 'describe' {
             @{ PipelineIndentation = 'IncreaseIndentationForFirstPipeline' }
             @{ PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline' }
             @{ PipelineIndentation = 'NoIndentation' }
+            @{ PipelineIndentation = 'None' }
         ) {
             param ($PipelineIndentation)
             $idempotentScriptDefinition = @'
