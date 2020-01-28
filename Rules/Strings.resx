@@ -1081,13 +1081,13 @@
     <value>Use space before pipe.</value>
   </data>
   <data name="UseCorrectCasingCommonName" xml:space="preserve">
-    <value>Use exact casing of cmdlet/function name.</value>
+    <value>Use exact casing of cmdlet/function/parameter name.</value>
   </data>
   <data name="UseCorrectCasingDescription" xml:space="preserve">
-    <value>For better readability and consistency, use the exact casing of the cmdlet/function.</value>
+    <value>For better readability and consistency, use the exact casing of the cmdlet/function/parameter.</value>
   </data>
   <data name="UseCorrectCasingError" xml:space="preserve">
-    <value>Cmdlet/Function does not match its exact casing '{0}'.</value>
+    <value>Cmdlet/Function/Parameter does not match its exact casing '{0}'.</value>
   </data>
   <data name="UseCorrectCasingName" xml:space="preserve">
     <value>UseCorrectCasing</value>

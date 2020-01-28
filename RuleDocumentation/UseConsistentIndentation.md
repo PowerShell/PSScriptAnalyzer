@@ -53,6 +53,7 @@ foo |
 bar |
 baz
 ```
+- None: Do not change any existing pipeline indentation.
 
 #### Kind: string (Default value is `space`)
 
