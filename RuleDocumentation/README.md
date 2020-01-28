@@ -43,6 +43,7 @@
 |[ProvideCommentHelp](./ProvideCommentHelp.md) | Information | Yes |
 |[ReservedCmdletChar](./ReservedCmdletChar.md) | Error | |
 |[ReservedParams](./ReservedParams.md) | Error | |
+|[ReviewUnusedParameter](./ReviewUnusedParameter.md) | Warning | |
 |[ShouldProcess](./ShouldProcess.md) | Error | |
 |[UseApprovedVerbs](./UseApprovedVerbs.md) | Warning | |
 |[UseBOMForUnicodeEncodedFile](./UseBOMForUnicodeEncodedFile.md) | Warning | |
