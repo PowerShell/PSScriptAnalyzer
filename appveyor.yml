@@ -3,15 +3,16 @@ environment:
   BuildConfiguration: Release
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true # For faster CI builds
   matrix:
-  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    PowerShellEdition: PowerShellCore
-  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    PowerShellEdition: WindowsPowerShell
-  - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
-    PowerShellEdition: WindowsPowerShell
-    PSVersion: 4
-  - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-    PowerShellEdition: PowerShellCore
+    - APPVEYOR_BUILD_WORKER_IMAGE: WMF 4
+      PowerShellEdition: WindowsPowerShell
+      PSVersion: 4
+  ## Only the tests for WMF4 remain active in AppVeyor due to Azure DevOps not offering such images ##
+  # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+  #   PowerShellEdition: PowerShellCore
+  # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+  #   PowerShellEdition: WindowsPowerShell
+  # - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+  #   PowerShellEdition: PowerShellCore
 
 # cache Nuget packages and dotnet CLI cache
 cache:
