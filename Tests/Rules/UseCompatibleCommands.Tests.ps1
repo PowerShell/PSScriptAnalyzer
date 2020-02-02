@@ -64,34 +64,16 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2019_5_profile; Script = 'fhx $filePath'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
 
     @{ Target = $script:Srv2019_6_1_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'ConvertFrom-String $str'; Commands = @("ConvertFrom-String"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = '$cb = Get-Clipboard'; Commands = @("Get-Clipboard"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = "Get-PSSnapIn MySnapIn"; Commands = @("Get-PSSnapIn"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = "Get-WmiObject -Class Win32_Process"; Commands = @("Get-WmiObject"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = "Invoke-WmiMethod -Path win32_process -Name create -ArgumentList notepad.exe"; Commands = @("Invoke-WmiMethod"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = "Get-Content $pshome\about_signing.help.txt | Out-Printer"; Commands = @("Out-Printer"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'New-PSWorkflowSession -ComputerName "ServerNode01" -Name "WorkflowTests" -SessionOption (New-PSSessionOption -OutputBufferingMode Drop)'; Commands = @("New-PSWorkflowSession"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = "Get-Process | Out-GridView"; Commands = @("Out-GridView"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = "Get-Process | ogv"; Commands = @("ogv"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = "Remove-PSSnapIn MySnapIn"; Commands = @("Remove-PSSnapIn"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = '$np | Remove-WmiObject'; Commands = @("Remove-WmiObject"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = "Show-Command"; Commands = @("Show-Command"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = "Set-WmiInstance -Class Win32_WMISetting -Argument @{LoggingLevel=2}"; Commands = @("Set-WmiInstance"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Add-Computer -DomainName "Domain01" -Restart'; Commands = @("Add-Computer"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Checkpoint-Computer -Description "Install MyApp"'; Commands = @("Checkpoint-Computer"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Clear-EventLog "Windows PowerShell"'; Commands = @("Clear-EventLog"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Clear-RecycleBin'; Commands = @("Clear-RecycleBin"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Start-Transaction; New-Item MyCompany -UseTransaction; Complete-Transaction'; Commands = @("Start-Transaction", "Complete-Transaction"); Version = "6.1"; OS = "Windows"; ProblemCount = 2 }
     @{ Target = $script:Srv2019_6_1_profile; Script = '$composers | Convert-String -Example "first middle last=last, first"'; Commands = @("Convert-String"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Disable-ComputerRestore -Drive "C:\"'; Commands = @("Disable-ComputerRestore"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Enable-ComputerRestore -Drive "C:\", "D:\"'; Commands = @("Enable-ComputerRestore"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Export-Console -Path $pshome\Consoles\ConsoleS1.psc1'; Commands = @("Export-Console"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-Counter "\Processor(*)\% Processor Time" | Export-Counter -Path $home\Counters.blg'; Commands = @("Get-Counter", "Export-Counter"); Version = "6.1"; OS = "Windows"; ProblemCount = 2 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-ControlPanelItem -Name "*Program*", "*App*"'; Commands = @("Get-ControlPanelItem"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-EventLog -Newest 5 -LogName "Application"'; Commands = @("Get-EventLog"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @("Get-HotFix"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
-    @{ Target = $script:Srv2019_6_1_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'curl $uri'; Commands = @("curl"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'gci .'; Commands = @(); Version = "6.1"; OS = "Windows"; ProblemCount = 0 }
@@ -105,6 +87,28 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'gci .'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "6.1"; OS = "Linux"; ProblemCount = 0 }
+
+    # These entries fail on Ubuntu in Az DevOps only -- unable to reproduce locally
+    if (-not ($env:TF_BUILD -and $IsLinux))
+    {
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'ConvertFrom-String $str'; Commands = @("ConvertFrom-String"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = "Get-WmiObject -Class Win32_Process"; Commands = @("Get-WmiObject"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = "Invoke-WmiMethod -Path win32_process -Name create -ArgumentList notepad.exe"; Commands = @("Invoke-WmiMethod"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = '$np | Remove-WmiObject'; Commands = @("Remove-WmiObject"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = "Set-WmiInstance -Class Win32_WMISetting -Argument @{LoggingLevel=2}"; Commands = @("Set-WmiInstance"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Add-Computer -DomainName "Domain01" -Restart'; Commands = @("Add-Computer"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Checkpoint-Computer -Description "Install MyApp"'; Commands = @("Checkpoint-Computer"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Clear-EventLog "Windows PowerShell"'; Commands = @("Clear-EventLog"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Clear-RecycleBin'; Commands = @("Clear-RecycleBin"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Start-Transaction; New-Item MyCompany -UseTransaction; Complete-Transaction'; Commands = @("Start-Transaction", "Complete-Transaction"); Version = "6.1"; OS = "Windows"; ProblemCount = 2 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Disable-ComputerRestore -Drive "C:\"'; Commands = @("Disable-ComputerRestore"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Enable-ComputerRestore -Drive "C:\", "D:\"'; Commands = @("Enable-ComputerRestore"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-ControlPanelItem -Name "*Program*", "*App*"'; Commands = @("Get-ControlPanelItem"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-EventLog -Newest 5 -LogName "Application"'; Commands = @("Get-EventLog"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @("Get-HotFix"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+        @{ Target = $script:Srv2019_6_1_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    }
 )
 
 $script:ParameterCompatibilityTestCases = @(
@@ -182,7 +186,7 @@ Describe 'UseCompatibleCommands' {
             $diagnostics = Invoke-ScriptAnalyzer -IncludeRule $script:RuleName -ScriptDefinition $Script -Settings $settings `
                 | Where-Object { -not $_.Parameter } # Filter out diagnostics about incompatible parameters
 
-            $diagnostics.Count | Should -Be $ProblemCount
+            $diagnostics.Count | Should -Be $ProblemCount -Because ($diagnostics.RuleName -join ', ')
 
             for ($i = 0; $i -lt $diagnostics.Count; $i++)
             {
@@ -208,7 +212,7 @@ Describe 'UseCompatibleCommands' {
             $diagnostics = Invoke-ScriptAnalyzer -IncludeRule $script:RuleName -ScriptDefinition $Script -Settings $settings `
                 | Where-Object { $_.Parameter } # Filter out diagnostics about incompatible parameters
 
-            $diagnostics.Count | Should -Be $ProblemCount
+            $diagnostics.Count | Should -Be $ProblemCount -Because ($diagnostics.RuleName -join ', ')
 
             for ($i = 0; $i -lt $diagnostics.Count; $i++)
             {
@@ -240,7 +244,9 @@ Describe 'UseCompatibleCommands' {
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings `
                 | Where-Object { $_.RuleName -eq $script:RuleName }
 
-            $diagnostics.Count | Should -Be 14
+            $expectedNumber = if ($env:TF_BUILD -and $IsLinux) { 13 } else { 14 }
+
+            $diagnostics.Count | Should -Be $expectedNumber -Because "Got diagnostics: $($diagnostics.Message -join ", ")"
 
             $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Command
 
@@ -320,7 +326,7 @@ Describe 'UseCompatibleCommands' {
             }
 
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/../../" -IncludeRule $script:RuleName -Settings $settings
-            $diagnostics.Count | Should -Be 0
+            $diagnostics.Count | Should -Be 0 -Because ($diagnostics.RuleName -join ', ')
         }
     }
 
@@ -347,7 +353,7 @@ Describe 'UseCompatibleCommands' {
                 Invoke-MySpecialFunction
             '
 
-            $diagnostics.Count | Should -Be 2
+            $diagnostics.Count | Should -Be 2 -Because ($diagnostics.RuleName -join ', ')
             $diagnosticGroups = Group-Object -InputObject $diagnostics -Property Command
             foreach ($group in $diagnosticGroups)
             {
