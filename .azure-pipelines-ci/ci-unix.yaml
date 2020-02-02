@@ -3,14 +3,14 @@ variables:
   # Avoid expensive initialization of dotnet cli, see: https://donovanbrown.com/post/Stop-wasting-time-during-NET-Core-builds
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 jobs:
-  - job: 'Ubuntu_16.04'
+  - job: 'Ubuntu_16_04'
     pool:
       vmImage: ubuntu-16.04
     steps:
     - template: templates/unix.yaml
   - job: 'Ubuntu_18.04'
     pool:
-      vmImage: ubuntu-18.04
+      vmImage: ubuntu-18_04
     steps:
     - template: templates/unix.yaml
   - job: macOS
