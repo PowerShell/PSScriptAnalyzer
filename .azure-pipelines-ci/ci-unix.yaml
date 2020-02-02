@@ -8,9 +8,9 @@ jobs:
       vmImage: ubuntu-16.04
     steps:
     - template: templates/unix.yaml
-  - job: 'Ubuntu_18.04'
+  - job: 'Ubuntu_18_04'
     pool:
-      vmImage: ubuntu-18_04
+      vmImage: ubuntu-18.04
     steps:
     - template: templates/unix.yaml
   - job: macOS
