@@ -15,13 +15,13 @@ jobs:
       displayName: 'Build'
     - template: templates/test.yaml
   - job: Ubuntu1804
-      pool:
-        vmImage: ubuntu-18.04
-      steps:
-      - pwsh: |
-          Import-Module .\tools\appveyor.psm1
-          Invoke-AppveyorInstall
-          ./build.ps1 -Configuration 'Release' -PSVersion 6
-          ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
-        displayName: 'Build'
-      - template: templates/test.yaml
+    pool:
+      vmImage: ubuntu-18.04
+    steps:
+    - pwsh: |
+        Import-Module .\tools\appveyor.psm1
+        Invoke-AppveyorInstall
+        ./build.ps1 -Configuration 'Release' -PSVersion 6
+        ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
+      displayName: 'Build'
+    - template: templates/test.yaml
