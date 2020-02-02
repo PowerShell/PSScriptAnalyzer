@@ -1,3 +1,5 @@
+pool:
+  vmImage: windows-latest
 variables:
   pwsh: false
     # Avoid expensive initialization of dotnet cli, see: https://donovanbrown.com/post/Stop-wasting-time-during-NET-Core-builds

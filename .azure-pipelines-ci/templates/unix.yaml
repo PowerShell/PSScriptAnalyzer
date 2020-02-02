@@ -1,0 +1,8 @@
+steps:
+- pwsh: |
+    Import-Module .\tools\appveyor.psm1
+    Invoke-AppveyorInstall
+    ./build.ps1 -Configuration 'Release' -PSVersion 6
+    ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
+  displayName: 'Build'
+- template: templates/test.yaml

@@ -3,25 +3,13 @@ variables:
   # Avoid expensive initialization of dotnet cli, see: https://donovanbrown.com/post/Stop-wasting-time-during-NET-Core-builds
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 jobs:
-  - job: Ubuntu1604
+  - job: Ubuntu
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-latest
     steps:
-    - pwsh: |
-        Import-Module .\tools\appveyor.psm1
-        Invoke-AppveyorInstall
-        ./build.ps1 -Configuration 'Release' -PSVersion 6
-        ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
-      displayName: 'Build'
-    - template: templates/test.yaml
-  - job: Ubuntu1804
+    - template: templates/unix.yaml
+  - job: macOS
     pool:
-      vmImage: ubuntu-18.04
+      vmImage: macos-latest
     steps:
-    - pwsh: |
-        Import-Module .\tools\appveyor.psm1
-        Invoke-AppveyorInstall
-        ./build.ps1 -Configuration 'Release' -PSVersion 6
-        ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
-      displayName: 'Build'
-    - template: templates/test.yaml
+    - template: templates/unix.yaml
