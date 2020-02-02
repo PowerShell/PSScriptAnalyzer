@@ -31,7 +31,7 @@ jobs:
         Invoke-AppveyorInstall
         ./build.ps1 -Configuration 'Release' -PSVersion 5
         ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'net452'
-      displayName: 'Full Build'
+      displayName: 'Build'
     - template: templates/test.yaml
       parameters:
         pwsh: false
