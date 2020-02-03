@@ -1,3 +1,8 @@
+parameters:
+- name: pwsh
+  type: boolean
+  default: true
+
 steps:
 - task: DownloadPipelineArtifact@2
   displayName: 'Download Pipeline Artifact: out Folder'
