@@ -22,8 +22,12 @@ function Install-Pester {
 
 # Implements the AppVeyor 'install' step and installs the required versions of Pester, platyPS and the .Net Core SDK if needed.
 function Invoke-AppVeyorInstall {
+    param(
+        # For the multi-stage build in Azure DevOps, Pester is not needed for bootstrapping the build environment
+        [switch] $SkipPesterInstallation
+    )
 
-    Install-Pester
+    if (-not $SkipPesterInstallation.IsPresent) { Install-Pester }
 
     if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
         # WMF 4 image build
