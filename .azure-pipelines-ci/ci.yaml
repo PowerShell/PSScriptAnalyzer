@@ -23,26 +23,26 @@ stages:
             artifactName: out
   - stage: Test
     jobs:
-      - job: Strategy
+      - job:
         strategy:
           matrix:
             Ubuntu_16_04:
-              containerImage: ubuntu-16.04
+              vmImage: ubuntu-16.04
             Ubuntu_18_04:
-              containerImage: ubuntu-18.04
+              vmImage: ubuntu-18.04
             macOS:
-              containerImage: macos-latest
+              vmImage: macos-latest
             Windows_Server2016_PowerShell_Core:
-              containerImage: windows-2019
+              vmImage: windows-2019
             Windows_Server2019_PowerShell_Core:
-              containerImage: windows-2019
+              vmImage: windows-2019
             Windows_Server2016_PowerShell_5_1:
-              containerImage: vs2017-win2016
+              vmImage: vs2017-win2016
               pwsh: false
             Windows_Server2019_PowerShell_5_1:
-              containerImage: vs2017-win2016
+              vmImage: vs2017-win2016
               pwsh: false
         pool:
-          vmImage: $[ variables['containerImage'] ]
+          vmImage: $[ variables['vmImage'] ]
         steps:
         - template: templates/test.yaml
