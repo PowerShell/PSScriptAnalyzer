@@ -3,6 +3,7 @@ steps:
   displayName: 'Download Pipeline Artifact: out Folder'
   inputs:
     artifactName: out
+    targetPath: '$(Pipeline.Workspace)/out'
 - task: PowerShell@2
   displayName: 'Test'
   inputs:
