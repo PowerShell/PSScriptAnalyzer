@@ -22,54 +22,17 @@ stages:
             targetPath: '$(Build.SourcesDirectory)/out'
             artifactName: out
   - stage: Test
-    strategy:
-      matrix:
-        ubuntu16:
-          containerImage: ubuntu:16.04
-        ubuntu18:
-          containerImage: ubuntu:18.04
-    pool:
-      vmImage: $[ variables['containerImage'] ]
     jobs:
-      - job: 'Ubuntu_16_04'
+      - job: Strategy
+        strategy:
+          matrix:
+            ubuntu16:
+              containerImage: ubuntu:16.04
+            ubuntu18:
+              containerImage: ubuntu:18.04
+        pool:
+          vmImage: $[ variables['containerImage'] ]
         steps:
         - template: templates/test.yaml
           parameters:
             pwsh: false
-        
-      - job: 'Ubuntu_18_04'
-        steps:
-        - template: templates/test.yaml
-          parameters:
-            pwsh: false
-        
-      - job: macOS
-        steps:
-        - template: templates/test.yaml
-          parameters:
-            pwsh: false
-
-      - job: 'Windows_Server2016_PowerShell_5_1'
-        steps:
-        - template: templates/test.yaml
-          parameters:
-            pwsh: false
-      
-      - job: 'Windows_Server2019_PowerShell_5_1'
-        steps:
-        - template: templates/test.yaml
-          parameters:
-            pwsh: false
-
-      - job: 'Windows_Server2016_PowerShell_Core'
-        steps:
-        - template: templates/test.yaml
-          parameters:
-            pwsh: true
-
-      - job: 'Windows_Server2019_PowerShell_Core'
-        steps:
-        - template: templates/test.yaml
-          parameters:
-            pwsh: true
-      
