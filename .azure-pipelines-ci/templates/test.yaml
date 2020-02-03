@@ -3,7 +3,9 @@ steps:
   displayName: 'Download Pipeline Artifact: out Folder'
   inputs:
     artifactName: out
-    targetPath: '$(Pipeline.Workspace)/out'
+    targetPath: '$(Build.SourcesDirectory)/out'
+- pwsh: |
+    ls (Join-Path $env:Build_SourcesDirectory 'out'
 - task: PowerShell@2
   displayName: 'Test'
   inputs:
