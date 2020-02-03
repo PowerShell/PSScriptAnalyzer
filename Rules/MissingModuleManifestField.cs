@@ -115,10 +115,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 Strings.MissingModuleManifestFieldCorrectionDescription,
                 fieldName,
                 fieldValue);
-            var correctionTextTemplate = @"
-# Version number of this module.
-{0} = '{1}'
-";
+            var correctionTextTemplate = string.Concat(Environment.NewLine,
+                "# Version number of this module.", Environment.NewLine,
+                "{0} = '{1}'", Environment.NewLine);
             var correctionText = string.Format(
                 correctionTextTemplate,
                 fieldName,

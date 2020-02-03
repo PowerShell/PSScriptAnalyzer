@@ -33,7 +33,7 @@ Describe "MissingRequiredFieldModuleManifest" {
         }
 
     # On Linux, mismatch in line endings cause this to fail
-	It "has the right suggested correction" -Skip:($IsLinux) {
+	It "has the right suggested correction" {
 	   $expectedText = @'
 # Version number of this module.
 ModuleVersion = '1.0.0.0'
