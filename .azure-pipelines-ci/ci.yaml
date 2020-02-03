@@ -1,0 +1,51 @@
+variables:
+  pwsh: true
+  # Avoid expensive initialization of dotnet cli, see: https://donovanbrown.com/post/Stop-wasting-time-during-NET-Core-builds
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+
+jobs:
+  - job: 'Ubuntu_16_04'
+    pool:
+      vmImage: ubuntu-16.04
+    steps:
+    - template: templates/unix.yaml
+    
+  - job: 'Ubuntu_18_04'
+    pool:
+      vmImage: ubuntu-18.04
+    steps:
+    - template: templates/unix.yaml
+    
+  - job: macOS
+    pool:
+      vmImage: macos-latest
+    steps:
+    - template: templates/unix.yaml
+
+  - job: 'Windows_PowerShell_5_1'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - powershell: |
+        Import-Module .\tools\appveyor.psm1
+        Invoke-AppveyorInstall
+        ./build.ps1 -Configuration 'Release' -PSVersion 5
+        ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'net452'
+      displayName: 'Build'
+    - template: templates/test.yaml
+      parameters:
+        pwsh: false
+
+  - job: 'Windows_PowerShell_Core'
+    pool:
+      vmImage: windows-latest
+    steps:
+    - pwsh: |
+        Import-Module .\tools\appveyor.psm1
+        Invoke-AppveyorInstall
+        ./build.ps1 -Configuration 'Release' -All
+        ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
+      displayName: 'Full Build'
+    - template: templates/test.yaml
+      parameters:
+        pwsh: true

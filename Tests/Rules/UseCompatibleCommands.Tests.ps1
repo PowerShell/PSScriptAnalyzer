@@ -1,6 +1,7 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+$script:RunningInCIOnUbuntu = $IsLinux -and ($env:TF_BUILD -or $env:APPVEYOR) # some test cases randomly start and stop to fail in Ubuntu CI tests
 $script:RuleName = 'PSUseCompatibleCommands'
 $script:AnyProfileConfigKey = 'AnyProfilePath'
 $script:TargetProfileConfigKey = 'TargetProfiles'
@@ -23,6 +24,7 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = '"Hello World" | ConvertFrom-String | Get-Member'; Commands = @("ConvertFrom-String"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Compress-Archive -LiteralPath C:\Reference\Draftdoc.docx, C:\Reference\Images\diagram2.vsd -CompressionLevel Optimal -DestinationPath C:\Archives\Draft.Zip'; Commands = @("Compress-Archive"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-Runspace -Id 2'; Commands = @("Get-Runspace"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2012_3_profile; Script = '$Protected = "Hello World" | Protect-CmsMessage -To "*youralias@emailaddress.com*"'; Commands = @("Protect-CmsMessage"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Format-Hex -Path "C:\temp\temp.t7f"'; Commands = @("Format-Hex"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Clear-RecycleBin -Force'; Commands = @("Clear-RecycleBin"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
@@ -62,7 +64,6 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2019_5_profile; Script = 'gci .'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_5_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_5_profile; Script = 'fhx $filePath'; Commands = @(); Version = "5.1"; OS = "Windows"; ProblemCount = 0 }
-
     @{ Target = $script:Srv2019_6_1_profile; Script = "Add-PSSnapIn MySnapIn"; Commands = @("Add-PSSnapIn"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = "Get-PSSnapIn MySnapIn"; Commands = @("Get-PSSnapIn"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
     @{ Target = $script:Srv2019_6_1_profile; Script = "Get-Content $pshome\about_signing.help.txt | Out-Printer"; Commands = @("Out-Printer"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
@@ -78,6 +79,23 @@ $script:CompatibilityTestCases = @(
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-ChildItem ./ | Format-List'; Commands = @(); Version = "3.0"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2019_6_1_profile; Script = 'gci .'; Commands = @(); Version = "6.1"; OS = "Windows"; ProblemCount = 0 }
     @{ Target = $script:Srv2016_6_1_profile; Script = 'iex $expr | % { Transform $_ }'; Commands = @(); Version = "6.1"; OS = "Windows"; ProblemCount = 0 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'ConvertFrom-String $str'; Commands = @("ConvertFrom-String"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = "Get-WmiObject -Class Win32_Process"; Commands = @("Get-WmiObject"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = "Invoke-WmiMethod -Path win32_process -Name create -ArgumentList notepad.exe"; Commands = @("Invoke-WmiMethod"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = '$np | Remove-WmiObject'; Commands = @("Remove-WmiObject"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Set-Clipboard -Value "This is a test string"'; Commands = @("Set-Clipboard"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = "Set-WmiInstance -Class Win32_WMISetting -Argument @{LoggingLevel=2}"; Commands = @("Set-WmiInstance"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Add-Computer -DomainName "Domain01" -Restart'; Commands = @("Add-Computer"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Checkpoint-Computer -Description "Install MyApp"'; Commands = @("Checkpoint-Computer"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Clear-EventLog "Windows PowerShell"'; Commands = @("Clear-EventLog"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Clear-RecycleBin'; Commands = @("Clear-RecycleBin"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Start-Transaction; New-Item MyCompany -UseTransaction; Complete-Transaction'; Commands = @("Start-Transaction", "Complete-Transaction"); Version = "6.1"; OS = "Windows"; ProblemCount = 2 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Disable-ComputerRestore -Drive "C:\"'; Commands = @("Disable-ComputerRestore"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Enable-ComputerRestore -Drive "C:\", "D:\"'; Commands = @("Enable-ComputerRestore"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-ControlPanelItem -Name "*Program*", "*App*"'; Commands = @("Get-ControlPanelItem"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-EventLog -Newest 5 -LogName "Application"'; Commands = @("Get-EventLog"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = 'Get-HotFix -Description "Security*" -ComputerName "Server01", "Server02" -Cred "Server01\admin01"'; Commands = @("Get-HotFix"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
+    @{ Target = $script:Srv2019_6_1_profile; Script = '$zip = New-WebServiceProxy -Uri "http://www.webservicex.net/uszip.asmx?WSDL"'; Commands = @("New-WebServiceProxy"); Version = "6.1"; OS = "Windows"; ProblemCount = 1 }
 
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-AuthenticodeSignature ./script.ps1'; Commands = @("Get-AuthenticodeSignature"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
     @{ Target = $script:Ubuntu1804_6_1_profile; Script = 'Get-Service systemd'; Commands = @("Get-Service"); Version = "6.1"; OS = "Linux"; ProblemCount = 1 }
@@ -120,6 +138,9 @@ $script:ParameterCompatibilityTestCases = @(
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-Command -ShowCommandInfo'; Commands = @('Get-Command'); Parameters = @('ShowCommandInfo'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Import-Module -FullyQualifiedName @{ ModuleName = "PSScriptAnalyzer"; ModuleVersion = "1.17" }'; Commands = @('Import-Module'); Parameters = @('FullyQualifiedName'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Remove-Module -FullyQualifiedName @{ ModuleName = "PSScriptAnalyzer"; ModuleVersion = "1.17" }'; Commands = @('Remove-Module'); Parameters = @('FullyQualifiedName'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
+    @{ Target = $script:Srv2012_3_profile; Script = 'Register-ScheduledJob -RunNow -Trigger $t'; Commands = @('Register-ScheduledJob'); Parameters = @('RunNow'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
+    @{ Target = $script:Srv2012_3_profile; Script = 'New-JobTrigger -At "1/20/2012 3:00 AM" -RepeatIndefinitely'; Commands = @('New-JobTrigger'); Parameters = @('RepeatIndefinitely'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
+    @{ Target = $script:Srv2012_3_profile; Script = '$t = Get-ScheduledJob | Get-JobTrigger | Enable-JobTrigger -PassThru'; Commands = @('Enable-JobTrigger'); Parameters = @('PassThru'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Save-Help -FullyQualifiedModule @{ ModuleName = "MyModule"; MaximumVersion = "2.7" }'; Commands = @('Save-Help'); Parameters = @('FullyQualifiedModule'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Export-PSSession -FullyQualifiedModule @{ ModuleName = "MyModule"; RequiredVersion = $reqVer }'; Commands = @('Export-PSSession'); Parameters = @('FullyQualifiedModule'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
     @{ Target = $script:Srv2012_3_profile; Script = 'Get-Command -FullyQualifiedModule @{ ModuleName = $m; MaximumVersion = $maxVer }'; Commands = @('Get-Command'); Parameters = @('FullyQualifiedModule'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
@@ -155,23 +176,9 @@ $script:ParameterCompatibilityTestCases = @(
     @{ Target = $script:Srv2019_6_1_profile; Script = 'Start-Service "eventlog" -ComputerName "MyComputer"'; Commands = @('Start-Service'); Parameters = @('ComputerName'); Version = '6.1'; OS = 'Windows'; ProblemCount = 1 }
 )
 
-# Disabled on AppVeyor's Ubuntu image until fixed
-if (-not $IsLinux -and $env:APPVEYOR) {
-    $script:CompatibilityTestCases += @(
-        @{ Target = $script:Srv2012_3_profile; Script = '$Protected = "Hello World" | Protect-CmsMessage -To "*youralias@emailaddress.com*"'; Commands = @("Protect-CmsMessage"); Version = "3.0"; OS = "Windows"; ProblemCount = 1 }
-    )
-
-    $script:ParameterCompatibilityTestCases += @(
-        @{ Target = $script:Srv2012_3_profile; Script = 'Register-ScheduledJob -RunNow -Trigger $t'; Commands = @('Register-ScheduledJob'); Parameters = @('RunNow'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
-        @{ Target = $script:Srv2012_3_profile; Script = 'New-JobTrigger -At "1/20/2012 3:00 AM" -RepeatIndefinitely'; Commands = @('New-JobTrigger'); Parameters = @('RepeatIndefinitely'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
-        @{ Target = $script:Srv2012_3_profile; Script = '$t = Get-ScheduledJob | Get-JobTrigger | Enable-JobTrigger -PassThru'; Commands = @('Enable-JobTrigger'); Parameters = @('PassThru'); Version = '3.0'; OS = 'Windows'; ProblemCount = 1 }
-    )
-}
-
-
 Describe 'UseCompatibleCommands' {
     Context 'Targeting a single profile' {
-        It "Reports <ProblemCount> command incompatibilties with '<Script>' on <OS> with PowerShell <Version>" -TestCases $script:CompatibilityTestCases {
+        It "Reports <ProblemCount> command incompatibilties with '<Script>' on <OS> with PowerShell <Version>" -TestCases $script:CompatibilityTestCases -Skip:$script:RunningInCIOnUbuntu {
             param($Script, [string]$Target, [string[]]$Commands, [version]$Version, [string]$OS, [int]$ProblemCount)
 
             $settings = @{
@@ -197,7 +204,7 @@ Describe 'UseCompatibleCommands' {
             }
         }
 
-        It "Reports <ProblemCount> parameter incompatibilties for '<Parameters>' on '<Commands>' with '<Script>' on <OS> with PowerShell <Version>" -TestCases $script:ParameterCompatibilityTestCases {
+        It "Reports <ProblemCount> parameter incompatibilties for '<Parameters>' on '<Commands>' with '<Script>' on <OS> with PowerShell <Version>" -TestCases $script:ParameterCompatibilityTestCases -Skip:$script:RunningInCIOnUbuntu {
             param($Script, [string]$Target, [string[]]$Commands, [string[]]$Parameters, [version]$Version, [string]$OS, [int]$ProblemCount)
 
             $settings = @{
@@ -225,7 +232,7 @@ Describe 'UseCompatibleCommands' {
     }
 
     Context "Checking a file against many targets" {
-        It "Finds all command problems" {
+        It "Finds all command problems" -Skip:$script:RunningInCIOnUbuntu {
             $settings = @{
                 Rules = @{
                     $script:RuleName = @{
@@ -244,7 +251,7 @@ Describe 'UseCompatibleCommands' {
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings `
                 | Where-Object { $_.RuleName -eq $script:RuleName }
 
-            $expectedNumber = if ($env:TF_BUILD -and $IsLinux) { 13 } else { 14 }
+            $expectedNumber = 14
 
             $diagnostics.Count | Should -Be $expectedNumber -Because "Got diagnostics: $($diagnostics.Message -join ", ")"
 
