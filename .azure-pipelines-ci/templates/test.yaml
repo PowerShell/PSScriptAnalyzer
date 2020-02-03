@@ -1,4 +1,8 @@
 steps:
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download Pipeline Artifact: out Folder'
+  inputs:
+    artifactName: out
 - task: PowerShell@2
   displayName: 'Test'
   inputs:

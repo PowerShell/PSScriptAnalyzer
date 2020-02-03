@@ -12,12 +12,12 @@ stages:
         steps:
         - pwsh: |
             Import-Module .\tools\appveyor.psm1
-            Invoke-AppveyorInstall
+            Invoke-AppveyorInstall -SkipPesterInstallation
             ./build.ps1 -Configuration 'Release' -All
             ./PSCompatibilityCollector/build.ps1 -Configuration 'Release' -Framework 'netstandard2.0'
           displayName: 'Full Build'
         - task: PublishPipelineArtifact@1
-          displayName: 'Publish Artifact: out Folder'
+          displayName: 'Publish Pipeline Artifact: out Folder'
           inputs:
             targetPath: '$(Build.SourcesDirectory)/out'
             artifactName: out
