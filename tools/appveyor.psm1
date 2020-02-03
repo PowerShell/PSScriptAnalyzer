@@ -3,9 +3,8 @@
 
 $ErrorActionPreference = 'Stop'
 
-# Implements the AppVeyor 'install' step and installs the required versions of Pester, platyPS and the .Net Core SDK if needed.
-function Invoke-AppVeyorInstall {
-    $requiredPesterVersion = '4.4.4'
+function Install-Pester {
+    $requiredPesterVersion = '4.10.0'
     $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
     if ($null -eq $pester) {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
@@ -19,6 +18,12 @@ function Invoke-AppVeyorInstall {
             Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery
         }
     }
+}
+
+# Implements the AppVeyor 'install' step and installs the required versions of Pester, platyPS and the .Net Core SDK if needed.
+function Invoke-AppVeyorInstall {
+
+    Install-Pester
 
     if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
         # WMF 4 image build
@@ -71,6 +76,8 @@ function Invoke-AppveyorTest {
         [ValidateScript( {Test-Path $_})]
         $CheckoutPath
     )
+
+    Install-Pester
 
     # enforce the language to utf-8 to avoid issues
     $env:LANG = "en_US.UTF-8"
