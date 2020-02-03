@@ -33,9 +33,11 @@ Describe "MissingRequiredFieldModuleManifest" {
         }
 
 	It "has the right suggested correction" {
-	   $expectedText = @'
+       $expectedText = @'
+
 # Version number of this module.
 ModuleVersion = '1.0.0.0'
+
 '@
             $violations[0].SuggestedCorrections[0].Text | Should -Match $expectedText
             Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -BeNullOrEmpty
