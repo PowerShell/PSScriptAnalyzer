@@ -32,14 +32,12 @@ Describe "MissingRequiredFieldModuleManifest" {
             $violations.SuggestedCorrections.Count | Should -Be $numExpectedCorrections
         }
 
-    # On Linux, mismatch in line endings cause this to fail
-	It "has the right suggested correction" -Skip:($IsLinux) {
-	   $expectedText = @'
-# Version number of this module.
-ModuleVersion = '1.0.0.0'
-'@
-            $violations[0].SuggestedCorrections[0].Text | Should -Match $expectedText
-            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -BeNullOrEmpty
+	It "has the right suggested correction" {
+        $expectedText = [System.Environment]::NewLine + '# Version number of this module.' +
+            [System.Environment]::NewLine + "ModuleVersion = '1.0.0.0'" + [System.Environment]::NewLine
+
+        $violations[0].SuggestedCorrections[0].Text | Should -BeExactly $expectedText
+        Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -BeNullOrEmpty
     }
 }
 

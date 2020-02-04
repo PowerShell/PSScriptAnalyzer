@@ -1,4 +1,14 @@
+parameters:
+- name: pwsh
+  type: boolean
+  default: true
+
 steps:
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download Pipeline Artifact: out Folder'
+  inputs:
+    artifactName: out
+    targetPath: '$(Build.SourcesDirectory)/out'
 - task: PowerShell@2
   displayName: 'Test'
   inputs:
