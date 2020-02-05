@@ -3,46 +3,15 @@
 
 $script:RuleName = 'PSUseCompatibleSyntax'
 
-$script:ScriptDefinition = @'
-class MyClass
-{
-    [string]$Hi = "Hello"
-
-    [string]GetString()
-    {
-        return $this.Hi
-    }
-}
-
-enum MyEnum
-{
-    One,
-    Two
-}
-
-$x = [MyClass]::new()
-
-$member = 'Hi'
-Write-Host $x.$member
-
-Write-Output 'Banana'
-
-$method = 'GetString'
-$x.$method()
-
-$enumVal = "One"
-[MyEnum]::$enumVal
-'@
-
 Describe "PSUseCompatibleSyntax" {
     BeforeAll {
         $testCases = @(
             @{ Script = '$x = [MyClass]::new()'; Versions = @(3,4) }
-            @{ Script = '$member = "Hi"; $x.$member'; Versions = @(3) }
+            @{ Script = '$member = "Hi"; $x.$member'; Versions = @() }
             @{ Script = 'Write-Host "Banana"'; Versions = @() }
             @{ Script = '[System.VeryInnocuousType]::RunApiMethod($obj)'; Versions = @() }
             @{ Script = '$y.$methodWithAVeryLongName()'; Versions = @(3) }
-            @{ Script = '$typeExpression::$staticMember'; Versions = @(3) }
+            @{ Script = '$typeExpression::$staticMember'; Versions = @() }
             @{ Script = '$typeExpression::$dynamicStaticMethodName()'; Versions = @(3) }
         )
 

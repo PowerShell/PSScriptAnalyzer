@@ -3,9 +3,8 @@
 
 $ErrorActionPreference = 'Stop'
 
-# Implements the AppVeyor 'install' step and installs the required versions of Pester, platyPS and the .Net Core SDK if needed.
-function Invoke-AppVeyorInstall {
-    $requiredPesterVersion = '4.4.4'
+function Install-Pester {
+    $requiredPesterVersion = '4.10.0'
     $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
     if ($null -eq $pester) {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
@@ -19,6 +18,16 @@ function Invoke-AppVeyorInstall {
             Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery
         }
     }
+}
+
+# Implements the AppVeyor 'install' step and installs the required versions of Pester, platyPS and the .Net Core SDK if needed.
+function Invoke-AppVeyorInstall {
+    param(
+        # For the multi-stage build in Azure DevOps, Pester is not needed for bootstrapping the build environment
+        [switch] $SkipPesterInstallation
+    )
+
+    if (-not $SkipPesterInstallation.IsPresent) { Install-Pester }
 
     if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
         # WMF 4 image build
@@ -72,6 +81,8 @@ function Invoke-AppveyorTest {
         $CheckoutPath
     )
 
+    Install-Pester
+
     # enforce the language to utf-8 to avoid issues
     $env:LANG = "en_US.UTF-8"
     Write-Verbose -Verbose ("Running tests on PowerShell version " + $PSVersionTable.PSVersion)
@@ -107,9 +118,11 @@ function Invoke-AppveyorTest {
     $testResults = Invoke-Pester -Script $testScripts -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
 
     # Upload the test results
-    $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
-    Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
-    [byte[]]$response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+    if ($env:APPVEYOR) {
+        $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
+        Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
+        [byte[]]$response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+    }
 
     # Throw an error if any tests failed
     if ($testResults.FailedCount -gt 0) {
