@@ -65,4 +65,9 @@ Describe "UseCorrectCasing" {
         Invoke-Formatter 'Invoke-DummyFunction -parametername: $parameterValue' |
             Should -Be 'Invoke-DummyFunction -ParameterName: $parameterValue'
     }
+
+    It "Should not throw when using parameter name that does not exist" {
+        Invoke-Formatter 'Get-Process -NonExistingParameterName' -ErrorAction Stop
+    }
+
 }

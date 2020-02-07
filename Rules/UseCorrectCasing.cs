@@ -73,8 +73,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (var commandParameterAst in commandParameterAsts)
                 {
                     var parameterName = commandParameterAst.ParameterName;
-                    var parameterMetaData = availableParameters[parameterName];
-                    if (parameterMetaData != null)
+                    if (availableParameters.TryGetValue(parameterName, out ParameterMetadata parameterMetaData))
                     {
                         var correctlyCasedParameterName = parameterMetaData.Name;
                         if (!parameterName.Equals(correctlyCasedParameterName, StringComparison.Ordinal))
