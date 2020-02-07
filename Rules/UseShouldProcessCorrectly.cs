@@ -379,7 +379,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     // Otherwise try to get the value assigned to the parameter, and assume false if value cannot be determined
                     try
                     {
-                        hasShouldProcessSet = LanguagePrimitives.IsTrue(namedArgumentAst.Argument.SafeGetValue());
+                        hasShouldProcessSet = LanguagePrimitives.IsTrue(
+                            Helper.GetSafeValueFromExpressionAst(
+                                namedArgumentAst.Argument));
                     }
                     catch
                     {
