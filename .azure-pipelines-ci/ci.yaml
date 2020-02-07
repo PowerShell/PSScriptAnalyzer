@@ -32,14 +32,14 @@ stages:
             macOS:
               vmImage: macos-latest
             Windows_Server2016_PowerShell_Core:
-              vmImage: windows-2019
+              vmImage: vs2017-win2016
             Windows_Server2019_PowerShell_Core:
               vmImage: windows-2019
             Windows_Server2016_PowerShell_5_1:
               vmImage: vs2017-win2016
               pwsh: false
             Windows_Server2019_PowerShell_5_1:
-              vmImage: vs2017-win2016
+              vmImage: windows-2019
               pwsh: false
         pool:
           vmImage: $[ variables['vmImage'] ]
