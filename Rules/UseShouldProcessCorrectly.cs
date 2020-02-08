@@ -356,7 +356,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (AttributeAst attributeAst in functionBodyAst.ParamBlock.Attributes)
             {
                 // We're looking for [CmdletBinding()]
-                if (!String.Equals(attributeAst.TypeName.FullName, "CmdletBinding", StringComparison.OrdinalIgnoreCase))
+                if (!attributeAst.TypeName.FullName.Equals("CmdletBinding", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
