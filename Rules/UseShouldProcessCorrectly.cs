@@ -364,7 +364,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 foreach (NamedAttributeArgumentAst namedArgumentAst in attributeAst.NamedArguments)
                 {
                     // We want [CmdletBinding(SupportsShouldProcess)]
-                    if (!String.Equals(namedArgumentAst.ArgumentName, "SupportsShouldProcess", StringComparison.OrdinalIgnoreCase))
+                    if (!namedArgumentAst.ArgumentName.Equals("SupportsShouldProcess", StringComparison.OrdinalIgnoreCase))
+
                     {
                         continue;
                     }
