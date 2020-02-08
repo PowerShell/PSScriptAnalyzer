@@ -251,8 +251,6 @@ Describe "Settings Class" {
                 @{ Expr = ';)' }
             )
 
-            $gsvMethod = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings].GetMethod('GetSafeValueFromExpressionAst', [System.Reflection.BindingFlags]'nonpublic,static')
-
             function ShouldBeDeeplyEqual
             {
                 param(
@@ -294,7 +292,7 @@ Describe "Settings Class" {
                         {
                             @(,$inputVal) | ShouldBeDeeplyEqual -To $To[$i]
                             continue
-                        }
+            }
                         $inputVal | ShouldBeDeeplyEqual -To $To[$i]
                     }
                     return
@@ -311,7 +309,7 @@ Describe "Settings Class" {
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
             $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
-            $gsvVal = $gsvMethod.Invoke($null, @($exprAst))
+            $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
             $gsvVal | Should -Be $pwshVal
         }
@@ -323,7 +321,7 @@ Describe "Settings Class" {
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
             $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
-            $gsvVal = $gsvMethod.Invoke($null, @($exprAst))
+            $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
 
             # Need to test the type like this so that the pipeline doesn't unwrap the type,
@@ -340,7 +338,7 @@ Describe "Settings Class" {
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
             $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
-            $gsvVal = $gsvMethod.Invoke($null, @($exprAst))
+            $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
             $gsvVal | Should -BeOfType [hashtable]
             $gsvVal | ShouldBeDeeplyEqual -To $pwshVal
@@ -358,7 +356,7 @@ Describe "Settings Class" {
                 $expectedError = 'ArgumentNullException'
             }
 
-            { $gsvVal = $gsvMethod.Invoke($null, @($exprAst)) } | Should -Throw -ErrorId $expectedError
+            { $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst) } | Should -Throw -ErrorId $expectedError
         }
     }
 }
