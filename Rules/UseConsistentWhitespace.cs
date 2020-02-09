@@ -57,7 +57,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckSeparator { get; protected set; }
 
-        [ConfigurableRuleProperty(defaultValue: true)]
+        [ConfigurableRuleProperty(defaultValue: false)]
         public bool CheckParameter { get; protected set; }
 
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
