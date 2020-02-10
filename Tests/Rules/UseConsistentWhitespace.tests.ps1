@@ -237,7 +237,7 @@ $x = "abc";
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
             $ruleConfiguration.CheckPipe = $true
-            $ruleConfiguration.CheckPipeForRedundantWhiteSpace = $false
+            $ruleConfiguration.CheckPipeForRedundantWhitespace  = $false
             $ruleConfiguration.CheckSeparator = $false
         }
 
@@ -293,14 +293,14 @@ foo
         }
     }
 
-    Context "CheckPipeForRedundantWhiteSpace" {
+    Context "CheckPipeForRedundantWhitespace " {
         BeforeAll {
             $ruleConfiguration.CheckInnerBrace = $false
             $ruleConfiguration.CheckOpenBrace = $false
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
             $ruleConfiguration.CheckPipe = $false
-            $ruleConfiguration.CheckPipeForRedundantWhiteSpace = $true
+            $ruleConfiguration.CheckPipeForRedundantWhitespace  = $true
             $ruleConfiguration.CheckSeparator = $false
         }
 
