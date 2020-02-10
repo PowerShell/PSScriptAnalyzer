@@ -48,6 +48,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckPipe { get; protected set; }
 
+        [ConfigurableRuleProperty(defaultValue: false)]
+        public bool CheckPipeForRedundantWhiteSpace { get; protected set; }
+
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckOpenParen { get; protected set; }
 
@@ -73,7 +76,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 violationFinders.Add(FindInnerBraceViolations);
             }
 
-            if (CheckPipe)
+            if (CheckPipe || CheckPipeForRedundantWhiteSpace)
             {
                 violationFinders.Add(FindPipeViolations);
             }
@@ -260,7 +263,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (!IsNextTokenApartByWhitespace(lCurly))
+                if (!IsNextTokenApartByWhitespace(lCurly, out bool redundantWhitespace))
                 {
                     yield return new DiagnosticRecord(
                         GetError(ErrorKind.AfterOpeningBrace),
@@ -314,16 +317,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (!IsNextTokenApartByWhitespace(pipe))
+                if (!IsNextTokenApartByWhitespace(pipe, out bool redundantWhitespace))
                 {
-                    yield return new DiagnosticRecord(
-                        GetError(ErrorKind.AfterPipe),
-                        pipe.Value.Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        tokenOperations.Ast.Extent.File,
-                        null,
-                        GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, true, false).ToList());
+                    if (CheckPipeForRedundantWhiteSpace && redundantWhitespace || CheckPipe && !redundantWhitespace)
+                    {
+                        yield return new DiagnosticRecord(
+                            GetError(ErrorKind.AfterPipe),
+                            pipe.Value.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            tokenOperations.Ast.Extent.File,
+                            null,
+                            GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, true, false).ToList());
+                    }
                 }
             }
 
@@ -339,9 +345,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (!IsPreviousTokenApartByWhitespace(pipe))
+                if (!IsPreviousTokenApartByWhitespace(pipe, out bool redundantWhitespace))
                 {
-                    yield return new DiagnosticRecord(
+                    if (CheckPipeForRedundantWhiteSpace && redundantWhitespace || CheckPipe && !redundantWhitespace)
+                    {
+                        yield return new DiagnosticRecord(
                         GetError(ErrorKind.BeforePipe),
                         pipe.Value.Extent,
                         GetName(),
@@ -349,6 +357,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         tokenOperations.Ast.Extent.File,
                         null,
                         GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, false, true).ToList());
+                    }
                 }
             }
         }
@@ -467,16 +476,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return openParenKeywordWhitelist.Contains(token.Kind);
         }
 
-        private bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
+        private static bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
         {
-            return whiteSpaceSize ==
-                (tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber);
+            return IsPreviousTokenApartByWhitespace(tokenNode, out _);
         }
 
-        private bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
+        private static bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode, out bool hasRedundantWhitespace)
         {
-            return whiteSpaceSize ==
-                (tokenNode.Next.Value.Extent.StartColumnNumber - tokenNode.Value.Extent.EndColumnNumber);
+            var actualWhitespaceSize = tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber;
+            hasRedundantWhitespace = actualWhitespaceSize - whiteSpaceSize > 0;
+            return whiteSpaceSize == actualWhitespaceSize;
+        }
+
+        private static bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode, out bool hasRedundantWhitespace)
+        {
+            var actualWhitespaceSize = tokenNode.Next.Value.Extent.StartColumnNumber - tokenNode.Value.Extent.EndColumnNumber;
+            hasRedundantWhitespace = actualWhitespaceSize - whiteSpaceSize > 0;
+            return whiteSpaceSize == actualWhitespaceSize;
         }
 
         private bool IsPreviousTokenOnSameLineAndApartByWhitespace(LinkedListNode<Token> tokenNode)

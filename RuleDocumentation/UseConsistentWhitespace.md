@@ -13,14 +13,15 @@
 ```powershell
     Rules = @{
         PSUseConsistentWhitespace  = @{
-            Enable          = $true
-            CheckInnerBrace = $true
-            CheckOpenBrace  = $true
-            CheckOpenParen  = $true
-            CheckOperator   = $true
-            CheckPipe       = $true
-            CheckSeparator  = $true
-            CheckParameter  = $false
+            Enable                          = $true
+            CheckInnerBrace                 = $true
+            CheckOpenBrace                  = $true
+            CheckOpenParen                  = $true
+            CheckOperator                   = $true
+            CheckPipe                       = $true
+            CheckPipeForRedundantWhiteSpace = $false
+            CheckSeparator                  = $true
+            CheckParameter                  = $false
         }
     }
 ```

@@ -237,6 +237,7 @@ $x = "abc";
             $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $false
             $ruleConfiguration.CheckPipe = $true
+            $ruleConfiguration.CheckPipeForRedundantWhiteSpace = $false
             $ruleConfiguration.CheckSeparator = $false
         }
 
@@ -246,22 +247,20 @@ $x = "abc";
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
-        It "Should find a violation if there is no space before pipe" {
+        It "Should not find a violation if there is no space before pipe" {
             $def = 'Get-Item| foo'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '' ' '
         }
 
-        It "Should find a violation if there is one space too much before pipe" {
+        It "Should not find a violation if there is one space too much before pipe" {
             $def = 'Get-Item  | foo'
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
         It "Should find a violation if there is one space too much after pipe" {
             $def = 'Get-Item |  foo'
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
         It "Should not find a violation if there is 1 space before and after a pipe" {
@@ -294,6 +293,51 @@ foo
         }
     }
 
+    Context "CheckPipeForRedundantWhiteSpace" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckPipeForRedundantWhiteSpace = $true
+            $ruleConfiguration.CheckSeparator = $false
+        }
+
+        It "Should not find a violation if there is no space around pipe" {
+            $def = 'foo|bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should not find a violation if there is exactly one space around pipe" {
+            $def = 'foo | bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should find a violation if there is one space too much before pipe" {
+            $def = 'foo  | bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+        }
+
+        It "Should find a violation if there is two spaces too much before pipe" {
+            $def = 'foo   | bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '   ' ' '
+        }
+
+        It "Should find a violation if there is one space too much after pipe" {
+            $def = 'foo |  bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
+        }
+
+        It "Should find a violation if there is two spaces too much after pipe" {
+            $def = 'foo |   bar'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '   ' ' '
+        }
+    }
 
     Context "CheckInnerBrace" {
         BeforeAll {
