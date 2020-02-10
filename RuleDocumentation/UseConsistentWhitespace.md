@@ -54,7 +54,11 @@ Checks if a comma or a semicolon is followed by a space. E.g. `@(1, 2, 3)` or `@
 
 #### CheckPipe: bool (Default value is `$true`)
 
-Checks if a pipe is surrounded on both sides by a space. E.g. `foo | bar` instead of `foo|bar`.
+Checks if a pipe is surrounded on both sides by a space but ignores redundant whitespace. E.g. `foo | bar` instead of `foo|bar`.
+
+#### CheckPipeForRedundantWhiteSpace: bool (Default value is `$false`)
+
+Checks if a pipe is surrounded by redundant whitespace (i.e. more than 1 whitespace). E.g. `foo | bar` instead of `foo|bar`.
 
 #### CheckParameter: bool (Default value is `$false` at the moment due to the setting being new)
 

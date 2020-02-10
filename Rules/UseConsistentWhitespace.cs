@@ -263,7 +263,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (!IsNextTokenApartByWhitespace(lCurly, out bool redundantWhitespace))
+                if (!IsNextTokenApartByWhitespace(lCurly))
                 {
                     yield return new DiagnosticRecord(
                         GetError(ErrorKind.AfterOpeningBrace),
@@ -317,9 +317,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (!IsNextTokenApartByWhitespace(pipe, out bool redundantWhitespace))
+                if (!IsNextTokenApartByWhitespace(pipe, out bool hasRedundantWhitespace))
                 {
-                    if (CheckPipeForRedundantWhiteSpace && redundantWhitespace || CheckPipe && !redundantWhitespace)
+                    if (CheckPipeForRedundantWhiteSpace && hasRedundantWhitespace || CheckPipe && !hasRedundantWhitespace)
                     {
                         yield return new DiagnosticRecord(
                             GetError(ErrorKind.AfterPipe),
@@ -345,9 +345,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (!IsPreviousTokenApartByWhitespace(pipe, out bool redundantWhitespace))
+                if (!IsPreviousTokenApartByWhitespace(pipe, out bool hasRedundantWhitespace))
                 {
-                    if (CheckPipeForRedundantWhiteSpace && redundantWhitespace || CheckPipe && !redundantWhitespace)
+                    if (CheckPipeForRedundantWhiteSpace && hasRedundantWhitespace || CheckPipe && !hasRedundantWhitespace)
                     {
                         yield return new DiagnosticRecord(
                         GetError(ErrorKind.BeforePipe),
@@ -486,6 +486,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var actualWhitespaceSize = tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber;
             hasRedundantWhitespace = actualWhitespaceSize - whiteSpaceSize > 0;
             return whiteSpaceSize == actualWhitespaceSize;
+        }
+
+        private static bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
+        {
+            return IsNextTokenApartByWhitespace(tokenNode, out _);
         }
 
         private static bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode, out bool hasRedundantWhitespace)
