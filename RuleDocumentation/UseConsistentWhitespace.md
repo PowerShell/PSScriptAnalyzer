@@ -58,7 +58,8 @@ Checks if a pipe is surrounded on both sides by a space but ignores redundant wh
 
 #### CheckPipeForRedundantWhitespace : bool (Default value is `$false`)
 
-Checks if a pipe is surrounded by redundant whitespace (i.e. more than 1 whitespace). E.g. `foo | bar` instead of `foo|bar`.
+Checks if a pipe is surrounded by redundant whitespace (i.e. more than 1 whitespace). E.g. `foo | bar` instead of `foo     |    
+ bar`.
 
 #### CheckParameter: bool (Default value is `$false` at the moment due to the setting being new)
 
