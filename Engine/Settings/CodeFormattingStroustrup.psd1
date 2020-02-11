@@ -38,7 +38,7 @@
             CheckOpenParen                  = $true
             CheckOperator                   = $true
             CheckPipe                       = $true
-            CheckPipeForRedundantWhitespace  = $false
+            CheckPipeForRedundantWhitespace = $false
             CheckSeparator                  = $true
             CheckParameter                  = $false
         }

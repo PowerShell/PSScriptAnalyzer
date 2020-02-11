@@ -49,7 +49,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public bool CheckPipe { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: false)]
-        public bool CheckPipeForRedundantWhitespace  { get; protected set; }
+        public bool CheckPipeForRedundantWhitespace { get; protected set; }
 
         [ConfigurableRuleProperty(defaultValue: true)]
         public bool CheckOpenParen { get; protected set; }
@@ -76,7 +76,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 violationFinders.Add(FindInnerBraceViolations);
             }
 
-            if (CheckPipe || CheckPipeForRedundantWhitespace )
+            if (CheckPipe || CheckPipeForRedundantWhitespace)
             {
                 violationFinders.Add(FindPipeViolations);
             }
@@ -319,7 +319,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (!IsNextTokenApartByWhitespace(pipe, out bool hasRedundantWhitespace))
                 {
-                    if (CheckPipeForRedundantWhitespace  && hasRedundantWhitespace || CheckPipe && !hasRedundantWhitespace)
+                    if (CheckPipeForRedundantWhitespace && hasRedundantWhitespace || CheckPipe && !hasRedundantWhitespace)
                     {
                         yield return new DiagnosticRecord(
                             GetError(ErrorKind.AfterPipe),
@@ -347,7 +347,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (!IsPreviousTokenApartByWhitespace(pipe, out bool hasRedundantWhitespace))
                 {
-                    if (CheckPipeForRedundantWhitespace  && hasRedundantWhitespace || CheckPipe && !hasRedundantWhitespace)
+                    if (CheckPipeForRedundantWhitespace && hasRedundantWhitespace || CheckPipe && !hasRedundantWhitespace)
                     {
                         yield return new DiagnosticRecord(
                         GetError(ErrorKind.BeforePipe),
