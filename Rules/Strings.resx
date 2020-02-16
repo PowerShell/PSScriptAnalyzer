@@ -1114,12 +1114,21 @@
     <value>ReviewUnusedParameter</value>
   </data>
   <data name="ReviewUnusedParameterDescription" xml:space="preserve">
-    <value>Ensure all parameters are used within the same script, scriptblock, or function where they are declared.</value>	
-  </data>	
-  <data name="ReviewUnusedParameterError" xml:space="preserve">	
-    <value>The parameter '{0}' has been declared but not used. </value>	
-  </data>	
-  <data name="ReviewUnusedParameterName" xml:space="preserve">	
-    <value>ReviewUnusedParameter</value>	
+    <value>Ensure all parameters are used within the same script, scriptblock, or function where they are declared.</value>
+  </data>
+  <data name="ReviewUnusedParameterError" xml:space="preserve">
+    <value>The parameter '{0}' has been declared but not used. </value>
+  </data>
+  <data name="ReviewUnusedParameterName" xml:space="preserve">
+    <value>ReviewUnusedParameter</value>
+  </data>
+  <data name="AvoidUnInitializedVarsInNewRunspacesCommonName" xml:space="preserve">
+    <value>Use $Using: directive in runspace scriptblocks</value>
+  </data>
+  <data name="AvoidUnInitializedVarsInNewRunspacesDescription" xml:space="preserve">
+    <value>If a scriptblock is intended to be run as a new runspace, variables inside it should use $using: directive, or be initialized within the scriptblock.</value>
+  </data>
+  <data name="AvoidUnInitializedVarsInNewRunspacesName" xml:space="preserve">
+    <value>AvoidUnInitializedVarsInNewRunspaces</value>
   </data>
 </root>

@@ -619,6 +619,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use $Using: directive in runspace scriptblocks.
+        /// </summary>
+        internal static string AvoidUnInitializedVarsInNewRunspacesCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a scriptblock is intended to be run as a new runspace, variables inside it should use $using: directive, or be initialized within the scriptblock..
+        /// </summary>
+        internal static string AvoidUnInitializedVarsInNewRunspacesDescription {
+            get {
+                return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUnInitializedVarsInNewRunspaces.
+        /// </summary>
+        internal static string AvoidUnInitializedVarsInNewRunspacesName {
+            get {
+                return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Module Must Be Loadable.
         /// </summary>
         internal static string AvoidUnloadableModuleCommonName {
