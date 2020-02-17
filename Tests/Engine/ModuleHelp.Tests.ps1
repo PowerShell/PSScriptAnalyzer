@@ -205,6 +205,10 @@ function Get-CommandVersion {
 
 if (!$RequiredVersion) {
 	$RequiredVersion = (Get-Module $ModuleName -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1).Version
+	if ($null -eq $RequiredVersion) {
+		# Look for loaded modules instead of installed modules, if we don't find any installed modules.
+		$RequiredVersion = (Get-Module $ModuleName | Sort-Object -Property Version -Descending | Select-Object -First 1).Version
+	}
 }
 
 # Remove all versions of the module from the session. Pester can't handle multiple versions.
@@ -214,7 +218,9 @@ Get-Module $ModuleName | Remove-Module
 Import-Module $ModuleName -RequiredVersion $RequiredVersion -ErrorAction Stop
 $ms = $null
 $commands =$null
-$paramBlackList = @()
+$paramBlackList = @(
+	'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
+)
 if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 	$ms = New-Object -TypeName 'Microsoft.PowerShell.Commands.ModuleSpecification' -ArgumentList $ModuleName
 	$commands = Get-Command -Module $ms.Name
@@ -222,7 +228,9 @@ if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 }
 else {
 	$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
-	$commands = Get-Command -FullyQualifiedModule $ms -CommandType Cmdlet,Function,Workflow # Not alias
+	# Because on Windows Powershell we have workflow, we need to include it there, but in pwsh, we can't. This makes sure this works on both.
+	$commandTypes = ([System.Enum]::GetNames("System.Management.Automation.CommandTypes") -match "^Cmdlet$|^Function$|^Workflow$")
+	$commands = Get-Command -FullyQualifiedModule $ms -CommandType $commandTypes
 }
 
 ## When testing help, remember that help is cached at the beginning of each session.
@@ -276,7 +284,7 @@ foreach ($command in $commands) {
 			$HelpParameterNames = $Help.Parameters.Parameter.Name | Sort-Object -Unique
 
 			foreach ($parameter in $parameters) {
-				if ($parameter -in $paramBlackList) {
+				if ($parameter.Name -in $paramBlackList) {
 					continue
 				}
 				$parameterName = $parameter.Name
