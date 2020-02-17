@@ -205,10 +205,6 @@ function Get-CommandVersion {
 
 if (!$RequiredVersion) {
 	$RequiredVersion = (Get-Module $ModuleName -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1).Version
-	if ($null -eq $RequiredVersion) {
-		# Look for loaded modules instead of installed modules, if we don't find any installed modules.
-		$RequiredVersion = (Get-Module $ModuleName | Sort-Object -Property Version -Descending | Select-Object -First 1).Version
-	}
 }
 
 # Remove all versions of the module from the session. Pester can't handle multiple versions.
