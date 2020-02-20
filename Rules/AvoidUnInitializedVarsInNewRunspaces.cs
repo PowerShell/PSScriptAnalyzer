@@ -144,7 +144,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     SelectMany(a => a.FindAll(
                                     predicate: aa => aa is VariableExpressionAst varAst &&
                                                      !(varAst.Parent is UsingExpressionAst) &&
-                                                     !varsInAssignments.Contains(varAst),
+                                                     !varsInAssignments.Contains(varAst) &&
+                                                     !Helper.Instance.HasSpecialVars(varAst.VariablePath.UserPath),
                                     searchNestedScriptBlocks: true).
                                         Select(aaa => aaa as VariableExpressionAst));
 
