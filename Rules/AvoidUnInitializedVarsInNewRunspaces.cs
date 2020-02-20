@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -111,53 +111,45 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>An enumerable containing diagnostic records</returns>
         private IEnumerable<DiagnosticRecord> AnalyzeScriptBlockAst(ScriptBlockAst scriptBlockAst, string fileName)
         {
+            // TODO: add other Cmdlets like invoke-command later?
             var foreachObjectCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Foreach-Object");
 
-            // Find all commandAst objects for `Foreach-Object -Parallel`. As for parametername matching, there are three
+            // Find all commandAst objects for `Foreach-Object -Parallel`. As for parameter name matching, there are three
             // parameters starting with a 'p': Parallel, PipelineVariable and Process, so we use startsWith 'pa' as the shortest unambiguous form.
             // Because we are already going trough all ScriptBlockAst objects, we do not need to look for nested script blocks here.
-            if (!(scriptBlockAst.FindAll(
+            var foreachObjectParallelCommandAsts = scriptBlockAst.FindAll(
                 predicate: c => c is CommandAst commandAst &&
-                                foreachObjectCmdletNamesAndAliases.Contains(commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
-                                commandAst.CommandElements.Any(
-                                    e => e is CommandParameterAst parameterAst && 
-                                         parameterAst.ParameterName.StartsWith("pa", StringComparison.OrdinalIgnoreCase)), 
-                searchNestedScriptBlocks: true) is IEnumerable<Ast> foreachObjectParallelAsts))
+                                foreachObjectCmdletNamesAndAliases.Contains(
+                                    commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
+                                    commandAst.CommandElements.Any(
+                                        e => e is CommandParameterAst parameterAst && 
+                                             parameterAst.ParameterName.StartsWith("pa", StringComparison.OrdinalIgnoreCase)), 
+                searchNestedScriptBlocks: false).Select(a=>a as CommandAst);
+            
+            foreach (var commandAst in foreachObjectParallelCommandAsts)
             {
-                yield break;
-            }
-
-            foreach (var ast in foreachObjectParallelAsts)
-            {
-                var commandAst = ast as CommandAst;
-
-                if (commandAst == null)
-                {
-                    continue;
-                }
-
+                if (commandAst == null) 
+                    yield break;
+                
+                // Find all variables that are assigned within this ScriptBlock
                 var varsInAssignments = commandAst.FindAll(
-                    predicate: a => a is AssignmentStatementAst assignment && 
-                                    assignment.Left.FindAll(
-                                        predicate: aa => aa is VariableExpressionAst, 
-                                        searchNestedScriptBlocks: true) != null, 
-                    searchNestedScriptBlocks: true);
+                    predicate: a => a is VariableExpressionAst varExpr &&
+                                    varExpr.Parent is AssignmentStatementAst assignment &&
+                                    assignment.Left.Equals(varExpr),
+                    searchNestedScriptBlocks: true).
+                        Select(a => a as VariableExpressionAst);
 
-                var commandElements = commandAst.CommandElements;
-                var nonAssignedNonUsingVars = new List<Ast>() { };
-                foreach (var cmdEl in commandElements)
-                {
-                    nonAssignedNonUsingVars.AddRange(
-                        cmdEl.FindAll(
-                            predicate: aa => aa is VariableExpressionAst varAst && 
-                            !(varAst.Parent is UsingExpressionAst) &&
-                            !varsInAssignments.Contains(varAst), true));
-                }
+                // Find all variables that are not locally assigned, and don't have $using: directive
+                var nonAssignedNonUsingVars = commandAst.CommandElements.
+                    SelectMany(a => a.FindAll(
+                                    predicate: aa => aa is VariableExpressionAst varAst &&
+                                                     !(varAst.Parent is UsingExpressionAst) &&
+                                                     !varsInAssignments.Contains(varAst),
+                                    searchNestedScriptBlocks: true).
+                                        Select(aaa => aaa as VariableExpressionAst));
 
                 foreach (var variableExpression in nonAssignedNonUsingVars)
                 {
-                    var _temp  = variableExpression as VariableExpressionAst;
-
                     yield return new DiagnosticRecord(
                         message: string.Format(CultureInfo.CurrentCulture,
                             Strings.AvoidUnInitializedVarsInNewRunspacesError, variableExpression.ToString()),
@@ -165,7 +157,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         ruleName: GetName(),
                         severity: DiagnosticSeverity.Warning,
                         scriptPath: fileName,
-                        ruleId: _temp?.ToString());
+                        ruleId: variableExpression.ToString());
                 }
             }
         }
