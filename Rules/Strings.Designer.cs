@@ -628,11 +628,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a scriptblock is intended to be run as a new runspace, variables inside it should use $using: directive, or be initialized within the scriptblock..
+        ///   Looks up a localized string similar to If a ScriptBlock is intended to be run as a new runspace, variables inside it should use $using: directive, or be initialized within the ScriptBlock..
         /// </summary>
         internal static string AvoidUnInitializedVarsInNewRunspacesDescription {
             get {
                 return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The variable &apos;{0}&apos; is not declared within this ScriptBlock, and is missing the &apos;$using:&apos; directive..
+        /// </summary>
+        internal static string AvoidUnInitializedVarsInNewRunspacesError {
+            get {
+                return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesError", resourceCulture);
             }
         }
         

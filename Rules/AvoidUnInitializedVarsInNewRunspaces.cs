@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -160,8 +160,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     yield return new DiagnosticRecord(
                         message: string.Format(CultureInfo.CurrentCulture,
-                            Strings.UseDeclaredVarsMoreThanAssignmentsError, _temp?.ToString()),
-                        extent: _temp?.Extent,
+                            Strings.AvoidUnInitializedVarsInNewRunspacesError, variableExpression.ToString()),
+                        extent: variableExpression.Extent,
                         ruleName: GetName(),
                         severity: DiagnosticSeverity.Warning,
                         scriptPath: fileName,
