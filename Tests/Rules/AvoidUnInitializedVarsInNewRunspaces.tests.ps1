@@ -1,12 +1,5 @@
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testRootDirectory = Split-Path -Parent $directory
-
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
-
-$ruleName = "PSAvoidUnInitializedVarsInNewRunspaces"
-
 $settings = @{
-    IncludeRules = @($ruleName)
+    IncludeRules = "PSAvoidUnInitializedVarsInNewRunspaces"
 }
 
 Describe "AvoidUnInitializedVarsInNewRunspaces" {
