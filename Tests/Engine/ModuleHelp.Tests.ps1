@@ -224,9 +224,7 @@ if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 }
 else {
 	$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
-	# Because on Windows Powershell we have workflow, we need to include it there, but in pwsh, we can't. This makes sure this works on both.
-	$commandTypes = ([System.Enum]::GetNames("System.Management.Automation.CommandTypes") -match "^Cmdlet$|^Function$|^Workflow$")
-	$commands = Get-Command -FullyQualifiedModule $ms -CommandType $commandTypes
+	$commands = Get-Command -FullyQualifiedModule $ms
 }
 
 ## When testing help, remember that help is cached at the beginning of each session.
