@@ -619,7 +619,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use $Using: directive in runspace scriptblocks.
+        ///   Looks up a localized string similar to Use &apos;$using:&apos; scope modifier in runspace scriptblocks.
         /// </summary>
         internal static string AvoidUnInitializedVarsInNewRunspacesCommonName {
             get {
@@ -628,7 +628,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a ScriptBlock is intended to be run as a new runspace, variables inside it should use $using: directive, or be initialized within the ScriptBlock..
+        ///   Looks up a localized string similar to If a ScriptBlock is intended to be run as a new runspace, variables inside it should use &apos;$using:&apos; scope modifier, or be initialized within the ScriptBlock..
         /// </summary>
         internal static string AvoidUnInitializedVarsInNewRunspacesDescription {
             get {
@@ -637,7 +637,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The variable &apos;{0}&apos; is not declared within this ScriptBlock, and is missing the &apos;$using:&apos; directive..
+        ///   Looks up a localized string similar to The variable &apos;{0}&apos; is not declared within this ScriptBlock, and is missing the &apos;$using:&apos; scope modifier..
         /// </summary>
         internal static string AvoidUnInitializedVarsInNewRunspacesError {
             get {
