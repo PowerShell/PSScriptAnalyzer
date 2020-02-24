@@ -170,16 +170,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var invokeCommandCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Invoke-Command");
             var sessionDictionary = new Dictionary<string, List<Ast>>();
             var result = new List<VariableExpressionAst>();
-            
+
+            // The shortest unambiguous name for parameter -Session is 'session' (SessionName and SessionOption) also exist.
             var scriptBlockExpressionAstsToAnalyze = scriptBlockAst.FindAll(
                 predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
                                 scriptBlockExpressionAst.Parent is CommandAst commandAst &&
-                                invokeCommandCmdletNamesAndAliases.Contains(
-                                    commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
+                                invokeCommandCmdletNamesAndAliases
+                                    .Contains(commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
                                 commandAst.CommandElements.Any(
                                     e => e is CommandParameterAst parameterAst &&
-                                         parameterAst.ParameterName.StartsWith(
-                                             "session", //TODO: find better way to discern between Session, SessionName and SessionOption parameters
+                                         parameterAst.ParameterName.Equals(
+                                             "session",
                                              StringComparison
                                                  .OrdinalIgnoreCase)), 
                 searchNestedScriptBlocks: false);
@@ -189,14 +190,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (!(ast.Parent is CommandAst commandAst))
                     continue;
-                
+
                 // Find session parameter
+                //   The shortest unambiguous name for parameter -Session is 'session' (SessionName and SessionOption) also exist.
                 if (!(commandAst.CommandElements.First<Ast>(
                         e => e is CommandParameterAst parameterAst &&
                              parameterAst.
                                  ParameterName.
-                                 StartsWith(
-                                     "session", //TODO: find better way to discern between Session, SessionName and SessionOption parameters
+                                 Equals(
+                                     "session",
                                      StringComparison
                                          .OrdinalIgnoreCase)) is CommandParameterAst sessionParameterAst))
                     continue;
@@ -342,7 +344,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 .Select(a => a as VariableExpressionAst);
         }
 
-        private static IEnumerable<VariableExpressionAst> FindNonAssignedNonUsingVarAsts(Ast ast, IEnumerable<VariableExpressionAst> varsInAssignments)
+        private static IEnumerable<VariableExpressionAst> FindNonAssignedNonUsingVarAsts(
+            Ast ast, IEnumerable<VariableExpressionAst> varsInAssignments)
         {
             // Find all variables that are not locally assigned, and don't have $using: scope modifier
             return ast.FindAll(
