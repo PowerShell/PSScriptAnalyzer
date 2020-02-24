@@ -44,6 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var scriptBlockAst in scriptBlockAsts)
             {
                 var sbAst = scriptBlockAst as ScriptBlockAst;
+
                 foreach (var diagnosticRecord in AnalyzeScriptBlockAst(sbAst, fileName))
                 {
                     yield return diagnosticRecord;
@@ -57,7 +58,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUnInitializedVarsInNewRunspacesName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(),
+                Strings.AvoidUnInitializedVarsInNewRunspacesName);
         }
 
         /// <summary>
@@ -111,56 +113,171 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>An enumerable containing diagnostic records</returns>
         private IEnumerable<DiagnosticRecord> AnalyzeScriptBlockAst(ScriptBlockAst scriptBlockAst, string fileName)
         {
-            // TODO: add other Cmdlets like invoke-command later?
-            var foreachObjectCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Foreach-Object");
+            var astsToProcess = new List<Ast>();
 
-            // Find all commandAst objects for `Foreach-Object -Parallel`. As for parameter name matching, there are three
+            var inlineScriptCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("InlineScript");
+            var jobCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Start-Job");
+            jobCmdletNamesAndAliases.AddRange(Helper.Instance.CmdletNameAndAliases("Start-ThreadJob"));
+            var foreachObjectCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Foreach-Object");
+            var invokeCommandCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Invoke-Command");
+
+            // - `Workflow bar {$foo = 'foo'; InlineScript {$using:foo} }`  On Windows PowerShell only. (see get-help about_InlineScript)
+            astsToProcess.AddRange(
+                scriptBlockAst.FindAll(
+                    predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
+                                    scriptBlockExpressionAst.Parent is CommandAst commandAst &&
+                                    inlineScriptCmdletNamesAndAliases.Contains(
+                                        commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase),
+                    searchNestedScriptBlocks: false));
+
+            // - `Start - Job / Start - ThreadJob - scriptBlock {$using:foo <#'using' required#>} -InitializationScript {$bar <# no 'using' allowed #>}`
+            //   Here the catch is, we need to be sure we check the right ScriptBlock. The rule does not apply to InitializationScript.
+            //   Shortest unambiguous for for the parameter -InitializationScript is 'ini'. 
+            astsToProcess.AddRange(
+                scriptBlockAst.FindAll(
+                    predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
+                                    scriptBlockExpressionAst.Parent is CommandAst commandAst &&
+                                    jobCmdletNamesAndAliases.Contains(
+                                        commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
+                                    // we need to exclude the ScriptBlockExpression if it has a CommandParameterAst before it in the CommandElements collection which name starts with 'ini'.
+                                    !(commandAst.CommandElements[commandAst.CommandElements.IndexOf(scriptBlockExpressionAst) - 1] is CommandParameterAst parameterAst &&
+                                        parameterAst.ParameterName.StartsWith("ini", StringComparison.OrdinalIgnoreCase)),
+                    searchNestedScriptBlocks: false));
+
+            // Find all ScriptBlockExpressionAst objects for `Foreach-Object -Parallel`. As for parameter name matching, there are three
             // parameters starting with a 'p': Parallel, PipelineVariable and Process, so we use startsWith 'pa' as the shortest unambiguous form.
             // Because we are already going trough all ScriptBlockAst objects, we do not need to look for nested script blocks here.
-            var foreachObjectParallelCommandAsts = scriptBlockAst.FindAll(
-                predicate: c => c is CommandAst commandAst &&
-                                foreachObjectCmdletNamesAndAliases.Contains(
-                                    commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
-                                    commandAst.CommandElements.Any(
-                                        e => e is CommandParameterAst parameterAst && 
-                                             parameterAst.ParameterName.StartsWith("pa", StringComparison.OrdinalIgnoreCase)), 
-                searchNestedScriptBlocks: false).Select(a=>a as CommandAst);
+            astsToProcess.AddRange(
+                scriptBlockAst.FindAll(
+                    predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
+                                    scriptBlockExpressionAst.Parent is CommandAst commandAst &&
+                                    foreachObjectCmdletNamesAndAliases.Contains(
+                                        commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
+                                        commandAst.CommandElements.Any(
+                                            e => e is CommandParameterAst parameterAst &&
+                                                 parameterAst.ParameterName.StartsWith("pa", StringComparison.OrdinalIgnoreCase)),
+                    searchNestedScriptBlocks: false));
+
+            //- `Invoke-Command -ComputerName "baz" -ScriptBlock {$using:foo}`
+            //The catch here, is that the `-ComputerName` parameter _has_ to be used, otherwise `$using` is prohibited. 
+            //Also tricky; one can open a persistent session, and use subsequent `invoke-command` calls to that, where variables
+            //from previous calls are still valid: https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_remote_variables?view=powershell-7#using-remote-variables
             
-            foreach (var commandAst in foreachObjectParallelCommandAsts)
+            // Because -ComputerName and -Session parameters are in different parameter sets, we can treat them separately
+            // Shortest unambiguous for for the parameter -ComputerName is 'com'. 
+            astsToProcess.AddRange(scriptBlockAst.FindAll(
+                    predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
+                                    scriptBlockExpressionAst.Parent is CommandAst commandAst &&
+                                    invokeCommandCmdletNamesAndAliases.Contains(
+                                        commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
+                                    commandAst.CommandElements.Any(
+                                        e => e is CommandParameterAst parameterAst &&
+                                             parameterAst.ParameterName.StartsWith("com", StringComparison.OrdinalIgnoreCase)),
+                    searchNestedScriptBlocks: false));
+
+            // Process invoke-command ScriptBlocks that belong to a session
+            var scriptBlockExpressionAstsToAnalyze = scriptBlockAst.FindAll(
+                predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
+                                scriptBlockExpressionAst.Parent is CommandAst commandAst &&
+                                invokeCommandCmdletNamesAndAliases.Contains(
+                                    commandAst.GetCommandName(), StringComparer.OrdinalIgnoreCase) &&
+                                commandAst.CommandElements.Any(
+                                    e => e is CommandParameterAst parameterAst &&
+                                         parameterAst.ParameterName.StartsWith("session", StringComparison.OrdinalIgnoreCase)), //TODO: find better way to discern between Session, SessionName and SessionOption parameters
+                searchNestedScriptBlocks: false);
+
+            // Match ScriptBlocks together that belong to the same session
+            var sessionDictionary = new Dictionary<string, List<Ast>>();
+            foreach (var ast in scriptBlockExpressionAstsToAnalyze)
             {
-                if (commandAst == null) 
-                    yield break;
-                
-                // Find all variables that are assigned within this ScriptBlock
-                var varsInAssignments = commandAst.FindAll(
-                    predicate: a => a is VariableExpressionAst varExpr &&
-                                    varExpr.Parent is AssignmentStatementAst assignment &&
-                                    assignment.Left.Equals(varExpr),
-                    searchNestedScriptBlocks: true).
-                        Select(a => a as VariableExpressionAst);
+                if (!(ast.Parent is CommandAst commandAst))
+                    continue;
 
-                // Find all variables that are not locally assigned, and don't have $using: directive
-                var nonAssignedNonUsingVars = commandAst.CommandElements.
-                    SelectMany(a => a.FindAll(
-                                    predicate: aa => aa is VariableExpressionAst varAst &&
-                                                     !(varAst.Parent is UsingExpressionAst) &&
-                                                     !varsInAssignments.Contains(varAst) &&
-                                                     !Helper.Instance.HasSpecialVars(varAst.VariablePath.UserPath),
-                                    searchNestedScriptBlocks: true).
-                                        Select(aaa => aaa as VariableExpressionAst));
+                var sessionParameterAst = commandAst.CommandElements.First<Ast>(
+                    e => e is CommandParameterAst parameterAst &&
+                         parameterAst.ParameterName.StartsWith("session", StringComparison.OrdinalIgnoreCase)) as CommandParameterAst;
 
-                foreach (var variableExpression in nonAssignedNonUsingVars)
+                if (sessionParameterAst == null)
+                    continue;
+
+                var sessionName = commandAst.CommandElements[commandAst.CommandElements.IndexOf(sessionParameterAst) + 1].Extent.Text.Trim();
+
+                if (sessionDictionary.ContainsKey(sessionName))
                 {
-                    yield return new DiagnosticRecord(
-                        message: string.Format(CultureInfo.CurrentCulture,
-                            Strings.AvoidUnInitializedVarsInNewRunspacesError, variableExpression.ToString()),
-                        extent: variableExpression.Extent,
-                        ruleName: GetName(),
-                        severity: DiagnosticSeverity.Warning,
-                        scriptPath: fileName,
-                        ruleId: variableExpression.ToString());
+                    sessionDictionary[sessionName].Add(ast);
+                }
+                else
+                {
+                    sessionDictionary.Add(sessionName, new List<Ast>());
+                    sessionDictionary[sessionName].Add(ast);
                 }
             }
+
+            var nonAssignedNonUsingVars = new List<VariableExpressionAst>();
+
+            foreach (var session in sessionDictionary)
+            {
+                // Find all variables that are assigned within these ScriptBlocks that are part of one session
+                List<VariableExpressionAst> varsInAssignments = new List<VariableExpressionAst>();
+                foreach (var ast in session.Value)
+                {
+                    varsInAssignments.AddRange(FindVarsInAssignmentAsts(ast));
+                }
+
+                // Find all variables that are not locally assigned, and don't have $using: scope modifier
+                foreach (var ast in session.Value)
+                {
+                    nonAssignedNonUsingVars.AddRange(FindNonAssignedNonUsingVarAsts(ast, varsInAssignments));
+                }
+            }
+
+
+            // Process rest of the Asts
+            foreach (var ast in astsToProcess)
+            {
+                if (ast == null)
+                    continue;
+
+                var varsInAssignments = FindVarsInAssignmentAsts(ast);
+                
+                nonAssignedNonUsingVars.AddRange(FindNonAssignedNonUsingVarAsts(ast, varsInAssignments));
+            }
+
+            foreach (var variableExpression in nonAssignedNonUsingVars)
+            {
+                if (variableExpression == null)
+                    continue;
+
+                yield return new DiagnosticRecord(
+                    message: string.Format(CultureInfo.CurrentCulture,
+                        Strings.AvoidUnInitializedVarsInNewRunspacesError, variableExpression.ToString()),
+                    extent: variableExpression.Extent,
+                    ruleName: GetName(),
+                    severity: DiagnosticSeverity.Warning,
+                    scriptPath: fileName,
+                    ruleId: variableExpression.ToString());
+            }
+        }
+
+        private static IEnumerable<VariableExpressionAst> FindVarsInAssignmentAsts (Ast ast)
+        {
+            // Find all variables that are assigned within this ast
+            return ast.FindAll(
+                predicate: a => a is VariableExpressionAst varExpr &&
+                                varExpr.Parent is AssignmentStatementAst assignment &&
+                                assignment.Left.Equals(varExpr),
+                searchNestedScriptBlocks: true).Select(a => a as VariableExpressionAst);
+        }
+
+        private static IEnumerable<VariableExpressionAst> FindNonAssignedNonUsingVarAsts(Ast ast, IEnumerable<VariableExpressionAst> varsInAssignments)
+        {
+            // Find all variables that are not locally assigned, and don't have $using: scope modifier
+            return ast.FindAll(
+                predicate: a => a is VariableExpressionAst varAst &&
+                                !(varAst.Parent is UsingExpressionAst) &&
+                                varsInAssignments.All(b => b.VariablePath.UserPath != varAst.VariablePath.UserPath) &&
+                                !Helper.Instance.HasSpecialVars(varAst.VariablePath.UserPath),
+                searchNestedScriptBlocks: true).Select(a => a as VariableExpressionAst);
         }
     }
 }
