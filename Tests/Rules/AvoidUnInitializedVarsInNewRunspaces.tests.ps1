@@ -1,10 +1,12 @@
 $settings = @{
     IncludeRules = "PSAvoidUnInitializedVarsInNewRunspaces"
+    Severity     = "warning" # because we need to prevent ParseErrors from being reported, so 'workflow' keyword will not be flagged when running test on Pwsh.
 }
 
 Describe "AvoidUnInitializedVarsInNewRunspaces" {
     Context "Should detect something" {
         $testCases = @(
+            # Foreach-Object -Parallel {}
             @{
                 Description = "Foreach-Object -Parallel with undeclared var"
                 ScriptBlock = '{
@@ -12,29 +14,82 @@ Describe "AvoidUnInitializedVarsInNewRunspaces" {
                 }'
             }
             @{
-                Description = "alias foreach -parallel with undeclared var"
+                Description = "foreach -parallel alias with undeclared var"
                 ScriptBlock = '{
                     1..2 | ForEach -Parallel { $var }
                 }'
             }
             @{
-                Description = "alias % -parallel with undeclared var"
+                Description = "% -parallel alias with undeclared var"
                 ScriptBlock = '{
                     1..2 | % -Parallel { $var }
                 }'
             }
             @{
-                Description = "abbreviated param Foreach-Object -pa with undeclared var"
+                Description = "Foreach-Object -pa abbreviated param with undeclared var"
                 ScriptBlock = '{
                     1..2 | foreach-object -pa { $var }
                 }'
             }
             @{
-                Description = "Nested Foreach-Object -Parallel with undeclared var"
+                Description = "Foreach-Object -Parallel nested with undeclared var"
                 ScriptBlock = '{
                     $myNestedScriptBlock = {
                         1..2 | ForEach-Object -Parallel { $var }
                     }
+                }'
+            }
+            # Start-Job / Start-ThreadJob
+            @{
+                Description = 'Start-Job without $using:'
+                ScriptBlock = '{
+                    $foo = "bar"
+                    Start-Job {$foo} | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            @{
+                Description = 'Start-ThreadJob without $using:'
+                ScriptBlock = '{
+                    $foo = "bar"
+                    Start-ThreadJob -ScriptBlock {$foo} | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            @{
+                Description = 'Start-Job with -InitializationScript with a variable'
+                ScriptBlock = '{
+                    $foo = "bar"
+                    Start-Job -ScriptBlock {$foo} -InitializationScript {$foo} | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            @{
+                Description = 'Start-ThreadJob with -InitializationScript with a variable'
+                ScriptBlock = '{
+                    $foo = "bar"
+                    Start-ThreadJob -ScriptBlock {$foo} -InitializationScript {$foo} | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            # workflow/inlinescript
+            @{
+                Description = "Workflow/InlineScript"
+                ScriptBlock = '{
+                    $foo = "bar"
+                    workflow baz { InlineScript {$foo} }
+                }'
+            }
+            # Invoke-Command
+            @{
+                Description = 'Invoke-Command with -ComputerName'
+                ScriptBlock = '{
+                    Invoke-Command -ScriptBlock {Write-Output $foo} -ComputerName "bar"
+                }'
+            }
+            @{
+                Description = 'Invoke-Command with two different sessions, where var is declared in wrong session'
+                ScriptBlock = '{
+                    $session = new-PSSession -ComputerName "baz"
+                    $otherSession = new-PSSession -ComputerName "bar"
+                    Invoke-Command -session $session -ScriptBlock {$foo = "foo" }
+                    Invoke-Command -session $otherSession -ScriptBlock {Write-Output $foo}
                 }'
             }
         )
@@ -67,9 +122,68 @@ Describe "AvoidUnInitializedVarsInNewRunspaces" {
                 }'
             }
             @{
-                Description = "Foreach-Object -Parallel with built-in var '`$Args' inside"
+                Description = "Foreach-Object -Parallel with built-in var '`$PSBoundParameters' inside"
                 ScriptBlock = '{
-                    1..2 | ForEach-Object { $Args[0] } -ArgumentList "a" -Parallel
+                    1..2 | ForEach-Object -Parallel{ $PSBoundParameters }
+                }'
+            }
+            @{
+                Description = "Foreach-Object -Parallel with vars in other parameters"
+                ScriptBlock = '{
+                    $foo = "bar"
+                    ForEach-Object -Parallel {$_} -InputObject $foo
+                }'
+            }
+            # Start-Job / Start-ThreadJob
+            @{
+                Description = 'Start-Job with $using:'
+                ScriptBlock = '{
+                    $foo = "bar"
+                    Start-Job -ScriptBlock {$using:foo} | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            @{
+                Description = 'Start-ThreadJob with $using:'
+                ScriptBlock = '{
+                    $foo = "bar"
+                    Start-ThreadJob -ScriptBlock {$using:foo} | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            @{
+                Description = 'Start-Job with -InitializationScript with a variable'
+                ScriptBlock = '{
+                    $foo = "bar"
+                    Start-Job -ScriptBlock {$using:foo} -InitializationScript {$foo} | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            @{
+                Description = 'Start-ThreadJob with -InitializationScript with a variable'
+                ScriptBlock = '{
+                    $foo = "bar"
+                    Start-ThreadJob -ScriptBlock {$using:foo} -InitializationScript {$foo} | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            # workflow/inlinescript
+            @{
+                Description = "Workflow/InlineScript"
+                ScriptBlock = '{
+                    $foo = "bar"
+                    workflow baz { InlineScript {$using:foo} }
+                }'
+            }
+            # Invoke-Command
+            @{
+                Description = 'Invoke-Command multiple, variable is declared in separate scriptblock, belonging to same session'
+                ScriptBlock = '{
+                    $session = new-PSSession -ComputerName "baz"
+                    Invoke-Command -session $session -ScriptBlock {$foo = "foo" }
+                    Invoke-Command -session $session -ScriptBlock {Write-Output $foo}
+                }'
+            }
+            @{
+                Description = 'Invoke-Command without -ComputerName'
+                ScriptBlock = '{
+                    Invoke-Command -ScriptBlock {Write-Output $foo}
                 }'
             }
         )
