@@ -214,7 +214,9 @@ Get-Module $ModuleName | Remove-Module
 Import-Module $ModuleName -RequiredVersion $RequiredVersion -ErrorAction Stop
 $ms = $null
 $commands =$null
-$paramBlackList = @()
+$paramBlackList = @(
+	'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
+)
 if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 	$ms = New-Object -TypeName 'Microsoft.PowerShell.Commands.ModuleSpecification' -ArgumentList $ModuleName
 	$commands = Get-Command -Module $ms.Name
@@ -222,7 +224,7 @@ if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 }
 else {
 	$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
-	$commands = Get-Command -FullyQualifiedModule $ms -CommandType Cmdlet,Function,Workflow # Not alias
+	$commands = Get-Command -FullyQualifiedModule $ms
 }
 
 ## When testing help, remember that help is cached at the beginning of each session.
@@ -276,7 +278,7 @@ foreach ($command in $commands) {
 			$HelpParameterNames = $Help.Parameters.Parameter.Name | Sort-Object -Unique
 
 			foreach ($parameter in $parameters) {
-				if ($parameter -in $paramBlackList) {
+				if ($parameter.Name -in $paramBlackList) {
 					continue
 				}
 				$parameterName = $parameter.Name
