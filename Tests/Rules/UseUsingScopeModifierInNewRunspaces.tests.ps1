@@ -1,9 +1,9 @@
 $settings = @{
-    IncludeRules = "PSAvoidUnInitializedVarsInNewRunspaces"
+    IncludeRules = "PSUseUsingScopeModifierInNewRunspaces"
     Severity     = "warning" # because we need to prevent ParseErrors from being reported, so 'workflow' keyword will not be flagged when running test on Pwsh.
 }
 
-Describe "AvoidUnInitializedVarsInNewRunspaces" {
+Describe "UseUsingScopeModifierInNewRunspaces" {
     Context "Should detect something" {
         $testCases = @(
             # Foreach-Object -Parallel {}

@@ -1122,16 +1122,16 @@
   <data name="ReviewUnusedParameterName" xml:space="preserve">
     <value>ReviewUnusedParameter</value>
   </data>
-  <data name="AvoidUnInitializedVarsInNewRunspacesCommonName" xml:space="preserve">
-    <value>Use '$using:' scope modifier in runspace scriptblocks</value>
+  <data name="UseUsingScopeModifierInNewRunspacesCommonName" xml:space="preserve">
+    <value>Use 'Using:' scope modifier in RunSpace ScriptBlocks</value>
   </data>
-  <data name="AvoidUnInitializedVarsInNewRunspacesDescription" xml:space="preserve">
-    <value>If a ScriptBlock is intended to be run as a new runspace, variables inside it should use '$using:' scope modifier, or be initialized within the ScriptBlock.</value>
+  <data name="UseUsingScopeModifierInNewRunspacesDescription" xml:space="preserve">
+    <value>If a ScriptBlock is intended to be run as a new RunSpace, variables inside it should use 'Using:' scope modifier, or be initialized within the ScriptBlock.</value>
   </data>
-  <data name="AvoidUnInitializedVarsInNewRunspacesName" xml:space="preserve">
-    <value>AvoidUnInitializedVarsInNewRunspaces</value>
+  <data name="UseUsingScopeModifierInNewRunspacesName" xml:space="preserve">
+    <value>UseUsingScopeModifierInNewRunspaces</value>
   </data>
-  <data name="AvoidUnInitializedVarsInNewRunspacesError" xml:space="preserve">
-    <value>The variable '{0}' is not declared within this ScriptBlock, and is missing the '$using:' scope modifier.</value>
+  <data name="UseUsingScopeModifierInNewRunspacesError" xml:space="preserve">
+    <value>The variable '{0}' is not declared within this ScriptBlock, and is missing the 'Using:' scope modifier.</value>
   </data>
 </root>

@@ -619,42 +619,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use &apos;$using:&apos; scope modifier in runspace scriptblocks.
-        /// </summary>
-        internal static string AvoidUnInitializedVarsInNewRunspacesCommonName {
-            get {
-                return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to If a ScriptBlock is intended to be run as a new runspace, variables inside it should use &apos;$using:&apos; scope modifier, or be initialized within the ScriptBlock..
-        /// </summary>
-        internal static string AvoidUnInitializedVarsInNewRunspacesDescription {
-            get {
-                return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The variable &apos;{0}&apos; is not declared within this ScriptBlock, and is missing the &apos;$using:&apos; scope modifier..
-        /// </summary>
-        internal static string AvoidUnInitializedVarsInNewRunspacesError {
-            get {
-                return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidUnInitializedVarsInNewRunspaces.
-        /// </summary>
-        internal static string AvoidUnInitializedVarsInNewRunspacesName {
-            get {
-                return ResourceManager.GetString("AvoidUnInitializedVarsInNewRunspacesName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Module Must Be Loadable.
         /// </summary>
         internal static string AvoidUnloadableModuleCommonName {
@@ -3036,6 +3000,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseTypeAtVariableAssignmentName {
             get {
                 return ResourceManager.GetString("UseTypeAtVariableAssignmentName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use &apos;Using:&apos; scope modifier in RunSpace ScriptBlocks.
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesCommonName {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a ScriptBlock is intended to be run as a new RunSpace, variables inside it should use &apos;Using:&apos; scope modifier, or be initialized within the ScriptBlock..
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesDescription {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The variable &apos;{0}&apos; is not declared within this ScriptBlock, and is missing the &apos;Using:&apos; scope modifier..
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesError {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseUsingScopeModifierInNewRunspaces.
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesName {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesName", resourceCulture);
             }
         }
         

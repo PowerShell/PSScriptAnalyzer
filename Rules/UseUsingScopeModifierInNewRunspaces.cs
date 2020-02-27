@@ -15,12 +15,12 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidUnInitializedVarsInNewRunspaces: Analyzes the ast to check that variables in script blocks that run in new run spaces are properly initialized or passed in with '$using:(varName)'.
+    /// UseUsingScopeModifierInNewRunspaces: Analyzes the ast to check that variables in script blocks that run in new run spaces are properly initialized or passed in with '$using:(varName)'.
     /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
 #endif
-    public class AvoidUnInitializedVarsInNewRunspaces : IScriptRule
+    public class UseUsingScopeModifierInNewRunspaces : IScriptRule
     {
         /// <summary>
         /// AnalyzeScript: Analyzes the ast to check variables in script blocks that will run in new runspaces are properly initialized or passed in with $using:
@@ -59,7 +59,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public string GetName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(),
-                Strings.AvoidUnInitializedVarsInNewRunspacesName);
+                Strings.UseUsingScopeModifierInNewRunspacesName);
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUnInitializedVarsInNewRunspacesCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseUsingScopeModifierInNewRunspacesCommonName);
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUnInitializedVarsInNewRunspacesDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.UseUsingScopeModifierInNewRunspacesDescription);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 yield return new DiagnosticRecord(
                     message: string.Format(CultureInfo.CurrentCulture,
-                        Strings.AvoidUnInitializedVarsInNewRunspacesError, variableExpression.ToString()),
+                        Strings.UseUsingScopeModifierInNewRunspacesError, variableExpression.ToString()),
                     extent: variableExpression.Extent,
                     ruleName: GetName(),
                     severity: DiagnosticSeverity.Warning,

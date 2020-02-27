@@ -1,4 +1,4 @@
-# AvoidUnInitializedVarsInNewRunspaces
+# UseUsingScopeModifierInNewRunspaces
 
 **Severity Level: Warning**
 
