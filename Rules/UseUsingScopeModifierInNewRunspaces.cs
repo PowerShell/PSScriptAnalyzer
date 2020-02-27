@@ -203,28 +203,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                          .OrdinalIgnoreCase)) is CommandParameterAst sessionParameterAst))
                     continue;
 
-                // Extract session name from session parameter
-                string sessionName;
-                try
-                {
-                    sessionName = commandAst
-                        .CommandElements[
-                            commandAst
-                                .CommandElements
-                                .IndexOf(sessionParameterAst) + 1]
-                        .Extent
-                        .Text
-                        .Trim();
-                }
-                catch
-                {
-                    // When a session name is not present, something is definitely wrong. In any case, we don't want to analyze further.
+                // Group script blocks by session name in a dictionary
+                var sessionParamAstIndex = commandAst.CommandElements.IndexOf(sessionParameterAst);
+                if (commandAst.CommandElements.Count <= sessionParamAstIndex)
                     continue;
-                }
+
+                var sessionName = commandAst
+                    .CommandElements[sessionParamAstIndex + 1]
+                    .Extent
+                    .Text
+                    .Trim();
 
                 if (!sessionDictionary.ContainsKey(sessionName))
-                    sessionDictionary.Add(sessionName, new List<Ast>()); 
-                
+                    sessionDictionary.Add(sessionName, new List<Ast>());
+
                 sessionDictionary[sessionName].Add(ast);
             }
 
