@@ -222,15 +222,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (sessionDictionary.ContainsKey(sessionName))
-                {
-                    sessionDictionary[sessionName].Add(ast);
-                }
-                else
-                {
-                    sessionDictionary.Add(sessionName, new List<Ast>());
-                    sessionDictionary[sessionName].Add(ast);
-                }
+                if (!sessionDictionary.ContainsKey(sessionName))
+                    sessionDictionary.Add(sessionName, new List<Ast>()); 
+                
+                sessionDictionary[sessionName].Add(ast);
             }
 
 
