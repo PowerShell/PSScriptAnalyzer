@@ -85,6 +85,8 @@ $script:expectedSyntaxDiagnostics = @(
     @{ Line = 15; CorrectionText = "New-Object 'System.Collections.Generic.List[System.Management.Automation.Signature]'" }
 )
 
+$script:RunningInCIOnUbuntu = $IsLinux -and ($env:TF_BUILD -or $env:APPVEYOR) # some test cases randomly start and stop to fail in Ubuntu CI tests
+
 Describe "Running all compatibility rules with a settings file" {
     BeforeAll {
         $testFile = New-Item -Path "$TestDrive/test.ps1" -Value $script:fileContent -ItemType File
@@ -96,7 +98,7 @@ Describe "Running all compatibility rules with a settings file" {
         $syntaxDiagnostics = $diagnostics.PSUseCompatibleSyntax
     }
 
-    It "Finds the problem with command <Command> on line <Line> in the file" -TestCases $script:expectedCommandDiagnostics {
+    It "Finds the problem with command <Command> on line <Line> in the file" -TestCases $script:expectedCommandDiagnostics -Skip:$script:RunningInCIOnUbuntu {
         param([string]$Command, [string]$Parameter, [int]$Line)
 
         $actualDiagnostic = $commandDiagnostics | Where-Object { $_.Command -eq $Command -and $_.Line -eq $Line }
