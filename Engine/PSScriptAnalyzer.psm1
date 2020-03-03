@@ -11,8 +11,12 @@ $PSModuleRoot = $PSModule.ModuleBase
 $binaryModuleRoot = $PSModuleRoot
 
 
-if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')) {
-    $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath 'coreclr'
+# if (($PSVersionTable.Keys -contains "PSEdition") -and ($PSVersionTable.PSEdition -ne 'Desktop')) {
+if ($PSVersionTable.PSVersion.Major -eq 7 ) {
+    $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath "PSv$($PSVersionTable.PSVersion.Major)"
+}
+elseif ($PSVersionTable.PSVersion.Major -eq 6 ) {
+    $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath "PSv$($PSVersionTable.PSVersion.Major)"
     # Minimum PowerShell Core version given by PowerShell Core support itself and
     # also the version of NewtonSoft.Json implicitly that PSSA ships with,
     # which cannot be higher than the one that PowerShell ships with.

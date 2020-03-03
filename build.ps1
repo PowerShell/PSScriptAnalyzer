@@ -37,10 +37,10 @@ param(
     [switch] $Bootstrap
 )
 BEGIN {
-    if ($PSVersion -gt 6) {
-        # due to netstandard2.0 we do not need to treat PS version 7 differently
-        $PSVersion = 6
-    }
+    #if ($PSVersion -gt 6) {
+    #    # due to netstandard2.0 we do not need to treat PS version 7 differently
+    #    $PSVersion = 6
+    #}
 }
 
 END {

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.18.3</VersionPrefix>
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <VersionPrefix>1.18.4</VersionPrefix>
+    <TargetFrameworks>netcoreapp3.1;netstandard2.0;net452</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
     <PackageId>Rules</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
@@ -10,8 +10,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
@@ -42,7 +42,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netcoreapp3.1'">
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
     <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
@@ -66,5 +66,31 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV4Debug' ">
     <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Release'">
+    <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Release'">
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-rc.3" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0' AND '$(Configuration)' == 'PSV6Release'">
+    <DefineConstants>$(DefineConstants);PSV6;CORECLR</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' AND '$(Configuration)' == 'PSV6Release'">
+    <PackageReference Include="System.Management.Automation" Version="6.1.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Debug'">
+    <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Debug'">
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-rc.3" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0' AND '$(Configuration)' == 'PSV6Debug'">
+    <DefineConstants>$(DefineConstants);PSV6;CORECLR</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' AND '$(Configuration)' == 'PSV6Debug'">
+    <PackageReference Include="System.Management.Automation" Version="6.1.0" />
+  </ItemGroup>
 
 </Project>
