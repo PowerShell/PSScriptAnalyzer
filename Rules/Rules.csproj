@@ -71,7 +71,7 @@
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Release'">
-    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-rc.3" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0" />
   </ItemGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0' AND '$(Configuration)' == 'PSV6Release'">
     <DefineConstants>$(DefineConstants);PSV6;CORECLR</DefineConstants>
@@ -84,7 +84,7 @@
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Debug'">
-    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-rc.3" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0" />
   </ItemGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0' AND '$(Configuration)' == 'PSV6Debug'">
     <DefineConstants>$(DefineConstants);PSV6;CORECLR</DefineConstants>
