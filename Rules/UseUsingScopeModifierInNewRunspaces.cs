@@ -161,8 +161,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     ruleName: GetName(),
                     severity: DiagnosticSeverity.Warning,
                     scriptPath: fileName,
-                    ruleId: variableExpression.ToString());
+                    ruleId: variableExpression.ToString(),
+                    suggestedCorrections: GetSuggestedCorrections(ast: variableExpression));
             }
+        }
+
+        private static IEnumerable<CorrectionExtent> GetSuggestedCorrections(Ast ast)
+        {
+            var varWithUsing = "$using:" + ast.Extent.Text.TrimStart('$');
+            var description = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.UseUsingScopeModifierInNewRunspacesCorrectionDescription,
+                ast.Extent.Text,
+                varWithUsing);
+            var corrections = new List<CorrectionExtent>()
+            {
+                new CorrectionExtent(
+                    startLineNumber: ast.Extent.StartLineNumber,
+                    endLineNumber: ast.Extent.EndLineNumber,
+                    startColumnNumber: ast.Extent.StartColumnNumber,
+                    endColumnNumber: ast.Extent.EndColumnNumber,
+                    text: varWithUsing,
+                    file: ast.Extent.File,
+                    description: description
+                )
+            };
+
+            return corrections;
         }
 
         private static IEnumerable<VariableExpressionAst> ProcessInvokeCommandSessionAsts(ScriptBlockAst scriptBlockAst)

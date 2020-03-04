@@ -1134,4 +1134,7 @@
   <data name="UseUsingScopeModifierInNewRunspacesError" xml:space="preserve">
     <value>The variable '{0}' is not declared within this ScriptBlock, and is missing the 'Using:' scope modifier.</value>
   </data>
+  <data name="UseUsingScopeModifierInNewRunspacesCorrectionDescription" xml:space="preserve">
+    <value>Replace {0} with {1}</value>
+  </data>
 </root>

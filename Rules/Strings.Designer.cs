@@ -3013,6 +3013,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Replace {0} with {1}.
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesCorrectionDescription {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesCorrectionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to If a ScriptBlock is intended to be run as a new RunSpace, variables inside it should use &apos;Using:&apos; scope modifier, or be initialized within the ScriptBlock..
         /// </summary>
         internal static string UseUsingScopeModifierInNewRunspacesDescription {
