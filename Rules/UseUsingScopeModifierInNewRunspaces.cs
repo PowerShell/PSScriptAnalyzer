@@ -274,7 +274,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             // TODO: finish refactor to reanimate this logic
             
-            var invokeCommandCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Invoke-Command");
+            IEnumerable<string> invokeCommandCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Invoke-Command");
+
             var sessionDictionary = new Dictionary<string, List<Ast>>();
             var result = new List<VariableExpressionAst>();
 
@@ -283,7 +284,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             //note: commandAst.GetCommandName() can be null, which will cause a crash here
             // for example: { & $commandName }.Ast.EndBlock.Statements[0].PipelineElements[0].GetCommandName()
             // The shortest unambiguous name for parameter -Session is 'session' (SessionName and SessionOption) also exist.
-            var scriptBlockExpressionAstsToAnalyze = scriptBlockAst.FindAll(
+            IEnumerable<Ast> scriptBlockExpressionAstsToAnalyze = scriptBlockAst.FindAll(
+
                 predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
                                 scriptBlockExpressionAst.Parent is CommandAst commandAst &&
                                 invokeCommandCmdletNamesAndAliases
