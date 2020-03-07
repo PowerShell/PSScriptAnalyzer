@@ -133,23 +133,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         public override AstVisitAction VisitScriptBlockExpression(ScriptBlockExpressionAst scriptBlockExpressionAst)
         {
             if (!(scriptBlockExpressionAst.Parent is CommandAst commandAst))
+            {
                 return AstVisitAction.Continue;
+            }
+
+            //note: commandAst.GetCommandName() could be null, which will cause a crash here
+            // for example: { & $commandName }.Ast.EndBlock.Statements[0].PipelineElements[0].GetCommandName() ==> turn into test.
 
             var cmdName = commandAst.GetCommandName();
             var scriptBlockParameterAst = commandAst.CommandElements[
-                    commandAst.CommandElements.IndexOf(scriptBlockExpressionAst) - 1] as
-                CommandParameterAst;
+                    commandAst.CommandElements.IndexOf(scriptBlockExpressionAst) - 1] as CommandParameterAst;
 
-            if (!IsInlineScriptBlock(cmdName) && 
-                !IsJobScriptBlock(cmdName, scriptBlockParameterAst) &&
-                !IsForeachScriptBlock(cmdName, scriptBlockParameterAst) &&
-                !IsInvokeCommandComputerScriptBlock(cmdName, commandAst) &&
-                !IsInvokeCommandSessionScriptBlock(cmdName, commandAst))
-                return AstVisitAction.Continue;
-            
-            AnalyzeScriptBlock(scriptBlockExpressionAst);
-            
-            return AstVisitAction.SkipChildren;
+            if (IsInlineScriptBlock(cmdName) || 
+                IsJobScriptBlock(cmdName, scriptBlockParameterAst) ||
+                IsForeachScriptBlock(cmdName, scriptBlockParameterAst) ||
+                IsInvokeCommandComputerScriptBlock(cmdName, commandAst) ||
+                IsInvokeCommandSessionScriptBlock(cmdName, commandAst))
+            {
+                AnalyzeScriptBlock(scriptBlockExpressionAst);
+                return AstVisitAction.SkipChildren;
+            }
+
+            return AstVisitAction.Continue;
         }
 
         private bool IsInvokeCommandSessionScriptBlock(string cmdName, CommandAst commandAst)
@@ -172,14 +177,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool IsForeachScriptBlock(string cmdName, CommandParameterAst scriptBlockParameterAst)
         {
             return _foreachObjectCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) &&
-                   (scriptBlockParameterAst != null && scriptBlockParameterAst.ParameterName.StartsWith("pa", StringComparison.OrdinalIgnoreCase));
+                   (scriptBlockParameterAst != null && 
+                    scriptBlockParameterAst.ParameterName.StartsWith("pa", StringComparison.OrdinalIgnoreCase));
         }
 
         private bool IsJobScriptBlock(string cmdName, CommandParameterAst scriptBlockParameterAst)
         {
             return (_jobCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase) ||
                     _threadJobCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase)) &&
-                   !(scriptBlockParameterAst != null && scriptBlockParameterAst.ParameterName.StartsWith("ini", StringComparison.OrdinalIgnoreCase));
+                   !(scriptBlockParameterAst != null && 
+                     scriptBlockParameterAst.ParameterName.StartsWith("ini", StringComparison.OrdinalIgnoreCase));
         }
 
         private bool IsInlineScriptBlock(string cmdName)
@@ -195,7 +202,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var variableExpression in nonAssignedNonUsingVarAsts)
             {
                 if (variableExpression == null)
+                {
                     continue;
+                }
 
                 _diagnosticAccumulator.Add(new DiagnosticRecord(
                     message: string.Format(CultureInfo.CurrentCulture,
@@ -204,7 +213,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     ruleName: _rule.GetName(),
                     severity: Severity,
                     scriptPath: _analyzedFilePath,
-                    ruleId: variableExpression.ToString(),
+                    ruleId: _rule.GetName(),
                     suggestedCorrections: GetSuggestedCorrections(ast: variableExpression)));
             }
         }
@@ -240,13 +249,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static IEnumerable<CorrectionExtent> GetSuggestedCorrections(VariableExpressionAst ast)
         {
-            var varWithUsing = "$using:" + ast.VariablePath.UserPath;
+            var varWithUsing = $"$using:{ast.VariablePath.UserPath}";
             var description = string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.UseUsingScopeModifierInNewRunspacesCorrectionDescription,
                 ast.Extent.Text,
                 varWithUsing);
-            var corrections = new List<CorrectionExtent>()
+
+            return new[]
             {
                 new CorrectionExtent(
                     startLineNumber: ast.Extent.StartLineNumber,
@@ -258,8 +268,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     description: description
                 )
             };
-
-            return corrections;
         }
 
         private static IEnumerable<VariableExpressionAst> ProcessInvokeCommandSessionAsts(Ast scriptBlockAst)
@@ -270,6 +278,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var sessionDictionary = new Dictionary<string, List<Ast>>();
             var result = new List<VariableExpressionAst>();
 
+
+            //TODO: turn into a Visitor as well:
+            //note: commandAst.GetCommandName() can be null, which will cause a crash here
+            // for example: { & $commandName }.Ast.EndBlock.Statements[0].PipelineElements[0].GetCommandName()
             // The shortest unambiguous name for parameter -Session is 'session' (SessionName and SessionOption) also exist.
             var scriptBlockExpressionAstsToAnalyze = scriptBlockAst.FindAll(
                 predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
@@ -288,7 +300,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var ast in scriptBlockExpressionAstsToAnalyze)
             {
                 if (!(ast.Parent is CommandAst commandAst))
+                {
                     continue;
+                }
 
                 // Find session parameter
                 //   The shortest unambiguous name for parameter -Session is 'session' (SessionName and SessionOption) also exist.
@@ -300,12 +314,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                      "session",
                                      StringComparison
                                          .OrdinalIgnoreCase)) is CommandParameterAst sessionParameterAst))
+                {
                     continue;
+                }
 
                 // Group script blocks by session name in a dictionary
                 var sessionParamAstIndex = commandAst.CommandElements.IndexOf(sessionParameterAst);
                 if (commandAst.CommandElements.Count <= sessionParamAstIndex)
+                {
                     continue;
+                }
 
                 var sessionName = commandAst
                     .CommandElements[sessionParamAstIndex + 1]
@@ -314,7 +332,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     .Trim();
 
                 if (!sessionDictionary.ContainsKey(sessionName))
+                {
                     sessionDictionary.Add(sessionName, new List<Ast>());
+                }
 
                 sessionDictionary[sessionName].Add(ast);
             }
