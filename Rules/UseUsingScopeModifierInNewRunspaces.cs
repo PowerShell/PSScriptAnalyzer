@@ -266,7 +266,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             // TODO: finish refactor to reanimate this logic
             
-            var invokeCommandCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Invoke-Command");
+            IEnumerable<string> invokeCommandCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Invoke-Command");
+
             var sessionDictionary = new Dictionary<string, List<Ast>>();
             var result = new List<VariableExpressionAst>();
 
