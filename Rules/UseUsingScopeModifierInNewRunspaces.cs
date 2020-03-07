@@ -272,7 +272,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var result = new List<VariableExpressionAst>();
 
             // The shortest unambiguous name for parameter -Session is 'session' (SessionName and SessionOption) also exist.
-            var scriptBlockExpressionAstsToAnalyze = scriptBlockAst.FindAll(
+            IEnumerable<Ast> scriptBlockExpressionAstsToAnalyze = scriptBlockAst.FindAll(
+
                 predicate: a => a is ScriptBlockExpressionAst scriptBlockExpressionAst &&
                                 scriptBlockExpressionAst.Parent is CommandAst commandAst &&
                                 invokeCommandCmdletNamesAndAliases
