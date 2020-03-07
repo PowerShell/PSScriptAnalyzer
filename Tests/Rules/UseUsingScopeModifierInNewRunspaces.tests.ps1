@@ -94,10 +94,19 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
             }
         )
 
-        it "should emit for: <Description>" -TestCases $testCases {
+        It "should emit for: <Description>" -TestCases $testCases {
             param($Description, $ScriptBlock)
             [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
             $warnings.Count | Should -Be 1
+        }
+
+        It "should emit suggested correction" {
+            $ScriptBlock = '{
+                1..2 | ForEach-Object -Parallel { $var }
+            }'
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
+
+            $warnings[0].SuggestedCorrections[0].Text | Should -Be '$using:var'
         }
     }
 
@@ -188,7 +197,7 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
             }
         )
 
-        it "should not emit anything for: <Description>" -TestCases $testCases {
+        It "should not emit anything for: <Description>" -TestCases $testCases {
             param($Description, $ScriptBlock)
             [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
             $warnings.Count | Should -Be 0
