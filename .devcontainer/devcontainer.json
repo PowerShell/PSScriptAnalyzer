@@ -8,7 +8,7 @@
 	},
 	"postCreateCommand": "dotnet restore",
 	"extensions": [
-		"ms-vscode.csharp",
+		"ms-dotnettools.csharp",
 		"ms-vscode.powershell"
 	]
 }
