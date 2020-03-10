@@ -92,6 +92,14 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
                     Invoke-Command -session $otherSession -ScriptBlock {Write-Output $foo}
                 }'
             }
+            @{
+                Description = 'Invoke-Command with session, where var is declared after use'
+                ScriptBlock = '{
+                    $session = new-PSSession -ComputerName "baz"
+                    Invoke-Command -session $session -ScriptBlock {Write-Output $foo}
+                    Invoke-Command -session $session -ScriptBlock {$foo = "foo" }
+                }'
+            }
         )
 
         It "should emit for: <Description>" -TestCases $testCases {
@@ -182,7 +190,7 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
             }
             # Invoke-Command
             @{
-                Description = 'Invoke-Command multiple, variable is declared in separate scriptblock, belonging to same session'
+                Description = 'Invoke-Command -Session, var declared in same session, other scriptblock'
                 ScriptBlock = '{
                     $session = new-PSSession -ComputerName "baz"
                     Invoke-Command -session $session -ScriptBlock {$foo = "foo" }
@@ -193,6 +201,14 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
                 Description = 'Invoke-Command without -ComputerName'
                 ScriptBlock = '{
                     Invoke-Command -ScriptBlock {Write-Output $foo}
+                }'
+            }
+            # Unsupported scenarios
+            @{
+                Description = 'Rule should skip analysis when Command Name cannot be resolved'
+                ScriptBlock = '{
+                    $commandName = "Invoke-Command"
+                    & $commandName -ComputerName -ScriptBlock { $foo }
                 }'
             }
         )
