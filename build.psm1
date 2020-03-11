@@ -289,12 +289,7 @@ function Start-ScriptAnalyzerBuild
 function Test-ScriptAnalyzer
 {
     [CmdletBinding()]
-    param(
-        [Parameter()]
-        [switch]$InProcess,
-        [switch]$ShowAll,
-        [String]$RuleToTest
-    )
+    param ( [Parameter()][switch]$InProcess, [switch]$ShowAll )
 
     END {
         # versions 3 and 4 don't understand versioned module paths, so we need to rename the directory of the version to
@@ -324,12 +319,7 @@ function Test-ScriptAnalyzer
             $testModulePath = Join-Path "${projectRoot}" -ChildPath out
         }
         $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
-        if ($RuleToTest) {
-            $testScripts = "${projectRoot}\Tests\Rules\$RuleToTest"
-        }
-        else {
-            $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
-        }
+        $testScripts = "'${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
         try {
             if ( $major -lt 5 ) {
                 Rename-Item $script:destinationDir ${testModulePath}
@@ -714,12 +704,3 @@ function Copy-CrossCompatibilityModule
         }
     }
 }
-
-Function RuleNameCompleter {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParmeter)
-
-    Get-Childitem -Path "${projectRoot}\Tests\Rules" -Filter "*$wordToComplete*.tests.ps1" -Name |
-        ForEach-Object { New-Object System.Management.Automation.CompletionResult $_ }
-}
-
-Register-ArgumentCompleter -CommandName 'Test-ScriptAnalyzer' -ParameterName 'RuleToTest' -ScriptBlock $Function:RuleNameCompleter

@@ -92,7 +92,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !(PSV3 || PSV4)
     internal class SyntaxCompatibilityVisitor : AstVisitor2
 #else
-    internal class SyntaxCompatibilityVisitor : AstVisitor
+        private class SyntaxCompatibilityVisitor : AstVisitor
 #endif
     {
         private const DiagnosticSeverity Severity = DiagnosticSeverity.Warning;
