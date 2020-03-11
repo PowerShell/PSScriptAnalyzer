@@ -183,6 +183,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 // Look for [typename]::new(...) and [typename]::$dynamicMethodName syntax
 
+#if PS7
+                if (!TargetsNonPS7())
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                if (methodCallAst.NullConditional)
+                {
+                    AddDiagnostic(
+                        methodCallAst,
+                        "null-conditional method invocation",
+                        "${x}?.Method()",
+                        "3,4,5,6");
+                }
+#endif
+
                 if (!_targetVersions.Contains(s_v3) && !_targetVersions.Contains(s_v4))
                 {
                     return AstVisitAction.Continue;
@@ -190,20 +206,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (_targetVersions.Contains(s_v3) && methodCallAst.Member is VariableExpressionAst)
                 {
-                    string message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.UseCompatibleSyntaxError,
+                    AddDiagnostic(
+                        methodCallAst,
                         "dynamic method invocation",
-                        methodCallAst.Extent.Text,
+                        "$x.$method()",
                         "3");
-
-                    _diagnosticAccumulator.Add(new DiagnosticRecord(
-                        message,
-                        methodCallAst.Extent,
-                        _rule.GetName(),
-                        _rule.Severity,
-                        _analyzedFilePath
-                    ));
                 }
 
                 if (!(methodCallAst.Expression is TypeExpressionAst typeExpressionAst))
@@ -226,22 +233,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         typeName,
                         methodCallAst.Arguments);
 
-                    string message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.UseCompatibleSyntaxError,
-                        "constructor",
-                        methodCallAst.Extent.Text,
-                        "3,4");
-
-                    _diagnosticAccumulator.Add(new DiagnosticRecord(
-                        message,
-                        methodCallAst.Extent,
-                        _rule.GetName(),
-                        _rule.Severity,
-                        _analyzedFilePath,
-                        ruleId: null,
-                        suggestedCorrections: new [] { suggestedCorrection }
-                    ));
+                    AddDiagnostic(methodCallAst, "constructor", "[type]::new()", "3,4", suggestedCorrection);
 
                     return AstVisitAction.Continue;
                 }
@@ -263,21 +255,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.Continue;
                 }
 
-                string message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.UseCompatibleSyntaxError,
-                    "workflow",
-                    "workflow { ... }",
-                    "6");
-
-                _diagnosticAccumulator.Add(
-                    new DiagnosticRecord(
-                        message,
-                        functionDefinitionAst.Extent,
-                        _rule.GetName(),
-                        _rule.Severity,
-                        _analyzedFilePath
-                    ));
+                AddDiagnostic(functionDefinitionAst, "workflow", "workflow { ... }", "6,7");
 
                 return AstVisitAction.Continue;
             }
@@ -292,21 +270,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.Continue;
                 }
 
-                string message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.UseCompatibleSyntaxError,
+                AddDiagnostic(
+                    usingStatementAst,
                     "using statement",
                     "using ...;",
                     "3,4");
-
-                _diagnosticAccumulator.Add(
-                    new DiagnosticRecord(
-                        message,
-                        usingStatementAst.Extent,
-                        _rule.GetName(),
-                        _rule.Severity,
-                        _analyzedFilePath
-                    ));
 
                 return AstVisitAction.Continue;
             }
@@ -339,6 +307,145 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 #endif
+
+#if PS7
+            public override AstVisitAction VisitMemberExpression(MemberExpressionAst memberExpressionAst)
+            {
+                if (!TargetsNonPS7())
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                if (memberExpressionAst.NullConditional)
+                {
+                    AddDiagnostic(
+                        memberExpressionAst,
+                        "null-conditional member access",
+                        "${x}?.Member",
+                        "3,4,5,6");
+                }
+
+                return AstVisitAction.Continue;
+            }
+
+            public override AstVisitAction VisitAssignmentStatement(AssignmentStatementAst assignmentStatementAst)
+            {
+                if (!TargetsNonPS7())
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                if (assignmentStatementAst.Operator == TokenKind.QuestionQuestionEquals)
+                {
+                    AddDiagnostic(assignmentStatementAst, "null-conditional assignment", "$x ??= $y", "3,4,5,6");
+                }
+
+                return AstVisitAction.Continue;
+            }
+
+            public override AstVisitAction VisitBinaryExpression(BinaryExpressionAst binaryExpressionAst)
+            {
+                if (!TargetsNonPS7())
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                if (binaryExpressionAst.Operator == TokenKind.QuestionQuestion)
+                {
+                    AddDiagnostic(
+                        binaryExpressionAst,
+                        "null-coalescing operator",
+                        "$x ?? $y",
+                        "3,4,5,6");
+                }
+
+                return AstVisitAction.Continue;
+            }
+
+            public override AstVisitAction VisitTernaryExpression(TernaryExpressionAst ternaryExpressionAst)
+            {
+                if (!TargetsNonPS7())
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                var correction = new CorrectionExtent(
+                    ternaryExpressionAst.Extent,
+                    $"if ({ternaryExpressionAst.Condition.Extent.Text}) {{ {ternaryExpressionAst.IfTrue.Extent.Text} }} else {{ {ternaryExpressionAst.IfFalse.Extent.Text} }}",
+                    _analyzedFilePath);
+
+                AddDiagnostic(
+                    ternaryExpressionAst,
+                    "ternary expression",
+                    "<test> ? <exp1> : <exp2>",
+                    "3,4,5,6",
+                    correction);
+
+                return AstVisitAction.Continue;
+            }
+
+            public override AstVisitAction VisitPipelineChain(PipelineChainAst statementChain)
+            {
+                if (!TargetsNonPS7())
+                {
+                    return AstVisitAction.Continue;
+                }
+
+                AddDiagnostic(
+                    statementChain,
+                    "pipeline chain",
+                    "<pipeline1> && <pipeline2> OR <pipeline1> || <pipeline2>",
+                    "3,4,5,6");
+
+                return AstVisitAction.Continue;
+            }
+
+            private bool TargetsNonPS7()
+            {
+                return _targetVersions.Contains(s_v3)
+                    || _targetVersions.Contains(s_v4)
+                    || _targetVersions.Contains(s_v5)
+                    || _targetVersions.Contains(s_v6);
+            }
+#endif
+
+            private void AddDiagnostic(
+                Ast offendingAst,
+                string syntaxName,
+                string syntaxExample,
+                string unsupportedVersions,
+                CorrectionExtent correction = null)
+            {
+                string message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UseCompatibleSyntaxError,
+                    syntaxName,
+                    syntaxExample,
+                    unsupportedVersions);
+
+                if (correction == null)
+                {
+                    _diagnosticAccumulator.Add(
+                        new DiagnosticRecord(
+                            message,
+                            offendingAst.Extent,
+                            _rule.GetName(),
+                            _rule.Severity,
+                            _analyzedFilePath));
+
+                    return;
+                }
+
+                _diagnosticAccumulator.Add(
+                    new DiagnosticRecord(
+                        message,
+                        offendingAst.Extent,
+                        _rule.GetName(),
+                        _rule.Severity,
+                        _analyzedFilePath,
+                        ruleId: null,
+                        new[] { correction }));
+            }
 
             private static CorrectionExtent CreateNewObjectCorrection(
                 string filePath,
