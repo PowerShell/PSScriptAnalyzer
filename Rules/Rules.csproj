@@ -8,7 +8,13 @@
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net452' ">
+    <ProjectReference Include="..\Engine\Engine.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' ">
     <ProjectReference Include="..\Engine\Engine.csproj" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
