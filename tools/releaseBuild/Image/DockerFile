@@ -22,13 +22,6 @@ RUN Import-Module PackageManagement; `
     C:/dotnet-install.ps1 -Channel Release -Version 2.1.4; `
     Add-Path C:/Users/ContainerAdministrator/AppData/Local/Microsoft/dotnet;
 
-#RUN Import-Module ./containerFiles/dockerInstall.psm1; `
-#   git clone https://Github.com/PowerShell/PSScriptAnalyzer; `
-#    Install-ChocolateyPackage -PackageName dotnet4.5;
-
-#RUN Import-Module ./containerFiles/dockerInstall.psm1; `
-#    Install-ChocolateyPackage -PackageName netfx-4.5.2-devpack;
-
 COPY buildPSSA.ps1 containerFiles/buildPSSA.ps1
 
 ENTRYPOINT ["C:\\windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "-command"]
