@@ -97,6 +97,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     {
         private const DiagnosticSeverity Severity = DiagnosticSeverity.Warning;
 
+        private static readonly string[] s_dscScriptResourceCommandNames = {"GetScript", "TestScript", "SetScript"};
+
         private readonly IEnumerable<string> _jobCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Start-Job");
 
         private readonly IEnumerable<string> _threadJobCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Start-ThreadJob");
@@ -158,7 +160,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (IsInlineScriptBlock(cmdName) || 
                 IsJobScriptBlock(cmdName, scriptBlockParameterAst) ||
                 IsForeachScriptBlock(cmdName, scriptBlockParameterAst) ||
-                IsInvokeCommandComputerScriptBlock(cmdName, commandAst))
+                IsInvokeCommandComputerScriptBlock(cmdName, commandAst) ||
+                IsDSCScriptResource(cmdName, commandAst))
             {
                 AnalyzeScriptBlock(scriptBlockExpressionAst);
                 return AstVisitAction.SkipChildren;
@@ -401,13 +404,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// IsForeachScriptBlock: Returns true if:
+        /// IsInlineScriptBlock: Returns true if:
         /// - command is 'InlineScript' (or alias)
         /// </summary>
         /// <param name="cmdName"></param>
         private bool IsInlineScriptBlock(string cmdName)
         {
             return _inlineScriptCmdletNamesAndAliases.Contains(cmdName, StringComparer.OrdinalIgnoreCase);
+        }
+
+
+        /// <summary>
+        /// IsDSCScriptResource: Returns true if:
+        /// - command is 'GetScript', 'TestScript' or 'SetScript'
+        /// </summary>
+        /// <param name="commandAst"></param>
+        private bool IsDSCScriptResource(string cmdName, CommandAst commandAst)
+        {
+            // Inside DSC Script resource, GetScript is of the form 'Script foo { GetScript = {} }'
+            // If we reach this point in the code, we are sure there are 
+            return s_dscScriptResourceCommandNames.Contains(cmdName, StringComparer.OrdinalIgnoreCase) && 
+                   commandAst.CommandElements[1].ToString() == "=";
         }
     }
 }
