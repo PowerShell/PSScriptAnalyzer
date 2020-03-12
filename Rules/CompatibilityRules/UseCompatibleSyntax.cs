@@ -183,7 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 // Look for [typename]::new(...) and [typename]::$dynamicMethodName syntax
 
-#if PS7
+#if PSV7
                 if (!TargetsNonPS7())
                 {
                     return AstVisitAction.Continue;
@@ -308,7 +308,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 #endif
 
-#if PS7
+#if PSV7
             public override AstVisitAction VisitMemberExpression(MemberExpressionAst memberExpressionAst)
             {
                 if (!TargetsNonPS7())
