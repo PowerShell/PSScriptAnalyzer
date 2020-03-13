@@ -155,8 +155,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
             
-            var scriptBlockParameterAst = commandAst.CommandElements[
-                    commandAst.CommandElements.IndexOf(scriptBlockExpressionAst) - 1] as CommandParameterAst;
+            int scriptBlockPosition = commandAst.CommandElements.IndexOf(scriptBlockExpressionAst);
+            var scriptBlockParameterAst = commandAst.CommandElements[scriptBlockPosition - 1] as CommandParameterAst;
+
 
             if (IsInlineScriptBlock(cmdName) || 
                 IsJobScriptBlock(cmdName, scriptBlockParameterAst) ||
