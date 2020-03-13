@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -155,13 +155,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     return AstVisitAction.Continue;
                 }
 
-                    string cmdName = commandAst.GetCommandName();
+                string cmdName = commandAst.GetCommandName();
                 if (cmdName == null)
                 {
                     // Skip for situations where command name cannot be resolved like `& $commandName -ComputerName -ScriptBlock { $foo }` 
                     return AstVisitAction.Continue;
                 }
                 
+                // We need this information, because some cmdlets can have more than one ScriptBlock parameter
                 var scriptBlockParameterAst = commandAst.CommandElements[
                         commandAst.CommandElements.IndexOf(scriptBlockExpressionAst) - 1] as CommandParameterAst;
 
@@ -179,7 +180,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                         string sessionName = GetSessionName(commandAst);
 
-                        IEnumerable<VariableExpressionAst> varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
+                    IEnumerable<VariableExpressionAst> varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
                     if (varsInLocalAssignments != null)
                     {
                         AddAssignedVarsToSession(sessionName, varsInLocalAssignments);
@@ -203,16 +204,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <param name="ast"></param>
             private static IEnumerable<VariableExpressionAst> FindVarsInAssignmentAsts(Ast ast)
             {
-                // TODO: rewrite as visitor method, and fix the case of `[int]$x = 10`, where LHS doesn't match varExpr.
                 // Find all variables that are assigned within this ast
-                return ast.FindAll(
-                        predicate: a => a is VariableExpressionAst varExpr &&
-                                        varExpr.Parent is AssignmentStatementAst assignment &&
-                                        assignment
-                                            .Left
-                                            .Equals(varExpr),
-                        searchNestedScriptBlocks: true)
-                    .Select(a => a as VariableExpressionAst);
+                foreach (Ast foundAst in ast.FindAll(VarsInAssignments, true))
+                {
+                    var assignment = foundAst as AssignmentStatementAst;
+                    
+                    if (assignment.Left is VariableExpressionAst variable)
+                    {
+                        yield return variable;
+                    }
+                    else if (assignment.Left is ConvertExpressionAst conversion)
+                    {
+                        yield return conversion.Child as VariableExpressionAst;
+                    }
+                };
+            }
+
+            /// <summary>
+            /// VarsInAssignments: helper function to prevent allocation of closures for FindAll predicate.
+            /// </summary>
+            /// <param name="ast"></param>
+            private static bool VarsInAssignments(Ast ast)
+            {
+                return ast is AssignmentStatementAst;
             }
 
             /// <summary>
@@ -223,21 +237,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// </summary>
             /// <param name="ast"></param>
             /// <param name="varsInAssignments"></param>
-            private static List<VariableExpressionAst> FindNonAssignedNonUsingVarAsts(
+            private static IEnumerable<VariableExpressionAst> FindNonAssignedNonUsingVarAsts(
                 Ast ast, IEnumerable<VariableExpressionAst> varsInAssignments)
             {
-                // TODO: rewrite as visitor method
                 // Find all variables that are not locally assigned, and don't have $using: scope modifier
-                return ast.FindAll(
-                        predicate: a => a is VariableExpressionAst varAst &&
-                                        !(varAst.Parent is UsingExpressionAst) &&
-                                        varsInAssignments.All(
-                                            b => b.VariablePath.UserPath != varAst.VariablePath.UserPath) &&
-                                        !Helper
-                                            .Instance
-                                            .HasSpecialVars(varAst.VariablePath.UserPath),
-                        searchNestedScriptBlocks: true)
-                    .Select(a => a as VariableExpressionAst).ToList();
+                foreach (Ast varAst in ast.FindAll(NonUsingNonSpecialVariables, true))
+                {
+                    var variable = varAst as VariableExpressionAst;
+
+                    foreach (var expressionAst in varsInAssignments)
+                    {
+                        if (expressionAst.VariablePath.UserPath == variable.VariablePath.UserPath)
+                        {
+                            yield break;    
+                        }
+                    }
+                    yield return variable;
+                }
+            }
+
+            /// <summary>
+            /// NonUsingNonSpecialVariables: helper function to prevent allocation of closures for FindAll predicate.
+            /// </summary>
+            /// <param name="ast"></param>
+            private static bool NonUsingNonSpecialVariables(Ast ast)
+            {
+                return ast is VariableExpressionAst variable && 
+                       !(variable.Parent is UsingExpressionAst) && 
+                       !Helper.Instance.HasSpecialVars(variable.VariablePath.UserPath);
             }
 
             /// <summary>
@@ -272,14 +299,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// </summary>
             /// <param name="commandAst"></param>
             private static string GetSessionName(CommandAst commandAst)
-            {
+                    {
                 if (!(commandAst.CommandElements.First<Ast>(
                     e => e is CommandParameterAst parameterAst &&
                         parameterAst.ParameterName.Equals(
                             "session", StringComparison.OrdinalIgnoreCase)) is CommandParameterAst sessionParameterAst))
-                {
+                    {
                     return "";
-                }
+                    }
 
                     int sessionParamAstIndex = commandAst.CommandElements.IndexOf(sessionParameterAst);
 
@@ -320,8 +347,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <param name="scriptBlockExpressionAst"></param>
             private void AnalyzeScriptBlock(ScriptBlockExpressionAst scriptBlockExpressionAst)
             {
-                    List<VariableExpressionAst> nonAssignedNonUsingVarAsts = FindNonAssignedNonUsingVarAsts(scriptBlockExpressionAst,
-                    FindVarsInAssignmentAsts(scriptBlockExpressionAst)).ToList();
+                    IEnumerable<VariableExpressionAst> nonAssignedNonUsingVarAsts = FindNonAssignedNonUsingVarAsts(scriptBlockExpressionAst,
+                    FindVarsInAssignmentAsts(scriptBlockExpressionAst));
 
                 GenerateDiagnosticRecords(nonAssignedNonUsingVarAsts);
             }
