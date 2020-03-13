@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -101,17 +101,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static readonly string[] s_dscScriptResourceCommandNames = {"GetScript", "TestScript", "SetScript"};
 
-        private readonly IEnumerable<string> _jobCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Start-Job");
+            private readonly IEnumerable<string> _jobCmdletNamesAndAliases =
+                Helper.Instance.CmdletNameAndAliases("Start-Job");
 
-        private readonly IEnumerable<string> _threadJobCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Start-ThreadJob");
+            private readonly IEnumerable<string> _threadJobCmdletNamesAndAliases =
+                Helper.Instance.CmdletNameAndAliases("Start-ThreadJob");
 
-        private readonly IEnumerable<string> _inlineScriptCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("InlineScript");
+            private readonly IEnumerable<string> _inlineScriptCmdletNamesAndAliases =
+                Helper.Instance.CmdletNameAndAliases("InlineScript");
 
-        private readonly IEnumerable<string> _foreachObjectCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Foreach-Object");
+            private readonly IEnumerable<string> _foreachObjectCmdletNamesAndAliases =
+                Helper.Instance.CmdletNameAndAliases("Foreach-Object");
 
-        private readonly IEnumerable<string> _invokeCommandCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Invoke-Command");
+            private readonly IEnumerable<string> _invokeCommandCmdletNamesAndAliases =
+                Helper.Instance.CmdletNameAndAliases("Invoke-Command");
 
-        private readonly Dictionary<string, List<VariableExpressionAst>> _varsDeclaredPerSession = new Dictionary<string, List<VariableExpressionAst>>();
+            private readonly Dictionary<string, List<VariableExpressionAst>> _varsDeclaredPerSession =
+                new Dictionary<string, List<VariableExpressionAst>>();
         
         private readonly List<DiagnosticRecord> _diagnosticAccumulator;
         
@@ -149,7 +155,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return AstVisitAction.Continue;
             }
 
-            var cmdName = commandAst.GetCommandName();
+                string cmdName = commandAst.GetCommandName();
             if (cmdName == null)
             {
                 // Skip for situations where command name cannot be resolved like `& $commandName -ComputerName -ScriptBlock { $foo }` 
@@ -171,9 +177,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             if (IsInvokeCommandSessionScriptBlock(cmdName, commandAst))
             {
-                var sessionName = GetSessionName(commandAst);
+                    string sessionName = GetSessionName(commandAst);
 
-                var varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
+                    IEnumerable<VariableExpressionAst> varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
                 if (varsInLocalAssignments != null)
                 {
                     AddAssignedVarsToSession(sessionName, varsInLocalAssignments);
@@ -273,7 +279,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return "";
             }
 
-            var sessionParamAstIndex = commandAst.CommandElements.IndexOf(sessionParameterAst);
+                int sessionParamAstIndex = commandAst.CommandElements.IndexOf(sessionParameterAst);
 
             return commandAst
                 .CommandElements[sessionParamAstIndex + 1]
@@ -312,7 +318,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="scriptBlockExpressionAst"></param>
         private void AnalyzeScriptBlock(ScriptBlockExpressionAst scriptBlockExpressionAst)
         {
-            var nonAssignedNonUsingVarAsts = FindNonAssignedNonUsingVarAsts(scriptBlockExpressionAst,
+                List<VariableExpressionAst> nonAssignedNonUsingVarAsts = FindNonAssignedNonUsingVarAsts(scriptBlockExpressionAst,
                 FindVarsInAssignmentAsts(scriptBlockExpressionAst)).ToList();
 
             GenerateDiagnosticRecords(nonAssignedNonUsingVarAsts);
