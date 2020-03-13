@@ -10,7 +10,9 @@ This applies to:
 - Invoke-Command *
 - Workflow { InlineScript {}}
 - Foreach-Object **
-- Start-(Thread)Job
+- Start-Job
+- Start-ThreadJob
+- The `Script` resource in DSC configurations, specifically for the `GetScript`, `TestScript` and `SetScript` properties
 
 \* Only with the -ComputerName or -Session parameter.  
 \*\* Only with the -Parallel parameter
