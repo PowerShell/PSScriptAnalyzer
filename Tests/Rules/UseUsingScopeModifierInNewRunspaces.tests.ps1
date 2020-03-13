@@ -125,156 +125,156 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
                         }
                     }'
             }
-    )
+        )
 
-    It "should emit for: <Description>" -TestCases $testCases {
-        param($Description, $ScriptBlock)
-        [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
-        $warnings.Count | Should -Be 1
-    }
+        It "should emit for: <Description>" -TestCases $testCases {
+            param($Description, $ScriptBlock)
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
+            $warnings.Count | Should -Be 1
+        }
 
-    It "should emit suggested correction" {
-        $ScriptBlock = '{
+        It "should emit suggested correction" {
+            $ScriptBlock = '{
                 1..2 | ForEach-Object -Parallel { $var }
             }'
-        $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
 
-        $warnings[0].SuggestedCorrections[0].Text | Should -Be '$using:var'
+            $warnings[0].SuggestedCorrections[0].Text | Should -Be '$using:var'
+        }
     }
-}
 
-Context "Should not detect anything" {
-    $testCases = @(
-        @{
-            Description = "Foreach-Object with uninitialized var inside"
-            ScriptBlock = '{
+    Context "Should not detect anything" {
+        $testCases = @(
+            @{
+                Description = "Foreach-Object with uninitialized var inside"
+                ScriptBlock = '{
                     1..2 | ForEach-Object { $var }
                 }'
-        }
-        @{
-            Description = "Foreach-Object -Parallel with uninitialized `$using: var"
-            ScriptBlock = '{
+            }
+            @{
+                Description = "Foreach-Object -Parallel with uninitialized `$using: var"
+                ScriptBlock = '{
                     1..2 | foreach-object -Parallel { $using:var }
                 }'
-        }
-        @{
-            Description = "Foreach-Object -Parallel with var assigned locally"
-            ScriptBlock = '{
+            }
+            @{
+                Description = "Foreach-Object -Parallel with var assigned locally"
+                ScriptBlock = '{
                     1..2 | ForEach-Object -Parallel { $var="somevalue" }
                 }'
-        }
-        @{
-            Description = "Foreach-Object -Parallel with built-in var '`$PSBoundParameters' inside"
-            ScriptBlock = '{
+            }
+            @{
+                Description = "Foreach-Object -Parallel with built-in var '`$PSBoundParameters' inside"
+                ScriptBlock = '{
                     1..2 | ForEach-Object -Parallel{ $PSBoundParameters }
                 }'
-        }
-        @{
-            Description = "Foreach-Object -Parallel with vars in other parameters"
-            ScriptBlock = '{
+            }
+            @{
+                Description = "Foreach-Object -Parallel with vars in other parameters"
+                ScriptBlock = '{
                     $foo = "bar"
                     ForEach-Object -Parallel {$_} -InputObject $foo
                 }'
-        }
-        # Start-Job / Start-ThreadJob
-        @{
-            Description = 'Start-Job with $using:'
-            ScriptBlock = '{
+            }
+            # Start-Job / Start-ThreadJob
+            @{
+                Description = 'Start-Job with $using:'
+                ScriptBlock = '{
                     $foo = "bar"
                     Start-Job -ScriptBlock {$using:foo} | Receive-Job -Wait -AutoRemoveJob
                 }'
-        }
-        @{
-            Description = 'Start-ThreadJob with $using:'
-            ScriptBlock = '{
+            }
+            @{
+                Description = 'Start-ThreadJob with $using:'
+                ScriptBlock = '{
                     $foo = "bar"
                     Start-ThreadJob -ScriptBlock {$using:foo} | Receive-Job -Wait -AutoRemoveJob
                 }'
-        }
-        @{
-            Description = 'Start-Job with -InitializationScript with a variable'
-            ScriptBlock = '{
+            }
+            @{
+                Description = 'Start-Job with -InitializationScript with a variable'
+                ScriptBlock = '{
                     $foo = "bar"
                     Start-Job -ScriptBlock {$using:foo} -InitializationScript {$foo} | Receive-Job -Wait -AutoRemoveJob
                 }'
-        }
-        @{
-            Description = 'Start-ThreadJob with -InitializationScript with a variable'
-            ScriptBlock = '{
+            }
+            @{
+                Description = 'Start-ThreadJob with -InitializationScript with a variable'
+                ScriptBlock = '{
                     $foo = "bar"
                     Start-ThreadJob -ScriptBlock {$using:foo} -InitializationScript {$foo} | Receive-Job -Wait -AutoRemoveJob
                 }'
-        }
-        # workflow/inlinescript
-        @{
-            Description = "Workflow/InlineScript"
-            ScriptBlock = '{
+            }
+            # workflow/inlinescript
+            @{
+                Description = "Workflow/InlineScript"
+                ScriptBlock = '{
                     $foo = "bar"
                     workflow baz { InlineScript {$using:foo} }
                 }'
-        }
-        # Invoke-Command
-        @{
-            Description = 'Invoke-Command -Session, var declared in same session, other scriptblock'
-            ScriptBlock = '{
+            }
+            # Invoke-Command
+            @{
+                Description = 'Invoke-Command -Session, var declared in same session, other scriptblock'
+                ScriptBlock = '{
                     $session = new-PSSession -ComputerName "baz"
                     Invoke-Command -session $session -ScriptBlock {$foo = "foo" }
                     Invoke-Command -session $session -ScriptBlock {Write-Output $foo}
                 }'
-        }
-        @{
-            Description = 'Invoke-Command without -ComputerName'
-            ScriptBlock = '{
+            }
+            @{
+                Description = 'Invoke-Command without -ComputerName'
+                ScriptBlock = '{
                     Invoke-Command -ScriptBlock {Write-Output $foo}
                 }'
-        }
-        # Unsupported scenarios
-        @{
-            Description = 'Rule should skip analysis when Command Name cannot be resolved'
-            ScriptBlock = '{
+            }
+            # Unsupported scenarios
+            @{
+                Description = 'Rule should skip analysis when Command Name cannot be resolved'
+                ScriptBlock = '{
                     $commandName = "Invoke-Command"
                     & $commandName -ComputerName -ScriptBlock { $foo }
                 }'
-        }
-        # DSC Script resource
-        @{
-            Description = 'DSC Script resource with GetScript {}'
-            ScriptBlock = 'Script ReturnFoo {
+            }
+            # DSC Script resource
+            @{
+                Description = 'DSC Script resource with GetScript {}'
+                ScriptBlock = 'Script ReturnFoo {
                     GetScript = {
                         return @{ "Result" = "$using:foo" }
                     }
                 }'
-        }
-        @{
-            Description = 'DSC Script resource with TestScript {}'
-            ScriptBlock = 'Script TestFoo {
+            }
+            @{
+                Description = 'DSC Script resource with TestScript {}'
+                ScriptBlock = 'Script TestFoo {
                     TestScript = {
                         return [bool]$using:foo
                     }
                 }'
-        }
-        @{
-            Description = 'DSC Script resource with SetScript {}'
-            ScriptBlock = 'Script SetFoo {
+            }
+            @{
+                Description = 'DSC Script resource with SetScript {}'
+                ScriptBlock = 'Script SetFoo {
                     SetScript = {
                         $using:foo | Set-Content -path "~\nonexistent\foo.txt"
                     }
                 }'
-        }
-        @{
-            Description = 'Non-DSC function with the name SetScript {}'
-            ScriptBlock = '{
+            }
+            @{
+                Description = 'Non-DSC function with the name SetScript {}'
+                ScriptBlock = '{
                     SetScript -ScriptBlock {
                         $foo | Set-Content -path "~\nonexistent\foo.txt"
                     }
                 }'
-        }
-    )
+            }
+        )
 
-    It "should not emit anything for: <Description>" -TestCases $testCases {
-        param($Description, $ScriptBlock)
-        [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
-        $warnings.Count | Should -Be 0
+        It "should not emit anything for: <Description>" -TestCases $testCases {
+            param($Description, $ScriptBlock)
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
+            $warnings.Count | Should -Be 0
+        }
     }
-}
 }
