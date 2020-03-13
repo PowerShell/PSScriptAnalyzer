@@ -6,7 +6,7 @@ $settings = @{
 Describe "UseUsingScopeModifierInNewRunspaces" {
     Context "Should detect something" {
         $testCases = @(
-            # Foreach-Object -Parallel {}
+            # Test: Foreach-Object -Parallel {}
             @{
                 Description = "Foreach-Object -Parallel with undeclared var"
                 ScriptBlock = '{
