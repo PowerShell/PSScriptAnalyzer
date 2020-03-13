@@ -313,7 +313,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private void AnalyzeScriptBlock(ScriptBlockExpressionAst scriptBlockExpressionAst)
         {
             var nonAssignedNonUsingVarAsts = FindNonAssignedNonUsingVarAsts(scriptBlockExpressionAst,
-                FindVarsInAssignmentAsts(scriptBlockExpressionAst)).ToList();
+                FindVarsInAssignmentAsts(scriptBlockExpressionAst));
+
 
             GenerateDiagnosticRecords(nonAssignedNonUsingVarAsts);
         }
