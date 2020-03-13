@@ -97,7 +97,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     {
         private const DiagnosticSeverity Severity = DiagnosticSeverity.Warning;
 
-        private static readonly string[] s_dscScriptResourceCommandNames = {"GetScript", "TestScript", "SetScript"};
+        private static readonly IReadOnlyList<string> s_dscScriptResourceCommandNames = {"GetScript", "TestScript", "SetScript"};
+
 
         private readonly IEnumerable<string> _jobCmdletNamesAndAliases = Helper.Instance.CmdletNameAndAliases("Start-Job");
 
