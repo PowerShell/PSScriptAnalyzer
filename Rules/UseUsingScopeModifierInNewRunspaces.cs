@@ -90,12 +90,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
-    }
 
 #if !(PSV3 || PSV4)
-    internal class SyntaxCompatibilityVisitor : AstVisitor2
+        private class SyntaxCompatibilityVisitor : AstVisitor2
 #else
-    internal class SyntaxCompatibilityVisitor : AstVisitor
+        private class SyntaxCompatibilityVisitor : AstVisitor
 #endif
     {
         private const DiagnosticSeverity Severity = DiagnosticSeverity.Warning;
@@ -430,4 +429,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                    commandAst.CommandElements[1].ToString() == "=";
         }
     }
+}
 }
