@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -41,7 +41,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(),
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.NameSpaceFormat,
+                GetSourceName(),
                 Strings.UseUsingScopeModifierInNewRunspacesName);
         }
 
