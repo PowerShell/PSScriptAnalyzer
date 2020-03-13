@@ -203,6 +203,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <param name="ast"></param>
             private static IEnumerable<VariableExpressionAst> FindVarsInAssignmentAsts(Ast ast)
             {
+                // TODO: rewrite as visitor method, and fix the case of `[int]$x = 10`, where LHS doesn't match varExpr.
                 // Find all variables that are assigned within this ast
                 return ast.FindAll(
                         predicate: a => a is VariableExpressionAst varExpr &&
@@ -225,6 +226,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             private static List<VariableExpressionAst> FindNonAssignedNonUsingVarAsts(
                 Ast ast, IEnumerable<VariableExpressionAst> varsInAssignments)
             {
+                // TODO: rewrite as visitor method
                 // Find all variables that are not locally assigned, and don't have $using: scope modifier
                 return ast.FindAll(
                         predicate: a => a is VariableExpressionAst varAst &&
