@@ -90,7 +90,7 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
                     ScriptBlock = '{
                         $session = new-PSSession -ComputerName "baz"
                         $otherSession = new-PSSession -ComputerName "bar"
-                        Invoke-Command -session $session -ScriptBlock {$foo = "foo" }
+                        Invoke-Command -session $session -ScriptBlock {[string]$foo = "foo" }
                         Invoke-Command -session $otherSession -ScriptBlock {Write-Output $foo}
                     }'
                 }
@@ -165,7 +165,7 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
                 @{
                     Description = "Foreach-Object -Parallel with var assigned locally"
                     ScriptBlock = '{
-                        1..2 | ForEach-Object -Parallel { $var="somevalue" }
+                        1..2 | ForEach-Object -Parallel { [string]$var="somevalue" }
                     }'
                 }
                 @{
