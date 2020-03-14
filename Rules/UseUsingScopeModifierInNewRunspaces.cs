@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -178,7 +178,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (IsInvokeCommandSessionScriptBlock(cmdName, commandAst))
                 {
-                        string sessionName = GetSessionName(commandAst);
+                    if (!TryGetSessionNameFromInvokeCommand(commandAst, out var sessionName))
+                    {
+                        return AstVisitAction.Continue;
+                    }
 
                     IEnumerable<VariableExpressionAst> varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
                     if (varsInLocalAssignments != null)
@@ -295,26 +298,48 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             /// <summary>
-            /// GetSessionName: Retrieves the name of the session (that Invoke-Command is run with).
+            /// TryGetSessionNameFromInvokeCommand:  Retrieves the name of the session (that Invoke-Command is run with).
             /// </summary>
-            /// <param name="commandAst"></param>
-            private static string GetSessionName(CommandAst commandAst)
+            /// <param name="invokeCommandAst"></param>
+            /// <param name="sessionName"></param>
+            /// <returns></returns>
+            private static bool TryGetSessionNameFromInvokeCommand(CommandAst invokeCommandAst, out string sessionName)
+            {
+                // Sift through Invoke-Command parameters to find the value of the -Session parameter
+                // Start at 1 to skip the command name
+                for (int i = 1; i < invokeCommandAst.CommandElements.Count; i++)
+                {
+                    // We need a parameter
+                    if (!(invokeCommandAst.CommandElements[i] is CommandParameterAst parameterAst))
                     {
-                if (!(commandAst.CommandElements.First<Ast>(
-                    e => e is CommandParameterAst parameterAst &&
-                        parameterAst.ParameterName.Equals(
-                            "session", StringComparison.OrdinalIgnoreCase)) is CommandParameterAst sessionParameterAst))
-                    {
-                    return "";
+                        continue;
                     }
 
-                    int sessionParamAstIndex = commandAst.CommandElements.IndexOf(sessionParameterAst);
+                    // The parameter must be called "Session"
+                    if (!parameterAst.ParameterName.Equals("Session", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
 
-                return commandAst
-                    .CommandElements[sessionParamAstIndex + 1]
-                    .Extent
-                    .Text
-                    .Trim();
+                    // If we have a partial AST, ensure we don't crash
+                    if (i + 1 >= invokeCommandAst.CommandElements.Count)
+                    {
+                        break;
+                    }
+
+                    // The -Session parameter expects an argument of type [System.Management.Automation.Runspaces.PSSession].
+                    // It will typically be provided in the form of a variable. We do not support other scenarios at this time.
+                    if (!(invokeCommandAst.CommandElements[i + 1] is VariableExpressionAst variableAst))
+                    {
+                        break;
+                    }
+
+                    sessionName = variableAst.VariablePath.UserPath;
+                    return true;
+                }
+
+                sessionName = null;
+                return false;
             }
 
             /// <summary>
