@@ -385,7 +385,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <param name="nonAssignedNonUsingVarAsts"></param>
             private void GenerateDiagnosticRecords(IEnumerable<VariableExpressionAst> nonAssignedNonUsingVarAsts)
             {
-                foreach (var variableExpression in nonAssignedNonUsingVarAsts)
+                foreach (VariableExpressionAst variableExpression in nonAssignedNonUsingVarAsts)
+
                 {
                     if (variableExpression == null)
                     {
