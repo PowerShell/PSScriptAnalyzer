@@ -393,15 +393,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         continue;
                     }
 
-                    _diagnosticAccumulator.Add(new DiagnosticRecord(
-                        message: string.Format(CultureInfo.CurrentCulture,
-                            Strings.UseUsingScopeModifierInNewRunspacesError, variableExpression.ToString()),
-                        extent: variableExpression.Extent,
-                        ruleName: _rule.GetName(),
-                        severity: Severity,
-                        scriptPath: _analyzedFilePath,
-                        ruleId: _rule.GetName(),
-                        suggestedCorrections: GetSuggestedCorrections(ast: variableExpression)));
+                    string diagnosticMessage = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.UseUsingScopeModifierInNewRunspacesError,
+                        variableExpression.ToString());
+
+                    _diagnosticAccumulator.Add(
+                        new DiagnosticRecord(
+                            diagnosticMessage,
+                            variableExpression.Extent,
+                            _rule.GetName(),
+                            Severity,
+                            _analyzedFilePath,
+                            ruleId: _rule.GetName(),
+                            GetSuggestedCorrections(ast: variableExpression)));
+
                 }
             }
 
