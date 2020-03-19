@@ -276,7 +276,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <param name="ast"></param>
             private static IEnumerable<CorrectionExtent> GetSuggestedCorrections(VariableExpressionAst ast)
             {
-                var varWithUsing = $"$using:{ast.VariablePath.UserPath}";
+                string varWithUsing = $"$using:{ast.VariablePath.UserPath}";
+
                 var description = string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.UseUsingScopeModifierInNewRunspacesCorrectionDescription,
