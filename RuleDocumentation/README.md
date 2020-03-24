@@ -16,6 +16,7 @@
 |[AvoidOverwritingBuiltInCmdlets](./AvoidOverwritingBuiltInCmdlets.md) | Warning | |
 |[AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md) | Warning | |
 |[AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md) | Warning | |
+|[UseUsingScopeModifierInNewRunspaces](./UseUsingScopeModifierInNewRunspaces.md) | Warning | |
 |[AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md) | Warning | Yes |
 |[AvoidUsingComputerNameHardcoded](./AvoidUsingComputerNameHardcoded.md) | Error | |
 |[AvoidUsingConvertToSecureStringWithPlainText](./AvoidUsingConvertToSecureStringWithPlainText.md) | Error | |
