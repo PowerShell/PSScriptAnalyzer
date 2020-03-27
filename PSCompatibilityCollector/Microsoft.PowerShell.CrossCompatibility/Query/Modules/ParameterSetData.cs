@@ -11,8 +11,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class ParameterSetData
     {
-        private readonly Modules.ParameterSetData _parameterSet;
-
         /// <summary>
         /// Create a parameter set query object from the parameter set name and data object.
         /// </summary>
@@ -21,7 +19,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public ParameterSetData(string name, Modules.ParameterSetData parameterSetData)
         {
             Name = name;
-            _parameterSet = parameterSetData;
+            Flags = parameterSetData.Flags;
+            Position = parameterSetData.Position;
         }
 
         /// <summary>
@@ -32,12 +31,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// Parameter set flags that are set.
         /// </summary>
-        public IReadOnlyCollection<ParameterSetFlag> Flags => _parameterSet.Flags;
+        public IReadOnlyCollection<ParameterSetFlag> Flags { get; }
 
         /// <summary>
         /// The position of the parameter.
         /// A negative position means no position is specified.
         /// </summary>
-        public int Position => _parameterSet.Position;
+        public int Position { get; }
     }
 }

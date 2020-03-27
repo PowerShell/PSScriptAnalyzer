@@ -12,10 +12,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class ParameterData
     {
-        private readonly Data.ParameterData _parameterData;
-
-        private readonly Lazy<IReadOnlyDictionary<string, ParameterSetData>> _parameterSets;
-
         /// <summary>
         /// Create a new parameter query object from the parameter name and its data object.
         /// </summary>
@@ -23,26 +19,27 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <param name="parameterData">The parameter data object.</param>
         public ParameterData(string name, Data.ParameterData parameterData)
         {
-            _parameterData = parameterData;
-            _parameterSets = new Lazy<IReadOnlyDictionary<string, ParameterSetData>>(() => CreateParameterSetDictionary(_parameterData.ParameterSets));
             Name = name;
+            Type = parameterData.Type;
+            IsDynamic = parameterData.Dynamic;
+            ParameterSets = CreateParameterSetDictionary(parameterData.ParameterSets);
         }
 
         /// <summary>
         /// The parameter sets of the object.
         /// </summary>
         /// <value></value>
-        public IReadOnlyDictionary<string, ParameterSetData> ParameterSets => _parameterSets.Value;
+        public IReadOnlyDictionary<string, ParameterSetData> ParameterSets { get; }
 
         /// <summary>
         /// The name of the type of the object.
         /// </summary>
-        public string Type => _parameterData.Type;
+        public string Type { get; }
 
         /// <summary>
         /// True if this is a dynamic parameter, false otherwise.
         /// </summary>
-        public bool IsDynamic => _parameterData.Dynamic;
+        public bool IsDynamic { get; }
 
         /// <summary>
         /// The name of the parameter.

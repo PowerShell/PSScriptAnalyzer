@@ -133,6 +133,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     // If the target has this command, everything is good
                     if (targetProfile.Runtime.Commands.TryGetValue(commandName, out IReadOnlyList<CommandData> matchedCommands))
                     {
+                        if (commandName == "Get-Service"
+                            && targetProfile.Platform.OperatingSystem.DistributionId == "ubuntu"
+                            && targetProfile.Platform.PowerShell.Version.Major == 7)
+                        {
+                            Console.WriteLine("ISSUE: Get-Service reported as present in UBUNTU PS 7 profile");
+                        }
+
                         // Now check that the parameters on the command are available on all target platforms
                         CheckCommandInvocationParameters(targetProfile, commandName, commandAst, matchedCommands);
                         continue;

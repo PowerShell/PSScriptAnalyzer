@@ -10,8 +10,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class EventData
     {
-        private readonly EventDataMut _eventData;
-
         /// <summary>
         /// Create a new query object around collected .NET event information.
         /// </summary>
@@ -20,7 +18,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public EventData(string name, EventDataMut eventData)
         {
             Name = name;
-            _eventData = eventData;
+            IsMulticast = eventData.IsMulticast;
+            HandlerType = eventData.HandlerType;
         }
 
         /// <summary>
@@ -31,11 +30,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// True if the event is multicast, false otherwise.
         /// </summary>
-        public bool IsMulticast => _eventData.IsMulticast;
+        public bool IsMulticast { get; }
 
         /// <summary>
         /// The type of the handler for this event.
         /// </summary>
-        public string HandlerType => _eventData.HandlerType;
+        public string HandlerType { get; }
     }
 }

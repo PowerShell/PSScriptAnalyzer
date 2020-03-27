@@ -14,16 +14,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class RuntimeData
     {
-        private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>>> _modules;
-
-        private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>> _nonAliasCommands;
-
-        private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>> _aliases;
-
-        private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>> _commands;
-
-        private readonly Lazy<NativeCommandLookupTable> _nativeCommands;
-
         /// <summary>
         /// Create a new query object around collected PowerShell runtime data.
         /// </summary>
@@ -33,11 +23,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             Types = new AvailableTypeData(runtimeData.Types);
             Common = new CommonPowerShellData(runtimeData.Common);
 
-            _modules = new Lazy<IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>>>(() => CreateModuleTable(runtimeData.Modules));
-            _nonAliasCommands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateNonAliasCommandLookupTable(Modules));
-            _aliases = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => CreateAliasLookupTable(runtimeData.Modules, NonAliasCommands));
-            _commands = new Lazy<IReadOnlyDictionary<string, IReadOnlyList<CommandData>>>(() => new DualLookupTable<string, IReadOnlyList<CommandData>>(NonAliasCommands, Aliases));
-            _nativeCommands = new Lazy<NativeCommandLookupTable>(() => NativeCommandLookupTable.Create(runtimeData.NativeCommands));
+            Modules = CreateModuleTable(runtimeData.Modules);
+            NonAliasCommands = CreateNonAliasCommandLookupTable(Modules);
+            Aliases = CreateAliasLookupTable(runtimeData.Modules, NonAliasCommands);
+            SetModuleAliases(runtimeData.Modules);
+            Commands = new DualLookupTable<string, IReadOnlyList<CommandData>>(NonAliasCommands, Aliases);
+            NativeCommands = NativeCommandLookupTable.Create(runtimeData.NativeCommands);
         }
 
         /// <summary>
@@ -49,28 +40,28 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// All the default modules available to the PowerShell runtime, keyed by module name and then version.
         /// </summary>
         /// <value></value>
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> Modules => _modules.Value;
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> Modules { get; }
 
         /// <summary>
         /// A lookup table for commands from modules.
         /// </summary>
-        public IReadOnlyDictionary<string, IReadOnlyList<CommandData>> Commands => _commands.Value;
+        public IReadOnlyDictionary<string, IReadOnlyList<CommandData>> Commands { get; }
 
         /// <summary>
         /// All the native commands/applications available to PowerShell.
         /// </summary>
-        public NativeCommandLookupTable NativeCommands => _nativeCommands.Value;
+        public NativeCommandLookupTable NativeCommands { get; }
 
         /// <summary>
         /// PowerShell runtime data not confined to a module.
         /// </summary>
         public CommonPowerShellData Common { get; }
 
-        internal IReadOnlyDictionary<string, IReadOnlyList<CommandData>> NonAliasCommands => _nonAliasCommands.Value;
+        internal IReadOnlyDictionary<string, IReadOnlyList<CommandData>> NonAliasCommands { get; }
 
-        internal IReadOnlyDictionary<string, IReadOnlyList<CommandData>> Aliases => _aliases.Value;
+        internal IReadOnlyDictionary<string, IReadOnlyList<CommandData>> Aliases { get; }
 
-        private IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> CreateModuleTable(IDictionary<string, JsonDictionary<Version, Data.ModuleData>> modules)
+        private static IReadOnlyDictionary<string, IReadOnlyDictionary<Version, ModuleData>> CreateModuleTable(IDictionary<string, JsonDictionary<Version, Data.ModuleData>> modules)
         {
             var moduleDict = new Dictionary<string, IReadOnlyDictionary<Version, ModuleData>>(modules.Count, StringComparer.OrdinalIgnoreCase);
             foreach (KeyValuePair<string, JsonDictionary<Version, Data.ModuleData>> moduleVersions in modules)
@@ -78,11 +69,22 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
                 var moduleVersionDict = new Dictionary<Version, ModuleData>(moduleVersions.Value.Count);
                 foreach (KeyValuePair<Version, Data.ModuleData> module in moduleVersions.Value)
                 {
-                    moduleVersionDict[module.Key] = new ModuleData(name: moduleVersions.Key, version: module.Key, parent: this, moduleData: module.Value);
+                    moduleVersionDict[module.Key] = new ModuleData(name: moduleVersions.Key, version: module.Key, moduleData: module.Value);
                 }
                 moduleDict[moduleVersions.Key] = moduleVersionDict;
             }
             return moduleDict;
+        }
+
+        private void SetModuleAliases(Data.RuntimeData runtimeData)
+        {
+            foreach (KeyValuePair<string, IReadOnlyDictionary<Version, ModuleData>> moduleVersions in Modules)
+            {
+                foreach (KeyValuePair<Version, ModuleData> module in moduleVersions.Value)
+                {
+                    module.Value.SetAliasTable(this, runtimeData.Modules[moduleVersions.Key][module.Key].Aliases);
+                }
+            }
         }
 
         private static IReadOnlyDictionary<string, IReadOnlyList<CommandData>> CreateNonAliasCommandLookupTable(

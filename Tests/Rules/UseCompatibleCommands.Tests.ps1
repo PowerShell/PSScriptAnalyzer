@@ -247,11 +247,6 @@ Describe 'UseCompatibleCommands' {
         It "Reports <ProblemCount> command incompatibilties with '<Script>' on <OS> with PowerShell <Version>" -TestCases $script:CompatibilityTestCases -Skip:$script:RunningInCIOnUbuntu {
             param($Script, [string]$Target, [string[]]$Commands, [version]$Version, [string]$OS, [int]$ProblemCount)
 
-            if ($OS -eq 'Linux' -and 'Get-AuthenticodeSignature' -in $Commands -and $Version -eq '7.0')
-            {
-                Wait-Debugger
-            }
-
             $settings = @{
                 Rules = @{
                     $script:RuleName = @{

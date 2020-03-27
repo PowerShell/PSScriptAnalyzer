@@ -11,8 +11,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class PropertyData
     {
-        private readonly PropertyDataMut _propertyData;
-
         /// <summary>
         /// Create a new query object around collected .NET property data.
         /// </summary>
@@ -21,7 +19,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public PropertyData(string name, PropertyDataMut propertyData)
         {
             Name = name;
-            _propertyData = propertyData;
+            Type = propertyData.Type;
+            Accessors = new List<AccessorType>(propertyData.Accessors);
         }
 
         /// <summary>
@@ -32,11 +31,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// The full name of the type of the property.
         /// </summary>
-        public string Type => _propertyData.Type;
+        public string Type { get; }
 
         /// <summary>
         /// List of the available accessors (get, set) on the property.
         /// </summary>
-        public IReadOnlyList<AccessorType> Accessors => _propertyData.Accessors;
+        public IReadOnlyList<AccessorType> Accessors { get; }
     }
 }

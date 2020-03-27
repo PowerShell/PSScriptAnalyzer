@@ -12,25 +12,24 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class DotnetData
     {
-        private readonly DotnetDataMut _dotnetData;
-
         /// <summary>
         /// Create a new query object around a .NET data instance.
         /// </summary>
         /// <param name="dotnetData">The .NET data to be queried.</param>
         public DotnetData(DotnetDataMut dotnetData)
         {
-            _dotnetData = dotnetData;
+            ClrVersion = dotnetData.ClrVersion;
+            Runtime = dotnetData.Runtime;
         }
 
         /// <summary>
         /// The version of the .NET CLR used by the PowerShell platform.
         /// </summary>
-        public Version ClrVersion => _dotnetData.ClrVersion;
+        public Version ClrVersion { get; }
 
         /// <summary>
         /// The edition of the .NET runtime PowerShell is running on.
         /// </summary>
-        public DotnetRuntime Runtime => _dotnetData.Runtime;
+        public DotnetRuntime Runtime { get; }
     }
 }

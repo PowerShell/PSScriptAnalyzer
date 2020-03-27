@@ -12,8 +12,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class AssemblyData
     {
-        private readonly Lazy<IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>>> _types;
-
         /// <summary>
         /// Create a query object for assembly data from collected assembly data.
         /// </summary>
@@ -24,7 +22,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
             if (assemblyData.Types != null)
             {
-                _types = new Lazy<IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>>>(() => CreateTypeDictionary(assemblyData.Types));
+                Types = CreateTypeDictionary(assemblyData.Types);
             }
         }
 
@@ -36,7 +34,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// Lookup table of types in the assembly, keyed by namespace and then type name.
         /// </summary>
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> Types => _types?.Value;
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> Types { get; }
 
         private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, TypeData>> CreateTypeDictionary(IReadOnlyDictionary<string, JsonDictionary<string, Data.TypeData>> typeData)
         {

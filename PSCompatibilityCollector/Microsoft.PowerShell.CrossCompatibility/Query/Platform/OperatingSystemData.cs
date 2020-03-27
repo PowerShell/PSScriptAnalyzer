@@ -11,71 +11,79 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class OperatingSystemData
     {
-        private readonly OperatingSystemDataMut _operatingSystemData;
-
         /// <summary>
         /// Create an operating system query object from operating system information.
         /// </summary>
         /// <param name="operatingSystemData">Operating system data object from a profile.</param>
         public OperatingSystemData(OperatingSystemDataMut operatingSystemData)
         {
-            _operatingSystemData = operatingSystemData;
+            Name = operatingSystemData.Name;
+            Description = operatingSystemData.Description;
+            Platform = operatingSystemData.Platform;
+            Architecture = operatingSystemData.Architecture;
+            Family = operatingSystemData.Family;
+            Version = operatingSystemData.Version;
+            ServicePack = operatingSystemData.ServicePack;
+            SkuId = operatingSystemData.SkuId;
+            DistributionId = operatingSystemData.DistributionId;
+            DistirbutionVersion = operatingSystemData.DistributionVersion;
+            DistributionPrettyName = operatingSystemData.DistributionPrettyName;
         }
 
         /// <summary>
         /// The name of the operating system.
         /// </summary>
-        public string Name => _operatingSystemData.Name;
+        public string Name { get; }
 
         /// <summary>
         /// The description of the operating system as reported by $PSVersionTable.OS.
         /// </summary>
-        public string Description => _operatingSystemData.Description;
+        public string Description { get; }
 
         /// <summary>
         /// The name of the platform as reported by $PSVersionTable.Platform.
         /// </summary>
-        public string Platform => _operatingSystemData.Platform;
+        public string Platform { get; }
 
         /// <summary>
         /// The OS machine architecture, from System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.
         /// </summary>
-        public Architecture Architecture => _operatingSystemData.Architecture;
+        public Architecture Architecture { get; }
 
         /// <summary>
         /// Specifies whether the OS is Windows, Linux or macOS.
         /// </summary>
-        public OSFamily Family => _operatingSystemData.Family;
+        public OSFamily Family { get; }
 
         /// <summary>
         /// The self declared version of the operating system (kernel on Linux).
         /// </summary>
-        public string Version => _operatingSystemData.Version;
+        public string Version { get; }
 
         /// <summary>
         /// The Windows Service Pack of the OS, if any.
         /// </summary>
-        public string ServicePack => _operatingSystemData.ServicePack;
+        public string ServicePack { get; }
 
         /// <summary>
         /// The Windows SKU ID of the OS, if any.
         /// </summary>
-        public uint? SkuId => _operatingSystemData.SkuId;
+        public uint? SkuId { get; }
 
         /// <summary>
         /// The Linux distribution ID of the OS, if any.
         /// </summary>
-        public string DistributionId => _operatingSystemData.DistributionId;
+        public string DistributionId { get; }
 
         /// <summary>
         /// The version of the Linux distribution, if any.
         /// </summary>
-        public string DistirbutionVersion => _operatingSystemData.DistributionVersion;
+        public string DistirbutionVersion { get; }
 
         /// <summary>
         /// The self-reported "pretty name" of the Linux distribution, if any.
         /// </summary>
-        public string DistributionPrettyName => _operatingSystemData.DistributionPrettyName;
+        public string DistributionPrettyName { get; }
 
         /// <summary>
         /// The human-readable name of this operating system
