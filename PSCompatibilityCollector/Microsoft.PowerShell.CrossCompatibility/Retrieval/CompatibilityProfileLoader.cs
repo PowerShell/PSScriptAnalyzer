@@ -123,12 +123,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Retrieval
 
                 var compatibilityProfile = new CompatibilityProfileData(compatibilityProfileMut);
 
-                if (compatibilityProfileMut.Platform.OperatingSystem.DistributionId == "ubuntu"
-                    && compatibilityProfileMut.Platform.PowerShell.Version.Major == 7)
-                {
-                    Console.WriteLine($"PS 7 UBUNTU PROFILE LOADED. Contains Get-Service: {compatibilityProfileMut.Runtime.Modules["Microsoft.PowerShell.Management"].Values.First().Cmdlets.ContainsKey("Get-Service")}");
-                }
-
                 return new CompatibilityProfileCacheEntry(
                     compatibilityProfileMut,
                     compatibilityProfile);

@@ -76,13 +76,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             return moduleDict;
         }
 
-        private void SetModuleAliases(Data.RuntimeData runtimeData)
+        private void SetModuleAliases(JsonCaseInsensitiveStringDictionary<JsonDictionary<Version, Data.ModuleData>> moduleData)
         {
             foreach (KeyValuePair<string, IReadOnlyDictionary<Version, ModuleData>> moduleVersions in Modules)
             {
                 foreach (KeyValuePair<Version, ModuleData> module in moduleVersions.Value)
                 {
-                    module.Value.SetAliasTable(this, runtimeData.Modules[moduleVersions.Key][module.Key].Aliases);
+                    module.Value.SetAliasTable(this, moduleData[moduleVersions.Key][module.Key].Aliases);
                 }
             }
         }

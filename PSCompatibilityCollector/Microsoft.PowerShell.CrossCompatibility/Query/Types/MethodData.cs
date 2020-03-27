@@ -20,7 +20,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         {
             Name = name;
             ReturnType = methodData.ReturnType;
-            OverloadParameters = new List<IReadOnlyList<string>>(methodData.OverloadParameters);
+            if (methodData.OverloadParameters != null)
+            {
+                OverloadParameters = new List<IReadOnlyList<string>>(methodData.OverloadParameters);
+            }
         }
 
         /// <summary>

@@ -28,7 +28,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             Tuple<IReadOnlyDictionary<string, FunctionData>, IReadOnlyDictionary<string, CmdletData>> commands = CreateCommandTables(moduleData.Functions, moduleData.Cmdlets);
             Functions = commands.Item1;
             Cmdlets = commands.Item2;
-            Variables = new List<string>(moduleData.Variables);
+            if (moduleData.Variables != null)
+            {
+                Variables = new List<string>(moduleData.Variables);
+            }
         }
 
         /// <summary>

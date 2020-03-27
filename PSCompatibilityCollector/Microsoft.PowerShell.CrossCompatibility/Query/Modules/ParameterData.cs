@@ -22,7 +22,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             Name = name;
             Type = parameterData.Type;
             IsDynamic = parameterData.Dynamic;
-            ParameterSets = CreateParameterSetDictionary(parameterData.ParameterSets);
+            if (parameterData.ParameterSets != null)
+            {
+                ParameterSets = CreateParameterSetDictionary(parameterData.ParameterSets);
+            }
         }
 
         /// <summary>
