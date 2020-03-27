@@ -102,3 +102,24 @@ An example configuration might look like:
     }
 }
 ```
+
+## Suppression
+
+Command compatibility diagnostics can be suppressed with an attribute on the `param` block of a scriptblock
+as with other rules.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "")]
+```
+
+The rule can also be suppressed only for particular commands:
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "", Target="Start-Service")]
+```
+
+And also suppressed only for parameters:
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "", Target="Import-Module/FullyQualifiedName")]
+```

@@ -122,3 +122,24 @@ PSUseCompatibleTypes                Warning                 1     The type 'Syst
                                                                   not available by default in PowerShell version
                                                                   '5.1.17763.316' on platform 'Microsoft Windows 10 Pro'
 ```
+
+## Suppression
+
+Command compatibility diagnostics can be suppressed with an attribute on the `param` block of a scriptblock
+as with other rules.
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleTypes", "")]
+```
+
+The rule can also be suppressed only for particular types:
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleTypes", "", Target="System.Management.Automation.Security.SystemPolicy")]
+```
+
+And also suppressed only for type members:
+
+```powershell
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "", Target="System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName")]
+```
