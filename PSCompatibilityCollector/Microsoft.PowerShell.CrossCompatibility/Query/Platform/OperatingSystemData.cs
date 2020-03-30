@@ -26,7 +26,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
             ServicePack = operatingSystemData.ServicePack;
             SkuId = operatingSystemData.SkuId;
             DistributionId = operatingSystemData.DistributionId;
-            DistirbutionVersion = operatingSystemData.DistributionVersion;
+            DistributionVersion = operatingSystemData.DistributionVersion;
             DistributionPrettyName = operatingSystemData.DistributionPrettyName;
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// The version of the Linux distribution, if any.
         /// </summary>
-        public string DistirbutionVersion { get; }
+        public string DistributionVersion { get; }
 
         /// <summary>
         /// The self-reported "pretty name" of the Linux distribution, if any.

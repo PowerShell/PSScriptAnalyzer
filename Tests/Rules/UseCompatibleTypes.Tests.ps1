@@ -177,6 +177,8 @@ Describe 'UseCompatibleTypes' {
                 }
             }
 
+            Wait-Debugger
+
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/../../" -Settings $settings -IncludeRule PSUseCompatibleTypes
             $diagnostics.Count | Should -Be 0
         }
