@@ -62,7 +62,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Debug'">
-    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0" />
+    <PackageReference Include="System.Management.Automation" Version="7.0.0" />
   </ItemGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Debug'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
@@ -75,7 +75,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Release'">
-    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0" />
+    <PackageReference Include="System.Management.Automation" Version="7.0.0" />
   </ItemGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' AND '$(Configuration)' == 'PSV7Release'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
