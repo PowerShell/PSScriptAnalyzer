@@ -314,7 +314,7 @@ Describe 'UseCompatibleCommands' {
 
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings
 
-            $expectedNumber = 17
+            $expectedNumber = if ($PSVersionTable.PSVersion.Major -ge 4) { 17 } else { 20 }
 
             $diagnostics.Count | Should -Be $expectedNumber -Because "Got diagnostics: $($diagnostics.Message -join ", ")"
 
