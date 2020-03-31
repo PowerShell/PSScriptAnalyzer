@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Management.Automation;
 using System.Reflection;
-using Microsoft.PowerShell.Commands;
 using Microsoft.PowerShell.CrossCompatibility.Data;
 using Microsoft.PowerShell.CrossCompatibility.Utility;
 using SMA = System.Management.Automation;
+using System.IO;
 
 #if CoreCLR
 using System.Runtime.InteropServices;
@@ -78,7 +77,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                     pwsh,
                     platformInfoCollector,
                     _pwshDataCollectorBuilder.Build(pwsh, platformInfoCollector.PSVersion),
-                    _typeDataColletorBuilder.Build());
+                    _typeDataColletorBuilder.Build(Path.GetDirectoryName(typeof(SMA.PowerShell).Assembly.Location)));
             }
         }
 
