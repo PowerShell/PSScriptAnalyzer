@@ -13,27 +13,31 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class PowerShellData
     {
-        private readonly PowerShellDataMut _powerShellData;
-
         /// <summary>
         /// Create a new query object around collected PowerShell installation information.
         /// </summary>
         /// <param name="powerShellData">A PowerShell installation data object.</param>
         public PowerShellData(PowerShellDataMut powerShellData)
         {
-            _powerShellData = powerShellData;
-            CompatibleVersions = new ReadOnlyCollection<Version>(_powerShellData.CompatibleVersions);
+            Version = powerShellData.Version;
+            Edition = powerShellData.Edition;
+            CompatibleVersions = new List<Version>(powerShellData.CompatibleVersions);
+            RemotingProtocolVersion = powerShellData.RemotingProtocolVersion;
+            SerializationVersion = powerShellData.SerializationVersion;
+            WsManStackVersion = powerShellData.WSManStackVersion;
+            GitCommitId = powerShellData.GitCommitId;
+            ProcessArchitecture = powerShellData.ProcessArchitecture;
         }
 
         /// <summary>
         /// The version of PowerShell, as reported by $PSVersionTable.PSVersion.
         /// </summary>
-        public PowerShellVersion Version => _powerShellData.Version;
+        public PowerShellVersion Version { get; }
 
         /// <summary>
         /// The edition of PowerShell, as reported by $PSVersionTable.PSEdition.
         /// </summary>
-        public string Edition => _powerShellData.Edition;
+        public string Edition { get; }
 
         /// <summary>
         /// Output of $PSVersionTable.PSCompatibleVersions.
@@ -43,26 +47,26 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// Output of $PSVersionTable.PSRemotingProtocolVersion.
         /// </summary>
-        public Version RemotingProtocolVersion => _powerShellData.RemotingProtocolVersion;
+        public Version RemotingProtocolVersion { get; }
 
         /// <summary>
         /// Output of $PSVersionTable.SerializationVersion.
         /// </summary>
-        public Version SerializationVersion => _powerShellData.SerializationVersion;
+        public Version SerializationVersion { get; }
 
         /// <summary>
         /// Output of $PSVersionTable.WSManStackVersion.
         /// </summary>
-        public Version WsManStackVersion => _powerShellData.WSManStackVersion;
+        public Version WsManStackVersion { get; }
 
         /// <summary>
         /// Output of $PSVersionTable.GitCommitId, if it differs from the version.
         /// </summary>
-        public string GitCommitId => _powerShellData.GitCommitId;
+        public string GitCommitId { get; }
 
         /// <summary>
         /// The self-reported process architecture from System.InteropServices.RuntimeInformation.ProcessArchitecture.
         /// </summary>
-        public Architecture ProcessArchitecture => _powerShellData.ProcessArchitecture;
+        public Architecture ProcessArchitecture { get; }
     }
 }

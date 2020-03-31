@@ -13,8 +13,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public abstract class CommandData
     {
-        protected readonly Data.CommandData _commandData;
-
         /// <summary>
         /// Create a new command data query object from the data object.
         /// </summary>
@@ -22,15 +20,25 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <param name="commandData">The command data object describing the command.</param>
         protected CommandData(string name, Data.CommandData commandData)
         {
-            _commandData = commandData;
             Name = name;
+            DefaultParameterSet = commandData.DefaultParameterSet;
+
+            if (commandData.OutputType != null)
+            {
+                OutputType = new List<string>(commandData.OutputType);
+            }
+
+            if (commandData.ParameterSets != null)
+            {
+                ParameterSets = new List<string>(commandData.ParameterSets);
+            }
 
             var parameters = new Dictionary<string, ParameterData>(StringComparer.OrdinalIgnoreCase);
             var paramAliases = new Dictionary<string, ParameterData>(StringComparer.OrdinalIgnoreCase);
 
             if (commandData.Parameters != null)
             {
-                foreach (KeyValuePair<string, Microsoft.PowerShell.CrossCompatibility.Data.ParameterData> parameter in commandData.Parameters)
+                foreach (KeyValuePair<string, Data.ParameterData> parameter in commandData.Parameters)
                 {
                     parameters.Add(parameter.Key, new ParameterData(parameter.Key, parameter.Value));
                 }
@@ -59,17 +67,17 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// The output types of the command, if any.
         /// </summary>
-        public IReadOnlyList<string> OutputType => _commandData.OutputType;
+        public IReadOnlyList<string> OutputType { get; }
 
         /// <summary>
         /// The parameter sets of the command, if any.
         /// </summary>
-        public IReadOnlyList<string> ParameterSets => _commandData.ParameterSets;
+        public IReadOnlyList<string> ParameterSets { get; }
 
         /// <summary>
         /// The default parameter set of the command, if any.
         /// </summary>
-        public string DefaultParameterSet => _commandData.DefaultParameterSet;
+        public string DefaultParameterSet { get; }
 
         /// <summary>
         /// Parameter aliases of the command.

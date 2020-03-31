@@ -241,7 +241,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 message,
                 extent,
                 rule.GetName(),
-                ruleId: null,
+                ruleId: commandName,
                 analyzedFileName: analyzedFileName,
                 suggestedCorrections: suggestedCorrections);
         }
@@ -280,7 +280,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 message,
                 extent,
                 rule.GetName(),
-                ruleId: null,
+                ruleId: $"{commandName}/{parameterName}",
                 analyzedFileName: analyzedFileName,
                 parameterName: parameterName);
         }

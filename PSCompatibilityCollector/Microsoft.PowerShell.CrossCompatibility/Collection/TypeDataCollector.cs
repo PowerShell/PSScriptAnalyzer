@@ -14,6 +14,7 @@ using Microsoft.PowerShell.CrossCompatibility.Utility;
 using SMA = System.Management.Automation;
 using System.Runtime.InteropServices;
 using System.IO;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.PowerShell.CrossCompatibility.Collection
 {
@@ -37,9 +38,9 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             /// Build the configured TypeDataCollector object.
             /// </summary>
             /// <returns>The constructed TypeDataCollector object.</returns>
-            public TypeDataCollector Build()
+            public TypeDataCollector Build(string psHomePath)
             {
-                return new TypeDataCollector(ExcludedAssemblyPathPrefixes);
+                return new TypeDataCollector(psHomePath, ExcludedAssemblyPathPrefixes);
             }
         }
 
@@ -53,8 +54,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 
         private readonly IReadOnlyCollection<string> _excludedAssemblyPathPrefixes;
 
-        private TypeDataCollector(IReadOnlyCollection<string> excludedAssemblyPathPrefixes)
+        private readonly string _psHomePath;
+
+        private TypeDataCollector(
+            string psHomePath,
+            IReadOnlyCollection<string> excludedAssemblyPathPrefixes)
         {
+            _psHomePath = psHomePath;
             _excludedAssemblyPathPrefixes = excludedAssemblyPathPrefixes;
         }
 
@@ -65,10 +71,49 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         /// <returns>A data object describing the assemblies and PowerShell type accelerators available.</returns>
         public AvailableTypeData GetAvailableTypeData(out IEnumerable<CompatibilityAnalysisException> errors)
         {
+            // PS 6+ behaves as if assemblies in PSHOME are already loaded when they aren't
+            // so we must load them pre-emptively to capture the correct behavior
+#if CoreCLR
+            List<CompatibilityAnalysisException> psHomeLoadErrors = new List<CompatibilityAnalysisException>();
+            foreach (string dllPath in Directory.GetFiles(_psHomePath))
+            {
+                if (!string.Equals(Path.GetExtension(dllPath), ".dll"))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    Assembly.LoadFrom(dllPath);
+                }
+                catch (Exception e)
+                {
+                    psHomeLoadErrors.Add(new CompatibilityAnalysisException($"Unable to load PSHOME DLL at path '{dllPath}'", e));
+                }
+            }
+#endif
+
             IReadOnlyDictionary<string, Type> typeAccelerators = GetTypeAccelerators();
             IEnumerable<Assembly> loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
+#if !CoreCLR
             return AssembleAvailableTypes(loadedAssemblies, typeAccelerators, out errors);
+#else
+
+            AvailableTypeData typeData = AssembleAvailableTypes(loadedAssemblies, typeAccelerators, out IEnumerable<CompatibilityAnalysisException> typeCollectionErrors);
+
+            if (psHomeLoadErrors.Count > 0)
+            {
+                psHomeLoadErrors.AddRange(typeCollectionErrors);
+                errors = psHomeLoadErrors;
+            }
+            else
+            {
+                errors = typeCollectionErrors;
+            }
+
+            return typeData;
+#endif
         }
 
         /// <summary>

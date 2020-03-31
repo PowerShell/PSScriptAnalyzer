@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using AsmNameDataMut = Microsoft.PowerShell.CrossCompatibility.Data.AssemblyNameData;
@@ -14,8 +15,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class AssemblyNameData
     {
-        private readonly AsmNameDataMut _assemblyNameData;
-
         private readonly Lazy<string> _fullName;
 
         private readonly Lazy<AssemblyName> _assemblyName;
@@ -26,7 +25,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <param name="assemblyNameData">Collected assembly name data object.</param>
         public AssemblyNameData(AsmNameDataMut assemblyNameData)
         {
-            _assemblyNameData = assemblyNameData;
+            Name = assemblyNameData.Name;
+            Version = assemblyNameData.Version;
+            Culture = assemblyNameData.Culture;
+            PublicKeyToken = assemblyNameData.PublicKeyToken;
             _fullName = new Lazy<string>(GetFullName);
             _assemblyName = new Lazy<AssemblyName>(() => new AssemblyName(FullName));
         }
@@ -34,22 +36,22 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// The simple name of the assembly.
         /// </summary>
-        public string Name => _assemblyNameData.Name;
+        public string Name { get; }
 
         /// <summary>
         /// The version of the assembly.
         /// </summary>
-        public Version Version => _assemblyNameData.Version;
+        public Version Version { get; }
 
         /// <summary>
         /// The culture of the assembly, if it is not null, "" or "neutral".
         /// </summary>
-        public string Culture => _assemblyNameData.Culture;
+        public string Culture { get; }
 
         /// <summary>
         /// The public key token of the assembly, if any.
         /// </summary>
-        public IReadOnlyList<byte> PublicKeyToken => _assemblyNameData.PublicKeyToken;
+        public IReadOnlyList<byte> PublicKeyToken { get; }
 
         /// <summary>
         /// The full name of the assembly, in strong name format.
@@ -84,7 +86,13 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
 
             if (PublicKeyToken != null)
             {
-                string tokenHex = BitConverter.ToString(_assemblyNameData.PublicKeyToken)
+                var publicKeyTokenArray = new byte[PublicKeyToken.Count];
+                for (int i = 0; i < publicKeyTokenArray.Length; i++)
+                {
+                    publicKeyTokenArray[i] = PublicKeyToken[i];
+                }
+
+                string tokenHex = BitConverter.ToString(publicKeyTokenArray)
                     .Replace("-", "");
 
                 sb.Append(", PublicKeyToken=").Append(tokenHex);

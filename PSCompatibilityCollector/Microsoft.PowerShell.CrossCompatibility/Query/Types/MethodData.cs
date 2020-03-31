@@ -11,8 +11,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class MethodData
     {
-        private readonly MethodDataMut _methodData;
-
         /// <summary>
         /// Create a new query object around collected .NET method data.
         /// </summary>
@@ -21,7 +19,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public MethodData(string name, MethodDataMut methodData)
         {
             Name = name;
-            _methodData = methodData;
+            ReturnType = methodData.ReturnType;
+            if (methodData.OverloadParameters != null)
+            {
+                OverloadParameters = new List<IReadOnlyList<string>>(methodData.OverloadParameters);
+            }
         }
 
         /// <summary>
@@ -32,11 +34,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// The full name of the return type of the method.
         /// </summary>
-        public string ReturnType => _methodData.ReturnType;
+        public string ReturnType { get; }
 
         /// <summary>
         /// The overloads of the method, an array of arrays of full type names.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<string>> OverloadParameters => _methodData.OverloadParameters;
+        public IReadOnlyList<IReadOnlyList<string>> OverloadParameters { get; }
     }
 }
