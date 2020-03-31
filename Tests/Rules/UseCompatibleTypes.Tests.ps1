@@ -144,7 +144,8 @@ Describe 'UseCompatibleTypes' {
 
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -Settings $settings -IncludeRule PSUseCompatibleTypes
 
-            $diagnostics.Count | Should -Be 2
+            # Classes in the script cause extra diagnostics in PS 3 and 4
+            $diagnostics.Count | Should -Be (if ($PSVersionTable.PSVersion.Major -ge 5) { 2 } else { 5 })
             foreach ($diagnostic in $diagnostics)
             {
                 $diagnostic.Member | Should -BeExactly 'TryParse'
