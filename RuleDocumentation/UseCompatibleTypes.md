@@ -135,11 +135,11 @@ as with other rules.
 The rule can also be suppressed only for particular types:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleTypes", "", Target="System.Management.Automation.Security.SystemPolicy")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleTypes", "System.Management.Automation.Security.SystemPolicy")]
 ```
 
 And also suppressed only for type members:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "", Target="System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName")]
 ```

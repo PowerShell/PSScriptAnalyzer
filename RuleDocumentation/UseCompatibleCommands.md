@@ -115,11 +115,11 @@ as with other rules.
 The rule can also be suppressed only for particular commands:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "", Target="Start-Service")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "Start-Service")]
 ```
 
 And also suppressed only for parameters:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "", Target="Import-Module/FullyQualifiedName")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "Import-Module/FullyQualifiedName")]
 ```
