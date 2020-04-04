@@ -257,7 +257,7 @@ baz
                     DiagnosticRecord = $violations[0]
                     CorrectionsCount = 1
                     ViolationText    = "baz"
-                    CorrectionText   = (New-Object -TypeName String -ArgumentList $indentationUnit, ($indentationSize * 1)) + 'baz'
+                    CorrectionText   = $indentationUnit * $indentationSize + 'baz'
                 }
                 Test-CorrectionExtentFromContent @params
             }
