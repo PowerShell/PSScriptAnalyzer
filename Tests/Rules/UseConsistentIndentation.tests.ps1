@@ -225,6 +225,48 @@ baz
             Test-CorrectionExtentFromContent @params
         }
 
+        It "Should indent pipelines correctly using <PipelineIndentation> option" -TestCases @(
+            @{
+                PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
+                ExpectCorrection    = $true
+            },
+            @{
+                PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+                ExpectCorrection    = $true
+            },
+            @{
+                PipelineIndentation = 'NoIndentation'
+                ExpectCorrection    = $false
+            }
+            @{
+                PipelineIndentation = 'None'
+                ExpectCorrection    = $false
+            }
+        ) {
+            Param([string] $PipelineIndentation, [bool] $ExpectCorrection)
+            $def = @'
+foo | bar |
+baz
+'@
+            $settings.Rules.PSUseConsistentIndentation.PipelineIndentation = $PipelineIndentation
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            if ($ExpectCorrection) {
+                $violations.Count | Should -Be 1
+                $params = @{
+                    RawContent       = $def
+                    DiagnosticRecord = $violations[0]
+                    CorrectionsCount = 1
+                    ViolationText    = "baz"
+                    CorrectionText   = $indentationUnit * $indentationSize + 'baz'
+                }
+                Test-CorrectionExtentFromContent @params
+            }
+            else
+            {
+                $violations | Should -BeNullOrEmpty
+            }
+        }
+
         It 'Should preserve script when using PipelineIndentation None' -TestCases @(
             @{ IdempotentScriptDefinition = @'
 foo |

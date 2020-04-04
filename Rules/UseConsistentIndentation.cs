@@ -168,7 +168,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
                         if (pipelineIndentationStyle == PipelineIndentationStyle.IncreaseIndentationForFirstPipeline)
                         {
-                            bool isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst => PositionIsEqual(((PipelineAst)pipelineAst).PipelineElements[0].Extent.EndScriptPosition, tokens[tokenIndex - 1].Extent.EndScriptPosition));
+                            bool isFirstPipeInPipeline = pipelineAsts.Any(pipelineAst =>
+                                PositionIsEqual(LastPipeOnFirstLineWithPipeUsage((PipelineAst)pipelineAst).Extent.EndScriptPosition,
+                                   tokens[tokenIndex - 1].Extent.EndScriptPosition));
                             if (isFirstPipeInPipeline)
                             {
                                 AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
@@ -253,6 +255,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
+        }
+
+        private static CommandBaseAst LastPipeOnFirstLineWithPipeUsage(PipelineAst pipelineAst)
+        {
+            CommandBaseAst lastPipeOnFirstLineWithPipeUsage = pipelineAst.PipelineElements[0];
+            foreach (CommandBaseAst pipelineElement in pipelineAst.PipelineElements.Skip(1))
+            {
+                if (pipelineElement.Extent.StartLineNumber == pipelineAst.PipelineElements[0].Extent.StartLineNumber ||
+                    pipelineElement.Extent.StartLineNumber == pipelineAst.PipelineElements[0].Extent.EndLineNumber ||
+                    pipelineElement.Extent.EndLineNumber == pipelineAst.PipelineElements[0].Extent.EndLineNumber)
+                {
+                    lastPipeOnFirstLineWithPipeUsage = pipelineElement;
+                }
+            }
+            return lastPipeOnFirstLineWithPipeUsage;
         }
 
         private static bool PositionIsEqual(IScriptPosition position1, IScriptPosition position2)
