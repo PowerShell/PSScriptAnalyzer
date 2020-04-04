@@ -31,6 +31,23 @@ Describe "PSUseCompatibleSyntax" {
                 @{ Script = 'workflow Banana { Do-ExpensiveCommandOnAnotherMachine -Argument "Banana" }'; Versions = @(6) }
             )
         }
+
+        if ($PSVersionTable.PSVersion.Major -ge 7)
+        {
+            $testCases += @(
+                @{ Script = '$x = $path ? (Get-Content -Raw $path) : "default"'; Versions = @(3,4,5,6) }
+                @{ Script = '$x ??= 7'; Versions = @(3,4,5,6) }
+                @{ Script = 'git pull origin master && git pull upstream master'; Versions = @(3,4,5,6) }
+            )
+
+            if ((Get-ExperimentalFeature -Name 'PSNullConditionalOperators').Enabled)
+            {
+                $testCases += @(
+                    @{ Script = '${item}?.Invoke()'; Versions = @(3,4,5,6) }
+                    @{ Script = '${object}?.Member'; Versions = @(3,4,5,6) }
+                )
+            }
+        }
     }
 
     foreach ($v in 3,4,5,6)

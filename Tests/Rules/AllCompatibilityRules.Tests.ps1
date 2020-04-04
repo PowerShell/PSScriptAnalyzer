@@ -50,7 +50,7 @@ $script:settingsContent = @'
             TargetProfiles = @(
                 'win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework' # Server 2019 - PS 5.1 (the platform it already runs on)
                 'win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework' # Server 2012 - PS 3
-                'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core' # Ubuntu 18.04 - PS 6.1
+                'ubuntu_x64_18.04_7.0.0_x64_3.1.2_core' # Ubuntu 18.04 - PS 6.1
             )
         }
         PSUseCompatibleTypes = @{
@@ -59,12 +59,12 @@ $script:settingsContent = @'
             TargetProfiles = @(
                 'win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
                 'win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework'
-                'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
+                'ubuntu_x64_18.04_7.0.0_x64_3.1.2_core'
             )
         }
         PSUseCompatibleSyntax = @{
             Enable = $true
-            TargetVersions = @('3.0', '5.1', '6.1')
+            TargetVersions = @('3.0', '5.1', '7.0')
         }
     }
 }

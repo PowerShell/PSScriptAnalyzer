@@ -10,8 +10,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class TypeAcceleratorData
     {
-        private readonly TypeAcceleratorDataMut _typeAcceleratorData;
-
         /// <summary>
         /// Create a new query object around collected PowerShell type accelerator data.
         /// </summary>
@@ -20,7 +18,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public TypeAcceleratorData(string name, TypeAcceleratorDataMut typeAcceleratorData)
         {
             Name = name;
-            _typeAcceleratorData = typeAcceleratorData;
+            Assembly = typeAcceleratorData.Assembly;
+            Type = typeAcceleratorData.Type;
         }
 
         /// <summary>
@@ -32,11 +31,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// The assembly carrying the type the type accelerator refers to.
         /// </summary>
-        public string Assembly => _typeAcceleratorData.Assembly;
+        public string Assembly { get; }
 
         /// <summary>
         /// The full name of the type the type accelerator refers to.
         /// </summary>
-        public string Type => _typeAcceleratorData.Type;
+        public string Type { get; }
     }
 }

@@ -268,7 +268,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 ruleName,
                 DiagnosticSeverity.Warning,
                 analyzedFileName,
-                ruleId: null,
+                ruleId,
                 suggestedCorrections: suggestedCorrections)
         {
         }

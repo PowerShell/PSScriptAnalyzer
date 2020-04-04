@@ -18,11 +18,12 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public FunctionData(string name, Data.FunctionData functionData)
             : base(name, functionData)
         {
+            IsCmdletBinding = functionData.CmdletBinding;
         }
 
         /// <summary>
         /// True if this is an advanced function (has a cmdlet binding), false otherwise.
         /// </summary>
-        public override bool IsCmdletBinding => ((Data.FunctionData)_commandData).CmdletBinding;
+        public override bool IsCmdletBinding { get; }
     }
 }

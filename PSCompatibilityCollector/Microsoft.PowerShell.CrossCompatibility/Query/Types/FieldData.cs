@@ -10,8 +10,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
     /// </summary>
     public class FieldData
     {
-        private readonly FieldDataMut _fieldData;
-
         /// <summary>
         /// Create a new query object around collected field member information.
         /// </summary>
@@ -20,7 +18,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         public FieldData(string name, FieldDataMut fieldData)
         {
             Name = name;
-            _fieldData = fieldData;
+            Type = fieldData.Type;
         }
 
         /// <summary>
@@ -31,6 +29,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Query
         /// <summary>
         /// The type of the field.
         /// </summary>
-        public string Type => _fieldData.Type;
+        public string Type { get; }
     }
 }

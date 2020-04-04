@@ -3004,6 +3004,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use &apos;Using:&apos; scope modifier in RunSpace ScriptBlocks.
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesCommonName {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace {0} with {1}.
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesCorrectionDescription {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesCorrectionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a ScriptBlock is intended to be run as a new RunSpace, variables inside it should use &apos;Using:&apos; scope modifier, or be initialized within the ScriptBlock..
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesDescription {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The variable &apos;{0}&apos; is not declared within this ScriptBlock, and is missing the &apos;Using:&apos; scope modifier..
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesError {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UseUsingScopeModifierInNewRunspaces.
+        /// </summary>
+        internal static string UseUsingScopeModifierInNewRunspacesName {
+            get {
+                return ResourceManager.GetString("UseUsingScopeModifierInNewRunspacesName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use UTF8 Encoding For Help File.
         /// </summary>
         internal static string UseUTF8EncodingForHelpFileCommonName {

@@ -615,7 +615,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 extent,
                 rule.GetName(),
                 memberName: methodName,
-                ruleId: null,
+                ruleId: $"{typeName}/{methodName}",
                 analyzedFileName: analyzedFileName,
                 kind: TypeCompatibilityDiagnosticKind.Type,
                 suggestedCorrections: suggestedCorrections);
@@ -657,7 +657,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 extent,
                 rule.GetName(),
                 memberName: propertyName,
-                ruleId: null,
+                ruleId: $"{typeName}/{propertyName}",
                 analyzedFileName: analyzedFileName,
                 kind: TypeCompatibilityDiagnosticKind.Type,
                 suggestedCorrections: suggestedCorrections);

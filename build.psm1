@@ -144,9 +144,7 @@ function Start-ScriptAnalyzerBuild
     param (
         [switch]$All,
 
-        # Note that 6 should also be chosen for PowerShell7 as both implement netstandard2.0
-        # and we do not use features from netstandard2.1
-        [ValidateRange(3, 6)]
+        [ValidateRange(3, 7)]
         [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
         [ValidateSet("Debug", "Release")]
@@ -178,7 +176,7 @@ function Start-ScriptAnalyzerBuild
         if ( $All )
         {
             # Build all the versions of the analyzer
-            foreach($psVersion in 3..6) {
+            foreach($psVersion in 3..7) {
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
             }
             return
@@ -191,7 +189,10 @@ function Start-ScriptAnalyzerBuild
             Set-Variable -Name profilesCopied -Value $true -Scope 1
         }
 
-        if ($PSVersion -ge 6) {
+        if ($PSVersion -eq 7) {
+            $framework = 'netcoreapp3.1'
+        }
+        elseif ($PSVersion -eq 6) {
             $framework = 'netstandard2.0'
         }
         else {
@@ -199,7 +200,7 @@ function Start-ScriptAnalyzerBuild
         }
 
         # build the appropriate assembly
-        if ($PSVersion -match "[34]" -and $Framework -eq "core")
+        if ($PSVersion -match "[34]" -and $Framework -ne "net452")
         {
             throw ("ScriptAnalyzer for PS version '{0}' is not applicable to {1} framework" -f $PSVersion,$Framework)
         }
@@ -231,7 +232,11 @@ function Start-ScriptAnalyzerBuild
             }
             6
             {
-                $destinationDirBinaries = "$script:destinationDir\coreclr"
+                $destinationDirBinaries = "$script:destinationDir\PSv6"
+            }
+            7
+            {
+                $destinationDirBinaries = "$script:destinationDir\PSv7"
             }
             default
             {
@@ -240,7 +245,7 @@ function Start-ScriptAnalyzerBuild
         }
 
         $buildConfiguration = $Configuration
-        if ((3, 4) -contains $PSVersion) {
+        if ((3, 4, 6, 7) -contains $PSVersion) {
             $buildConfiguration = "PSV${PSVersion}${Configuration}"
         }
 
