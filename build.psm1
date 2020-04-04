@@ -331,13 +331,14 @@ function Test-ScriptAnalyzer
             }
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
+            $importPesterV4 = 'Import-Module -Name Pester -MaximumVersion 4.99'
             if ($ShowAll)
             {
-                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile")
+                $scriptBlock = [scriptblock]::Create("$importPesterV4; Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile")
             }
             else
             {
-                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary,Failed")
+                $scriptBlock = [scriptblock]::Create("$importPesterV4; Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary,Failed")
             }
             if ( $InProcess ) {
                 & $scriptBlock
