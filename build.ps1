@@ -37,16 +37,22 @@ param(
     [switch] $Bootstrap,
 
     [Parameter(ParameterSetName='BuildAll')]
-    [Parameter(ParameterSetName='BuildOne')]
     [switch] $Catalog
 
 
 )
 
+BEGIN {
+    $verboseWanted = $false
+    if ( $PSBoundParameters['Verbose'] ) {
+        $verboseWanted = $PSBoundParameters['Verbose'].ToBool()
+    }
+}
+
 END {
-    Import-Module -Force (Join-Path $PSScriptRoot build.psm1)
+    Import-Module -Force (Join-Path $PSScriptRoot build.psm1) -verbose:$false
     if ( $Clean -or $Clobber ) {
-        Remove-Build
+        Remove-Build -verbose:$false
         if ( $PSCmdlet.ParameterSetName -eq "Clean" ) {
             return
         }
@@ -55,16 +61,18 @@ END {
     $setName = $PSCmdlet.ParameterSetName
     switch ( $setName ) {
         "BuildAll" {
-            Start-ScriptAnalyzerBuild -All -Configuration $Configuration -Verbose:$Verbose -Catalog:$Catalog
+            Start-ScriptAnalyzerBuild -All -Configuration $Configuration -Verbose:$verboseWanted
+            if ( $Catalog ) {
+                $catalogFile = New-Catalog
+            }
         }
         "BuildDocumentation" {
-            Start-ScriptAnalyzerBuild -Documentation -Verbose:$Verbose -Catalog:$Catalog
+            Start-ScriptAnalyzerBuild -Documentation -Verbose:$Verbose
         }
         "BuildOne" {
             $buildArgs = @{
                 PSVersion = $PSVersion
                 Configuration = $Configuration
-                Verbose = $Verbose
             }
             Start-ScriptAnalyzerBuild @buildArgs
         }
