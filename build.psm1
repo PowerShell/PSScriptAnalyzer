@@ -257,7 +257,17 @@ function Start-ScriptAnalyzerBuild
             if ( -not $script:DotnetExe ) {
                 $script:DotnetExe = Get-DotnetExe
             }
-            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$buildConfiguration" 2>&1
+            $dotnetArgs = "build",
+                "--framework",
+                $framework,
+                "--configuration",
+                "$buildConfiguration"
+            if ( $env:InVSTS ) {
+                $dotnetArgs += "--output"
+                $dotnetArgs += "${PSScriptRoot}\bin\${buildConfiguration}\${framework}"
+            }
+            # $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$buildConfiguration" 2>&1
+            $buildOutput = & $script:DotnetExe $dotnetArgs 2>&1
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
         }
         catch {
@@ -271,11 +281,20 @@ function Start-ScriptAnalyzerBuild
 
         Publish-File $itemsToCopyCommon $script:destinationDir
 
-        $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
-            "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
-            )
+        if ( $env:InVsts ) {
+            $itemsToCopyBinaries = @(
+                "$projectRoot\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+                "$projectRoot\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+                "$projectRoot\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
+                )
+        }
+        else {
+            $itemsToCopyBinaries = @(
+                "$projectRoot\Engine\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+                "$projectRoot\Rules\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+                "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
+                )
+        }
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
         $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
