@@ -301,7 +301,13 @@ function Start-ScriptAnalyzerBuild
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         if ($framework -eq 'net452') {
-            Copy-Item -path "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            if ( $env:InVSTS ) {
+                $nsoft =  "$projectRoot\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll"
+            }
+            else {
+                $nsoft =  "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll"
+            }
+            Copy-Item -path $nsoft -Destination $destinationDirBinaries
         }
 
         Pop-Location
