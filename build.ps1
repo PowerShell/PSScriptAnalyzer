@@ -34,7 +34,12 @@ param(
     [switch] $InProcess,
 
     [Parameter(ParameterSetName='Bootstrap')]
-    [switch] $Bootstrap
+    [switch] $Bootstrap,
+
+    [Parameter(ParameterSetName='BuildAll')]
+    [Parameter(ParameterSetName='BuildOne')]
+    [switch] $Catalog
+
 
 )
 
@@ -50,10 +55,10 @@ END {
     $setName = $PSCmdlet.ParameterSetName
     switch ( $setName ) {
         "BuildAll" {
-            Start-ScriptAnalyzerBuild -All -Configuration $Configuration -Verbose:$Verbose
+            Start-ScriptAnalyzerBuild -All -Configuration $Configuration -Verbose:$Verbose -Catalog:$Catalog
         }
         "BuildDocumentation" {
-            Start-ScriptAnalyzerBuild -Documentation -Verbose:$Verbose
+            Start-ScriptAnalyzerBuild -Documentation -Verbose:$Verbose -Catalog:$Catalog
         }
         "BuildOne" {
             $buildArgs = @{

@@ -114,7 +114,7 @@ function Start-DocumentationBuild
     {
         throw "Cannot find markdown documentation folder."
     }
-    Import-Module platyPS
+    Import-Module platyPS -Verbose:$false
     if ( -not (Test-Path $outputDocsPath)) {
         $null = New-Item -Type Directory -Path $outputDocsPath -Force
     }
@@ -150,7 +150,9 @@ function Start-ScriptAnalyzerBuild
         [ValidateSet("Debug", "Release")]
         [string]$Configuration = "Debug",
 
-        [switch]$Documentation
+        [switch]$Documentation,
+
+        [switch]$Catalog
         )
 
     BEGIN {
@@ -315,6 +317,24 @@ function Start-ScriptAnalyzerBuild
             Copy-Item -path $nsoft -Destination $destinationDirBinaries
         }
 
+        New-Catalog -Location $script:destinationDir
+
+        Pop-Location
+    }
+}
+
+function New-Catalog
+{
+    param ( [Parameter()]$Location )
+    if ( ! $IsWindows ) {
+        Write-Warning "Create catalog only on windows"
+        return
+    }
+    try {
+        Push-Location $Location
+        New-FileCatalog -CatalogFilePath PSScriptAnalzyer.cat -Path .
+    }
+    finally {
         Pop-Location
     }
 }
