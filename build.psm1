@@ -170,6 +170,7 @@ function Start-ScriptAnalyzerBuild
         $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out\PSScriptAnalyzer\en-us\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
         if ( $Documentation -or -not $documentationFileExists )
         {
+            Write-Verbose -Verbose:$Verbose -Message "Start-DocumentationBuild"
             Start-DocumentationBuild
         }
 
@@ -177,13 +178,14 @@ function Start-ScriptAnalyzerBuild
         {
             # Build all the versions of the analyzer
             foreach($psVersion in 3..7) {
-                Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
+                Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion -Verbose:$Verbose
             }
             return
         }
 
         if (-not $profilesCopied)
         {
+            Write-Verbose -Verbose:$Verbose -Message "Copy-CompatibilityProfiles"
             Copy-CompatibilityProfiles
             # Set the variable in the caller's scope, so this will only happen once
             Set-Variable -Name profilesCopied -Value $true -Scope 1
@@ -253,7 +255,9 @@ function Start-ScriptAnalyzerBuild
         # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
         try {
             Push-Location $projectRoot/Rules
-            Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            $message = "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            Write-Verbose -Verbose:$Verbose -Message "$message"
+            Write-Progress "$message"
             if ( -not $script:DotnetExe ) {
                 $script:DotnetExe = Get-DotnetExe
             }
@@ -269,6 +273,7 @@ function Start-ScriptAnalyzerBuild
             # $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$buildConfiguration" 2>&1
             $buildOutput = & $script:DotnetExe $dotnetArgs 2>&1
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
+            Write-Verbose -Verbose:$Verbose -message "$buildOutput"
         }
         catch {
             Write-Warning $_
