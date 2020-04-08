@@ -32,6 +32,9 @@ stages:
               PowerShellVersion: Preview
             Ubuntu_18_04:
               vmImage: ubuntu-18.04
+            Ubuntu_18_04_preview:
+              vmImage: ubuntu-18.04
+              PowerShellVersion: Preview
             macOS_10_14_Mojave:
               vmImage: macOS-10.14
             macOS_10_15_Catalina:
