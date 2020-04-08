@@ -29,7 +29,7 @@ stages:
               vmImage: ubuntu-16.04
             Ubuntu_16_04_preview:
               vmImage: ubuntu-16.04
-              pwsh_preview: true
+              preview: true
             Ubuntu_18_04:
               vmImage: ubuntu-18.04
             macOS_10_14_Mojave:
