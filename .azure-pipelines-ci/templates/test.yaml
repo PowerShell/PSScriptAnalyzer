@@ -15,7 +15,7 @@ steps:
     targetPath: '$(Build.SourcesDirectory)/out'
 # - pwsh: |
 #     Write-Host "##vso[task.setvariable variable=PowerShellVersion]${{ parameters.PowerShellVersion }}"
-  displayName: 'Set PowerShellVersion environment variable'
+  # displayName: 'Set PowerShellVersion environment variable'
 - pwsh: |
     Write-Host "Installing PowerShell Preview..."
     # Use `AGENT_TEMPDIRECTORY` to make sure the downloaded PowerShell is cleaned up.
