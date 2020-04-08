@@ -13,9 +13,6 @@ steps:
   inputs:
     artifactName: out
     targetPath: '$(Build.SourcesDirectory)/out'
-# - pwsh: |
-#     Write-Host "##vso[task.setvariable variable=PowerShellVersion]${{ parameters.PowerShellVersion }}"
-  # displayName: 'Set PowerShellVersion environment variable'
 - pwsh: |
     Write-Host "Installing PowerShell Preview..."
     # Use `AGENT_TEMPDIRECTORY` to make sure the downloaded PowerShell is cleaned up.
@@ -32,7 +29,7 @@ steps:
   displayName: 'Test'
   inputs:
     targetType: inline
-    pwsh: ne( '${{ parameters.PowerShellVersion }}', 'WindowsPowerShell')
+    pwsh: ne(variables['PowerShellVersion'], 'WindowsPowerShell')
     script: |
       Import-Module .\tools\appveyor.psm1
       Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
