@@ -2,7 +2,7 @@ parameters:
 - name: pwsh
   type: boolean
   default: true
-- name: pwsh-preview
+- name: pwsh_preview
   type: boolean
   default: false
 
@@ -21,7 +21,7 @@ steps:
     # Using `prependpath` to update the PATH just for this build.
     Write-Host "##vso[task.prependpath]$powerShellPath"
   displayName: Install PowerShell Daily
-  condition: eq(${{ parameters.pwsh-preview }}, true)
+  condition: eq(${{ parameters.pwsh_preview }}, true)
 - pwsh: '$PSVersionTable'
   displayName: Display PowerShell version information
 - task: PowerShell@2
