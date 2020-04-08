@@ -13,8 +13,8 @@ steps:
   inputs:
     artifactName: out
     targetPath: '$(Build.SourcesDirectory)/out'
-- pwsh: |
-    Write-Host "##vso[task.setvariable variable=PowerShellVersion]${{ parameters.PowerShellVersion }}"
+# - pwsh: |
+#     Write-Host "##vso[task.setvariable variable=PowerShellVersion]${{ parameters.PowerShellVersion }}"
   displayName: 'Set PowerShellVersion environment variable'
 - pwsh: |
     Write-Host "Installing PowerShell Preview..."
