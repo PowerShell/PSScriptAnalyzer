@@ -29,7 +29,7 @@ stages:
               vmImage: ubuntu-16.04
             Ubuntu_16_04_preview:
               vmImage: ubuntu-16.04
-              preview: true
+              PowerShellVersion: Preview
             Ubuntu_18_04:
               vmImage: ubuntu-18.04
             macOS_10_14_Mojave:
@@ -42,10 +42,10 @@ stages:
               vmImage: windows-2019
             Windows_Server2016_PowerShell_5_1:
               vmImage: vs2017-win2016
-              pwsh: false
+              PowerShellVersion: WindowsPowerShell
             Windows_Server2019_PowerShell_5_1:
               vmImage: windows-2019
-              pwsh: false
+              PowerShellVersion: WindowsPowerShell
         pool:
           vmImage: $[ variables['vmImage'] ]
         steps:

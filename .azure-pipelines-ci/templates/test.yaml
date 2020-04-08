@@ -1,10 +1,11 @@
 parameters:
-- name: pwsh
-  type: boolean
-  default: true
-- name: preview
-  type: boolean
-  default: false
+- name: PowerShellVersion
+  type: string
+  default: LTS
+  values:
+    - WindowsPowerShell
+    - LTS
+    - Preview
 
 steps:
 - task: DownloadPipelineArtifact@2
@@ -12,6 +13,9 @@ steps:
   inputs:
     artifactName: out
     targetPath: '$(Build.SourcesDirectory)/out'
+- pwsh: |
+    Write-Host "##vso[task.setvariable variable=parameters.PowerShellVersion]${{ parameters.PowerShellVersion }}"
+  displayName: 'Set parameters.PowerShellVersion environment variable'
 - pwsh: |
     Write-Host "Installing PowerShell Daily..."
     # Use `AGENT_TEMPDIRECTORY` to make sure the downloaded PowerShell is cleaned up.
@@ -21,14 +25,14 @@ steps:
     # Using `prependpath` to update the PATH just for this build.
     Write-Host "##vso[task.prependpath]$powerShellPath"
   displayName: Install PowerShell Daily
-  condition: ${{ parameters.preview }}
+  condition: eq( '${{ parameters.preview }}' , 'Preview')
 - pwsh: '$PSVersionTable'
   displayName: Display PowerShell version information
 - task: PowerShell@2
   displayName: 'Test'
   inputs:
     targetType: inline
-    pwsh: ${{ parameters.pwsh }}
+    pwsh: ne( '${{ parameters.PowerShellVersion }}', 'WindowsPowerShell')
     script: |
       Import-Module .\tools\appveyor.psm1
       Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
