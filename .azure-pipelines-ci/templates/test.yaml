@@ -25,7 +25,7 @@ steps:
     # Using `prependpath` to update the PATH just for this build.
     Write-Host "##vso[task.prependpath]$powerShellPath"
   displayName: Install PowerShell Daily
-  condition: eq( '${{ parameters.PowerShellVersion }}' , 'Preview')
+  condition: eq($(parameters.PowerShellVersion), 'Preview')
 - pwsh: '$PSVersionTable'
   displayName: Display PowerShell version information
 - task: PowerShell@2
