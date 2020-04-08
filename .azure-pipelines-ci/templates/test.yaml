@@ -2,6 +2,9 @@ parameters:
 - name: pwsh
   type: boolean
   default: true
+- name: pwsh-preview
+  type: boolean
+  default: false
 
 steps:
 - task: DownloadPipelineArtifact@2
@@ -9,6 +12,18 @@ steps:
   inputs:
     artifactName: out
     targetPath: '$(Build.SourcesDirectory)/out'
+- pwsh: |
+    Write-Host "Installing PowerShell Daily..."
+    # Use `AGENT_TEMPDIRECTORY` to make sure the downloaded PowerShell is cleaned up.
+    $powerShellPath = Join-Path -Path $env:AGENT_TEMPDIRECTORY -ChildPath 'powershell'
+    Invoke-WebRequest -Uri https://aka.ms/install-powershell.ps1 -OutFile ./install-powershell.ps1
+    ./install-powershell.ps1 -Destination $powerShellPath -Daily
+    # Using `prependpath` to update the PATH just for this build.
+    Write-Host "##vso[task.prependpath]$powerShellPath"
+  displayName: Install PowerShell Daily
+  condition: eq(${{ parameters.pwsh-preview }}, true)
+- pwsh: '$PSVersionTable'
+  displayName: Display PowerShell version information
 - task: PowerShell@2
   displayName: 'Test'
   inputs:
