@@ -11,6 +11,7 @@ stages:
         steps:
         - pwsh: |
             Import-Module .\tools\appveyor.psm1
+            mkdir out
             # Invoke-AppveyorInstall -SkipPesterInstallation
             # ./build.ps1 -Configuration 'Release' -All
             # ./PSCompatibilityCollector/build.ps1 -Configuration 'Release'
@@ -29,12 +30,12 @@ stages:
               vmImage: ubuntu-16.04
             Ubuntu_16_04_preview:
               vmImage: ubuntu-16.04
-              PowerShellVersion: 'Preview'
+              PowerShellVersion: Preview
             Ubuntu_18_04:
               vmImage: ubuntu-18.04
             Ubuntu_18_04_preview:
               vmImage: ubuntu-18.04
-              PowerShellVersion: 'Preview'
+              PowerShellVersion: Preview
             macOS_10_14_Mojave:
               vmImage: macOS-10.14
             macOS_10_15_Catalina:
