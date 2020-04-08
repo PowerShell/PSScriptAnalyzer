@@ -27,8 +27,8 @@ stages:
           matrix:
             Ubuntu_16_04:
               vmImage: ubuntu-16.04
-            Ubuntu_16_04:
-              vmImage: ubuntu-16.04-preview
+            Ubuntu_16_04_preview:
+              vmImage: ubuntu-16.04
               pwsh-preview: true
             Ubuntu_18_04:
               vmImage: ubuntu-18.04
