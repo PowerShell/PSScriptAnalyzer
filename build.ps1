@@ -39,7 +39,6 @@ param(
     [Parameter(ParameterSetName='BuildAll')]
     [switch] $Catalog
 
-
 )
 
 BEGIN {
@@ -61,10 +60,16 @@ END {
     $setName = $PSCmdlet.ParameterSetName
     switch ( $setName ) {
         "BuildAll" {
-            Start-ScriptAnalyzerBuild -All -Configuration $Configuration -Verbose:$verboseWanted
-            if ( $Catalog ) {
-                $catalogFile = New-Catalog
+            $buildArgs = @{
+                All = $true
+                Configuration = $Configuration
+                Verbose = $verboseWanted
+                Catalog = $false
             }
+            if ( $Catalog ) {
+                $buildArgs['Catalog'] = $true
+            }
+            Start-ScriptAnalyzerBuild @buildArgs # -All -Configuration $Configuration -Verbose:$verboseWanted
         }
         "BuildDocumentation" {
             Start-ScriptAnalyzerBuild -Documentation -Verbose:$Verbose

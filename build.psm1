@@ -186,6 +186,9 @@ function Start-ScriptAnalyzerBuild
             foreach($psVersion in 3..7) {
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion -Verbose:$verboseWanted
             }
+            if ( $Catalog ) {
+                New-Catalog -Location $script:destinationDir
+            }
             return
         }
 
@@ -320,8 +323,6 @@ function Start-ScriptAnalyzerBuild
             }
             Copy-Item -path $nsoft -Destination $destinationDirBinaries
         }
-
-        New-Catalog -Location $script:destinationDir
 
         Pop-Location
     }
