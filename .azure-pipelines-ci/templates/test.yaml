@@ -21,4 +21,4 @@ steps:
   inputs:
     testRunner: NUnit
     testResultsFiles: 'TestResults.xml'
-    condition: succeededOrFailed()
+    condition: always()
