@@ -15,7 +15,7 @@ function Install-Pester {
         else {
             # Visual Studio 2017 build (has already Pester v3, therefore a different installation mechanism is needed to make it also use the new version 4)
             Write-Verbose -Verbose "Installing Pester via Install-Module"
-            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery
+            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery -AllowPrerelease
         }
     }
 }
