@@ -1,4 +1,9 @@
-﻿$ruleName = "PSUseLiteralInitializerForHashtable"
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $ruleName = "PSUseLiteralInitializerForHashtable"
+}
 
 Describe "UseLiteralInitlializerForHashtable" {
     Context "When new-object hashtable is used to create a hashtable" {

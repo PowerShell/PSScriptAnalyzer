@@ -1,7 +1,12 @@
-﻿$violationMessage = [regex]::Escape('$null should be on the left side of equality comparisons.')
-$violationName = "PSPossibleIncorrectComparisonWithNull"
-$violations = Invoke-ScriptAnalyzer $PSScriptRoot\PossibleIncorrectComparisonWithNull.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\PossibleIncorrectComparisonWithNullNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $violationMessage = [regex]::Escape('$null should be on the left side of equality comparisons.')
+    $violationName = "PSPossibleIncorrectComparisonWithNull"
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\PossibleIncorrectComparisonWithNull.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\PossibleIncorrectComparisonWithNullNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+}
 
 Describe "PossibleIncorrectComparisonWithNull" {
     Context "When there are violations" {

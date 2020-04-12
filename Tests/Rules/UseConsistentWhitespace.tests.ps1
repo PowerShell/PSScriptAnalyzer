@@ -1,24 +1,30 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$ruleName = "PSUseConsistentWhitespace"
-$ruleConfiguration = @{
-    Enable          = $true
-    CheckInnerBrace = $false
-    CheckOpenBrace  = $false
-    CheckOpenParen  = $false
-    CheckOperator   = $false
-    CheckPipe       = $false
-    CheckSeparator  = $false
-    CheckParameter  = $false
-}
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-$settings = @{
-    IncludeRules = @($ruleName)
-    Rules        = @{
-        PSUseConsistentWhitespace = $ruleConfiguration
+    $ruleName = "PSUseConsistentWhitespace"
+    $ruleConfiguration = @{
+        Enable          = $true
+        CheckInnerBrace = $false
+        CheckOpenBrace  = $false
+        CheckOpenParen  = $false
+        CheckOperator   = $false
+        CheckPipe       = $false
+        CheckSeparator  = $false
+        CheckParameter  = $false
+    }
+
+    $settings = @{
+        IncludeRules = @($ruleName)
+        Rules        = @{
+            PSUseConsistentWhitespace = $ruleConfiguration
+        }
     }
 }
+
 
 Describe "UseWhitespace" {
     Context "When an open brace follows a keyword" {

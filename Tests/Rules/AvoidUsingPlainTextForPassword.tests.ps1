@@ -1,9 +1,14 @@
-﻿$violationMessage = [regex]::Escape("Parameter '`$password' should use SecureString, otherwise this will expose sensitive information. See ConvertTo-SecureString for more information.")
-$violationName = "PSAvoidUsingPlainTextForPassword"
-$violationFilepath = Join-Path $PSScriptRoot 'AvoidUsingPlainTextForPassword.ps1'
-$violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingPlainTextForPasswordNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
-Import-Module (Join-Path $PSScriptRoot "PSScriptAnalyzerTestHelper.psm1")
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $violationMessage = [regex]::Escape("Parameter '`$password' should use SecureString, otherwise this will expose sensitive information. See ConvertTo-SecureString for more information.")
+    $violationName = "PSAvoidUsingPlainTextForPassword"
+    $violationFilepath = Join-Path $PSScriptRoot 'AvoidUsingPlainTextForPassword.ps1'
+    $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingPlainTextForPasswordNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    Import-Module (Join-Path $PSScriptRoot "PSScriptAnalyzerTestHelper.psm1")
+}
 
 Describe "AvoidUsingPlainTextForPassword" {
     Context "When there are violations" {

@@ -1,8 +1,12 @@
-﻿$ruleName = "PSUseCompatibleCmdlets"
-$testRootDirectory = Split-Path -Parent $PSScriptRoot
-$ruleTestDirectory = Join-Path $PSScriptRoot 'UseCompatibleCmdlets'
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+BeforeAll {
+    $ruleName = "PSUseCompatibleCmdlets"
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    $ruleTestDirectory = Join-Path $PSScriptRoot 'UseCompatibleCmdlets'
+    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+}
 
 Describe "UseCompatibleCmdlets" {
     Context "script has violation" {

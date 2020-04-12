@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$script:RuleName = 'PSUseCompatibleSyntax'
+BeforeAll {
+    $script:RuleName = 'PSUseCompatibleSyntax'
+}
 
 Describe "PSUseCompatibleSyntax" {
     BeforeAll {

@@ -1,4 +1,9 @@
-﻿$ruleName = "PSAvoidAssignmentToAutomaticVariable"
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $ruleName = "PSAvoidAssignmentToAutomaticVariable"
+}
 
 Describe "AvoidAssignmentToAutomaticVariables" {
     Context "ReadOnly Variables" {

@@ -1,7 +1,12 @@
-﻿$violationName = "PSAvoidUsingDeprecatedManifestFields"
-$violations = Invoke-ScriptAnalyzer "$PSScriptRoot\TestBadModule\TestDeprecatedManifestFields.psd1" | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer "$PSScriptRoot\TestGoodModule\TestGoodModule.psd1" | Where-Object {$_.RuleName -eq $violationName}
-$noViolations2 = Invoke-ScriptAnalyzer "$PSScriptRoot\TestGoodModule\TestDeprecatedManifestFieldsWithVersion2.psd1" | Where-Object {$_.RuleName -eq $violationName}
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $violationName = "PSAvoidUsingDeprecatedManifestFields"
+    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\TestBadModule\TestDeprecatedManifestFields.psd1" | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer "$PSScriptRoot\TestGoodModule\TestGoodModule.psd1" | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations2 = Invoke-ScriptAnalyzer "$PSScriptRoot\TestGoodModule\TestDeprecatedManifestFieldsWithVersion2.psd1" | Where-Object {$_.RuleName -eq $violationName}
+}
 
 Describe "AvoidUsingDeprecatedManifestFields" {
     Context "When there are violations" {

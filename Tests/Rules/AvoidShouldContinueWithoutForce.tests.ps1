@@ -1,7 +1,12 @@
-﻿$violationMessage = "Function 'Verb-Noun2' in file 'AvoidShouldContinueWithoutForce.ps1' uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt"
-$violationName = "PSAvoidShouldContinueWithoutForce"
-$violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidShouldContinueWithoutForce.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $violationMessage = "Function 'Verb-Noun2' in file 'AvoidShouldContinueWithoutForce.ps1' uses ShouldContinue but does not have a boolean force parameter. The force parameter will allow users of the script to bypass ShouldContinue prompt"
+    $violationName = "PSAvoidShouldContinueWithoutForce"
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidShouldContinueWithoutForce.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+}
 
 Describe "AvoidShouldContinueWithoutForce" {
     Context "When there are violations" {

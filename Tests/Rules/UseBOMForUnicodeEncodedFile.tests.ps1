@@ -1,10 +1,15 @@
-﻿$violationMessageOne = "Missing BOM encoding for non-ASCII encoded file 'BOMAbsent_UTF16EncodedScript.ps1'"
-$violationMessageTwo = "Missing BOM encoding for non-ASCII encoded file 'BOMAbsent_UnknownEncodedScript.ps1'"
-$violationName = "PSUseBOMForUnicodeEncodedFile"
-$violationsOne = Invoke-ScriptAnalyzer "$PSScriptRoot\TestFiles\BOMAbsent_UTF16EncodedScript.ps1" | Where-Object {$_.RuleName -eq $violationName}
-$violationsTwo = Invoke-ScriptAnalyzer "$PSScriptRoot\TestFiles\BOMAbsent_UnknownEncodedScript.ps1" | Where-Object {$_.RuleName -eq $violationName}
-$noViolationsOne = Invoke-ScriptAnalyzer "$PSScriptRoot\TestFiles\BOMPresent_UTF16EncodedScript.ps1" | Where-Object {$_.RuleName -eq $violationName}
-$noViolationsTwo = Invoke-ScriptAnalyzer "$PSScriptRoot\TestFiles\BOMAbsent_ASCIIEncodedScript.ps1" | Where-Object {$_.RuleName -eq $violationName}
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $violationMessageOne = "Missing BOM encoding for non-ASCII encoded file 'BOMAbsent_UTF16EncodedScript.ps1'"
+    $violationMessageTwo = "Missing BOM encoding for non-ASCII encoded file 'BOMAbsent_UnknownEncodedScript.ps1'"
+    $violationName = "PSUseBOMForUnicodeEncodedFile"
+    $violationsOne = Invoke-ScriptAnalyzer "$PSScriptRoot\TestFiles\BOMAbsent_UTF16EncodedScript.ps1" | Where-Object {$_.RuleName -eq $violationName}
+    $violationsTwo = Invoke-ScriptAnalyzer "$PSScriptRoot\TestFiles\BOMAbsent_UnknownEncodedScript.ps1" | Where-Object {$_.RuleName -eq $violationName}
+    $noViolationsOne = Invoke-ScriptAnalyzer "$PSScriptRoot\TestFiles\BOMPresent_UTF16EncodedScript.ps1" | Where-Object {$_.RuleName -eq $violationName}
+    $noViolationsTwo = Invoke-ScriptAnalyzer "$PSScriptRoot\TestFiles\BOMAbsent_ASCIIEncodedScript.ps1" | Where-Object {$_.RuleName -eq $violationName}
+}
 
 Describe "UseBOMForUnicodeEncodedFile" {
     Context "When there are violations" {

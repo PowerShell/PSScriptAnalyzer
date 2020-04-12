@@ -1,10 +1,15 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$violationMessage = "The Credential parameter in 'Credential' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute."
-$violationName = "PSUsePSCredentialType"
-$violations = Invoke-ScriptAnalyzer $PSScriptRoot\PSCredentialType.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\PSCredentialTypeNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+
+    $violationMessage = "The Credential parameter in 'Credential' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute."
+    $violationName = "PSUsePSCredentialType"
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\PSCredentialType.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\PSCredentialTypeNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+}
 
 Describe "PSCredentialType" {
     Context "When there are violations" {
