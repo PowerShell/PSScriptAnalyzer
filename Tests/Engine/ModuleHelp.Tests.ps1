@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 <#
 .SYNOPSIS
 Tests the PowerShell help for the commands in a module.

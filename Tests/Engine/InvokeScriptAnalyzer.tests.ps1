@@ -1,9 +1,14 @@
-﻿$sa = Get-Command Invoke-ScriptAnalyzer
-$singularNouns = "PSUseSingularNouns"
-$approvedVerb = "PSUseApprovedVerbs"
-$rules = Get-ScriptAnalyzerRule -Name ($singularNouns, "PSUseApprovedVerbs")
-$avoidRules = Get-ScriptAnalyzerRule -Name "PSAvoid*"
-$useRules = "PSUse*"
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $sa = Get-Command Invoke-ScriptAnalyzer
+    $singularNouns = "PSUseSingularNouns"
+    $approvedVerb = "PSUseApprovedVerbs"
+    $rules = Get-ScriptAnalyzerRule -Name ($singularNouns, "PSUseApprovedVerbs")
+    $avoidRules = Get-ScriptAnalyzerRule -Name "PSAvoid*"
+    $useRules = "PSUse*"
+}
 
 Describe "Test available parameters" {
     $params = $sa.Parameters

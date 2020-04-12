@@ -1,22 +1,26 @@
-﻿if (-not ([bool] $IsCoreCLR))
-{
-	# Force Get-Help not to prompt for interactive input to download help using Update-Help
-	# By adding this registry key we turn off Get-Help interactivity logic during ScriptRule parsing
-	$null,"Wow6432Node" | ForEach-Object {
-		try
-		{
-			Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -ErrorAction SilentlyContinue
-		}
-		catch
-		{
-			# Ignore for cases when tests are running in non-elevated more or registry key does not exist or not accessible
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+	if (-not ([bool] $IsCoreCLR))
+	{
+		# Force Get-Help not to prompt for interactive input to download help using Update-Help
+		# By adding this registry key we turn off Get-Help interactivity logic during ScriptRule parsing
+		$null,"Wow6432Node" | ForEach-Object {
+			try
+			{
+				Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -ErrorAction SilentlyContinue
+			}
+			catch
+			{
+				# Ignore for cases when tests are running in non-elevated more or registry key does not exist or not accessible
+			}
 		}
 	}
+	$message = "this is help"
+	$measure = "Measure-RequiresRunAsAdministrator"
 }
 
-
-$message = "this is help"
-$measure = "Measure-RequiresRunAsAdministrator"
 
 Describe "Test importing customized rules with null return results" {
     Context "Test Get-ScriptAnalyzer with customized rules" {

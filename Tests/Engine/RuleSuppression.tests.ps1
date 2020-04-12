@@ -1,43 +1,49 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
-$violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
-$ruleSuppressionBad = @'
-Function do-something
-{
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "username")]
-    Param(
-    $username,
-    $password
-    )
-}
+    $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
+    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
+
+    $ruleSuppressionBad = @'
+    Function do-something
+    {
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "username")]
+        Param(
+        $username,
+        $password
+        )
+    }
+    '@
+
+    $ruleSuppressionInConfiguration = @'
+    Configuration xFileUpload
+    {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+    param ([string] $decryptedPassword)
+    $securePassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
+    }
+    '@
+
+    # If function doesn't starts at offset 0, then the test case fails before commit b551211
+    $ruleSuppressionAvoidUsernameAndPassword = @'
+
+    function SuppressUserAndPwdRule()
+    {
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "")]
+        [CmdletBinding()]
+        param
+        (
+            [System.String] $username,
+            [System.String] $password
+        )
+    }
 '@
-
-$ruleSuppressionInConfiguration = @'
-Configuration xFileUpload
-{
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
-param ([string] $decryptedPassword)
-$securePassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
 }
-'@
 
-# If function doesn't starts at offset 0, then the test case fails before commit b551211
-$ruleSuppressionAvoidUsernameAndPassword = @'
-
-function SuppressUserAndPwdRule()
-{
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "")]
-    [CmdletBinding()]
-    param
-    (
-        [System.String] $username,
-        [System.String] $password
-    )
-}
-'@
 
 Describe "RuleSuppressionWithoutScope" {
     Context "Function" {

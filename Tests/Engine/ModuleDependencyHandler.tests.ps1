@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 Describe "Resolve DSC Resource Dependency" {
     BeforeAll {
         $skipTest = $false # Test that require DSC to be installed
