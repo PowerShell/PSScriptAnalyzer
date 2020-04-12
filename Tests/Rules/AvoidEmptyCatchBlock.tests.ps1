@@ -1,5 +1,5 @@
 ﻿$violationMessage = "Empty catch block is used. Please use Write-Error or throw statements in catch blocks."
-$violationName = "PSAvoidUsingE
+$violationName = "PSAvoidUsingEmptyCatchBlock"
 $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidEmptyCatchBlock.ps1 | Where-Object {$_.RuleName -eq $violationName}
 $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidEmptyCatchBlockNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
