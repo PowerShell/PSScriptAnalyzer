@@ -1,6 +1,5 @@
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ruleName = 'PSDSCUseIdenticalMandatoryParametersForDSC'
-$resourceBasepath = "$directory\DSCResourceModule\DSCResources"
+$resourceBasepath = "$PSScriptRoot\DSCResourceModule\DSCResources"
 $badResourceFilepath = [System.IO.Path]::Combine(
     $resourceBasepath,
     'MSFT_WaitForAnyNoIdenticalMandatoryParameter',

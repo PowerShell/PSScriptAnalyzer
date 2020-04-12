@@ -1,5 +1,3 @@
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-
 Describe "Resolve DSC Resource Dependency" {
     BeforeAll {
         $skipTest = $false # Test that require DSC to be installed
@@ -19,8 +17,8 @@ Describe "Resolve DSC Resource Dependency" {
 
         $savedPSModulePath = $env:PSModulePath
         $violationFileName = 'MissingDSCResource.ps1'
-        $violationFilePath = Join-Path $directory $violationFileName
-        $testRootDirectory = Split-Path -Parent $directory
+        $violationFilePath = Join-Path $PSScriptRoot $violationFileName
+        $testRootDirectory = Split-Path -Parent $PSScriptRoot
         Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
         Function Test-EnvironmentVariables($oldEnv)
@@ -186,7 +184,7 @@ Describe "Resolve DSC Resource Dependency" {
             if ( $skipTest ) { return }
             $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
             $moduleName = "MyDscResource"
-            $modulePath = "$(Split-Path $directory)\Rules\DSCResourceModule\DSCResources\$moduleName"
+            $modulePath = "$(Split-Path $PSScriptRoot)\Rules\DSCResourceModule\DSCResources\$moduleName"
 
             # Save the current environment variables
             $oldLocalAppDataPath = Get-LocalAppDataFolder

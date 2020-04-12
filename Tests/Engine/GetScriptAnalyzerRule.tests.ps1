@@ -1,5 +1,4 @@
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testRootDirectory = Split-Path -Parent $directory
+$testRootDirectory = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 $sa = Get-Command Get-ScriptAnalyzerRule
 
@@ -105,28 +104,28 @@ Describe "Test RuleExtension" {
 			$expectedNumCommunityRules = 12
 		}
         It "with the module folder path" {
-            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules | Where-Object {$_.SourceName -eq $community}
+            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules | Where-Object {$_.SourceName -eq $community}
             $ruleExtension.Count | Should -Be $expectedNumCommunityRules
         }
 
         It "with the psd1 path" {
-            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1 | Where-Object {$_.SourceName -eq $community}
+            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1 | Where-Object {$_.SourceName -eq $community}
             $ruleExtension.Count | Should -Be $expectedNumCommunityRules
 
         }
 
         It "with the psm1 path" {
-            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 | Where-Object {$_.SourceName -eq $community}
+            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 | Where-Object {$_.SourceName -eq $community}
             $ruleExtension.Count | Should -Be $expectedNumCommunityRules
         }
 
         It "with Name of a built-in rules" {
-            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns
+            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns
             $ruleExtension.Count | Should -Be 0
         }
 
         It "with Names of built-in, DSC and non-built-in rules" {
-            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $directory\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns, $measureRequired, $dscIdentical
+            $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -Name $singularNouns, $measureRequired, $dscIdentical
             $ruleExtension.Count | Should -Be 1
             ($ruleExtension | Where-Object {$_.RuleName -eq $measureRequired}).Count | Should -Be 1
             ($ruleExtension | Where-Object {$_.RuleName -eq $singularNouns}).Count | Should -Be 0

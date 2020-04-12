@@ -1,9 +1,8 @@
-﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testRootDirectory = Split-Path -Parent $directory
+﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
-$violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$directory\RuleSuppression.ps1")
-$violations = Invoke-ScriptAnalyzer "$directory\RuleSuppression.ps1"
+$violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
+$violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
 
 $ruleSuppressionBad = @'
 Function do-something
@@ -123,7 +122,7 @@ Write-Host "write-host"
             It "Suppresses violation of an external ast rule" {
                 Invoke-ScriptAnalyzer `
                     -ScriptDefinition $externalRuleSuppression `
-                    -CustomRulePath (Join-Path $directory "CommunityAnalyzerRules") `
+                    -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") `
                     -OutVariable ruleViolations `
                     -SuppressedOnly
                 $ruleViolations.Count | Should -Be 1

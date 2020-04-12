@@ -1,8 +1,7 @@
 $violationName = "PSAvoidNullOrEmptyHelpMessageAttribute"
 $violationMessage = "HelpMessage parameter attribute should not be null or empty. To fix a violation of this rule, please set its value to a non-empty string."
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer "$directory\AvoidNullOrEmptyHelpMessageAttribute.ps1" -IncludeRule PSAvoidNullOrEmptyHelpMessageAttribute
-$noViolations = Invoke-ScriptAnalyzer "$directory\AvoidNullOrEmptyHelpMessageAttributeNoViolations.ps1" -IncludeRule PSAvoidNullOrEmptyHelpMessageAttribute
+$violations = Invoke-ScriptAnalyzer "$PSScriptRoot\AvoidNullOrEmptyHelpMessageAttribute.ps1" -IncludeRule PSAvoidNullOrEmptyHelpMessageAttribute
+$noViolations = Invoke-ScriptAnalyzer "$PSScriptRoot\AvoidNullOrEmptyHelpMessageAttributeNoViolations.ps1" -IncludeRule PSAvoidNullOrEmptyHelpMessageAttribute
 
 Describe "AvoidNullOrEmptyHelpMessageAttribute" {
     Context "When there are violations" {

@@ -1,17 +1,15 @@
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testRootDirectory = Split-Path -Parent $directory
+$testRootDirectory = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
 # test is meant to verify functionality if csharp apis are used. Hence not if psedition is CoreCLR
-if ((Test-PSEditionCoreCLR))
+if (([bool] $IsCoreCLR))
 {
 	return
 }
 
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Overwrite Invoke-ScriptAnalyzer with a version that
-# wraps the usage of ScriptAnalyzer as a .NET library 
+# wraps the usage of ScriptAnalyzer as a .NET library
 function Invoke-ScriptAnalyzer {
 	param (
         [CmdletBinding(DefaultParameterSetName="File", SupportsShouldProcess = $true)]
@@ -34,12 +32,12 @@ function Invoke-ScriptAnalyzer {
         [string[]] $ExcludeRule = $null,
 
         [Parameter(Mandatory = $false)]
-        [string[]] $IncludeRule = $null, 
+        [string[]] $IncludeRule = $null,
 
         [ValidateSet("Warning", "Error", "Information", "ParseError", IgnoreCase = $true)]
         [Parameter(Mandatory = $false)]
         [string[]] $Severity = $null,
-        
+
         [Parameter(Mandatory = $false)]
 		[switch] $Recurse,
 
@@ -54,7 +52,7 @@ function Invoke-ScriptAnalyzer {
 
         [Parameter(Mandatory = $false)]
         [switch] $EnableExit,
-		
+
         [Parameter(Mandatory = $false)]
         [switch] $ReportSummary
     )
@@ -63,18 +61,18 @@ function Invoke-ScriptAnalyzer {
     {
         $IncludeDefaultRules = $true
     }
-	# There is an inconsistency between this implementation and c# implementation of the cmdlet. 
+	# There is an inconsistency between this implementation and c# implementation of the cmdlet.
 	# The CustomRulePath parameter here is of "string[]" type whereas in the c# implementation it is of "string" type.
-	# If we set the CustomRulePath parameter here to  "string[]", then the library usage test fails when run as an administrator. 
+	# If we set the CustomRulePath parameter here to  "string[]", then the library usage test fails when run as an administrator.
 	# We want to note that the library usage test doesn't fail when run as a non-admin user.
-	# The following is the error statement when the test runs as an administrator. 
+	# The following is the error statement when the test runs as an administrator.
 	# Assert failed on "Initialize" with "7" argument(s): "Test failed due to terminating error: The module was expected to contain an assembly manifest. (Exception from HRESULT: 0x80131018)"
 
 	$scriptAnalyzer = New-Object "Microsoft.Windows.PowerShell.ScriptAnalyzer.ScriptAnalyzer";
 	$scriptAnalyzer.Initialize(
-		$runspace, 
-		$testOutputWriter, 
-		$CustomRulePath, 
+		$runspace,
+		$testOutputWriter,
+		$CustomRulePath,
 		$IncludeRule,
 		$ExcludeRule,
 		$Severity,
@@ -98,7 +96,7 @@ function Invoke-ScriptAnalyzer {
     {
         $results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
 	}
-	
+
 	$results
 
     if ($ReportSummary.IsPresent)
@@ -113,7 +111,7 @@ function Invoke-ScriptAnalyzer {
             Write-Host '0 rule violations found.' -ForegroundColor Green
         }
     }
-	
+
     if ($EnableExit.IsPresent -and $null -ne $results)
     {
         exit $results.Count
@@ -126,7 +124,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer;
 
-public class PesterTestOutputWriter : IOutputWriter 
+public class PesterTestOutputWriter : IOutputWriter
 {
 	private PSHost psHost;
 
@@ -166,8 +164,8 @@ public class PesterTestOutputWriter : IOutputWriter
 	public void ThrowTerminatingError(ErrorRecord record)
 	{
 		throw new RuntimeException(
-			"Test failed due to terminating error: \r\n" + record.ToString(), 
-			null, 
+			"Test failed due to terminating error: \r\n" + record.ToString(),
+			null,
 			record);
 	}
 }
@@ -192,7 +190,7 @@ $null,"Wow6432Node" | ForEach-Object {
 	try
 	{
 		Set-ItemProperty -Name "DisablePromptToUpdateHelp" -Path "HKLM:\SOFTWARE\$($_)\Microsoft\PowerShell" -Value 1 -Force -ErrorAction SilentlyContinue
-	} 
+	}
 	catch
 	{
 		# Ignore for cases when tests are running in non-elevated more or registry key does not exist or not accessible
@@ -200,9 +198,9 @@ $null,"Wow6432Node" | ForEach-Object {
 }
 
 # Invoke existing test files that use Invoke-ScriptAnalyzer
-. $directory\InvokeScriptAnalyzer.tests.ps1
-. $directory\RuleSuppression.tests.ps1
-. $directory\CustomizedRule.tests.ps1
+. $PSScriptRoot\InvokeScriptAnalyzer.tests.ps1
+. $PSScriptRoot\RuleSuppression.tests.ps1
+. $PSScriptRoot\CustomizedRule.tests.ps1
 
 # We're done testing library usage
 $testingLibraryUsage = $false
