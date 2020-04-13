@@ -208,16 +208,17 @@ Describe 'LibraryUsage' {
 		. $PSScriptRoot\RuleSuppression.tests.ps1
 		. $PSScriptRoot\CustomizedRule.tests.ps1
 	}
+
+	AfterAll {
+		# We're done testing library usage
+		$testingLibraryUsage = $false
+
+		# Clean up the test runspace
+		$runspace.Dispose();
+
+		# Re-import the PSScriptAnalyzer module to overwrite the library test cmdlet
+		Import-Module PSScriptAnalyzer
+	}
 }
 
 
-AfterAll {
-	# We're done testing library usage
-	$testingLibraryUsage = $false
-
-	# Clean up the test runspace
-	$runspace.Dispose();
-
-	# Re-import the PSScriptAnalyzer module to overwrite the library test cmdlet
-	Import-Module PSScriptAnalyzer
-}
