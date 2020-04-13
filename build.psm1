@@ -332,8 +332,9 @@ function New-Catalog
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
     param ( [Parameter()]$Location )
-    if ( ! $IsWindows ) {
-        Write-Warning "Create catalog only on windows"
+    $newFileCatalog = Get-Command -ea silentlycontinue New-FileCatalog
+    if ($null -eq $newFileCatalog) {
+        Write-Warning "New-FileCatalog not found, not creating catalog"
         return
     }
     try {
