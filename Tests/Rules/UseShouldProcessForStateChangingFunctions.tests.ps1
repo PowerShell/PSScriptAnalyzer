@@ -4,8 +4,8 @@
 BeforeAll {
     $violationMessage = "Function 'Set-MyObject' has verb that could change system state. Therefore, the function has to support 'ShouldProcess'"
     $violationName = "PSUseShouldProcessForStateChangingFunctions"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\UseShouldProcessForStateChangingFunctions.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\UseShouldProcessForStateChangingFunctionsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\UseShouldProcessForStateChangingFunctions.ps1 | Where-Object { $_.RuleName -eq $violationName }
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\UseShouldProcessForStateChangingFunctionsNoViolations.ps1 | Where-Object { $_.RuleName -eq $violationName }
 }
 
 Describe "It checks UseShouldProcess is enabled when there are state changing verbs in the function names" {
@@ -53,7 +53,7 @@ Describe "It checks UseShouldProcess is enabled when there are state changing ve
         }
 
         It "has the correct extent" {
-        $violations[0].Extent.Text | Should -Be "Set-MyObject"
+            $violations[0].Extent.Text | Should -Be "Set-MyObject"
         }
     }
 
