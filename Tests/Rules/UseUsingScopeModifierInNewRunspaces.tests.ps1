@@ -10,7 +10,10 @@ BeforeAll {
 
 Describe "UseUsingScopeModifierInNewRunspaces" {
     Context "Should detect something" {
-        It "should emit for: <Description>" -TestCases @(
+        It "should emit for: <Description>" {
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
+            $warnings.Count | Should -Be 1
+        } -TestCases @(
             # Test: Foreach-Object -Parallel {}
             @{
                 Description = "Foreach-Object -Parallel with undeclared var"
@@ -130,10 +133,7 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
                         }
                     }'
             }
-        ) -Test {
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
-            $warnings.Count | Should -Be 1
-        }
+        )
 
         It "should emit suggested correction" {
             $ScriptBlock = '{
@@ -276,7 +276,10 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
             )
         }
 
-        It "should not emit anything for: <Description>" -TestCases @(
+        It "should not emit anything for: <Description>" {
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
+            $warnings.Count | Should -Be 0
+        } -TestCases @(
             @{
                 Description = "Foreach-Object with uninitialized var inside"
                 ScriptBlock = '{
@@ -401,9 +404,6 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
                     }
                 }'
             }
-        ) -Test {
-            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
-            $warnings.Count | Should -Be 0
-        }
+        )
     }
 }
