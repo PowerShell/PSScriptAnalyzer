@@ -1,16 +1,22 @@
-﻿$ruleConfiguration = @{
-    Enable = $true
-    OnSameLine = $true
-    NewLineAfter = $true
-    IgnoreOneLineIf = $true
-}
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$settings = @{
-    IncludeRules = @("PSPlaceOpenBrace")
-    Rules = @{
-        PSPlaceOpenBrace = $ruleConfiguration
+BeforeAll {
+    $ruleConfiguration = @{
+        Enable = $true
+        OnSameLine = $true
+        NewLineAfter = $true
+        IgnoreOneLineIf = $true
+    }
+
+    $settings = @{
+        IncludeRules = @("PSPlaceOpenBrace")
+        Rules = @{
+            PSPlaceOpenBrace = $ruleConfiguration
+        }
     }
 }
+
 
 Describe "PlaceOpenBrace" {
     Context "When an open brace must be on the same line" {

@@ -1,17 +1,22 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$ruleConfiguration = @{
-    Enable             = $true
-    NoEmptyLineBefore  = $true
-    IgnoreOneLineBlock = $true
-    NewLineAfter       = $true
-}
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-$settings = @{
-    IncludeRules = @("PSPlaceCloseBrace")
-    Rules        = @{
-        PSPlaceCloseBrace = $ruleConfiguration
+    $ruleConfiguration = @{
+        Enable             = $true
+        NoEmptyLineBefore  = $true
+        IgnoreOneLineBlock = $true
+        NewLineAfter       = $true
+    }
+
+    $settings = @{
+        IncludeRules = @("PSPlaceCloseBrace")
+        Rules        = @{
+            PSPlaceCloseBrace = $ruleConfiguration
+        }
     }
 }
 
