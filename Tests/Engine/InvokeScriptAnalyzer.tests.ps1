@@ -11,7 +11,10 @@ BeforeAll {
 }
 
 Describe "Test available parameters" {
-    $params = $sa.Parameters
+    BeforeAll {
+        $params = $sa.Parameters
+    }
+
     Context "Path parameter" {
         It "has a Path parameter" {
             $params.ContainsKey("Path") | Should -BeTrue
@@ -66,20 +69,17 @@ Describe "Test available parameters" {
         }
     }
 
-    if (!$testingLibraryUsage -and ($PSVersionTable.PSVersion -ge [Version]'5.0.0'))
-    {
-        Context "SaveDscDependency parameter" {
-            It "has the parameter" {
-                $params.ContainsKey("SaveDscDependency") | Should -BeTrue
-            }
+    Context "SaveDscDependency parameter" -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt [Version]'5.0.0')) {
+        It "has the parameter" {
+            $params.ContainsKey("SaveDscDependency") | Should -BeTrue
+        }
 
-            It "is a switch parameter" {
-                $params["SaveDscDependency"].ParameterType.FullName | Should -Be "System.Management.Automation.SwitchParameter"
-            }
+        It "is a switch parameter" {
+            $params["SaveDscDependency"].ParameterType.FullName | Should -Be "System.Management.Automation.SwitchParameter"
+        }
 
-            It 'does not throw when being applied against a dummy script with no DSC code' {
-                Invoke-ScriptAnalyzer -ScriptDefinition 'foo' -SaveDscDependency
-            }
+        It 'does not throw when being applied against a dummy script with no DSC code' {
+            Invoke-ScriptAnalyzer -ScriptDefinition 'foo' -SaveDscDependency
         }
     }
 
@@ -146,79 +146,80 @@ Describe "Test Path" {
     }
 
     Context "DiagnosticRecord  " {
-	It "has valid ScriptPath and ScriptName properties when an input file is given" {
-	   $scriptName = "TestScript.ps1"
-	   $scriptPath = Join-Path $PSScriptRoot $scriptName
-	   $expectedScriptPath = Resolve-Path $PSScriptRoot\TestScript.ps1
-	   $diagnosticRecords = Invoke-ScriptAnalyzer $scriptPath -IncludeRule "PSAvoidUsingEmptyCatchBlock"
-	   $diagnosticRecords[0].ScriptPath | Should -Be $expectedScriptPath.Path
-	   $diagnosticRecords[0].ScriptName | Should -Be $scriptName
-	}
+        It "has valid ScriptPath and ScriptName properties when an input file is given" {
+            $scriptName = "TestScript.ps1"
+            $scriptPath = Join-Path $PSScriptRoot $scriptName
+            $expectedScriptPath = Resolve-Path $PSScriptRoot\TestScript.ps1
+            $diagnosticRecords = Invoke-ScriptAnalyzer $scriptPath -IncludeRule "PSAvoidUsingEmptyCatchBlock"
+            $diagnosticRecords[0].ScriptPath | Should -Be $expectedScriptPath.Path
+            $diagnosticRecords[0].ScriptName | Should -Be $scriptName
+        }
 
-	It "has empty ScriptPath and ScriptName properties when a script definition is given" {
-	   $diagnosticRecords = Invoke-ScriptAnalyzer -ScriptDefinition gci -IncludeRule "PSAvoidUsingCmdletAliases"
-	   $diagnosticRecords[0].ScriptPath | Should -Be ([System.String]::Empty)
-	   $diagnosticRecords[0].ScriptName | Should -Be ([System.String]::Empty)
-	}
+        It "has empty ScriptPath and ScriptName properties when a script definition is given" {
+            $diagnosticRecords = Invoke-ScriptAnalyzer -ScriptDefinition gci -IncludeRule "PSAvoidUsingCmdletAliases"
+            $diagnosticRecords[0].ScriptPath | Should -Be ([System.String]::Empty)
+            $diagnosticRecords[0].ScriptName | Should -Be ([System.String]::Empty)
+        }
     }
 
-	if (!$testingLibraryUsage)
-	{
-		#There is probably a more concise way to do this but for now we will settle for this!
-		Function GetFreeDrive ($freeDriveLen) {
-			$ordA = 65
-			$ordZ = 90
-			$freeDrive = ""
-			$freeDriveName = ""
-			do{
-				$freeDriveName = (1..$freeDriveLen | %{[char](Get-Random -Maximum $ordZ -Minimum $ordA)}) -join ''
-				$freeDrive = $freeDriveName + ":"
-			}while(Test-Path $freeDrive)
-			$freeDrive, $freeDriveName
-		}
-
-		Context "When given a glob" {
-    		It "Invokes on all the matching files" {
-			$numFilesResult = (Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
-			$numFilesExpected = (Get-ChildItem -Path $PSScriptRoot\TestTestPath*.ps1).Count
-			$numFilesResult | Should -Be $numFilesExpected
-			}
-		}
-
-		Context "When given a FileSystem PSDrive" {
-    		It "Recognizes the path" {
-			$freeDriveNameLen = 2
-			$freeDrive, $freeDriveName = GetFreeDrive $freeDriveNameLen
-			New-PSDrive -Name $freeDriveName -PSProvider FileSystem -Root $PSScriptRoot
-			$numFilesExpected = (Get-ChildItem -Path $freeDrive\TestTestPath*.ps1).Count
-			$numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
-			Remove-PSDrive $freeDriveName
-			$numFilesResult | Should -Be $numFilesExpected
-			}
+    Context "When given a glob" -Skip:$testingLibraryUsage {
+        It "Invokes on all the matching files" {
+        $numFilesResult = (Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
+        $numFilesExpected = (Get-ChildItem -Path $PSScriptRoot\TestTestPath*.ps1).Count
+        $numFilesResult | Should -Be $numFilesExpected
         }
+    }
 
-        Context "When piping in files" {
-            It "Can be piped in from a string" {
-                $piped = ("$PSScriptRoot\TestScript.ps1" | Invoke-ScriptAnalyzer)
-                $explicit = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1
-
-                $piped.Count | Should Be $explicit.Count
-            }
-
-            It "Can be piped from Get-ChildItem" {
-                $piped = ( Get-ChildItem -Path $PSScriptRoot -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
-                $explicit = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestTestPath*.ps1
-                $piped.Count | Should Be $explicit.Count
+    Context "When given a FileSystem PSDrive" -Skip:$testingLibraryUsage {
+        BeforeAll {
+            #There is probably a more concise way to do this but for now we will settle for this!
+            Function GetFreeDrive ($freeDriveLen) {
+                $ordA = 65
+                $ordZ = 90
+                $freeDrive = ""
+                $freeDriveName = ""
+                do{
+                    $freeDriveName = (1..$freeDriveLen | %{[char](Get-Random -Maximum $ordZ -Minimum $ordA)}) -join ''
+                    $freeDrive = $freeDriveName + ":"
+                }while(Test-Path $freeDrive)
+                $freeDrive, $freeDriveName
             }
         }
-	}
+
+        It "Recognizes the path" {
+        $freeDriveNameLen = 2
+        $freeDrive, $freeDriveName = GetFreeDrive $freeDriveNameLen
+        New-PSDrive -Name $freeDriveName -PSProvider FileSystem -Root $PSScriptRoot
+        $numFilesExpected = (Get-ChildItem -Path $freeDrive\TestTestPath*.ps1).Count
+        $numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
+        Remove-PSDrive $freeDriveName
+        $numFilesResult | Should -Be $numFilesExpected
+        }
+    }
+
+    Context "When piping in files" -Skip:$testingLibraryUsage {
+        It "Can be piped in from a string" {
+            $piped = ("$PSScriptRoot\TestScript.ps1" | Invoke-ScriptAnalyzer)
+            $explicit = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1
+
+            $piped.Count | Should -Be $explicit.Count
+        }
+
+        It "Can be piped from Get-ChildItem" {
+            $piped = ( Get-ChildItem -Path $PSScriptRoot -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
+            $explicit = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestTestPath*.ps1
+            $piped.Count | Should -Be $explicit.Count
+        }
+    }
 
     Context "When given a directory" {
-        $withoutPathWithDirectory = Invoke-ScriptAnalyzer -Recurse $PSScriptRoot\RecursionDirectoryTest
-        $withPathWithDirectory = Invoke-ScriptAnalyzer -Recurse -Path $PSScriptRoot\RecursionDirectoryTest
+        BeforeAll {
+            $withoutPathWithDirectory = Invoke-ScriptAnalyzer -Recurse $PSScriptRoot\RecursionDirectoryTest
+            $withPathWithDirectory = Invoke-ScriptAnalyzer -Recurse -Path $PSScriptRoot\RecursionDirectoryTest
+        }
 
         It "Has the same count as without Path parameter"{
-            $withoutPathWithDirectory.Count -eq $withPathWithDirectory.Count | Should -BeTrue
+            $withoutPathWithDirectory.Count | Should -Be $withPathWithDirectory.Count
         }
 
         It "Analyzes all the files" {
@@ -259,7 +260,6 @@ Describe "Test ExcludeRule" {
             $excludeWildCard = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $avoidRules | Where-Object {$_.RuleName -match $avoidRules}
         }
     }
-
 }
 
 Describe "Test IncludeRule" {
@@ -326,25 +326,29 @@ Describe "Test Severity" {
             $Severities = "ParseError","Error","Warning","Information"
             # end space is important
             $script = '$a=;ConvertTo-SecureString -Force -AsPlainText "bad practice" '
-            $testcases = @{ Severity = "ParseError" }, @{ Severity = "Error" },
-                @{ Severity = "Warning" }, @{ Severity = "Information" },
-                @{ Severity = "ParseError", "Error" }, @{ Severity = "ParseError","Information" },
-                @{ Severity = "Information", "Warning", "Error" }
         }
 
-        It "Can retrieve specific severity <severity>" -testcase $testcases {
-            param ( $severity )
-            $result = Invoke-ScriptAnalyzer -ScriptDefinition $script -Severity $severity
-            if ( $severity -is [array] ) {
-                @($result).Count | Should -Be @($severity).Count
-                foreach ( $sev in $severity ) {
+        It "Can retrieve specific severity <Severity>" {
+            param ( $Severity )
+            $result = Invoke-ScriptAnalyzer -ScriptDefinition $script -Severity $Severity
+            if ( $Severity -is [array] ) {
+                @($result).Count | Should -Be @($Severity).Count
+                foreach ( $sev in $Severity ) {
                     $result.Severity | Should -Contain $sev
                 }
             }
             else {
                 $result.Severity | Should -Be $severity
             }
-        }
+        } -TestCases @(
+            @{ Severity = 'ParseError' }
+            @{ Severity = 'Error' }
+            @{ Severity = 'Warning' }
+            @{ Severity = 'Information' }
+            @{ Severity = 'ParseError', 'Error' }
+            @{ Severity = 'ParseError', 'Information' }
+            @{ Severity = 'Information', 'Warning', 'Error' }
+        )
     }
 
     Context "When used correctly" {
@@ -393,7 +397,9 @@ Describe "Test Severity" {
 }
 
 Describe "Test CustomizedRulePath" {
-    $measureRequired = "CommunityAnalyzerRules\Measure-RequiresModules"
+    BeforeAll {
+        $measureRequired = "CommunityAnalyzerRules\Measure-RequiresModules"
+    }
     Context "When used correctly" {
         It "with the module folder path" {
             $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules | Where-Object {$_.RuleName -eq $measureRequired}
@@ -427,99 +433,96 @@ Describe "Test CustomizedRulePath" {
         }
     }
 
-    if (!$testingLibraryUsage)
-    {
-        Context "When used from settings file" {
-            It "Should process relative settings path" {
-                try {
-                    Push-Location $PSScriptRoot
-                    $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings .\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1
-                    $warnings.Count | Should -Be 1
-                }
-                finally {
-                    Pop-Location
-                }
-            }
-
-            It "Should process relative settings path even when settings path object is not resolved to a string yet" {
-                try {
-                    Push-Location $PSScriptRoot
-                    $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings (Join-Path (Get-Location).Path '.\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1')
-                    $warnings.Count | Should -Be 1
-                }
-                finally {
-                    Pop-Location
-                }
-            }
-
-            It "resolves rule preset when passed in via pipeline" {
-                $warnings = 'CodeFormattingStroustrup' | ForEach-Object {
-                    Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){ }' -Settings $_}
+    Context "When used from settings file" -Skip:$testingLibraryUsage {
+        It "Should process relative settings path" {
+            try {
+                Push-Location $PSScriptRoot
+                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings .\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1
                 $warnings.Count | Should -Be 1
-                $warnings.RuleName | Should -Be 'PSUseConsistentWhitespace'
             }
-
-            It "Should use the CustomRulePath parameter" {
-                $settings = @{
-                    CustomRulePath        = "$PSScriptRoot\CommunityAnalyzerRules"
-                    IncludeDefaultRules   = $false
-                    RecurseCustomRulePath = $false
-                }
-
-                $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
-                $v.Count | Should -Be 1
-            }
-
-            It "Should use the IncludeDefaultRulePath parameter" {
-                $settings = @{
-                    CustomRulePath        = "$PSScriptRoot\CommunityAnalyzerRules"
-                    IncludeDefaultRules   = $true
-                    RecurseCustomRulePath = $false
-                }
-
-                $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
-                $v.Count | Should -Be 2
-            }
-
-            It "Should use the RecurseCustomRulePath parameter" {
-                $settings = @{
-                    CustomRulePath        = "$PSScriptRoot\samplerule"
-                    IncludeDefaultRules   = $false
-                    RecurseCustomRulePath = $true
-                }
-
-                $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
-                $v.Count | Should -Be 3
+            finally {
+                Pop-Location
             }
         }
 
-        Context "When used from settings file and command line simulataneusly" {
-            BeforeAll {
-                $settings = @{
-                    CustomRulePath        = "$PSScriptRoot\samplerule"
-                    IncludeDefaultRules   = $false
-                    RecurseCustomRulePath = $false
-                }
-                $isaParams = @{
-                    Path     = "$PSScriptRoot\TestScript.ps1"
-                    Settings = $settings
-                }
+        It "Should process relative settings path even when settings path object is not resolved to a string yet" {
+            try {
+                Push-Location $PSScriptRoot
+                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings (Join-Path (Get-Location).Path '.\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1')
+                $warnings.Count | Should -Be 1
+            }
+            finally {
+                Pop-Location
+            }
+        }
+
+        It "resolves rule preset when passed in via pipeline" {
+            $warnings = 'CodeFormattingStroustrup' | ForEach-Object {
+                Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){ }' -Settings $_}
+            $warnings.Count | Should -Be 1
+            $warnings.RuleName | Should -Be 'PSUseConsistentWhitespace'
+        }
+
+        It "Should use the CustomRulePath parameter" {
+            $settings = @{
+                CustomRulePath        = "$PSScriptRoot\CommunityAnalyzerRules"
+                IncludeDefaultRules   = $false
+                RecurseCustomRulePath = $false
             }
 
-            It "Should combine CustomRulePaths" {
-                $v = Invoke-ScriptAnalyzer @isaParams -CustomRulePath "$PSScriptRoot\CommunityAnalyzerRules"
-                $v.Count | Should -Be 2
+            $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
+            $v.Count | Should -Be 1
+        }
+
+        It "Should use the IncludeDefaultRulePath parameter" {
+            $settings = @{
+                CustomRulePath        = "$PSScriptRoot\CommunityAnalyzerRules"
+                IncludeDefaultRules   = $true
+                RecurseCustomRulePath = $false
             }
 
-            It "Should override the settings IncludeDefaultRules parameter" {
-                $v = Invoke-ScriptAnalyzer @isaParams -IncludeDefaultRules
-                $v.Count | Should -Be 2
+            $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
+            $v.Count | Should -Be 2
+        }
+
+        It "Should use the RecurseCustomRulePath parameter" {
+            $settings = @{
+                CustomRulePath        = "$PSScriptRoot\samplerule"
+                IncludeDefaultRules   = $false
+                RecurseCustomRulePath = $true
             }
 
-            It "Should override the settings RecurseCustomRulePath parameter" {
-                $v = Invoke-ScriptAnalyzer @isaParams -RecurseCustomRulePath
-                $v.Count | Should -Be 3
+            $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
+            $v.Count | Should -Be 3
+        }
+    }
+
+    Context "When used from settings file and command line simulataneusly" -Skip:$testingLibraryUsage {
+        BeforeAll {
+            $settings = @{
+                CustomRulePath        = "$PSScriptRoot\samplerule"
+                IncludeDefaultRules   = $false
+                RecurseCustomRulePath = $false
             }
+            $isaParams = @{
+                Path     = "$PSScriptRoot\TestScript.ps1"
+                Settings = $settings
+            }
+        }
+
+        It "Should combine CustomRulePaths" {
+            $v = Invoke-ScriptAnalyzer @isaParams -CustomRulePath "$PSScriptRoot\CommunityAnalyzerRules"
+            $v.Count | Should -Be 2
+        }
+
+        It "Should override the settings IncludeDefaultRules parameter" {
+            $v = Invoke-ScriptAnalyzer @isaParams -IncludeDefaultRules
+            $v.Count | Should -Be 2
+        }
+
+        It "Should override the settings RecurseCustomRulePath parameter" {
+            $v = Invoke-ScriptAnalyzer @isaParams -RecurseCustomRulePath
+            $v.Count | Should -Be 3
         }
     }
 
@@ -616,34 +619,34 @@ Describe "Test -EnableExit Switch" {
     }
 
     # using statements are only supported in v5+
-    if (!$testingLibraryUsage -and ($PSVersionTable.PSVersion -ge [Version]'5.0.0')) {
-        Describe "Handles parse errors due to unknown types" {
+    Describe "Handles parse errors due to unknown types" -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt [Version]'5.0.0')) {
+        BeforeAll {
             $script = @'
                 using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
                 using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
                 Import-Module "AzureRm"
                 class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
 '@
-            It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
-                $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
-                $warnings.Count | Should -Be 1
-                $warnings.RuleName | Should -Be 'TypeNotFound'
-            }
-
-            It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
-                $testFilePath = "TestDrive:\testfile.ps1"
-                Set-Content $testFilePath -value $script
-                $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
-                $warnings.Count | Should -Be 1
-                $warnings.RuleName | Should -Be 'TypeNotFound'
-            }
+        }
+        It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
+            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
+            $warnings.Count | Should -Be 1
+            $warnings.RuleName | Should -Be 'TypeNotFound'
         }
 
-        Describe "Handles static Singleton (issue 1182)" {
-            It "Does not throw or return diagnostic record" {
-                $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
-                Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
-            }
+        It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
+            $testFilePath = "TestDrive:\testfile.ps1"
+            Set-Content $testFilePath -value $script
+            $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
+            $warnings.Count | Should -Be 1
+            $warnings.RuleName | Should -Be 'TypeNotFound'
+        }
+    }
+
+    Describe "Handles static Singleton (issue 1182)"-Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt [Version]'5.0.0')) {
+        It "Does not throw or return diagnostic record" {
+            $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
         }
     }
 }
