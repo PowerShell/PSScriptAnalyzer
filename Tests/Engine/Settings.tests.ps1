@@ -50,11 +50,11 @@ Describe "Settings Class" {
             @{ Name = "ExcludeRules" }
             @{ Name = "Severity" }
             @{ Name = "RuleArguments" }
-            ) {
-                Param($Name)
+        ) {
+            Param($Name)
 
-                $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{}
-                ${settings}.${Name}.Count | Should -Be 0
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{}
+            ${settings}.${Name}.Count | Should -Be 0
         }
 
         It "Should be able to parse empty settings hashtable from settings file" {
@@ -107,8 +107,8 @@ Describe "Settings Class" {
     Context "When a settings file path is provided" {
         BeforeAll {
             $settings = New-Object -TypeName $settingsTypeName `
-                              -ArgumentList ([System.IO.Path]::Combine($project1Root, "ExplicitSettings.psd1"))
-                              $expectedNumberOfIncludeRules = 3
+                -ArgumentList ([System.IO.Path]::Combine($project1Root, "ExplicitSettings.psd1"))
+            $expectedNumberOfIncludeRules = 3
         }
 
         It "Should return correct IncludeRules count" {
@@ -162,7 +162,7 @@ Describe "Settings Class" {
 
         It "Should detect the parameter in a settings file" {
             $settings = New-Object -TypeName $settingsTypeName `
-                              -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
+                -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
             $settings.CustomRulePath.Count | Should -Be 2
         }
     }
@@ -203,7 +203,7 @@ Describe "Settings Class" {
             function ShouldBeDeeplyEqual
             {
                 param(
-                    [Parameter(Position=0)]
+                    [Parameter(Position = 0)]
                     $To,
 
                     [Parameter(ValueFromPipeline)]
@@ -223,7 +223,7 @@ Describe "Settings Class" {
                         $inputVal = $InputObject[$toKey]
                         if ($inputVal -is [array])
                         {
-                            @(,$inputVal) | ShouldBeDeeplyEqual -To $To[$toKey]
+                            @(, $inputVal) | ShouldBeDeeplyEqual -To $To[$toKey]
                             continue
                         }
                         $inputVal | ShouldBeDeeplyEqual -To $To[$toKey]
@@ -239,9 +239,9 @@ Describe "Settings Class" {
                         $inputVal = $InputObject[$i]
                         if ($inputVal -is [array])
                         {
-                            @(,$inputVal) | ShouldBeDeeplyEqual -To $To[$i]
+                            @(, $inputVal) | ShouldBeDeeplyEqual -To $To[$i]
                             continue
-            }
+                        }
                         $inputVal | ShouldBeDeeplyEqual -To $To[$i]
                     }
                     return
@@ -257,7 +257,7 @@ Describe "Settings Class" {
             $pwshVal = Invoke-Expression $Expr
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
-            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $exprAst = $exprAst.Find( { $args[0] -is [System.Management.Automation.Language.ExpressionAst] }, $true)
             $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
             $gsvVal | Should -Be $pwshVal
@@ -280,7 +280,7 @@ Describe "Settings Class" {
             $pwshVal = Invoke-Expression $Expr
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
-            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $exprAst = $exprAst.Find( { $args[0] -is [System.Management.Automation.Language.ExpressionAst] }, $true)
             $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
 
@@ -288,7 +288,7 @@ Describe "Settings Class" {
             # but we also don't create the array ourselves
             $gsvVal.GetType().IsArray | Should -BeTrue
 
-            @(,$gsvVal) | ShouldBeDeeplyEqual -To $pwshVal
+            @(, $gsvVal) | ShouldBeDeeplyEqual -To $pwshVal
         } -TestCases @(
             @{ Expr = '1, 2, 3'; Count = 3 }
             @{ Expr = '"One","Two","Three"'; Count = 3 }
@@ -309,7 +309,7 @@ Describe "Settings Class" {
             $pwshVal = Invoke-Expression $Expr
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
-            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $exprAst = $exprAst.Find( { $args[0] -is [System.Management.Automation.Language.ExpressionAst] }, $true)
             $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
             $gsvVal | Should -BeOfType [hashtable]
@@ -330,7 +330,7 @@ Describe "Settings Class" {
             param([string]$Expr)
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
-            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $exprAst = $exprAst.Find( { $args[0] -is [System.Management.Automation.Language.ExpressionAst] }, $true)
 
             $expectedError = 'InvalidDataException'
             if ($null -eq $exprAst)
