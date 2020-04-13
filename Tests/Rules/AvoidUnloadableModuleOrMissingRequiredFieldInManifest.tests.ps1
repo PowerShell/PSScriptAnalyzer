@@ -31,9 +31,8 @@ Describe "MissingRequiredFieldModuleManifest" {
             $violations.Message | Should -Match $missingMessage
         }
 
-        $numExpectedCorrections = 1
-        It "has $numExpectedCorrections suggested corrections" {
-            $violations.SuggestedCorrections.Count | Should -Be $numExpectedCorrections
+        It "has correct suggested corrections count" {
+            $violations.SuggestedCorrections.Count | Should -Be 1
         }
 
 	It "has the right suggested correction" {
