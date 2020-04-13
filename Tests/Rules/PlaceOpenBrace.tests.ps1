@@ -3,15 +3,15 @@
 
 BeforeAll {
     $ruleConfiguration = @{
-        Enable = $true
-        OnSameLine = $true
-        NewLineAfter = $true
+        Enable          = $true
+        OnSameLine      = $true
+        NewLineAfter    = $true
         IgnoreOneLineIf = $true
     }
 
     $settings = @{
         IncludeRules = @("PSPlaceOpenBrace")
-        Rules = @{
+        Rules        = @{
             PSPlaceOpenBrace = $ruleConfiguration
         }
     }

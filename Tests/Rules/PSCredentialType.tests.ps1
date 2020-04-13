@@ -13,11 +13,13 @@ BeforeAll {
 
 Describe "PSCredentialType" {
     Context "When there are violations" {
-        $expectedViolations = 1
-        if ((Test-PSVersionV3) -or (Test-PSVersionV4)) {
-            $expectedViolations = 2
+        BeforeAll {
+            $expectedViolations = 1
+            if ((Test-PSVersionV3) -or (Test-PSVersionV4)) {
+                $expectedViolations = 2
+            }
         }
-        It ("has {0} PSCredential type violation" -f $expectedViolations) {
+        It ("has correct count of PSCredential type violations" -f $expectedViolations) {
             $violations.Count | Should -Be $expectedViolations
         }
 
