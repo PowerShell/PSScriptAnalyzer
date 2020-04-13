@@ -41,12 +41,12 @@ Describe "Test available parameters" {
         }
 
         It "accepts a string array" {
-				$params["CustomRulePath"].ParameterType.FullName | Should -Be "System.String[]"
+            $params["CustomRulePath"].ParameterType.FullName | Should -Be "System.String[]"
         }
 
-		It "has a CustomizedRulePath alias"{
-			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should -BeTrue
-		}
+        It "has a CustomizedRulePath alias" {
+            $params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should -BeTrue
+        }
     }
 
     Context "IncludeRule parameters" {
@@ -139,7 +139,7 @@ Describe "Test Path" {
     Context "When there are more than 10 errors in a file" {
         It "All errors are found in a file" {
             # this is a script with 12 parse errors
-            1..12 | Foreach-Object { ');' } | Out-File -Encoding ASCII "${TestDrive}\badfile.ps1"
+            1..12 | ForEach-Object { ');' } | Out-File -Encoding ASCII "${TestDrive}\badfile.ps1"
             $moreThanTenErrors = Invoke-ScriptAnalyzer -Path "${TestDrive}\badfile.ps1"
             @($moreThanTenErrors).Count | Should -Be 12
         }
@@ -164,9 +164,9 @@ Describe "Test Path" {
 
     Context "When given a glob" -Skip:$testingLibraryUsage {
         It "Invokes on all the matching files" {
-        $numFilesResult = (Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
-        $numFilesExpected = (Get-ChildItem -Path $PSScriptRoot\TestTestPath*.ps1).Count
-        $numFilesResult | Should -Be $numFilesExpected
+            $numFilesResult = (Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
+            $numFilesExpected = (Get-ChildItem -Path $PSScriptRoot\TestTestPath*.ps1).Count
+            $numFilesResult | Should -Be $numFilesExpected
         }
     }
 
@@ -181,19 +181,19 @@ Describe "Test Path" {
                 do{
                     $freeDriveName = (1..$freeDriveLen | %{[char](Get-Random -Maximum $ordZ -Minimum $ordA)}) -join ''
                     $freeDrive = $freeDriveName + ":"
-                }while(Test-Path $freeDrive)
+                }while (Test-Path $freeDrive)
                 $freeDrive, $freeDriveName
             }
         }
 
         It "Recognizes the path" {
-        $freeDriveNameLen = 2
-        $freeDrive, $freeDriveName = GetFreeDrive $freeDriveNameLen
-        New-PSDrive -Name $freeDriveName -PSProvider FileSystem -Root $PSScriptRoot
-        $numFilesExpected = (Get-ChildItem -Path $freeDrive\TestTestPath*.ps1).Count
-        $numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
-        Remove-PSDrive $freeDriveName
-        $numFilesResult | Should -Be $numFilesExpected
+            $freeDriveNameLen = 2
+            $freeDrive, $freeDriveName = GetFreeDrive $freeDriveNameLen
+            New-PSDrive -Name $freeDriveName -PSProvider FileSystem -Root $PSScriptRoot
+            $numFilesExpected = (Get-ChildItem -Path $freeDrive\TestTestPath*.ps1).Count
+            $numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
+            Remove-PSDrive $freeDriveName
+            $numFilesResult | Should -Be $numFilesExpected
         }
     }
 
@@ -218,14 +218,14 @@ Describe "Test Path" {
             $withPathWithDirectory = Invoke-ScriptAnalyzer -Recurse -Path $PSScriptRoot\RecursionDirectoryTest
         }
 
-        It "Has the same count as without Path parameter"{
+        It "Has the same count as without Path parameter" {
             $withoutPathWithDirectory.Count | Should -Be $withPathWithDirectory.Count
         }
 
         It "Analyzes all the files" {
-            $globalVarsViolation = $withPathWithDirectory | Where-Object {$_.RuleName -eq "PSAvoidGlobalVars"}
-            $clearHostViolation = $withPathWithDirectory | Where-Object {$_.RuleName -eq "PSAvoidUsingClearHost"}
-            $writeHostViolation = $withPathWithDirectory | Where-Object {$_.RuleName -eq "PSAvoidUsingWriteHost"}
+            $globalVarsViolation = $withPathWithDirectory | Where-Object { $_.RuleName -eq "PSAvoidGlobalVars" }
+            $clearHostViolation = $withPathWithDirectory | Where-Object { $_.RuleName -eq "PSAvoidUsingClearHost" }
+            $writeHostViolation = $withPathWithDirectory | Where-Object { $_.RuleName -eq "PSAvoidUsingWriteHost" }
             Write-Output $globalVarsViolation.Count
             Write-Output $clearHostViolation.Count
             Write-Output $writeHostViolation.Count
@@ -237,12 +237,12 @@ Describe "Test Path" {
 Describe "Test ExcludeRule" {
     Context "When used correctly" {
         It "excludes 1 rule" {
-            $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $singularNouns | Where-Object {$_.RuleName -eq $singularNouns}
+            $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $singularNouns | Where-Object { $_.RuleName -eq $singularNouns }
             $noViolations.Count | Should -Be 0
         }
 
         It "excludes 3 rules" {
-            $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $rules | Where-Object {$rules -contains $_.RuleName}
+            $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $rules | Where-Object { $rules -contains $_.RuleName }
             $noViolations.Count | Should -Be 0
         }
     }
@@ -256,8 +256,8 @@ Describe "Test ExcludeRule" {
     }
 
     Context "Support wild card" {
-        It "supports wild card exclusions of input rules"{
-            $excludeWildCard = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $avoidRules | Where-Object {$_.RuleName -match $avoidRules}
+        It "supports wild card exclusions of input rules" {
+            $excludeWildCard = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $avoidRules | Where-Object { $_.RuleName -match $avoidRules }
         }
     }
 }
@@ -265,7 +265,7 @@ Describe "Test ExcludeRule" {
 Describe "Test IncludeRule" {
     Context "When used correctly" {
         It "includes 1 rule" {
-            $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $approvedVerb | Where-Object {$_.RuleName -eq $approvedVerb}
+            $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $approvedVerb | Where-Object { $_.RuleName -eq $approvedVerb }
             $violations.Count | Should -Be 1
         }
 
@@ -289,12 +289,12 @@ Describe "Test IncludeRule" {
     }
 
     Context "IncludeRule supports wild card" {
-        It "includes 1 wildcard rule"{
+        It "includes 1 wildcard rule" {
             $includeWildcard = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
             $includeWildcard.Count | Should -Be 0
         }
 
-        it "includes 2 wildcardrules" {
+        It "includes 2 wildcardrules" {
             # CoreCLR version of PSScriptAnalyzer does not contain PSUseSingularNouns rule
             $expectedNumViolations = 4
             if ([bool] $IsCoreCLR)
@@ -308,7 +308,7 @@ Describe "Test IncludeRule" {
     }
 }
 
-Describe "Test Exclude And Include" {1
+Describe "Test Exclude And Include" {
     It "Exclude and Include different rules" {
         $violations = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -IncludeRule "PSAvoidUsingEmptyCatchBlock" -ExcludeRule "PSAvoidUsingPositionalParameters"
         $violations.Count | Should -Be 1
@@ -323,7 +323,7 @@ Describe "Test Exclude And Include" {1
 Describe "Test Severity" {
     Context "Each severity can be chosen in any combination" {
         BeforeAll {
-            $Severities = "ParseError","Error","Warning","Information"
+            $Severities = "ParseError", "Error", "Warning", "Information"
             # end space is important
             $script = '$a=;ConvertTo-SecureString -Force -AsPlainText "bad practice" '
         }
@@ -362,30 +362,30 @@ Describe "Test Severity" {
             $errors.Count | Should -Be 1
         }
 
-        It "works with lowercase argument"{
-             $errors = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -Severity information, warning
+        It "works with lowercase argument" {
+            $errors = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -Severity information, warning
             $errors.Count | Should -Be 1
         }
 
         It "works for dsc rules" {
             $testDataPath = [System.IO.Path]::Combine($(Split-Path $PSScriptRoot -Parent), `
-                                                                'Rules', `
-                                                                'DSCResourceModule', `
-                                                                'DSCResources', `
-                                                                'MSFT_WaitForAll', `
-                                                                'MSFT_WaitForAll.psm1')
+                    'Rules', `
+                    'DSCResourceModule', `
+                    'DSCResources', `
+                    'MSFT_WaitForAll', `
+                    'MSFT_WaitForAll.psm1')
 
-            Function Get-Count {begin{$count=0} process{$count++} end{$count}}
+            Function Get-Count { begin { $count = 0 } process { $count++ } end { $count } }
 
             Invoke-ScriptAnalyzer -Path $testDataPath -Severity Error | `
-                Where-Object {$_.RuleName -eq "PSDSCUseVerboseMessageInDSCResource"} | `
-                Get-Count | `
-                Should -Be 0
+                    Where-Object { $_.RuleName -eq "PSDSCUseVerboseMessageInDSCResource" } | `
+                    Get-Count | `
+                    Should -Be 0
 
             Invoke-ScriptAnalyzer -Path $testDataPath -Severity Information | `
-                Where-Object {$_.RuleName -eq "PSDSCUseVerboseMessageInDSCResource"} | `
-                Get-Count | `
-                Should -Be 2
+                    Where-Object { $_.RuleName -eq "PSDSCUseVerboseMessageInDSCResource" } | `
+                    Get-Count | `
+                    Should -Be 2
         }
     }
 
@@ -402,18 +402,18 @@ Describe "Test CustomizedRulePath" {
     }
     Context "When used correctly" {
         It "with the module folder path" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules | Where-Object {$_.RuleName -eq $measureRequired}
+            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules | Where-Object { $_.RuleName -eq $measureRequired }
             $customizedRulePath.Count | Should -Be 1
         }
 
         It "with the psd1 path" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1 | Where-Object {$_.RuleName -eq $measureRequired}
+            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1 | Where-Object { $_.RuleName -eq $measureRequired }
             $customizedRulePath.Count | Should -Be 1
 
         }
 
         It "with the psm1 path" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 | Where-Object {$_.RuleName -eq $measureRequired}
+            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 | Where-Object { $_.RuleName -eq $measureRequired }
             $customizedRulePath.Count | Should -Be 1
         }
 
@@ -423,11 +423,11 @@ Describe "Test CustomizedRulePath" {
         }
 
         It "with ExcludeRule" {
-            $customizedRulePathExclude = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -ExcludeRule "Measure-RequiresModules" | Where-Object {$_.RuleName -eq $measureRequired}
+            $customizedRulePathExclude = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -ExcludeRule "Measure-RequiresModules" | Where-Object { $_.RuleName -eq $measureRequired }
             $customizedRulePathExclude.Count | Should -Be 0
         }
 
-		It "When supplied with a collection of paths" {
+        It "When supplied with a collection of paths" {
             $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomRulePath ("$PSScriptRoot\CommunityAnalyzerRules", "$PSScriptRoot\samplerule", "$PSScriptRoot\samplerule\samplerule2")
             $customizedRulePath.Count | Should -Be 3
         }
@@ -458,7 +458,7 @@ Describe "Test CustomizedRulePath" {
 
         It "resolves rule preset when passed in via pipeline" {
             $warnings = 'CodeFormattingStroustrup' | ForEach-Object {
-                Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){ }' -Settings $_}
+                Invoke-ScriptAnalyzer -ScriptDefinition 'if ($true){ }' -Settings $_ }
             $warnings.Count | Should -Be 1
             $warnings.RuleName | Should -Be 'PSUseConsistentWhitespace'
         }
@@ -535,7 +535,7 @@ Describe "Test CustomizedRulePath" {
             catch
             {
                 if (-not $testingLibraryUsage)
-			    {
+                {
                     $_.FullyQualifiedErrorId | Should -Match "PathNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
                 }
             }
@@ -547,10 +547,10 @@ Describe "Test -Fix Switch" {
 
     BeforeAll {
         $scriptName = "TestScriptWithFixableWarnings.ps1"
-        $testSource = join-path $PSScriptRoot $scriptName
-        $fixedScript = join-path $PSScriptRoot TestScriptWithFixableWarnings_AfterFix.ps1
-        $expectedScriptContent = Get-Content $fixedScript -raw
-        $testScript  = Join-Path $TESTDRIVE $scriptName
+        $testSource = Join-Path $PSScriptRoot $scriptName
+        $fixedScript = Join-Path $PSScriptRoot TestScriptWithFixableWarnings_AfterFix.ps1
+        $expectedScriptContent = Get-Content $fixedScript -Raw
+        $testScript = Join-Path $TESTDRIVE $scriptName
     }
 
     BeforeEach {
@@ -636,7 +636,7 @@ Describe "Test -EnableExit Switch" {
 
         It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
             $testFilePath = "TestDrive:\testfile.ps1"
-            Set-Content $testFilePath -value $script
+            Set-Content $testFilePath -Value $script
             $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
             $warnings.Count | Should -Be 1
             $warnings.RuleName | Should -Be 'TypeNotFound'
