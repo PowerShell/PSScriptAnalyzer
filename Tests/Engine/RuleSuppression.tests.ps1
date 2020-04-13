@@ -17,7 +17,7 @@ BeforeAll {
         $password
         )
     }
-    '@
+'@
 
     $ruleSuppressionInConfiguration = @'
     Configuration xFileUpload
@@ -26,7 +26,7 @@ BeforeAll {
     param ([string] $decryptedPassword)
     $securePassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
     }
-    '@
+'@
 
     # If function doesn't starts at offset 0, then the test case fails before commit b551211
     $ruleSuppressionAvoidUsernameAndPassword = @'
@@ -109,30 +109,27 @@ function SuppressPwdParam()
         }
     }
 
-    if (!$testingLibraryUsage)
-    {
-        Context "Bad Rule Suppression" {
-            It "Throws a non-terminating error" {
-                Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionBad -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -ErrorVariable errorRecord -ErrorAction SilentlyContinue
-                $errorRecord.Count | Should -Be 1
-                $errorRecord.FullyQualifiedErrorId | Should -Match "suppression message attribute error"
-            }
+    Context "Bad Rule Suppression" -Skip:$testingLibraryUsage {
+        It "Throws a non-terminating error" {
+            Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionBad -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -ErrorVariable errorRecord -ErrorAction SilentlyContinue
+            $errorRecord.Count | Should -Be 1
+            $errorRecord.FullyQualifiedErrorId | Should -Match "suppression message attribute error"
         }
+    }
 
-        Context "External Rule Suppression" {
+    Context "External Rule Suppression" -Skip:$testingLibraryUsage {
+        It "Suppresses violation of an external ast rule" {
             $externalRuleSuppression = @'
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','')]
-param() # without the param block, powershell parser throws up!
-Write-Host "write-host"
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','')]
+    param() # without the param block, powershell parser throws up!
+    Write-Host "write-host"
 '@
-            It "Suppresses violation of an external ast rule" {
-                Invoke-ScriptAnalyzer `
-                    -ScriptDefinition $externalRuleSuppression `
-                    -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") `
-                    -OutVariable ruleViolations `
-                    -SuppressedOnly
-                $ruleViolations.Count | Should -Be 1
-            }
+            Invoke-ScriptAnalyzer `
+                -ScriptDefinition $externalRuleSuppression `
+                -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") `
+                -OutVariable ruleViolations `
+                -SuppressedOnly
+            $ruleViolations.Count | Should -Be 1
         }
     }
 }
