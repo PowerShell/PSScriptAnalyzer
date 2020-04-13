@@ -330,6 +330,7 @@ function Start-ScriptAnalyzerBuild
 
 function New-Catalog
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
     param ( [Parameter()]$Location )
     if ( ! $IsWindows ) {
         Write-Warning "Create catalog only on windows"
