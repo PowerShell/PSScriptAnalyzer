@@ -339,7 +339,7 @@ function New-Catalog
     }
     try {
         Push-Location $Location
-        New-FileCatalog -CatalogFilePath PSScriptAnalzyer.cat -Path .
+        New-FileCatalog -CatalogFilePath PSScriptAnalyzer.cat -Path .
     }
     finally {
         Pop-Location
