@@ -41,7 +41,7 @@ BeforeAll {
     }
 
     Write-Output $sigs
-    '@
+'@
 
     $script:settingsContent = @'
     @{
@@ -70,22 +70,8 @@ BeforeAll {
         }
     }
 '@
-
-    $script:expectedCommandDiagnostics = @(
-        @{ Command = 'Import-Module'; Parameter = 'FullyQualifiedName'; Line = 13 }
-        @{ Command = 'Get-ChildItem'; Parameter = 'Depth'; Line = 17 }
-        @{ Command = 'Get-AuthenticodeSignature'; Line = 26 }
-    )
-
-    $script:expectedTypeDiagnostics = @(
-        @{ Type = 'System.Management.Automation.WildcardPattern'; Member = 'Get'; Line = 16 }
-        @{ Type = 'System.IO.Compression.ZipFile'; Line = 34 }
-    )
-
-    $script:expectedSyntaxDiagnostics = @(
-        @{ Line = 15; CorrectionText = "New-Object 'System.Collections.Generic.List[System.Management.Automation.Signature]'" }
-    )
 }
+
 
 Describe "Running all compatibility rules with a settings file" {
     BeforeAll {
@@ -98,7 +84,7 @@ Describe "Running all compatibility rules with a settings file" {
         $syntaxDiagnostics = $diagnostics.PSUseCompatibleSyntax
     }
 
-    It "Finds the problem with command <Command> on line <Line> in the file" -TestCases $script:expectedCommandDiagnostics {
+    It "Finds the problem with command <Command> on line <Line> in the file" {
         param([string]$Command, [string]$Parameter, [int]$Line)
 
         $actualDiagnostic = $commandDiagnostics | Where-Object { $_.Command -eq $Command -and $_.Line -eq $Line }
@@ -108,9 +94,13 @@ Describe "Running all compatibility rules with a settings file" {
         {
             $actualDiagnostic.Parameter | Should -Be $Parameter
         }
-    }
+    } -TestCases @(
+        @{ Command = 'Import-Module'; Parameter = 'FullyQualifiedName'; Line = 13 }
+        @{ Command = 'Get-ChildItem'; Parameter = 'Depth'; Line = 17 }
+        @{ Command = 'Get-AuthenticodeSignature'; Line = 26 }
+    )
 
-    It "Finds the problem with type <Type> on line <Line> in the file" -TestCases $script:expectedTypeDiagnostics {
+    It "Finds the problem with type <Type> on line <Line> in the file" {
         param([string]$Type, [string]$Member, [int]$Line)
 
         $actualDiagnostic = $typeDiagnostics | Where-Object { $_.Type -eq $Type -and $_.Line -eq $Line }
@@ -120,9 +110,12 @@ Describe "Running all compatibility rules with a settings file" {
         {
             $actualDiagnostic.Member | Should -Be $Member
         }
-    }
+    } -TestCases @(
+        @{ Type = 'System.Management.Automation.WildcardPattern'; Member = 'Get'; Line = 16 }
+        @{ Type = 'System.IO.Compression.ZipFile'; Line = 34 }
+    )
 
-    It "Finds the problem with syntax on line <Line> in the file" -TestCases $script:expectedSyntaxDiagnostics {
+    It "Finds the problem with syntax on line <Line> in the file" {
         param([string]$Suggestion, [int]$Line)
 
         $actualDiagnostic = $syntaxDiagnostics | Where-Object { $_.Line -eq $Line }
@@ -131,5 +124,7 @@ Describe "Running all compatibility rules with a settings file" {
         {
             $actualDiagnostic.Suggestion | Should -Be $Suggestion
         }
-    }
+    } -TestCases @(
+        @{ Line = 15; CorrectionText = "New-Object 'System.Collections.Generic.List[System.Management.Automation.Signature]'" }
+    )
 }
