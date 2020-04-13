@@ -48,8 +48,10 @@ describe 'AvoidOverwritingBuiltInCmdlets' {
     }
 
     context 'PowerShellVersion explicitly set to Windows PowerShell' {
-        $settings['Rules'] = $ruleSettingsWindows
-        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        BeforeAll {
+            $settings['Rules'] = $ruleSettingsWindows
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        }
 
         it 'should find two violations' {
             $violations.Count | Should -Be 2
@@ -64,8 +66,10 @@ describe 'AvoidOverwritingBuiltInCmdlets' {
     }
 
     context 'PowerShellVersion explicitly set to PowerShell 6' {
-        $settings['Rules'] = $ruleSettingsCore
-        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        BeforeAll {
+            $settings['Rules'] = $ruleSettingsCore
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        }
 
         it 'should find one violation' {
             $violations.Count | Should -Be 1
@@ -77,8 +81,10 @@ describe 'AvoidOverwritingBuiltInCmdlets' {
     }
 
     context 'PowerShellVersion explicitly set to both Windows PowerShell and PowerShell 6' {
-        $settings['Rules'] = $ruleSettingsBoth
-        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        BeforeAll {
+            $settings['Rules'] = $ruleSettingsBoth
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        }
 
         it 'should find three violations' {
             $violations.Count | Should -Be 3

@@ -12,9 +12,10 @@ BeforeAll {
     }
 
     Context "When examples absent" {
-
-        $violations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $classResourcePath | Where-Object {$_.RuleName -eq $ruleName}
-        $violationMessage = "No examples found for resource 'FileResource'"
+        BeforeAll {
+            $violations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $classResourcePath | Where-Object {$_.RuleName -eq $ruleName}
+            $violationMessage = "No examples found for resource 'FileResource'"
+        }
 
         It "has 1 missing examples violation" {
             $violations.Count | Should -Be 1
@@ -26,16 +27,17 @@ BeforeAll {
     }
 
     Context "When examples present" {
-        New-Item -Path $examplesPath -ItemType Directory -force
-        New-Item -Path "$examplesPath\FileResource_Example.psm1" -ItemType File -force
-
-        $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $classResourcePath | Where-Object {$_.RuleName -eq $ruleName}
-
         It "returns no violations" {
+            New-Item -Path $examplesPath -ItemType Directory -force
+            New-Item -Path "$examplesPath\FileResource_Example.psm1" -ItemType File -force
+
+            $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $classResourcePath | Where-Object {$_.RuleName -eq $ruleName}
             $noViolations.Count | Should -Be 0
         }
 
-        Remove-Item -Path $examplesPath -Recurse -Force
+        AfterAll {
+            Remove-Item -Path $examplesPath -Recurse -Force
+        }
     }
 }
 
@@ -46,9 +48,10 @@ Describe "DscExamplesPresent rule in regular (non-class) based resource" {
     }
 
     Context "When examples absent" {
-
-        $violations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $resourcePath | Where-Object {$_.RuleName -eq $ruleName}
-        $violationMessage = "No examples found for resource 'MSFT_WaitForAll'"
+        BeforeAll {
+            $violations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $resourcePath | Where-Object {$_.RuleName -eq $ruleName}
+            $violationMessage = "No examples found for resource 'MSFT_WaitForAll'"
+        }
 
         It "has 1 missing examples violation" {
             $violations.Count | Should -Be 1
@@ -70,6 +73,8 @@ Describe "DscExamplesPresent rule in regular (non-class) based resource" {
             $noViolations.Count | Should -Be 0
         }
 
-        Remove-Item -Path $examplesPath -Recurse -Force
+        AfterAll {
+            Remove-Item -Path $examplesPath -Recurse -Force
+        }
     }
 }

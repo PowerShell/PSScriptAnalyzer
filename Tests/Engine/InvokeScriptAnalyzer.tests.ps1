@@ -630,9 +630,9 @@ Describe "Test -EnableExit Switch" {
                 $warnings.RuleName | Should -Be 'TypeNotFound'
             }
 
-            $testFilePath = "TestDrive:\testfile.ps1"
-            Set-Content $testFilePath -value $script
             It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
+                $testFilePath = "TestDrive:\testfile.ps1"
+                Set-Content $testFilePath -value $script
                 $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
                 $warnings.Count | Should -Be 1
                 $warnings.RuleName | Should -Be 'TypeNotFound'

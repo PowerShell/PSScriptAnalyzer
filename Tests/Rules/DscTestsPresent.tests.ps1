@@ -12,9 +12,10 @@ BeforeAll {
     }
 
     Context "When tests absent" {
-
-        $violations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $classResourcePath | Where-Object {$_.RuleName -eq $ruleName}
-        $violationMessage = "No tests found for resource 'FileResource'"
+        BeforeAll {
+            $violations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $classResourcePath | Where-Object {$_.RuleName -eq $ruleName}
+            $violationMessage = "No tests found for resource 'FileResource'"
+        }
 
         It "has 1 missing test violation" {
             $violations.Count | Should -Be 1
@@ -36,7 +37,9 @@ BeforeAll {
             $noViolations.Count | Should -Be 0
         }
 
-        Remove-Item -Path $testsPath -Recurse -Force
+        AfterAll {
+            Remove-Item -Path $testsPath -Recurse -Force
+        }
     }
 }
 
@@ -65,14 +68,15 @@ Describe "DscTestsPresent rule in regular (non-class) based resource" {
             $testsPath = "$PSScriptRoot\DSCResourceModule\Tests"
             New-Item -Path $testsPath -ItemType Directory -force
             New-Item -Path "$testsPath\MSFT_WaitForAll_Test.psm1" -ItemType File -force
+            $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $resourcePath | Where-Object {$_.RuleName -eq $ruleName}
         }
-
-        $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $resourcePath | Where-Object {$_.RuleName -eq $ruleName}
 
         It "returns no violations" {
             $noViolations.Count | Should -Be 0
         }
 
-        Remove-Item -Path $testsPath -Recurse -Force
+        AfterAll {
+            Remove-Item -Path $testsPath -Recurse -Force
+        }
     }
 }
