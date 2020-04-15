@@ -2,14 +2,6 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    # Check if PSScriptAnalyzer is already loaded so we don't
-    # overwrite a test version of Invoke-ScriptAnalyzer by
-    # accident
-    if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
-    {
-        Import-Module -Verbose PSScriptAnalyzer
-    }
-
     $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1"
     $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\GlobalSuppression.ps1")
     $suppression = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1" -Profile "$PSScriptRoot\Profile.ps1"

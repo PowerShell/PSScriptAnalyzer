@@ -115,6 +115,7 @@ function Invoke-AppveyorTest {
     [System.Threading.Thread]::CurrentThread.CurrentUICulture = [cultureinfo]::CreateSpecificCulture('tr-TR')
 
     # Run all tests
+    Import-Module PSScriptAnalyzer
     $testResults = Invoke-Pester -Path $testScripts -CI # -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
 
     # Upload the test results

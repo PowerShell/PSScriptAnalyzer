@@ -333,11 +333,11 @@ function Test-ScriptAnalyzer
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
             if ($ShowAll)
             {
-                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -CI")
+                $scriptBlock = [scriptblock]::Create("Import-Module PSScriptAnalyzer; Invoke-Pester -Path $testScripts -CI")
             }
             else
             {
-                $scriptBlock = [scriptblock]::Create("Invoke-Pester -Path $testScripts -CI")
+                $scriptBlock = [scriptblock]::Create("Import-Module PSScriptAnalyzer; Invoke-Pester -Path $testScripts -CI")
             }
             if ( $InProcess ) {
                 & $scriptBlock

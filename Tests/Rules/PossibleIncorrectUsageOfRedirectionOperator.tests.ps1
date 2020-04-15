@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    Import-Module PSScriptAnalyzer
     $ruleName = "PSPossibleIncorrectUsageOfRedirectionOperator"
 }
 
