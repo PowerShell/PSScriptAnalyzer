@@ -1,14 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-Describe 'Library Usage' {
+Describe 'Library Usage' -Skip:$IsCoreCLR {
 	BeforeAll {
-
-		if ($IsCoreCLR)
-		{
-			return
-		}
-
 		# Overwrite Invoke-ScriptAnalyzer with a version that
 		# wraps the usage of ScriptAnalyzer as a .NET library
 		function Invoke-ScriptAnalyzer {
@@ -119,7 +113,9 @@ Describe 'Library Usage' {
 			}
 		}
 
-		# Define an implementation of the IOutputWriter interface
+		# Define an implementation of the IOutputWriter interface.
+		# For this to compile the ScriptAnalyzer module needs to have been loaded
+		Import-Module PSScriptAnalyzer
 		Add-Type -Language CSharp @"
 		using System.Management.Automation;
 		using System.Management.Automation.Host;
@@ -199,7 +195,6 @@ Describe 'Library Usage' {
 		}
 	}
 
-
 	Describe 'InvokeScriptAnalyzer.tests.ps1' {
 		$testingLibraryUsage = $true
 		. (Join-Path $PSScriptRoot 'InvokeScriptAnalyzer.tests.ps1')
@@ -215,10 +210,6 @@ Describe 'Library Usage' {
 
 
 	AfterAll {
-		# We're done testing library usage
-		$testingLibraryUsage = $false
-		Write-Host "AFTERALL"
-
 		# Clean up the test runspace
 		$runspace.Dispose();
 
