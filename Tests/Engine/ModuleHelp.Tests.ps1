@@ -3,59 +3,6 @@
 
 <#
 .SYNOPSIS
-Tests the PowerShell help for the commands in a module.
-
-.DESCRIPTION
-This Pester test verifies that the commands in a module have basic help content.
-It works on all command types and both comment-based and XML help.
-
-This test verifies that Get-Help is not autogenerating help because it cannot
-find any help for the command. Then, it checks for the following help elements:
-	- Synopsis
-	- Description
-	- Parameter:
-		- A description of each parameter.
-		- An accurate value for the Mandatory property.
-		- An accurate value for the .NET type of the parameter value.
-	- No extra parameters:
-		- Verifies that there are no parameters in help that are not also in the code.
-
-When testing attributes of parameters that appear in multiple parameter sets,
-this test uses the parameter that appears in the default parameter set, if one
-is defined.
-
-You can run this Tests file from any location. For a help test that is located in a module
-directory, use https://github.com/juneb/PesterTDD/InModule.Help.Tests.ps1
-
-.PARAMETER ModuleName
-Enter the name of the module to test. You can enter only one name at a time. This
-parameter is mandatory.
-
-.PARAMETER RequiredVersion
-Enter the version of the module to test. This parameter is optional. If you
-omit it, the test runs on the latest version of the module in $env:PSModulePath.
-
-.EXAMPLE
-.\Module.Help.Tests.ps1 -ModuleName Pester -RequiredVersion 4.3.1
-This command runs the tests on the commands in Pester 4.3.1.
-
-.EXAMPLE
-.\Module.Help.Tests.ps1 -ModuleName Pester
-This command runs the tests on the commands in latest local version of the
-Pester module.
-#>
-Param
-(
-	[string]
-	$ModuleName = 'PSScriptAnalyzer',
-
-	[Parameter(Mandatory = $false)]
-	[System.Version]
-	$RequiredVersion
-)
-
-<#
-.SYNOPSIS
 Gets the module/snapin name and version for a command.
 
 .DESCRIPTION
@@ -107,16 +54,14 @@ function Get-CommandVersion {
 	}
 }
 
-
-if (!$RequiredVersion) {
-	$RequiredVersion = (Get-Command Invoke-ScriptAnalyzer).Module.Version
-}
+$RequiredVersion = (Get-Command Invoke-ScriptAnalyzer).Module.Version
 
 $ms = $null
 $commands = $null
 $paramBlackList = @(
 	'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
 )
+[string] $ModuleName = 'PSScriptAnalyzer'
 if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 	$ms = New-Object -TypeName 'Microsoft.PowerShell.Commands.ModuleSpecification' -ArgumentList $ModuleName
 	$commands = Get-Command -Module $ms.Name
@@ -126,9 +71,6 @@ else {
 	$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
 	$commands = Get-Command -FullyQualifiedModule $ms
 }
-
-## When testing help, remember that help is cached at the beginning of each session.
-## To test, restart session.
 
 $testCases = $commands.ForEach{
 	@{
@@ -144,6 +86,13 @@ $testCases = $commands.ForEach{
 			$Help
 		}
 	}
+}
+
+
+BeforeAll {
+	$paramBlackList = @(
+		'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
+	)
 }
 
 
@@ -290,11 +239,11 @@ Describe 'Cmdlet parameter help' {
 			$helpType | Should -Be $codeType -Because "help for $commandName has correct parameter type for $parameterName"
 		}
 
-		foreach ($helpParm in $HelpParameterNames) {
-			if ($helpParm -in $paramBlackList) {
+		foreach ($helpParam in $HelpParameterNames) {
+			if ($helpParam -in $paramBlackList) {
 				continue
 			}
-			$helpParm -in $parameterNames | Should -BeTrue -Because "There should be no extra parameters in help. '$helpParm' was not in '$parameterNames'"
+			$helpParam -in $parameterNames | Should -BeTrue -Because "There should be no extra parameters in help. '$helpParam' was not in '$parameterNames'"
 		}
 	}
 }
