@@ -1,4 +1,4 @@
-﻿if (-not ([bool] $IsCoreCLR))
+﻿if (-not $IsCoreCLR)
 {
 	# Force Get-Help not to prompt for interactive input to download help using Update-Help
 	# By adding this registry key we turn off Get-Help interactivity logic during ScriptRule parsing
@@ -38,7 +38,7 @@ Describe "Test importing customized rules with null return results" {
 
 Describe "Test importing correct customized rules" {
 
-	if(-not ([bool] $IsCoreCLR))
+	if(-not $IsCoreCLR)
 	{
 		Context "Test Get-Help functionality in ScriptRule parsing logic" {
 			It "ScriptRule help section must be correctly processed when Get-Help is called for the first time" {

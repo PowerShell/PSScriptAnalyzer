@@ -2,7 +2,7 @@ $testRootDirectory = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
 # test is meant to verify functionality if csharp apis are used. Hence not if psedition is CoreCLR
-if (([bool] $IsCoreCLR))
+if ($IsCoreCLR)
 {
 	return
 }

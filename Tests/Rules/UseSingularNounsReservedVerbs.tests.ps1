@@ -10,7 +10,7 @@ $nounNoViolations = $noViolations | Where-Object {$_.RuleName -eq $nounViolation
 $verbNoViolations = $noViolations | Where-Object {$_.RuleName -eq $verbViolationName}
 
 # this rule doesn't exist in the non desktop version of PSScriptAnalyzer
-if (-not ([bool] $IsCoreCLR))
+if (-not $IsCoreCLR)
 {
     Describe "UseSingularNouns" {
         Context "When there are violations" {
