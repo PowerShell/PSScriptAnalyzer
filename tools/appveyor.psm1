@@ -115,21 +115,16 @@ function Invoke-AppveyorTest {
 
     # Run all tests
     Import-Module PSScriptAnalyzer
-    try {
-        Invoke-Pester -Path $testScripts -CI -PassThru
-    }
-    finally {
-        if ($env:APPVEYOR) {
-            Join-Path $CheckoutPath 'testResults.xml' # default when using the -CI switch in Invoke-Pester
-            $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
-            Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
-            $null = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
-        }
-    }
+    Invoke-Pester -Path $testScripts -CI -PassThru
 }
 
 # Implements AppVeyor 'on_finish' step
 function Invoke-AppveyorFinish {
+    $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
+    $testResultsPath = Join-Path $pwd TestResults.xml # default when using the -CI switch in Invoke-Pester
+    Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
+    $null = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+
     $stagingDirectory = (Resolve-Path ..).Path
     $zipFile = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
     Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
