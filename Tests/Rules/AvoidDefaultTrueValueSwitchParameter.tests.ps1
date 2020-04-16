@@ -1,8 +1,7 @@
 ﻿$violationMessage = "File 'AvoidDefaultTrueValueSwitchParameter.ps1' has a switch parameter default to true."
 $violationName = "PSAvoidDefaultValueSwitchParameter"
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer $directory\AvoidDefaultTrueValueSwitchParameter.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $directory\AvoidDefaultTrueValueSwitchParameterNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidDefaultTrueValueSwitchParameter.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidDefaultTrueValueSwitchParameterNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 Describe "AvoidDefaultTrueValueSwitchParameter" {
     Context "When there are violations" {

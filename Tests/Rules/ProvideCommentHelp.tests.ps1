@@ -1,6 +1,4 @@
-﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testRootDirectory = Split-Path -Parent $directory
-
+﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 $violationMessage = "The cmdlet 'Comment' does not have a help comment."
@@ -18,13 +16,13 @@ $settings = @{
     Rules = @{ PSProvideCommentHelp = $ruleSettings }
 }
 
-$violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
-    $dscViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $directory\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
+    $dscViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
-$noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 function Test-Correction {
     param($scriptDef, $expectedCorrection, $settings)

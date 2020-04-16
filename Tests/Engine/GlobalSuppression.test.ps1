@@ -6,11 +6,10 @@ if (!(Get-Module PSScriptAnalyzer) -and !$testingLibraryUsage)
 	Import-Module -Verbose PSScriptAnalyzer
 }
 
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1"
-$violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$directory\GlobalSuppression.ps1")
-$suppression = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Profile "$directory\Profile.ps1"
-$suppressionUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$directory\GlobalSuppression.ps1") -Profile "$directory\Profile.ps1"
+$violations = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1"
+$violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\GlobalSuppression.ps1")
+$suppression = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1" -Profile "$PSScriptRoot\Profile.ps1"
+$suppressionUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\GlobalSuppression.ps1") -Profile "$PSScriptRoot\Profile.ps1"
 
 Describe "GlobalSuppression" {
     Context "Exclude Rule" {
@@ -29,11 +28,11 @@ Describe "GlobalSuppression" {
         }
 
         It "Does not raise any violation for cmdlet alias using configuration hashtable" {
-            $hashtableConfiguration = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Configuration @{"excluderules" = "PSAvoidUsingCmdletAliases"} |
+            $hashtableConfiguration = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1" -Configuration @{"excluderules" = "PSAvoidUsingCmdletAliases"} |
                                         Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases"}
             $hashtableConfiguration.Count | Should -Be 0
 
-            $hashtableConfiguration = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$directory\GlobalSuppression.ps1") -Configuration @{"excluderules" = "PSAvoidUsingCmdletAliases"} |
+            $hashtableConfiguration = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\GlobalSuppression.ps1") -Configuration @{"excluderules" = "PSAvoidUsingCmdletAliases"} |
                                         Where-Object { $_.RuleName -eq "PSAvoidUsingCmdletAliases"}
             $hashtableConfiguration.Count | Should -Be 0
         }
@@ -53,9 +52,9 @@ Describe "GlobalSuppression" {
             $withProfile = $suppressionUsingScriptDefinition | Where-Object { $_.RuleName -eq "PSAvoidUsingComputerNameHardcoded" }
             $withProfile.Count | Should -Be 0
         }
-        
+
         It "Does not raise any violation for computername hard-coded using configuration hashtable" {
-            $hashtableConfiguration = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Settings @{"includerules" = @("PSAvoidUsingCmdletAliases", "PSUseOutputTypeCorrectly")} |
+            $hashtableConfiguration = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1" -Settings @{"includerules" = @("PSAvoidUsingCmdletAliases", "PSUseOutputTypeCorrectly")} |
                                         Where-Object { $_.RuleName -eq "PSAvoidUsingComputerNameHardcoded"}
             $hashtableConfiguration.Count | Should -Be 0
         }
@@ -77,7 +76,7 @@ Describe "GlobalSuppression" {
         }
 
         It "Does not raise any violation for use output type correctly with configuration hashtable" {
-            $hashtableConfiguration = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Settings @{"severity" = "warning"} |
+            $hashtableConfiguration = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1" -Settings @{"severity" = "warning"} |
                                     Where-Object {$_.RuleName -eq "PSUseOutputTypeCorrectly"}
             $hashtableConfiguration.Count | Should -Be 0
         }
@@ -85,19 +84,19 @@ Describe "GlobalSuppression" {
 
     Context "Error Case" {
         It "Raises Error for file not found" {
-            $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Settings ".\ThisFileDoesNotExist.ps1" -ErrorAction SilentlyContinue
+            $invokeWithError = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1" -Settings ".\ThisFileDoesNotExist.ps1" -ErrorAction SilentlyContinue
             $invokeWithError.Count | Should -Be 0
             $Error[0].FullyQualifiedErrorId | Should -Match "SettingsFileNotFound,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
         }
 
         It "Raises Error for file with no hash table" {
-            $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Settings "$directory\GlobalSuppression.ps1" -ErrorAction SilentlyContinue
+            $invokeWithError = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1" -Settings "$PSScriptRoot\GlobalSuppression.ps1" -ErrorAction SilentlyContinue
             $invokeWithError.Count | Should -Be 0
             $Error[0].FullyQualifiedErrorId | Should -Match "SettingsFileHasNoHashTable,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
         }
 
         It "Raises Error for wrong profile" {
-            $invokeWithError = Invoke-ScriptAnalyzer "$directory\GlobalSuppression.ps1" -Settings "$directory\WrongProfile.ps1" -ErrorAction SilentlyContinue
+            $invokeWithError = Invoke-ScriptAnalyzer "$PSScriptRoot\GlobalSuppression.ps1" -Settings "$PSScriptRoot\WrongProfile.ps1" -ErrorAction SilentlyContinue
             $invokeWithError.Count | Should -Be 0
             $Error[0].FullyQualifiedErrorId | Should -Match "WrongSettingsKey,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand"
         }

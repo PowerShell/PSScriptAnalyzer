@@ -1,8 +1,7 @@
 ﻿$violationMessage = [regex]::Escape("The ComputerName parameter of cmdlet 'Invoke-Command' is hardcoded. This will expose sensitive information about the system if the script is shared.")
 $violationName = "PSAvoidUsingComputerNameHardcoded"
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer $directory\AvoidUsingComputerNameHardcoded.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $directory\AvoidUsingComputerNameHardcodedNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingComputerNameHardcoded.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingComputerNameHardcodedNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 Describe "AvoidUsingComputerNameHardcoded" {
     Context "When there are violations" {

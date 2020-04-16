@@ -1,8 +1,7 @@
 ﻿$violationMessage = [regex]::Escape("Verb-Files' defines the reserved common parameter 'Verbose'.")
 $violationName = "PSReservedParams"
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 Describe "AvoidReservedParams" {
     Context "When there are violations" {

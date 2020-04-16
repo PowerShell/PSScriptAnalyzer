@@ -1,5 +1,4 @@
-$directory = Split-Path $MyInvocation.MyCommand.Path
-$settingsTestDirectory = [System.IO.Path]::Combine($directory, "SettingsTest")
+$settingsTestDirectory = [System.IO.Path]::Combine($PSScriptRoot, "SettingsTest")
 $project1Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project1")
 $project2Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project2")
 $settingsTypeName = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings'

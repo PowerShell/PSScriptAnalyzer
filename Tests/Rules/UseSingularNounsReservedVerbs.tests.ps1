@@ -1,20 +1,16 @@
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testRootDirectory = Split-Path -Parent $directory
-Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
-
 $nounViolationMessage = "The cmdlet 'Verb-Files' uses a plural noun. A singular noun should be used instead."
 $verbViolationMessage = "The cmdlet 'Verb-Files' uses an unapproved verb."
 $nounViolationName = "PSUseSingularNouns"
 $verbViolationName = "PSUseApprovedVerbs"
-$violations = Invoke-ScriptAnalyzer $directory\BadCmdlet.ps1
+$violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1
 $nounViolations = $violations | Where-Object {$_.RuleName -eq $nounViolationName}
 $verbViolations = $violations | Where-Object {$_.RuleName -eq $verbViolationName}
-$noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1
+$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1
 $nounNoViolations = $noViolations | Where-Object {$_.RuleName -eq $nounViolationName}
 $verbNoViolations = $noViolations | Where-Object {$_.RuleName -eq $verbViolationName}
 
 # this rule doesn't exist in the non desktop version of PSScriptAnalyzer
-if (-not (Test-PSEditionCoreCLR))
+if (-not $IsCoreCLR)
 {
     Describe "UseSingularNouns" {
         Context "When there are violations" {

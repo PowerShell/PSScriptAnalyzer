@@ -1,17 +1,16 @@
-﻿$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testRootDirectory = Split-Path -Parent $directory
+﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
 $missingMessage = "The member 'ModuleVersion' is not present in the module manifest."
 $missingMemberRuleName = "PSMissingModuleManifestField"
-$violationFilepath = Join-Path $directory "TestBadModule\TestBadModule.psd1"
+$violationFilepath = Join-Path $PSScriptRoot "TestBadModule\TestBadModule.psd1"
 $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $missingMemberRuleName}
-$noViolations = Invoke-ScriptAnalyzer $directory\TestGoodModule\TestGoodModule.psd1 | Where-Object {$_.RuleName -eq $missingMemberRuleName}
-$noHashtableFilepath = Join-Path $directory "TestBadModule\NoHashtable.psd1"
+$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\TestGoodModule\TestGoodModule.psd1 | Where-Object {$_.RuleName -eq $missingMemberRuleName}
+$noHashtableFilepath = Join-Path $PSScriptRoot "TestBadModule\NoHashtable.psd1"
 
 Describe "MissingRequiredFieldModuleManifest" {
     BeforeAll {
-        Import-Module (Join-Path $directory "PSScriptAnalyzerTestHelper.psm1") -Force
+        Import-Module (Join-Path $PSScriptRoot "PSScriptAnalyzerTestHelper.psm1") -Force
     }
 
     AfterAll{
@@ -55,32 +54,32 @@ Describe "MissingRequiredFieldModuleManifest" {
 
     Context "Validate the contents of a .psd1 file" {
         It "detects a valid module manifest file" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGood.psd1"
+            $filepath = Join-Path $PSScriptRoot "TestManifest/ManifestGood.psd1"
             [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should -BeTrue
         }
 
         It "detects a .psd1 file which is not module manifest" {
-            $filepath = Join-Path $directory "TestManifest/PowerShellDataFile.psd1"
+            $filepath = Join-Path $PSScriptRoot "TestManifest/PowerShellDataFile.psd1"
             [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should -BeFalse
         }
 
         It "detects valid module manifest file for PSv5" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv5.psd1"
+            $filepath = Join-Path $PSScriptRoot "TestManifest/ManifestGoodPsv5.psd1"
             [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"5.0.0") | Should -BeTrue
         }
 
         It "does not validate PSv5 module manifest file for PSv3 check" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv5.psd1"
+            $filepath = Join-Path $PSScriptRoot "TestManifest/ManifestGoodPsv5.psd1"
             [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0.0") | Should -BeFalse
         }
 
         It "detects valid module manifest file for PSv4" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv4.psd1"
+            $filepath = Join-Path $PSScriptRoot "TestManifest/ManifestGoodPsv4.psd1"
             [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"4.0.0") | Should -BeTrue
         }
 
         It "detects valid module manifest file for PSv3" {
-            $filepath = Join-Path $directory "TestManifest/ManifestGoodPsv3.psd1"
+            $filepath = Join-Path $PSScriptRoot "TestManifest/ManifestGoodPsv3.psd1"
             [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::IsModuleManifest($filepath, [version]"3.0.0") | Should -BeTrue
         }
     }
@@ -88,7 +87,7 @@ Describe "MissingRequiredFieldModuleManifest" {
     Context "When given a non module manifest file" {
         It "does not flag a PowerShell data file" {
             Invoke-ScriptAnalyzer `
-                -Path "$directory/TestManifest/PowerShellDataFile.psd1" `
+                -Path "$PSScriptRoot/TestManifest/PowerShellDataFile.psd1" `
                 -IncludeRule "PSMissingModuleManifestField" `
                 -OutVariable ruleViolation
             $ruleViolation.Count | Should -Be 0
