@@ -294,7 +294,7 @@ Describe 'Cmdlet parameter help' {
 			if ($helpParm -in $paramBlackList) {
 				continue
 			}
-			$helpParm -in $parameterNames | Should -BeTrue -Because 'There should be no extra parameters in help'
+			$helpParm -in $parameterNames | Should -BeTrue -Because "There should be no extra parameters in help. '$helpParm' was not in '$parameterNames'"
 		}
 	}
 }

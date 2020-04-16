@@ -1,15 +1,14 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+$IsV3OrV4 = ($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 3)
+
 BeforeAll {
     $violationMessage = "'Verb-Files' has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue."
     $violationName = "PSShouldProcess"
-    $testRootDirectory = Split-Path -Parent $PSScriptRoot
-    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
     $violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
     $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $IsV3OrV4 = (Test-PSVersionV3) -or (Test-PSVersionV4)
 }
 
 Describe "UseShouldProcessCorrectly" {

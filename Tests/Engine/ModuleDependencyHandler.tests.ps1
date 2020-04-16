@@ -185,7 +185,7 @@ Describe "Resolve DSC Resource Dependency" {
         }
     }
 
-    Context "Invoke-ScriptAnalyzer without switch but with module in temp path" {
+    Context "Invoke-ScriptAnalyzer without switch but with module in temp path" -Skip:$skipTest {
         BeforeAll {
             if ( $skipTest ) { return }
             $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
