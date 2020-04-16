@@ -65,7 +65,6 @@ $paramBlackList = @(
 if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
 	$ms = New-Object -TypeName 'Microsoft.PowerShell.Commands.ModuleSpecification' -ArgumentList $ModuleName
 	$commands = Get-Command -Module $ms.Name
-	$paramBlackList += 'SaveDscDependency'
 }
 else {
 	$ms = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = $ModuleName; RequiredVersion = $RequiredVersion }
@@ -93,6 +92,9 @@ BeforeAll {
 	$paramBlackList = @(
 		'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
 	)
+	if ($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
+		$paramBlackList += 'SaveDscDependency'
+	}
 }
 
 

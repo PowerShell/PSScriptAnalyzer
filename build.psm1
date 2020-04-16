@@ -294,7 +294,7 @@ function Start-ScriptAnalyzerBuild
 function Test-ScriptAnalyzer
 {
     [CmdletBinding()]
-    param ( [Parameter()][switch]$InProcess, [switch]$ShowAll )
+    param ( [switch] $InProcess )
 
     END {
         # versions 3 and 4 don't understand versioned module paths, so we need to rename the directory of the version to
@@ -331,14 +331,7 @@ function Test-ScriptAnalyzer
             }
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
-            if ($ShowAll)
-            {
-                $scriptBlock = [scriptblock]::Create("Import-Module PSScriptAnalyzer; Invoke-Pester -Path $testScripts -CI")
-            }
-            else
-            {
-                $scriptBlock = [scriptblock]::Create("Import-Module PSScriptAnalyzer; Invoke-Pester -Path $testScripts -CI")
-            }
+            $scriptBlock = [scriptblock]::Create("Import-Module PSScriptAnalyzer; Invoke-Pester -Path $testScripts -CI")
             if ( $InProcess ) {
                 & $scriptBlock
             }

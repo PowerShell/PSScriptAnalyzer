@@ -107,7 +107,6 @@ function Invoke-AppveyorTest {
     Write-Verbose -Verbose "module path: ${env:PSModulePath}"
 
     # Set up testing assets
-    $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml
     $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\PSCompatibilityCollector\Tests"
 
     # Change culture to Turkish to test that PSSA works well with different locales
@@ -116,13 +115,14 @@ function Invoke-AppveyorTest {
 
     # Run all tests
     Import-Module PSScriptAnalyzer
-    $testResults = Invoke-Pester -Path $testScripts -CI # -OutputFormat NUnitXml -OutputFile $testResultsPath -PassThru
+    $testResults = Invoke-Pester -Path $testScripts -CI -PassThru
+    $testResultsPath = Join-Path ${CheckoutPath} TestResults.xml # default when using the -CI switch in Invoke-Pester
 
     # Upload the test results
     if ($env:APPVEYOR) {
         $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
         Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
-        [byte[]]$response = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+        $null = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
     }
 
     # Throw an error if any tests failed
