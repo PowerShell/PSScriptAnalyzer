@@ -2,9 +2,6 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    $testRootDirectory = Split-Path -Parent $PSScriptRoot
-    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
-
     $violationMessage = "The Credential parameter in 'Credential' must be of type PSCredential. For PowerShell 4.0 and earlier, please define a credential transformation attribute, e.g. [System.Management.Automation.Credential()], after the PSCredential type attribute."
     $violationName = "PSUsePSCredentialType"
     $violations = Invoke-ScriptAnalyzer $PSScriptRoot\PSCredentialType.ps1 | Where-Object {$_.RuleName -eq $violationName}
@@ -15,7 +12,7 @@ Describe "PSCredentialType" {
     Context "When there are violations" {
         BeforeAll {
             $expectedViolations = 1
-            if ((Test-PSVersionV3) -or (Test-PSVersionV4)) {
+            if (($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4)) {
                 $expectedViolations = 2
             }
         }

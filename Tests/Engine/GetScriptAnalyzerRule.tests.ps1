@@ -2,8 +2,6 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    $testRootDirectory = Split-Path -Parent $PSScriptRoot
-    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
     $sa = Get-Command Get-ScriptAnalyzerRule
 
     $singularNouns = "PSUseSingularNouns" # this rule does not exist for coreclr version
@@ -66,7 +64,7 @@ Describe "Test Name parameters" {
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
             $expectedNumRules = 64
-            if ((Test-PSEditionCoreClr) -or (Test-PSVersionV3) -or (Test-PSVersionV4))
+            if ($IsCoreCLR -or ($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4))
             {
                 # for PSv3 PSAvoidGlobalAliases is not shipped because
                 # it uses StaticParameterBinder.BindCommand which is
