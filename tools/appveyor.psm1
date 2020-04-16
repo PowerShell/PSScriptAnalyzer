@@ -115,23 +115,28 @@ function Invoke-AppveyorTest {
 
     # Run all tests
     Import-Module PSScriptAnalyzer
-    Invoke-Pester -Path $testScripts -CI -PassThru
+    try {
+        Invoke-Pester -Path $testScripts -CI -PassThru
+    }
+    finally {
+        if ($env:APPVEYOR) {
+            Join-Path $CheckoutPath 'testResults.xml' # default when using the -CI switch in Invoke-Pester
+            $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
+            Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
+            $null = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
+        }
+    }
 }
 
 # Implements AppVeyor 'on_finish' step
 function Invoke-AppveyorFinish {
-    Join-Path $pwd 'testResults.xml' # default when using the -CI switch in Invoke-Pester
-    $uploadUrl = "https://ci.appveyor.com/api/testresults/nunit/${env:APPVEYOR_JOB_ID}"
-    Write-Verbose -Verbose "Uploading test results '$testResultsPath' to '${uploadUrl}'"
-    $null = (New-Object 'System.Net.WebClient').UploadFile("$uploadUrl" , $testResultsPath)
-
     $stagingDirectory = (Resolve-Path ..).Path
     $zipFile = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
     Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
     [System.IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $pwd 'out'), $zipFile)
     @(
         # add test results as an artifact
-        (Get-ChildItem TestResults.xml)
+        (Get-ChildItem testResults.xml)
         # You can add other artifacts here
         (Get-ChildItem $zipFile)
     ) | ForEach-Object { Push-AppveyorArtifact $_.FullName }
