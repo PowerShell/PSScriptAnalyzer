@@ -362,7 +362,7 @@ function Get-TestResults
 # it's not a filter of the results of Get-TestResults because this is faster
 function Get-TestFailures
 {
-    param ( $logfile = (Join-Path -Path ${projectRoot} -ChildPath TestResults.xml) )
+    param ( $logfile = (Join-Path -Path ${projectRoot} -ChildPath testResults.xml) )
     $logPath = (Resolve-Path $logfile).Path
     $results = [xml](Get-Content $logPath)
     $results.SelectNodes(".//test-case[@result='Failure']")
