@@ -218,3 +218,6 @@ TestResults.xml
 
 # PSCompatibilityCollector module
 PSCompatibilityCollector/out/
+
+# Folder of build module 
+out
