@@ -17,8 +17,10 @@ steps:
     script: |
       Import-Module .\tools\appveyor.psm1
       Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
+- pwsh: |
+  ls
 - task: PublishTestResults@2
   inputs:
     testRunner: NUnit
     testResultsFiles: 'TestResults.xml'
-    condition: always()
+    condition: succeededOrFailed()
