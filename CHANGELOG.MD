@@ -1,5 +1,88 @@
 ﻿# CHANGELOG
 
+## [1.19.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.19.0)
+
+### New Rules
+
+- UseUsingScopeModifierInNewRunspaces (#1419) (thanks @Jawz84!)
+- ReviewUnusedParameter (#1382) (thanks @mattmcnabb!)
+- AvoidOverwritingBuiltInCmdlets (#1348) (thanks @thomasrayner!)
+- UseProcessBlockForPipelineCommand (#1373) (thanks @mattmcnabb!)
+- AvoidLongLines (#1329) (thanks @thomasrayner!)
+
+### Rule Enhancements
+
+- Add more automatic variables to PSAvoidAssignmentToAutomaticVariables that are not read-only but should still not be assigned to in most cases (#1394) (by @bergmeister)
+
+### Compatibility Rules
+
+- Make CompatibilityCollector able to parse a single version String #1446 (by @bergmeister)
+- Update compatibility profiles for PowerShell 7 (#1429) (by @rjmholt)
+- Ps7 syntax (#1426) (by @rjmholt)
+- Fix ps3 syntax check (#1395) (by @rjmholt)
+- Add PS 7 to UseCompatibleSyntax (#1331) (by @rjmholt)
+- Fix UseCompatibleSyntax configuration doc ([e37daeb](https://github.com/PowerShell/PSScriptAnalyzer/commit/e37daeb62d7ae6267b1a2c78a50404c8ab271786)) (by @rjmholt)
+- Update UseCompatibleTypes docs with more info ([42f5e58](https://github.com/PowerShell/PSScriptAnalyzer/commit/42f5e58ad689fd3871bf4d9c5977b9352d1d4a1f)) (by @rjmholt)
+- UseCompatibleCommands doc improvements ([7874b55](https://github.com/PowerShell/PSScriptAnalyzer/commit/7874b555643315dc3d8c00394fac81e0684504ff)) (by @rjmholt)
+- Update AzF profile to be useful (#1341) (by @rjmholt)
+
+### Formatter
+
+- Set default of CheckParameter configuration setting to false to ensure that setting won't be enabled by default if an old version of the VS-Code extension uses a new version of - PSScriptAnalyzer (1.19) (#1411) (by @bergmeister)
+- Split CheckPipe feature of trimming redundant whitespace out into option CheckPipeForRedundantWhiteSpace (#1413) (by @bergmeister)
+- Fix recently introduced bug (PR #1391) for UseCorrectCasing (#1408) (by @bergmeister)
+- Add PipelineIndentationStyle.None option for scenarios where indentation is custom, inconsistent or the user does not like any of the 3 pipeline indentation styles (#1399) (by @bergmeister)
+- Correct casing of parameters as well in PSUseCorrectCasing formatter rule (#1391) (by @bergmeister)
+- Remove redundant whitespace between parameters with new option (disabled by default) in UseConsistentWhitespace (#1392) (by @bergmeister)
+- Fix complex case when PipelineIndentation is not set to default (NoIndentation) (#1359) (by @bergmeister)
+- UseConsistentWhitespace: Ignore empty hashtable for CheckInnerBrace configuration (#1349) (by @bergmeister)
+
+### Fixes
+
+- Fix edge case of PSUseConsistentIndentation for non-default value (IncreaseIndentationForFirstPipeline/IncreaseIndentationAfterEveryPipeline) (#1423) (by @bergmeister)
+- Fix rule suppression ID in compat rules (#1432) (by @rjmholt)
+- Changes to build analyzer for PS7 and PS6 and ship in separate directories and bump version to 1.19.0 (#1425) (by @JamesWTruher)
+- Use AST to determine SupportsShouldProcess when an error is thrown (#1397) (by @rjmholt)
+- Fix false positive of AvoidAlias rule for implicit aliasing of Get- commands for the CommandType ExternalScript (#1386) (by @bergmeister)
+
+### Build/Tests/Maintenance
+
+- Replace usage of $MyInvocation.MyCommand.Path with $PSScriptRoot and cleanup tests as a preparation for Pester v5 (#1438) (by @bergmeister)
+- Compatibility tests: Use correct genericVerCases test case and remove invalid test case (#1440) (by @bergmeister)
+- Add out folder to .gitignore (#1443) (by @bergmeister)
+- Pin major version of Pester to 4 and upgrade Pester version for WMF4 build (#1433) (by @bergmeister)
+- ms-vscode.csharp to ms-dotnettools.csharp (#1424) (thanks @devlead!)
+- Upgrade .net sdk to latest path (#1421) (by @bergmeister)
+- Fix #1417 modulehelp false positives (#1418) (thanks @Jawz84!)
+- Increase macOs CI coverage to include both 10.14 and 10.15 as 10.15 has recently been added to Azure DevOps hosted agents (#1412) (by @bergmeister)
+- Fix vmImage entries in build to match description (#1409) (by @bergmeister)
+- Update .Net Core SDK from 3.1.100 to latest patch 3.1.101 (#1405) (by @bergmeister)
+- Multi-stage pipelines (to split build->test) (#1404) (by @bergmeister)
+- Use vmImage in yaml and merge build definitions into 1 by using jobs. Disable all AppVeyor images except for WMF4. Disable flaky UseCompatibleCommand tests on Ubuntu in CI (#1403) (by @bergmeister)
+- Azure pipelines migration (#1267) (by @bergmeister)
+- Add DevContainer support (#1286) (by @bergmeister)
+- Increase maximum runspace pool size in flaky test (#1358) (by @bergmeister)
+- Use latest version of PlatyPS in AppVeyor (#1390) (by @bergmeister)
+- .Net core sdk 3.1 (#1388) (by @bergmeister)
+- Use Where-Object instead of alias in buildmodule.tests.ps1 (#1360) (thanks @kvprasoon!)
+- Remove legacy methods (#1387) (by @bergmeister)
+- Upgrade .Net Core SDK version to a newer version that is also available in Visual Studio Online environment (#1377) (by @bergmeister)
+- Update Newtonsoft.Json from 12.0.1 to 12.02 (latest version), which increases the minimum PS Core version from 6.2.0 to 6.2.1 (#1357) (by @bergmeister)
+- Harden dotnet --version handling (#1367) (by @JamesWTruher)
+- Fix configuration for PS v5 and v6 builds to be Debug/Release as it used to be to allow for actual debug builds (#1356) (by @bergmeister)
+- Disable bad tests on Linux for now (#1365) (by @rjmholt)
+- Fix Ubuntu build and runspace test (#1340) (by @bergmeister)
+
+### Documentation
+
+- Change term to satisfy policheck requirements #1445 (by @JamesWTruher)
+- Update adopters file with entry for Microsoft internal teams (#1398) (thanks @pperrier27!)
+- Add ADOPTERS.md (#1380) (by @SteveL-MSFT)
+- Update SuppressMessageAttribute docs link and use single quotes for examples (#1389) (by @bergmeister)
+- Update ShouldProcess.md (#1383) (thanks @baardhermansen!)
+- Fix typo in example (#1379) (thanks @Farwaykorse!)
+- Update Hyperlink for Approved Verbs (#1374) (thanks @MysticRyuujin!)
+
 ## [1.18.3](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.3) - 2019-09-13
 
 This release adds one more important fix, which prevents a leak of runspaces when repeatedly invoking the PSScriptAnalyzer cmdlets. Furthermore it ups the minimum version of PowerShell Core to `6.2.0` due to `6.1` reaching its [end of life](https://docs.microsoft.com/en-us/powershell/scripting/powershell-support-lifecycle?view=powershell-6#powershell-releases-end-of-life) this month.
