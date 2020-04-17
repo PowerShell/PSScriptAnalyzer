@@ -47,6 +47,7 @@
 
 ### Build/Tests/Maintenance
 
+- Update Newtonsoft.Json from 12.0.2 to 12.0.3 in Compatibility project as well (#1447) (by @bergmeister)
 - Replace usage of $MyInvocation.MyCommand.Path with $PSScriptRoot and cleanup tests as a preparation for Pester v5 (#1438) (by @bergmeister)
 - Compatibility tests: Use correct genericVerCases test case and remove invalid test case (#1440) (by @bergmeister)
 - Add out folder to .gitignore (#1443) (by @bergmeister)
