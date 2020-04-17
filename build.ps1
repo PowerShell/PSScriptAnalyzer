@@ -69,7 +69,7 @@ END {
             if ( $Catalog ) {
                 $buildArgs['Catalog'] = $true
             }
-            Start-ScriptAnalyzerBuild @buildArgs # -All -Configuration $Configuration -Verbose:$verboseWanted
+            Start-ScriptAnalyzerBuild @buildArgs
         }
         "BuildDocumentation" {
             Start-ScriptAnalyzerBuild -Documentation -Verbose:$Verbose

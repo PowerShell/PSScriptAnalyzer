@@ -275,11 +275,10 @@ function Start-ScriptAnalyzerBuild
                 $framework,
                 "--configuration",
                 "$buildConfiguration"
-            if ( $env:InVSTS ) {
+            if ( $env:TF_BUILD ) {
                 $dotnetArgs += "--output"
                 $dotnetArgs += "${PSScriptRoot}\bin\${buildConfiguration}\${framework}"
             }
-            # $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$buildConfiguration" 2>&1
             $buildOutput = & $script:DotnetExe $dotnetArgs 2>&1
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
             Write-Verbose -Verbose:$verboseWanted -message "$buildOutput"
@@ -295,7 +294,7 @@ function Start-ScriptAnalyzerBuild
 
         Publish-File $itemsToCopyCommon $script:destinationDir
 
-        if ( $env:InVsts ) {
+        if ( $env:TF_BUILD ) {
             $itemsToCopyBinaries = @(
                 "$projectRoot\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
                 "$projectRoot\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
@@ -315,7 +314,7 @@ function Start-ScriptAnalyzerBuild
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         if ($framework -eq 'net452') {
-            if ( $env:InVSTS ) {
+            if ( $env:TF_BUILD ) {
                 $nsoft =  "$projectRoot\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll"
             }
             else {
@@ -330,9 +329,8 @@ function Start-ScriptAnalyzerBuild
 
 function New-Catalog
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
     param ( [Parameter()]$Location )
-    $newFileCatalog = Get-Command -ea silentlycontinue New-FileCatalog
+    $newFileCatalog = Get-Command -ErrorAction SilentlyContinue New-FileCatalog
     if ($null -eq $newFileCatalog) {
         Write-Warning "New-FileCatalog not found, not creating catalog"
         return
