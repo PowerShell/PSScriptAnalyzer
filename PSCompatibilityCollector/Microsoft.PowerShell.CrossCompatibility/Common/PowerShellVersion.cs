@@ -88,7 +88,8 @@ namespace Microsoft.PowerShell.CrossCompatibility
 
             if (dotCount == 0)
             {
-                throw new ArgumentException($"Version string '{versionStr}' must contain at least one dot separator");
+                var majorVersion = int.Parse(versionStr);
+                return new PowerShellVersion(majorVersion, -1, -1, label: null);
             }
 
             versionParts[dotCount] = int.Parse(versionStr.Substring(sectionStartOffset, i - sectionStartOffset));
