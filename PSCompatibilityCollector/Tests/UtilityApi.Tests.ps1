@@ -122,6 +122,8 @@ Describe "PowerShell version object" {
             $v.Minor | Should -Be $Minor
             $v.Patch | Should -Be $Patch
         } -TestCases @(
+            @{ VerStr = '42'; Major = 42; Minor = -1; Patch = -1 }
+            @{ VerStr = '7'; Major = 7; Minor = -1; Patch = -1 }
             @{ VerStr = '6.1'; Major = 6; Minor = 1; Patch = -1 }
             @{ VerStr = '5.2.7'; Major = 5; Minor = 2; Patch = 7 }
             @{ VerStr = '512.2124.71'; Major = 512; Minor = 2124; Patch = 71 }
