@@ -1,12 +1,11 @@
-$currentPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ruleName = "PSDSCDscTestsPresent"
 
 if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
 
  Describe "DscTestsPresent rule in class based resource" {
 
-    $testsPath = "$currentPath\DSCResourceModule\DSCResources\MyDscResource\Tests"
-    $classResourcePath = "$currentPath\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1"
+    $testsPath = "$PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\Tests"
+    $classResourcePath = "$PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1"
 
     Context "When tests absent" {
 
@@ -39,8 +38,8 @@ if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
 
 Describe "DscTestsPresent rule in regular (non-class) based resource" {
 
-    $testsPath = "$currentPath\DSCResourceModule\Tests"
-    $resourcePath = "$currentPath\DSCResourceModule\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1"
+    $testsPath = "$PSScriptRoot\DSCResourceModule\Tests"
+    $resourcePath = "$PSScriptRoot\DSCResourceModule\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1"
 
     Context "When tests absent" {
 

@@ -1,5 +1,4 @@
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testRootDirectory = Split-Path -Parent $directory
+$testRootDirectory = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
 Describe "Invoke-Formatter Cmdlet" {

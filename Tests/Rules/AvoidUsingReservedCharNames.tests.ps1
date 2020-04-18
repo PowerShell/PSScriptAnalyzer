@@ -1,8 +1,7 @@
 ﻿$reservedCharMessage = "The cmdlet 'Use-#Reserved' uses a reserved char in its name."
 $reservedCharName = "PSReservedCmdletChar"
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer $directory\AvoidUsingReservedCharNames.ps1 | Where-Object {$_.RuleName -eq $reservedCharName}
-$noViolations = Invoke-ScriptAnalyzer $directory\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $reservedCharName}
+$violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingReservedCharNames.ps1 | Where-Object {$_.RuleName -eq $reservedCharName}
+$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $reservedCharName}
 
 Describe "Avoid Using Reserved Char" {
     Context "When there are violations" {

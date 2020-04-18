@@ -1,8 +1,7 @@
 ﻿$violationMessage = "Empty catch block is used. Please use Write-Error or throw statements in catch blocks."
 $violationName = "PSAvoidUsingEmptyCatchBlock"
-$directory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$violations = Invoke-ScriptAnalyzer $directory\AvoidEmptyCatchBlock.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $directory\AvoidEmptyCatchBlockNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidEmptyCatchBlock.ps1 | Where-Object {$_.RuleName -eq $violationName}
+$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidEmptyCatchBlockNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
 Describe "UseDeclaredVarsMoreThanAssignments" {
     Context "When there are violations" {

@@ -108,6 +108,7 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 #### Requirements
 
 * [.NET Core 3.1.102 SDK](https://www.microsoft.com/net/download/dotnet-core/3.1#sdk-3.1.102) or newer patch release
+* [Pester v4 PowerShell module, available on PowerShell Gallery](https://github.com/pester/Pester)
 * [PlatyPS PowerShell module, available on PowerShell Gallery](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017/2019](https://www.visualstudio.com/downloads/)
 
