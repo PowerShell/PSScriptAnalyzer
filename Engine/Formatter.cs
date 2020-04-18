@@ -46,22 +46,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             };
 
             var text = new EditableText(scriptDefinition);
-            foreach (var rule in ruleOrder)
-            {
-                if (!settings.RuleArguments.ContainsKey(rule))
-                {
-                    continue;
-                }
-
-                var currentSettings = GetCurrentSettings(settings, rule);
-                ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
-                ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
-
-                Range updatedRange;
-                bool fixesWereApplied;
-                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange, out fixesWereApplied);
-                range = updatedRange;
-            }
+            var currentSettings = GetCurrentSettings(settings, ruleOrder);
+            ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
+            ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
+            text = ScriptAnalyzer.Instance.Fix(text, range, out Range updatedRange, out bool _);
+            range = updatedRange;
 
             return text.ToString();
         }
@@ -74,12 +63,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        private static Settings GetCurrentSettings(Settings settings, string rule)
+        private static Settings GetCurrentSettings(Settings settings, string[] rules)
         {
+            var rulesHashtable = new Hashtable();
+            foreach (var rule in rules)
+            {
+                if (!settings.RuleArguments.ContainsKey(rule))
+                {
+                    continue;
+                }
+                rulesHashtable.Add(rule, new Hashtable(settings.RuleArguments[rule]));
+            }
             return new Settings(new Hashtable()
             {
-                {"IncludeRules", new string[] {rule}},
-                {"Rules", new Hashtable() { { rule, new Hashtable(settings.RuleArguments[rule]) } } }
+                {"IncludeRules", rules },
+                {"Rules", rulesHashtable }
             });
         }
     }
