@@ -150,58 +150,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        // TODO Fix code duplication in the following method and GetBraceInCommandElement
-        private IEnumerable<Token> GetBraceInOneLineIfStatment(TokenKind tokenKind)
-        {
-            var ifStatementAsts = ast.FindAll(ast =>
-            {
-                var ifAst = ast as IfStatementAst;
-                if (ifAst == null)
-                {
-                    return false;
-                }
-
-                return ifAst.Extent.StartLineNumber == ifAst.Extent.EndLineNumber;
-            },
-            true);
-
-            if (ifStatementAsts == null)
-            {
-                yield break;
-            }
-
-            var braceTokens = new List<Token>();
-            foreach (var ast in ifStatementAsts)
-            {
-                var ifStatementAst = ast as IfStatementAst;
-                foreach (var clause in ifStatementAst.Clauses)
-                {
-                    var tokenIf
-                        = tokenKind == TokenKind.LCurly
-                            ? GetTokens(clause.Item2).FirstOrDefault()
-                            : GetTokens(clause.Item2).LastOrDefault();
-                    if (tokenIf != null)
-                    {
-                        yield return tokenIf;
-                    }
-                }
-
-                if (ifStatementAst.ElseClause == null)
-                {
-                    continue;
-                }
-
-                var tokenElse
-                    = tokenKind == TokenKind.LCurly
-                            ? GetTokens(ifStatementAst.ElseClause).FirstOrDefault()
-                            : GetTokens(ifStatementAst.ElseClause).LastOrDefault();
-                if (tokenElse != null)
-                {
-                    yield return tokenElse;
-                }
-            }
-        }
-
         public static IEnumerable<Token> GetTokens(Ast outerAst, Ast innerAst, Token[] outerTokens)
         {
             ThrowIfNull(outerAst, nameof(outerAst));
