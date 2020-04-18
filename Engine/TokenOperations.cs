@@ -15,7 +15,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     public class TokenOperations
     {
         private readonly Token[] tokens;
-        private LinkedList<Token> tokensLL;
+        private readonly Lazy<LinkedList<Token>> tokensLL;
         private readonly Ast ast;
 
         public Ast Ast { get { return ast; } }
@@ -39,7 +39,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             this.tokens = tokens;
             this.ast = ast;
-            this.tokensLL = new LinkedList<Token>(this.tokens);
+            this.tokensLL = new Lazy<LinkedList<Token>>(() => new LinkedList<Token>(this.tokens));
         }
 
         /// <summary>
@@ -150,16 +150,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
         }
 
-        public IEnumerable<Token> GetCloseBraceInOneLineIfStatement()
-        {
-            return GetBraceInOneLineIfStatment(TokenKind.RCurly);
-        }
-
-        public IEnumerable<Token> GetOpenBraceInOneLineIfStatement()
-        {
-            return GetBraceInOneLineIfStatment(TokenKind.LCurly);
-        }
-
         // TODO Fix code duplication in the following method and GetBraceInCommandElement
         private IEnumerable<Token> GetBraceInOneLineIfStatment(TokenKind tokenKind)
         {
@@ -262,7 +252,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
         public IEnumerable<LinkedListNode<Token>> GetTokenNodes(Func<Token, bool> predicate)
         {
-            var token = tokensLL.First;
+            var token = tokensLL.Value.First;
             while (token != null)
             {
                 if (predicate(token.Value))
@@ -288,21 +278,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     item.Value,
                     item.Value.Extent.StartColumnNumber - item.Previous.Value.Extent.EndColumnNumber);
             }
-        }
-
-        public IEnumerable<Tuple<Token, int>> GetOpenBracesWithWhiteSpacesBefore()
-        {
-            return GetTokenAndPrecedingWhitespace(TokenKind.LCurly);
-        }
-
-        public IEnumerable<Tuple<Token, int>> GetOpenParensWithWhiteSpacesBefore()
-        {
-            return GetTokenAndPrecedingWhitespace(TokenKind.LParen);
-        }
-
-        public static int GetExtentWidth(IScriptExtent extent)
-        {
-            return extent.EndOffset - extent.StartOffset;
         }
 
         private bool OnSameLine(Token token1, Token token2)
