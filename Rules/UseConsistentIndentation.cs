@@ -219,10 +219,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 }
                             }
 
-                            var lineHasPipelineBeforeToken = tokens.Any(oneToken =>
-                                oneToken.Kind == TokenKind.Pipe &&
-                                oneToken.Extent.StartLineNumber == token.Extent.StartLineNumber &&
-                                oneToken.Extent.StartColumnNumber < token.Extent.StartColumnNumber);
+                            bool lineHasPipelineBeforeToken = false;
+                            var searchIndex = tokenIndex;
+                            var searchToken = tokens[searchIndex];
+                            var searchLine = token.Extent.StartLineNumber;
+                            do
+                            {
+                                searchToken = tokens[searchIndex];
+                                searchLine = searchToken.Extent.StartLineNumber;
+                                var searchcolumn = searchToken.Extent.StartColumnNumber;
+                                if (searchToken.Kind == TokenKind.Pipe && searchcolumn < token.Extent.StartColumnNumber)
+                                {
+                                    lineHasPipelineBeforeToken = true;
+                                    break;
+                                }
+                                searchIndex--;
+                            } while (searchLine == token.Extent.StartLineNumber && searchIndex >= 0);
 
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
