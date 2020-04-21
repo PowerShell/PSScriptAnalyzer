@@ -1499,7 +1499,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="scriptDefinition">The script to be analyzed</param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition)
+        public IEnumerable<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, bool skipVariableAnalysis = false)
         {
             ScriptBlockAst scriptAst = null;
             Token[] scriptTokens = null;
@@ -1539,7 +1539,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             // now, analyze the script definition
-            return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty));
+            return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty, skipVariableAnalysis));
         }
 
         /// <summary>
@@ -1566,8 +1566,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="range">The range in which the fixes are allowed.</param>
         /// <param name="updatedRange">The updated range after the fixes have been applied.</param>
         /// <param name="updatedRange">Whether any warnings were fixed.</param>
+        /// <param name="skipVariableAnalysis">Whether to skip variable analysis.</param>
         /// <returns>The same instance of `EditableText` that was passed to the method, but the instance encapsulates the fixed script text. This helps in chaining the Fix method.</returns>
-        public EditableText Fix(EditableText text, Range range, out Range updatedRange, out bool fixesWereApplied)
+        public EditableText Fix(EditableText text, Range range, out Range updatedRange, out bool fixesWereApplied, bool skipVariableAnalysis = false)
         {
             if (text == null)
             {
@@ -1589,7 +1590,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var previousUnusedCorrections = 0;
             do
             {
-                var records = AnalyzeScriptDefinition(text.ToString());
+                var records = AnalyzeScriptDefinition(text.ToString(), skipVariableAnalysis);
                 var corrections = records
                     .Select(r => r.SuggestedCorrections)
                     .Where(sc => sc != null && sc.Any())
@@ -2016,13 +2017,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="scriptAst">The ScriptBlockAst from the parsed script.</param>
         /// <param name="scriptTokens">The tokens found in the script.</param>
         /// <param name="filePath">The path to the file that was parsed.
+        /// <param name="skipVariableAnalysis">Whether to skip variable analysis.
         /// If AnalyzeSyntaxTree is called from an ast that we get from ParseInput, then this field will be String.Empty
         /// </param>
         /// <returns>An enumeration of DiagnosticRecords that were found by rules.</returns>
         public IEnumerable<DiagnosticRecord> AnalyzeSyntaxTree(
             ScriptBlockAst scriptAst,
             Token[] scriptTokens,
-            string filePath)
+            string filePath,
+            bool skipVariableAnalysis = false)
         {
             Dictionary<string, List<RuleSuppression>> ruleSuppressions = new Dictionary<string,List<RuleSuppression>>();
             ConcurrentBag<DiagnosticRecord> diagnostics = new ConcurrentBag<DiagnosticRecord>();
@@ -2053,13 +2056,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                     }
                 }
 
-#region Run VariableAnalysis
-                try
+                if (!skipVariableAnalysis)
                 {
-                    Helper.Instance.InitializeVariableAnalysis(scriptAst);
-                }
-                catch { }
+#region Run VariableAnalysis
+                    try
+                    {
+                        Helper.Instance.InitializeVariableAnalysis(scriptAst);
+                    }
+                    catch { }
 #endregion
+                }
 
                 Helper.Instance.Tokens = scriptTokens;
             }
