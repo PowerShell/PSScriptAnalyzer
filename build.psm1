@@ -329,6 +329,7 @@ function Start-ScriptAnalyzerBuild
 
 function New-Catalog
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
     param ( [Parameter()]$Location )
     $newFileCatalog = Get-Command -ErrorAction SilentlyContinue New-FileCatalog
     if ($null -eq $newFileCatalog) {
