@@ -59,7 +59,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 Range updatedRange;
                 bool fixesWereApplied;
-                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange, out fixesWereApplied);
+                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange, out fixesWereApplied, skipVariableAnalysis: true);
                 range = updatedRange;
             }
 
