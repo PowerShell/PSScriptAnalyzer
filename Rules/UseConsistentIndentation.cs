@@ -219,22 +219,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 }
                             }
 
-                            bool lineHasPipelineBeforeToken = false;
-                            var searchIndex = tokenIndex;
-                            var searchToken = tokens[searchIndex];
-                            var searchLine = token.Extent.StartLineNumber;
-                            do
-                            {
-                                searchToken = tokens[searchIndex];
-                                searchLine = searchToken.Extent.StartLineNumber;
-                                var searchcolumn = searchToken.Extent.StartColumnNumber;
-                                if (searchToken.Kind == TokenKind.Pipe && searchcolumn < token.Extent.StartColumnNumber)
-                                {
-                                    lineHasPipelineBeforeToken = true;
-                                    break;
-                                }
-                                searchIndex--;
-                            } while (searchLine == token.Extent.StartLineNumber && searchIndex >= 0);
+                            bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
 
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
@@ -267,6 +252,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
+        }
+
+        private static bool LineHasPipelineBeforeToken(Token[] tokens, int tokenIndex, Token token)
+        {
+            bool lineHasPipelineBeforeToken = false;
+            var searchIndex = tokenIndex;
+            var searchLine = token.Extent.StartLineNumber;
+            do
+            {
+                searchLine = tokens[searchIndex].Extent.StartLineNumber;
+                var searchcolumn = tokens[searchIndex].Extent.StartColumnNumber;
+                if (tokens[searchIndex].Kind == TokenKind.Pipe && searchcolumn < token.Extent.StartColumnNumber)
+                {
+                    lineHasPipelineBeforeToken = true;
+                    break;
+                }
+                searchIndex--;
+            } while (searchLine == token.Extent.StartLineNumber && searchIndex >= 0);
+            return lineHasPipelineBeforeToken;
         }
 
         private static CommandBaseAst LastPipeOnFirstLineWithPipeUsage(PipelineAst pipelineAst)
