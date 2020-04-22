@@ -256,7 +256,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static bool LineHasPipelineBeforeToken(Token[] tokens, int tokenIndex, Token token)
         {
-            bool lineHasPipelineBeforeToken = false;
             var searchIndex = tokenIndex;
             var searchLine = token.Extent.StartLineNumber;
             do
@@ -265,12 +264,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 var searchcolumn = tokens[searchIndex].Extent.StartColumnNumber;
                 if (tokens[searchIndex].Kind == TokenKind.Pipe && searchcolumn < token.Extent.StartColumnNumber)
                 {
-                    lineHasPipelineBeforeToken = true;
-                    break;
+                    return true;
                 }
                 searchIndex--;
             } while (searchLine == token.Extent.StartLineNumber && searchIndex >= 0);
-            return lineHasPipelineBeforeToken;
+            return false;
         }
 
         private static CommandBaseAst LastPipeOnFirstLineWithPipeUsage(PipelineAst pipelineAst)
