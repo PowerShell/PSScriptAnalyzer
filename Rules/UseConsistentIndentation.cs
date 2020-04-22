@@ -256,12 +256,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private static bool LineHasPipelineBeforeToken(Token[] tokens, int tokenIndex, Token token)
         {
-            var searchIndex = tokenIndex;
-            var searchLine = token.Extent.StartLineNumber;
+            int searchIndex = tokenIndex;
+            int searchLine = token.Extent.StartLineNumber;
             do
             {
                 searchLine = tokens[searchIndex].Extent.StartLineNumber;
-                var searchcolumn = tokens[searchIndex].Extent.StartColumnNumber;
+                int searchcolumn = tokens[searchIndex].Extent.StartColumnNumber;
                 if (tokens[searchIndex].Kind == TokenKind.Pipe && searchcolumn < token.Extent.StartColumnNumber)
                 {
                     return true;
