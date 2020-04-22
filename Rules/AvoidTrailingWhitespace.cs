@@ -36,11 +36,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var diagnosticRecords = new List<DiagnosticRecord>();
 
-            string[] lines = Regex.Split(ast.Extent.Text, @"\r?\n");
+            //string[] lines = Regex.Split(ast.Extent.Text, @"\r?\n");
+            string[] lines = ast.Extent.Text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
             for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
             {
                 var line = lines[lineNumber];
+
+                if (line.Length == 0)
+                {
+                    continue;
+                }
+                if (line[line.Length - 1] != ' ' && line[line.Length - 1] != '\t')
+                {
+                    continue;
+                }
 
                 var match = Regex.Match(line, @"\s+$");
                 if (match.Success)
