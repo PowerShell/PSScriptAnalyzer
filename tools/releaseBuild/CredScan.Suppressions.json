@@ -1,0 +1,15 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+        { "file": "\\Engine\\Settings\\desktop-4.0-windows.json",
+            "_justification": "The file contains the list of all parameters of a cmdlet but no passwords are actually present." },
+        { "file": "\\Engine\\Settings\\desktop-3.0-windows.json",
+            "_justification": "The file contains the list of all parameters of a cmdlet but no passwords are actually present." },
+        { "file": "\\Engine\\Settings\\desktop-5.1.14393.206-windows.json",
+            "_justification": "The file contains the list of all parameters of a cmdlet but no passwords are actually present." },
+        { "file": "\\Tests\\Engine\\RuleSuppression.tests.ps1",
+            "_justification": "The parameter password is used in function declaration for test but is not called and no password is present." }
+     ]
+}
+
+
