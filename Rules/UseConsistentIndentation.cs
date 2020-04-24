@@ -295,6 +295,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     break;
                 }
+
                 if (PositionIsEqual(pipelineAsts[i].Extent.EndScriptPosition, token.Extent.EndScriptPosition))
                 {
                     matchingPipeLineAstEnd = pipelineAsts[i] as PipelineAst;
