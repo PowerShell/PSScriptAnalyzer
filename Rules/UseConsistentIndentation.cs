@@ -219,10 +219,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 }
                             }
 
-                            var lineHasPipelineBeforeToken = tokens.Any(oneToken =>
-                                oneToken.Kind == TokenKind.Pipe &&
-                                oneToken.Extent.StartLineNumber == token.Extent.StartLineNumber &&
-                                oneToken.Extent.StartColumnNumber < token.Extent.StartColumnNumber);
+                            bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
 
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
@@ -255,6 +252,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
+        }
+
+        private static bool LineHasPipelineBeforeToken(Token[] tokens, int tokenIndex, Token token)
+        {
+            int searchIndex = tokenIndex;
+            int searchLine = token.Extent.StartLineNumber;
+            do
+            {
+                searchLine = tokens[searchIndex].Extent.StartLineNumber;
+                int searchcolumn = tokens[searchIndex].Extent.StartColumnNumber;
+                if (tokens[searchIndex].Kind == TokenKind.Pipe && searchcolumn < token.Extent.StartColumnNumber)
+                {
+                    return true;
+                }
+                searchIndex--;
+            } while (searchLine == token.Extent.StartLineNumber && searchIndex >= 0);
+            return false;
         }
 
         private static CommandBaseAst LastPipeOnFirstLineWithPipeUsage(PipelineAst pipelineAst)
