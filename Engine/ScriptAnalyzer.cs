@@ -1597,7 +1597,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             do
             {
                 IEnumerable<DiagnosticRecord> records;
-                if (skipParsing)
+                if (skipParsing && previousUnusedCorrections == 0)
                 {
                     records = AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty, skipVariableAnalysis);
                 }
