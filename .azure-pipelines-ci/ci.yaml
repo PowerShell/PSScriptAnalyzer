@@ -48,4 +48,4 @@ stages:
         steps:
         - template: templates/test.yaml
           parameters:
-            - pwsh: $[ variables['pwsh'] ]
+            pwsh: $[ variables['pwsh'] ]
