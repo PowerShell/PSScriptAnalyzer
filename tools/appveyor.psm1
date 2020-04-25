@@ -107,7 +107,12 @@ function Invoke-AppveyorTest {
     Write-Verbose -Verbose "module path: ${env:PSModulePath}"
 
     # Set up testing assets
-    $testScripts = "${CheckoutPath}\Tests\Engine","${CheckoutPath}\Tests\Rules","${CheckoutPath}\Tests\Documentation","${CheckoutPath}\PSCompatibilityCollector\Tests"
+    $testScripts = @(
+        Join-Path $CheckoutPath 'Tests\Engine'
+        Join-Path $CheckoutPath 'Tests\Rules'
+        Join-Path $CheckoutPath 'Tests\Documentation'
+        Join-Path $CheckoutPath 'PSCompatibilityCollector\Tests'
+    )
 
     # Change culture to Turkish to test that PSSA works well with different locales
     [System.Threading.Thread]::CurrentThread.CurrentCulture = [cultureinfo]::CreateSpecificCulture('tr-TR')
