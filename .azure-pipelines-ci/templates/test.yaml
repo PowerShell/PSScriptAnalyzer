@@ -1,7 +1,7 @@
 parameters:
 - name: pwsh
-  type: boolean
-  default: true
+  type: string
+  default: 'true'
 
 steps:
 - task: DownloadPipelineArtifact@2
