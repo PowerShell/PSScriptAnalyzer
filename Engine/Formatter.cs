@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Management.Automation;
+using System.Management.Automation.Language;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -46,6 +47,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             };
 
             var text = new EditableText(scriptDefinition);
+            ScriptBlockAst scriptAst = null;
+            Token[] scriptTokens = null;
+            bool skipParsing = false;
             foreach (var rule in ruleOrder)
             {
                 if (!settings.RuleArguments.ContainsKey(rule))
@@ -57,9 +61,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
                 ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
 
-                Range updatedRange;
-                bool fixesWereApplied;
-                text = ScriptAnalyzer.Instance.Fix(text, range, out updatedRange, out fixesWereApplied, skipVariableAnalysis: true);
+                text = ScriptAnalyzer.Instance.Fix(text, range, skipParsing, out Range updatedRange, out bool fixesWereApplied, ref scriptAst, ref scriptTokens, skipVariableAnalysis: true);
+                skipParsing = !fixesWereApplied;
                 range = updatedRange;
             }
 

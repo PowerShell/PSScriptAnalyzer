@@ -1478,8 +1478,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 if (shouldProcess(scriptFilePath, $"Analyzing and fixing file {scriptFilePath}"))
                 {
                     var fileEncoding = GetFileEncoding(scriptFilePath);
-                    bool fixesWereApplied;
-                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding), out fixesWereApplied);
+                    var scriptFileContentWithFixes = Fix(File.ReadAllText(scriptFilePath, fileEncoding), out bool fixesWereApplied);
                     if (fixesWereApplied)
                     {
                         File.WriteAllText(scriptFilePath, scriptFileContentWithFixes, fileEncoding);
@@ -1497,12 +1496,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <summary>
         /// Analyzes a script definition in the form of a string input
         /// </summary>
-        /// <param name="scriptDefinition">The script to be analyzed</param>
+        /// <param name="scriptDefinition">The script to be analyzed.</param>
+        /// <param name="scriptAst">Parsed AST of <paramref name="scriptDefinition"/>.</param>
+        /// <param name="scriptTokens">Parsed tokens of <paramref name="scriptDefinition"/.></param>
+        /// <param name="skipVariableAnalysis">Whether variable analysis can be skipped (applicable if rules do not use variable analysis APIs).</param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, bool skipVariableAnalysis = false)
+        public IEnumerable<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, out ScriptBlockAst scriptAst, out Token[] scriptTokens, bool skipVariableAnalysis = false)
         {
-            ScriptBlockAst scriptAst = null;
-            Token[] scriptTokens = null;
+            scriptAst = null;
+            scriptTokens = null;
             ParseError[] errors = null;
 
             this.outputWriter.WriteVerbose(string.Format(CultureInfo.CurrentCulture, Strings.VerboseScriptDefinitionMessage));
@@ -1546,7 +1548,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Fix the violations in the given script text.
         /// </summary>
         /// <param name="scriptDefinition">The script text to be fixed.</param>
-        /// <param name="updatedRange">Whether any warnings were fixed.</param>
+        /// <param name="fixesWereApplied">Whether any warnings were fixed.</param>
         /// <returns>The fixed script text.</returns>
         public string Fix(string scriptDefinition, out bool fixesWereApplied)
         {
@@ -1555,20 +1557,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 throw new ArgumentNullException(nameof(scriptDefinition));
             }
 
-            Range updatedRange;
-            return Fix(new EditableText(scriptDefinition), null, out updatedRange, out fixesWereApplied).ToString();
+            ScriptBlockAst scriptAst = null;
+            Token[] scriptTokens = null;
+            return Fix(new EditableText(scriptDefinition), range: null, skipParsing: false, out _, out fixesWereApplied, ref scriptAst, ref scriptTokens).ToString();
         }
 
         /// <summary>
         /// Fix the violations in the given script text.
         /// </summary>
-        /// <param name="text">An object of type `EditableText` that encapsulates the script text to be fixed.</param>
+        /// <param name="text">An object of type <see cref="EditableText"/> that encapsulates the script text to be fixed.</param>
         /// <param name="range">The range in which the fixes are allowed.</param>
+        /// <param name="skipParsing">Whether to use the <paramref name="scriptAst"/> and <paramref name="scriptTokens"/> parameters instead of parsing the <paramref name="text"/> parameter.</param>
         /// <param name="updatedRange">The updated range after the fixes have been applied.</param>
-        /// <param name="updatedRange">Whether any warnings were fixed.</param>
+        /// <param name="fixesWereApplied">Whether any warnings were fixed.</param>
+        /// <param name="scriptAst">Optionally pre-parsed AST.</param>
+        /// <param name="scriptTokens">Optionally pre-parsed tokens.</param>
         /// <param name="skipVariableAnalysis">Whether to skip variable analysis.</param>
         /// <returns>The same instance of `EditableText` that was passed to the method, but the instance encapsulates the fixed script text. This helps in chaining the Fix method.</returns>
-        public EditableText Fix(EditableText text, Range range, out Range updatedRange, out bool fixesWereApplied, bool skipVariableAnalysis = false)
+        public EditableText Fix(EditableText text, Range range, bool skipParsing, out Range updatedRange, out bool fixesWereApplied, ref ScriptBlockAst scriptAst, ref Token[] scriptTokens, bool skipVariableAnalysis = false)
         {
             if (text == null)
             {
@@ -1590,7 +1596,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var previousUnusedCorrections = 0;
             do
             {
-                var records = AnalyzeScriptDefinition(text.ToString(), skipVariableAnalysis);
+                IEnumerable<DiagnosticRecord> records;
+                if (skipParsing)
+                {
+                    records = AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty, skipVariableAnalysis);
+                }
+                else
+                {
+                    records = AnalyzeScriptDefinition(text.ToString(), out scriptAst, out scriptTokens, skipVariableAnalysis);
+                }
                 var corrections = records
                     .Select(r => r.SuggestedCorrections)
                     .Where(sc => sc != null && sc.Any())
