@@ -44,7 +44,7 @@ stages:
               vmImage: windows-2019
               pwsh: false
         pool:
-          vmImage: $[ variables['vmImage'] ]
+          vmImage: ${{ variables['vmImage'] }}
         steps:
         - template: templates/test.yaml
           parameters:
