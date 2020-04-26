@@ -1698,22 +1698,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         }
 
         private static IEnumerable<CorrectionExtent> GetCorrectionExtentsForFix(
-            IEnumerable<CorrectionExtent> correctionExtents)
+            List<CorrectionExtent> correctionExtents)
         {
-            var ceList = correctionExtents.ToList();
-            ceList.Sort((x, y) =>
+            correctionExtents.Sort((x, y) =>
             {
                 return x.StartLineNumber < y.StartLineNumber ?
                             1 :
                             (x.StartLineNumber == y.StartLineNumber ? 0 : -1);
             });
 
-            return ceList.GroupBy(ce => ce.StartLineNumber).Select(g => g.First());
+            return correctionExtents.GroupBy(ce => ce.StartLineNumber).Select(g => g.First());
         }
 
         private static EditableText Fix(
             EditableText text,
-            IEnumerable<CorrectionExtent> correctionExtents,
+            List<CorrectionExtent> correctionExtents,
             out int unusedCorrections)
         {
             var correctionsToUse = GetCorrectionExtentsForFix(correctionExtents);
@@ -1724,7 +1723,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 text.ApplyEdit(correction);
             }
 
-            unusedCorrections = correctionExtents.Count() - count;
+            unusedCorrections = correctionExtents.Count - count;
             return text;
         }
 
