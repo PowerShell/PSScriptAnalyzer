@@ -155,8 +155,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     case TokenKind.Pipe:
                         if (pipelineIndentationStyle == PipelineIndentationStyle.None) { break; }
-                        bool pipelineIsFollowedByNewlineOrLineContinuation = tokenIndex < tokens.Length - 1 && tokenIndex > 0 &&
-                              (tokens[tokenIndex + 1].Kind == TokenKind.NewLine || tokens[tokenIndex + 1].Kind == TokenKind.LineContinuation);
+                        bool pipelineIsFollowedByNewlineOrLineContinuation =
+                            PipelineIsFollowedByNewlineOrLineContinuation(tokens, tokenIndex);
                         if (!pipelineIsFollowedByNewlineOrLineContinuation)
                         {
                             break;
@@ -252,6 +252,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             return diagnosticRecords;
+        }
+
+        private static bool PipelineIsFollowedByNewlineOrLineContinuation(Token[] tokens, int tokenIndex)
+        {
+            if (tokenIndex == tokens.Length - 1)
+            {
+                return false;
+            }
+            var nextToken = tokens[tokenIndex + 1];
+            if (nextToken.Kind == TokenKind.Comment && tokenIndex < tokens.Length - 2)
+            {
+                nextToken = tokens[tokenIndex + 2];
+            }
+            return nextToken.Kind == TokenKind.NewLine ||
+                   nextToken.Kind == TokenKind.LineContinuation;
         }
 
         private static bool LineHasPipelineBeforeToken(Token[] tokens, int tokenIndex, Token token)
