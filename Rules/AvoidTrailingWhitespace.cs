@@ -36,7 +36,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var diagnosticRecords = new List<DiagnosticRecord>();
 
-            //string[] lines = Regex.Split(ast.Extent.Text, @"\r?\n");
             string[] lines = ast.Extent.Text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
             for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
