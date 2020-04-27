@@ -47,5 +47,3 @@ stages:
           vmImage: $[ variables['vmImage'] ]
         steps:
         - template: templates/test.yaml
-          parameters:
-            pwsh: $[ variables['pwsh'] ]
