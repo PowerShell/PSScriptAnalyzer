@@ -132,7 +132,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var indentationLevel = 0;
             var currentIndenationLevelIncreaseDueToPipelines = 0;
             var onNewLine = true;
-            var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true);
+            var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true).ToList();
+            int minimumPipelineAstIndex = 0;
             for (int tokenIndex = 0; tokenIndex < tokens.Length; tokenIndex++)
             {
                 var token = tokens[tokenIndex];
@@ -219,10 +220,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 }
                             }
 
-                            var lineHasPipelineBeforeToken = tokens.Any(oneToken =>
-                                oneToken.Kind == TokenKind.Pipe &&
-                                oneToken.Extent.StartLineNumber == token.Extent.StartLineNumber &&
-                                oneToken.Extent.StartColumnNumber < token.Extent.StartColumnNumber);
+                            bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
 
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
@@ -231,8 +229,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (pipelineIndentationStyle == PipelineIndentationStyle.None) { break; }
                 // Check if the current token matches the end of a PipelineAst
-                var matchingPipeLineAstEnd = pipelineAsts.FirstOrDefault(pipelineAst =>
-                        PositionIsEqual(pipelineAst.Extent.EndScriptPosition, token.Extent.EndScriptPosition)) as PipelineAst;
+                PipelineAst matchingPipeLineAstEnd = MatchingPipelineAstEnd(pipelineAsts, ref minimumPipelineAstIndex, token);
                 if (matchingPipeLineAstEnd == null)
                 {
                     continue;
@@ -257,6 +254,23 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return diagnosticRecords;
         }
 
+        private static bool LineHasPipelineBeforeToken(Token[] tokens, int tokenIndex, Token token)
+        {
+            int searchIndex = tokenIndex;
+            int searchLine = token.Extent.StartLineNumber;
+            do
+            {
+                searchLine = tokens[searchIndex].Extent.StartLineNumber;
+                int searchcolumn = tokens[searchIndex].Extent.StartColumnNumber;
+                if (tokens[searchIndex].Kind == TokenKind.Pipe && searchcolumn < token.Extent.StartColumnNumber)
+                {
+                    return true;
+                }
+                searchIndex--;
+            } while (searchLine == token.Extent.StartLineNumber && searchIndex >= 0);
+            return false;
+        }
+
         private static CommandBaseAst LastPipeOnFirstLineWithPipeUsage(PipelineAst pipelineAst)
         {
             CommandBaseAst lastPipeOnFirstLineWithPipeUsage = pipelineAst.PipelineElements[0];
@@ -270,6 +284,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
             }
             return lastPipeOnFirstLineWithPipeUsage;
+        }
+
+        private static PipelineAst MatchingPipelineAstEnd(List<Ast> pipelineAsts, ref int minimumPipelineAstIndex, Token token)
+        {
+            PipelineAst matchingPipeLineAstEnd = null;
+            for (int i = minimumPipelineAstIndex; i < pipelineAsts.Count; i++)
+            {
+                if (pipelineAsts[i].Extent.EndScriptPosition.LineNumber > token.Extent.EndScriptPosition.LineNumber)
+                {
+                    break;
+                }
+
+                if (PositionIsEqual(pipelineAsts[i].Extent.EndScriptPosition, token.Extent.EndScriptPosition))
+                {
+                    matchingPipeLineAstEnd = pipelineAsts[i] as PipelineAst;
+                    minimumPipelineAstIndex = i;
+                    break;
+                }
+            }
+
+            return matchingPipeLineAstEnd;
         }
 
         private static bool PositionIsEqual(IScriptPosition position1, IScriptPosition position2)
