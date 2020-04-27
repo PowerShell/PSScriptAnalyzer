@@ -16,11 +16,8 @@ stages:
             #./build.ps1 -Configuration 'Release' -All
             #./PSCompatibilityCollector/build.ps1 -Configuration 'Release'
           displayName: 'Full Build'
-        - task: PublishPipelineArtifact@1
-          displayName: 'Publish Pipeline Artifact: out Folder'
-          inputs:
-            targetPath: '$(Build.SourcesDirectory)/out'
-            artifactName: out
+        - pwsh: |
+            Write-Host "##vso[artifact.upload containerfolder=out;artifactname=out;]${env:Build_SourcesDirectory}/out"
   - stage: Test
     jobs:
       - job:
