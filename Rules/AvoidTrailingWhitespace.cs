@@ -46,11 +46,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
+
                 if (line[line.Length - 1] != ' ' &&
                     line[line.Length - 1] != '\t')
                 {
                     continue;
                 }
+
                 int startColumnOfTrailingWhitespace = 1;
                 for (int i = line.Length - 2; i > 0; i--)
                 {
@@ -61,10 +63,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
 
-                var startLine = lineNumber + 1;
-                var endLine = startLine;
-                var startColumn = startColumnOfTrailingWhitespace;
-                var endColumn = line.Length + 1;
+                int startLine = lineNumber + 1;
+                int endLine = startLine;
+                int startColumn = startColumnOfTrailingWhitespace;
+                int endColumn = line.Length + 1;
 
                 var violationExtent = new ScriptExtent(
                     new ScriptPosition(
