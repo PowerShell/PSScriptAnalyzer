@@ -8,7 +8,7 @@ steps:
   displayName: 'Test'
   inputs:
     targetType: inline
-    pwsh: $[ variables['pwsh'] ]
+    pwsh: true
     script: |
       Import-Module .\tools\appveyor.psm1
       Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY

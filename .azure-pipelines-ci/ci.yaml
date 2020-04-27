@@ -38,6 +38,15 @@ stages:
               vmImage: vs2017-win2016
             Windows_Server2019_PowerShell_Core:
               vmImage: windows-2019
+        pool:
+          vmImage: $[ variables['vmImage'] ]
+        steps:
+        - template: templates/test-pwsh.yaml
+      - job:
+        strategy:
+          matrix:
+            Windows_Server2019_PowerShell_Core:
+              vmImage: windows-2019
             Windows_Server2016_PowerShell_5_1:
               vmImage: vs2017-win2016
               pwsh: false
@@ -47,4 +56,4 @@ stages:
         pool:
           vmImage: $[ variables['vmImage'] ]
         steps:
-        - template: templates/test.yaml
+        - template: templates/test-powershell.yaml
