@@ -52,7 +52,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                int startColumnOfTrailingWhitespace = 0;
+                int startColumnOfTrailingWhitespace = 1;
                 for (int i = line.Length - 2; i > 0; i--)
                 {
                     if (line[i] != ' ' && line[i] != '\t')
