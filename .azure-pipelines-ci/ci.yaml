@@ -17,11 +17,6 @@ stages:
           displayName: 'Full Build'
         - pwsh: |
             Write-Host "##vso[artifact.upload containerfolder=out;artifactname=out;]${env:Build_SourcesDirectory}/out"
-        # - task: PublishPipelineArtifact@1
-        #   displayName: 'Publish Pipeline Artifact: out Folder'
-        #   inputs:
-        #     targetPath: '$(Build.SourcesDirectory)/out'
-        #     artifactName: out
   - stage: Test
     jobs:
       - job:
