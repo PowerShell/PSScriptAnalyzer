@@ -254,19 +254,33 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return diagnosticRecords;
         }
 
-        private static bool PipelineIsFollowedByNewlineOrLineContinuation(Token[] tokens, int tokenIndex)
+        private static bool PipelineIsFollowedByNewlineOrLineContinuation(Token[] tokens, int startIndex)
         {
-            if (tokenIndex == tokens.Length - 1)
+            if (startIndex >= tokens.Length - 1)
             {
                 return false;
             }
-            var nextToken = tokens[tokenIndex + 1];
-            if (nextToken.Kind == TokenKind.Comment && tokenIndex < tokens.Length - 2)
+            
+            Token nextToken = null;
+            for (int i = startIndex + 1; i < tokens.Length; i++)
             {
-                nextToken = tokens[tokenIndex + 2];
+                nextToken = tokens[i];
+                
+                switch (nextToken.Kind)
+                {
+                    case TokenKind.Comment:
+                        continue;
+                        
+                    case TokenKind.NewLine:
+                    case TokenKind.LineContinuation:
+                        return true;
+                        
+                    default:
+                        return false;
             }
-            return nextToken.Kind == TokenKind.NewLine ||
-                   nextToken.Kind == TokenKind.LineContinuation;
+            
+            // We've run out of tokens but haven't seen a newline
+            return false;
         }
 
         private static bool LineHasPipelineBeforeToken(Token[] tokens, int tokenIndex, Token token)
