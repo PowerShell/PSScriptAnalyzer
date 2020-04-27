@@ -10,10 +10,11 @@ stages:
           vmImage: windows-latest
         steps:
         - pwsh: |
-            Import-Module .\tools\appveyor.psm1
-            Invoke-AppveyorInstall -SkipPesterInstallation
-            ./build.ps1 -Configuration 'Release' -All
-            ./PSCompatibilityCollector/build.ps1 -Configuration 'Release'
+            mkdir out
+            #Import-Module .\tools\appveyor.psm1
+            #Invoke-AppveyorInstall -SkipPesterInstallation
+            #./build.ps1 -Configuration 'Release' -All
+            #./PSCompatibilityCollector/build.ps1 -Configuration 'Release'
           displayName: 'Full Build'
         - task: PublishPipelineArtifact@1
           displayName: 'Publish Pipeline Artifact: out Folder'

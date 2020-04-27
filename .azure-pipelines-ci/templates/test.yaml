@@ -1,8 +1,3 @@
-parameters:
-- name: pwsh
-  type: string
-  default: 'true'
-
 steps:
 - task: DownloadPipelineArtifact@2
   displayName: 'Download Pipeline Artifact: out Folder'
@@ -13,7 +8,7 @@ steps:
   displayName: 'Test'
   inputs:
     targetType: inline
-    pwsh: $(pwsh)
+    pwsh: $[ variables['pwsh'] ]
     script: |
       Import-Module .\tools\appveyor.psm1
       Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
