@@ -47,51 +47,57 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-                if (line[line.Length - 1] != ' ' && line[line.Length - 1] != '\t')
+                if (line[line.Length - 1] != ' ' &&
+                    line[line.Length - 1] != '\t')
                 {
                     continue;
                 }
-
-                var match = Regex.Match(line, @"\s+$");
-                if (match.Success)
+                int startColumnOfTrailingWhitespace = 0;
+                for (int i = line.Length - 2; i > 0; i--)
                 {
-                    var startLine = lineNumber + 1;
-                    var endLine = startLine;
-                    var startColumn = match.Index + 1;
-                    var endColumn = startColumn + match.Length;
-
-                    var violationExtent = new ScriptExtent(
-                        new ScriptPosition(
-                            ast.Extent.File,
-                            startLine,
-                            startColumn,
-                            line
-                        ),
-                        new ScriptPosition(
-                            ast.Extent.File,
-                            endLine,
-                            endColumn,
-                            line
-                        ));
-
-                    var suggestedCorrections = new List<CorrectionExtent>();
-                    suggestedCorrections.Add(new CorrectionExtent(
-                                violationExtent,
-                                string.Empty,
-                                ast.Extent.File
-                            ));
-
-                    diagnosticRecords.Add(
-                        new DiagnosticRecord(
-                            String.Format(CultureInfo.CurrentCulture, Strings.AvoidTrailingWhitespaceError),
-                            violationExtent,
-                            GetName(),
-                            GetDiagnosticSeverity(),
-                            ast.Extent.File,
-                            null,
-                            suggestedCorrections
-                        ));
+                    if (line[i] != ' ' && line[i] != '\t')
+                    {
+                        startColumnOfTrailingWhitespace = i + 2;
+                        break;
+                    }
                 }
+
+                var startLine = lineNumber + 1;
+                var endLine = startLine;
+                var startColumn = startColumnOfTrailingWhitespace;
+                var endColumn = line.Length + 1;
+
+                var violationExtent = new ScriptExtent(
+                    new ScriptPosition(
+                        ast.Extent.File,
+                        startLine,
+                        startColumn,
+                        line
+                    ),
+                    new ScriptPosition(
+                        ast.Extent.File,
+                        endLine,
+                        endColumn,
+                        line
+                    ));
+
+                var suggestedCorrections = new List<CorrectionExtent>();
+                suggestedCorrections.Add(new CorrectionExtent(
+                            violationExtent,
+                            string.Empty,
+                            ast.Extent.File
+                        ));
+
+                diagnosticRecords.Add(
+                    new DiagnosticRecord(
+                        String.Format(CultureInfo.CurrentCulture, Strings.AvoidTrailingWhitespaceError),
+                        violationExtent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        ast.Extent.File,
+                        null,
+                        suggestedCorrections
+                    ));
             }
 
             return diagnosticRecords;
