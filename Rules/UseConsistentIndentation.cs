@@ -265,18 +265,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             for (int i = startIndex + 1; i < tokens.Length; i++)
             {
                 nextToken = tokens[i];
-                
+
                 switch (nextToken.Kind)
                 {
                     case TokenKind.Comment:
                         continue;
-                        
+
                     case TokenKind.NewLine:
                     case TokenKind.LineContinuation:
                         return true;
-                        
+
                     default:
                         return false;
+                }
             }
             
             // We've run out of tokens but haven't seen a newline
