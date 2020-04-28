@@ -47,7 +47,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (line[line.Length - 1] != ' ' &&
+                if (!char.IsWhiteSpace(line[line.Length - 1]) &&
                     line[line.Length - 1] != '\t')
                 {
                     continue;
