@@ -28,14 +28,37 @@
 
 ### Formatter
 
-- Set default of CheckParameter configuration setting to false to ensure that setting won't be enabled by default if an old version of the VS-Code extension uses a new version of - PSScriptAnalyzer (1.19) (#1411) (by @bergmeister)
-- Split CheckPipe feature of trimming redundant whitespace out into option CheckPipeForRedundantWhiteSpace (#1413) (by @bergmeister)
-- Fix recently introduced bug (PR #1391) for UseCorrectCasing (#1408) (by @bergmeister)
-- Add PipelineIndentationStyle.None option for scenarios where indentation is custom, inconsistent or the user does not like any of the 3 pipeline indentation styles (#1399) (by @bergmeister)
-- Correct casing of parameters as well in PSUseCorrectCasing formatter rule (#1391) (by @bergmeister)
-- Remove redundant whitespace between parameters with new option (disabled by default) in UseConsistentWhitespace (#1392) (by @bergmeister)
-- Fix complex case when PipelineIndentation is not set to default (NoIndentation) (#1359) (by @bergmeister)
-- UseConsistentWhitespace: Ignore empty hashtable for CheckInnerBrace configuration (#1349) (by @bergmeister)
+- UseCorrectCasing
+  - Correct casing of parameters as well in PSUseCorrectCasing formatter rule (#1391) (by @bergmeister)
+  - Fix temporarilly introduced bug (PR #1391) for UseCorrectCasing (#1408) (by @bergmeister)
+- UseConsistentIndentation
+  - When non-default options are used, cater for the case of a comment between pipe and newline (#1463)
+  - Add PipelineIndentationStyle.None option for scenarios where indentation is custom, inconsistent or the user does not like any of the 3 pipeline indentation styles (#1399) (by @bergmeister)
+  - Fix complex case when PipelineIndentation is not set to default (NoIndentation) (#1359) (by @bergmeister)
+- UseConsistentWhitespace
+  - Split CheckPipe feature of trimming redundant whitespace out into option CheckPipeForRedundantWhiteSpace (#1413) (by @bergmeister)
+  - Set default of CheckParameter configuration setting to false to ensure that setting won't be enabled by default if an old version of the VS-Code extension uses a new version of - PSScriptAnalyzer (1.19) (#1411) (by @bergmeister)
+  - Remove redundant whitespace between parameters with new option (disabled by default) in UseConsistentWhitespace (#1392) (by @bergmeister)
+  - Ignore empty hashtable for CheckInnerBrace configuration (#1349) (by @bergmeister)
+
+### Performance
+
+The Formatter can now be multiple times faster depending on the use case and especially scaling problems were addressed that showed when analyzing large scripts with thousands of lines (a 3000 line test script was used in the below performance figures) Optimisations were to
+
+- Eliminate initialization overhead, which can lead to a reduced time of up to 50%
+- Optimize operations in rules to make them scale better, another improvement of around 50%
+- The formatter used to re-parse the script in between every rule run but this is skipped now if the previous rule did not emit a `DiagnosticRecord` as it means the script text hasn't changed and doesn't need updating. Therefore formatting will be faster on scripts that need no to little changes.
+
+A small improvement was made to a script analysis rule as well but the gain is offset by the addition of the new rules in this release.
+
+The PRs for those improvements are:
+
+- Eliminate Regex overhead in AvoidTrailingWhitespace -> Speedup of 5% (PowerShell 5.1) or 2.5 % (PowerShell 7.1-preview.2) (#1465) (by @bergmeister)
+- Formatter: Recycle parsed AST and tokens in between rule invocations when no correction was applied to improve performance (#1462) (by @bergmeister)
+- Improve performance of UseConsistentIndentation even more > another 10% speedup for formatter (#1461) (by @bergmeister)
+- Improve performance of UseConsistentIndentation -> 35% speedup for formatter (#1458) (by @bergmeister)
+- Lazy initialisation of LinkedList in TokenOperations constructor -> 7% performance gain for formatter (#1453) (by @bergmeister)
+- Invoke-Formatter: Skip VariableAnalysis, which is not needed to yield a 50% performance improvement (#1451) (by @bergmeister)
 
 ### Fixes
 
@@ -47,6 +70,13 @@
 
 ### Build/Tests/Maintenance
 
+- Changelog for 1.19.0 (#1448) (by @bergmeister)
+- Use separate test.yaml files files since param passing of pwsh still doesn't seem to fully work correctly #1466 (by @bergmeister)
+- New build scripts for release pipeline (#1442) (by @JamesWTruher)
+- Make sure that tests always get uploaded, due to too much YAML indentation, condition was not applied (#1455) (by @bergmeister)
+- Cleanup csproj files: Remove code duplication for Configuration and entries in Rules project, since it depends on Engine project (#1450) (by @bergmeister)
+- Build: Use logging command as a temporary workaround due to billing bug preventing upload of pipeline artefacts (#1464) (by @bergmeister)
+- Use bracket syntax for passing yaml parameter (#1449) (by @bergmeister)
 - Update Newtonsoft.Json from 12.0.2 to 12.0.3 in Compatibility project as well (#1447) (by @bergmeister)
 - Replace usage of $MyInvocation.MyCommand.Path with $PSScriptRoot and cleanup tests as a preparation for Pester v5 (#1438) (by @bergmeister)
 - Compatibility tests: Use correct genericVerCases test case and remove invalid test case (#1440) (by @bergmeister)
@@ -76,6 +106,7 @@
 
 ### Documentation
 
+- Update Readme with minimum PowerShell Core version being 6.2 (#1457) (by @bergmeister)
 - Change term to satisfy policheck requirements #1445 (by @JamesWTruher)
 - Update adopters file with entry for Microsoft internal teams (#1398) (thanks @pperrier27!)
 - Add ADOPTERS.md (#1380) (by @SteveL-MSFT)
