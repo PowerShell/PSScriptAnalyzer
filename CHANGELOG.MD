@@ -30,7 +30,7 @@
 
 - UseCorrectCasing
   - Correct casing of parameters as well in PSUseCorrectCasing formatter rule (#1391) (by @bergmeister)
-  - Fix temporarilly introduced bug (PR #1391) for UseCorrectCasing (#1408) (by @bergmeister)
+  - Fix temporarily introduced bug (PR #1391) for UseCorrectCasing (#1408) (by @bergmeister)
 - UseConsistentIndentation
   - When non-default options are used, cater for the case of a comment between pipe and newline (#1463)
   - Add PipelineIndentationStyle.None option for scenarios where indentation is custom, inconsistent or the user does not like any of the 3 pipeline indentation styles (#1399) (by @bergmeister)
@@ -43,7 +43,7 @@
 
 ### Performance
 
-The Formatter can now be multiple times faster depending on the use case and especially scaling problems were addressed that showed when analyzing large scripts with thousands of lines (a 3000 line test script was used in the below performance figures) Optimisations were to
+The Formatter can now be multiple times faster depending on the use case and especially scaling problems were addressed that showed when analyzing large scripts with thousands of lines (a 3000 line test script was used in the below performance figures). Optimisations were to
 
 - Eliminate initialization overhead, which can lead to a reduced time of up to 50%
 - Optimize operations in rules to make them scale better, another improvement of around 50%
