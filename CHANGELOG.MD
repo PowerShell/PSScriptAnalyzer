@@ -583,7 +583,7 @@ A big **Thank You!** to the following folks for making PSScriptAnalyzer even bet
 ### Engine
 - Fixed an engine bug that prevented versioned script rule modules from being loaded
 - Fixed loading issues with custom rules that do not have comment-based help to describe the rule
-- Fixed a hang issue that appeared when using ScriptAnalyzer engine recursively with a large data set
+- Fixed an issue where ScriptAnalyzer would become non-responsive when recursively analyzing a large data set
 - Housekeeping: Fixed Appveyor config to use VS 2015 and WMF 5.0 RTM image
 - Community Fix: Updated the Initialize API to process the `-Settings` (formerly `-Profile`) parameter
 - Perf: Improved rule filtering based on severity before invoking the engine to create tasks (threads)

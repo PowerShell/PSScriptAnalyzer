@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SignConfigXML>
+  <!-- ****Begin**** BothDual - Dual (Sha256 and Sha1) AuthicodeDual) and should be StrongName, but we will add this in 6.1.0 ******** -->
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Microsoft.PowerShell.CrossCompatibility.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSScriptAnalyzer.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSScriptAnalyzer.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSScriptAnalyzer.psm1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSScriptAnalyzer.psm1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\ScriptAnalyzer.format.ps1xml" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\ScriptAnalyzer.format.ps1xml" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\ScriptAnalyzer.types.ps1xml" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\ScriptAnalyzer.types.ps1xml" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\CmdletDesign.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\CmdletDesign.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\CodeFormatting.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\CodeFormatting.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\CodeFormattingAllman.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\CodeFormattingAllman.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\CodeFormattingOTBS.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\CodeFormattingOTBS.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\CodeFormattingStroustrup.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\CodeFormattingStroustrup.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\DSC.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\DSC.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\PSGallery.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\PSGallery.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\ScriptFunctions.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\ScriptFunctions.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\ScriptingStyle.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\ScriptingStyle.psd1" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\Settings\ScriptSecurity.psd1" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\Settings\ScriptSecurity.psd1" />
+ </job>
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv6" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv6\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv6\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv6\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv6\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv6\Microsoft.PowerShell.CrossCompatibility.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv6\Microsoft.PowerShell.CrossCompatibility.dll" />
+ </job>
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv7" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv7\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv7\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv7\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv7\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv7\Microsoft.PowerShell.CrossCompatibility.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv7\Microsoft.PowerShell.CrossCompatibility.dll" />
+ </job>
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv4" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv4\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv4\Microsoft.PowerShell.CrossCompatibility.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv4\Microsoft.PowerShell.CrossCompatibility.dll" />
+ </job>
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv3" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.0\PSv3\Microsoft.PowerShell.CrossCompatibility.dll" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSv3\Microsoft.PowerShell.CrossCompatibility.dll" />
+ </job>
+</SignConfigXML>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SignConfigXML>
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer File Catalog" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\PSScriptAnalyzer\1.19.0\PSScriptAnalyzer.cat" signType="400" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.0\PSScriptAnalyzer.cat" />
+ </job>
+</SignConfigXML>
