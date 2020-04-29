@@ -400,7 +400,7 @@ Describe 'UseCompatibleCommands' {
             }
 
             $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/../../" -IncludeRule $script:RuleName -Settings $settings
-            $diagnostics.Count | Should -Be 0 -Because ($diagnostics.RuleName -join ', ')
+            $diagnostics.Count | Should -Be 0 -Because ($diagnostics.Message -join ', ')
         }
     }
 
