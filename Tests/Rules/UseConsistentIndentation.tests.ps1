@@ -160,6 +160,18 @@ foo |
             Invoke-FormatterAssertion $scriptDefinition $expected 3 $settings
         }
 
+        It "When a comment is after a pipeline and before the newline " {
+            $scriptDefinition = @'
+foo | # comment
+bar
+'@
+            $expected = @'
+foo | # comment
+    bar
+'@
+            Invoke-FormatterAssertion $scriptDefinition $expected 1 $settings
+        }
+
         It "Should find a violation if a pipleline element is not indented correctly" {
             $def = @'
 get-process |

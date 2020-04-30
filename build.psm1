@@ -114,7 +114,7 @@ function Start-DocumentationBuild
     {
         throw "Cannot find markdown documentation folder."
     }
-    Import-Module platyPS
+    Import-Module platyPS -Verbose:$false
     if ( -not (Test-Path $outputDocsPath)) {
         $null = New-Item -Type Directory -Path $outputDocsPath -Force
     }
@@ -150,7 +150,9 @@ function Start-ScriptAnalyzerBuild
         [ValidateSet("Debug", "Release")]
         [string]$Configuration = "Debug",
 
-        [switch]$Documentation
+        [switch]$Documentation,
+
+        [switch]$Catalog
         )
 
     BEGIN {
@@ -163,6 +165,10 @@ function Start-ScriptAnalyzerBuild
             $foundVersion = Get-InstalledCLIVersion
             Write-Warning "No suitable dotnet CLI found, requires version '$requiredVersion' found only '$foundVersion'"
         }
+        $verboseWanted = $false
+        if ( $PSBoundParameters['Verbose'] ) {
+            $verboseWanted = $PSBoundParameters['Verbose'].ToBool()
+        }
     }
     END {
 
@@ -170,20 +176,25 @@ function Start-ScriptAnalyzerBuild
         $documentationFileExists = Test-Path (Join-Path $PSScriptRoot 'out\PSScriptAnalyzer\en-us\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml')
         if ( $Documentation -or -not $documentationFileExists )
         {
-            Start-DocumentationBuild
+            Write-Verbose -Verbose:$verboseWanted -Message "Start-DocumentationBuild"
+            Start-DocumentationBuild -Verbose:$verboseWanted
         }
 
         if ( $All )
         {
             # Build all the versions of the analyzer
             foreach($psVersion in 3..7) {
-                Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion
+                Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion -Verbose:$verboseWanted
+            }
+            if ( $Catalog ) {
+                New-Catalog -Location $script:destinationDir
             }
             return
         }
 
         if (-not $profilesCopied)
         {
+            Write-Verbose -Verbose:$verboseWanted -Message "Copy-CompatibilityProfiles"
             Copy-CompatibilityProfiles
             # Set the variable in the caller's scope, so this will only happen once
             Set-Variable -Name profilesCopied -Value $true -Scope 1
@@ -253,12 +264,24 @@ function Start-ScriptAnalyzerBuild
         # The Rules project has a dependency on the Engine therefore just building the Rules project is enough
         try {
             Push-Location $projectRoot/Rules
-            Write-Progress "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            $message = "Building ScriptAnalyzer for PSVersion '$PSVersion' using framework '$framework' and configuration '$Configuration'"
+            Write-Verbose -Verbose:$verboseWanted -Message "$message"
+            Write-Progress "$message"
             if ( -not $script:DotnetExe ) {
                 $script:DotnetExe = Get-DotnetExe
             }
-            $buildOutput = & $script:DotnetExe build --framework $framework --configuration "$buildConfiguration" 2>&1
+            $dotnetArgs = "build",
+                "--framework",
+                $framework,
+                "--configuration",
+                "$buildConfiguration"
+            if ( $env:TF_BUILD ) {
+                $dotnetArgs += "--output"
+                $dotnetArgs += "${PSScriptRoot}\bin\${buildConfiguration}\${framework}"
+            }
+            $buildOutput = & $script:DotnetExe $dotnetArgs 2>&1
             if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
+            Write-Verbose -Verbose:$verboseWanted -message "$buildOutput"
         }
         catch {
             Write-Warning $_
@@ -271,20 +294,53 @@ function Start-ScriptAnalyzerBuild
 
         Publish-File $itemsToCopyCommon $script:destinationDir
 
-        $itemsToCopyBinaries = @(
-            "$projectRoot\Engine\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
-            "$projectRoot\Rules\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
-            "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
-            )
+        if ( $env:TF_BUILD ) {
+            $itemsToCopyBinaries = @(
+                "$projectRoot\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+                "$projectRoot\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+                "$projectRoot\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
+                )
+        }
+        else {
+            $itemsToCopyBinaries = @(
+                "$projectRoot\Engine\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll",
+                "$projectRoot\Rules\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll"
+                "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
+                )
+        }
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
         $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
         if ($framework -eq 'net452') {
-            Copy-Item -path "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll" -Destination $destinationDirBinaries
+            if ( $env:TF_BUILD ) {
+                $nsoft =  "$projectRoot\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll"
+            }
+            else {
+                $nsoft =  "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll"
+            }
+            Copy-Item -path $nsoft -Destination $destinationDirBinaries
         }
 
+        Pop-Location
+    }
+}
+
+function New-Catalog
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
+    param ( [Parameter()]$Location )
+    $newFileCatalog = Get-Command -ErrorAction SilentlyContinue New-FileCatalog
+    if ($null -eq $newFileCatalog) {
+        Write-Warning "New-FileCatalog not found, not creating catalog"
+        return
+    }
+    try {
+        Push-Location $Location
+        New-FileCatalog -CatalogFilePath PSScriptAnalyzer.cat -Path .
+    }
+    finally {
         Pop-Location
     }
 }

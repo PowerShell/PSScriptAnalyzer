@@ -89,7 +89,7 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 			}
 			else
 			{
-				$results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition);
+        $results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition, [ref] $null, [ref] $null)
 			}
 
 			$results

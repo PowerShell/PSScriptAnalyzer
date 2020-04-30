@@ -422,7 +422,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
             else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
             {
-                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition);
+                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition, out _, out _);
                 WriteToOutput(diagnosticsList);
             }
         }

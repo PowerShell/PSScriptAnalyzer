@@ -1,0 +1,19 @@
+steps:
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download Pipeline Artifact: out Folder'
+  inputs:
+    artifactName: out
+    targetPath: '$(Build.SourcesDirectory)/out'
+- task: PowerShell@2
+  displayName: 'Test'
+  inputs:
+    targetType: inline
+    pwsh: false
+    script: |
+      Import-Module .\tools\appveyor.psm1
+      Invoke-AppveyorTest -CheckoutPath $env:BUILD_SOURCESDIRECTORY
+- task: PublishTestResults@2
+  inputs:
+    testRunner: NUnit
+    testResultsFiles: 'testResults.xml'
+  condition: succeededOrFailed()

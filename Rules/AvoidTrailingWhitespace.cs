@@ -36,52 +36,69 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var diagnosticRecords = new List<DiagnosticRecord>();
 
-            string[] lines = Regex.Split(ast.Extent.Text, @"\r?\n");
+            string[] lines = ast.Extent.Text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
             for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
             {
                 var line = lines[lineNumber];
 
-                var match = Regex.Match(line, @"\s+$");
-                if (match.Success)
+                if (line.Length == 0)
                 {
-                    var startLine = lineNumber + 1;
-                    var endLine = startLine;
-                    var startColumn = match.Index + 1;
-                    var endColumn = startColumn + match.Length;
-
-                    var violationExtent = new ScriptExtent(
-                        new ScriptPosition(
-                            ast.Extent.File,
-                            startLine,
-                            startColumn,
-                            line
-                        ),
-                        new ScriptPosition(
-                            ast.Extent.File,
-                            endLine,
-                            endColumn,
-                            line
-                        ));
-
-                    var suggestedCorrections = new List<CorrectionExtent>();
-                    suggestedCorrections.Add(new CorrectionExtent(
-                                violationExtent,
-                                string.Empty,
-                                ast.Extent.File
-                            ));
-
-                    diagnosticRecords.Add(
-                        new DiagnosticRecord(
-                            String.Format(CultureInfo.CurrentCulture, Strings.AvoidTrailingWhitespaceError),
-                            violationExtent,
-                            GetName(),
-                            GetDiagnosticSeverity(),
-                            ast.Extent.File,
-                            null,
-                            suggestedCorrections
-                        ));
+                    continue;
                 }
+
+                if (!char.IsWhiteSpace(line[line.Length - 1]) &&
+                    line[line.Length - 1] != '\t')
+                {
+                    continue;
+                }
+
+                int startColumnOfTrailingWhitespace = 1;
+                for (int i = line.Length - 2; i > 0; i--)
+                {
+                    if (line[i] != ' ' && line[i] != '\t')
+                    {
+                        startColumnOfTrailingWhitespace = i + 2;
+                        break;
+                    }
+                }
+
+                int startLine = lineNumber + 1;
+                int endLine = startLine;
+                int startColumn = startColumnOfTrailingWhitespace;
+                int endColumn = line.Length + 1;
+
+                var violationExtent = new ScriptExtent(
+                    new ScriptPosition(
+                        ast.Extent.File,
+                        startLine,
+                        startColumn,
+                        line
+                    ),
+                    new ScriptPosition(
+                        ast.Extent.File,
+                        endLine,
+                        endColumn,
+                        line
+                    ));
+
+                var suggestedCorrections = new List<CorrectionExtent>();
+                suggestedCorrections.Add(new CorrectionExtent(
+                            violationExtent,
+                            string.Empty,
+                            ast.Extent.File
+                        ));
+
+                diagnosticRecords.Add(
+                    new DiagnosticRecord(
+                        String.Format(CultureInfo.CurrentCulture, Strings.AvoidTrailingWhitespaceError),
+                        violationExtent,
+                        GetName(),
+                        GetDiagnosticSeverity(),
+                        ast.Extent.File,
+                        null,
+                        suggestedCorrections
+                    ));
             }
 
             return diagnosticRecords;
