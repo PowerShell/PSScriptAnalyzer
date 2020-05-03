@@ -134,7 +134,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var onNewLine = true;
             var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true).ToList();
             int minimumPipelineAstIndex = 0;
-            var parenthesisStack = new Stack<bool>();
+            var lParenSkippedIndentation = new Stack<bool>();
             
             for (int tokenIndex = 0; tokenIndex < tokens.Length; tokenIndex++)
             {
@@ -154,7 +154,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     case TokenKind.DollarParen:
                     case TokenKind.AtParen:
-                        parenthesisStack.Push(true);
+                        lParenSkippedIndentation.Push(false);
                         AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
                         break;
 
@@ -167,10 +167,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             {
                                 onNewLine = false;
                             }
-                            parenthesisStack.Push(false);
+                            lParenSkippedIndentation.Push(true);
                             break;
                         }
-                        parenthesisStack.Push(true);
+                        lParenSkippedIndentation.Push(false);
                         AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
                         break;
 
@@ -202,10 +202,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.RParen:
-                        parenthesisStack.TryPop(out bool matchingLParenIncreasedIndentation);
-                        if (!matchingLParenIncreasedIndentation)
+                        bool matchingLParenIncreasedIndentation = false;
+                        if (lParenSkippedIndentation.Count > 0)
                         {
-                            if (onNewLine) // left over from AddViolation
+                            matchingLParenIncreasedIndentation = lParenSkippedIndentation.Pop();
+                        }
+                        if (matchingLParenIncreasedIndentation)
+                        {
+                            if (onNewLine)
                             {
                                 onNewLine = false;
                             }
