@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
-using System.Linq;
-using System.Management;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
@@ -57,42 +55,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         yield return GetDiagnosticRecord(stringConstantExpressionAst,
                             $"@'{Environment.NewLine}{stringConstantExpressionAst.Value}{Environment.NewLine}'@");
                         break;
-                    // yield return new DiagnosticRecord(
-                    //     Strings.AvoidOverwritingBuiltInCmdletsError,
-                    //     stringConstantExpressionAst.Extent,
-                    //     GetName(),
-                    //     GetDiagnosticSeverity(),
-                    //     stringConstantExpressionAst.Extent.File,
-                    //     suggestedCorrections: new[] {
-                    //         new CorrectionExtent(
-                    //             stringConstantExpressionAst.Extent,
-                    //             $"@'{Environment.NewLine}{stringConstantExpressionAst.Value}{Environment.NewLine}'@",
-                    //             stringConstantExpressionAst.Extent.File
-                    //         )
-                    //     }
-                    // );
 
                     default:
                         break;
                 }
-
-                // if (stringConstantExpressionAst.StringConstantType == StringConstantType.DoubleQuoted)
-                // {
-                //     yield return new DiagnosticRecord(
-                //         Strings.AvoidOverwritingBuiltInCmdletsError,
-                //         stringConstantExpressionAst.Extent,
-                //         GetName(),
-                //         GetDiagnosticSeverity(),
-                //         stringConstantExpressionAst.Extent.File,
-                //         suggestedCorrections: new[] {
-                //             new CorrectionExtent(
-                //                 stringConstantExpressionAst.Extent,
-                //                 $"'{stringConstantExpressionAst.Value}'",
-                //                 stringConstantExpressionAst.Extent.File
-                //             )
-                //         }
-                //     );
-                // }
             }
         }
 
