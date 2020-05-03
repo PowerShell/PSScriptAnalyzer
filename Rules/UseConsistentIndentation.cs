@@ -159,11 +159,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.LParen:
-                        // when a line start with a parenthesis then indentation does not need to be increased
+                        // When a line start with a parenthesis and it is not the last non-comment token of that line,
+                        // then indentation does not need to be increased.
                         if ((tokenIndex == 0 || tokens[tokenIndex - 1].Kind == TokenKind.NewLine) &&
                             (tokenIndex < tokens.Length - 1 && NextTokenIgnoringComments(tokens, tokenIndex)?.Kind != TokenKind.NewLine))
                         {
-                            if (onNewLine) // left over from AddViolation
+                            if (onNewLine)
                             {
                                 onNewLine = false;
                             }
