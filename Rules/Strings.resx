@@ -1146,4 +1146,7 @@
   <data name="AvoidUsingDoubleQuotesForConstantStringName" xml:space="preserve">
     <value>AvoidUsingDoubleQuotesForConstantString</value>
   </data>
+  <data name="AvoidUsingDoubleQuotesForConstantStringError" xml:space="preserve">
+    <value>Use single quotes when a string is constant.</value>
+  </data>
 </root>

@@ -25,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public AvoidUsingDoubleQuotesForConstantString()
         {
-            Enable = false;  // Disabled by default
+            Enable = false;
         }
 
         /// <summary>
@@ -47,11 +47,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 switch (stringConstantExpressionAst.StringConstantType)
                 {
                     case StringConstantType.DoubleQuoted:
+                        if (stringConstantExpressionAst.Value.Contains("'"))
+                        {
+                            break;
+                        }
                         yield return GetDiagnosticRecord(stringConstantExpressionAst,
                             $"'{stringConstantExpressionAst.Value}'");
                         break;
 
                     case StringConstantType.DoubleQuotedHereString:
+                        if (stringConstantExpressionAst.Value.Contains("@'"))
+                        {
+                            break;
+                        }
                         yield return GetDiagnosticRecord(stringConstantExpressionAst,
                             $"@'{Environment.NewLine}{stringConstantExpressionAst.Value}{Environment.NewLine}'@");
                         break;
@@ -66,7 +74,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             string suggestedCorrection)
         {
             return new DiagnosticRecord(
-                Strings.AvoidOverwritingBuiltInCmdletsError,
+                Strings.AvoidUsingDoubleQuotesForConstantStringError,
                 stringConstantExpressionAst.Extent,
                 GetName(),
                 GetDiagnosticSeverity(),

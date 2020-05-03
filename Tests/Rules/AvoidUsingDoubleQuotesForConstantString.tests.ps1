@@ -13,12 +13,16 @@ Describe 'AvoidUsingDoubleQuotesForConstantString' {
             (Invoke-ScriptAnalyzer -ScriptDefinition '$item = "value"' -Settings $settings).Count | Should -Be 1
         }
 
+        It 'Should not warn if string is interpolated and double quotes are used but single quotes are in value' {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$item = "''value''"' -Settings $settings | Should -BeNullOrEmpty
+        }
+
         It 'Should not warn if string is constant and signle quotes are used' {
             Invoke-ScriptAnalyzer -ScriptDefinition '$item = ''value''' -Settings $settings | Should -BeNullOrEmpty
         }
 
         It 'Should not warn if string is interpolated and double quotes are used' {
-            Invoke-ScriptAnalyzer -ScriptDefinition '$item = $(Get-Item)' -Settings $settings | Should -BeNullOrEmpty
+            Invoke-ScriptAnalyzer -ScriptDefinition '$item = "$(Get-Item)"' -Settings $settings | Should -BeNullOrEmpty
         }
     }
 

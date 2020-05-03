@@ -880,6 +880,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use single quotes when a string is constant..
+        /// </summary>
+        internal static string AvoidUsingDoubleQuotesForConstantStringError {
+            get {
+                return ResourceManager.GetString("AvoidUsingDoubleQuotesForConstantStringError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AvoidUsingDoubleQuotesForConstantString.
         /// </summary>
         internal static string AvoidUsingDoubleQuotesForConstantStringName {
