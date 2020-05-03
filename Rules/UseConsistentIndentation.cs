@@ -134,6 +134,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var onNewLine = true;
             var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true).ToList();
             int minimumPipelineAstIndex = 0;
+            var parenthesisStack = new Stack<bool>();
+            
             for (int tokenIndex = 0; tokenIndex < tokens.Length; tokenIndex++)
             {
                 var token = tokens[tokenIndex];
@@ -146,10 +148,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 switch (token.Kind)
                 {
                     case TokenKind.AtCurly:
-                    case TokenKind.AtParen:
-                    case TokenKind.LParen:
                     case TokenKind.LCurly:
+                        AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                        break;
+
                     case TokenKind.DollarParen:
+                    case TokenKind.AtParen:
+                        parenthesisStack.Push(true);
+                        AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                        break;
+
+                    case TokenKind.LParen:
+                        // when a line start with a parenthesis then indentation does not need to be increased
+                        if ((tokenIndex == 0 || tokens[tokenIndex - 1].Kind == TokenKind.NewLine) &&
+                            (tokenIndex < tokens.Length - 1 && NextTokenIgnoringComments(tokens, tokenIndex)?.Kind != TokenKind.NewLine))
+                        {
+                            if (onNewLine) // left over from AddViolation
+                            {
+                                onNewLine = false;
+                            }
+                            parenthesisStack.Push(false);
+                            break;
+                        }
+                        parenthesisStack.Push(true);
                         AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
                         break;
 
@@ -181,6 +202,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.RParen:
+                        parenthesisStack.TryPop(out bool matchingLParenIncreasedIndentation);
+                        if (!matchingLParenIncreasedIndentation)
+                        {
+                            if (onNewLine) // left over from AddViolation
+                            {
+                                onNewLine = false;
+                            }
+                            break;
+                        }
+                        indentationLevel = ClipNegative(indentationLevel - 1);
+                        AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
+                        break;
+
                     case TokenKind.RCurly:
                         indentationLevel = ClipNegative(indentationLevel - 1);
                         AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
@@ -254,6 +288,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return diagnosticRecords;
         }
 
+        private static Token NextTokenIgnoringComments(Token[] tokens, int startIndex)
+        {
+            if (startIndex == tokens.Length - 1)
+            {
+                return null;
+            }
+            
+            for (int i = startIndex + 1; i < tokens.Length; i++)
+            {
+                switch (tokens[i].Kind)
+                {
+                    case TokenKind.Comment:
+                        continue;
+
+                    default:
+                        return tokens[i];
+                }
+            }
+            
+            // We've run out of tokens
+            return null;
+        }
+        
         private static bool PipelineIsFollowedByNewlineOrLineContinuation(Token[] tokens, int startIndex)
         {
             if (startIndex >= tokens.Length - 1)
