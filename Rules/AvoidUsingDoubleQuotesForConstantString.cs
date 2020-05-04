@@ -47,7 +47,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 switch (stringConstantExpressionAst.StringConstantType)
                 {
                     case StringConstantType.DoubleQuoted:
-                        if (stringConstantExpressionAst.Value.Contains("'") || stringConstantExpressionAst.Value.Contains("`"))
+                        // Note that .ToString() has to be called in the 2nd case because the Value property already trimmed the ` escape character
+                        if (stringConstantExpressionAst.Value.Contains("'") || stringConstantExpressionAst.ToString().Contains("`"))
                         {
                             break;
                         }
@@ -56,7 +57,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case StringConstantType.DoubleQuotedHereString:
-                        if (stringConstantExpressionAst.Value.Contains("@'") || stringConstantExpressionAst.Value.Contains("`"))
+                        if (stringConstantExpressionAst.Value.Contains("@'") || stringConstantExpressionAst.ToString().Contains("`"))
                         {
                             break;
                         }
