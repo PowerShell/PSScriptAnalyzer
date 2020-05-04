@@ -47,7 +47,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 switch (stringConstantExpressionAst.StringConstantType)
                 {
                     case StringConstantType.DoubleQuoted:
-                        if (stringConstantExpressionAst.Value.Contains("'"))
+                        if (stringConstantExpressionAst.Value.Contains("'") || stringConstantExpressionAst.Value.Contains("`"))
                         {
                             break;
                         }
@@ -56,7 +56,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case StringConstantType.DoubleQuotedHereString:
-                        if (stringConstantExpressionAst.Value.Contains("@'"))
+                        if (stringConstantExpressionAst.Value.Contains("@'") || stringConstantExpressionAst.Value.Contains("`"))
                         {
                             break;
                         }
