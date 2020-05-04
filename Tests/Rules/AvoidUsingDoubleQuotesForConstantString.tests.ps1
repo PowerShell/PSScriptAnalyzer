@@ -18,7 +18,7 @@ Describe 'AvoidUsingDoubleQuotesForConstantString' {
         }
 
         It 'Should not warn if string is interpolated and double quotes are used but backtick character is in value' {
-            Invoke-ScriptAnalyzer -ScriptDefinition '$item = ''foo-`$-bar''' -Settings $settings | Should -BeNullOrEmpty
+            Invoke-ScriptAnalyzer -ScriptDefinition '$item = "foo-`$-bar"' -Settings $settings | Should -BeNullOrEmpty
         }
 
         It 'Should not warn if string is constant and signle quotes are used' {
