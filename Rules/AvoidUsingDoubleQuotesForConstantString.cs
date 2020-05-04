@@ -29,7 +29,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Analyzes the given ast to find the [violation]
+        /// Analyzes the given ast to find occurences of StringConstantExpressionAst where double quotes are used
+        /// and could be replaced with single quotes.
         /// </summary>
         /// <param name="ast">AST to be analyzed. This should be non-null</param>
         /// <param name="fileName">Name of file that corresponds to the input AST.</param>
