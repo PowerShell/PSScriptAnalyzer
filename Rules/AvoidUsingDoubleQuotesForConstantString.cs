@@ -47,6 +47,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 switch (stringConstantExpressionAst.StringConstantType)
                 {
+                    /*
+                        If an interpolated string (i.e. using double quotes) uses single quotes (or @' in case of a here-string), then do not warn.
+                        This because one would then have to escape this single quote, which would make the string less readable.
+                        If an interpolated string contains a backtick character, then do not warn as well.
+                        This is because we'd have to replace the backtick in some cases like `$ and in others like `a it would not be possible at all.
+                        Therefore to keep it simple, all interpolated strings with a backtick are being excluded. 
+                    */
                     case StringConstantType.DoubleQuoted:
                         if (stringConstantExpressionAst.Value.Contains("'") || stringConstantExpressionAst.Extent.Text.Contains("`"))
                         {
