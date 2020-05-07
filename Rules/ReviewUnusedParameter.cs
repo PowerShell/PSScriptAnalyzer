@@ -40,7 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 IEnumerable<Ast> parameterAsts = scriptBlockAst.FindAll(oneAst => oneAst is ParameterAst, false);
 
                 // list all variables
-                IDictionary<string, int> variableCount = scriptBlockAst.FindAll(oneAst => oneAst is VariableExpressionAst, false)
+                IDictionary<string, int> variableCount = scriptBlockAst.FindAll(oneAst => oneAst is VariableExpressionAst, true)
                     .Select(variableExpressionAst => ((VariableExpressionAst)variableExpressionAst).VariablePath.UserPath)
                     .GroupBy(variableName => variableName, StringComparer.OrdinalIgnoreCase)
                     .ToDictionary(variableName => variableName.Key, variableName => variableName.Count(), StringComparer.OrdinalIgnoreCase);

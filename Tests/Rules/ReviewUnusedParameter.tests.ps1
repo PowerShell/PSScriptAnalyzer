@@ -23,6 +23,26 @@ Describe "ReviewUnusedParameter" {
             $Violations.Count | Should -Be 1
         }
 
+        It "traverses child scriptblock scope" {
+            $ScriptDefinition = 'param($Param1) { $Param1 }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName | Should -BeNullOrEmpty
+        }
+
+        It "traverses child scriptblock scope within simple function" {
+            $ScriptDefinition = 'function foo($Param1) { { $Param1 } }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName | Should -BeNullOrEmpty
+        }
+
+        It "traverses child scriptblock scope within a function that uses param" {
+            $ScriptDefinition = 'function foo { param($Param1) { $Param1 } }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName | Should -BeNullOrEmpty
+        }
+
+        It "traverse child function within a function" {
+            $ScriptDefinition = 'function foo($Param1) { function bar() { { $Param1 } } }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName | Should -BeNullOrEmpty
+        }
+
         It "doesn't traverse scriptblock scope" {
             $ScriptDefinition = '{ param ($Param1) }; { $Param1 }'
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
