@@ -389,7 +389,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     if (!_varsDeclaredPerSession[sessionName].Contains(item))
                     {
-                        _varsDeclaredPerSession[sessionName].Append(item);
+                        _varsDeclaredPerSession[sessionName].Add(item);
                     }
                 }
             }
