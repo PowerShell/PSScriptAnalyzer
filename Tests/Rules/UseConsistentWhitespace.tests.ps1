@@ -39,17 +39,27 @@ Describe "UseWhitespace" {
 
         It "Should not find violation if an open brace follows a whitespace" {
             $def = 'if($true) {}'
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
         It "Should not find violation if an open brace follows a foreach member invocation" {
             $def = '(1..5).foreach{$_}'
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
         It "Should not find violation if an open brace follows a where member invocation" {
             $def = '(1..5).where{$_}'
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should not find violation if an open brace is on the next line" {
+            $def = @'
+if ($true)
+{
+    foo
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
     }
