@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -227,7 +227,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
                 }
 
-                if (pipelineIndentationStyle == PipelineIndentationStyle.None) { break; }
+                if (pipelineIndentationStyle == PipelineIndentationStyle.None) { continue; }
                 // Check if the current token matches the end of a PipelineAst
                 PipelineAst matchingPipeLineAstEnd = MatchingPipelineAstEnd(pipelineAsts, ref minimumPipelineAstIndex, token);
                 if (matchingPipeLineAstEnd == null)
