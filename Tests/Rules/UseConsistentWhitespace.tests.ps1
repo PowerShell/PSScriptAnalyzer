@@ -474,11 +474,11 @@ bar -h i `
         }
 
         It "Should fix script to always have 1 space between parameters except when using colon syntax but not by default" {
-            $def = 'foo  -bar   $baz  -ParameterName:  $ParameterValue'
+            $def = 'foo  -bar   $baz  -ParameterName:  $ParameterValue "$PSScriptRoot\module.psd1"'
             Invoke-Formatter -ScriptDefinition $def |
                 Should -BeExactly $def -Because 'CheckParameter configuration is not turned on by default (yet) as the setting is new'
             Invoke-Formatter -ScriptDefinition $def -Settings $settings |
-                Should -BeExactly 'foo -bar $baz -ParameterName:  $ParameterValue'
+                Should -BeExactly 'foo -bar $baz -ParameterName:  $ParameterValue "$PSScriptRoot\module.psd1"'
         }
 
         It "Should fix script when newlines are involved" {
