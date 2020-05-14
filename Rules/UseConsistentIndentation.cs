@@ -220,8 +220,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 }
                             }
 
+                            if (pipelineIndentationStyle == PipelineIndentationStyle.None && PreviousLineEndedWithPipe(tokens, tokenIndex, token))
+                            {
+                                continue;
+                            }
                             bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
-
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
                         break;
@@ -281,6 +284,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             
             // We've run out of tokens but haven't seen a newline
+            return false;
+        }
+
+        private static bool PreviousLineEndedWithPipe(Token[] tokens, int tokenIndex, Token token)
+        {
+            if (tokenIndex < 2 || token.Extent.StartLineNumber == 1)
+            {
+                return false;
+            }
+
+            int searchIndex = tokenIndex - 2;
+            int searchLine = token.Extent.StartLineNumber;
+            do
+            {
+                searchLine = tokens[searchIndex].Extent.StartLineNumber;
+                if (tokens[searchIndex].Kind == TokenKind.Comment)
+                {
+                    searchIndex--;
+                }
+                else if (tokens[searchIndex].Kind == TokenKind.Pipe)
+                {
+                    return true;
+                }
+                else
+                {
+                    break;
+                }
+            } while (searchLine == token.Extent.StartLineNumber - 1 && searchIndex >= 0);
             return false;
         }
 
