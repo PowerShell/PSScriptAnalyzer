@@ -1,18 +1,44 @@
 {
     "version": "0.2.0",
     "configurations": [
-
         {
-            "name": ".NET Core Launch (console)",
-            "type": "coreclr",
+            "type": "PowerShell",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceRoot}/bin/Debug/<target-framework>/<project-name.dll>",
-            "args": [],
-            "cwd": "${workspaceRoot}",
-            "externalConsole": false,
-            "stopAtEntry": false,
-            "internalConsoleOptions": "openOnSessionStart"
+            "name": "Build",
+            "script": "./build.ps1",
+            "args": [
+                ""
+            ],
+            "cwd": "${workspaceFolder}",
+            "createTemporaryIntegratedConsole": true
+        },
+        {
+            "type": "PowerShell",
+            "request": "launch",
+            "name": "Build & Run all tests",
+            "script": "./build.ps1; ./build.ps1 -Test",
+            "args": [
+                ""
+            ],
+            "cwd": "${workspaceFolder}",
+            "createTemporaryIntegratedConsole": true
+        },
+        {
+            "type": "PowerShell",
+            "request": "launch",
+            "name": "PowerShell Run current Pester File",
+            "script": "Import-Module ./out/PSScriptAnalyzer/*/PSScriptAnalyzer.psd1; Invoke-Pester -Path '${file}'; $PID",
+            "args": [
+                ""
+            ],
+            "cwd": "${workspaceFolder}",
+            "createTemporaryIntegratedConsole": true
+        },
+        {
+            "name": "PowerShell Attach to Host Process",
+            "type": "PowerShell",
+            "request": "attach",
+            "runspaceId": 1
         },
         {
             "name": ".NET Core Attach",
