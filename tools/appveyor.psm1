@@ -123,7 +123,11 @@ function Invoke-AppveyorTest {
     Import-Module Pester
     $configuration = [PesterConfiguration]::Default
     $configuration.CodeCoverage.Enabled = $false
-    Invoke-Pester -Path $testScripts -Configuration $configuration -Output 'Normal' -CI -PassThru
+    $configuration.Output = 'Normal'
+    $configuration.Run.PassThru = $true
+    $configuration.Run.Path = $testScripts
+    $configuration.TestResult.Enabled = $true
+    Invoke-Pester -Configuration $configuration
 }
 
 # Implements AppVeyor 'on_finish' step
