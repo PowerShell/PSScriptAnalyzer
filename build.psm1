@@ -387,7 +387,7 @@ function Test-ScriptAnalyzer
             }
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
-            $scriptBlock = [scriptblock]::Create("Import-Module PSScriptAnalyzer; Invoke-Pester -Path $testScripts -CI")
+            $scriptBlock = [scriptblock]::Create("Import-Module PSScriptAnalyzer; Invoke-Pester -Path $testScripts")
             if ( $InProcess ) {
                 & $scriptBlock
             }
