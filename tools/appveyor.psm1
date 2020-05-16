@@ -107,7 +107,7 @@ function Invoke-AppveyorTest {
     Write-Verbose -Verbose "module path: ${env:PSModulePath}"
 
     # Set up testing assets
-    $testScripts = @(
+    [string[]] $testScripts = @(
         Join-Path $CheckoutPath 'Tests\Engine'
         Join-Path $CheckoutPath 'Tests\Rules'
         Join-Path $CheckoutPath 'Tests\Documentation'
