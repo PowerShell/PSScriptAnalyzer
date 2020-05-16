@@ -122,7 +122,7 @@ function Invoke-AppveyorTest {
     Import-Module PSScriptAnalyzer
     Import-Module Pester
     $configuration = [PesterConfiguration]::Default
-    $configuration.CodeCoverage.Enable = $false
+    $configuration.CodeCoverage.Enabled = $false
     Invoke-Pester -Path $testScripts -CI -PassThru -Output Normal
 }
 
