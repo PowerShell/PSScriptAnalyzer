@@ -51,6 +51,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                // bail out if $MyInvocation.BoundParameters used
+                if (variableCount.ContainsKey("MyInvocation"))
+                {
+                    bool isBound = false;
+                    IEnumerable<Ast> memExpAst = scriptBlockAst.FindAll(oneAst => oneAst is MemberExpressionAst, false);
+                    foreach (MemberExpressionAst memberExpressionAst in memExpAst)
+                    {                        
+                        if (memberExpressionAst.Expression is VariableExpressionAst &&
+                            ((VariableExpressionAst)memberExpressionAst.Expression).VariablePath.UserPath == "MyInvocation" &&
+                            memberExpressionAst.Member is StringConstantExpressionAst &&
+                            ((StringConstantExpressionAst)memberExpressionAst.Member).Value == "BoundParameters")
+                        {
+                            isBound = true;
+                            break;
+                        }                        
+                    }
+
+                    if (isBound)
+                    {
+                        continue;
+                    }
+                }
+
                 foreach (ParameterAst parameterAst in parameterAsts)
                 {
                     // there should be at least two usages of the variable since the parameter declaration counts as one
