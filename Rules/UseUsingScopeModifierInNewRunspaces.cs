@@ -217,7 +217,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         string variableName = string.Format(variable.VariablePath.UserPath,
                             StringComparer.OrdinalIgnoreCase);
-                        variableDictionary.Add(variableName);
+                        if (!variableDictionary.ContainsKey(variableName))
+                        {
+                            variableDictionary.Add(variableName, variable);
+                        }
                     }
                 };
 
