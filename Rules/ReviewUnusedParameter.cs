@@ -51,21 +51,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                // bail out if $MyInvocation.BoundParameters used
-                if (variableCount.ContainsKey("MyInvocation"))
+                // bail out if $MyInvocation.BoundParameters or $PSCmdlet.MyInvocation.BoundParameters used
+                if (variableCount.ContainsKey("MyInvocation") || variableCount.ContainsKey("PSCmdlet"))
                 {
                     bool isBound = false;
                     IEnumerable<Ast> memExpAst = scriptBlockAst.FindAll(oneAst => oneAst is MemberExpressionAst, false);
                     foreach (MemberExpressionAst memberExpressionAst in memExpAst)
-                    {                        
-                        if (memberExpressionAst.Expression is VariableExpressionAst &&
-                            ((VariableExpressionAst)memberExpressionAst.Expression).VariablePath.UserPath == "MyInvocation" &&
-                            memberExpressionAst.Member is StringConstantExpressionAst &&
-                            ((StringConstantExpressionAst)memberExpressionAst.Member).Value == "BoundParameters")
+                    {
+                        if (memberExpressionAst.Member is StringConstantExpressionAst sceAst && sceAst.Value == "BoundParameters")
                         {
-                            isBound = true;
-                            break;
-                        }                        
+                            // handle both regular and nested scenarios
+                            if ((memberExpressionAst.Expression is VariableExpressionAst veAst &&
+                                veAst.VariablePath.UserPath == "MyInvocation") ||
+                                (memberExpressionAst.Expression is MemberExpressionAst meAst &&
+                                meAst.Expression is VariableExpressionAst veAstNested &&
+                                veAstNested.VariablePath.UserPath == "PSCmdlet" &&
+                                meAst.Member is StringConstantExpressionAst sceAstNested &&
+                                sceAstNested.Value == "MyInvocation"))
+                            {
+                                isBound = true;
+                                break;
+                            }
+                        }
                     }
 
                     if (isBound)
