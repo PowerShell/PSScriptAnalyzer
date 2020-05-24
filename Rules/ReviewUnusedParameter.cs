@@ -36,6 +36,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (ScriptBlockAst scriptBlockAst in scriptBlockAsts)
             {
+                // bail out if PS bound parameter used.
+                if (scriptBlockAst.FindAll(IsBoundParametersReference, false).Any())
+                {
+                    continue;
+                }
+
                 // find all declared parameters
                 IEnumerable<Ast> parameterAsts = scriptBlockAst.FindAll(oneAst => oneAst is ParameterAst, false);
 
@@ -44,42 +50,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     .Select(variableExpressionAst => ((VariableExpressionAst)variableExpressionAst).VariablePath.UserPath)
                     .GroupBy(variableName => variableName, StringComparer.OrdinalIgnoreCase)
                     .ToDictionary(variableName => variableName.Key, variableName => variableName.Count(), StringComparer.OrdinalIgnoreCase);
-
-                // all bets are off if the script uses PSBoundParameters
-                if (variableCount.ContainsKey("PSBoundParameters"))
-                {
-                    continue;
-                }
-
-                // bail out if $MyInvocation.BoundParameters or $PSCmdlet.MyInvocation.BoundParameters used
-                if (variableCount.ContainsKey("MyInvocation") || variableCount.ContainsKey("PSCmdlet"))
-                {
-                    bool isBound = false;
-                    IEnumerable<Ast> memExpAst = scriptBlockAst.FindAll(oneAst => oneAst is MemberExpressionAst, false);
-                    foreach (MemberExpressionAst memberExpressionAst in memExpAst)
-                    {
-                        if (memberExpressionAst.Member is StringConstantExpressionAst sceAst && sceAst.Value == "BoundParameters")
-                        {
-                            // handle both regular and nested scenarios
-                            if ((memberExpressionAst.Expression is VariableExpressionAst veAst &&
-                                veAst.VariablePath.UserPath == "MyInvocation") ||
-                                (memberExpressionAst.Expression is MemberExpressionAst meAst &&
-                                meAst.Expression is VariableExpressionAst veAstNested &&
-                                veAstNested.VariablePath.UserPath == "PSCmdlet" &&
-                                meAst.Member is StringConstantExpressionAst sceAstNested &&
-                                sceAstNested.Value == "MyInvocation"))
-                            {
-                                isBound = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (isBound)
-                    {
-                        continue;
-                    }
-                }
 
                 foreach (ParameterAst parameterAst in parameterAsts)
                 {
@@ -100,6 +70,34 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     );
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks for PS bound parameter reference.
+        /// </summary>
+        /// <param name="ast"></param>
+        /// <returns></returns>
+        private static bool IsBoundParametersReference(Ast ast)
+        {
+            bool isBound = false;
+            // if $MyInvocation.BoundParameters or $PSCmdlet.MyInvocation.BoundParameters used.
+            if (ast is MemberExpressionAst memberAst
+                && memberAst.Member is StringConstantExpressionAst memberStringAst
+                && memberStringAst.Value.Equals("BoundParameters", StringComparison.OrdinalIgnoreCase))
+            {
+                // handle both regular and nested scenarios.
+                isBound = (memberAst.Expression is VariableExpressionAst veAst
+                    && veAst.VariablePath.UserPath.Equals("MyInvocation", StringComparison.OrdinalIgnoreCase))
+                    || (memberAst.Expression is MemberExpressionAst meAst
+                    && meAst.Expression is VariableExpressionAst veAstNested
+                    && veAstNested.VariablePath.UserPath.Equals("PSCmdlet", StringComparison.OrdinalIgnoreCase)
+                    && meAst.Member is StringConstantExpressionAst sceAstNested
+                    && sceAstNested.Value.Equals("MyInvocation", StringComparison.OrdinalIgnoreCase));
+            }
+
+            return isBound
+                || ast is VariableExpressionAst variableAst
+                && variableAst.VariablePath.UserPath.Equals("PSBoundParameters", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
