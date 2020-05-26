@@ -26,7 +26,7 @@
         {
             "type": "PowerShell",
             "request": "launch",
-            "name": "PowerShell Run current Pester File",
+            "name": "Run current Pester file with PSScriptAnalyzer development build",
             "script": "Import-Module ./out/PSScriptAnalyzer/*/PSScriptAnalyzer.psd1; Invoke-Pester -Path '${file}'; $PID",
             "args": [
                 ""
