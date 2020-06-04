@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.PowerShell.ScriptAnalyzer.Utils;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -28,20 +29,24 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Configuration.Psd
 
                 case VariableExpressionAst varExprAst:
                     // $true and $false are VariableExpressionAsts, so look for them here
-                    switch (varExprAst.VariablePath.UserPath.ToLowerInvariant())
+                    string varName = varExprAst.VariablePath.UserPath;
+
+                    if (varName.CaseInsensitiveEquals("true"))
                     {
-                        case "true":
-                            return true;
-
-                        case "false":
-                            return false;
-
-                        case "null":
-                            return null;
-
-                        default:
-                            throw CreateInvalidDataExceptionFromAst(varExprAst);
+                        return true;
                     }
+
+                    if (varName.CaseInsensitiveEquals("false"))
+                    {
+                        return false;
+                    }
+
+                    if (varName.CaseInsensitiveEquals("null"))
+                    {
+                        return null;
+                    }
+
+                    throw CreateInvalidDataExceptionFromAst(varExprAst);
 
                 case ArrayExpressionAst arrExprAst:
 

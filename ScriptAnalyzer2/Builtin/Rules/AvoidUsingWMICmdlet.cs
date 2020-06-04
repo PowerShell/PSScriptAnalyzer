@@ -31,7 +31,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builtin.Rules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             // Rule is applicable only when PowerShell Version is < 3.0, since CIM cmdlet was introduced in 3.0
-            int majorPSVersion = GetPSMajorVersion(ast);
+            int majorPSVersion = GetPSRequiredVersionMajor(ast);
             if (!(3 > majorPSVersion && 0 < majorPSVersion))
             {
                 // Finds all CommandAsts.
@@ -69,7 +69,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builtin.Rules
         /// GetPSMajorVersion: Retrieves Major PowerShell Version when supplied using #requires keyword in the script
         /// </summary>
         /// <returns>The name of this rule</returns>
-        private int GetPSMajorVersion(Ast ast)
+        private int GetPSRequiredVersionMajor(Ast ast)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 

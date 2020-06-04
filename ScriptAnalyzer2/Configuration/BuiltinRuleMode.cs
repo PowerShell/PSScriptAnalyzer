@@ -14,7 +14,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Configuration
         [EnumMember(Value = "default")]
         Default,
 
-        [EnumMember(Value = "aggressive")]
+        [EnumMember(Value = "comprehensive")]
         Aggressive,
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.PowerShell.ScriptAnalyzer.Configuration;
 using Microsoft.PowerShell.ScriptAnalyzer.Execution;
 using Microsoft.PowerShell.ScriptAnalyzer.Instantiation;
+using Microsoft.PowerShell.ScriptAnalyzer.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,13 +41,12 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
             {
                 foreach (string rulePath in configuration.RulePaths)
                 {
-                    string extension = Path.GetExtension(rulePath).ToLower();
+                    string extension = Path.GetExtension(rulePath);
 
-                    switch (extension)
+                    if (extension.CaseInsensitiveEquals(".dll"))
                     {
-                        case ".dll":
-                            analyzerBuilder.AddRuleProvider(TypeRuleProvider.FromAssemblyFile(configuration.RuleConfiguration, componentProvider, rulePath));
-                            break;
+                        analyzerBuilder.AddRuleProvider(TypeRuleProvider.FromAssemblyFile(configuration.RuleConfiguration, componentProvider, rulePath));
+                        break;
                     }
                 }
             }

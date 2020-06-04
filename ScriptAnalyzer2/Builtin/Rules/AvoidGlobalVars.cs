@@ -34,16 +34,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             IEnumerable<Ast> varAsts = ast.FindAll(testAst => testAst is VariableExpressionAst, true);
 
-            if (varAsts != null)
+            if (varAsts == null)
             {
-                foreach (VariableExpressionAst varAst in varAsts)
+                yield break;
+            }
+
+            foreach (VariableExpressionAst varAst in varAsts)
+            {
+                if (varAst.VariablePath.IsGlobal)
                 {
-                    if (varAst.VariablePath.IsGlobal)
-                    {
-                        yield return CreateDiagnostic(
-                                string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalVarsError, varAst.VariablePath.UserPath),
-                                varAst);
-                    }
+                    yield return CreateDiagnostic(
+                            string.Format(CultureInfo.CurrentCulture, Strings.AvoidGlobalVarsError, varAst.VariablePath.UserPath),
+                            varAst);
                 }
             }
         }
