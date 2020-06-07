@@ -3,7 +3,7 @@
 
 function Get-Skip
 {
-    if ($testingLibararyUsage -or ($PSversionTable.PSVersion -lt [Version]'5.0.0'))
+    if ($testingLibararyUsage -or ($PSVersionTable.PSVersion -lt '5.0'))
     {
         return $true
     }
@@ -50,7 +50,7 @@ Describe "Resolve DSC Resource Dependency" {
 
     Context "Module handler class" {
         BeforeAll {
-            if ($PSversionTable.PSVersion -lt [Version]'5.0.0') { return }
+            if ($PSVersionTable.PSVersion -lt '5.0') { return }
             $moduleHandlerType = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.ModuleDependencyHandler]
             $oldEnvVars = Get-Item Env:\* | Sort-Object -Property Key
             $savedPSModulePath = $env:PSModulePath
@@ -59,7 +59,7 @@ Describe "Resolve DSC Resource Dependency" {
             if ( $skipTest ) { return }
             $env:PSModulePath = $savedPSModulePath
         }
-        It "Sets defaults correctly" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
+        It "Sets defaults correctly" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
             $rsp = [runspacefactory]::CreateRunspace()
             $rsp.Open()
             $depHandler = $moduleHandlerType::new($rsp)
@@ -82,15 +82,15 @@ Describe "Resolve DSC Resource Dependency" {
             $rsp.Dispose()
         }
 
-        It "Keeps the environment variables unchanged" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
+        It "Keeps the environment variables unchanged" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
             Test-EnvironmentVariables($oldEnvVars)
         }
 
-        It "Throws if runspace is null" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
+        It "Throws if runspace is null" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
             {$moduleHandlerType::new($null)} | Should -Throw
         }
 
-        It "Throws if runspace is not opened" -Skip:($PSversionTable.PSVersion -lt [Version]'5.0.0') {
+        It "Throws if runspace is not opened" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
             $rsp = [runspacefactory]::CreateRunspace()
             {$moduleHandlerType::new($rsp)} | Should -Throw
             $rsp.Dispose()

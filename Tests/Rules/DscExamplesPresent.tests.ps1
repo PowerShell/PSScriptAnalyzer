@@ -5,7 +5,7 @@ BeforeAll {
     $ruleName = "PSDSCDscExamplesPresent"
 }
 
- Describe "DscExamplesPresent rule in class based resource" -Skip:($PSVersionTable.PSVersion -lt [Version]'5.0.0')  {
+ Describe "DscExamplesPresent rule in class based resource" -Skip:($PSVersionTable.PSVersion -lt '5.0')  {
     BeforeAll {
         $examplesPath = "$PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\Examples"
         $classResourcePath = "$PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1"

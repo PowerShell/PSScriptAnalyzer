@@ -334,7 +334,7 @@ $s$s$s$s
         }
 
 
-        It "Does not count violation in DSC class" -Skip:($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
+        It "Does not count violation in DSC class" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
             $dscViolations.Count | Should -Be 0
         }
     }

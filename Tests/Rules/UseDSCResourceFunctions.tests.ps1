@@ -34,7 +34,7 @@ Describe "StandardDSCFunctionsInResource" {
     }
 }
 
-Describe "StandardDSCFunctionsInClass" -Skip:($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
+Describe "StandardDSCFunctionsInClass" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
     Context "When there are violations" {
         It "has 1 missing standard DSC functions violation" {
             $classViolations.Count | Should -Be 1

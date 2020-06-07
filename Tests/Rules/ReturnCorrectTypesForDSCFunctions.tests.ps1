@@ -33,7 +33,7 @@ Describe "ReturnCorrectTypesForDSCFunctions" {
     }
 }
 
- Describe "StandardDSCFunctionsInClass" -Skip:($PSVersionTable.PSVersion -lt [Version]'5.0.0') {
+ Describe "StandardDSCFunctionsInClass" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
     Context "When there are violations" {
         It "has 4 return correct types for DSC functions violations" {
             $classViolations.Count | Should -Be 4
