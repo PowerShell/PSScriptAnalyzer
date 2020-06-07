@@ -272,7 +272,7 @@ Describe "Test IncludeRule" {
         It "includes the given rules" {
             # CoreCLR version of PSScriptAnalyzer does not contain PSUseSingularNouns rule
             $expectedNumViolations = 2
-            if ([bool] $IsCoreCLR)
+            if ($IsCoreCLR)
             {
                 $expectedNumViolations = 1
             }
@@ -297,7 +297,7 @@ Describe "Test IncludeRule" {
         It "includes 2 wildcardrules" {
             # CoreCLR version of PSScriptAnalyzer does not contain PSUseSingularNouns rule
             $expectedNumViolations = 4
-            if ([bool] $IsCoreCLR)
+            if ($IsCoreCLR)
             {
                 $expectedNumViolations = 3
             }
