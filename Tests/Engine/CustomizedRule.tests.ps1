@@ -42,8 +42,6 @@ Describe "Test importing customized rules with null return results" {
 
 Describe "Test importing correct customized rules" {
 
-	# if(-not ([bool] $IsCoreCLR))
-	# {
 	Context "Test Get-Help functionality in ScriptRule parsing logic" -Skip:$IsCoreCLR {
 		It "ScriptRule help section must be correctly processed when Get-Help is called for the first time" {
 
@@ -201,8 +199,6 @@ Describe "Test importing correct customized rules" {
             $violations[0].RuleSuppressionID   | Should -Be "MyRuleSuppressionID"
         }
 
-        # if (!$testingLibraryUsage)
-		# {
 		Context "Test Invoke-ScriptAnalyzer with customized rules - Advanced test cases" -Skip:$testingLibraryUsage {
             It "will show the custom rule in the results when given a rule folder path with trailing backslash" {
 				# needs fixing for Linux
