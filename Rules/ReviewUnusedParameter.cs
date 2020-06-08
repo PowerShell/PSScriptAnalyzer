@@ -90,20 +90,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 && memberAst.Member is StringConstantExpressionAst memberStringAst
                 && memberStringAst.Value.Equals("BoundParameters", StringComparison.OrdinalIgnoreCase))
             {
-                MemberExpressionAst meAst = (MemberExpressionAst)ast;
-
                 // $MyInvocation.BoundParameters
-                if (meAst.Expression is VariableExpressionAst veAst
+                if (memberAst.Expression is VariableExpressionAst veAst
                     && veAst.VariablePath.UserPath.Equals("MyInvocation", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
 
                 // $PSCmdlet.MyInvocation.BoundParameters
-                if (meAst.Expression is MemberExpressionAst)
+                if (memberAst.Expression is MemberExpressionAst meAstNested)
                 {
-                    MemberExpressionAst meAstNested = (MemberExpressionAst)meAst.Expression;
-
                     if (meAstNested.Expression is VariableExpressionAst veAstNested
                         && veAstNested.VariablePath.UserPath.Equals("PSCmdlet", StringComparison.OrdinalIgnoreCase)
                         && meAstNested.Member is StringConstantExpressionAst sceAstNested
