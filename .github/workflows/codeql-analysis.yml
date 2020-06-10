@@ -35,7 +35,7 @@ jobs:
     
     - name: Build with dotnet
       run: | 
-        pwsh -command {Import-Module ./build.psm1; Start-PSBuild;}
+        pwsh -command ./build.psm1
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
