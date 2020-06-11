@@ -116,7 +116,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             private static readonly IEnumerable<string> s_invokeCommandCmdletNamesAndAliases =
                 Helper.Instance.CmdletNameAndAliases("Invoke-Command");
 
-            private readonly Dictionary<string, Dictionary<string, VariableExpressionAst>> _varsDeclaredPerSession;
+            private readonly Dictionary<string, HashSet<string>> _varsDeclaredPerSession;
 
             private readonly List<DiagnosticRecord> _diagnosticAccumulator;
         
@@ -127,7 +127,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             public SyntaxCompatibilityVisitor(UseUsingScopeModifierInNewRunspaces rule, string analyzedScriptPath)
             {
                 _diagnosticAccumulator = new List<DiagnosticRecord>();
-                _varsDeclaredPerSession = new Dictionary<string, Dictionary<string, VariableExpressionAst>>();
+                _varsDeclaredPerSession = new Dictionary<string, HashSet<string>>();
                 _rule = rule;
                 _analyzedFilePath = analyzedScriptPath;
             }
@@ -183,7 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         return AstVisitAction.Continue;
                     }
 
-                    IReadOnlyDictionary<string, VariableExpressionAst> varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
+                    HashSet<string> varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
                     if (varsInLocalAssignments != null)
                     {
                         AddAssignedVarsToSession(sessionName, varsInLocalAssignments);
@@ -191,7 +191,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                     GenerateDiagnosticRecords(
                         FindNonAssignedNonUsingVarAsts(
-                            scriptBlockExpressionAst, 
+                            scriptBlockExpressionAst,
                             GetAssignedVarsInSession(sessionName)));
 
                     return AstVisitAction.SkipChildren;
@@ -205,10 +205,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// Example: `$foo = "foo"` ==> the VariableExpressionAst for $foo is returned
             /// </summary>
             /// <param name="ast"></param>
-            private static IReadOnlyDictionary<string, VariableExpressionAst> FindVarsInAssignmentAsts(Ast ast)
+            private static HashSet<string> FindVarsInAssignmentAsts(Ast ast)
             {
-                Dictionary<string, VariableExpressionAst> variableDictionary =
-                    new Dictionary<string, VariableExpressionAst>();
+                HashSet<string> variableDictionary =
+                    new HashSet<string>();
 
                 // Find all variables that are assigned within this ast
                 foreach (AssignmentStatementAst statementAst in ast.FindAll(IsAssignmentStatementAst, true))
@@ -217,11 +217,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         string variableName = string.Format(variable.VariablePath.UserPath,
                             StringComparer.OrdinalIgnoreCase);
-                        variableDictionary.Add(variableName, variable);
+                        variableDictionary.Add(variableName);
                     }
                 };
 
-                return new ReadOnlyDictionary<string, VariableExpressionAst>(variableDictionary);
+                return variableDictionary;
             }
 
             /// <summary>
@@ -264,14 +264,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <param name="ast"></param>
             /// <param name="varsInAssignments"></param>
             private static IEnumerable<VariableExpressionAst> FindNonAssignedNonUsingVarAsts(
-                Ast ast, IReadOnlyDictionary<string, VariableExpressionAst> varsInAssignments)
+                Ast ast, HashSet<string> varsInAssignments)
             {
                 // Find all variables that are not locally assigned, and don't have $using: scope modifier
                 foreach (VariableExpressionAst variable in ast.FindAll(IsNonUsingNonSpecialVariableExpressionAst, true))
                 {
                     var varName = string.Format(variable.VariablePath.UserPath, StringComparer.OrdinalIgnoreCase);
                     
-                    if (varsInAssignments.ContainsKey(varName))
+                    if (varsInAssignments.Contains(varName))
                     {
                         yield break;    
                     }
@@ -368,7 +368,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// GetAssignedVarsInSession: Retrieves all previously declared vars for a given session (as in Invoke-Command -Session $session).
             /// </summary>
             /// <param name="sessionName"></param>
-            private IReadOnlyDictionary<string,VariableExpressionAst> GetAssignedVarsInSession(string sessionName)
+            private HashSet<string> GetAssignedVarsInSession(string sessionName)
             {
                 return _varsDeclaredPerSession[sessionName];
             }
@@ -378,16 +378,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// </summary>
             /// <param name="sessionName"></param>
             /// <param name="variablesToAdd"></param>
-            private void AddAssignedVarsToSession(string sessionName, IReadOnlyDictionary<string, VariableExpressionAst> variablesToAdd)
+            private void AddAssignedVarsToSession(string sessionName, HashSet<string> variablesToAdd)
             {
                 if (!_varsDeclaredPerSession.ContainsKey(sessionName))
                 {
-                    _varsDeclaredPerSession.Add(sessionName, new Dictionary<string, VariableExpressionAst>());
+                    _varsDeclaredPerSession.Add(sessionName, new HashSet<string>());
                 }
 
                 foreach (var item in variablesToAdd)
                 {
-                    _varsDeclaredPerSession[sessionName].Add(item.Key, item.Value);
+                    if (!_varsDeclaredPerSession[sessionName].Contains(item))
+                    {
+                        _varsDeclaredPerSession[sessionName].Add(item);
+                    }
                 }
             }
 

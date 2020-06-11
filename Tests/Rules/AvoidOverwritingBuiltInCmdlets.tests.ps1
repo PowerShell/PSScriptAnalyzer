@@ -1,29 +1,34 @@
-﻿$ruleName = "PSAvoidOverwritingBuiltInCmdlets"
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$ruleSettingsWindows = @{$ruleName = @{PowerShellVersion = @('desktop-5.1.14393.206-windows') } }
-$ruleSettingsCore = @{$ruleName = @{PowerShellVersion = @('core-6.1.0-windows') } }
-$ruleSettingsBoth = @{$ruleName = @{PowerShellVersion = @('core-6.1.0-windows', 'desktop-5.1.14393.206-windows') } }
+BeforeAll {
+    $ruleName = "PSAvoidOverwritingBuiltInCmdlets"
 
-$settings = @{
-    IncludeRules = @($ruleName)
-}
+    $ruleSettingsWindows = @{$ruleName = @{PowerShellVersion = @('desktop-5.1.14393.206-windows') } }
+    $ruleSettingsCore = @{$ruleName = @{PowerShellVersion = @('core-6.1.0-windows') } }
+    $ruleSettingsBoth = @{$ruleName = @{PowerShellVersion = @('core-6.1.0-windows', 'desktop-5.1.14393.206-windows') } }
 
-# Get-Something is not a built in cmdlet on any platform and should never be flagged
-# Get-ChildItem is available on all versions of PowerShell and should always be flagged
-# Get-Clipboard is available on PowerShell 5 but not 6 and should be flagged conditionally
-$scriptDefinition = @"
-function Get-Something {
-    Write-Output "Get-Something"
-}
+    $settings = @{
+        IncludeRules = @($ruleName)
+    }
 
-function Get-ChildItem {
-    Write-Output "Get-ChildItem"
-}
+    # Get-Something is not a built in cmdlet on any platform and should never be flagged
+    # Get-ChildItem is available on all versions of PowerShell and should always be flagged
+    # Get-Clipboard is available on PowerShell 5 but not 6 and should be flagged conditionally
+    $scriptDefinition = @"
+    function Get-Something {
+        Write-Output "Get-Something"
+    }
 
-function Get-Clipboard {
-    Write-Output "Get-Clipboard"
-}
+    function Get-ChildItem {
+        Write-Output "Get-ChildItem"
+    }
+
+    function Get-Clipboard {
+        Write-Output "Get-Clipboard"
+    }
 "@
+}
 
 describe 'AvoidOverwritingBuiltInCmdlets' {
     context 'No settings specified' {
@@ -43,8 +48,10 @@ describe 'AvoidOverwritingBuiltInCmdlets' {
     }
 
     context 'PowerShellVersion explicitly set to Windows PowerShell' {
-        $settings['Rules'] = $ruleSettingsWindows
-        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        BeforeAll {
+            $settings['Rules'] = $ruleSettingsWindows
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        }
 
         it 'should find two violations' {
             $violations.Count | Should -Be 2
@@ -59,8 +66,10 @@ describe 'AvoidOverwritingBuiltInCmdlets' {
     }
 
     context 'PowerShellVersion explicitly set to PowerShell 6' {
-        $settings['Rules'] = $ruleSettingsCore
-        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        BeforeAll {
+            $settings['Rules'] = $ruleSettingsCore
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        }
 
         it 'should find one violation' {
             $violations.Count | Should -Be 1
@@ -72,8 +81,10 @@ describe 'AvoidOverwritingBuiltInCmdlets' {
     }
 
     context 'PowerShellVersion explicitly set to both Windows PowerShell and PowerShell 6' {
-        $settings['Rules'] = $ruleSettingsBoth
-        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        BeforeAll {
+            $settings['Rules'] = $ruleSettingsBoth
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        }
 
         it 'should find three violations' {
             $violations.Count | Should -Be 3

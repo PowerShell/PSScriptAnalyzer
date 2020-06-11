@@ -1,11 +1,15 @@
-﻿$violationMessage = "'cls' is an alias of 'Clear-Host'. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content."
-$violationName = "PSAvoidUsingCmdletAliases"
-$testRootDirectory = Split-Path -Parent $PSScriptRoot
-$violationFilepath = Join-Path $PSScriptRoot 'AvoidUsingAlias.ps1'
-$violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingAliasNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+BeforeAll {
+    $violationMessage = "'cls' is an alias of 'Clear-Host'. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content."
+    $violationName = "PSAvoidUsingCmdletAliases"
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    $violationFilepath = Join-Path $PSScriptRoot 'AvoidUsingAlias.ps1'
+    $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingAliasNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+}
 
 Describe "AvoidUsingAlias" {
     Context "When there are violations" {

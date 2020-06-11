@@ -1,11 +1,15 @@
-$ruleName = 'PSDSCUseIdenticalMandatoryParametersForDSC'
-$resourceBasepath = "$PSScriptRoot\DSCResourceModule\DSCResources"
-$badResourceFilepath = [System.IO.Path]::Combine(
-    $resourceBasepath,
-    'MSFT_WaitForAnyNoIdenticalMandatoryParameter',
-    'MSFT_WaitForAnyNoIdenticalMandatoryParameter.psm1');
-$goodResourceFilepath = [System.IO.Path]::Combine($resourceBasepath,'MSFT_WaitForAny','MSFT_WaitForAny.psm1');
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
+BeforeAll {
+    $ruleName = 'PSDSCUseIdenticalMandatoryParametersForDSC'
+    $resourceBasepath = "$PSScriptRoot\DSCResourceModule\DSCResources"
+    $badResourceFilepath = [System.IO.Path]::Combine(
+        $resourceBasepath,
+        'MSFT_WaitForAnyNoIdenticalMandatoryParameter',
+        'MSFT_WaitForAnyNoIdenticalMandatoryParameter.psm1')
+    $goodResourceFilepath = [System.IO.Path]::Combine($resourceBasepath,'MSFT_WaitForAny','MSFT_WaitForAny.psm1')
+}
 
 Describe "UseIdenticalMandatoryParametersForDSC" {
     Context "When a mandatory parameters are not present" {
