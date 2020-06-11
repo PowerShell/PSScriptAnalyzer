@@ -862,6 +862,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid using double quotes if the string is constant..
+        /// </summary>
+        internal static string AvoidUsingDoubleQuotesForConstantStringCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUsingDoubleQuotesForConstantStringCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use single quotes if the string is constant..
+        /// </summary>
+        internal static string AvoidUsingDoubleQuotesForConstantStringDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingDoubleQuotesForConstantStringDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use single quotes when a string is constant..
+        /// </summary>
+        internal static string AvoidUsingDoubleQuotesForConstantStringError {
+            get {
+                return ResourceManager.GetString("AvoidUsingDoubleQuotesForConstantStringError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUsingDoubleQuotesForConstantString.
+        /// </summary>
+        internal static string AvoidUsingDoubleQuotesForConstantStringName {
+            get {
+                return ResourceManager.GetString("AvoidUsingDoubleQuotesForConstantStringName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using Empty Catch Block.
         /// </summary>
         internal static string AvoidUsingEmptyCatchBlockCommonName {

@@ -1137,4 +1137,16 @@
   <data name="UseUsingScopeModifierInNewRunspacesCorrectionDescription" xml:space="preserve">
     <value>Replace {0} with {1}</value>
   </data>
+  <data name="AvoidUsingDoubleQuotesForConstantStringCommonName" xml:space="preserve">
+    <value>Avoid using double quotes if the string is constant.</value>
+  </data>
+  <data name="AvoidUsingDoubleQuotesForConstantStringDescription" xml:space="preserve">
+    <value>Use single quotes if the string is constant.</value>
+  </data>
+  <data name="AvoidUsingDoubleQuotesForConstantStringName" xml:space="preserve">
+    <value>AvoidUsingDoubleQuotesForConstantString</value>
+  </data>
+  <data name="AvoidUsingDoubleQuotesForConstantStringError" xml:space="preserve">
+    <value>Use single quotes when a string is constant.</value>
+  </data>
 </root>
