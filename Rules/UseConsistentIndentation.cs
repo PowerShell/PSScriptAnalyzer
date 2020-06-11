@@ -224,6 +224,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             {
                                 continue;
                             }
+
                             bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
@@ -231,6 +232,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 }
 
                 if (pipelineIndentationStyle == PipelineIndentationStyle.None) { continue; }
+
                 // Check if the current token matches the end of a PipelineAst
                 PipelineAst matchingPipeLineAstEnd = MatchingPipelineAstEnd(pipelineAsts, ref minimumPipelineAstIndex, token);
                 if (matchingPipeLineAstEnd == null)
@@ -312,6 +314,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     break;
                 }
             } while (searchLine == token.Extent.StartLineNumber - 1 && searchIndex >= 0);
+
             return false;
         }
 
