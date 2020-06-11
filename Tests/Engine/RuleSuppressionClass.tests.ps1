@@ -1,10 +1,15 @@
-﻿$script:skipForV3V4 = $true
-if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
-    $script:skipForV3V4 = $false
-}
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
-$violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
+BeforeAll {
+    $script:skipForV3V4 = $true
+    if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
+        $script:skipForV3V4 = $false
+    }
+
+    $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
+    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
+}
 
 Describe "RuleSuppressionWithoutScope" {
 

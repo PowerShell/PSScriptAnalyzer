@@ -390,7 +390,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     testAst => testAst is CommandAst, true);
             foreach (CommandAst commandAst in commandAsts)
             {
-                List<Ast> commandParameterAstElements = commandAst.FindAll(testAst => true, searchNestedScriptBlocks: false).ToList();
+                List<Ast> commandParameterAstElements = commandAst.FindAll(
+                    testAst => testAst.Parent == commandAst, searchNestedScriptBlocks: false).ToList();
                 for (int i = 0; i < commandParameterAstElements.Count - 1; i++)
                 {
                     IScriptExtent leftExtent = commandParameterAstElements[i].Extent;

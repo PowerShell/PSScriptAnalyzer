@@ -37,7 +37,7 @@ Table of Contents
 
 Introduction
 ============
-PSScriptAnalyzer is a static code checker for Windows PowerShell modules and scripts. PSScriptAnalyzer checks the quality of Windows PowerShell code by running a set of rules.
+PSScriptAnalyzer is a static code checker for PowerShell modules and scripts. PSScriptAnalyzer checks the quality of PowerShell code by running a set of rules.
 The rules are based on PowerShell best practices identified by PowerShell Team and the community. It generates DiagnosticResults (errors and warnings) to inform users about potential
 code defects and suggests possible solutions for improvements.
 
@@ -108,7 +108,7 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
 #### Requirements
 
 * [.NET Core 3.1.102 SDK](https://www.microsoft.com/net/download/dotnet-core/3.1#sdk-3.1.102) or newer patch release
-* [Pester v4 PowerShell module, available on PowerShell Gallery](https://github.com/pester/Pester)
+* [Pester v5 PowerShell module, available on PowerShell Gallery](https://github.com/pester/Pester)
 * [PlatyPS PowerShell module, available on PowerShell Gallery](https://github.com/PowerShell/platyPS/releases)
 * Optionally but recommended for development: [Visual Studio 2017/2019](https://www.visualstudio.com/downloads/)
 

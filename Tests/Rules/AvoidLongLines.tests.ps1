@@ -1,11 +1,16 @@
-$ruleName = "PSAvoidLongLines"
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$ruleSettings = @{
-    Enable = $true
-}
-$settings = @{
-    IncludeRules = @($ruleName)
-    Rules        = @{ $ruleName = $ruleSettings }
+BeforeAll {
+    $ruleName =  "PSAvoidLongLines"
+
+    $ruleSettings = @{
+        Enable = $true
+    }
+    $settings = @{
+        IncludeRules = @($ruleName)
+        Rules        = @{ $ruleName = $ruleSettings }
+    }
 }
 
 Describe "AvoidLongLines" {

@@ -1,30 +1,51 @@
-﻿$violationMessage = "Function 'Set-MyObject' has verb that could change system state. Therefore, the function has to support 'ShouldProcess'"
-$violationName = "PSUseShouldProcessForStateChangingFunctions"
-$violations = Invoke-ScriptAnalyzer $PSScriptRoot\UseShouldProcessForStateChangingFunctions.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\UseShouldProcessForStateChangingFunctionsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $violationMessage = "Function 'Set-MyObject' has verb that could change system state. Therefore, the function has to support 'ShouldProcess'"
+    $violationName = "PSUseShouldProcessForStateChangingFunctions"
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\UseShouldProcessForStateChangingFunctions.ps1 | Where-Object { $_.RuleName -eq $violationName }
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\UseShouldProcessForStateChangingFunctionsNoViolations.ps1 | Where-Object { $_.RuleName -eq $violationName }
+}
 
 Describe "It checks UseShouldProcess is enabled when there are state changing verbs in the function names" {
     Context "When function name has state changing verb" {
-
-        Function Test-Verb([string] $verb)
-        {
-            $scriptDefinitionGeneric = @'
-Function New-{0} () {{ }}
-'@
-            $scriptDef = $scriptDefinitionGeneric -f $verb
-            It ('finds "{0}" verb in function name' -f $verb) {
-                $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule $violationName
-                $violations.Count | Should -Be 1
+        It 'Finds verb "<Verb>" in function name' {
+            Param($Verb)
+            $scriptDefinition = "Function New-${Verb} () {{ }}"
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -IncludeRule $violationName
+            $violations.Count | Should -Be 1
+        } -TestCases @(
+            @{
+                Verb = 'New'
             }
-        }
-
-        $verbs = @('New', 'Set', 'Remove', 'Start', 'Stop', 'Restart', 'Reset', 'Update')
-        $verbs | ForEach-Object {Test-Verb $_}
+            @{
+                Verb = 'Set'
+            }
+            @{
+                Verb = 'Remove'
+            }
+            @{
+                Verb = 'Start'
+            }
+            @{
+                Verb = 'Stop'
+            }
+            @{
+                Verb = 'Restart'
+            }
+            @{
+                Verb = 'Reset'
+            }
+            @{
+                Verb = 'Update'
+            }
+        )
     }
+
     Context "When there are violations" {
-    	$numViolations = 5
-        It ("has {0} violations where ShouldProcess is not supported" -f $numViolations) {
-            $violations.Count | Should -Be $numViolations
+        It "has correct number of violations where ShouldProcess is not supported" {
+            $violations.Count | Should -Be 5
         }
 
         It "has the correct description message" {
@@ -32,7 +53,7 @@ Function New-{0} () {{ }}
         }
 
         It "has the correct extent" {
-        $violations[0].Extent.Text | Should -Be "Set-MyObject"
+            $violations[0].Extent.Text | Should -Be "Set-MyObject"
         }
     }
 

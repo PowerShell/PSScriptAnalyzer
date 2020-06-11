@@ -1,14 +1,20 @@
-$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
-$sa = Get-Command Get-ScriptAnalyzerRule
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$singularNouns = "PSUseSingularNouns" # this rule does not exist for coreclr version
-$approvedVerbs = "PSUseApprovedVerbs"
-$cmdletAliases = "PSAvoidUsingCmdletAliases"
-$dscIdentical = "PSDSCUseIdenticalParametersForDSC"
+BeforeAll {
+    $sa = Get-Command Get-ScriptAnalyzerRule
+
+    $singularNouns = "PSUseSingularNouns" # this rule does not exist for coreclr version
+    $approvedVerbs = "PSUseApprovedVerbs"
+    $cmdletAliases = "PSAvoidUsingCmdletAliases"
+    $dscIdentical = "PSDSCUseIdenticalParametersForDSC"
+}
 
 Describe "Test available parameters" {
-    $params = $sa.Parameters
+    BeforeAll {
+        $params = $sa.Parameters
+    }
+
     Context "Name parameter" {
         It "has a RuleName parameter" {
             $params.ContainsKey("Name") | Should -BeTrue
@@ -32,7 +38,6 @@ Describe "Test available parameters" {
 			$params.CustomRulePath.Aliases.Contains("CustomizedRulePath") | Should -BeTrue
 		}
     }
-
 }
 
 Describe "Test Name parameters" {
@@ -59,7 +64,7 @@ Describe "Test Name parameters" {
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
             $expectedNumRules = 64
-            if ((Test-PSEditionCoreClr) -or (Test-PSVersionV3) -or (Test-PSVersionV4))
+            if ($IsCoreCLR -or ($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4))
             {
                 # for PSv3 PSAvoidGlobalAliases is not shipped because
                 # it uses StaticParameterBinder.BindCommand which is
@@ -94,15 +99,16 @@ Describe "Test Name parameters" {
 }
 
 Describe "Test RuleExtension" {
-    $community = "CommunityAnalyzerRules"
-    $measureRequired = "Measure-RequiresModules"
     Context "When used correctly" {
-
-		$expectedNumCommunityRules = 10
-		if ($PSVersionTable.PSVersion -ge [Version]'4.0.0')
-		{
-			$expectedNumCommunityRules = 12
-		}
+        BeforeAll {
+            $community = "CommunityAnalyzerRules"
+            $measureRequired = "Measure-RequiresModules"
+            $expectedNumCommunityRules = 10
+            if ($PSVersionTable.PSVersion -ge [Version]'4.0.0')
+            {
+                $expectedNumCommunityRules = 12
+            }
+        }
         It "with the module folder path" {
             $ruleExtension = Get-ScriptAnalyzerRule -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules | Where-Object {$_.SourceName -eq $community}
             $ruleExtension.Count | Should -Be $expectedNumCommunityRules

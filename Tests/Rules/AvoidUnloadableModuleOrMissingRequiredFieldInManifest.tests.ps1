@@ -1,19 +1,24 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$missingMessage = "The member 'ModuleVersion' is not present in the module manifest."
-$missingMemberRuleName = "PSMissingModuleManifestField"
-$violationFilepath = Join-Path $PSScriptRoot "TestBadModule\TestBadModule.psd1"
-$violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $missingMemberRuleName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\TestGoodModule\TestGoodModule.psd1 | Where-Object {$_.RuleName -eq $missingMemberRuleName}
-$noHashtableFilepath = Join-Path $PSScriptRoot "TestBadModule\NoHashtable.psd1"
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+
+    $missingMessage = "The member 'ModuleVersion' is not present in the module manifest."
+    $missingMemberRuleName = "PSMissingModuleManifestField"
+    $violationFilepath = Join-Path $PSScriptRoot "TestBadModule\TestBadModule.psd1"
+    $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object { $_.RuleName -eq $missingMemberRuleName }
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\TestGoodModule\TestGoodModule.psd1 | Where-Object { $_.RuleName -eq $missingMemberRuleName }
+    $noHashtableFilepath = Join-Path $PSScriptRoot "TestBadModule\NoHashtable.psd1"
+}
 
 Describe "MissingRequiredFieldModuleManifest" {
     BeforeAll {
         Import-Module (Join-Path $PSScriptRoot "PSScriptAnalyzerTestHelper.psm1") -Force
     }
 
-    AfterAll{
+    AfterAll {
         Remove-Module PSScriptAnalyzerTestHelper
     }
 
@@ -26,19 +31,18 @@ Describe "MissingRequiredFieldModuleManifest" {
             $violations.Message | Should -Match $missingMessage
         }
 
-        $numExpectedCorrections = 1
-        It "has $numExpectedCorrections suggested corrections" {
-            $violations.SuggestedCorrections.Count | Should -Be $numExpectedCorrections
+        It "has correct suggested corrections count" {
+            $violations.SuggestedCorrections.Count | Should -Be 1
         }
 
-	It "has the right suggested correction" {
-        $expectedText = [System.Environment]::NewLine + '# Version number of this module.' +
+        It "has the right suggested correction" {
+            $expectedText = [System.Environment]::NewLine + '# Version number of this module.' +
             [System.Environment]::NewLine + "ModuleVersion = '1.0.0.0'" + [System.Environment]::NewLine
 
-        $violations[0].SuggestedCorrections[0].Text | Should -BeExactly $expectedText
-        Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -BeNullOrEmpty
+            $violations[0].SuggestedCorrections[0].Text | Should -BeExactly $expectedText
+            Get-ExtentText $violations[0].SuggestedCorrections[0] $violationFilepath | Should -BeNullOrEmpty
+        }
     }
-}
 
     Context "When there are no violations" {
         It "returns no violations" {
@@ -94,4 +98,3 @@ Describe "MissingRequiredFieldModuleManifest" {
         }
     }
 }
-

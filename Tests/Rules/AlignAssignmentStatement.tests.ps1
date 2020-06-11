@@ -1,16 +1,20 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-$ruleConfiguration = @{
-    Enable         = $true
-    CheckHashtable = $true
-}
+    $ruleConfiguration = @{
+        Enable         = $true
+        CheckHashtable = $true
+    }
 
-$settings = @{
-    IncludeRules = @("PSAlignAssignmentStatement")
-    Rules        = @{
-        PSAlignAssignmentStatement = $ruleConfiguration
+    $settings = @{
+        IncludeRules = @("PSAlignAssignmentStatement")
+        Rules        = @{
+            PSAlignAssignmentStatement = $ruleConfiguration
+        }
     }
 }
 

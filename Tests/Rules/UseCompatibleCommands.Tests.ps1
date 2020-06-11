@@ -1,9 +1,11 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+BeforeAll {
+    $script:RuleName = 'PSUseCompatibleCommands'
+}
+
 $script:RunningInCIOnUbuntu = $IsLinux -and ($env:TF_BUILD -or $env:APPVEYOR) # some test cases randomly start and stop to fail in Ubuntu CI tests
-$script:RuleName = 'PSUseCompatibleCommands'
-$script:AnyProfileConfigKey = 'AnyProfilePath'
 $script:TargetProfileConfigKey = 'TargetProfiles'
 
 $script:Srv2012_3_profile = 'win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework'
@@ -237,6 +239,7 @@ $script:ParameterCompatibilityTestCases = @(
     @{ Target = $script:Srv2019_7_profile; Script = 'Get-Help "Invoke-WebRequest" -ShowWindow'; Commands = @(); Parameters = @(); Version = "7.0"; OS = 'Windows'; ProblemCount = 0 }
     @{ Target = $script:Srv2019_7_profile; Script = 'Start-Service "eventlog" -ComputerName "MyComputer"'; Commands = @('Start-Service'); Parameters = @('ComputerName'); Version = "7.0"; OS = 'Windows'; ProblemCount = 1 }
 )
+
 
 Describe 'UseCompatibleCommands' {
     Context 'Targeting a single profile' {
