@@ -1,8 +1,10 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+BeforeAll {
 $script:RuleName = 'PSUseCompatibleTypes'
-$script:AnyProfileConfigKey = 'AnyProfilePath'
+}
+
 $script:TargetProfileConfigKey = 'TargetProfiles'
 
 $script:Srv2012_3_profile = 'win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework'
@@ -66,6 +68,7 @@ $script:MemberCompatibilityTestCases = @(
 
     @{ Target = $script:Ubuntu1804_7_profile; Script = '[System.Management.Automation.Tracing.Tracer]::GetExceptionString($e)'; Types = @('System.Management.Automation.Tracing.Tracer'); Members = @('GetExceptionString'); Version = "7.0"; OS = 'Linux'; ProblemCount = 1 }
 )
+
 
 Describe 'UseCompatibleTypes' {
     Context 'Targeting a single profile' {

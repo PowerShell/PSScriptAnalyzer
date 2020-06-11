@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 Describe "UseCorrectCasing" {
     It "corrects case of simple cmdlet" {
         Invoke-Formatter 'get-childitem' | Should -Be 'Get-ChildItem'

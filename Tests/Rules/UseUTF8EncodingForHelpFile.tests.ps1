@@ -1,4 +1,7 @@
-﻿Describe "UseUTF8EncodingForHelpFile" {
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Describe "UseUTF8EncodingForHelpFile" {
     BeforeAll {
         $violationMessage = "File about_utf16.help.txt has to use UTF8 instead of System.Text.UTF32Encoding encoding because it is a powershell help file."
         $violationName = "PSUseUTF8EncodingForHelpFile"

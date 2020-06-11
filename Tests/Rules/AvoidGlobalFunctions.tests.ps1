@@ -1,9 +1,13 @@
-﻿$functionErroMessage = "Avoid creating functions with a Global scope."
-$violationName = "PSAvoidGlobalFunctions"
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalFunctions.psm1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalFunctionsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+BeforeAll {
+    $functionErroMessage = "Avoid creating functions with a Global scope."
+    $violationName = "PSAvoidGlobalFunctions"
 
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalFunctions.psm1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalFunctionsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+}
 
 Describe "$violationName " {
     Context "When there are violations" {

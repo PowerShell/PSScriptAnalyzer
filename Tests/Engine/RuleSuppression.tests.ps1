@@ -1,43 +1,49 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
-$violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
-$ruleSuppressionBad = @'
-Function do-something
-{
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "username")]
-    Param(
-    $username,
-    $password
-    )
-}
+    $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
+    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
+
+    $ruleSuppressionBad = @'
+    Function do-something
+    {
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "username")]
+        Param(
+        $username,
+        $password
+        )
+    }
 '@
 
-$ruleSuppressionInConfiguration = @'
-Configuration xFileUpload
-{
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
-param ([string] $decryptedPassword)
-$securePassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
-}
+    $ruleSuppressionInConfiguration = @'
+    Configuration xFileUpload
+    {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+    param ([string] $decryptedPassword)
+    $securePassword = ConvertTo-SecureString $decryptedPassword -AsPlainText -Force
+    }
 '@
 
-# If function doesn't starts at offset 0, then the test case fails before commit b551211
-$ruleSuppressionAvoidUsernameAndPassword = @'
+    # If function doesn't starts at offset 0, then the test case fails before commit b551211
+    $ruleSuppressionAvoidUsernameAndPassword = @'
 
-function SuppressUserAndPwdRule()
-{
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "")]
-    [CmdletBinding()]
-    param
-    (
-        [System.String] $username,
-        [System.String] $password
-    )
-}
+    function SuppressUserAndPwdRule()
+    {
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "")]
+        [CmdletBinding()]
+        param
+        (
+            [System.String] $username,
+            [System.String] $password
+        )
+    }
 '@
+}
+
 
 Describe "RuleSuppressionWithoutScope" {
     Context "Function" {
@@ -103,30 +109,27 @@ function SuppressPwdParam()
         }
     }
 
-    if (!$testingLibraryUsage)
-    {
-        Context "Bad Rule Suppression" {
-            It "Throws a non-terminating error" {
-                Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionBad -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -ErrorVariable errorRecord -ErrorAction SilentlyContinue
-                $errorRecord.Count | Should -Be 1
-                $errorRecord.FullyQualifiedErrorId | Should -Match "suppression message attribute error"
-            }
+    Context "Bad Rule Suppression" -Skip:$testingLibraryUsage {
+        It "Throws a non-terminating error" {
+            Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionBad -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -ErrorVariable errorRecord -ErrorAction SilentlyContinue
+            $errorRecord.Count | Should -Be 1
+            $errorRecord.FullyQualifiedErrorId | Should -Match "suppression message attribute error"
         }
+    }
 
-        Context "External Rule Suppression" {
+    Context "External Rule Suppression" -Skip:$testingLibraryUsage {
+        It "Suppresses violation of an external ast rule" {
             $externalRuleSuppression = @'
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','')]
-param() # without the param block, powershell parser throws up!
-Write-Host "write-host"
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','')]
+    param() # without the param block, powershell parser throws up!
+    Write-Host "write-host"
 '@
-            It "Suppresses violation of an external ast rule" {
-                Invoke-ScriptAnalyzer `
-                    -ScriptDefinition $externalRuleSuppression `
-                    -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") `
-                    -OutVariable ruleViolations `
-                    -SuppressedOnly
-                $ruleViolations.Count | Should -Be 1
-            }
+            Invoke-ScriptAnalyzer `
+                -ScriptDefinition $externalRuleSuppression `
+                -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") `
+                -OutVariable ruleViolations `
+                -SuppressedOnly
+            $ruleViolations.Count | Should -Be 1
         }
     }
 }

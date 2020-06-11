@@ -1,5 +1,9 @@
-Import-Module PSScriptAnalyzer
-$ruleName = "PSPossibleIncorrectUsageOfRedirectionOperator"
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $ruleName = "PSPossibleIncorrectUsageOfRedirectionOperator"
+}
 
 Describe "PossibleIncorrectUsageOfComparisonOperator" {
     Context "When there are violations" {
