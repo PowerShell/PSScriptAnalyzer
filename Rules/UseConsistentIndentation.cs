@@ -297,7 +297,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             int searchIndex = tokenIndex - 2;
-            int searchLine = token.Extent.StartLineNumber;
+            int searchLine;
             do
             {
                 searchLine = tokens[searchIndex].Extent.StartLineNumber;
