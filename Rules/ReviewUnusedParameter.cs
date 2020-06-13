@@ -37,7 +37,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (ScriptBlockAst scriptBlockAst in scriptBlockAsts)
             {
                 // bail out if PS bound parameter used.
-                if (scriptBlockAst.Find(IsBoundParametersReference, false) != null)
+                if (scriptBlockAst.Find(IsBoundParametersReference, searchNestedScriptBlocks: false) != null)
                 {
                     continue;
                 }
