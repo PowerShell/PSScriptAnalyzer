@@ -44,7 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                var commandInfo = Helper.Instance.GetCommandInfo(commandName, bypassCache: false);
+                var commandInfo = Helper.Instance.GetCommandInfo(commandName);
                 if (commandInfo == null || commandInfo.CommandType == CommandTypes.ExternalScript || commandInfo.CommandType == CommandTypes.Application)
                 {
                     continue;
@@ -69,7 +69,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 var commandParameterAsts = commandAst.FindAll(
                     testAst => testAst is CommandParameterAst, true).Cast<CommandParameterAst>();
-                var availableParameters = commandInfo.Parameters;
+                Dictionary<string, ParameterMetadata> availableParameters;
+                try
+                {
+                    availableParameters = commandInfo.Parameters;
+                }
+                // It's a known issue that objects from PowerShell can have a runspace affinity,
+                // therefore if that happens, we query a fresh object instead of using the cache.
+                // https://github.com/PowerShell/PowerShell/issues/4003
+                catch (InvalidOperationException)
+                {
+                    commandInfo = Helper.Instance.GetCommandInfo(commandName, bypassCache: true);
+                    availableParameters = commandInfo.Parameters;
+                }
                 foreach (var commandParameterAst in commandParameterAsts)
                 {
                     var parameterName = commandParameterAst.ParameterName;

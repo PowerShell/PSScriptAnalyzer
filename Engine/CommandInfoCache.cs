@@ -67,11 +67,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             var key = new CommandLookupKey(commandName, commandTypes);
-            // Atomically either use PowerShell to query a command info object, or fetch it from the cache
             if (bypassCache)
             {
                 return GetCommandInfoInternal(commandName, commandTypes);
             }
+            // Atomically either use PowerShell to query a command info object, or fetch it from the cache
             return _commandInfoCache.GetOrAdd(key, new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes))).Value;
         }
 
