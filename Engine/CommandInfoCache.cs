@@ -57,8 +57,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="commandName">Name of the command to get a commandinfo object for.</param>
         /// <param name="commandTypes">What types of command are needed. If omitted, all types are retrieved.</param>
+        /// <param name="bypassCache">When needed due to runspace affinity problems of some PowerShell objects.</param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null)
+        public CommandInfo GetCommandInfo(string commandName, CommandTypes? commandTypes = null, bool bypassCache = false)
         {
             if (string.IsNullOrWhiteSpace(commandName))
             {
@@ -67,6 +68,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             var key = new CommandLookupKey(commandName, commandTypes);
             // Atomically either use PowerShell to query a command info object, or fetch it from the cache
+            if (bypassCache)
+            {
+                return GetCommandInfoInternal(commandName, commandTypes);
+            }
             return _commandInfoCache.GetOrAdd(key, new Lazy<CommandInfo>(() => GetCommandInfoInternal(commandName, commandTypes))).Value;
         }
 

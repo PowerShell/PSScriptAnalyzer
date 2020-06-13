@@ -44,7 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                var commandInfo = Helper.Instance.GetCommandInfo(commandName);
+                var commandInfo = Helper.Instance.GetCommandInfo(commandName, bypassCache: false);
                 if (commandInfo == null || commandInfo.CommandType == CommandTypes.ExternalScript || commandInfo.CommandType == CommandTypes.Application)
                 {
                     continue;
