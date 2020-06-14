@@ -59,6 +59,18 @@ Describe "ReviewUnusedParameter" {
             $Violations.Count | Should -Be 0
         }
 
+        It "has no violations when using MyInvocation.BoundParameters" {
+            $ScriptDefinition = 'function Bound { param ($Param1) $splat = $MyInvocation.BoundParameters; Get-Foo @splat }'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+        It "has no violations when using PSCmdlet.MyInvocation.BoundParameters" {
+            $ScriptDefinition = 'function Bound { param ($Param1) $splat = $PSCmdlet.MyInvocation.BoundParameters; Get-Foo @splat }'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
         It "has no violations when parameter is called in child scope" -skip {
             $ScriptDefinition = 'function foo { param ($Param1) function Child { $Param1 } }'
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
