@@ -32,14 +32,12 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.102
-    
-    - name: Open powershell
-      run: pwsh 
+
     - name: Run commands in powershell
       run: |
-        Import-Module .\tools\appveyor.psm1
-        Invoke-AppveyorInstall -SkipPesterInstallation
-        ./build.ps1 -All
+        pwsh -command {Import-Module .\tools\appveyor.psm1}
+        pwsh -command {Invoke-AppveyorInstall -SkipPesterInstallation}
+        pwsh -command {./build.ps1 -All}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
