@@ -11,7 +11,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Instantiation
     {
         public static bool TryGetRuleFromType(
             IReadOnlyDictionary<string, IRuleConfiguration> ruleConfigurationCollection,
-            IRuleComponentProvider ruleComponentProvider,
+            RuleComponentProvider ruleComponentProvider,
             Type type,
             out RuleInfo ruleInfo,
             out TypeRuleFactory<ScriptRule> ruleFactory)
@@ -26,7 +26,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Instantiation
             RuleInfo ruleInfo,
             Type ruleType,
             IReadOnlyDictionary<string, IRuleConfiguration> ruleConfigurationCollection,
-            IRuleComponentProvider ruleComponentProvider,
+            RuleComponentProvider ruleComponentProvider,
             out TypeRuleFactory<TRuleBase> factory)
         {
             ConstructorInfo[] ruleConstructors = ruleType.GetConstructors();

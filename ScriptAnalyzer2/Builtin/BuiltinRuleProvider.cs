@@ -25,7 +25,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builtin
 
     public static class Default
     {
-        private static readonly Lazy<IRuleComponentProvider> s_ruleComponentProviderLazy = new Lazy<IRuleComponentProvider>(BuildRuleComponentProvider);
+        private static readonly Lazy<RuleComponentProvider> s_ruleComponentProviderLazy = new Lazy<RuleComponentProvider>(BuildRuleComponentProvider);
 
         public static IReadOnlyDictionary<string, IRuleConfiguration> RuleConfiguration { get; } = new Dictionary<string, IRuleConfiguration>(StringComparer.OrdinalIgnoreCase)
         {
@@ -39,9 +39,9 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builtin
 
         public static IRuleExecutorFactory RuleExecutorFactory { get; } = new ParallelLinqRuleExecutorFactory();
 
-        public static IRuleComponentProvider RuleComponentProvider => s_ruleComponentProviderLazy.Value;
+        public static RuleComponentProvider RuleComponentProvider => s_ruleComponentProviderLazy.Value;
 
-        private static IRuleComponentProvider BuildRuleComponentProvider()
+        private static RuleComponentProvider BuildRuleComponentProvider()
         {
             return new RuleComponentProviderBuilder()
                 .AddSingleton(InstantiatePowerShellCommandDatabase())

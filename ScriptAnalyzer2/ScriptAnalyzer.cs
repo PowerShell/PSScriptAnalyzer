@@ -9,17 +9,31 @@ namespace Microsoft.PowerShell.ScriptAnalyzer
 {
     public class ScriptAnalyzer
     {
+        public static ScriptAnalyzer Create(
+            RuleComponentProvider ruleComponentProvider,
+            IRuleExecutorFactory executorFactory,
+            IReadOnlyList<IRuleProviderFactory> ruleProviderFactories)
+        {
+            var ruleProviders = new List<IRuleProvider>(ruleProviderFactories.Count);
+            foreach (IRuleProviderFactory ruleProviderFactory in ruleProviderFactories)
+            {
+                ruleProviders.Add(ruleProviderFactory.CreateRuleProvider(ruleComponentProvider));
+            }
+
+            return new ScriptAnalyzer(executorFactory, ruleProviders);
+        }
+
         private readonly IRuleExecutorFactory _executorFactory;
 
-        public ScriptAnalyzer(
-            IRuleProvider ruleProvider,
-            IRuleExecutorFactory executorFactory)
+        private ScriptAnalyzer(
+            IRuleExecutorFactory executorFactory,
+            IReadOnlyList<IRuleProvider> ruleProviders)
         {
-            RuleProvider = ruleProvider;
+            RuleProviders = ruleProviders;
             _executorFactory = executorFactory;
         }
 
-        public IRuleProvider RuleProvider { get; }
+        public IReadOnlyList<IRuleProvider> RuleProviders { get; }
 
         public IReadOnlyCollection<ScriptDiagnostic> AnalyzeScriptPath(string path)
         {
@@ -40,9 +54,12 @@ namespace Microsoft.PowerShell.ScriptAnalyzer
         {
             IRuleExecutor ruleExecutor = _executorFactory.CreateRuleExecutor(scriptAst, scriptTokens, scriptPath);
 
-            foreach (ScriptRule rule in RuleProvider.GetScriptRules())
+            foreach (IRuleProvider ruleProvider in RuleProviders)
             {
-                ruleExecutor.AddRule(rule);
+                foreach (ScriptRule rule in ruleProvider.GetScriptRules())
+                {
+                    ruleExecutor.AddRule(rule);
+                }
             }
 
             return ruleExecutor.CollectDiagnostics();

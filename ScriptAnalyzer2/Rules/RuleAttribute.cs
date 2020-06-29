@@ -10,9 +10,19 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Rules
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public sealed class RuleAttribute : ScriptAnalyzerAttribute
     {
-        public RuleAttribute(string name)
+        private readonly Lazy<string> _descriptionLazy;
+
+        public RuleAttribute(string name, string description)
         {
             Name = name;
+            _descriptionLazy = new Lazy<string>(() => description);
+        }
+
+
+        public RuleAttribute(string name, Type descriptionResourceProvider, string descriptionResourceKey)
+        {
+            Name = name;
+            _descriptionLazy = new Lazy<string>(() => GetStringFromResourceProvider(descriptionResourceProvider, descriptionResourceKey));
         }
 
         public string Name { get; }
@@ -20,22 +30,6 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Rules
         public DiagnosticSeverity Severity { get; set; } = DiagnosticSeverity.Warning;
 
         public string Namespace { get; set; }
-    }
-
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public sealed class RuleDescriptionAttribute : ScriptAnalyzerAttribute
-    {
-        private readonly Lazy<string> _descriptionLazy;
-
-        public RuleDescriptionAttribute(string description)
-        {
-            _descriptionLazy = new Lazy<string>(() => description);
-        }
-
-        public RuleDescriptionAttribute(Type resourceProvider, string resourceKey)
-        {
-            _descriptionLazy = new Lazy<string>(() => GetStringFromResourceProvider(resourceProvider, resourceKey));
-        }
 
         public string Description => _descriptionLazy.Value;
 

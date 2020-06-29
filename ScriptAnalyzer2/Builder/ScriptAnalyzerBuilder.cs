@@ -8,13 +8,15 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
 {
     public class ScriptAnalyzerBuilder
     {
-        private readonly List<IRuleProvider> _ruleProviders;
+        private readonly List<IRuleProviderFactory> _ruleProviderFactories;
 
         private IRuleExecutorFactory _ruleExecutorFactory;
 
+        private RuleComponentProvider _ruleComponentProvider;
+
         public ScriptAnalyzerBuilder()
         {
-            _ruleProviders = new List<IRuleProvider>();
+            _ruleProviderFactories = new List<IRuleProviderFactory>();
         }
 
         public ScriptAnalyzerBuilder WithRuleExecutorFactory(IRuleExecutorFactory ruleExecutorFactory)
@@ -23,18 +25,30 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
             return this;
         }
 
-        public ScriptAnalyzerBuilder AddRuleProvider(IRuleProvider ruleProvider)
+        public ScriptAnalyzerBuilder WithRuleComponentProvider(RuleComponentProvider ruleComponentProvider)
         {
-            _ruleProviders.Add(ruleProvider);
+            _ruleComponentProvider = ruleComponentProvider;
+            return this;
+        }
+
+        public ScriptAnalyzerBuilder WithRuleComponentProvider(Action<RuleComponentProviderBuilder> configureComponentProviderBuilder)
+        {
+            var componentProviderBuilder = new RuleComponentProviderBuilder();
+            configureComponentProviderBuilder(componentProviderBuilder);
+            WithRuleComponentProvider(componentProviderBuilder.Build());
+            return this;
+        }
+
+        public ScriptAnalyzerBuilder AddRuleProviderFactory(IRuleProviderFactory ruleProvider)
+        {
+            _ruleProviderFactories.Add(ruleProvider);
             return this;
         }
 
         public ScriptAnalyzerBuilder AddBuiltinRules()
         {
-            _ruleProviders.Add(TypeRuleProvider.FromTypes(
-                Default.RuleConfiguration,
-                Default.RuleComponentProvider,
-                BuiltinRules.DefaultRules));
+            _ruleProviderFactories.Add(
+                new BuiltinRuleProviderFactory(Default.RuleConfiguration));
             return this;
         }
 
@@ -42,17 +56,13 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
         {
             var builtinRulesBuilder = new BuiltinRulesBuilder();
             configureBuiltinRules(builtinRulesBuilder);
-            _ruleProviders.Add(builtinRulesBuilder.Build());
+            _ruleProviderFactories.Add(builtinRulesBuilder.Build());
             return this;
         }
 
         public ScriptAnalyzer Build()
         {
-            IRuleProvider ruleProvider = _ruleProviders.Count == 1
-                ? _ruleProviders[0]
-                : new CompositeRuleProvider(_ruleProviders);
-
-            return new ScriptAnalyzer(ruleProvider, _ruleExecutorFactory ?? Default.RuleExecutorFactory);
+            return ScriptAnalyzer.Create(_ruleComponentProvider, _ruleExecutorFactory, _ruleProviderFactories);
         }
     }
 }

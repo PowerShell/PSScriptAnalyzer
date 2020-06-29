@@ -16,8 +16,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// </summary>
     [IdempotentRule]
     [ThreadsafeRule]
-    [RuleDescription(typeof(Strings), nameof(Strings.AvoidGlobalVarsDescription))]
-    [Rule("AvoidGlobalVars")]
+    [Rule("AvoidGlobalVars", typeof(Strings), nameof(Strings.AvoidGlobalVarsDescription))]
     public class AvoidGlobalVars : ScriptRule
     {
         public AvoidGlobalVars(RuleInfo ruleInfo) : base(ruleInfo)

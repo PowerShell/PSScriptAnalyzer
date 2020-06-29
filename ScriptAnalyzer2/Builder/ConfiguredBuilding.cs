@@ -13,7 +13,8 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
     {
         public static ScriptAnalyzer CreateScriptAnalyzer(this IScriptAnalyzerConfiguration configuration)
         {
-            var analyzerBuilder = new ScriptAnalyzerBuilder();
+            var analyzerBuilder = new ScriptAnalyzerBuilder()
+                .WithRuleComponentProvider(new RuleComponentProviderBuilder().Build());
 
             switch (configuration.BuiltinRules ?? BuiltinRulePreference.Default)
             {
@@ -35,8 +36,6 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
                     break;
             }
 
-            var componentProvider = new RuleComponentProviderBuilder().Build();
-
             if (configuration.RulePaths != null)
             {
                 foreach (string rulePath in configuration.RulePaths)
@@ -45,7 +44,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
 
                     if (extension.CaseInsensitiveEquals(".dll"))
                     {
-                        analyzerBuilder.AddRuleProvider(TypeRuleProvider.FromAssemblyFile(configuration.RuleConfiguration, componentProvider, rulePath));
+                        analyzerBuilder.AddRuleProviderFactory(TypeRuleProviderFactory.FromAssemblyFile(configuration.RuleConfiguration, rulePath));
                         break;
                     }
                 }

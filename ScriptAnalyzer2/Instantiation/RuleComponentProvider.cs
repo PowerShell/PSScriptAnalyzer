@@ -4,12 +4,24 @@ using System.Text;
 
 namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
 {
-    public interface IRuleComponentProvider
+    public abstract class RuleComponentProvider
     {
-        bool TryGetComponentInstance(Type componentType, out object component);
+        public bool TryGetComponentInstance<TComponent>(out TComponent component)
+        {
+            if (!TryGetComponentInstance(typeof(TComponent), out object componentObj))
+            {
+                component = default(TComponent);
+                return false;
+            }
+
+            component = (TComponent)componentObj;
+            return true;
+        }
+
+        public abstract bool TryGetComponentInstance(Type componentType, out object component);
     }
 
-    internal class SimpleRuleComponentProvider : IRuleComponentProvider
+    internal class SimpleRuleComponentProvider : RuleComponentProvider
     {
         private readonly IReadOnlyDictionary<Type, Func<object>> _componentRegistrations;
 
@@ -23,7 +35,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
             _singletonComponents = singletonComponents;
         }
 
-        public bool TryGetComponentInstance(Type componentType, out object component)
+        public override bool TryGetComponentInstance(Type componentType, out object component)
         {
             if (_singletonComponents.TryGetValue(componentType, out component))
             {
@@ -111,7 +123,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
             return this;
         }
 
-        public IRuleComponentProvider Build()
+        public RuleComponentProvider Build()
         {
             return new SimpleRuleComponentProvider(_componentRegistrations, _singletonComponents);
         }

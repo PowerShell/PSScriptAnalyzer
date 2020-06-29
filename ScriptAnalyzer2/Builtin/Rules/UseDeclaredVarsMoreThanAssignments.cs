@@ -18,8 +18,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// </summary>
     [IdempotentRule]
     [ThreadsafeRule]
-    [RuleDescription(typeof(Strings), nameof(Strings.UseDeclaredVarsMoreThanAssignmentsDescription))]
-    [Rule("UseDeclaredVarsMoreThanAssignments")]
+    [Rule("UseDeclaredVarsMoreThanAssignments", typeof(Strings), nameof(Strings.UseDeclaredVarsMoreThanAssignmentsDescription))]
     public class UseDeclaredVarsMoreThanAssignments : ScriptRule
     {
         public UseDeclaredVarsMoreThanAssignments(RuleInfo ruleInfo) : base(ruleInfo)

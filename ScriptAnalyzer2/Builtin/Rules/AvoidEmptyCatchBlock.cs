@@ -14,8 +14,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builtin.Rules
     /// </summary>
     [IdempotentRule]
     [ThreadsafeRule]
-    [RuleDescription(typeof(Strings), nameof(Strings.AvoidUsingEmptyCatchBlockDescription))]
-    [Rule("AvoidUsingEmptyCatchBlock")]
+    [Rule("AvoidUsingEmptyCatchBlock", typeof(Strings), nameof(Strings.AvoidUsingEmptyCatchBlockDescription))]
     public class AvoidEmptyCatchBlock : ScriptRule
     {
         public AvoidEmptyCatchBlock(RuleInfo ruleInfo)

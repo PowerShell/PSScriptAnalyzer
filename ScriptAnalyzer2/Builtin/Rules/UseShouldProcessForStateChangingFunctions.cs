@@ -13,8 +13,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builtin.Rules
     /// <summary>
     /// UseShouldProcessForStateChangingFunctions: Analyzes the ast to check if ShouldProcess is included in Advanced functions if the Verb of the function could change system state.
     /// </summary>
-    [RuleDescription(typeof(Strings), nameof(Strings.UseShouldProcessForStateChangingFunctionsDescrption))]
-    [Rule("UseShouldProcessForStateChangingFunctions")]
+    [Rule("UseShouldProcessForStateChangingFunctions", typeof(Strings), nameof(Strings.UseShouldProcessForStateChangingFunctionsDescrption))]
     public class UseShouldProcessForStateChangingFunctions : ScriptRule
     {
         private static readonly IReadOnlyList<string> s_stateChangingVerbs = new List<string>

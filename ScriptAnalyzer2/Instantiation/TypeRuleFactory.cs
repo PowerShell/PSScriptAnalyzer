@@ -26,7 +26,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Instantiation
 
     public class ConstructorInjectingRuleFactory<TRule> : TypeRuleFactory<TRule>
     {
-        private readonly IRuleComponentProvider _ruleComponentProvider;
+        private readonly RuleComponentProvider _ruleComponentProvider;
 
         private readonly RuleInfo _ruleInfo;
 
@@ -39,7 +39,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Instantiation
         private int _callCount;
 
         public ConstructorInjectingRuleFactory(
-            IRuleComponentProvider ruleComponentProvider,
+            RuleComponentProvider ruleComponentProvider,
             RuleInfo ruleInfo,
             ConstructorInfo ctorInfo)
             : this(ruleComponentProvider, ruleInfo, ctorInfo, ruleConfiguration: null)
@@ -47,7 +47,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Instantiation
         }
 
         public ConstructorInjectingRuleFactory(
-            IRuleComponentProvider ruleComponentProvider,
+            RuleComponentProvider ruleComponentProvider,
             RuleInfo ruleInfo,
             ConstructorInfo ctorInfo,
             IRuleConfiguration ruleConfiguration)
@@ -126,7 +126,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Instantiation
     public class ConstructorInjectingDisposableRuleFactory<TRule> : ConstructorInjectingRuleFactory<TRule>
     {
         public ConstructorInjectingDisposableRuleFactory(
-            IRuleComponentProvider ruleComponentProvider,
+            RuleComponentProvider ruleComponentProvider,
             RuleInfo ruleInfo,
             ConstructorInfo ctorInfo,
             IRuleConfiguration ruleConfiguration)
@@ -145,7 +145,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Instantiation
         private readonly TRule _instance;
 
         public ConstructorInjectionIdempotentRuleFactory(
-            IRuleComponentProvider ruleComponentProvider,
+            RuleComponentProvider ruleComponentProvider,
             RuleInfo ruleInfo,
             ConstructorInfo ctorInfo,
             IRuleConfiguration ruleConfiguration)
@@ -165,7 +165,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Instantiation
         private readonly ResettablePool _pool;
 
         public ConstructorInjectingResettableRulePoolingFactory(
-            IRuleComponentProvider ruleComponentProvider,
+            RuleComponentProvider ruleComponentProvider,
             RuleInfo ruleInfo,
             ConstructorInfo ctorInfo,
             IRuleConfiguration ruleConfiguration)

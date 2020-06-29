@@ -19,13 +19,13 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Rules
         public RuleInfo RuleInfo { get; }
 
         protected ScriptDiagnostic CreateDiagnostic(string message, IScriptExtent extent)
-            => CreateDiagnostic(message, extent, RuleInfo.Severity);
+            => CreateDiagnostic(message, extent, RuleInfo.DefaultSeverity);
 
         protected ScriptDiagnostic CreateDiagnostic(string message, IScriptExtent extent, DiagnosticSeverity severity)
             => CreateDiagnostic(message, extent, severity, corrections: null);
 
         protected ScriptDiagnostic CreateDiagnostic(string message, IScriptExtent extent, IReadOnlyList<Correction> corrections)
-            => CreateDiagnostic(message, extent, RuleInfo.Severity, corrections);
+            => CreateDiagnostic(message, extent, RuleInfo.DefaultSeverity, corrections);
 
         protected ScriptDiagnostic CreateDiagnostic(string message, IScriptExtent extent, DiagnosticSeverity severity, IReadOnlyList<Correction> corrections)
         {
@@ -53,13 +53,13 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Rules
         public abstract IEnumerable<ScriptDiagnostic> AnalyzeScript(Ast ast, IReadOnlyList<Token> tokens, string scriptPath);
 
         protected ScriptAstDiagnostic CreateDiagnostic(string message, Ast ast)
-            => CreateDiagnostic(message, ast, RuleInfo.Severity);
+            => CreateDiagnostic(message, ast, RuleInfo.DefaultSeverity);
 
         protected ScriptAstDiagnostic CreateDiagnostic(string message, Ast ast, DiagnosticSeverity severity)
             => CreateDiagnostic(message, ast, severity, corrections: null);
 
         protected ScriptAstDiagnostic CreateDiagnostic(string message, Ast ast, IReadOnlyList<Correction> corrections)
-            => CreateDiagnostic(message, ast, RuleInfo.Severity, corrections);
+            => CreateDiagnostic(message, ast, RuleInfo.DefaultSeverity, corrections);
 
         protected ScriptAstDiagnostic CreateDiagnostic(string message, Ast ast, DiagnosticSeverity severity, IReadOnlyList<Correction> corrections)
         {
@@ -67,13 +67,13 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Rules
         }
 
         protected ScriptTokenDiagnostic CreateDiagnostic(string message, Token token)
-            => CreateDiagnostic(message, token, RuleInfo.Severity);
+            => CreateDiagnostic(message, token, RuleInfo.DefaultSeverity);
 
         protected ScriptTokenDiagnostic CreateDiagnostic(string message, Token token, DiagnosticSeverity severity)
             => CreateDiagnostic(message, token, severity, corrections: null);
 
         protected ScriptTokenDiagnostic CreateDiagnostic(string message, Token token, IReadOnlyList<Correction> corrections)
-            => CreateDiagnostic(message, token, RuleInfo.Severity, corrections);
+            => CreateDiagnostic(message, token, RuleInfo.DefaultSeverity, corrections);
 
         protected ScriptTokenDiagnostic CreateDiagnostic(string message, Token token, DiagnosticSeverity severity, IReadOnlyList<Correction> corrections)
         {

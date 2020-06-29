@@ -10,7 +10,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
     {
         private IReadOnlyDictionary<string, IRuleConfiguration> _ruleConfiguration;
 
-        private IRuleComponentProvider _ruleComponents;
+        private RuleComponentProvider _ruleComponents;
 
         public BuiltinRulesBuilder WithRuleConfiguration(IReadOnlyDictionary<string, IRuleConfiguration> ruleConfigurationCollection)
         {
@@ -18,7 +18,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
             return this;
         }
 
-        public BuiltinRulesBuilder WithRuleComponentProvider(IRuleComponentProvider ruleComponentProvider)
+        public BuiltinRulesBuilder WithRuleComponentProvider(RuleComponentProvider ruleComponentProvider)
         {
             _ruleComponents = ruleComponentProvider;
             return this;
@@ -32,12 +32,9 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builder
             return this;
         }
 
-        public TypeRuleProvider Build()
+        public IRuleProviderFactory Build()
         {
-            return TypeRuleProvider.FromTypes(
-                _ruleConfiguration ?? Default.RuleConfiguration,
-                _ruleComponents ?? Default.RuleComponentProvider,
-                BuiltinRules.DefaultRules);
+            return new BuiltinRuleProviderFactory(_ruleConfiguration);
         }
     }
 }

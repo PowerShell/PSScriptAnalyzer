@@ -14,8 +14,7 @@ namespace Microsoft.PowerShell.ScriptAnalyzer.Builtin.Rules
     /// </summary>
     [ThreadsafeRule]
     [IdempotentRule]
-    [RuleDescription(typeof(Strings), nameof(Strings.AvoidUsingWMICmdletDescription))]
-    [Rule("AvoidUsingWMICmdlet")]
+    [Rule("AvoidUsingWMICmdlet", typeof(Strings), nameof(Strings.AvoidUsingWMICmdletDescription))]
     public class AvoidUsingWMICmdlet : ScriptRule
     {
         public AvoidUsingWMICmdlet(RuleInfo ruleInfo)
