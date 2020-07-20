@@ -1,5 +1,35 @@
 ﻿# CHANGELOG
 
+## [1.19.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.19.1)
+
+### Fixes
+
+- `UseCorrectCasing`: Do not use CommandInfoCache when CommandInfoParameters property throws due to runspace affinity problem of PowerShell engine (#1523) (by @bergmeister)
+- `ReviewUnusedParameter`: Do not trigger when MyInvocation.BoundParameters or PSCmdlet.MyInvocation.BoundParameters is used (#1520) (Thanks @jegannathanmaniganadan!)
+- `PipelineIndentationStyle.None`: Fix bug that caused incorrect formatting in hashtables (#1497) (by @bergmeister)
+- `UseUsingScopeModifierInNewRunspaces`: Fix ArgumentException when the same variable name is used in 2 different sessions. (#1493) (by @bergmeister)
+- `UseConsistentWhitespace`
+  - Check previous token only if it starts on the same line (#1491) (by @bergmeister)
+  - Fix CheckParameter bug when using interpolated string (#1498) (by @bergmeister)
+
+### New Rule
+
+- New rule (disabled by default): `AvoidUsingDoubleQuotesForConstantString` (#1470) (by @bergmeister)
+
+### Documentation
+
+- Remove references to Windows in Introduction of Readme.md (#1509) (Thanks @hjorslev!)
+
+### Testing
+
+- Pester v5 (#1444) (by @bergmeister)
+
+### Development improvements
+
+- Include PDB files in Debug build (#1535) (by @bergmeister)
+- Add more useful launch configurations (#1499) (by @bergmeister)
+- Make .Net Core version in Docker image of .devcontainer match the one in global.json (#1494) (by @bergmeister)
+
 ## [1.19.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.19.0)
 
 ### New Rules
