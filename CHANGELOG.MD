@@ -14,7 +14,7 @@
 
 ### New Rule
 
-- New rule (disabled by default): `AvoidUsingDoubleQuotesForConstantString` (#1470) (by @bergmeister)
+- New rule (disabled by default): [AvoidUsingDoubleQuotesForConstantString](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingDoubleQuotesForConstantString.md) (#1470) (by @bergmeister)
 
 ### Documentation
 
