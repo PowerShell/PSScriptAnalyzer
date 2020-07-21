@@ -1,10 +1,15 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$violationMessage = "The variable 'declaredVar2' is assigned but never used."
-$violationName = "PSUseDeclaredVarsMoreThanAssignments"
-$violations = Invoke-ScriptAnalyzer $PSScriptRoot\UseDeclaredVarsMoreThanAssignments.ps1 | Where-Object {$_.RuleName -eq $violationName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\UseDeclaredVarsMoreThanAssignmentsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
+
+    $violationMessage = "The variable 'declaredVar2' is assigned but never used."
+    $violationName = "PSUseDeclaredVarsMoreThanAssignments"
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\UseDeclaredVarsMoreThanAssignments.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\UseDeclaredVarsMoreThanAssignmentsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+}
 
 Describe "UseDeclaredVarsMoreThanAssignments" {
     Context "When there are violations" {

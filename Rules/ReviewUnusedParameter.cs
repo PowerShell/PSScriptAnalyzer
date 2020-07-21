@@ -36,6 +36,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             foreach (ScriptBlockAst scriptBlockAst in scriptBlockAsts)
             {
+                // bail out if PS bound parameter used.
+                if (scriptBlockAst.Find(IsBoundParametersReference, searchNestedScriptBlocks: false) != null)
+                {
+                    continue;
+                }
+
                 // find all declared parameters
                 IEnumerable<Ast> parameterAsts = scriptBlockAst.FindAll(oneAst => oneAst is ParameterAst, false);
 
@@ -44,12 +50,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     .Select(variableExpressionAst => ((VariableExpressionAst)variableExpressionAst).VariablePath.UserPath)
                     .GroupBy(variableName => variableName, StringComparer.OrdinalIgnoreCase)
                     .ToDictionary(variableName => variableName.Key, variableName => variableName.Count(), StringComparer.OrdinalIgnoreCase);
-
-                // all bets are off if the script uses PSBoundParameters
-                if (variableCount.ContainsKey("PSBoundParameters"))
-                {
-                    continue;
-                }
 
                 foreach (ParameterAst parameterAst in parameterAsts)
                 {
@@ -70,6 +70,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     );
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks for PS bound parameter reference.
+        /// </summary>
+        /// <param name="ast">AST to be analyzed. This should be non-null</param>
+        /// <returns>Boolean true indicating that given AST has PS bound parameter reference, otherwise false</returns>
+        private static bool IsBoundParametersReference(Ast ast)
+        {
+            // $PSBoundParameters
+            if (ast is VariableExpressionAst variableAst
+                && variableAst.VariablePath.UserPath.Equals("PSBoundParameters", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (ast is MemberExpressionAst memberAst
+                && memberAst.Member is StringConstantExpressionAst memberStringAst
+                && memberStringAst.Value.Equals("BoundParameters", StringComparison.OrdinalIgnoreCase))
+            {
+                // $MyInvocation.BoundParameters
+                if (memberAst.Expression is VariableExpressionAst veAst
+                    && veAst.VariablePath.UserPath.Equals("MyInvocation", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                // $PSCmdlet.MyInvocation.BoundParameters
+                if (memberAst.Expression is MemberExpressionAst meAstNested)
+                {
+                    if (meAstNested.Expression is VariableExpressionAst veAstNested
+                        && veAstNested.VariablePath.UserPath.Equals("PSCmdlet", StringComparison.OrdinalIgnoreCase)
+                        && meAstNested.Member is StringConstantExpressionAst sceAstNested
+                        && sceAstNested.Value.Equals("MyInvocation", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

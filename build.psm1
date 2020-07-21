@@ -308,6 +308,13 @@ function Start-ScriptAnalyzerBuild
                 "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.dll"
                 )
         }
+        if ($Configuration -eq 'Debug') {
+            $itemsToCopyBinaries += @(
+                "$projectRoot\Engine\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.pdb",
+                "$projectRoot\Rules\bin\${buildConfiguration}\${Framework}\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.pdb"
+                "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Microsoft.PowerShell.CrossCompatibility.pdb"
+            )
+        }
         Publish-File $itemsToCopyBinaries $destinationDirBinaries
 
         $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
@@ -350,7 +357,7 @@ function New-Catalog
 function Test-ScriptAnalyzer
 {
     [CmdletBinding()]
-    param ( [Parameter()][switch]$InProcess, [switch]$ShowAll )
+    param ( [switch] $InProcess )
 
     END {
         # versions 3 and 4 don't understand versioned module paths, so we need to rename the directory of the version to
@@ -387,15 +394,7 @@ function Test-ScriptAnalyzer
             }
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
-            $importPesterV4 = 'Import-Module -Name Pester -MaximumVersion 4.99'
-            if ($ShowAll)
-            {
-                $scriptBlock = [scriptblock]::Create("$importPesterV4; Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile")
-            }
-            else
-            {
-                $scriptBlock = [scriptblock]::Create("$importPesterV4; Invoke-Pester -Path $testScripts -OutputFormat NUnitXml -OutputFile $testResultsFile -Show Describe,Summary,Failed")
-            }
+            $scriptBlock = [scriptblock]::Create("Import-Module PSScriptAnalyzer; Invoke-Pester -Path $testScripts")
             if ( $InProcess ) {
                 & $scriptBlock
             }
@@ -426,7 +425,7 @@ function Get-TestResults
 # it's not a filter of the results of Get-TestResults because this is faster
 function Get-TestFailures
 {
-    param ( $logfile = (Join-Path -Path ${projectRoot} -ChildPath TestResults.xml) )
+    param ( $logfile = (Join-Path -Path ${projectRoot} -ChildPath testResults.xml) )
     $logPath = (Resolve-Path $logfile).Path
     $results = [xml](Get-Content $logPath)
     $results.SelectNodes(".//test-case[@result='Failure']")

@@ -1,24 +1,30 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$ruleName = "PSUseConsistentWhitespace"
-$ruleConfiguration = @{
-    Enable          = $true
-    CheckInnerBrace = $false
-    CheckOpenBrace  = $false
-    CheckOpenParen  = $false
-    CheckOperator   = $false
-    CheckPipe       = $false
-    CheckSeparator  = $false
-    CheckParameter  = $false
-}
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-$settings = @{
-    IncludeRules = @($ruleName)
-    Rules        = @{
-        PSUseConsistentWhitespace = $ruleConfiguration
+    $ruleName = "PSUseConsistentWhitespace"
+    $ruleConfiguration = @{
+        Enable          = $true
+        CheckInnerBrace = $false
+        CheckOpenBrace  = $false
+        CheckOpenParen  = $false
+        CheckOperator   = $false
+        CheckPipe       = $false
+        CheckSeparator  = $false
+        CheckParameter  = $false
+    }
+
+    $settings = @{
+        IncludeRules = @($ruleName)
+        Rules        = @{
+            PSUseConsistentWhitespace = $ruleConfiguration
+        }
     }
 }
+
 
 Describe "UseWhitespace" {
     Context "When an open brace follows a keyword" {
@@ -39,17 +45,27 @@ Describe "UseWhitespace" {
 
         It "Should not find violation if an open brace follows a whitespace" {
             $def = 'if($true) {}'
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
         It "Should not find violation if an open brace follows a foreach member invocation" {
             $def = '(1..5).foreach{$_}'
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
         It "Should not find violation if an open brace follows a where member invocation" {
             $def = '(1..5).where{$_}'
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should not find violation if an open brace is on the next line" {
+            $def = @'
+if ($true)
+{
+    foo
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
     }
@@ -474,11 +490,11 @@ bar -h i `
         }
 
         It "Should fix script to always have 1 space between parameters except when using colon syntax but not by default" {
-            $def = 'foo  -bar   $baz  -ParameterName:  $ParameterValue'
+            $def = 'foo  -bar   $baz  -ParameterName:  $ParameterValue "$PSScriptRoot\module.psd1"'
             Invoke-Formatter -ScriptDefinition $def |
                 Should -BeExactly $def -Because 'CheckParameter configuration is not turned on by default (yet) as the setting is new'
             Invoke-Formatter -ScriptDefinition $def -Settings $settings |
-                Should -BeExactly 'foo -bar $baz -ParameterName:  $ParameterValue'
+                Should -BeExactly 'foo -bar $baz -ParameterName:  $ParameterValue "$PSScriptRoot\module.psd1"'
         }
 
         It "Should fix script when newlines are involved" {

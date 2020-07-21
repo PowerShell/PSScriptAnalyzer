@@ -1,45 +1,50 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$violationMessage = "The cmdlet 'Comment' does not have a help comment."
-$violationName = "PSProvideCommentHelp"
-$ruleSettings = @{
-    Enable = $true
-    ExportedOnly = $false
-    BlockComment = $true
-    Placement = "before"
-    VSCodeSnippetCorrection = $false
-}
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-$settings = @{
-    IncludeRules = @("PSProvideCommentHelp")
-    Rules = @{ PSProvideCommentHelp = $ruleSettings }
-}
+    $violationMessage = "The cmdlet 'Comment' does not have a help comment."
+    $violationName = "PSProvideCommentHelp"
+    $ruleSettings = @{
+        Enable = $true
+        ExportedOnly = $false
+        BlockComment = $true
+        Placement = "before"
+        VSCodeSnippetCorrection = $false
+    }
 
-$violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $settings = @{
+        IncludeRules = @("PSProvideCommentHelp")
+        Rules = @{ PSProvideCommentHelp = $ruleSettings }
+    }
 
-if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
-    $dscViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
-}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
+        $dscViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1 | Where-Object {$_.RuleName -eq $violationName}
+    }
 
-function Test-Correction {
-    param($scriptDef, $expectedCorrection, $settings)
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 
-    $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -Settings $settings
-    $violations.Count | Should -Be 1
+    function Test-Correction {
+        param($scriptDef, $expectedCorrection, $settings)
 
-    # We split the lines because appveyor checks out files with "\n" endings
-    # on windows, which results in inconsistent line endings between corrections
-    # and result.
-    $resultLines = $violations[0].SuggestedCorrections[0].Text -split "\r?\n"
-    $expectedLines = $expectedCorrection -split "\r?\n"
-    $resultLines.Count | Should -Be $expectedLines.Count
-    for ($i = 0; $i -lt $resultLines.Count; $i++) {
-        $resultLine = $resultLines[$i]
-        $expectedLine = $expectedLines[$i]
-        $resultLine | Should -Be $expectedLine
+        $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -Settings $settings
+        $violations.Count | Should -Be 1
+
+        # We split the lines because appveyor checks out files with "\n" endings
+        # on windows, which results in inconsistent line endings between corrections
+        # and result.
+        $resultLines = $violations[0].SuggestedCorrections[0].Text -split "\r?\n"
+        $expectedLines = $expectedCorrection -split "\r?\n"
+        $resultLines.Count | Should -Be $expectedLines.Count
+        for ($i = 0; $i -lt $resultLines.Count; $i++) {
+            $resultLine = $resultLines[$i]
+            $expectedLine = $expectedLines[$i]
+            $resultLine | Should -Be $expectedLine
+        }
     }
 }
 
@@ -329,10 +334,8 @@ $s$s$s$s
         }
 
 
-        if ($PSVersionTable.PSVersion -ge [Version]'5.0.0') {
-            It "Does not count violation in DSC class" {
-                $dscViolations.Count | Should -Be 0
-            }
+        It "Does not count violation in DSC class" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
+            $dscViolations.Count | Should -Be 0
         }
     }
 

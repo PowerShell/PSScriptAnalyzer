@@ -673,10 +673,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="name"></param>
         /// <param name="commandType"></param>
+        /// <param name="bypassCache"></param>
         /// <returns></returns>
-        public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null)
+        public CommandInfo GetCommandInfo(string name, CommandTypes? commandType = null, bool bypassCache = false)
         {
-            return CommandInfoCache.GetCommandInfo(name, commandTypes: commandType);
+            return CommandInfoCache.GetCommandInfo(name, commandTypes: commandType, bypassCache: bypassCache);
         }
 
         /// <summary>

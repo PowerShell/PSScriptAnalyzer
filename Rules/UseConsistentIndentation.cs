@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -259,14 +259,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 }
                             }
 
-                            bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
+                            if (pipelineIndentationStyle == PipelineIndentationStyle.None && PreviousLineEndedWithPipe(tokens, tokenIndex, token))
+                            {
+                                continue;
+                            }
 
+                            bool lineHasPipelineBeforeToken = LineHasPipelineBeforeToken(tokens, tokenIndex, token);
                             AddViolation(token, tempIndentationLevel, diagnosticRecords, ref onNewLine, lineHasPipelineBeforeToken);
                         }
                         break;
                 }
 
-                if (pipelineIndentationStyle == PipelineIndentationStyle.None) { break; }
+                if (pipelineIndentationStyle == PipelineIndentationStyle.None) { continue; }
+
                 // Check if the current token matches the end of a PipelineAst
                 PipelineAst matchingPipeLineAstEnd = MatchingPipelineAstEnd(pipelineAsts, ref minimumPipelineAstIndex, token);
                 if (matchingPipeLineAstEnd == null)
@@ -343,6 +348,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             
             // We've run out of tokens but haven't seen a newline
+            return false;
+        }
+
+        private static bool PreviousLineEndedWithPipe(Token[] tokens, int tokenIndex, Token token)
+        {
+            if (tokenIndex < 2 || token.Extent.StartLineNumber == 1)
+            {
+                return false;
+            }
+
+            int searchIndex = tokenIndex - 2;
+            int searchLine;
+            do
+            {
+                searchLine = tokens[searchIndex].Extent.StartLineNumber;
+                if (tokens[searchIndex].Kind == TokenKind.Comment)
+                {
+                    searchIndex--;
+                }
+                else if (tokens[searchIndex].Kind == TokenKind.Pipe)
+                {
+                    return true;
+                }
+                else
+                {
+                    break;
+                }
+            } while (searchLine == token.Extent.StartLineNumber - 1 && searchIndex >= 0);
+
             return false;
         }
 

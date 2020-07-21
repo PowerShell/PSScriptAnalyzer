@@ -1,17 +1,22 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$ruleConfiguration = @{
-    Enable             = $true
-    NoEmptyLineBefore  = $true
-    IgnoreOneLineBlock = $true
-    NewLineAfter       = $true
-}
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
 
-$settings = @{
-    IncludeRules = @("PSPlaceCloseBrace")
-    Rules        = @{
-        PSPlaceCloseBrace = $ruleConfiguration
+    $ruleConfiguration = @{
+        Enable             = $true
+        NoEmptyLineBefore  = $true
+        IgnoreOneLineBlock = $true
+        NewLineAfter       = $true
+    }
+
+    $settings = @{
+        IncludeRules = @("PSPlaceCloseBrace")
+        Rules        = @{
+            PSPlaceCloseBrace = $ruleConfiguration
+        }
     }
 }
 
@@ -196,7 +201,7 @@ if (Test-Path "blah") {
         }
 
         It "Should find a violation for a close brace followed by a catch statement" {
-             $def = @'
+            $def = @'
 try {
     "try"
 } catch {
@@ -268,7 +273,7 @@ else {
     $false
 }
 '@
-             $expected = @'
+            $expected = @'
 if ($true) {
     $true
 } else {
@@ -279,14 +284,14 @@ if ($true) {
         }
 
         It "Should correct violation if the close brace and following keyword are apart by less than a space" {
-$def = @'
+            $def = @'
 if ($true) {
     $true
 }else {
     $false
 }
 '@
-             $expected = @'
+            $expected = @'
 if ($true) {
     $true
 } else {
@@ -297,14 +302,14 @@ if ($true) {
         }
 
         It "Should correct violation if the close brace and following keyword are apart by more than a space" {
-$def = @'
+            $def = @'
 if ($true) {
     $true
 }     else {
     $false
 }
 '@
-             $expected = @'
+            $expected = @'
 if ($true) {
     $true
 } else {
@@ -327,7 +332,7 @@ else {
     "3"
 }
 '@
-             $expected = @'
+            $expected = @'
 $x = 1
 if ($x -eq 1) {
     "1"

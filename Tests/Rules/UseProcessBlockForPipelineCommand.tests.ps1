@@ -1,4 +1,7 @@
-﻿Describe "UseProcessBlockForPipelineCommand" {
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Describe "UseProcessBlockForPipelineCommand" {
     BeforeAll {
         $RuleName = 'PSUseProcessBlockForPipelineCommand'
     }

@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 Describe "ReviewUnusedParameter" {
     BeforeAll {
         $RuleName = 'PSReviewUnusedParameter'
@@ -52,6 +55,18 @@ Describe "ReviewUnusedParameter" {
 
         It "has no violations when using PSBoundParameters" {
             $ScriptDefinition = 'function Bound { param ($Param1) Get-Foo @PSBoundParameters }'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+        It "has no violations when using MyInvocation.BoundParameters" {
+            $ScriptDefinition = 'function Bound { param ($Param1) $splat = $MyInvocation.BoundParameters; Get-Foo @splat }'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+        It "has no violations when using PSCmdlet.MyInvocation.BoundParameters" {
+            $ScriptDefinition = 'function Bound { param ($Param1) $splat = $PSCmdlet.MyInvocation.BoundParameters; Get-Foo @splat }'
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
             $Violations.Count | Should -Be 0
         }

@@ -1,8 +1,13 @@
-$writeHostName = "PSMisleadingBacktick"
-$violationFilepath = Join-Path $PSScriptRoot 'MisleadingBacktick.ps1'
-$violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $writeHostName}
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\NoMisleadingBacktick.ps1 | Where-Object {$_.RuleName -eq $clearHostName}
-Import-Module (Join-Path $PSScriptRoot "PSScriptAnalyzerTestHelper.psm1")
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $writeHostName = "PSMisleadingBacktick"
+    $violationFilepath = Join-Path $PSScriptRoot 'MisleadingBacktick.ps1'
+    $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $writeHostName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\NoMisleadingBacktick.ps1 | Where-Object {$_.RuleName -eq $clearHostName}
+    Import-Module (Join-Path $PSScriptRoot "PSScriptAnalyzerTestHelper.psm1")
+}
 
 Describe "Avoid Misleading Backticks" {
     Context "When there are violations" {

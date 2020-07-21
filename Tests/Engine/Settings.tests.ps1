@@ -1,7 +1,12 @@
-$settingsTestDirectory = [System.IO.Path]::Combine($PSScriptRoot, "SettingsTest")
-$project1Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project1")
-$project2Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project2")
-$settingsTypeName = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings'
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $settingsTestDirectory = [System.IO.Path]::Combine($PSScriptRoot, "SettingsTest")
+    $project1Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project1")
+    $project2Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project2")
+    $settingsTypeName = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings'
+}
 
 Describe "Settings Precedence" {
     Context "settings object is explicit" {
@@ -35,6 +40,8 @@ Describe "Settings Precedence" {
     }
 }
 
+$customRuleParameterTestCases = @('IncludeDefaultRules', 'RecurseCustomRulePath').ForEach{ @{ ParamName = $_ } }
+
 Describe "Settings Class" {
     Context "When an empty hashtable is provided" {
 
@@ -43,11 +50,11 @@ Describe "Settings Class" {
             @{ Name = "ExcludeRules" }
             @{ Name = "Severity" }
             @{ Name = "RuleArguments" }
-            ) {
-                Param($Name)
+        ) {
+            Param($Name)
 
-                $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{}
-                ${settings}.${Name}.Count | Should -Be 0
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList @{}
+            ${settings}.${Name}.Count | Should -Be 0
         }
 
         It "Should be able to parse empty settings hashtable from settings file" {
@@ -100,21 +107,19 @@ Describe "Settings Class" {
     Context "When a settings file path is provided" {
         BeforeAll {
             $settings = New-Object -TypeName $settingsTypeName `
-                              -ArgumentList ([System.IO.Path]::Combine($project1Root, "ExplicitSettings.psd1"))
+                -ArgumentList ([System.IO.Path]::Combine($project1Root, "ExplicitSettings.psd1"))
+            $expectedNumberOfIncludeRules = 3
         }
 
-        $expectedNumberOfIncludeRules = 3
-        It "Should return $expectedNumberOfIncludeRules IncludeRules" {
-            $settings.IncludeRules.Count | Should -Be $expectedNumberOfIncludeRules
+        It "Should return correct IncludeRules count" {
+            $settings.IncludeRules.Count | Should -Be 3
         }
 
-        $expectedNumberOfExcludeRules = 3
-        It "Should return $expectedNumberOfExcludeRules ExcludeRules" {
-            $settings.ExcludeRules.Count | Should -Be $expectedNumberOfExcludeRules
+        It "Should return correct ExcludeRules count" {
+            $settings.ExcludeRules.Count | Should -Be 3
         }
 
-        $expectedNumberOfRuleArguments = 3
-        It "Should return $expectedNumberOfRuleArguments rule argument" {
+        It "Should return correct rule argument count" {
             $settings.RuleArguments.Count | Should -Be 3
         }
 
@@ -157,103 +162,48 @@ Describe "Settings Class" {
 
         It "Should detect the parameter in a settings file" {
             $settings = New-Object -TypeName $settingsTypeName `
-                              -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
+                -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
             $settings.CustomRulePath.Count | Should -Be 2
         }
     }
 
-    @("IncludeDefaultRules", "RecurseCustomRulePath") | ForEach-Object {
-        $paramName = $_
-        Context "When $paramName parameter is provided" {
-            It "Should correctly set the value if a boolean is given - true" {
-                $settingsHashtable = @{}
-                $settingsHashtable.Add($paramName, $true)
+    Context "When custom rule path relates parameters are provided" {
+        It "<ParamName>: Should correctly set the value if a boolean is given - true" -TestCases $customRuleParameterTestCases {
+            $settingsHashtable = @{}
+            $settingsHashtable.Add($ParamName, $true)
 
-                $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
-                $settings."$paramName" | Should -BeTrue
-            }
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+            $settings."$ParamName" | Should -BeTrue
+        }
 
-            It "Should correctly set the value if a boolean is given - false" {
-                $settingsHashtable = @{}
-                $settingsHashtable.Add($paramName, $false)
+        It "<ParamName>: Should correctly set the value if a boolean is given - false" -TestCases $customRuleParameterTestCases {
+            $settingsHashtable = @{}
+            $settingsHashtable.Add($ParamName, $false)
 
-                $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
-                $settings."$paramName" | Should -BeFalse
-            }
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+            $settings."$ParamName" | Should -BeFalse
+        }
 
-            It "Should throw if a non-boolean value is given" {
-                $settingsHashtable = @{}
-                $settingsHashtable.Add($paramName, "some random string")
+        It "<ParamName>: Should throw if a non-boolean value is given" -TestCases $customRuleParameterTestCases {
+            $settingsHashtable = @{}
+            $settingsHashtable.Add($ParamName, "some random string")
 
-                { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should -Throw
-            }
+            { New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable } | Should -Throw
+        }
 
-            It "Should detect the parameter in a settings file" {
-                $settings = New-Object -TypeName $settingsTypeName `
-                    -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
-                $settings."$paramName" | Should -BeTrue
-            }
+        It "<ParamName>: Should detect the parameter in a settings file" -TestCases $customRuleParameterTestCases {
+            $settings = New-Object -TypeName $settingsTypeName `
+                -ArgumentList ([System.IO.Path]::Combine($project1Root, "CustomRulePathSettings.psd1"))
+            $settings."$ParamName" | Should -BeTrue
         }
     }
 
     Context "Settings GetSafeValue API" {
         BeforeAll {
-            $gsvSimpleTests = @(
-                @{ Expr = '0' }
-                @{ Expr = '-2'}
-                @{ Expr = '-2.5'}
-                @{ Expr = '$true' }
-                @{ Expr = '$false' }
-                @{ Expr = '123124' }
-                @{ Expr = '0.142' }
-                @{ Expr = '"Hello"' }
-                @{ Expr = '"Well then"' }
-                @{ Expr = '$null' }
-            )
-
-            $gsvArrayTests = @(
-                @{ Expr = '1, 2, 3'; Count = 3 }
-                @{ Expr = '"One","Two","Three"'; Count = 3 }
-                @{ Expr = '@(1,2,3,4)'; Count = 4 }
-                @{ Expr = '@("A","B","C")'; Count = 3 }
-                @{ Expr = '@()'; Count = 0 }
-                @{ Expr = '@(7)'; Count = 1 }
-                @{ Expr = "'1',`n'2',`n'3'"; Count = 3 }
-                @{ Expr = "@(1`n3`n5`n7)"; Count = 4 }
-                @{ Expr = "'1',`r`n'2',`r`n'3'"; Count = 3 }
-                @{ Expr = "@(1`r`n3`r`n5`r`n7)"; Count = 4 }
-                @{ Expr = "@(1,2,3`n7,8,9)"; Count = 6 }
-            )
-
-            $gsvHashtableTests = @(
-                @{ Expr = '@{}' }
-                @{ Expr = '@{ Key = "Value" }' }
-                @{ Expr = '@{ Item = @(1, 2, 3) }' }
-                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = "Hello"; Setting2 = 42 } } }' }
-                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = 7,4,6,1; Setting2 = 42 } } }' }
-                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(); Setting2 = 42 } } }' }
-                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, 2, 1, "Hello"); Setting2 = 42 } } }' }
-                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, @(3, 6), 1, "Hello"); Setting2 = 42 } } }' }
-                @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, @{ x = 10; y = 11 }, 1, "Hello"); Setting2 = 42 } } }' }
-            )
-
-            $gsvThrowTests = @(
-                @{ Expr = '$var' }
-                @{ Expr = '' }
-                @{ Expr = '3+7' }
-                @{ Expr = '- 2.5'}
-                @{ Expr = '-not $true' }
-                @{ Expr = '@(1, Get-Thing)' }
-                @{ Expr = '@{ Key = Get-Thing }' }
-                @{ Expr = '@{ Thing = $true;7 ' }
-                @{ Expr = '@{ Thing = @(Asset-Thing;10) ' }
-                @{ Expr = ';)' }
-            )
-
             function ShouldBeDeeplyEqual
             {
                 param(
-                    [Parameter(Position=0)]
+                    [Parameter(Position = 0)]
                     $To,
 
                     [Parameter(ValueFromPipeline)]
@@ -273,7 +223,7 @@ Describe "Settings Class" {
                         $inputVal = $InputObject[$toKey]
                         if ($inputVal -is [array])
                         {
-                            @(,$inputVal) | ShouldBeDeeplyEqual -To $To[$toKey]
+                            @(, $inputVal) | ShouldBeDeeplyEqual -To $To[$toKey]
                             continue
                         }
                         $inputVal | ShouldBeDeeplyEqual -To $To[$toKey]
@@ -289,9 +239,9 @@ Describe "Settings Class" {
                         $inputVal = $InputObject[$i]
                         if ($inputVal -is [array])
                         {
-                            @(,$inputVal) | ShouldBeDeeplyEqual -To $To[$i]
+                            @(, $inputVal) | ShouldBeDeeplyEqual -To $To[$i]
                             continue
-            }
+                        }
                         $inputVal | ShouldBeDeeplyEqual -To $To[$i]
                     }
                     return
@@ -301,25 +251,36 @@ Describe "Settings Class" {
             }
         }
 
-        It "Safely gets the simple value <Expr>" -TestCases $gsvSimpleTests {
+        It "Safely gets the simple value <Expr>" {
             param([string]$Expr)
 
             $pwshVal = Invoke-Expression $Expr
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
-            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $exprAst = $exprAst.Find( { $args[0] -is [System.Management.Automation.Language.ExpressionAst] }, $true)
             $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
             $gsvVal | Should -Be $pwshVal
-        }
+        } -TestCases @(
+            @{ Expr = '0' }
+            @{ Expr = '-2' }
+            @{ Expr = '-2.5' }
+            @{ Expr = '$true' }
+            @{ Expr = '$false' }
+            @{ Expr = '123124' }
+            @{ Expr = '0.142' }
+            @{ Expr = '"Hello"' }
+            @{ Expr = '"Well then"' }
+            @{ Expr = '$null' }
+        )
 
-        It "Safely gets the array value <Expr>" -TestCases $gsvArrayTests {
+        It "Safely gets the array value <Expr>" {
             param([string]$Expr)
 
             $pwshVal = Invoke-Expression $Expr
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
-            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $exprAst = $exprAst.Find( { $args[0] -is [System.Management.Automation.Language.ExpressionAst] }, $true)
             $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
 
@@ -327,27 +288,49 @@ Describe "Settings Class" {
             # but we also don't create the array ourselves
             $gsvVal.GetType().IsArray | Should -BeTrue
 
-            @(,$gsvVal) | ShouldBeDeeplyEqual -To $pwshVal
-        }
+            @(, $gsvVal) | ShouldBeDeeplyEqual -To $pwshVal
+        } -TestCases @(
+            @{ Expr = '1, 2, 3'; Count = 3 }
+            @{ Expr = '"One","Two","Three"'; Count = 3 }
+            @{ Expr = '@(1,2,3,4)'; Count = 4 }
+            @{ Expr = '@("A","B","C")'; Count = 3 }
+            @{ Expr = '@()'; Count = 0 }
+            @{ Expr = '@(7)'; Count = 1 }
+            @{ Expr = "'1',`n'2',`n'3'"; Count = 3 }
+            @{ Expr = "@(1`n3`n5`n7)"; Count = 4 }
+            @{ Expr = "'1',`r`n'2',`r`n'3'"; Count = 3 }
+            @{ Expr = "@(1`r`n3`r`n5`r`n7)"; Count = 4 }
+            @{ Expr = "@(1,2,3`n7,8,9)"; Count = 6 }
+        )
 
-        It "Safely gets the hashtable value <Expr>" -TestCases $gsvHashtableTests {
+        It "Safely gets the hashtable value <Expr>" {
             param([string]$Expr)
 
             $pwshVal = Invoke-Expression $Expr
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
-            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $exprAst = $exprAst.Find( { $args[0] -is [System.Management.Automation.Language.ExpressionAst] }, $true)
             $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst)
 
             $gsvVal | Should -BeOfType [hashtable]
             $gsvVal | ShouldBeDeeplyEqual -To $pwshVal
-        }
+        } -TestCases @(
+            @{ Expr = '@{}' }
+            @{ Expr = '@{ Key = "Value" }' }
+            @{ Expr = '@{ Item = @(1, 2, 3) }' }
+            @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = "Hello"; Setting2 = 42 } } }' }
+            @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = 7,4,6,1; Setting2 = 42 } } }' }
+            @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(); Setting2 = 42 } } }' }
+            @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, 2, 1, "Hello"); Setting2 = 42 } } }' }
+            @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, @(3, 6), 1, "Hello"); Setting2 = 42 } } }' }
+            @{ Expr = '@{ Rules = @{ MyRule = @{ Setting1 = @(9, @{ x = 10; y = 11 }, 1, "Hello"); Setting2 = 42 } } }' }
+        )
 
-        It "Rejects the input <Expr>" -TestCases $gsvThrowTests {
+        It "Rejects the input <Expr>" {
             param([string]$Expr)
 
             $exprAst = [System.Management.Automation.Language.Parser]::ParseInput($Expr, [ref]$null, [ref]$null)
-            $exprAst = $exprAst.Find({$args[0] -is [System.Management.Automation.Language.ExpressionAst]}, $true)
+            $exprAst = $exprAst.Find( { $args[0] -is [System.Management.Automation.Language.ExpressionAst] }, $true)
 
             $expectedError = 'InvalidDataException'
             if ($null -eq $exprAst)
@@ -356,6 +339,17 @@ Describe "Settings Class" {
             }
 
             { $gsvVal = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Helper]::GetSafeValueFromExpressionAst($exprAst) } | Should -Throw -ErrorId $expectedError
-        }
+        } -TestCases @(
+            @{ Expr = '$var' }
+            @{ Expr = '' }
+            @{ Expr = '3+7' }
+            @{ Expr = '- 2.5' }
+            @{ Expr = '-not $true' }
+            @{ Expr = '@(1, Get-Thing)' }
+            @{ Expr = '@{ Key = Get-Thing }' }
+            @{ Expr = '@{ Thing = $true;7 ' }
+            @{ Expr = '@{ Thing = @(Asset-Thing;10) ' }
+            @{ Expr = ';)' }
+        )
     }
 }

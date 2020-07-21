@@ -1,11 +1,16 @@
-﻿$testRootDirectory = Split-Path -Parent $PSScriptRoot
-Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$settings = @{
-    IncludeRules = @("PSUseSupportsShouldProcess")
-    Rules = @{
-        PSUseSupportsShouldProcess = @{
-            Enable = $true
+BeforeAll {
+    $testRootDirectory = Split-Path -Parent $PSScriptRoot
+    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+
+    $settings = @{
+        IncludeRules = @("PSUseSupportsShouldProcess")
+        Rules = @{
+            PSUseSupportsShouldProcess = @{
+                Enable = $true
+            }
         }
     }
 }

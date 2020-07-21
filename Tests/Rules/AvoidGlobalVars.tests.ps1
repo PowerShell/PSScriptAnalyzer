@@ -1,13 +1,18 @@
-﻿$globalMessage = "Found global variable 'Global:1'."
-$globalName = "PSAvoidGlobalVars"
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
 
-$nonInitializedMessage = "Variable 'globalVars' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables."
-$violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalOrUnitializedVars.ps1
+BeforeAll {
+    $globalMessage = "Found global variable 'Global:1'."
+    $globalName = "PSAvoidGlobalVars"
 
-$globalViolations = $violations | Where-Object {$_.RuleName -eq $globalName}
+    $nonInitializedMessage = "Variable 'globalVars' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables."
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalOrUnitializedVars.ps1
 
-$noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalOrUnitializedVarsNoViolations.ps1
-$noGlobalViolations = $noViolations | Where-Object {$_.RuleName -eq $globalName}
+    $globalViolations = $violations | Where-Object {$_.RuleName -eq $globalName}
+
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalOrUnitializedVarsNoViolations.ps1
+    $noGlobalViolations = $noViolations | Where-Object {$_.RuleName -eq $globalName}
+}
 
 Describe "AvoidGlobalVars" {
     Context "When there are violations" {

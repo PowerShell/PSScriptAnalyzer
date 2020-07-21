@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 Describe "UseCorrectCasing" {
     It "corrects case of simple cmdlet" {
         Invoke-Formatter 'get-childitem' | Should -Be 'Get-ChildItem'
@@ -70,4 +73,13 @@ Describe "UseCorrectCasing" {
         Invoke-Formatter 'Get-Process -NonExistingParameterName' -ErrorAction Stop
     }
 
+    It "Does not throw when correcting certain cmdlets (issue 1516)" {
+        $scriptDefinition = 'Get-Content;Test-Path;Get-ChildItem;Get-Content;Test-Path;Get-ChildItem'
+        $settings = @{ 'Rules' = @{ 'PSUseCorrectCasing' = @{ 'Enable' = $true } } }
+        {
+            1..100 |
+            ForEach-Object { $null = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings -ErrorAction Stop }
+        } |
+        Should -Not -Throw
+    }
 }

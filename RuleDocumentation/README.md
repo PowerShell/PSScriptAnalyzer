@@ -17,6 +17,7 @@
 |[AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md) | Warning | |
 |[AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md) | Warning | |
 |[UseUsingScopeModifierInNewRunspaces](./UseUsingScopeModifierInNewRunspaces.md) | Warning | |
+|[AvoidUsingDoubleQuotesForConstantString](./AvoidUsingDoubleQuotesForConstantString.md) | Warning | Yes |
 |[AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md) | Warning | Yes |
 |[AvoidUsingComputerNameHardcoded](./AvoidUsingComputerNameHardcoded.md) | Error | |
 |[AvoidUsingConvertToSecureStringWithPlainText](./AvoidUsingConvertToSecureStringWithPlainText.md) | Error | |

@@ -1,4 +1,9 @@
-﻿$ruleName = 'PSAvoidDefaultValueForMandatoryParameter'
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+BeforeAll {
+    $ruleName = 'PSAvoidDefaultValueForMandatoryParameter'
+}
 
 Describe "AvoidDefaultValueForMandatoryParameter" {
     Context "When there are violations" {
