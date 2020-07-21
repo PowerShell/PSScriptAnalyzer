@@ -159,15 +159,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.LParen:
-                        // When a line start with a parenthesis and it is not the last non-comment token of that line,
+                        // When a line starts with a parenthesis and it is not the last non-comment token of that line,
                         // then indentation does not need to be increased.
                         if ((tokenIndex == 0 || tokens[tokenIndex - 1].Kind == TokenKind.NewLine) &&
                             (tokenIndex < tokens.Length - 1 && NextTokenIgnoringComments(tokens, tokenIndex)?.Kind != TokenKind.NewLine))
                         {
-                            if (onNewLine)
-                            {
-                                onNewLine = false;
-                            }
+                            onNewLine = false;
                             lParenSkippedIndentation.Push(true);
                             break;
                         }
@@ -210,10 +207,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
                         if (matchingLParenIncreasedIndentation)
                         {
-                            if (onNewLine)
-                            {
-                                onNewLine = false;
-                            }
+                            onNewLine = false;
                             break;
                         }
                         indentationLevel = ClipNegative(indentationLevel - 1);
