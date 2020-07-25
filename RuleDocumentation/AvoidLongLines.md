@@ -14,7 +14,7 @@ Lines should be no longer than a configured number of characters (default: 120),
     Rules = @{
         PSAvoidLongLines  = @{
             Enable     = $true
-            LineLength = 120
+            MaximumLineLength = 120
         }
     }
 ```
