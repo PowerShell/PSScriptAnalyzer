@@ -28,7 +28,6 @@ Table of Contents
   * [Implicit](#implicit)
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
 - [Violation Correction](#violation-correction)
-- [Project Management Dashboard](#project-management-dashboard)
 - [Contributions are welcome](#contributions-are-welcome)
 - [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
