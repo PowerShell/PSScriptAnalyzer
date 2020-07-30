@@ -28,7 +28,6 @@ Table of Contents
   * [Implicit](#implicit)
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
 - [Violation Correction](#violation-correction)
-- [Project Management Dashboard](#project-management-dashboard)
 - [Contributions are welcome](#contributions-are-welcome)
 - [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
@@ -412,22 +411,6 @@ The initial motivation behind having the `SuggestedCorrections` property on the 
 - MisleadingBacktick.cs
 - MissingModuleManifestField.cs
 - UseToExportFieldsInManifest.cs
-
-[Back to ToC](#table-of-contents)
-
-Project Management Dashboard
-============================
-You can track issues, pull requests, backlog items here:
-
-[![Stories in progress](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=In%20Progress&title=In%20Progress)](https://waffle.io/PowerShell/PSScriptAnalyzer)
-
-[![Stories in ready](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=ready&title=Ready)](https://waffle.io/PowerShell/PSScriptAnalyzer)
-
-[![Stories in backlog](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=BackLog&title=BackLog)](https://waffle.io/PowerShell/PSScriptAnalyzer)
-
-Throughput Graph
-
-[![Throughput Graph](https://graphs.waffle.io/powershell/psscriptanalyzer/throughput.svg)](https://waffle.io/powershell/psscriptanalyzer/metrics)
 
 [Back to ToC](#table-of-contents)
 
