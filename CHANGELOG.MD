@@ -1,6 +1,6 @@
 ﻿# CHANGELOG
 
-## [1.19.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.19.1)
+## [1.19.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.19.1) - 2020-07-28
 
 ### Fixes
 
@@ -15,6 +15,10 @@
 ### New Rule
 
 - New rule (disabled by default): [AvoidUsingDoubleQuotesForConstantString](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingDoubleQuotesForConstantString.md) (#1470) (by @bergmeister)
+
+### Miscellaneous
+
+- Set Assembly version attribute (#1549) (by @JamesWTruher) 
 
 ### Documentation
 
