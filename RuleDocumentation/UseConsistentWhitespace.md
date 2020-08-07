@@ -13,15 +13,16 @@
 ```powershell
     Rules = @{
         PSUseConsistentWhitespace  = @{
-            Enable                          = $true
-            CheckInnerBrace                 = $true
-            CheckOpenBrace                  = $true
-            CheckOpenParen                  = $true
-            CheckOperator                   = $true
-            CheckPipe                       = $true
-            CheckPipeForRedundantWhitespace = $false
-            CheckSeparator                  = $true
-            CheckParameter                  = $false
+            Enable                                  = $true
+            CheckInnerBrace                         = $true
+            CheckOpenBrace                          = $true
+            CheckOpenParen                          = $true
+            CheckOperator                           = $true
+            CheckPipe                               = $true
+            CheckPipeForRedundantWhitespace         = $false
+            CheckSeparator                          = $true
+            CheckParameter                          = $false
+            IgnoreAssignmentOperatorInsideHashTable = $false
         }
     }
 ```
@@ -64,3 +65,7 @@ Checks if a pipe is surrounded by redundant whitespace (i.e. more than 1 whitesp
 
 Checks if there is more than one space between parameters and values. E.g. `foo -bar $baz -bat` instead of `foo   -bar   $baz   -bat`. This eliminates redundant whitespace that was probably added unintentionally.
 The rule does not check for whitespace between parameter and value when the colon syntax `-ParameterName:$ParameterValue` is used as some users prefer either 0 or 1 whitespace in this case.
+
+#### IgnoreAssignmentOperatorInsideHashTable: bool (Default value is `$false`)
+
+When `CheckOperator` is set, ignore whitespace around assignment operators within multi-line hash tables. Set this option in order to use the `AlignAssignmentStatement` rule but still check whitespace around operators everywhere else.
