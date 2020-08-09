@@ -1,4 +1,4 @@
-﻿Clear-Host
+Clear-Host
 cls
 Write-Host "aaa"
 clear

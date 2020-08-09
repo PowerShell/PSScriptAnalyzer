@@ -1,3 +1,3 @@
-﻿@{
+@{
     IncludeRules=@('PSDSC*')
 }

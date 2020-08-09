@@ -1,1 +1,1 @@
-﻿Write-Host "write host"
+Write-Host "write host"

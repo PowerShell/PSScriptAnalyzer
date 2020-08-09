@@ -1,4 +1,4 @@
-﻿$Global:DebugPreference
+$Global:DebugPreference
 
 
 function Test {
@@ -44,7 +44,8 @@ function Test-PreferenceVariable
 {
 
    if (-not $PSBoundParameters.ContainsKey('Verbose')) {
-       $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') -as 
+       $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') -as 
+
         [System.Management.Automation.ActionPreference]
         }
 

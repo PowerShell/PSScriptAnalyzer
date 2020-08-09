@@ -1,4 +1,4 @@
-﻿BeforeAll {
+BeforeAll {
     $settings = @{
         IncludeRules = @('PSAvoidUsingDoubleQuotesForConstantString')
         Rules        = @{

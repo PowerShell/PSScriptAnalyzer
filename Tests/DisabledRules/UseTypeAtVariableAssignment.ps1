@@ -1,4 +1,4 @@
-﻿$test = "Test"
+$test = "Test"
 [Test]$test2 = "test"
 
 if ($a=3) {

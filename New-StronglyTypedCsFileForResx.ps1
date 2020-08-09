@@ -1,4 +1,4 @@
-﻿<#
+<#
 # This script can be used to update the *.Designer file if a *.resx ressource file has been updated.
 # However, it is recommended to use Visual Studio instead for editing ressources instead since it takes of that automatically and prodcues cleaner diffs.
 #>

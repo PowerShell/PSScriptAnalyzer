@@ -1,4 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
+Import-Module PSScriptAnalyzer
 $violationMessage = @'
 The file path "D:\\Code" of AvoidUsingFilePath.ps1 is rooted. This should be avoided if AvoidUsingFilePath.ps1 is published online
 '@

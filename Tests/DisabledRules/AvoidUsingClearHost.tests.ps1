@@ -1,4 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
+Import-Module PSScriptAnalyzer
 Set-Alias ctss ConvertTo-SecureString
 $clearHostMessage = "File 'AvoidUsingClearHostWriteHost.ps1' uses Clear-Host. This is not recommended because it may not work in some hosts or there may even be no hosts at all."
 $clearHostName = "PSAvoidUsingClearHost"

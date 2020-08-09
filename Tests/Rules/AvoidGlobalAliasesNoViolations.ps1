@@ -1,4 +1,4 @@
-﻿
+
 New-Alias -Name Name1 -Value Value
 nal -Name Name2 -Value Value -Scope Script
 

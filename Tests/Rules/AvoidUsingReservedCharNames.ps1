@@ -1,4 +1,4 @@
-﻿function Use-#Reserved
+function Use-#Reserved
 {
     [CmdletBinding()]
     [Alias()]

@@ -1,2 +1,2 @@
-﻿iex "I want to use alias"
+iex "I want to use alias"
 cls

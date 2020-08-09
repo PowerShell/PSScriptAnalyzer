@@ -1,1 +1,1 @@
-﻿$Global:1 = "GlobalVars"
+$Global:1 = "GlobalVars"

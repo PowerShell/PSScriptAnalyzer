@@ -1,1 +1,1 @@
-﻿Clear-Host
+Clear-Host

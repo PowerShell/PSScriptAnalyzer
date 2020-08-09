@@ -1,4 +1,4 @@
-﻿@{
+@{
     Severity='Warning'
     IncludeRules=@('PSAvoidUsingCmdletAliases',
                     'PSAvoidUsingPositionalParameters',

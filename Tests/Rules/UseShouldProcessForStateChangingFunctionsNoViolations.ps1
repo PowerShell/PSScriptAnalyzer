@@ -1,4 +1,4 @@
-﻿function Set-Service
+function Set-Service
 {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param ([string]$c)

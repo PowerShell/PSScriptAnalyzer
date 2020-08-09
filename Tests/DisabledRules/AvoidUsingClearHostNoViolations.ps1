@@ -1,1 +1,1 @@
-﻿Write-Output "This is the correct way to write output"
+Write-Output "This is the correct way to write output"

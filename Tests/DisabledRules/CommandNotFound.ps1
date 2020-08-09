@@ -1,1 +1,1 @@
-﻿Get-WrongCommand "Test"
+Get-WrongCommand "Test"

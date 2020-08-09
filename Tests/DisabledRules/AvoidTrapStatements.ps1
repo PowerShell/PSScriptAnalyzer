@@ -1,4 +1,4 @@
-﻿function TrapTest {
+function TrapTest {
     trap {"Error found: $_"}
     nonsensString
 }

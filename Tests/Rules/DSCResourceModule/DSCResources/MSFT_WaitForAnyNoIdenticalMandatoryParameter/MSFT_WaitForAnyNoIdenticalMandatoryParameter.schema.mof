@@ -1,4 +1,4 @@
-﻿#pragma namespace("\\\\.\\root\\microsoft\\windows\\DesiredStateConfiguration")
+#pragma namespace("\\\\.\\root\\microsoft\\windows\\DesiredStateConfiguration")
 
 [ClassVersion("1.0.0"), FriendlyName("WaitForAny")]
 

@@ -1,4 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
+Import-Module PSScriptAnalyzer
 $oneCharMessage = "The cmdlet name O only has one character."
 $oneCharName = "PSOneChar"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

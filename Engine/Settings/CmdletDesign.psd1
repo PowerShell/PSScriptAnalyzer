@@ -1,4 +1,4 @@
-﻿@{
+@{
     IncludeRules=@('PSUseApprovedVerbs',
                    'PSReservedCmdletChar',
                    'PSReservedParams',

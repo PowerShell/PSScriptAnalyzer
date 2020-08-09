@@ -1,4 +1,4 @@
-﻿function Credential
+function Credential
 {
     [CmdletBinding()]
     [Alias()]

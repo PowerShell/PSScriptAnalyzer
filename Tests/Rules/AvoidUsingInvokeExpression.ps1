@@ -1,2 +1,2 @@
-﻿Invoke-Expression "Invoke me"
+Invoke-Expression "Invoke me"
 iex "Invoke me"

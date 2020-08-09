@@ -1,4 +1,4 @@
-﻿ConvertFrom-StringData @'
+ConvertFrom-StringData @'
 # English strings
 MeasureRequiresRunAsAdministrator = The #Requires statement prevents a script from running unless the Windows PowerShell version, modules, snap-ins, and module and snap-in version prerequisites are met. From Windows PowerShell 4.0, the #Requires statement let script developers require that sessions be run with elevated user rights (run as Administrator). Script developers does not need to write their own methods any more. To fix a violation of this rule, please consider to use #Requires -RunAsAdministrator instead of your own methods.
 MeasureRequiresModules            = The #Requires statement prevents a script from running unless the Windows PowerShell version, modules, snap-ins, and module and snap-in version prerequisites are met. From Windows PowerShell 3.0, the #Requires statement let script developers specify Windows PowerShell modules that the script requires. To fix a violation of this rule, please consider to use #Requires -RunAsAdministrator instead of using Import-Module.

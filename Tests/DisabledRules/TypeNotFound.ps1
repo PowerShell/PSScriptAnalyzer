@@ -1,4 +1,4 @@
-﻿function Get-File ([Stre]$test) {
+function Get-File ([Stre]$test) {
 	[Stt]$a = 3
 }
 

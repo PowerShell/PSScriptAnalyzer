@@ -1,4 +1,4 @@
-﻿Configuration ServiceClassConfigDisabled
+Configuration ServiceClassConfigDisabled
 {
    Import-DscResource -module MSFT_ServiceResourceClass
    # A Configuration block can have zero or more Node blocks

@@ -1,4 +1,4 @@
-﻿try {
+try {
     Import-Module ScriptAnalyzer
 }
 catch {}

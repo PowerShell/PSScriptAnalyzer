@@ -1,4 +1,4 @@
-﻿@{
+@{
     IncludeRules=@('PSAvoidUsingCmdletAliases',
                    'PSAvoidUsingWMICmdlet',
                    'PSAvoidUsingEmptyCatchBlock',

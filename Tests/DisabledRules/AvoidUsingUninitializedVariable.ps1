@@ -1,4 +1,4 @@
-﻿# Script has uninitialized variables
+# Script has uninitialized variables
 # Must result in AvoidUsingUninitializedVariablerule violations along with other violations
 
 function Test-MyPreference

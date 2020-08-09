@@ -1,4 +1,4 @@
-﻿Import-Module -Verbose PSScriptAnalyzer
+Import-Module -Verbose PSScriptAnalyzer
 $violationMessage = "Type Stre is not found"
 $violationName = "PSTypeNotFound"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

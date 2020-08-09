@@ -1,4 +1,4 @@
-﻿function CompareWithNull {
+function CompareWithNull {
     if ($null -eq $DebugPreference) {
     }
     if ($DebugPreference -eq $null) {

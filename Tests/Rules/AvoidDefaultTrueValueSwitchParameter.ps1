@@ -1,4 +1,4 @@
-﻿function Verb-Noun
+function Verb-Noun
 {
     [CmdletBinding()]
     [Alias()]

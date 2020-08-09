@@ -1,4 +1,4 @@
-﻿function Verb-Files
+function Verb-Files
 {
     [CmdletBinding(DefaultParameterSetName='Parameter Set 1',
                   SupportsShouldProcess=$true,

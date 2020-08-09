@@ -1,4 +1,4 @@
-﻿<#
+<#
 .Synopsis
    Short description
 .DESCRIPTION

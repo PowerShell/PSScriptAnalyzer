@@ -1,4 +1,4 @@
-﻿function Test-Script
+function Test-Script
 {
     [CmdletBinding()]
     [Alias()]

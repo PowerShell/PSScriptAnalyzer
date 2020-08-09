@@ -1,4 +1,4 @@
-﻿Import-Module PSScriptAnalyzer 
+Import-Module PSScriptAnalyzer 
 $unloadableMessage = [regex]::Escape("Cannot load the module TestBadModule that the file TestBadModule.psd1 is in.")
 $unloadableName = "PSAvoidUnloadableModule"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

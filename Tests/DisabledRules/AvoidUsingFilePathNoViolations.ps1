@@ -1,2 +1,2 @@
-﻿Get-ChildItem "../Test"
+Get-ChildItem "../Test"
 Import-Module "Random"

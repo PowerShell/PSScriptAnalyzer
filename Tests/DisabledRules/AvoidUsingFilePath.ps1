@@ -1,4 +1,4 @@
-﻿Get-ChildItem D:\Code
+Get-ChildItem D:\Code
 Write-Warning "E:\Code"
 Get-ChildItem \\scratch2\scratch\
 Get-ChildItem ..\Test

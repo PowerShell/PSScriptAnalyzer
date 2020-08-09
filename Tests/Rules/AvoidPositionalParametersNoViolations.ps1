@@ -1,4 +1,4 @@
-﻿Write-Output -InputObject "Use positional parameters plz!"
+Write-Output -InputObject "Use positional parameters plz!"
 Get-ChildItem -Path "Tests"
 Clear-Host
 Split-Path -Path "Random" -leaf

@@ -1,4 +1,4 @@
-﻿$Global:1 = "globalVar“
+$Global:1 = "globalVar“
 $Global:DebugPreference
 
 

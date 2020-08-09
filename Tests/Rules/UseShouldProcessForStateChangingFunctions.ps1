@@ -1,4 +1,4 @@
-﻿function Set-MyObject{ 
+function Set-MyObject{ 
     [CmdletBinding(SupportsShouldProcess = $false)]
     param([string]$c, [int]$d) 
 

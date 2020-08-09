@@ -1,4 +1,4 @@
-﻿function MyFunction ($username, $param2)
+function MyFunction ($username, $param2)
 {
     
 }

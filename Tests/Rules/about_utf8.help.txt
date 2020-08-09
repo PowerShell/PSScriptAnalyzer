@@ -1,4 +1,4 @@
-﻿TOPIC
+TOPIC
     about_<subject or module name>
 
 SHORT DESCRIPTION

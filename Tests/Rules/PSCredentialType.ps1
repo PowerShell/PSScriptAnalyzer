@@ -1,4 +1,4 @@
-﻿function Credential([string]$credential) {
+function Credential([string]$credential) {
 
 }
 
