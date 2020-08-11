@@ -232,5 +232,85 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             return token1.Extent.StartLineNumber == token2.Extent.EndLineNumber;
         }
+
+        /// <summary>
+        /// Finds the position of a given token in the AST.
+        /// </summary>
+        /// <param name="token">The <see cref="Token"/> to search for.</param>
+        /// <returns>The Ast node directly containing the provided <see cref="Token"/>.</returns>
+        public Ast GetAstPosition(Token token)
+        {
+            FindAstPostitionVisitor findAstVisitor = new FindAstPostitionVisitor(token.Extent.StartScriptPosition);
+            ast.Visit(findAstVisitor);
+            return findAstVisitor.AstPosition;
+        }
+
+    }
+
+    /// <summary>
+    /// Provides an efficient way to find the position in the AST corresponding to a given script position.
+    /// </summary>
+    public class FindAstPostitionVisitor : AstVisitor2
+    {
+        private IScriptPosition searchPosition;
+
+        /// <summary>
+        /// Contains the position in the AST corresponding to the provided <see cref="IScriptPosition"/> upon completion of the <see cref="Ast.Visit(AstVisitor)"/> method.
+        /// </summary>
+        public Ast AstPosition { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FindAstPostitionVisitor"/> class with the postition to search for.
+        /// </summary>
+        /// <param name="position">The script position to search for.</param>
+        public FindAstPostitionVisitor(IScriptPosition position)
+        {
+            this.searchPosition = position;
+        }
+
+        /// <summary>
+        /// Traverses the AST based on offests to find the leaf node which contains the provided <see cref="IScriptPosition"/>.
+        /// This method implements the entire functionality of this visitor. All <see cref="AstVisitor2"/> methods are overridden to simply invoke this one.
+        /// </summary>
+        /// <param name="ast">Current AST node to process.</param>
+        /// <returns>An <see cref="AstVisitAction"/> indicating whether to visit children of the current node.</returns>
+        private AstVisitAction Visit(Ast ast)
+        {
+            if (ast.Extent.StartOffset > searchPosition.Offset || ast.Extent.EndOffset < searchPosition.Offset)
+            {
+                return AstVisitAction.SkipChildren;
+            }
+            else
+            {
+                AstPosition = ast;
+                return AstVisitAction.Continue;
+            }
+        }
+
+        public override AstVisitAction VisitScriptBlock(ScriptBlockAst scriptBlockAst)
+        {
+            return Visit(scriptBlockAst);
+        }
+
+        public override AstVisitAction VisitNamedBlock(NamedBlockAst namedBlockAst)
+        {
+            return Visit(namedBlockAst);
+        }
+
+        public override AstVisitAction VisitAssignmentStatement(AssignmentStatementAst assignmentStatementAst)
+        {
+            return Visit(assignmentStatementAst);
+        }
+
+        public override AstVisitAction VisitCommandExpression(CommandExpressionAst commandExpressionAst)
+        {
+            return Visit(commandExpressionAst);
+        }
+
+        public override AstVisitAction VisitHashtable(HashtableAst hashtableAst)
+        {
+            return Visit(hashtableAst);
+        }
+
     }
 }

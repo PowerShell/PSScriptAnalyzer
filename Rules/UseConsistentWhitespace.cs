@@ -536,23 +536,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // exclude assignment operator inside of multi-line hash tables if requested
                 if (IgnoreAssignmentOperatorInsideHashTable && tokenNode.Value.Kind == TokenKind.Equals)
                 {
-                    var enclosingHashTables = tokenOperations.Ast.FindAll(a => a.Extent.StartOffset <= tokenNode.Value.Extent.StartOffset && a.Extent.EndOffset >= tokenNode.Value.Extent.EndOffset && a is HashtableAst, true);
-                    if (enclosingHashTables.Count() > 0)
+                    Ast containingAst = tokenOperations.GetAstPosition(tokenNode.Value);
+                    if (containingAst is HashtableAst && containingAst.Extent.EndLineNumber != containingAst.Extent.StartLineNumber)
                     {
-                        Ast innermostEnclosingHashTable = enclosingHashTables.First();
-                        int smallestSizeSoFar = int.MaxValue;
-                        foreach (var hashTable in enclosingHashTables){
-                            int currentHashTableSize = hashTable.Extent.EndOffset - hashTable.Extent.StartOffset;
-                            if (currentHashTableSize < smallestSizeSoFar)
-                            {
-                                innermostEnclosingHashTable = hashTable;
-                                smallestSizeSoFar = currentHashTableSize;
-                            }
-                        }
-                        if (innermostEnclosingHashTable.Extent.StartLineNumber != innermostEnclosingHashTable.Extent.EndLineNumber)
-                        {
-                            continue;
-                        }
+                        continue;
                     }
                 }
 
