@@ -9,9 +9,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     /// Provides an efficient way to find the position in the AST corresponding to a given script position.
     /// </summary>
 #if !(PSV3 || PSV4)
-    internal class FindAstPostitionVisitor : AstVisitor2
+    internal class FindAstPositionVisitor : AstVisitor2
 #else
-    internal class FindAstPostitionVisitor : AstVisitor
+    internal class FindAstPositionVisitor : AstVisitor
 #endif
     {
         private IScriptPosition searchPosition;
@@ -22,10 +22,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         public Ast AstPosition { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FindAstPostitionVisitor"/> class with the postition to search for.
+        /// Initializes a new instance of the <see cref="FindAstPositionVisitor"/> class with the postition to search for.
         /// </summary>
         /// <param name="position">The script position to search for.</param>
-        public FindAstPostitionVisitor(IScriptPosition position)
+        public FindAstPositionVisitor(IScriptPosition position)
         {
             this.searchPosition = position;
         }

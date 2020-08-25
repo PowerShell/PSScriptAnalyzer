@@ -240,7 +240,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>The Ast node directly containing the provided <see cref="Token"/>.</returns>
         public Ast GetAstPosition(Token token)
         {
-            FindAstPostitionVisitor findAstVisitor = new FindAstPostitionVisitor(token.Extent.StartScriptPosition);
+            FindAstPositionVisitor findAstVisitor = new FindAstPositionVisitor(token.Extent.StartScriptPosition);
             ast.Visit(findAstVisitor);
             return findAstVisitor.AstPosition;
         }
