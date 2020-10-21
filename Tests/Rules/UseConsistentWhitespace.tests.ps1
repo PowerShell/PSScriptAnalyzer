@@ -119,7 +119,7 @@ function foo($param) {
         }
     }
 
-    Context "When there is whitespace around assignment and binary operators" {
+    Context "When there is whitespace around operators" {
         BeforeAll {
             $ruleConfiguration.CheckInnerBrace = $false
             $ruleConfiguration.CheckOpenParen = $false
@@ -180,6 +180,151 @@ $x = $true -and
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
+        It "Should find a violation if there is no space around an arithmetic operator" {
+            $def = '$z = 3+4'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '+' ' + '
+        }
+
+        It "Should find a violation if there is no space around a bitwise operator" {
+            $def = '$value = 7-band3'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-band' ' -band '
+        }
+
+        It "Should find a violation if there is no space around an equality comparison operator" {
+            $def = '$obviously = 3-lt4'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-lt' ' -lt '
+        }
+
+        It "Should find a violation if there is no space around a matching operator" {
+            $def = '$shouldSend = $fromAddress-like"*@*.com"'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-like' ' -like '
+        }
+
+        It "Should find a violation if there is no space around replace operator" {
+            $def = '$a = "string"-replace"ing", "aight"'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-replace' ' -replace '
+        }
+
+        It "Should find a violation if there is no space around a containment operator" {
+            $def = 'if ("filename.txt"-in$FileList) { }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-in' ' -in '
+        }
+
+        It "Should find a violation if there is no space around a type operator" {
+            $def = '$HoustonWeHaveAProblem = $a-isnot[System.Object]'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-isnot' ' -isnot '
+        }
+
+        It "Should find a violation if there is no space around a logical operator" {
+            $def = '$a = $b-xor$c'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-xor' ' -xor '
+        }
+
+        It "Should find a violation if there is no space around logical not operator but only on one side" {
+            $def = '$lie = (-not$true)'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should find a violation if there is no space around redirection operator" {
+            $def = '"hi">>secretmessage.txt'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '>>' ' >> '
+        }
+
+        It "Should find a violation if there is no space around binary split operator" {
+            $def = '$numbers = "one:two:three"-split":"'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-split' ' -split '
+        }
+
+        It "Should find a violation if there is no space around unary join operator but only on one side" {
+            $def = 'ConvertFrom-Json (-join(dotnet gitversion))'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should find a violation if there is no space around format operator" {
+            $def = '"{0:X}"-f88'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '-f' ' -f '
+        }
+
+        It "Should find violations if there is no space around ternary operator" -Skip:($PSVersionTable.PSVersion -lt '7.0') {
+            $def = '($a -is [System.Object])?3:4'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations | Should -HaveCount 2
+            Test-CorrectionExtentFromContent $def $violations[0] 1 '?' ' ? '
+            Test-CorrectionExtentFromContent $def $violations[1] 1 ':' ' : '
+        }
+
+        It "Should not find a violation if there is no space around pipeline operator" {
+            $def = 'Get-It|Forget-It'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should find a violation if there is no space around pipeline chain operator" -Skip:($PSVersionTable.PSVersion -lt '7.0') {
+            $def = 'Start-Service $ServiceName||Write-Error "Could not start $ServiceName"'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '||' ' || '
+        }
+
+        It "Should find a violation if there is no space around null coalescing operator" -Skip:($PSVersionTable.PSVersion -lt '7.0') {
+            $def = '${a}??3'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '??' ' ?? '
+        }
+
+        It "Should find a violation if there is no space around call operator" {
+            $def = '(&$ScriptFile)'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should find a violation if there is no space around background operator" -Skip:($PSVersionTable.PSVersion -lt '6.0') {
+            $def = '(Get-LongThing&)'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should find a violation if there is no space around dot sourcing operator" {
+            $def = '(.$ScriptFile)'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should not find a violation if there is no space around member access operator" {
+            $def = '$PSVersionTable.PSVersion'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if there is no space around comma operator" {
+            $def = '$somenumbers = 3,4,5'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if there is no space around prefix operator" {
+            $def = '--$counter'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if there is no space around postfix operator" {
+            $def = '$counter++'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if there is no space around exclaim operator" {
+            $def = 'if(!$true){ "FALSE!@!!!!" }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
     }
 
     Context "When a comma is not followed by a space" {
