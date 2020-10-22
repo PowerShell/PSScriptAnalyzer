@@ -547,12 +547,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 else if (tokenHasBinaryFlag // binary flag is set but not unary
                          // include other (non-expression) binary operators
                          || TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.AssignmentOperator)
+                         || tokenNode.Value.Kind == TokenKind.Redirection
                          || tokenNode.Value.Kind == TokenKind.AndAnd
                          || tokenNode.Value.Kind == TokenKind.OrOr
+#if !(NET452 || PSV6)    // include both parts of ternary operator but only for PS7+
+                         || TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.TernaryOperator)
+                         || tokenNode.Value.Kind == TokenKind.Colon
+#endif
                          ) {
                     checkLeftSide = true;
                     checkRightSide = true;
                 }
+                // Treat call and dot source operators as unary with operand on right.
+                else if ((tokenNode.Value.Kind == TokenKind.Dot || tokenNode.Value.Kind == TokenKind.Ampersand)
+                         && tokenOperations.GetAstPosition(tokenNode.Value) is CommandAst)
+                {
+                    checkRightSide = true;
+                }
+#if !(NET452)   // Treat background operator as unary with operand on left (only exists in PS6+)
+                else if (tokenNode.Value.Kind == TokenKind.Ampersand)
+                {
+                    checkLeftSide = true;
+                }
+#endif
                 else // Token is not an operator
                 {
                     continue;
