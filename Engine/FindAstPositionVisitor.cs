@@ -38,7 +38,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <returns>An <see cref="AstVisitAction"/> indicating whether to visit children of the current node.</returns>
         private AstVisitAction Visit(Ast ast)
         {
-            if (ast.Extent.StartOffset > searchPosition.Offset || ast.Extent.EndOffset < searchPosition.Offset)
+            if (ast.Extent.StartOffset > searchPosition.Offset || ast.Extent.EndOffset <= searchPosition.Offset)
             {
                 return AstVisitAction.SkipChildren;
             }
