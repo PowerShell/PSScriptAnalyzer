@@ -9,15 +9,13 @@ $PSModuleRoot = $PSModule.ModuleBase
 
 # Import the appropriate nested binary module based on the current PowerShell version
 $binaryModuleRoot = $PSModuleRoot
-if ($PSVersionTable.PSVersion.Major -eq 7 ) {
-    $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath "PSv$($PSVersionTable.PSVersion.Major)"
-}
-elseif ($PSVersionTable.PSVersion.Major -eq 6 ) {
+[Version] $minimumPowerShellCoreVersion = '7.0.3'
+if ($PSVersionTable.PSVersion.Major -ge 6) {
     $binaryModuleRoot = Join-Path -Path $PSModuleRoot -ChildPath "PSv$($PSVersionTable.PSVersion.Major)"
     # Minimum PowerShell Core version given by PowerShell Core support itself and
-    # also the version of NewtonSoft.Json implicitly that PSSA ships with,
-    # which cannot be higher than the one that PowerShell ships with.
-    [Version] $minimumPowerShellCoreVersion = '6.2.4'
+    # the version of Nuget references, such as e.g. Newtonsoft.Json inside PowerShell itself
+    # or the version of the System.Management.Automation NuGet reference in PSSA.
+    
     if ($PSVersionTable.PSVersion -lt $minimumPowerShellCoreVersion) {
         throw "Minimum supported version of PSScriptAnalyzer for PowerShell Core is $minimumPowerShellCoreVersion but current version is '$($PSVersionTable.PSVersion)'. Please update PowerShell Core."
     }
