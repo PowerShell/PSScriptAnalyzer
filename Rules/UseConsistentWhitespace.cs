@@ -63,7 +63,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: false)]
         public bool CheckParameter { get; protected set; }
 
-
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
             base.ConfigureRule(paramValueMap);
