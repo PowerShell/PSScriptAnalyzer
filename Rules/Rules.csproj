@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>1.19.1</VersionPrefix>
-    <TargetFrameworks>netcoreapp3.1;netstandard2.0;net452</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net452</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
     <AssemblyVersion>1.19.1</AssemblyVersion>
     <PackageId>Rules</PackageId>
@@ -15,7 +15,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
   </ItemGroup>
 
@@ -27,10 +27,6 @@
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,7 +44,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netcoreapp3.1'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
     <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
@@ -63,10 +59,6 @@
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <DefineConstants>$(DefineConstants);PSV6;CORECLR</DefineConstants>
   </PropertyGroup>
 
 </Project>

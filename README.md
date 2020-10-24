@@ -141,9 +141,9 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
     ```powershell
     .\build.ps1 -PSVersion 3
     ```
-    * PowerShell Core
+    * PowerShell 7
     ```powershell
-    .\build.ps1 -PSVersion 6
+    .\build.ps1 -PSVersion 7
     ```
 * Rebuild documentation since it gets built automatically only the first time
     ```powershell

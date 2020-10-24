@@ -144,7 +144,7 @@ function Start-ScriptAnalyzerBuild
     param (
         [switch]$All,
 
-        [ValidateRange(3, 7)]
+        [ValidateSet(3, 4, 5, 7)]
         [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
         [ValidateSet("Debug", "Release")]
@@ -183,7 +183,7 @@ function Start-ScriptAnalyzerBuild
         if ( $All )
         {
             # Build all the versions of the analyzer
-            foreach($psVersion in 3..7) {
+            foreach ($psVersion in 3, 4, 5, 7) {
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion -Verbose:$verboseWanted
             }
             if ( $Catalog ) {
@@ -200,14 +200,9 @@ function Start-ScriptAnalyzerBuild
             Set-Variable -Name profilesCopied -Value $true -Scope 1
         }
 
+        $framework = 'net452'
         if ($PSVersion -eq 7) {
             $framework = 'netcoreapp3.1'
-        }
-        elseif ($PSVersion -eq 6) {
-            $framework = 'netstandard2.0'
-        }
-        else {
-            $framework = "net452"
         }
 
         # build the appropriate assembly
@@ -241,10 +236,6 @@ function Start-ScriptAnalyzerBuild
             {
                 $destinationDirBinaries = "$script:destinationDir"
             }
-            6
-            {
-                $destinationDirBinaries = "$script:destinationDir\PSv6"
-            }
             7
             {
                 $destinationDirBinaries = "$script:destinationDir\PSv7"
@@ -256,7 +247,7 @@ function Start-ScriptAnalyzerBuild
         }
 
         $buildConfiguration = $Configuration
-        if ((3, 4, 6, 7) -contains $PSVersion) {
+        if ((3, 4, 7) -contains $PSVersion) {
             $buildConfiguration = "PSV${PSVersion}${Configuration}"
         }
 
