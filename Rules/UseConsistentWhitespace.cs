@@ -99,10 +99,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 violationFinders.Add(FindSeparatorViolations);
             }
 
-            if (CheckUnaryOperatorWithDash)
-            {
-                violationFinders.Add(FindUnaryOperatorViolations);
-            }
+            // if (CheckUnaryOperatorWithDash)
+            // {
+            //     violationFinders.Add(FindUnaryOperatorViolations);
+            // }
         }
 
         /// <summary>
@@ -199,6 +199,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return TokenTraits.HasTrait(token.Kind, TokenFlags.AssignmentOperator)
                     || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceAdd)
                     || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceMultiply)
+                    || TokenTraits.HasTrait(token.Kind, TokenFlags.UnaryOperator) && token.Text.StartsWith("-")
                     || token.Kind == TokenKind.AndAnd
                     || token.Kind == TokenKind.OrOr;
         }
