@@ -63,8 +63,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: false)]
         public bool CheckParameter { get; protected set; }
 
-        [ConfigurableRuleProperty(defaultValue: true)]
-        public bool CheckUnaryOperatorWithDash { get; protected set; }
 
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
@@ -98,11 +96,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 violationFinders.Add(FindSeparatorViolations);
             }
-
-            // if (CheckUnaryOperatorWithDash)
-            // {
-            //     violationFinders.Add(FindUnaryOperatorViolations);
-            // }
         }
 
         /// <summary>
@@ -369,72 +362,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
             }
-        }
-
-        private IEnumerable<DiagnosticRecord> FindUnaryOperatorViolations(TokenOperations tokenOperations)
-        {
-            bool isUnaryOperatorWithDash(Token token)
-            {
-                return token.TokenFlags == TokenFlags.UnaryOperator && token.Text.StartsWith("-");
-            }
-
-            foreach (var unaryOperatorWithDash in tokenOperations.GetTokenNodes(token => isUnaryOperatorWithDash(token)))
-            {
-                if (unaryOperatorWithDash.Next == null
-                    || !IsPreviousTokenOnSameLine(unaryOperatorWithDash)
-                    || unaryOperatorWithDash.Next.Value.Kind == TokenKind.NewLine
-                    || unaryOperatorWithDash.Next.Value.Kind == TokenKind.LineContinuation
-                    )
-                {
-                    continue;
-                }
-
-                if (!IsNextTokenApartByWhitespace(unaryOperatorWithDash, out bool hasRedundantWhitespace))
-                {
-                    // TODO put into if below: CheckPipeForRedundantWhitespace && hasRedundantWhitespace || 
-                    if (CheckUnaryOperatorWithDash && !hasRedundantWhitespace)
-                    {
-                        yield return new DiagnosticRecord(
-                            GetError(ErrorKind.AfterPipe),
-                            unaryOperatorWithDash.Value.Extent,
-                            GetName(),
-                            GetDiagnosticSeverity(),
-                            tokenOperations.Ast.Extent.File,
-                            null,
-                            GetCorrections(
-                                unaryOperatorWithDash.Previous.Value, unaryOperatorWithDash.Value, unaryOperatorWithDash.Next.Value, true, false)
-                                .ToList());
-                    }
-                }
-            }
-
-            // foreach (var pipe in tokenOperations.GetTokenNodes(TokenKind.Pipe))
-            // {
-            //     if (pipe.Previous == null
-            //         || !IsPreviousTokenOnSameLine(pipe)
-            //         || pipe.Previous.Value.Kind == TokenKind.Pipe
-            //         || pipe.Previous.Value.Kind == TokenKind.NewLine
-            //         || pipe.Previous.Value.Kind == TokenKind.LineContinuation
-            //         )
-            //     {
-            //         continue;
-            //     }
-
-            //     if (!IsPreviousTokenApartByWhitespace(pipe, out bool hasRedundantWhitespace))
-            //     {
-            //         if (CheckPipeForRedundantWhitespace && hasRedundantWhitespace || CheckUnaryOperatorWithDash && !hasRedundantWhitespace)
-            //         {
-            //             yield return new DiagnosticRecord(
-            //             GetError(ErrorKind.BeforePipe),
-            //             pipe.Value.Extent,
-            //             GetName(),
-            //             GetDiagnosticSeverity(),
-            //             tokenOperations.Ast.Extent.File,
-            //             null,
-            //             GetCorrections(pipe.Previous.Value, pipe.Value, pipe.Next.Value, false, true).ToList());
-            //         }
-            //     }
-            // }
         }
 
         private IEnumerable<DiagnosticRecord> FindOpenParenViolations(TokenOperations tokenOperations)
