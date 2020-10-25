@@ -499,7 +499,7 @@ Many thanks to @rkeithhill for contributing the _Stroustrup_ style code formatti
 ## [1.11.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.11.1) - 2017-04-04
 ### Fixed
 - CodeFormatting settings file (#727, #728).
-- Whitelisted aliases comparison in AvoidUsingCmdletAliases rule (#739).
+- Allowlist aliases comparison in AvoidUsingCmdletAliases rule (#739).
 - PlaceCloseBrace rule behavior for NewLineAfter option (#741).
 - UseConsistentIndentation rule to ignore open brace in magic methods (#744).
 
@@ -596,7 +596,7 @@ Here are some improvements since the last release.
 - Fix `SaveDscDependency` switch implementation, which use fail if more than one parameter is given to `Import-DSCResource` dynamic keyword.
 - Add support for external AST based rule suppression
 - Fix rule suppression caused by inavlid offsets
-- Whitelist `Data` in `PSUseSingularNoun` rule
+- Allowlist `Data` in `PSUseSingularNoun` rule
 - Fix rule documentation of `PSDSCExamplesPresent`
 - Fix false positives caused by PSD1 files which are not module manifests
     - affects `PSUseToExportFieldsInManifest`, `PSMissingModuleManifestField` and `PSAvoidUsingDeprecatedManifestFields` rules

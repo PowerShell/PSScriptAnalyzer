@@ -30,7 +30,7 @@ Describe "UseSingularNouns" -Skip:$IsCoreCLR {
         }
     }
 
-    Context "When function names have nouns from whitelist" {
+    Context "When function names have nouns from allowlist" {
 
         It "ignores function name ending with Data" {
             $nounViolationScript = @'

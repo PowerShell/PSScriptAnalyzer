@@ -18,9 +18,9 @@ The use of full command names also allows for syntax highlighting in sites and a
 
 Use the full cmdlet name and not an alias.
 
-## Alias Whitelist
+## Alias Allowlist
 
-To prevent `PSScriptAnalyzer` from flagging your preferred aliases, create a whitelist of the aliases in your settings file and point `PSScriptAnalyzer` to use the settings file. For example, to disable `PSScriptAnalyzer` from flagging `cd`, which is an alias of `Set-Location`, set the settings file content to the following.
+To prevent `PSScriptAnalyzer` from flagging your preferred aliases, create an allowlist of the aliases in your settings file and point `PSScriptAnalyzer` to use the settings file. For example, to disable `PSScriptAnalyzer` from flagging `cd`, which is an alias of `Set-Location`, set the settings file content to the following.
 
 ```PowerShell
 # PSScriptAnalyzerSettings.psd1

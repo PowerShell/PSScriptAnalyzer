@@ -264,13 +264,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private class ViolationFinder : AstVisitor
         {
-            private HashSet<string> functionWhitelist;
+            private HashSet<string> functionAllowList;
             private List<FunctionDefinitionAst> functionDefinitionAsts;
-            private bool useFunctionWhitelist;
+            private bool useFunctionAllowList;
 
             public ViolationFinder()
             {
-                functionWhitelist = new HashSet<string>();
+                functionAllowList = new HashSet<string>();
                 functionDefinitionAsts = new List<FunctionDefinitionAst>();
             }
 
@@ -281,12 +281,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     throw new ArgumentNullException(nameof(exportedFunctions));
                 }
 
-                this.functionWhitelist = exportedFunctions;
+                this.functionAllowList = exportedFunctions;
             }
 
             public ViolationFinder(HashSet<string> exportedFunctions, bool exportedOnly) : this(exportedFunctions)
             {
-                this.useFunctionWhitelist = exportedOnly;
+                this.useFunctionAllowList = exportedOnly;
             }
 
             public IEnumerable<FunctionDefinitionAst> FunctionDefinitionAsts
@@ -299,7 +299,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public override AstVisitAction VisitFunctionDefinition(FunctionDefinitionAst funcAst)
             {
-                if ((!useFunctionWhitelist || functionWhitelist.Contains(funcAst.Name))
+                if ((!useFunctionAllowList || functionAllowList.Contains(funcAst.Name))
                     && funcAst.GetHelpContent() == null)
                 {
                     functionDefinitionAsts.Add(funcAst);
