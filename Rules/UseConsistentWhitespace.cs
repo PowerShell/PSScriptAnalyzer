@@ -520,7 +520,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || tokenNode.Next == null
                     || tokenNode.Value.Kind == TokenKind.DotDot)
                 {
-                    continue;
+                    if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) &&
+                        tokenNode.Value.Text.StartsWith("-"))
+                    {
+                        var hasWhitespaceAfterOperator = tokenNode.Next.Value.Kind == TokenKind.NewLine
+                            || IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
+                        if (!hasWhitespaceAfterOperator)
+                        {
+                            yield return new DiagnosticRecord(
+                                GetError(ErrorKind.Operator),
+                                tokenNode.Value.Extent,
+                                GetName(),
+                                GetDiagnosticSeverity(),
+                                tokenOperations.Ast.Extent.File,
+                                null,
+                                new List<CorrectionExtent>()
+                                {
+                                    new CorrectionExtent(
+                                    tokenNode.Value.Extent.StartLineNumber,
+                                    tokenNode.Value.Extent.EndLineNumber,
+                                    tokenNode.Value.Extent.StartColumnNumber,
+                                    tokenNode.Value.Extent.EndColumnNumber,
+                                    $"{tokenNode.Value.Text} ",
+                                    tokenNode.Value.Extent.File)
+                                });
+                                continue;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
 
                 // exclude unary operator for cases like $foo.bar(-$Var)
