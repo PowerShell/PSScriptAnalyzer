@@ -214,7 +214,6 @@ $x = $true -and
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '-join' '-join '
         }
-
     }
 
     Context "When a comma is not followed by a space" {

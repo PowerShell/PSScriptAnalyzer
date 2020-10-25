@@ -520,6 +520,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || tokenNode.Next == null
                     || tokenNode.Value.Kind == TokenKind.DotDot)
                 {
+                    // for cases like '-split$a' as the other checks below in this function assume a preceding token
                     if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) &&
                         tokenNode.Value.Text.StartsWith("-"))
                     {
@@ -544,13 +545,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                     $"{tokenNode.Value.Text} ",
                                     tokenNode.Value.Extent.File)
                                 });
-                                continue;
                         }
                     }
-                    else
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
                 // exclude unary operator for cases like $foo.bar(-$Var)
