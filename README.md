@@ -77,7 +77,7 @@ Exit
 #### Supported PowerShell Versions and Platforms
 
 - Windows PowerShell 3.0 or greater
-- PowerShell Core 6.2 or greater on Windows/Linux/macOS
+- PowerShell Core 7.0.3 or greater on Windows/Linux/macOS
 - Docker (tested only using Docker Desktop on Windows 10 1809)
   - PowerShell 6 Windows Image tags from [mcr.microsoft.com/powershell](https://hub.docker.com/r/microsoft/powershell). Example (1 warning gets produced by `Save-Module` but can be ignored):
 
