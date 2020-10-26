@@ -42,11 +42,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 return AstVisitAction.SkipChildren;
             }
-            else
-            {
-                AstPosition = ast;
-                return AstVisitAction.Continue;
-            }
+            AstPosition = ast;
+            return AstVisitAction.Continue;
         }
 
          public override AstVisitAction VisitArrayExpression(ArrayExpressionAst arrayExpressionAst)
