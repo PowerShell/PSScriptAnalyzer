@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
   
