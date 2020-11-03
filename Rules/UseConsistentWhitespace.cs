@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             AfterOpeningBrace, BeforeClosingBrace, BeforePipe, AfterPipe, BetweenParameter };
         private const int whiteSpaceSize = 1;
         private const string whiteSpace = " ";
-        private readonly SortedSet<TokenKind> openParenKeywordWhitelist = new SortedSet<TokenKind>()
+        private readonly SortedSet<TokenKind> openParenKeywordAllowList = new SortedSet<TokenKind>()
         {
             TokenKind.If,
             TokenKind.ElseIf,
@@ -474,7 +474,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsKeyword(Token token)
         {
-            return openParenKeywordWhitelist.Contains(token.Kind);
+            return openParenKeywordAllowList.Contains(token.Kind);
         }
 
         private static bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)

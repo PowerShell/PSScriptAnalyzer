@@ -28,7 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     [Export(typeof(IScriptRule))]
     public class CmdletSingularNoun : IScriptRule {
 
-        private readonly string[] nounWhiteList =
+        private readonly string[] nounAllowList =
         {
             "Data"
         };
@@ -68,7 +68,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     if (!ps.IsSingular(noun) && ps.IsPlural(noun))
                     {
                         IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
-                        if (nounWhiteList.Contains(noun, StringComparer.OrdinalIgnoreCase))
+                        if (nounAllowList.Contains(noun, StringComparer.OrdinalIgnoreCase))
                         {
                             continue;
                         }

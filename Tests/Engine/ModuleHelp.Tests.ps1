@@ -58,7 +58,7 @@ $RequiredVersion = (Get-Command Invoke-ScriptAnalyzer).Module.Version
 
 $ms = $null
 $commands = $null
-$paramBlackList = @(
+$paramBlockList = @(
 	'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
 )
 [string] $ModuleName = 'PSScriptAnalyzer'
@@ -89,11 +89,11 @@ $testCases = $commands.ForEach{
 
 
 BeforeAll {
-	$paramBlackList = @(
+	$paramBlockList = @(
 		'AttachAndDebug' # Reason: When building with DEGUG configuration, an additional parameter 'AttachAndDebug' will be added to Invoke-ScriptAnalyzer and Invoke-Formatter, but there is no Help for those, as they are not intended for production usage.
 	)
 	if ($PSVersionTable.PSVersion -lt '5.0') {
-		$paramBlackList += 'SaveDscDependency'
+		$paramBlockList += 'SaveDscDependency'
 	}
 }
 
@@ -217,7 +217,7 @@ Describe 'Cmdlet parameter help' {
 		$HelpParameterNames = $Help.Parameters.Parameter.Name | Sort-Object -Unique
 
 		foreach ($parameter in $parameters) {
-			if ($parameter.Name -in $paramBlackList) {
+			if ($parameter.Name -in $paramBlockList) {
 				continue
 			}
 			$parameterName = $parameter.Name
@@ -242,7 +242,7 @@ Describe 'Cmdlet parameter help' {
 		}
 
 		foreach ($helpParam in $HelpParameterNames) {
-			if ($helpParam -in $paramBlackList) {
+			if ($helpParam -in $paramBlockList) {
 				continue
 			}
 			$helpParam -in $parameterNames | Should -BeTrue -Because "There should be no extra parameters in help. '$helpParam' was not in '$parameterNames'"
