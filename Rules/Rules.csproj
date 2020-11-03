@@ -16,11 +16,12 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
+    <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data.Entity.Design" />
   </ItemGroup>
@@ -42,11 +43,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
-    <Compile Remove="UseSingularNouns.cs" />
   </ItemGroup>
   
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' OR '$(Configuration)' == 'PSV3Debug'">

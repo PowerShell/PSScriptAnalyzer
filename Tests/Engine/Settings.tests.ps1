@@ -79,7 +79,32 @@ Describe "Settings Class" {
         }
     }
 
-    Context "When rule arguments are provided in a hashtable" {
+    Context 'When rule arguments are provided in a hashtable' {
+        BeforeAll {
+            $settingsHashtable = @{
+                Rules = @{
+                    PSAvoidUsingCmdletAliases = @{
+                        AllowList = @('cd', 'cp')
+                    }
+                }
+            }
+            $settings = New-Object -TypeName $settingsTypeName -ArgumentList $settingsHashtable
+        }
+
+        It 'Should return the rule arguments' {
+            $settings.RuleArguments['PSAvoidUsingCmdletAliases']['AllowList'].Count | Should -Be 2
+            $settings.RuleArguments['PSAvoidUsingCmdletAliases']['AllowList'][0] | Should -Be 'cd'
+            $settings.RuleArguments['PSAvoidUsingCmdletAliases']['AllowList'][1] | Should -Be 'cp'
+        }
+
+        It 'Should Be case insensitive' {
+            $settings.RuleArguments['psAvoidUsingCmdletAliases']['AllowList'].Count | Should -Be 2
+            $settings.RuleArguments['psAvoidUsingCmdletAliases']['AllowList'][0] | Should -Be 'cd'
+            $settings.RuleArguments['psAvoidUsingCmdletAliases']['AllowList'][1] | Should -Be 'cp'
+        }
+    }
+
+    Context 'When rule arguments are provided in a hashtable (legacy argument name)' {
         BeforeAll {
             $settingsHashtable = @{
                 Rules = @{

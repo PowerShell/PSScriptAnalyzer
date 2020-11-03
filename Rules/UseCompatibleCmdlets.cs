@@ -498,7 +498,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Check if current command is present in the whitelists
+        /// Check if current command is present in the allowlists
         /// If not, flag the corresponding value in curCmdletCompatibilityMap
         /// </summary>
         private void CheckCompatibility()

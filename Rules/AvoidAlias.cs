@@ -22,13 +22,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class AvoidAlias : IScriptRule
     {
-        private readonly string whiteListArgName = "whitelist";
+        private readonly string allowListArgName = "allowlist";
+        // keep legacy argument name for next version to allow customers to transition but remove later
+        private readonly string allowListLegacyArgName = "whitelist";
         private bool isPropertiesSet;
-        private List<string> whiteList;
-        public List<string> WhiteList
-        {
-            get { return whiteList; }
-        }
+        public List<string> AllowList { get; private set; }
 
         public AvoidAlias()
         {
@@ -38,21 +36,26 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Configure the rule.
         ///
-        /// Sets the whitelist of this rule
+        /// Sets the allowlist of this rule
         /// </summary>
         private void SetProperties()
         {
-            whiteList = new List<string>();
+            AllowList = new List<string>();
             isPropertiesSet = true;
             Dictionary<string, object> ruleArgs = Helper.Instance.GetRuleArguments(GetName());
             if (ruleArgs == null)
             {
                 return;
             }
-            object obj;
-            if (!ruleArgs.TryGetValue(whiteListArgName, out obj))
+            object objLegacy = null;
+            if (!ruleArgs.TryGetValue(allowListArgName, out object obj) &&
+                !ruleArgs.TryGetValue(allowListLegacyArgName, out objLegacy))
             {
                 return;
+            }
+            // Fallback for object from legacy allowlist argument name 
+            if (obj == null) {
+                obj = objLegacy;
             }
             IEnumerable<string> aliases = obj as IEnumerable<string>;
             if (aliases == null)
@@ -72,13 +75,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                     else
                     {
-                        whiteList.Add(y);
+                        AllowList.Add(y);
                     }
                 }
             }
             else
             {
-                whiteList.AddRange(aliases);
+                AllowList.AddRange(aliases);
             }
         }
 
@@ -110,7 +113,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // You can also review the remark section in following document,
                 // MSDN: CommandAst.GetCommandName Method
                 if (commandName == null
-                    || whiteList.Contains<string>(commandName, StringComparer.OrdinalIgnoreCase))
+                    || AllowList.Contains<string>(commandName, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
