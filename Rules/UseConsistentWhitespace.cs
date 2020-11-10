@@ -186,15 +186,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return SourceType.Builtin;
         }
 
-        private bool IsOperator(Token token)
-        {
-            return TokenTraits.HasTrait(token.Kind, TokenFlags.AssignmentOperator)
-                    || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceAdd)
-                    || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceMultiply)
-                    || token.Kind == TokenKind.AndAnd
-                    || token.Kind == TokenKind.OrOr;
-        }
-
         private string GetError(ErrorKind kind)
         {
             switch (kind)
@@ -513,45 +504,104 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private IEnumerable<DiagnosticRecord> FindOperatorViolations(TokenOperations tokenOperations)
         {
-            foreach (var tokenNode in tokenOperations.GetTokenNodes(IsOperator))
+            foreach (LinkedListNode<Token> tokenNode in tokenOperations.GetTokenNodes((t)=>true))
             {
-                if (tokenNode.Previous == null
-                    || tokenNode.Next == null
-                    || tokenNode.Value.Kind == TokenKind.DotDot)
+                bool tokenHasUnaryFlag = TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator);
+                bool tokenHasBinaryFlag = TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.BinaryOperator);
+                bool checkLeftSide = false;
+                bool checkRightSide = false;
+                bool operatorIsPrefixOrPostfix = false;
+
+                // Exclude operators handled by other UseConsistentWhitespace rule options
+                if (tokenNode.Value.Kind == TokenKind.DotDot
+                    || tokenNode.Value.Kind == TokenKind.Comma) {
+                    continue;
+                }
+                // First check operators that have unary flag (may be unary or binary)
+                else if (tokenHasUnaryFlag)
+                {
+                    Ast operatorAst = tokenOperations.GetAstPosition(tokenNode.Value);
+                    // If both unary and binary flags are set, check type of AST node to determine which it is in this case.
+                    if (tokenHasBinaryFlag && operatorAst is BinaryExpressionAst)
+                    {
+                        checkLeftSide = true;
+                        checkRightSide = true;
+                    }
+                    else // Token must be unary operator.
+                    {
+                        operatorIsPrefixOrPostfix = TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.PrefixOrPostfixOperator)
+                                                    || tokenNode.Value.Kind == TokenKind.Minus
+                                                    || tokenNode.Value.Kind == TokenKind.Exclaim;
+                        // If token and its AST node start at same position, operand is on the right.
+                        if (tokenNode.Value.Extent.StartOffset == operatorAst.Extent.StartOffset)
+                        {
+                            checkRightSide = true;
+                        }
+                        else
+                        {
+                            checkLeftSide = true;
+                        }
+                    }
+                }
+                // Handle operators that are definitely binary
+                else if (tokenHasBinaryFlag // binary flag is set but not unary
+                         // include other (non-expression) binary operators
+                         || TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.AssignmentOperator)
+                         || tokenNode.Value.Kind == TokenKind.Redirection
+                         || tokenNode.Value.Kind == TokenKind.AndAnd
+                         || tokenNode.Value.Kind == TokenKind.OrOr
+#if !(NET452 || PSV6)    // include both parts of ternary operator but only for PS7+
+                         || TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.TernaryOperator)
+                         || tokenNode.Value.Kind == TokenKind.Colon
+#endif
+                         ) {
+                    checkLeftSide = true;
+                    checkRightSide = true;
+                }
+                // Treat call and dot source operators as unary with operand on right.
+                else if ((tokenNode.Value.Kind == TokenKind.Dot || tokenNode.Value.Kind == TokenKind.Ampersand)
+                         && tokenOperations.GetAstPosition(tokenNode.Value) is CommandAst)
+                {
+                    checkRightSide = true;
+                }
+#if !(NET452)   // Treat background operator as unary with operand on left (only exists in PS6+)
+                else if (tokenNode.Value.Kind == TokenKind.Ampersand)
+                {
+                    checkLeftSide = true;
+                }
+#endif
+                else // Token is not an operator
                 {
                     continue;
                 }
 
-                // exclude unary operator for cases like $foo.bar(-$Var)
-                if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) &&
-                    tokenNode.Previous.Value.Kind == TokenKind.LParen &&
-                    tokenNode.Next.Value.Kind == TokenKind.Variable)
+                if (!operatorIsPrefixOrPostfix)
                 {
-                    continue;
-                }
+                    bool leftSideOK = !checkLeftSide || IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
 
-                var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
-                var hasWhitespaceAfter = tokenNode.Next.Value.Kind == TokenKind.NewLine
-                            || IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
+                    bool rightSideOK = !checkRightSide || tokenNode.Next.Value.Kind == TokenKind.NewLine
+                                    || IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
 
-                if (!hasWhitespaceAfter || !hasWhitespaceBefore)
-                {
-                    yield return new DiagnosticRecord(
-                        GetError(ErrorKind.Operator),
-                        tokenNode.Value.Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        tokenOperations.Ast.Extent.File,
-                        null,
-                        GetCorrections(
-                            tokenNode.Previous.Value,
-                            tokenNode.Value,
-                            tokenNode.Next.Value,
-                            hasWhitespaceBefore,
-                            hasWhitespaceAfter));
+                    if (!leftSideOK || !rightSideOK)
+                    {
+                        yield return new DiagnosticRecord(
+                            GetError(ErrorKind.Operator),
+                            tokenNode.Value.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            tokenOperations.Ast.Extent.File,
+                            null,
+                            GetCorrections(
+                                tokenNode.Previous?.Value,
+                                tokenNode.Value,
+                                tokenNode.Next?.Value,
+                                leftSideOK,
+                                rightSideOK));
+                    }
                 }
             }
         }
+
 
         private List<CorrectionExtent> GetCorrections(
             Token prevToken,
