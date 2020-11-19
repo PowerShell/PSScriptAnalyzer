@@ -30,23 +30,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             this.searchPosition = position;
         }
 
-        /// <summary>
-        /// Traverses the AST based on offests to find the leaf node which contains the provided <see cref="IScriptPosition"/>.
-        /// This method implements the entire functionality of this visitor. All <see cref="AstVisitor2"/> methods are overridden to simply invoke this one.
-        /// </summary>
-        /// <param name="ast">Current AST node to process.</param>
-        /// <returns>An <see cref="AstVisitAction"/> indicating whether to visit children of the current node.</returns>
-        private AstVisitAction Visit(Ast ast)
-        {
-            if (ast.Extent.StartOffset > searchPosition.Offset || ast.Extent.EndOffset <= searchPosition.Offset)
-            {
-                return AstVisitAction.SkipChildren;
-            }
-            AstPosition = ast;
-            return AstVisitAction.Continue;
-        }
-
-         public override AstVisitAction VisitArrayExpression(ArrayExpressionAst arrayExpressionAst)
+        public override AstVisitAction VisitArrayExpression(ArrayExpressionAst arrayExpressionAst)
          {
              return Visit(arrayExpressionAst);
          }
@@ -364,6 +348,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
              return Visit(ternaryExpressionAst);
          }
 #endif
+
+        /// <summary>
+        /// Traverses the AST based on offests to find the leaf-most node which contains the provided <see cref="IScriptPosition"/>.
+        /// This method implements the entire functionality of this visitor. All <see cref="AstVisitor2"/> methods are overridden to simply invoke this one.
+        /// </summary>
+        /// <param name="ast">Current AST node to process.</param>
+        /// <returns>An <see cref="AstVisitAction"/> indicating whether to visit children of the current node.</returns>
+        private AstVisitAction Visit(Ast ast)
+        {
+            if (ast.Extent.StartOffset > searchPosition.Offset || ast.Extent.EndOffset <= searchPosition.Offset)
+            {
+                return AstVisitAction.SkipChildren;
+            }
+            AstPosition = ast;
+            return AstVisitAction.Continue;
+        }
 
     }
 }
