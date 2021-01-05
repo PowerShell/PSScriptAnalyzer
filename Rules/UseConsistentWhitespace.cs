@@ -63,6 +63,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         [ConfigurableRuleProperty(defaultValue: false)]
         public bool CheckParameter { get; protected set; }
 
+        [ConfigurableRuleProperty(defaultValue: false)]
+        public bool IgnoreAssignmentOperatorInsideHashTable { get; protected set; }
+
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
             base.ConfigureRule(paramValueMap);
@@ -528,6 +531,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     tokenNode.Next.Value.Kind == TokenKind.Variable)
                 {
                     continue;
+                }
+
+                // exclude assignment operator inside of multi-line hash tables if requested
+                if (IgnoreAssignmentOperatorInsideHashTable && tokenNode.Value.Kind == TokenKind.Equals)
+                {
+                    Ast containingAst = tokenOperations.GetAstPosition(tokenNode.Value);
+                    if (containingAst is HashtableAst && containingAst.Extent.EndLineNumber != containingAst.Extent.StartLineNumber)
+                    {
+                        continue;
+                    }
                 }
 
                 var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
