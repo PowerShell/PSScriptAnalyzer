@@ -62,7 +62,6 @@ stages:
     - checkout: ComplianceRepo
 
     - template: EsrpSign.yml@ComplianceRepo
-      displayName: "Sign analyzer files"
       parameters:
         # the folder which contains the binaries to sign
         buildOutputPath: $(signSrcPath)
@@ -80,7 +79,6 @@ stages:
           **\Microsoft*.dll
 
     - template: EsrpSign.yml@ComplianceRepo
-      displayName: "Sign Newtonsoft files with 3rd party cert"
       parameters:
         # the folder which contains the binaries to sign
         buildOutputPath: $(signSrcPath)
