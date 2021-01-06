@@ -33,19 +33,21 @@ stages:
     - checkout: self
 
     - pwsh: |
-        Set-Location "$(Build.SourcesDirectory)/PSScriptAnalyzer"
+        Get-Location | out-string
+        Get-ChildItem | out-string
+        Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
         ./build.ps1
         Get-ChildItem -Recurse -File -Name | Write-Verbose -Verbose
       displayName: Execute build
 
     - pwsh: |
-        $signSrcPath = "$(Build.SourcesDirectory)/PSScriptAnalyzer/out"
+        $signSrcPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
         # Set signing src path variable
         $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
 
-        $signOutPath = "$(Build.SourcesDirectory)/PSScriptAnalyzer/signed"
+        $signOutPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/signed"
         $null = New-Item -ItemType Directory -Path $signOutPath
         # Set signing out path variable
         $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
@@ -103,7 +105,7 @@ stages:
       artifact: build
       displayName: Publish signed files
     
-    - publish: "$(Build.SourcesDirectory)/PSScriptAnalyzer/out"
+    - publish: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
       artifact: build
       displayName: publish out directory
 
@@ -127,7 +129,7 @@ stages:
     - template: script-module-compliance.yml@ComplianceRepo
       parameters:
         # component-governance
-        sourceScanPath: '$(Build.SourcesDirectory)/PSScriptAnalyzer'
+        sourceScanPath: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA'
         # credscan
         suppressionsFile: '$(Build.SourceDirectory)/PSScriptAnalyzer/tools/ReleaseBuild/CredScan.Suppressions.json'
         # TermCheck
