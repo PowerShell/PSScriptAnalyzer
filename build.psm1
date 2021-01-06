@@ -756,3 +756,21 @@ function Copy-CrossCompatibilityModule
         }
     }
 }
+
+# creates the nuget package which can be used for publishing to the gallery
+function Start-CreatePackage
+{
+    try {
+        $repoPath = [io.path]::GetTempPath()
+        $repoName = $repoPath.Replace(([io.path]::DirectorySeparatorChar),$null)
+        $nupkgDir = Join-Path $PSScriptRoot out
+        $repo = Register-PSRepository -Name $repoName -PublishLocation $repoPath -InstallationPolicy Trusted -SourceLocation $repoPath
+        Set-Location $nupkgDir
+        Publish-Module -Path $PWD/PSScriptAnalyzer -Repository $repoName
+        Copy-Item $repoPath/*.nupkg $nupkgDir
+    }
+    finally {
+       Unregister-PSRepository -Name $repoName
+       Remove-Item -Recurse $repoPath -WhatIf
+    }
+}

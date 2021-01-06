@@ -37,7 +37,11 @@ param(
     [switch] $Bootstrap,
 
     [Parameter(ParameterSetName='BuildAll')]
-    [switch] $Catalog
+    [switch] $Catalog,
+
+    [Parameter(ParameterSetName='BuildAll')]
+    [Parameter(ParameterSetName='BuildOne')]
+    [switch] $BuildNupkg
 
 )
 
@@ -92,5 +96,9 @@ END {
         default {
             throw "Unexpected parameter set '$setName'"
         }
+    }
+
+    if ( $BuildNupkg ) {
+        Start-CreatePackage
     }
 }

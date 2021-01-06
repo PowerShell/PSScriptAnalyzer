@@ -1,0 +1,153 @@
+name: PSSA-Release-$(Build.BuildId)
+trigger: none
+
+pr:
+  branches:
+    include:
+    - master
+    - release*
+
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  POWERSHELL_TELEMETRY_OPTOUT: 1
+
+resources:
+  repositories:
+  - repository: ComplianceRepo
+    type: github
+    endpoint: ComplianceGHRepo
+    name: PowerShell/compliance
+    ref: master
+
+stages:
+- stage: Build
+  displayName: Build
+  pool:
+    name: Package ES CodeHub Lab E
+  jobs:
+  - job: Build_Job
+    displayName: Build Microsoft.PowerShell.ScriptAnalyzer
+    variables:
+    - group: ESRP
+    steps:
+    - checkout: self
+
+    - pwsh: |
+        Set-Location "$(Build.SourcesDirectory)/PSScriptAnalyzer"
+        ./build.ps1
+        Get-ChildItem -Recurse -File -Name | Write-Verbose -Verbose
+      displayName: Execute build
+
+    - pwsh: |
+        $signSrcPath = "$(Build.SourcesDirectory)/PSScriptAnalyzer/out"
+        # Set signing src path variable
+        $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
+        $signOutPath = "$(Build.SourcesDirectory)/PSScriptAnalyzer/signed"
+        $null = New-Item -ItemType Directory -Path $signOutPath
+        # Set signing out path variable
+        $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
+        # Set path variable for guardian codesign validation
+        $vstsCommandString = "vso[task.setvariable variable=GDN_CODESIGN_TARGETDIRECTORY]${signOutPath}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
+      displayName: Setup variables for signing
+
+    - checkout: ComplianceRepo
+
+    - template: EsrpSign.yml@ComplianceRepo
+      displayName: "Sign analyzer files"
+      parameters:
+        # the folder which contains the binaries to sign
+        buildOutputPath: $(signSrcPath)
+        # the location to put the signed output
+        signOutputPath: $(signOutPath)
+        # the certificate ID to use
+        certificateId: "CP-230012"
+        # use minimatch because we need to exclude the NewtonSoft assembly
+        useMinimatch: true
+        # the file pattern to use - exclude NewtonSoft
+        pattern: |
+          **\*.psd1
+          **\*.psm1
+          **\*.ps1xml
+          **\Microsoft*.dll
+
+    - template: EsrpSign.yml@ComplianceRepo
+      displayName: "Sign Newtonsoft files with 3rd party cert"
+      parameters:
+        # the folder which contains the binaries to sign
+        buildOutputPath: $(signSrcPath)
+        # the location to put the signed output
+        signOutputPath: $(signOutPath)
+        # the certificate ID to use
+        # we'll need to change this to the 3rd party cert id
+        certificateId: "CP-230012"
+        # the file pattern to use - exclude newtonsoft
+        pattern: 'Newtonsoft*.dll'
+
+    - pwsh: |
+        Set-Location "$(Build.SourcesDirectory)/signed"
+        Get-ChildItem -recurse -file -name | Write-Verbose -Verbose
+      displayName: Copy signed files
+
+    - pwsh: |
+        ./build -BuildNupkg
+      displayName: Create nupkg for publishing
+
+    - publish: "$(signSrcPath)"
+      artifact: build
+      displayName: Publish signed files
+    
+    - publish: "$(Build.SourcesDirectory)/PSScriptAnalyzer/out"
+      artifact: build
+      displayName: publish out directory
+
+- stage: compliance
+  displayName: Compliance
+  dependsOn: Build
+  jobs:
+  - job: Compliance_Job
+    pool:
+      name: Package ES CodeHub Lab E
+    steps:
+    - checkout: self
+    - checkout: ComplianceRepo
+    - download: current
+      artifact: build
+
+    - pwsh: |
+        Get-ChildItem -Path "$(Pipeline.Workspace)\build" -Recurse
+      displayName: Capture downloaded artifacts
+
+    - template: script-module-compliance.yml@ComplianceRepo
+      parameters:
+        # component-governance
+        sourceScanPath: '$(Build.SourcesDirectory)/PSScriptAnalyzer'
+        # credscan
+        suppressionsFile: '$(Build.SourceDirectory)/PSScriptAnalyzer/tools/ReleaseBuild/CredScan.Suppressions.json'
+        # TermCheck
+        optionsRulesDBPath: ''
+        optionsFTPath: ''
+        # tsa-upload
+        codeBaseName: 'PSSA_202004'
+        # selections
+        APIScan: false # set to false when not using Windows APIs.
+
+#- template: template/publish.yml
+#  parameters:
+#    stageName: AzArtifactsFeed
+#    environmentName:
+#    feedCredential:
+
+#- template: template/publish.yml
+#  parameters:
+#    stageName: NuGet
+#    environmentName: PSMarkdownRenderNuGetApproval
+#    feedCredential: NugetOrgPush
