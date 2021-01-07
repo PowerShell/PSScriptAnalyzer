@@ -761,16 +761,14 @@ function Copy-CrossCompatibilityModule
 function Start-CreatePackage
 {
     try {
-        $repoPath = [io.path]::GetTempPath()
-        $repoName = $repoPath.Replace(([io.path]::DirectorySeparatorChar),$null)
+        $repoName = [guid]::NewGuid().ToString()
         $nupkgDir = Join-Path $PSScriptRoot out
-        $repo = Register-PSRepository -Name $repoName -PublishLocation $repoPath -InstallationPolicy Trusted -SourceLocation $repoPath
-        Set-Location $nupkgDir
+        $null = Register-PSRepository -Name $repoName -InstallationPolicy Trusted -SourceLocation $nupkgDir
+        Push-Location $nupkgDir
         Publish-Module -Path $PWD/PSScriptAnalyzer -Repository $repoName
-        Copy-Item $repoPath/*.nupkg $nupkgDir
     }
     finally {
+       Pop-Location
        Unregister-PSRepository -Name $repoName
-       Remove-Item -Recurse $repoPath -WhatIf
     }
 }

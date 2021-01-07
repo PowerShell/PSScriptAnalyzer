@@ -39,8 +39,7 @@ param(
     [Parameter(ParameterSetName='BuildAll')]
     [switch] $Catalog,
 
-    [Parameter(ParameterSetName='BuildAll')]
-    [Parameter(ParameterSetName='BuildOne')]
+    [Parameter(ParameterSetName='Package')]
     [switch] $BuildNupkg
 
 )
@@ -89,6 +88,9 @@ END {
             Install-DotNet
             return
         }
+        "Package" {
+            Start-CreatePackage
+        }
         "Test" {
             Test-ScriptAnalyzer -InProcess:$InProcess
             return
@@ -96,9 +98,5 @@ END {
         default {
             throw "Unexpected parameter set '$setName'"
         }
-    }
-
-    if ( $BuildNupkg ) {
-        Start-CreatePackage
     }
 }
