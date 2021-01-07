@@ -708,7 +708,13 @@ function Get-DotnetExe
     Write-Warning "Could not find dotnet executable"
     return [String]::Empty
 }
-$script:DotnetExe = Get-DotnetExe
+
+try {
+    $script:DotnetExe = Get-DotnetExe
+}
+catch {
+    Write-Warning "Could not find dotnet executable"
+}
 
 # Copies the built PSCompatibilityCollector module to the output destination for PSSA
 function Copy-CrossCompatibilityModule
