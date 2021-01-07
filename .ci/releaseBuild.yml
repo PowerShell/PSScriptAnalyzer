@@ -97,6 +97,7 @@ stages:
       displayName: Copy signed files
 
     - pwsh: |
+        Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
         ./build -BuildNupkg
       displayName: Create nupkg for publishing
 
