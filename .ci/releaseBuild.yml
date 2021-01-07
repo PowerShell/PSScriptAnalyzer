@@ -131,7 +131,7 @@ stages:
         # component-governance
         sourceScanPath: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA'
         # credscan
-        suppressionsFile: '$(Build.SourceDirectory)/PSScriptAnalyzer/tools/ReleaseBuild/CredScan.Suppressions.json'
+        suppressionsFile: '$(Build.SourceDirectory)/OSS_Microsoft_PSSA/tools/ReleaseBuild/CredScan.Suppressions.json'
         # TermCheck
         optionsRulesDBPath: ''
         optionsFTPath: ''
