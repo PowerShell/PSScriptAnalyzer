@@ -92,7 +92,7 @@ stages:
         pattern: 'Newtonsoft*.dll'
 
     - pwsh: |
-        Set-Location "$(Build.SourcesDirectory)/signed"
+        Set-Location "$(Build.SourcesDirectory)"
         Get-ChildItem -recurse -file -name | Write-Verbose -Verbose
       displayName: Copy signed files
 
