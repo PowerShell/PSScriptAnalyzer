@@ -36,7 +36,7 @@ stages:
         Get-Location | out-string
         Get-ChildItem | out-string
         Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
-        try { ./build.ps1 -Configuration Release } catch { throw $_ } finally { Get-ChildItem -Recurse -File -Name | Write-Verbose -Verbose }
+        try { ./build.ps1 -Configuration Release -All } catch { throw $_ } finally { Get-ChildItem -Recurse -File -Name | Write-Verbose -Verbose }
       displayName: Execute build
 
     - pwsh: |
@@ -72,7 +72,7 @@ stages:
         certificateId: "CP-230012"
         # use minimatch because we need to exclude the NewtonSoft assembly
         useMinimatch: true
-        # the file pattern to use - exclude NewtonSoft
+        # the file pattern to use - newtonSoft is excluded
         pattern: |
           **\*.psd1
           **\*.psm1
@@ -87,8 +87,8 @@ stages:
         signOutputPath: $(signOutPath)
         # the certificate ID to use
         # we'll need to change this to the 3rd party cert id
-        certificateId: "CP-230012"
-        # the file pattern to use - exclude newtonsoft
+        certificateId: "CP-231522"
+        # the file pattern to use - only sign newtonsoft
         pattern: 'Newtonsoft*.dll'
 
     - pwsh: |
