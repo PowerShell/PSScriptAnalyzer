@@ -766,9 +766,16 @@ function Copy-CrossCompatibilityModule
 # creates the nuget package which can be used for publishing to the gallery
 function Start-CreatePackage
 {
+    param ( [switch]$signed )
     try {
+        if ( $signed ) {
+            $buildRoot = "signed"
+        }
+        else {
+            $buildRoot = "out"
+        }
         $repoName = [guid]::NewGuid().ToString()
-        $nupkgDir = Join-Path $PSScriptRoot out
+        $nupkgDir = Join-Path $PSScriptRoot $buildRoot
         $null = Register-PSRepository -Name $repoName -InstallationPolicy Trusted -SourceLocation $nupkgDir
         Push-Location $nupkgDir
         Publish-Module -Path $PWD/PSScriptAnalyzer -Repository $repoName

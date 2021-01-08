@@ -40,7 +40,10 @@ param(
     [switch] $Catalog,
 
     [Parameter(ParameterSetName='Package')]
-    [switch] $BuildNupkg
+    [switch] $BuildNupkg,
+
+    [Parameter(ParameterSetName='Package')]
+    [switch] $Signed
 
 )
 
@@ -89,7 +92,7 @@ END {
             return
         }
         "Package" {
-            Start-CreatePackage
+            Start-CreatePackage -signed:$Signed
         }
         "Test" {
             Test-ScriptAnalyzer -InProcess:$InProcess

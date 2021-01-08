@@ -101,6 +101,10 @@ stages:
         ./build -BuildNupkg
       displayName: Create nupkg for publishing
 
+    - publish: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+      artifact: build
+      displayName: publish build directory
+
     - publish: "$(signSrcPath)"
       artifact: build
       displayName: Publish signed files
