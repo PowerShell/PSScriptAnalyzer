@@ -134,7 +134,7 @@ stages:
         # component-governance
         sourceScanPath: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA'
         # binskim
-        AnalyzeTarget: '$(Pipeline.Workspace)\build\PSScriptAnalyzer'
+        AnalyzeTarget: '$(Pipeline.Workspace)\build'
         # credscan
         suppressionsFile: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/tools/ReleaseBuild/CredScan.Suppressions.json'
         # TermCheck
