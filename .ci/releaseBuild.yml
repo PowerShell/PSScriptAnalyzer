@@ -98,21 +98,18 @@ stages:
 
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
-        ./build -BuildNupkg
+        ./build -BuildNupkg -signed
       displayName: Create nupkg for publishing
 
     - publish: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
       artifact: build
       displayName: publish build directory
 
-    - publish: "$(signSrcPath)"
+      # the signed files are the files used to create the nupkg
+    - publish: "$(signOutPath)"
       artifact: build
       displayName: Publish signed files
     
-    - publish: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
-      artifact: build
-      displayName: publish out directory
-
 - stage: compliance
   displayName: Compliance
   dependsOn: Build

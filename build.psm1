@@ -774,6 +774,7 @@ function Start-CreatePackage
         else {
             $buildRoot = "out"
         }
+        wait-debugger
         $repoName = [guid]::NewGuid().ToString()
         $nupkgDir = Join-Path $PSScriptRoot $buildRoot
         $null = Register-PSRepository -Name $repoName -InstallationPolicy Trusted -SourceLocation $nupkgDir
