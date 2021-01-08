@@ -79,17 +79,17 @@ stages:
           **\*.ps1xml
           **\Microsoft*.dll
 
-    - template: EsrpSign.yml@ComplianceRepo
-      parameters:
-        # the folder which contains the binaries to sign
-        buildOutputPath: $(signSrcPath)
-        # the location to put the signed output
-        signOutputPath: $(signOutPath)
-        # the certificate ID to use
-        # we'll need to change this to the 3rd party cert id
-        certificateId: "CP-231522"
-        # the file pattern to use - only sign newtonsoft
-        pattern: 'Newtonsoft*.dll'
+#    - template: EsrpSign.yml@ComplianceRepo
+#      parameters:
+#        # the folder which contains the binaries to sign
+#        buildOutputPath: $(signSrcPath)
+#        # the location to put the signed output
+#        signOutputPath: $(signOutPath)
+#        # the certificate ID to use
+#        # we'll need to change this to the 3rd party cert id
+#        certificateId: "CP-231522"
+#        # the file pattern to use - only sign newtonsoft
+#        pattern: 'Newtonsoft*.dll'
 
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)"
