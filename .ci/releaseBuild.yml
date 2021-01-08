@@ -115,7 +115,7 @@ stages:
       displayName: Publish signed files
 
       # publish separately the nuget package
-    - publish: "$(signOutPath)\*.nupkg"
+    - publish: "$(signOutPath)/*.nupkg"
       artifact: module
       displayName: Publish module nupkg
     
