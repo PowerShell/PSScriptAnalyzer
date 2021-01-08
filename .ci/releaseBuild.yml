@@ -107,7 +107,7 @@ stages:
 
       # the signed files are the files used to create the nupkg
     - publish: "$(signOutPath)"
-      artifact: build
+      artifact: signed
       displayName: Publish signed files
     
 - stage: compliance
