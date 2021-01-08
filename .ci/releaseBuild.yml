@@ -94,7 +94,7 @@ stages:
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)"
         Get-ChildItem -recurse -file -name | Write-Verbose -Verbose
-      displayName: Copy signed files
+      displayName: get file list
 
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
@@ -105,9 +105,9 @@ stages:
       artifact: build
       displayName: publish build directory
 
-    - publish: "$(System.ArtifactsDirectory)/signed"
-      artifact: signedartifacts
-      displayName: publish signed artifacts
+    - publish: "$(System.ArtifactsDirectory)"
+      artifact: artifacts
+      displayName: publish artifacts
 
       # the signed files are the files used to create the nupkg
     - publish: "$(signOutPath)"
