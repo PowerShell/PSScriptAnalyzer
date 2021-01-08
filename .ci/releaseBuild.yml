@@ -105,10 +105,19 @@ stages:
       artifact: build
       displayName: publish build directory
 
+    - publish: "$(System.ArtifactsDirectory)/signed"
+      artifact: signedartifacts
+      displayName: publish signed artifacts
+
       # the signed files are the files used to create the nupkg
     - publish: "$(signOutPath)"
       artifact: signed
       displayName: Publish signed files
+
+      # publish separately the nuget package
+    - publish: "$(signOutPath)\*.nupkg"
+      artifact: module
+      displayName: Publish module nupkg
     
 - stage: compliance
   displayName: Compliance
