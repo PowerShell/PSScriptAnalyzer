@@ -46,6 +46,13 @@ stages:
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
 
+        $signOutStep1 = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Step1"
+        $null = New-Item -ItemType Directory -Path $signOutStep1
+        # Set signing out path variable
+        $vstsCommandString = "vso[task.setvariable variable=signOutStep1]${signOutStep1}"
+        Write-Host "sending " + $vstsCommandString
+        Write-Host "##$vstsCommandString"
+
         $signOutPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/signed"
         $null = New-Item -ItemType Directory -Path $signOutPath
         # Set signing out path variable
@@ -67,7 +74,7 @@ stages:
         # the folder which contains the binaries to sign
         buildOutputPath: $(signSrcPath)
         # the location to put the signed output
-        signOutputPath: $(signOutPath)
+        signOutputPath: $(signOutStep1)
         # the certificate ID to use
         certificateId: "CP-230012"
         # use minimatch because we need to exclude the NewtonSoft assembly
@@ -79,19 +86,17 @@ stages:
           **\*.ps1xml
           **\Microsoft*.dll
 
-#    - template: EsrpSign.yml@ComplianceRepo
-#      parameters:
-#        # the folder which contains the binaries to sign
-#        buildOutputPath: $(signSrcPath)
-#        # the location to put the signed output
-#        signOutputPath: $(signOutPath)
-#        # the certificate ID to use
-#        # we'll need to change this to the 3rd party cert id
-#        certificateId: "CP-231522"
-#        # the file pattern to use - only sign newtonsoft
-#        pattern: 'Newtonsoft*.dll'
-#        # don't copy the unsigned files
-#        alwaysCopy: false
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+        # the folder which contains the binaries to sign
+        buildOutputPath: $(signOutStep1)
+        # the location to put the signed output
+        signOutputPath: $(signOutPath)
+        # the certificate ID to use
+        # we'll need to change this to the 3rd party cert id
+        certificateId: "CP-231522"
+        # the file pattern to use - only sign newtonsoft
+        pattern: 'Newtonsoft*.dll'
 
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)"
