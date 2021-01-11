@@ -33,10 +33,8 @@ stages:
     - checkout: self
 
     - pwsh: |
-        Get-Location | out-string
-        Get-ChildItem | out-string
         Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
-        try { ./build.ps1 -Configuration Release -All } catch { throw $_ } finally { Get-ChildItem -Recurse -File -Name | Write-Verbose -Verbose }
+        try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
       displayName: Execute build
 
     - pwsh: |
@@ -99,11 +97,6 @@ stages:
         pattern: 'Newtonsoft*.dll'
 
     - pwsh: |
-        Set-Location "$(Build.SourcesDirectory)"
-        Get-ChildItem -recurse -file -name | Write-Verbose -Verbose
-      displayName: get file list
-
-    - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
         ./build -BuildNupkg -signed
       displayName: Create nupkg for publishing
@@ -112,14 +105,10 @@ stages:
       artifact: build
       displayName: publish build directory
 
-    - publish: "$(System.ArtifactsDirectory)"
-      artifact: artifacts
-      displayName: publish artifacts
-
       # the signed files are the files used to create the nupkg
-    - publish: "$(signOutPath)"
-      artifact: signed
-      displayName: Publish signed files
+    - publish: "$(signOutPath)/**/*.nupkg"
+      artifact: nupkg
+      displayName: Publish signed nupkg
 
 - stage: compliance
   displayName: Compliance
