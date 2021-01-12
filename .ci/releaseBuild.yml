@@ -66,7 +66,7 @@ stages:
         # Get version and create a variable
         $moduleData = Import-PowerShellDataFile "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Engine/PSScriptAnalyzer.psd1"
         $moduleVersion = $moduleData.ModuleVersion
-        $vstsCommandString = "vso[task.setvariable variable variable=moduleVersion]${moduleVersion}"
+        $vstsCommandString = "vso[task.setvariable variable=moduleVersion]${moduleVersion}"
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
 
