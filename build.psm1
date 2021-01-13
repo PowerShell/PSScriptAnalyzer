@@ -766,6 +766,7 @@ function Copy-CrossCompatibilityModule
 # creates the nuget package which can be used for publishing to the gallery
 function Start-CreatePackage
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
     param ( [switch]$signed )
     try {
         if ( $signed ) {
