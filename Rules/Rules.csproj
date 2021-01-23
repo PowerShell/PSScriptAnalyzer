@@ -7,7 +7,7 @@
     <AssemblyVersion>1.19.1</AssemblyVersion>
     <PackageId>Rules</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle> <!-- Needed in order for PluralizeService.Core to appear in bin folder - https://github.com/NuGet/Home/issues/4488 -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies> <!-- Needed in order for PluralizeService.Core to appear in bin folder - https://github.com/NuGet/Home/issues/4488 -->
   </PropertyGroup>
 
   <ItemGroup>
