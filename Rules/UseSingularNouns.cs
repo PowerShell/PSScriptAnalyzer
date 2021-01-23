@@ -55,7 +55,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             char[] funcSeperator = { '-' };
             string[] funcNamePieces = new string[2];
-            var usCultureInfo = new CultureInfo("en-US");
+            var usCultureInfo = CultureInfo.GetCultureInfo("en-us");
 #if !CORECLR
                     var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(usCultureInfo);
 #else
