@@ -15,7 +15,7 @@ BeforeAll {
 }
 
 # UseSingularNouns rule doesn't exist in the non desktop version of PSScriptAnalyzer due to missing .Net Pluralization API
-Describe "UseSingularNouns" -Skip:$IsCoreCLR {
+Describe "UseSingularNouns" {
     Context "When there are violations" {
         It "has a cmdlet singular noun violation" {
             $nounViolations.Count | Should -Be 1
