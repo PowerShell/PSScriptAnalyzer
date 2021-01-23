@@ -270,12 +270,7 @@ Describe "Test IncludeRule" {
         }
 
         It "includes the given rules" {
-            # CoreCLR version of PSScriptAnalyzer does not contain PSUseSingularNouns rule
             $expectedNumViolations = 2
-            if ($IsCoreCLR)
-            {
-                $expectedNumViolations = 1
-            }
             $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $rules
             $violations.Count | Should -Be $expectedNumViolations
         }
@@ -295,12 +290,7 @@ Describe "Test IncludeRule" {
         }
 
         It "includes 2 wildcardrules" {
-            # CoreCLR version of PSScriptAnalyzer does not contain PSUseSingularNouns rule
             $expectedNumViolations = 4
-            if ($IsCoreCLR)
-            {
-                $expectedNumViolations = 3
-            }
             $includeWildcard = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
             $includeWildcard += Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $useRules
             $includeWildcard.Count | Should -Be $expectedNumViolations
