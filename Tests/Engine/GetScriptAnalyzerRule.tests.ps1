@@ -64,14 +64,11 @@ Describe "Test Name parameters" {
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
             $expectedNumRules = 65
-            if ($IsCoreCLR -or ($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4))
+            if (($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4))
             {
                 # for PSv3 PSAvoidGlobalAliases is not shipped because
                 # it uses StaticParameterBinder.BindCommand which is
                 # available only on PSv4 and above
-                # for PowerShell Core, PSUseSingularNouns is not
-                # shipped because it uses APIs that are not present
-                # in dotnet core.
 
                 $expectedNumRules--
             }
