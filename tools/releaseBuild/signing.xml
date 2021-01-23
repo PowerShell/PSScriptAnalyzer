@@ -24,6 +24,7 @@
     <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.1\PSv7\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.1\PSv7\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />
     <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.1\PSv7\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.1\PSv7\Microsoft.Windows.PowerShell.ScriptAnalyzer.dll" />
     <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.1\PSv7\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.1\PSv7\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.1\PSv7\PluralizeService.Core.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.1\PSv7\PluralizeService.Core.dll" />
  </job>
  <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Script Analyzer PSv3" approvers="vigarg;gstolt">
     <file src="__INPATHROOT__\out\PSScriptAnalyzer\1.19.1\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSScriptAnalyzer\1.19.1\PSv3\Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules.dll" />

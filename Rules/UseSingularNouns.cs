@@ -15,7 +15,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+#if !CORECLR
 using System.ComponentModel.Composition;
+#else
+using PluralizationService;
+using PluralizationService.English;
+#endif
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -25,8 +30,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     /// CmdletSingularNoun: Analyzes scripts to check that all defined cmdlets use singular nouns.
     /// 
     /// </summary>
-    [Export(typeof(IScriptRule))]
-    public class CmdletSingularNoun : IScriptRule {
+#if !CORECLR
+[Export(typeof(IScriptRule))]
+#endif
+    public class CmdletSingularNoun : IScriptRule
+    {
 
         private readonly string[] nounAllowList =
         {
@@ -39,13 +47,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName) {
+        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        {
             if (ast == null) throw new ArgumentNullException(Strings.NullCommandInfoError);
 
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
             char[] funcSeperator = { '-' };
             string[] funcNamePieces = new string[2];
+            var usCultureInfo = new CultureInfo("en-US");
+#if !CORECLR
+                    var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(usCultureInfo);
+#else
+            var pluralizationApiBuilder = new PluralizationService.PluralizationApiBuilder();
+            pluralizationApiBuilder.AddEnglishProvider();
+            IPluralizationApi pluralizationService = pluralizationApiBuilder.Build();
+#endif
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
@@ -57,15 +74,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     // Convert the noun part of the function into a series of space delimited words
                     // This helps the PluralizationService to provide an accurate determination about the plurality of the string
                     nounPart = SplitCamelCaseString(nounPart);
-                    var words = nounPart.Split(new char [] { ' ' });
+                    var words = nounPart.Split(new char[] { ' ' });
                     var noun = words.LastOrDefault();
                     if (noun == null)
                     {
                         continue;
                     }
-                    var ps = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
 
-                    if (!ps.IsSingular(noun) && ps.IsPlural(noun))
+#if !CORECLR
+                    if (!pluralizationService.IsSingular(noun) && pluralizationService.IsPlural(noun))
+#else
+                    if (!pluralizationService.IsSingular(noun, usCultureInfo) && pluralizationService.IsPlural(noun, usCultureInfo))
+#endif
                     {
                         IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
                         if (nounAllowList.Contains(noun, StringComparer.OrdinalIgnoreCase))
@@ -106,7 +126,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription() {
+        public string GetDescription()
+        {
             return string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsDescription);
         }
 
