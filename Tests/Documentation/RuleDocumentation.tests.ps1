@@ -15,14 +15,8 @@ Describe "Validate rule documentation files" {
             }} |
             Sort-Object
 
-        # Remove rules from the diff list that aren't supported on PSCore
-        if (($PSVersionTable.PSVersion.Major -ge 6) -and ($PSVersionTable.PSEdition -eq "Core"))
-        {
-            $RulesNotSupportedInNetstandard2 = @("PSUseSingularNouns")
-            $docs = $docs | Where-Object {$RulesNotSupportedInNetstandard2 -notcontains $_}
-            $readmeRules = $readmeRules | Where-Object { $RulesNotSupportedInNetstandard2 -notcontains $_ }
-        }
-        elseif ($PSVersionTable.PSVersion.Major -eq 4) {
+        # Remove rules from the diff list that aren't supported on old PS version
+        if ($PSVersionTable.PSVersion.Major -eq 4) {
             $docs = $docs | Where-Object {$_ -notmatch '^PSAvoidGlobalAliases$'}
             $readmeRules = $readmeRules | Where-Object { $_ -notmatch '^PSAvoidGlobalAliases$' }
         }
