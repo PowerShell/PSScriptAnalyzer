@@ -17,6 +17,7 @@ function Install-Pester {
             Write-Verbose -Verbose "Installing Pester via Install-Module"
             Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery
         }
+        Write-Verbose -Verbose "Installed Pester"
     }
 }
 
@@ -31,7 +32,7 @@ function Invoke-AppVeyorInstall {
     $jobs = @()
 
     Write-Verbose -Verbose "test1"
-    if (-not $SkipPesterInstallation.IsPresent) { $jobs += Start-Job $Function:Install-Pester }
+    if (-not $SkipPesterInstallation.IsPresent) { $jobs += Start-Job -ScriptBlock $Function:Install-Pester }
 
     Write-Verbose -Verbose "test2"
     $jobs += Start-Job {
@@ -44,6 +45,7 @@ function Invoke-AppVeyorInstall {
             Write-Verbose -Verbose "Installing platyPS via Install-Module"
             Install-Module -Name platyPS -Force -Scope CurrentUser -Repository PSGallery
         }
+        Write-Verbose -Verbose "Installed platyPS"
     }
 
     Write-Verbose -Verbose "test3"
@@ -79,6 +81,7 @@ function Invoke-AppVeyorInstall {
                 [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
                 Remove-Item .\dotnet-install.*
             }
+            Write-Verbose -Verbose "Installed required .Net CORE SDK"
         }
     }
 
