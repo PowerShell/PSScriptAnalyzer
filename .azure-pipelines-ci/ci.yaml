@@ -10,7 +10,7 @@ stages:
           vmImage: windows-latest
         steps:
         - checkout: self
-          fetchDepth: 1
+          fetchDepth: 5
         - pwsh: |
             Import-Module .\tools\appveyor.psm1
             Invoke-AppveyorInstall -SkipPesterInstallation
@@ -52,4 +52,6 @@ stages:
         pool:
           vmImage: $[ variables['vmImage'] ]
         steps:
+        - checkout: self
+          fetchDepth: 5
         - template: templates/test-powershell.yaml
