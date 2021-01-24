@@ -17,7 +17,7 @@ function Install-Pester {
             Write-Verbose -Verbose "Installing Pester via Install-Module"
             Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery
         }
-        Write-Verbose -Verbose "Installed Pester"
+        Write-Verbose -Verbose 'Installed Pester'
     }
 }
 
@@ -28,13 +28,11 @@ function Invoke-AppVeyorInstall {
         [switch] $SkipPesterInstallation
     )
 
-    Write-Verbose -Verbose "Bootstrapping build dependencies"
+    Write-Verbose -Verbose 'Bootstrapping build dependencies'
     $jobs = @()
 
-    Write-Verbose -Verbose "test1"
     if (-not $SkipPesterInstallation.IsPresent) { $jobs += Start-Job ${Function:Install-Pester} }
 
-    Write-Verbose -Verbose "test2"
     $jobs += Start-Job {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
             # WMF 4 image build
@@ -45,10 +43,9 @@ function Invoke-AppVeyorInstall {
             Write-Verbose -Verbose "Installing platyPS via Install-Module"
             Install-Module -Name platyPS -Force -Scope CurrentUser -Repository PSGallery
         }
-        Write-Verbose -Verbose "Installed platyPS"
+        Write-Verbose -Verbose 'Installed platyPS'
     }
 
-    Write-Verbose -Verbose "test3"
     $jobs += Start-Job  {
         # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
         Write-Verbose -Verbose "Installing required .Net CORE SDK"
@@ -70,7 +67,6 @@ function Invoke-AppVeyorInstall {
                 if ($IsLinux -or $isMacOS) {
                     Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
                     bash dotnet-install.sh --version $requiredDotNetCoreSDKVersion
-                    [System.Environment]::SetEnvironmentVariable('PATH', "/home/appveyor/.dotnet$([System.IO.Path]::PathSeparator)$PATH")
                 }
                 else {
                     Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
@@ -81,9 +77,11 @@ function Invoke-AppVeyorInstall {
                 [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
                 Remove-Item .\dotnet-install.*
             }
-            Write-Verbose -Verbose "Installed required .Net CORE SDK"
+            Write-Verbose -Verbose 'Installed required .Net CORE SDK'
         }
     }
+    # Set PATH variable (which has to happen outside of a PSJob)
+    [System.Environment]::SetEnvironmentVariable('PATH', "/home/appveyor/.dotnet$([System.IO.Path]::PathSeparator)$PATH")
 
     Wait-Job $jobs | Receive-Job
     $jobs | ForEach-Object {
