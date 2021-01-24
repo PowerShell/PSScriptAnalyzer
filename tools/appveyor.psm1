@@ -30,8 +30,10 @@ function Invoke-AppVeyorInstall {
     Write-Verbose -Verbose "Bootstrapping build dependencies"
     $jobs = @()
 
+    Write-Verbose -Verbose "test1"
     if (-not $SkipPesterInstallation.IsPresent) { $jobs += Start-Job $Function:Install-Pester }
 
+    Write-Verbose -Verbose "test2"
     $jobs += Start-Job {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
             # WMF 4 image build
@@ -44,6 +46,7 @@ function Invoke-AppVeyorInstall {
         }
     }
 
+    Write-Verbose -Verbose "test3"
     $jobs += Start-Job  {
         # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
         Write-Verbose -Verbose "Installing required .Net CORE SDK"
