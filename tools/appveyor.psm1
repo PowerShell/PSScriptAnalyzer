@@ -27,6 +27,7 @@ function Invoke-AppVeyorInstall {
         [switch] $SkipPesterInstallation
     )
 
+    Write-Verbose -Verbose "Bootstrapping build dependencies"
     $jobs = @()
 
     if (-not $SkipPesterInstallation.IsPresent) { $jobs += Start-Job $Function:Install-Pester }
@@ -47,7 +48,7 @@ function Invoke-AppVeyorInstall {
         # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
         Write-Verbose -Verbose "Installing required .Net CORE SDK"
         # the legacy WMF4 image only has the old preview SDKs of dotnet
-        $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
+        $globalDotJson = Get-Content (Join-Path $using:PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
         $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
         if ($PSVersionTable.PSVersion.Major -gt 4) {
             $requiredDotNetCoreSDKVersionPresent = (dotnet --list-sdks) -match $requiredDotNetCoreSDKVersion
