@@ -32,7 +32,7 @@ function Invoke-AppVeyorInstall {
     $jobs = @()
 
     Write-Verbose -Verbose "test1"
-    if (-not $SkipPesterInstallation.IsPresent) { $jobs += Start-Job -ScriptBlock ${Function:Install-Pester} }
+    if (-not $SkipPesterInstallation.IsPresent) { $jobs += Start-Job ${Function:Install-Pester} }
 
     Write-Verbose -Verbose "test2"
     $jobs += Start-Job {
