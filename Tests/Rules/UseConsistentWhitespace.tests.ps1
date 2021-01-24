@@ -68,6 +68,10 @@ if ($true)
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
+        It 'Should not find a violation if an open paren is before an opening brace' {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$ast.Find({ $oneAst -is [TypeExpressionAst] })' -Settings $settings |
+                Should -BeNullOrEmpty
+        }
     }
 
     Context "When a parenthesis follows a keyword" {
