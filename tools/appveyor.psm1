@@ -27,48 +27,63 @@ function Invoke-AppVeyorInstall {
         [switch] $SkipPesterInstallation
     )
 
-    if (-not $SkipPesterInstallation.IsPresent) { Install-Pester }
+    $jobs = @()
 
-    if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
-        # WMF 4 image build
-        Write-Verbose -Verbose "Installing platyPS via nuget"
-        nuget install platyPS -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
-    }
-    else {
-        Write-Verbose -Verbose "Installing platyPS via Install-Module"
-        Install-Module -Name platyPS -Force -Scope CurrentUser -Repository PSGallery
+    $jobs += {
+        if (-not $SkipPesterInstallation.IsPresent) { Install-Pester }
     }
 
-    # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
-    Write-Verbose -Verbose "Installing required .Net CORE SDK"
-    # the legacy WMF4 image only has the old preview SDKs of dotnet
-    $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
-    $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
-    if ($PSVersionTable.PSVersion.Major -gt 4) {
-        $requiredDotNetCoreSDKVersionPresent = (dotnet --list-sdks) -match $requiredDotNetCoreSDKVersion
+    $jobs += {
+        if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
+            # WMF 4 image build
+            Write-Verbose -Verbose "Installing platyPS via nuget"
+            nuget install platyPS -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+        }
+        else {
+            Write-Verbose -Verbose "Installing platyPS via Install-Module"
+            Install-Module -Name platyPS -Force -Scope CurrentUser -Repository PSGallery
+        }
     }
-    else {
-        # WMF 4 image has old SDK that does not have --list-sdks parameter
-        $requiredDotNetCoreSDKVersionPresent = (dotnet --version).StartsWith($requiredDotNetCoreSDKVersion)
-    }
-    if (-not $requiredDotNetCoreSDKVersionPresent) {
-        Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
-        $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
-        try {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-            if ($IsLinux -or $isMacOS) {
-                Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
-                bash dotnet-install.sh --version $requiredDotNetCoreSDKVersion
-                [System.Environment]::SetEnvironmentVariable('PATH', "/home/appveyor/.dotnet$([System.IO.Path]::PathSeparator)$PATH")
+
+    $jobs += {
+        # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
+        Write-Verbose -Verbose "Installing required .Net CORE SDK"
+        # the legacy WMF4 image only has the old preview SDKs of dotnet
+        $globalDotJson = Get-Content (Join-Path $PSScriptRoot '..\global.json') -Raw | ConvertFrom-Json
+        $requiredDotNetCoreSDKVersion = $globalDotJson.sdk.version
+        if ($PSVersionTable.PSVersion.Major -gt 4) {
+            $requiredDotNetCoreSDKVersionPresent = (dotnet --list-sdks) -match $requiredDotNetCoreSDKVersion
+        }
+        else {
+            # WMF 4 image has old SDK that does not have --list-sdks parameter
+            $requiredDotNetCoreSDKVersionPresent = (dotnet --version).StartsWith($requiredDotNetCoreSDKVersion)
+        }
+        if (-not $requiredDotNetCoreSDKVersionPresent) {
+            Write-Verbose -Verbose "Installing required .Net CORE SDK $requiredDotNetCoreSDKVersion"
+            $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
+            try {
+                [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+                if ($IsLinux -or $isMacOS) {
+                    Invoke-WebRequest 'https://dot.net/v1/dotnet-install.sh' -OutFile dotnet-install.sh
+                    bash dotnet-install.sh --version $requiredDotNetCoreSDKVersion
+                    [System.Environment]::SetEnvironmentVariable('PATH', "/home/appveyor/.dotnet$([System.IO.Path]::PathSeparator)$PATH")
+                }
+                else {
+                    Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
+                    .\dotnet-install.ps1 -Version $requiredDotNetCoreSDKVersion
+                }
             }
-            else {
-                Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile dotnet-install.ps1
-                .\dotnet-install.ps1 -Version $requiredDotNetCoreSDKVersion
+            finally {
+                [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
+                Remove-Item .\dotnet-install.*
             }
         }
-        finally {
-            [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
-            Remove-Item .\dotnet-install.*
+    }
+
+    Start-Job $jobs | Wait-Job | Receive-Job
+    $jobs | ForEach-Object {
+        if ($_.State -eq 'Failed') {
+            throw 'Bootstrapping failed, see job logs above'
         }
     }
 }
