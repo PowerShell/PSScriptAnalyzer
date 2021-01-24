@@ -29,11 +29,11 @@ function Invoke-AppVeyorInstall {
 
     $jobs = @()
 
-    $jobs += {
+    $jobs += Start-Job {
         if (-not $SkipPesterInstallation.IsPresent) { Install-Pester }
     }
 
-    $jobs += {
+    $jobs += Start-Job {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
             # WMF 4 image build
             Write-Verbose -Verbose "Installing platyPS via nuget"
@@ -45,7 +45,7 @@ function Invoke-AppVeyorInstall {
         }
     }
 
-    $jobs += {
+    $jobs += Start-Job  {
         # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
         Write-Verbose -Verbose "Installing required .Net CORE SDK"
         # the legacy WMF4 image only has the old preview SDKs of dotnet
@@ -80,7 +80,7 @@ function Invoke-AppVeyorInstall {
         }
     }
 
-    Start-Job $jobs | Wait-Job | Receive-Job
+    Wait-Job $jobs | Receive-Job
     $jobs | ForEach-Object {
         if ($_.State -eq 'Failed') {
             throw 'Bootstrapping failed, see job logs above'
