@@ -29,9 +29,7 @@ function Invoke-AppVeyorInstall {
 
     $jobs = @()
 
-    $jobs += Start-Job {
-        if (-not $SkipPesterInstallation.IsPresent) { Install-Pester }
-    }
+    if (-not $SkipPesterInstallation.IsPresent) { $jobs += Start-Job $Function:Install-Pester }
 
     $jobs += Start-Job {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
