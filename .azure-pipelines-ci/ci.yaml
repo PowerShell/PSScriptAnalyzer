@@ -26,6 +26,8 @@ stages:
               vmImage: ubuntu-16.04
             Ubuntu_18_04:
               vmImage: ubuntu-18.04
+            Ubuntu_20_04:
+              vmImage: ubuntu-20.04
             macOS_10_14_Mojave:
               vmImage: macOS-10.14
             macOS_10_15_Catalina:
