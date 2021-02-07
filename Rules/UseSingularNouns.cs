@@ -18,8 +18,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #else
-using PluralizationService;
-using PluralizationService.English;
+using Pluralize.NET;
 #endif
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -55,13 +54,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             char[] funcSeperator = { '-' };
             string[] funcNamePieces = new string[2];
-            var usCultureInfo = CultureInfo.GetCultureInfo("en-us");
+            
 #if !CORECLR
-                    var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(usCultureInfo);
+            var usCultureInfo = CultureInfo.GetCultureInfo("en-us");
+            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(usCultureInfo);
 #else
-            var pluralizationApiBuilder = new PluralizationService.PluralizationApiBuilder();
-            pluralizationApiBuilder.AddEnglishProvider();
-            IPluralizationApi pluralizationService = pluralizationApiBuilder.Build();
+            var pluralizationService = new Pluralizer();
 #endif
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
@@ -84,7 +82,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
                     if (!pluralizationService.IsSingular(noun) && pluralizationService.IsPlural(noun))
 #else
-                    if (!pluralizationService.IsSingular(noun, usCultureInfo) && pluralizationService.IsPlural(noun, usCultureInfo))
+                    if (!pluralizationService.IsSingular(noun) && pluralizationService.IsPlural(noun))
 #endif
                     {
                         IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
