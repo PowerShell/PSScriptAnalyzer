@@ -321,7 +321,7 @@ function Start-ScriptAnalyzerBuild
             Copy-Item -path $nsoft -Destination $destinationDirBinaries
         }
         else {
-            Copy-Item -Path (Join-Path $rulesProjectOutputDir 'PluralizeService.Core.dll') -Destination $destinationDirBinaries
+            Copy-Item -Path (Join-Path $rulesProjectOutputDir 'Pluralize.NET.dll') -Destination $destinationDirBinaries
         }
 
         Pop-Location
