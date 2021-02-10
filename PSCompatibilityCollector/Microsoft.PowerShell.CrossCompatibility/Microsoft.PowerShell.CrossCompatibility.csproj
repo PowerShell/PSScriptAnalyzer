@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.19.2</VersionPrefix>
+    <VersionPrefix>1.20.0</VersionPrefix>
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
-    <AssemblyVersion>1.19.2</AssemblyVersion>
+    <AssemblyVersion>1.20.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
