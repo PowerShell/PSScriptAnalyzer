@@ -109,7 +109,7 @@ Describe "Settings Class" {
             $settingsHashtable = @{
                 Rules = @{
                     PSAvoidUsingCmdletAliases = @{
-                        WhiteList = @("cd", "cp")
+                        allowlist = @("cd", "cp")
                     }
                 }
             }
@@ -117,15 +117,15 @@ Describe "Settings Class" {
         }
 
         It "Should return the rule arguments" {
-            $settings.RuleArguments["PSAvoidUsingCmdletAliases"]["WhiteList"].Count | Should -Be 2
-            $settings.RuleArguments["PSAvoidUsingCmdletAliases"]["WhiteList"][0] | Should -Be "cd"
-            $settings.RuleArguments["PSAvoidUsingCmdletAliases"]["WhiteList"][1] | Should -Be "cp"
+            $settings.RuleArguments["PSAvoidUsingCmdletAliases"]["allowlist"].Count | Should -Be 2
+            $settings.RuleArguments["PSAvoidUsingCmdletAliases"]["allowlist"][0] | Should -Be "cd"
+            $settings.RuleArguments["PSAvoidUsingCmdletAliases"]["allowlist"][1] | Should -Be "cp"
         }
 
         It "Should Be case insensitive" {
-            $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"].Count | Should -Be 2
-            $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"][0] | Should -Be "cd"
-            $settings.RuleArguments["psAvoidUsingCmdletAliases"]["whiteList"][1] | Should -Be "cp"
+            $settings.RuleArguments["psAvoidUsingCmdletAliases"]["allowlist"].Count | Should -Be 2
+            $settings.RuleArguments["psAvoidUsingCmdletAliases"]["allowlist"][0] | Should -Be "cd"
+            $settings.RuleArguments["psAvoidUsingCmdletAliases"]["allowlist"][1] | Should -Be "cp"
         }
     }
 

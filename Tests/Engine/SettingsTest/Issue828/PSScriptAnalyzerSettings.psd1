@@ -15,7 +15,7 @@
         }
         PSAvoidUsingCmdletAliases  = @{
             # only allowlist verbs from *-Object cmdlets
-            Whitelist = @(
+            allowlist = @(
                 '%',
                 '?',
                 'compare',

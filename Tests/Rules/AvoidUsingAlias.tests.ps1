@@ -73,7 +73,7 @@ Configuration MyDscConfiguration {
             $settings = @{
                 'Rules' = @{
                     'PSAvoidUsingCmdletAliases' = @{
-                        'Whitelist' = @('cd')
+                        'allowlist' = @('cd')
                     }
                 }
             }
@@ -83,7 +83,7 @@ Configuration MyDscConfiguration {
             $settings = @{
                 'Rules' = @{
                     'PSAvoidUsingCmdletAliases' = @{
-                        'Whitelist' = @('cd')
+                        'allowlist' = @('cd')
                     }
                 }
             }
