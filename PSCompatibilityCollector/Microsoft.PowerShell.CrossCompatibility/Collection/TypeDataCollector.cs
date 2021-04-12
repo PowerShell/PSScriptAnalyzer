@@ -492,7 +492,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             foreach (MethodInfo overload in methodOverloads)
             {
                 var parameters = new List<string>();
-                try {
+                try
+                {
                     foreach (ParameterInfo param in overload.GetParameters())
                     {
                         parameters.Add(TypeNaming.GetFullTypeName(param.ParameterType));
