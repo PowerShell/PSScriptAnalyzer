@@ -403,8 +403,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var methodDatas = new JsonDictionary<string, MethodData>();
             foreach (KeyValuePair<string, List<MethodInfo>> method in methods)
             {
-                MethodData md = null;
-                if (TryAssembleMethod(method.Value, out md))
+                if (TryAssembleMethod(method.Value, out MethodInfo md))
                 {
                     methodDatas[method.Key] = md;
                 }
