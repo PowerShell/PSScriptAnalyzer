@@ -347,7 +347,10 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 switch (member)
                 {
                     case ConstructorInfo constructor:
-                        constructors.Add(AssembleConstructor(constructor));
+                        string[] cInfo = null;
+                        if (TryAssembleConstructor(constructor, out cInfo)) {
+                            constructors.Add(cInfo);
+                        }
                         break;
 
                     case FieldInfo field:
@@ -400,7 +403,11 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             var methodDatas = new JsonDictionary<string, MethodData>();
             foreach (KeyValuePair<string, List<MethodInfo>> method in methods)
             {
-                methodDatas[method.Key] = AssembleMethod(method.Value);
+                MethodData md = null;
+                if (TryAssembleMethod(method.Value, out md))
+                {
+                    methodDatas[method.Key] = md;
+                }
             }
 
             return new MemberData()
@@ -457,35 +464,59 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             };
         }
 
-        private string[] AssembleConstructor(ConstructorInfo ctor)
+        // private string[] AssembleConstructor(ConstructorInfo ctor)
+        private bool TryAssembleConstructor(ConstructorInfo ctor, out string[] result)
         {
+            bool success = false;
             var parameters = new List<string>();
-            foreach (ParameterInfo param in ctor.GetParameters())
-            {
-                parameters.Add(TypeNaming.GetFullTypeName(param.ParameterType));
+            try {
+                foreach (ParameterInfo param in ctor.GetParameters())
+                {
+                    parameters.Add(TypeNaming.GetFullTypeName(param.ParameterType));
+                }
+
+                result = parameters.ToArray();
+                success = true;
+            }
+            catch {
+                result = null;
             }
 
-            return parameters.ToArray();
+            return success;
         }
 
-        private MethodData AssembleMethod(List<MethodInfo> methodOverloads)
+        // private MethodData AssembleMethod(List<MethodInfo> methodOverloads)
+        private bool TryAssembleMethod(List<MethodInfo> methodOverloads, out MethodData result)
         {
             var overloads = new List<string[]>();
             foreach (MethodInfo overload in methodOverloads)
             {
                 var parameters = new List<string>();
-                foreach (ParameterInfo param in overload.GetParameters())
-                {
-                    parameters.Add(TypeNaming.GetFullTypeName(param.ParameterType));
+                try {
+                    foreach (ParameterInfo param in overload.GetParameters())
+                    {
+                        parameters.Add(TypeNaming.GetFullTypeName(param.ParameterType));
+                    }
+                    overloads.Add(parameters.ToArray());
                 }
-                overloads.Add(parameters.ToArray());
+                catch
+                {
+                    ;
+                }
             }
 
-            return new MethodData()
+            if (overloads.Count == 0)
+            {
+                result = null;
+                return false;
+            }
+
+            result =  new MethodData()
             {
                 ReturnType = TypeNaming.GetFullTypeName(methodOverloads[0].ReturnType),
                 OverloadParameters = overloads.ToArray()
             };
+            return true;
         }
 
         private bool IsAssemblyPathExcluded(string path)
