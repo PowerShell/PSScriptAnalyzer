@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-#BeforeAll {
+BeforeAll {
     function Get-TypeNameAstFromScript
     {
         param([string]$Script)
@@ -18,7 +18,7 @@
     {
         [psobject].Assembly.GetType('System.Management.Automation.TypeAccelerators', 'nonpublic')::Get.GetEnumerator()
     }
-#}
+}
 
 
 Describe "Type name serialization" {
