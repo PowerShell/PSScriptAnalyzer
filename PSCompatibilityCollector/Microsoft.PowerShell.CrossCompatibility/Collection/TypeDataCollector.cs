@@ -469,7 +469,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
         {
             bool success = false;
             var parameters = new List<string>();
-            try {
+            try
+            {
                 foreach (ParameterInfo param in ctor.GetParameters())
                 {
                     parameters.Add(TypeNaming.GetFullTypeName(param.ParameterType));
