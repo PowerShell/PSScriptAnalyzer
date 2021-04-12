@@ -347,8 +347,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 switch (member)
                 {
                     case ConstructorInfo constructor:
-                        string[] cInfo = null;
-                        if (TryAssembleConstructor(constructor, out cInfo)) {
+                        if (TryAssembleConstructor(constructor, out string[] cInfo)) {
                             constructors.Add(cInfo);
                         }
                         break;
