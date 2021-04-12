@@ -478,7 +478,8 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 result = parameters.ToArray();
                 success = true;
             }
-            catch {
+            catch
+            {
                 result = null;
             }
 
