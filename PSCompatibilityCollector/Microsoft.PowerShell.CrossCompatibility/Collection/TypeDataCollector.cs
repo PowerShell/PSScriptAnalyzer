@@ -501,7 +501,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
                 }
                 catch
                 {
-                    ;
                 }
             }
 
