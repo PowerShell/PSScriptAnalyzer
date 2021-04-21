@@ -57,7 +57,7 @@ stages:
         $signSrcPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
         # Set signing src path variable
         $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
-        Write-Host "sending " + $vstsCommandString
+        Write-Host "sending $vstsCommandString"
         Write-Host "##$vstsCommandString"
 
         $signOutStep1 = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Step1"
