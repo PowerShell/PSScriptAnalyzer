@@ -39,7 +39,7 @@ Checks if there is a space after the opening brace and a space before the closin
 
 #### CheckOpenBrace: bool (Default value is `$true`)
 
-Checks if there is a space between a keyword and its corresponding open brace. E.g. `foo { }` instead of `foo{ }`.
+Checks if there is a space between a keyword and its corresponding open brace. E.g. `foo { }` instead of `foo{ }`. If an open brace is preceded by an open parenthesis, then no space is required.
 
 #### CheckOpenParen: bool (Default value is `$true`)
 
