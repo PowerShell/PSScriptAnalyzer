@@ -36,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             List<String> passwords = new List<String>() {"Password", "Passphrase"};
             List<String> usernames = new List<String>() { "Username", "User"};
-            Type[] typeWhiteList = {typeof(CredentialAttribute),
+            Type[] typeAllowList = {typeof(CredentialAttribute),
                                             typeof(PSCredential),
                                             typeof(System.Security.SecureString),
                                             typeof(SwitchParameter),
@@ -54,7 +54,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // Iterates all ParamAsts and check if their names are on the list.
                 foreach (ParameterAst paramAst in paramAsts)
                 {
-                    var attributes = typeWhiteList.Select(x => GetAttributeOfType(paramAst.Attributes, x));
+                    var attributes = typeAllowList.Select(x => GetAttributeOfType(paramAst.Attributes, x));
                     String paramName = paramAst.Name.VariablePath.ToString();                    
                     foreach (String password in passwords)
                     {

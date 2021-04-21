@@ -68,6 +68,10 @@ if ($true)
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
+        It 'Should not find a violation if an open paren is before an opening brace' {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$ast.Find({ $oneAst -is [TypeExpressionAst] })' -Settings $settings |
+                Should -BeNullOrEmpty
+        }
     }
 
     Context "When a parenthesis follows a keyword" {
@@ -127,6 +131,7 @@ function foo($param) {
             $ruleConfiguration.CheckOperator = $true
             $ruleConfiguration.CheckPipe = $false
             $ruleConfiguration.CheckSeparator = $false
+            $ruleConfiguration.IgnoreAssignmentOperatorInsideHashTable = $false
         }
 
         It "Should find a violation if no whitespace around an assignment operator" {
@@ -180,7 +185,6 @@ $x = $true -and
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
-
         It 'Should not find violation if there are whitespaces of size 1 around a unary operator starting with a dash' {
             Invoke-ScriptAnalyzer -ScriptDefinition '$x -join $y' -Settings $settings | Should -BeNullOrEmpty
         }
@@ -213,6 +217,61 @@ $x = $true -and
             $def = '-join$x'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
             Test-CorrectionExtentFromContent $def $violations 1 '-join' '-join '
+        }
+
+        It "Should find violation if not asked to ignore assignment operator in hash table" {
+            $def = @'
+$ht = @{
+    variable = 3
+    other    = 4
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '    ' ' '
+        }
+    }
+
+    Context "When asked to ignore assignment operator inside hash table" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOperator = $true
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $false
+            $ruleConfiguration.IgnoreAssignmentOperatorInsideHashTable = $true
+        }
+
+        It "Should not find violation if assignment operator is in multi-line hash table" {
+            $def = @'
+$ht = @{
+    variable = 3
+    other    = 4
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should find violation if assignment operator has extra space in single-line hash table" {
+            $def = @'
+$h = @{
+    ht = @{a = 3; b   = 4}
+    eb = 33
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '   ' ' '
+        }
+
+        It "Should find violation for extra space around non-assignment operator inside hash table" {
+            $def = @'
+$ht = @{
+    variable = 3
+    other    = 4 +  7
+}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '  ' ' '
         }
     }
 

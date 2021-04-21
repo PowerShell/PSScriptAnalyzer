@@ -23,12 +23,14 @@ Table of Contents
     + [From Chocolatey](#from-chocolatey)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
-  * [Built-in Presets](#built-in-presets)
-  * [Explicit](#explicit)
-  * [Implicit](#implicit)
+    + [Using parameter Settings](#using-parameter-settings)
+      - [Built-in Presets](#built-in-presets)
+      - [Explicit](#explicit)
+      - [Implicit](#implicit)
+    + [Custom rules](#custom-rules)
+      - [Using custom rules in Visual Studio Code](#using-custom-rules-in-visual-studio-code)
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
 - [Violation Correction](#violation-correction)
-- [Project Management Dashboard](#project-management-dashboard)
 - [Contributions are welcome](#contributions-are-welcome)
 - [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
@@ -37,7 +39,7 @@ Table of Contents
 
 Introduction
 ============
-PSScriptAnalyzer is a static code checker for PowerShell modules and scripts. PSScriptAnalyzer checks the quality of PowerShell code by running a set of rules.
+PSScriptAnalyzer is a static code checker for PowerShell modules and scripts. PSScriptAnalyzer checks the quality of PowerShell code by running a [set of rules](RuleDocumentation).
 The rules are based on PowerShell best practices identified by PowerShell Team and the community. It generates DiagnosticResults (errors and warnings) to inform users about potential
 code defects and suggests possible solutions for improvements.
 
@@ -78,7 +80,7 @@ Exit
 #### Supported PowerShell Versions and Platforms
 
 - Windows PowerShell 3.0 or greater
-- PowerShell Core 6.2 or greater on Windows/Linux/macOS
+- PowerShell Core 7.0.3 or greater on Windows/Linux/macOS
 - Docker (tested only using Docker Desktop on Windows 10 1809)
   - PowerShell 6 Windows Image tags from [mcr.microsoft.com/powershell](https://hub.docker.com/r/microsoft/powershell). Example (1 warning gets produced by `Save-Module` but can be ignored):
 
@@ -142,9 +144,9 @@ Note: the PSScriptAnalyzer Chocolatey package is provided and supported by the c
     ```powershell
     .\build.ps1 -PSVersion 3
     ```
-    * PowerShell Core
+    * PowerShell 7
     ```powershell
-    .\build.ps1 -PSVersion 6
+    .\build.ps1 -PSVersion 7
     ```
 * Rebuild documentation since it gets built automatically only the first time
     ```powershell
@@ -300,13 +302,13 @@ function start-bam {
 
 Suppress violations in all the functions:
 ``` PowerShell
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', Scope='Function', Target='*')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*')]
 Param()
 ```
 
 Suppress violation in `start-bar`, `start-baz` and `start-bam` but not in `start-foo`:
 ``` PowerShell
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', Scope='Function', Target='start-b*')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-b*')]
 Param()
 ```
 
@@ -319,7 +321,10 @@ Settings Support in ScriptAnalyzer
 Settings that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to
 `Invoke-ScriptAnalyzer` using the `Setting` parameter. This enables a user to create a custom configuration for a specific environment. We support the following modes for specifying the settings file.
 
-## Built-in Presets
+## Using parameter Settings
+
+### Built-in Presets
+
 ScriptAnalyzer ships a set of built-in presets that can be used to analyze scripts. For example, if the user wants to run *PowerShell Gallery* rules on their module, then they use the following command.
 
 ```powershell
@@ -328,7 +333,7 @@ PS> Invoke-ScriptAnalyzer -Path /path/to/module/ -Settings PSGallery -Recurse
 
 Along with `PSGallery` there are a few other built-in presets, including, `DSC` and `CodeFormatting`, that can be used. These presets can be tab completed for the `Settings` parameter.
 
-## Explicit
+### Explicit
 
 The following example excludes two rules from the default set of rules and any rule
 that does not output an Error or Warning diagnostic record.
@@ -363,7 +368,8 @@ Then invoke that settings file:
 Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 ```
 
-## Implicit
+### Implicit
+
 If you place a PSScriptAnayzer settings file named `PSScriptAnalyzerSettings.psd1` in your project root, PSScriptAnalyzer will discover it if you pass the project root as the `Path` parameter.
 
 ```PowerShell
@@ -371,6 +377,68 @@ Invoke-ScriptAnalyzer -Path "C:\path\to\project" -Recurse
 ```
 
 Note that providing settings explicitly takes higher precedence over this implicit mode. Sample settings files are provided [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/Engine/Settings).
+
+## Custom rules
+
+It is possible to provide one or more paths to custom rules in the settings file.
+It is important that these paths either point to a module's folder (implicitly
+uses the module manifest) or to the module's script file (.psm1). The module
+should export the custom rules (as functions) for them to be available to
+PS Script Analyzer.
+
+In this example the property `CustomRulePath` points to two different modules.
+Both modules exports the rules (the functions) with the verb `Measure`
+so that is used for the property `IncludeRules`.
+
+```powershell
+@{
+    CustomRulePath      = @(
+        '.\output\RequiredModules\DscResource.AnalyzerRules'
+        '.\tests\QA\AnalyzerRules\SqlServerDsc.AnalyzerRules.psm1'
+    )
+
+    IncludeRules        = @(
+        'Measure-*'
+    )
+}
+```
+
+It is also possible to used default rules by adding those to `IncludeRules`.
+When including default rules is important that the property `IncludeDefaultRules`
+is set to `$true` otherwise the default rules will not be triggered.
+
+```powershell
+@{
+    CustomRulePath      = @(
+        '.\output\RequiredModules\DscResource.AnalyzerRules'
+        '.\tests\QA\AnalyzerRules\SqlServerDsc.AnalyzerRules.psm1'
+    )
+
+    IncludeDefaultRules = $true
+
+    IncludeRules        = @(
+        # Default rules
+        'PSAvoidDefaultValueForMandatoryParameter'
+        'PSAvoidDefaultValueSwitchParameter'
+
+        # Custom rules
+        'Measure-*'
+    )
+}
+```
+
+### Using custom rules in Visual Studio Code
+
+It is also possible to use the custom rules that are provided in the
+settings file in Visual Studio Code. This is done by adding a Visual Studio
+Code workspace settings file (`.vscode/settings.json`).
+
+```json
+{
+    "powershell.scriptAnalysis.settingsPath": ".vscode\\analyzersettings.psd1",
+    "powershell.scriptAnalysis.enable": true,
+}
+```
 
 [Back to ToC](#table-of-contents)
 
@@ -412,22 +480,6 @@ The initial motivation behind having the `SuggestedCorrections` property on the 
 - MisleadingBacktick.cs
 - MissingModuleManifestField.cs
 - UseToExportFieldsInManifest.cs
-
-[Back to ToC](#table-of-contents)
-
-Project Management Dashboard
-============================
-You can track issues, pull requests, backlog items here:
-
-[![Stories in progress](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=In%20Progress&title=In%20Progress)](https://waffle.io/PowerShell/PSScriptAnalyzer)
-
-[![Stories in ready](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=ready&title=Ready)](https://waffle.io/PowerShell/PSScriptAnalyzer)
-
-[![Stories in backlog](https://badge.waffle.io/PowerShell/PSScriptAnalyzer.png?label=BackLog&title=BackLog)](https://waffle.io/PowerShell/PSScriptAnalyzer)
-
-Throughput Graph
-
-[![Throughput Graph](https://graphs.waffle.io/powershell/psscriptanalyzer/throughput.svg)](https://waffle.io/powershell/psscriptanalyzer/metrics)
 
 [Back to ToC](#table-of-contents)
 

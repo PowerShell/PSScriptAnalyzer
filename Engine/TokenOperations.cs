@@ -232,5 +232,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         {
             return token1.Extent.StartLineNumber == token2.Extent.EndLineNumber;
         }
+
+        /// <summary>
+        /// Finds the position of a given token in the AST.
+        /// </summary>
+        /// <param name="token">The <see cref="Token"/> to search for.</param>
+        /// <returns>The Ast node directly containing the provided <see cref="Token"/>.</returns>
+        public Ast GetAstPosition(Token token)
+        {
+            FindAstPositionVisitor findAstVisitor = new FindAstPositionVisitor(token.Extent.StartScriptPosition);
+            ast.Visit(findAstVisitor);
+            return findAstVisitor.AstPosition;
+        }
+
     }
 }

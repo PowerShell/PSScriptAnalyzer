@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             AfterOpeningBrace, BeforeClosingBrace, BeforePipe, AfterPipe, BetweenParameter };
         private const int whiteSpaceSize = 1;
         private const string whiteSpace = " ";
-        private readonly SortedSet<TokenKind> openParenKeywordWhitelist = new SortedSet<TokenKind>()
+        private readonly SortedSet<TokenKind> openParenKeywordAllowList = new SortedSet<TokenKind>()
         {
             TokenKind.If,
             TokenKind.ElseIf,
@@ -62,6 +62,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         [ConfigurableRuleProperty(defaultValue: false)]
         public bool CheckParameter { get; protected set; }
+
+        [ConfigurableRuleProperty(defaultValue: false)]
+        public bool IgnoreAssignmentOperatorInsideHashTable { get; protected set; }
 
         public override void ConfigureRule(IDictionary<string, object> paramValueMap)
         {
@@ -236,17 +239,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (!IsPreviousTokenApartByWhitespace(lcurly))
+                if (IsPreviousTokenApartByWhitespace(lcurly) || IsPreviousTokenLParen(lcurly))
                 {
-                    yield return new DiagnosticRecord(
-                        GetError(ErrorKind.BeforeOpeningBrace),
-                        lcurly.Value.Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        tokenOperations.Ast.Extent.File,
-                        null,
-                        GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, false, true).ToList());
+                    continue;
                 }
+                
+                yield return new DiagnosticRecord(
+                    GetError(ErrorKind.BeforeOpeningBrace),
+                    lcurly.Value.Extent,
+                    GetName(),
+                    GetDiagnosticSeverity(),
+                    tokenOperations.Ast.Extent.File,
+                    null,
+                    GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, false, true).ToList());
             }
         }
 
@@ -475,7 +480,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private bool IsKeyword(Token token)
         {
-            return openParenKeywordWhitelist.Contains(token.Kind);
+            return openParenKeywordAllowList.Contains(token.Kind);
         }
 
         private static bool IsPreviousTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
@@ -493,6 +498,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var actualWhitespaceSize = tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber;
             hasRedundantWhitespace = actualWhitespaceSize - whiteSpaceSize > 0;
             return whiteSpaceSize == actualWhitespaceSize;
+        }
+        
+        private static bool IsPreviousTokenLParen(LinkedListNode<Token> tokenNode)
+        {
+            return tokenNode.Previous.Value.Kind == TokenKind.LParen;
         }
 
         private static bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
@@ -558,6 +568,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     tokenNode.Next.Value.Kind == TokenKind.Variable)
                 {
                     continue;
+                }
+
+                // exclude assignment operator inside of multi-line hash tables if requested
+                if (IgnoreAssignmentOperatorInsideHashTable && tokenNode.Value.Kind == TokenKind.Equals)
+                {
+                    Ast containingAst = tokenOperations.GetAstPosition(tokenNode.Value);
+                    if (containingAst is HashtableAst && containingAst.Extent.EndLineNumber != containingAst.Extent.StartLineNumber)
+                    {
+                        continue;
+                    }
                 }
 
                 var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);

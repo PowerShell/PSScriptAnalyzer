@@ -1149,4 +1149,7 @@
   <data name="AvoidUsingDoubleQuotesForConstantStringError" xml:space="preserve">
     <value>Use single quotes when a string is constant.</value>
   </data>
+  <data name="InvalidSyntaxAroundProcessBlockError" xml:space="preserve">
+    <value>When using an explicit process block, no preceding code is allowed, only begin, end and dynamicparams blocks.</value>
+  </data>
 </root>

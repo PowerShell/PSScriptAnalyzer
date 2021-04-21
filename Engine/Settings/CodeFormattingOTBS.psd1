@@ -40,6 +40,7 @@
             CheckPipeForRedundantWhitespace = $false
             CheckSeparator                  = $true
             CheckParameter                  = $false
+            IgnoreAssignmentOperatorInsideHashTable = $true
         }
 
         PSAlignAssignmentStatement = @{

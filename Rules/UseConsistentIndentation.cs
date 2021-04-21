@@ -134,6 +134,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var onNewLine = true;
             var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true).ToList();
             int minimumPipelineAstIndex = 0;
+            /*
+                When an LParen and LBrace are on the same line, it can lead to too much de-indentation.
+                In order to prevent the RParen code from de-indenting too much, we keep a stack of when we skipped the indentation
+                caused by tokens that require a closing RParen (which are LParen, AtParen and DollarParen).
+            */
+            var lParenSkippedIndentation = new Stack<bool>();
+            
             for (int tokenIndex = 0; tokenIndex < tokens.Length; tokenIndex++)
             {
                 var token = tokens[tokenIndex];
@@ -146,10 +153,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 switch (token.Kind)
                 {
                     case TokenKind.AtCurly:
-                    case TokenKind.AtParen:
-                    case TokenKind.LParen:
                     case TokenKind.LCurly:
+                        AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                        break;
+
                     case TokenKind.DollarParen:
+                    case TokenKind.AtParen:
+                        lParenSkippedIndentation.Push(false);
+                        AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
+                        break;
+
+                    case TokenKind.LParen:
+                        // When a line starts with a parenthesis and it is not the last non-comment token of that line,
+                        // then indentation does not need to be increased.
+                        if ((tokenIndex == 0 || tokens[tokenIndex - 1].Kind == TokenKind.NewLine) &&
+                            NextTokenIgnoringComments(tokens, tokenIndex)?.Kind != TokenKind.NewLine)
+                        {
+                            onNewLine = false;
+                            lParenSkippedIndentation.Push(true);
+                            break;
+                        }
+                        lParenSkippedIndentation.Push(false);
                         AddViolation(token, indentationLevel++, diagnosticRecords, ref onNewLine);
                         break;
 
@@ -181,6 +205,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         break;
 
                     case TokenKind.RParen:
+                        bool matchingLParenIncreasedIndentation = false;
+                        if (lParenSkippedIndentation.Count > 0)
+                        {
+                            matchingLParenIncreasedIndentation = lParenSkippedIndentation.Pop();
+                        }
+                        if (matchingLParenIncreasedIndentation)
+                        {
+                            onNewLine = false;
+                            break;
+                        }
+                        indentationLevel = ClipNegative(indentationLevel - 1);
+                        AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
+                        break;
+
                     case TokenKind.RCurly:
                         indentationLevel = ClipNegative(indentationLevel - 1);
                         AddViolation(token, indentationLevel, diagnosticRecords, ref onNewLine);
@@ -259,6 +297,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return diagnosticRecords;
         }
 
+        private static Token NextTokenIgnoringComments(Token[] tokens, int startIndex)
+        {
+            if (startIndex >= tokens.Length - 1)
+            {
+                return null;
+            }
+            
+            for (int i = startIndex + 1; i < tokens.Length; i++)
+            {
+                switch (tokens[i].Kind)
+                {
+                    case TokenKind.Comment:
+                        continue;
+
+                    default:
+                        return tokens[i];
+                }
+            }
+            
+            // We've run out of tokens
+            return null;
+        }
+        
         private static bool PipelineIsFollowedByNewlineOrLineContinuation(Token[] tokens, int startIndex)
         {
             if (startIndex >= tokens.Length - 1)

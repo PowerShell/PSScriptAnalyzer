@@ -15,6 +15,17 @@
         {
             "type": "PowerShell",
             "request": "launch",
+            "name": "Build & Import PSSA",
+            "script": "./build.ps1; Import-Module ./out/PSScriptAnalyzer/*/PSScriptAnalyzer.psd1",
+            "args": [
+                ""
+            ],
+            "cwd": "${workspaceFolder}",
+            "createTemporaryIntegratedConsole": true
+        },
+        {
+            "type": "PowerShell",
+            "request": "launch",
             "name": "Build & Run all tests",
             "script": "./build.ps1; ./build.ps1 -Test",
             "args": [

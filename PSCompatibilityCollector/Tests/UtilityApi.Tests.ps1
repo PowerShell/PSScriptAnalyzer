@@ -38,6 +38,7 @@ Describe "Type name serialization" {
         @{ InputType = [System.Collections.Generic.Dictionary`2+Enumerator[string, object]]; ExpectedName = "System.Collections.Generic.Dictionary``2+Enumerator[System.String,System.Object]" }
         @{ InputType = [System.Collections.Concurrent.ConcurrentDictionary`2].GetMethod('ToArray').ReturnType; ExpectedName = "System.Collections.Generic.KeyValuePair``2[]" }
     ) {
+        param ( $InputType, $ExpectedName )
         $name = [Microsoft.PowerShell.CrossCompatibility.TypeNaming]::GetFullTypeName($InputType)
         $name | Should -BeExactly $ExpectedName
     }
@@ -81,6 +82,7 @@ Describe "Type accelerator expansion" {
         @{ Raw = "[object]"; Expanded = "System.Object" }
     ) -Test {
 
+        param ( $Raw, $Expanded )
         $typeName = Get-TypeNameAstFromScript -Script $Raw
 
         $canonicalName = [Microsoft.PowerShell.CrossCompatibility.TypeNaming]::GetCanonicalTypeName($typeAccelerators, $typeName)

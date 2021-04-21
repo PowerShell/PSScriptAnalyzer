@@ -113,6 +113,72 @@ $param3
         }
     }
 
+    Context 'LParen indentation' {
+        It 'Should preserve script when line starts with LParen' {
+            $IdempotentScriptDefinition = @'
+function test {
+    (foo | bar {
+        baz
+    })
+    Do-Something
+}
+'@
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition | Should -Be $idempotentScriptDefinition
+        }
+
+            It 'Should preserve script when line starts and ends with LParen' {
+                $IdempotentScriptDefinition = @'
+function test {
+    (
+        foo | bar {
+            baz
+        }
+    )
+    Do-Something
+}
+'@
+                Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition | Should -Be $idempotentScriptDefinition
+            }
+
+            It 'Should preserve script when line starts and ends with LParen but trailing comment' {
+                $IdempotentScriptDefinition = @'
+function test {
+    ( # comment
+        foo | bar {
+            baz
+        }
+    )
+    Do-Something
+}
+'@
+                Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition | Should -Be $idempotentScriptDefinition
+            }
+
+        It 'Should preserve script when there is Newline after LParen' {
+            $IdempotentScriptDefinition = @'
+function test {
+    $result = (
+        Get-Something
+    ).Property
+    Do-Something
+}
+'@
+            Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition | Should -Be $idempotentScriptDefinition
+        }
+
+    It 'Should preserve script when there is a comment and Newline after LParen' {
+        $IdempotentScriptDefinition = @'
+function test {
+    $result = ( # comment
+        Get-Something
+    ).Property
+    Do-Something
+}
+'@
+        Invoke-Formatter -ScriptDefinition $IdempotentScriptDefinition | Should -Be $idempotentScriptDefinition
+    }
+}
+
     Context "When a sub-expression is provided" {
         It "Should not find a violations" {
             $def = @'

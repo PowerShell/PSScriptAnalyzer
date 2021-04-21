@@ -1,8 +1,10 @@
-﻿$settings = @{
-    IncludeRules = @('PSAvoidUsingDoubleQuotesForConstantString')
-    Rules        = @{
-        PSAvoidUsingDoubleQuotesForConstantString = @{
-            Enable = $true
+﻿BeforeAll {
+    $settings = @{
+        IncludeRules = @('PSAvoidUsingDoubleQuotesForConstantString')
+        Rules        = @{
+            PSAvoidUsingDoubleQuotesForConstantString = @{
+                Enable = $true
+            }
         }
     }
 }

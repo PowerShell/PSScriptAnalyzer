@@ -67,9 +67,9 @@ Configuration MyDscConfiguration {
         }
     }
 
-    Context "Settings file provides whitelist" {
+    Context "Settings file provides allowlist" {
         BeforeAll {
-            $whiteListTestScriptDef = 'gci; cd;'
+            $allowListTestScriptDef = 'gci; cd;'
             $settings = @{
                 'Rules' = @{
                     'PSAvoidUsingCmdletAliases' = @{
@@ -79,7 +79,7 @@ Configuration MyDscConfiguration {
             }
         }
 
-        It "honors the whitelist provided as hashtable" {
+        It "honors the allowlist provided as hashtable" {
             $settings = @{
                 'Rules' = @{
                     'PSAvoidUsingCmdletAliases' = @{
@@ -87,18 +87,18 @@ Configuration MyDscConfiguration {
                     }
                 }
             }
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $whiteListTestScriptDef -Settings $settings -IncludeRule $violationName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $allowListTestScriptDef -Settings $settings -IncludeRule $violationName
             $violations.Count | Should -Be 1
         }
 
-        It "honors the whitelist provided through settings file" {
+        It "honors the allowlist provided through settings file" {
             # even though join-path returns string, if we do not use tostring, then invoke-scriptanalyzer cannot cast it to string type
             $settingsFilePath = (Join-Path $PSScriptRoot (Join-Path 'TestSettings' 'AvoidAliasSettings.psd1')).ToString()
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $whiteListTestScriptDef -Settings $settingsFilePath -IncludeRule $violationName
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $allowListTestScriptDef -Settings $settingsFilePath -IncludeRule $violationName
             $violations.Count | Should -Be 1
         }
 
-        It "honors the whitelist in a case-insensitive manner" {
+        It "honors the allowlist in a case-insensitive manner" {
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition "CD" -Settings $settings -IncludeRule $violationName
             $violations.Count | Should -Be 0
         }
@@ -116,6 +116,13 @@ Configuration MyDscConfiguration {
             }
 
             $violations.Count | Should -Be $expectedViolations
+        }
+
+        It 'Warn about incorrect syntax around process block' {
+            $scriptDefinition = { function foo { IShouldNotBeHere; process {} } }
+            $violations = Invoke-ScriptAnalyzer -IncludeRule PSAvoidUsingCmdletAliases -ScriptDefinition "$scriptDefinition"
+            $violations.Count | Should -Be 1
+            $violations.Severity | Should -Be ([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticSeverity]::ParseError)
         }
     }
 }
