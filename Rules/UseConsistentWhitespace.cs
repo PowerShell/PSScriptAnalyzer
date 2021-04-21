@@ -521,10 +521,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     || tokenNode.Value.Kind == TokenKind.DotDot)
                 {
                     // for cases like '-split$a' as the other checks below in this function assume a preceding token
-                    if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) &&
-                        tokenNode.Value.Text.StartsWith("-"))
+                    if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator)
+                        && tokenNode.Value.Text.StartsWith("-")
+                        && tokenNode.Value.Text.Length > 1
+                        && Char.IsLetter(tokenNode.Value.Text[1]))
                     {
-                        var hasWhitespaceAfterOperator = tokenNode.Next.Value.Kind == TokenKind.NewLine
+                        bool hasWhitespaceAfterOperator = tokenNode.Next.Value.Kind == TokenKind.NewLine
                             || IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
                         if (!hasWhitespaceAfterOperator)
                         {
