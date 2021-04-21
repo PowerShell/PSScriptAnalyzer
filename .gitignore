@@ -221,3 +221,6 @@ PSCompatibilityCollector/out/
 
 # Folder of build module 
 out
+
+# Explicitely Include test dir
+!/Tests/**

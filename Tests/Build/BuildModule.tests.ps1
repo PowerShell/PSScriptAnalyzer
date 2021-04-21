@@ -3,11 +3,11 @@
 
 # these are tests for the build module
 
-import-module -force "./build.psm1"
+import-module -force "$PSScriptRoot\..\..\build.psm1"
 Describe "Build Module Tests" {
     Context "Global.json" {
         BeforeAll {
-            $globalJson = Get-Content (Join-Path $PSScriptRoot global.json) | ConvertFrom-Json
+            $globalJson = Get-Content (Join-Path "$PSScriptRoot\..\..\" global.json) | ConvertFrom-Json
             $expectedVersion = $globalJson.sdk.version
             $result = Get-GlobalJsonSdkVersion
         }
@@ -105,7 +105,7 @@ Describe "Build Module Tests" {
     Context "Test result functions" {
         BeforeAll {
             $xmlFile = @'
-﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="2" errors="0" failures="1" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2019-02-19" time="11:36:56">
   <environment platform="Darwin" clr-version="Unknown" os-version="18.2.0" cwd="/Users/jimtru/src/github/forks/JamesWTruher/PSScriptAnalyzer" user="jimtru" user-domain="" machine-name="Jims-Mac-mini.guest.corp.microsoft.com" nunit-version="2.5.8.0" />
   <culture-info current-culture="en-US" current-uiculture="en-US" />
@@ -133,8 +133,8 @@ Describe "Build Module Tests" {
 '@
 
             $xmlFile | out-file TESTDRIVE:/results.xml
-            $results = Get-TestResults -logfile TESTDRIVE:/results.xml
-            $failures = Get-TestFailures -logfile TESTDRIVE:/results.xml
+            $results = @(Get-TestResults -logfile TESTDRIVE:/results.xml)
+            $failures = @(Get-TestFailures -logfile TESTDRIVE:/results.xml)
         }
 
         It "Get-TestResults finds 2 results" {

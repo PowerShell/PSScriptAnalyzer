@@ -17,6 +17,7 @@ function Install-Pester {
             Write-Verbose -Verbose "Installing Pester via Install-Module"
             Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser -Repository PSGallery
         }
+        Write-Verbose -Verbose 'Installed Pester'
     }
 }
 
@@ -27,16 +28,20 @@ function Invoke-AppVeyorInstall {
         [switch] $SkipPesterInstallation
     )
 
-    if (-not $SkipPesterInstallation.IsPresent) { Install-Pester }
+    $installPowerShellModulesjobs = @()
+    if (-not $SkipPesterInstallation.IsPresent) { $installPowerShellModulesjobs += Start-Job ${Function:Install-Pester} }
 
-    if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
-        # WMF 4 image build
-        Write-Verbose -Verbose "Installing platyPS via nuget"
-        nuget install platyPS -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
-    }
-    else {
-        Write-Verbose -Verbose "Installing platyPS via Install-Module"
-        Install-Module -Name platyPS -Force -Scope CurrentUser -Repository PSGallery
+    $installPowerShellModulesjobs += Start-Job {
+        if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
+            # WMF 4 image build
+            Write-Verbose -Verbose "Installing platyPS via nuget"
+            nuget install platyPS -source https://www.powershellgallery.com/api/v2 -outputDirectory "$Env:ProgramFiles\WindowsPowerShell\Modules\." -ExcludeVersion
+        }
+        else {
+            Write-Verbose -Verbose "Installing platyPS via Install-Module"
+            Install-Module -Name platyPS -Force -Scope CurrentUser -Repository PSGallery
+        }
+        Write-Verbose -Verbose 'Installed platyPS'
     }
 
     # Do not use 'build.ps1 -bootstrap' option for bootstraping the .Net SDK as it does not work well in CI with the AppVeyor Ubuntu image
@@ -69,6 +74,14 @@ function Invoke-AppVeyorInstall {
         finally {
             [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
             Remove-Item .\dotnet-install.*
+        }
+        Write-Verbose -Verbose 'Installed required .Net CORE SDK'
+    }
+
+    Wait-Job $installPowerShellModulesjobs | Receive-Job
+    $installPowerShellModulesjobs | ForEach-Object {
+        if ($_.State -eq 'Failed') {
+            throw 'Installing PowerShell modules failed, see job logs above'
         }
     }
 }

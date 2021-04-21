@@ -23,9 +23,12 @@ Table of Contents
     + [From Chocolatey](#from-chocolatey)
 - [Suppressing Rules](#suppressing-rules)
 - [Settings Support in ScriptAnalyzer](#settings-support-in-scriptanalyzer)
-  * [Built-in Presets](#built-in-presets)
-  * [Explicit](#explicit)
-  * [Implicit](#implicit)
+    + [Using parameter Settings](#using-parameter-settings)
+      - [Built-in Presets](#built-in-presets)
+      - [Explicit](#explicit)
+      - [Implicit](#implicit)
+    + [Custom rules](#custom-rules)
+      - [Using custom rules in Visual Studio Code](#using-custom-rules-in-visual-studio-code)
 - [ScriptAnalyzer as a .NET library](#scriptanalyzer-as-a-net-library)
 - [Violation Correction](#violation-correction)
 - [Contributions are welcome](#contributions-are-welcome)
@@ -36,7 +39,7 @@ Table of Contents
 
 Introduction
 ============
-PSScriptAnalyzer is a static code checker for PowerShell modules and scripts. PSScriptAnalyzer checks the quality of PowerShell code by running a set of rules.
+PSScriptAnalyzer is a static code checker for PowerShell modules and scripts. PSScriptAnalyzer checks the quality of PowerShell code by running a [set of rules](RuleDocumentation).
 The rules are based on PowerShell best practices identified by PowerShell Team and the community. It generates DiagnosticResults (errors and warnings) to inform users about potential
 code defects and suggests possible solutions for improvements.
 
@@ -318,7 +321,10 @@ Settings Support in ScriptAnalyzer
 Settings that describe ScriptAnalyzer rules to include/exclude based on `Severity` can be created and supplied to
 `Invoke-ScriptAnalyzer` using the `Setting` parameter. This enables a user to create a custom configuration for a specific environment. We support the following modes for specifying the settings file.
 
-## Built-in Presets
+## Using parameter Settings
+
+### Built-in Presets
+
 ScriptAnalyzer ships a set of built-in presets that can be used to analyze scripts. For example, if the user wants to run *PowerShell Gallery* rules on their module, then they use the following command.
 
 ```powershell
@@ -327,7 +333,7 @@ PS> Invoke-ScriptAnalyzer -Path /path/to/module/ -Settings PSGallery -Recurse
 
 Along with `PSGallery` there are a few other built-in presets, including, `DSC` and `CodeFormatting`, that can be used. These presets can be tab completed for the `Settings` parameter.
 
-## Explicit
+### Explicit
 
 The following example excludes two rules from the default set of rules and any rule
 that does not output an Error or Warning diagnostic record.
@@ -362,7 +368,8 @@ Then invoke that settings file:
 Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 ```
 
-## Implicit
+### Implicit
+
 If you place a PSScriptAnayzer settings file named `PSScriptAnalyzerSettings.psd1` in your project root, PSScriptAnalyzer will discover it if you pass the project root as the `Path` parameter.
 
 ```PowerShell
@@ -370,6 +377,68 @@ Invoke-ScriptAnalyzer -Path "C:\path\to\project" -Recurse
 ```
 
 Note that providing settings explicitly takes higher precedence over this implicit mode. Sample settings files are provided [here](https://github.com/PowerShell/PSScriptAnalyzer/tree/master/Engine/Settings).
+
+## Custom rules
+
+It is possible to provide one or more paths to custom rules in the settings file.
+It is important that these paths either point to a module's folder (implicitly
+uses the module manifest) or to the module's script file (.psm1). The module
+should export the custom rules (as functions) for them to be available to
+PS Script Analyzer.
+
+In this example the property `CustomRulePath` points to two different modules.
+Both modules exports the rules (the functions) with the verb `Measure`
+so that is used for the property `IncludeRules`.
+
+```powershell
+@{
+    CustomRulePath      = @(
+        '.\output\RequiredModules\DscResource.AnalyzerRules'
+        '.\tests\QA\AnalyzerRules\SqlServerDsc.AnalyzerRules.psm1'
+    )
+
+    IncludeRules        = @(
+        'Measure-*'
+    )
+}
+```
+
+It is also possible to used default rules by adding those to `IncludeRules`.
+When including default rules is important that the property `IncludeDefaultRules`
+is set to `$true` otherwise the default rules will not be triggered.
+
+```powershell
+@{
+    CustomRulePath      = @(
+        '.\output\RequiredModules\DscResource.AnalyzerRules'
+        '.\tests\QA\AnalyzerRules\SqlServerDsc.AnalyzerRules.psm1'
+    )
+
+    IncludeDefaultRules = $true
+
+    IncludeRules        = @(
+        # Default rules
+        'PSAvoidDefaultValueForMandatoryParameter'
+        'PSAvoidDefaultValueSwitchParameter'
+
+        # Custom rules
+        'Measure-*'
+    )
+}
+```
+
+### Using custom rules in Visual Studio Code
+
+It is also possible to use the custom rules that are provided in the
+settings file in Visual Studio Code. This is done by adding a Visual Studio
+Code workspace settings file (`.vscode/settings.json`).
+
+```json
+{
+    "powershell.scriptAnalysis.settingsPath": ".vscode\\analyzersettings.psd1",
+    "powershell.scriptAnalysis.enable": true,
+}
+```
 
 [Back to ToC](#table-of-contents)
 

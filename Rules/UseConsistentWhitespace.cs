@@ -238,17 +238,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (!IsPreviousTokenApartByWhitespace(lcurly))
+                if (IsPreviousTokenApartByWhitespace(lcurly) || IsPreviousTokenLParen(lcurly))
                 {
-                    yield return new DiagnosticRecord(
-                        GetError(ErrorKind.BeforeOpeningBrace),
-                        lcurly.Value.Extent,
-                        GetName(),
-                        GetDiagnosticSeverity(),
-                        tokenOperations.Ast.Extent.File,
-                        null,
-                        GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, false, true).ToList());
+                    continue;
                 }
+                
+                yield return new DiagnosticRecord(
+                    GetError(ErrorKind.BeforeOpeningBrace),
+                    lcurly.Value.Extent,
+                    GetName(),
+                    GetDiagnosticSeverity(),
+                    tokenOperations.Ast.Extent.File,
+                    null,
+                    GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, false, true).ToList());
             }
         }
 
@@ -495,6 +497,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var actualWhitespaceSize = tokenNode.Value.Extent.StartColumnNumber - tokenNode.Previous.Value.Extent.EndColumnNumber;
             hasRedundantWhitespace = actualWhitespaceSize - whiteSpaceSize > 0;
             return whiteSpaceSize == actualWhitespaceSize;
+        }
+        
+        private static bool IsPreviousTokenLParen(LinkedListNode<Token> tokenNode)
+        {
+            return tokenNode.Previous.Value.Kind == TokenKind.LParen;
         }
 
         private static bool IsNextTokenApartByWhitespace(LinkedListNode<Token> tokenNode)
