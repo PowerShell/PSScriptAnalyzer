@@ -143,14 +143,27 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     commandType: CommandTypes.Cmdlet | CommandTypes.Function | CommandTypes.Script);
                 if (cmdletNameIfCommandWasMissingGetPrefix != null)
                 {
-                    yield return new DiagnosticRecord(
-                        string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
-                        GetCommandExtent(cmdAst),
-                        GetName(),
-                        DiagnosticSeverity.Warning,
-                        fileName,
-                        commandName,
-                        suggestedCorrections: GetCorrectionExtent(cmdAst, commdNameWithGetPrefix));
+                    if (commandName.Equals("process", StringComparison.OrdinalIgnoreCase))
+                    {
+                        yield return new DiagnosticRecord(
+                            Strings.InvalidSyntaxAroundProcessBlockError,
+                            GetCommandExtent(cmdAst),
+                            "InvalidSyntaxAroundProcessBlock",
+                            DiagnosticSeverity.ParseError,
+                            fileName,
+                            commandName);
+                    }
+                    else
+                    {
+                        yield return new DiagnosticRecord(
+                            string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingCmdletAliasesMissingGetPrefixError, commandName, commdNameWithGetPrefix),
+                            GetCommandExtent(cmdAst),
+                            GetName(),
+                            DiagnosticSeverity.Warning,
+                            fileName,
+                            commandName,
+                            suggestedCorrections: GetCorrectionExtent(cmdAst, commdNameWithGetPrefix));
+                    }
                 }
 
             }

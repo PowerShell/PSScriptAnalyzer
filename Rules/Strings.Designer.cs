@@ -1285,6 +1285,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to When using a process block, only a begin or end block is allowed inside the function but no code..
+        /// </summary>
+        internal static string InvalidSyntaxAroundProcessBlockError {
+            get {
+                return ResourceManager.GetString("InvalidSyntaxAroundProcessBlockError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Misleading Backtick.
         /// </summary>
         internal static string MisleadingBacktickCommonName {
