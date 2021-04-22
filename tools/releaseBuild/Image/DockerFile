@@ -18,8 +18,8 @@ RUN Import-Module PackageManagement; `
     Install-ChocolateyPackage -PackageName git -Executable git.exe; `
     Install-ChocolateyPackage -PackageName nuget.commandline -Executable nuget.exe -Cleanup; `
     Install-Module -Force -Name platyPS -Repository PSGallery; `
-    Invoke-WebRequest -Uri https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1 -outfile C:/dotnet-install.ps1; `
-    C:/dotnet-install.ps1 -Channel Release -Version 2.1.4; `
+    Invoke-WebRequest -Uri https://dot.net/v1/dotnet-install.ps1 -OutFile C:/dotnet-install.ps1; `
+    C:/dotnet-install.ps1 -Version 3.1.408; `
     Add-Path C:/Users/ContainerAdministrator/AppData/Local/Microsoft/dotnet;
 
 COPY buildPSSA.ps1 containerFiles/buildPSSA.ps1
