@@ -708,7 +708,13 @@ function Get-DotnetExe
     Write-Warning "Could not find dotnet executable"
     return [String]::Empty
 }
-$script:DotnetExe = Get-DotnetExe
+
+try {
+    $script:DotnetExe = Get-DotnetExe
+}
+catch {
+    Write-Warning "Could not find dotnet executable"
+}
 
 # Copies the built PSCompatibilityCollector module to the output destination for PSSA
 function Copy-CrossCompatibilityModule
@@ -754,5 +760,29 @@ function Copy-CrossCompatibilityModule
             # Display the problem as a warning, but continue
             Write-Warning $_
         }
+    }
+}
+
+# creates the nuget package which can be used for publishing to the gallery
+function Start-CreatePackage
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
+    param ( [switch]$signed )
+    try {
+        if ( $signed ) {
+            $buildRoot = "signed"
+        }
+        else {
+            $buildRoot = "out"
+        }
+        $repoName = [guid]::NewGuid().ToString()
+        $nupkgDir = Join-Path $PSScriptRoot $buildRoot
+        $null = Register-PSRepository -Name $repoName -InstallationPolicy Trusted -SourceLocation $nupkgDir
+        Push-Location $nupkgDir
+        Publish-Module -Path $PWD/PSScriptAnalyzer -Repository $repoName
+    }
+    finally {
+       Pop-Location
+       Unregister-PSRepository -Name $repoName
     }
 }

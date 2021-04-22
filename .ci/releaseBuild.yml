@@ -1,0 +1,199 @@
+# The name of the build that will be seen in mscodehub
+name: PSSA-Release-$(Build.BuildId)
+# how is the build triggered
+# since this is a release build, no trigger as it's a manual release
+trigger: none
+
+pr:
+  branches:
+    include:
+    - master
+    - release*
+
+# variables to set in the build environment
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  POWERSHELL_TELEMETRY_OPTOUT: 1
+
+# since this build relies on templates, we need access to those
+# This needs a service connection in the build to work
+# the *name* of the service connection must be the same as the endpoint
+resources:
+  repositories:
+  - repository: ComplianceRepo
+    type: github
+    endpoint: ComplianceGHRepo
+    name: PowerShell/compliance
+    # this can be any branch of your choosing
+    ref: master
+
+# the stages in this build. There are 2
+# the assumption for script analyzer is that test is done as part of
+# CI so we needn't do it here
+stages:
+- stage: Build
+  displayName: Build
+  pool:
+    name: Package ES CodeHub Lab E
+  jobs:
+  - job: Build_Job
+    displayName: Build Microsoft.PowerShell.ScriptAnalyzer
+    # note the variable reference to ESRP.
+    # this must be created in Project -> Pipelines -> Library -> VariableGroups
+    # where it describes the link to the SigningServer
+    variables:
+    - group: ESRP
+    steps:
+    - checkout: self
+
+    # the steps for building the module go here
+    - pwsh: |
+        Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+        try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
+      displayName: Execute build
+
+    # these are setting vso variables which will be persisted between stages
+    - pwsh: |
+        $signSrcPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
+        # Set signing src path variable
+        $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
+        Write-Host "sending $vstsCommandString"
+        Write-Host "##$vstsCommandString"
+
+        $signOutStep1 = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Step1"
+        $null = New-Item -ItemType Directory -Path $signOutStep1
+        # Set signing out path variable
+        $vstsCommandString = "vso[task.setvariable variable=signOutStep1]${signOutStep1}"
+        Write-Host "sending $vstsCommandString"
+        Write-Host "##$vstsCommandString"
+
+        $signOutPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/signed"
+        $null = New-Item -ItemType Directory -Path $signOutPath
+        # Set signing out path variable
+        $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
+        Write-Host "sending $vstsCommandString"
+        Write-Host "##$vstsCommandString"
+
+        # Set path variable for guardian codesign validation
+        $vstsCommandString = "vso[task.setvariable variable=GDN_CODESIGN_TARGETDIRECTORY]${signOutPath}"
+        Write-Host "sending $vstsCommandString"
+        Write-Host "##$vstsCommandString"
+
+        # Get version and create a variable
+        $moduleData = Import-PowerShellDataFile "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Engine/PSScriptAnalyzer.psd1"
+        $moduleVersion = $moduleData.ModuleVersion
+        $vstsCommandString = "vso[task.setvariable variable=moduleVersion]${moduleVersion}"
+        Write-Host "sending $vstsCommandString"
+        Write-Host "##$vstsCommandString"
+
+
+      displayName: Setup variables for signing
+
+    # checkout the Compliance repository so it can be used to do the actual signing
+    - checkout: ComplianceRepo
+
+    # in script analyzer, we must sign with 2 different certs
+    # the normal cert for MS created items and the 3rd party cert
+    # this the MS authored step
+    # Because this needs 2 certs, we do it in 2 steps.
+    # the first step signs the binaries and puts them in a staging directory which
+    # will then be used for the second step. 
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+        # the folder which contains the binaries to sign
+        buildOutputPath: $(signSrcPath)
+        # the location to put the signed output
+        signOutputPath: $(signOutStep1)
+        # the certificate ID to use
+        certificateId: "CP-230012"
+        # use minimatch because we need to exclude the NewtonSoft assembly
+        useMinimatch: true
+        # the file pattern to use - newtonSoft is excluded
+        pattern: |
+          **\*.psd1
+          **\*.psm1
+          **\*.ps1xml
+          **\Microsoft*.dll
+
+    # this is the second step of the signing.
+    # note that the buildOutputPath (where we get the files to sign)
+    # is the same as the signOutputPath in the previous step
+    # at the end of this step we will have all the files signed that should be
+    # signOutPath is the location which contains the files we will use to make the module
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+        # the folder which contains the binaries to sign
+        buildOutputPath: $(signOutStep1)
+        # the location to put the signed output
+        signOutputPath: $(signOutPath)
+        # the certificate ID to use
+        # we'll need to change this to the 3rd party cert id
+        certificateId: "CP-231522"
+        # the file pattern to use - only sign newtonsoft
+        pattern: 'Newtonsoft*.dll'
+
+    # now create the nupkg which we will use to publish the module
+    # to the powershell gallery (not part of this yaml)
+    - pwsh: |
+        Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+        ./build -BuildNupkg -signed
+      displayName: Create nupkg for publishing
+
+    # finally publish the parts of the build which will be used in the next stages
+    # if it's not published, the subsequent stages will not be able to access it.
+    # This is the build directory (it contains all of the dll/pdb files)
+    - publish: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+      artifact: build
+      displayName: publish build directory
+
+      # export the nupkg only which will be used in the release pipeline
+    - publish: "$(signOutPath)/PSScriptAnalyzer.$(moduleVersion).nupkg"
+      artifact: nupkg
+      displayName: Publish module nupkg
+
+# Now on to the compliance stage
+- stage: compliance
+  displayName: Compliance
+  dependsOn: Build
+  jobs:
+  - job: Compliance_Job
+    pool:
+      name: Package ES CodeHub Lab E
+    steps:
+    - checkout: self
+    - checkout: ComplianceRepo
+    - download: current
+      artifact: build
+
+    # use the templates in the compliance repo
+    # since script analyzer has modules, we're using the assembly-module-compliance template
+    # if you don't have assemblies, you should use script-module-compliance template
+    - template: assembly-module-compliance.yml@ComplianceRepo
+      parameters:
+        # component-governance - the path to sources
+        sourceScanPath: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA'
+        # binskim - this isn't recursive, so you need the path to the assemblies
+        AnalyzeTarget: '$(Pipeline.Workspace)\build\bin\PSV7Release\netcoreapp3.1\*.dll'
+        # credscan - scan the repo for credentials
+        # you can suppress some files with this.
+        suppressionsFile: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/tools/ReleaseBuild/CredScan.Suppressions.json'
+        # TermCheck
+        optionsRulesDBPath: ''
+        optionsFTPath: ''
+        # tsa-upload
+        # the compliance scanning must be uploaded, which you need to request
+        codeBaseName: 'PSSA_202004'
+        # selections
+        APIScan: false # set to false when not using Windows APIs.
+
+#- template: template/publish.yml
+#  parameters:
+#    stageName: AzArtifactsFeed
+#    environmentName:
+#    feedCredential:
+
+#- template: template/publish.yml
+#  parameters:
+#    stageName: NuGet
+#    environmentName: PSMarkdownRenderNuGetApproval
+#    feedCredential: NugetOrgPush

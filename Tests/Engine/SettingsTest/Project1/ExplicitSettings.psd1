@@ -3,7 +3,7 @@
     "ExcludeRules" = @("PSShouldProcess", "PSAvoidUsingWMICmdlet", "PSUseCmdletCorrectly")
     "rules"        = @{
         PSAvoidUsingCmdletAliases  = @{
-            WhiteList = @("cd", "cp")
+            allowlist = @("cd", "cp")
         }
 
         PSUseConsistentIndentation = @{

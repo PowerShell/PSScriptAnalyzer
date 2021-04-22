@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.19.1</VersionPrefix>
+    <VersionPrefix>1.20.0</VersionPrefix>
     <TargetFrameworks>netcoreapp3.1;net452</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer</AssemblyName>
-    <AssemblyVersion>1.19.1</AssemblyVersion>
+    <AssemblyVersion>1.20.0</AssemblyVersion>
     <PackageId>Engine</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
   </PropertyGroup>

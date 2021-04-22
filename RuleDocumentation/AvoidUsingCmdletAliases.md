@@ -28,7 +28,7 @@ To prevent `PSScriptAnalyzer` from flagging your preferred aliases, create an al
 @{
     'Rules' = @{
         'PSAvoidUsingCmdletAliases' = @{
-            'Whitelist' = @('cd')
+            'allowlist' = @('cd')
         }
     }
 }
