@@ -170,14 +170,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 if (cmdletName[i] == '-')
                 {
-                    // Cmdlet name ends in '-' -- we give up
-                    if (i == cmdletName.Length - 1)
-                    {
-                        return null;
-                    }
-
-                    // Return everything after the dash
-                    return cmdletName.Substring(i + 1);
+                    // We got to the dash without seeing a CamelCase word, so nothing to singularize
+                    return null;
                 }
 
                 // We just changed from lower case to upper, so we have the end word
