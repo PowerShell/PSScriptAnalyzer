@@ -15,10 +15,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
-#if !CORECLR
-using System.ComponentModel.Composition;
-#else
+#if CORECLR
 using Pluralize.NET;
+#else
+using System.ComponentModel.Composition;
 #endif
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -55,48 +55,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             char[] funcSeperator = { '-' };
             string[] funcNamePieces = new string[2];
             
-#if !CORECLR
-            var usCultureInfo = CultureInfo.GetCultureInfo("en-us");
-            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(usCultureInfo);
-#else
-            var pluralizationService = new Pluralizer();
-#endif
+            var pluralizer = new PluralizerProxy();
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
             {
-                if (funcAst.Name != null && funcAst.Name.Contains('-'))
+                if (funcAst.Name == null || !funcAst.Name.Contains('-'))
                 {
-                    funcNamePieces = funcAst.Name.Split(funcSeperator);
-                    String nounPart = funcNamePieces[1];
+                    continue;
+                }
 
-                    // Convert the noun part of the function into a series of space delimited words
-                    // This helps the PluralizationService to provide an accurate determination about the plurality of the string
-                    nounPart = SplitCamelCaseString(nounPart);
-                    var words = nounPart.Split(new char[] { ' ' });
-                    var noun = words.LastOrDefault();
-                    if (noun == null)
+                string noun = GetLastWordInCmdlet(funcAst.Name);
+
+                if (noun is null)
+                {
+                    continue;
+                }
+
+                if (pluralizer.CanOnlyBePlural(noun))
+                {
+                    IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
+
+                    if (nounAllowList.Contains(noun, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
-#if !CORECLR
-                    if (!pluralizationService.IsSingular(noun) && pluralizationService.IsPlural(noun))
-#else
-                    if (!pluralizationService.IsSingular(noun) && pluralizationService.IsPlural(noun))
-#endif
+                    if (extent is null)
                     {
-                        IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
-                        if (nounAllowList.Contains(noun, StringComparer.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-                        if (null == extent)
-                        {
-                            extent = funcAst.Extent;
-                        }
-                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
-                            extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        extent = funcAst.Extent;
                     }
+
+                    yield return new DiagnosticRecord(
+                        string.Format(CultureInfo.CurrentCulture, Strings.UseSingularNounsError, funcAst.Name),
+                        extent,
+                        GetName(),
+                        DiagnosticSeverity.Warning,
+                        fileName);
                 }
             }
 
@@ -155,17 +149,71 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// SplitCamelCaseString: Splits a Camel Case'd string into individual words with space delimited
+        /// Gets the last word in a standard syntax, CamelCase cmdlet.
+        /// If the cmdlet name is non-standard, returns null.
         /// </summary>
-        private string SplitCamelCaseString(string input)
+        private string GetLastWordInCmdlet(string cmdletName)
         {
-            if (String.IsNullOrEmpty(input))
+            if (string.IsNullOrEmpty(cmdletName))
             {
-                return String.Empty;
+                return null;
             }
 
-            return Regex.Replace(input, "([A-Z])", " $1", RegexOptions.Compiled).Trim();
+            // Cmdlet doesn't use CamelCase, so assume it's something like an initialism that shouldn't be singularized
+            if (!char.IsLower(cmdletName[^1]))
+            {
+                return null;
+            }
+
+            for (int i = cmdletName.Length - 1; i >= 0; i--)
+            {
+                if (cmdletName[i] == '-')
+                {
+                    // Cmdlet name ends in '-' -- we give up
+                    if (i == cmdletName.Length - 1)
+                    {
+                        return null;
+                    }
+
+                    // Return everything after the dash
+                    return cmdletName.Substring(i + 1);
+                }
+
+                // We just changed from lower case to upper, so we have the end word
+                if (char.IsUpper(cmdletName[i]))
+                {
+                    return cmdletName.Substring(i);
+                }
+            }
+
+            // We shouldn't ever get here since we should always eventually hit a '-'
+            // But if we do, assume this isn't supported cmdlet name
+            return null;
         }
+
+#if CoreCLR
+        private class PluralizerProxy
+        {
+            private readonly Pluralizer _pluralizer;
+
+            public PluralizerProxy()
+            {
+                _pluralizer = new Pluralizer();
+            }
+
+            public bool CanOnlyBePlural(string noun) =>
+                !_pluralizer.IsSingular(noun) && _pluralizer.IsPlural(noun);
+        }
+#else
+        private class PluralizerProxy
+        {
+            private static readonly PluralizationService s_pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(
+                CultureInfo.GetCultureInfo('en-us'));
+
+            public bool CanOnlyBePlural(string noun) =>
+                !s_pluralizationService.IsSingular(noun) && s_pluralizationService.IsPlural(noun);
+        }
+#endif
     }
 
 }
