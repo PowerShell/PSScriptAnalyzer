@@ -192,7 +192,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return null;
         }
 
-#if CoreCLR
+#if CORECLR
         private class PluralizerProxy
         {
             private readonly Pluralizer _pluralizer;
