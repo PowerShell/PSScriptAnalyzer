@@ -64,7 +64,7 @@ Describe "Test Name parameters" {
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
             $expectedNumRules = 65
-            if (($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersion.Major -eq 4))
+            if ($PSVersionTable.PSVersion.Major -le 4)
             {
                 # for PSv3 PSAvoidGlobalAliases is not shipped because
                 # it uses StaticParameterBinder.BindCommand which is
