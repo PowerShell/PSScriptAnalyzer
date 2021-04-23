@@ -3,7 +3,7 @@ registries:
   powershell-gallery:
     type: nuget-feed
     url: https://www.powershellgallery.com/api/v2/
-  nuget_org:
+  nuget-org:
     type: nuget-feed
     url: https://api.nuget.org/v3/index.json
 
