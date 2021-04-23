@@ -3,12 +3,13 @@
 
 BeforeAll {
     $ruleName = "PSDSCDscExamplesPresent"
+    $assetRoot = (Resolve-Path "$PSScriptRoot\..\assets").Path
 }
 
  Describe "DscExamplesPresent rule in class based resource" -Skip:($PSVersionTable.PSVersion -lt '5.0')  {
     BeforeAll {
-        $examplesPath = "$PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\Examples"
-        $classResourcePath = "$PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1"
+        $examplesPath = "$assetRoot\DSCResourceModule\DSCResources\MyDscResource\Examples"
+        $classResourcePath = "$assetRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1"
     }
 
     Context "When examples absent" {
@@ -43,8 +44,8 @@ BeforeAll {
 
 Describe "DscExamplesPresent rule in regular (non-class) based resource" {
     BeforeAll {
-        $examplesPath = "$PSScriptRoot\DSCResourceModule\Examples"
-        $resourcePath = "$PSScriptRoot\DSCResourceModule\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1"
+        $examplesPath = "$assetRoot\DSCResourceModule\Examples"
+        $resourcePath = "$assetRoot\DSCResourceModule\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1"
     }
 
     Context "When examples absent" {

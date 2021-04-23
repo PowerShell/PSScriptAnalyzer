@@ -7,8 +7,8 @@ BeforeAll {
     $violationMessage = "'Verb-Files' has the ShouldProcess attribute but does not call ShouldProcess/ShouldContinue."
     $violationName = "PSShouldProcess"
 
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "UseShouldProcessCorrectly" {

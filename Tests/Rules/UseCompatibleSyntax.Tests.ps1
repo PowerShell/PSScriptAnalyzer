@@ -77,7 +77,7 @@ Describe "PSUseCompatibleSyntax" {
     It "Finds incompatibilities in a script file" {
         $settings = @{ Rules = @{ PSUseCompatibleSyntax = @{ Enable = $true; TargetVersions = @("3.0", "4.0", "5.1", "6.0") } } }
 
-        $diagnostics = Invoke-ScriptAnalyzer -IncludeRule PSUseCompatibleSyntax -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -Settings $settings `
+        $diagnostics = Invoke-ScriptAnalyzer -IncludeRule PSUseCompatibleSyntax -Path "$PSScriptRoot/..\assets\CompatibilityRuleAssets/IncompatibleScript.ps1" -Settings $settings `
             | Where-Object { $_.RuleName -eq 'PSUseCompatibleSyntax' }
 
         if ($PSVersionTable.PSVersion.Major -ge 5)

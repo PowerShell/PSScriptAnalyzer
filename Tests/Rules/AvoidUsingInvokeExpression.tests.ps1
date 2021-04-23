@@ -4,8 +4,8 @@
 BeforeAll {
     $violationMessage = "Invoke-Expression is used. Please remove Invoke-Expression from script and find other options instead."
     $violationName = "PSAvoidUsingInvokeExpression"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingInvokeExpression.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidConvertToSecureStringWithPlainTextNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidUsingInvokeExpression.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidConvertToSecureStringWithPlainTextNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "AvoidUsingInvokeExpression" {

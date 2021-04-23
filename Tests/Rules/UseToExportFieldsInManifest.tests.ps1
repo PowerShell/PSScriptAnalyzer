@@ -5,7 +5,7 @@ BeforeAll {
     $testRootDirectory = Split-Path -Parent $PSScriptRoot
     Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
-    $testManifestPath = Join-Path $PSScriptRoot "TestManifest"
+    $testManifestPath = Join-Path "$PSScriptRoot\..\assets\" "TestManifest"
     $testManifestBadFunctionsWildcardPath = "ManifestBadFunctionsWildcard.psd1"
     $testManifestBadFunctionsWildcardInArrayPath = "ManifestBadFunctionsWildcardInArray.psd1"
     $testManifestBadFunctionsNullPath = "ManifestBadFunctionsNull.psd1"
@@ -15,7 +15,7 @@ BeforeAll {
     $testManifestBadAllPath = "ManifestBadAll.psd1"
     $testManifestGoodPath = "ManifestGood.psd1"
     $testManifestInvalidPath = "ManifestInvalid.psd1"
-    Import-Module (Join-Path $PSScriptRoot "PSScriptAnalyzerTestHelper.psm1")
+    Import-Module (Join-Path "$PSScriptRoot\..\assets" "PSScriptAnalyzerTestHelper.psm1")
 
     Function Run-PSScriptAnalyzerRule
     {
@@ -109,7 +109,7 @@ Describe "UseManifestExportFields" {
     Context "When given a non module manifest file" {
         It "does not flag a PowerShell data file" {
             Invoke-ScriptAnalyzer `
-                -Path "$PSScriptRoot/TestManifest/PowerShellDataFile.psd1" `
+                -Path "$testManifestPath/PowerShellDataFile.psd1" `
                 -IncludeRule "PSUseToExportFieldsInManifest" `
                 -OutVariable ruleViolation
             $ruleViolation.Count | Should -Be 0

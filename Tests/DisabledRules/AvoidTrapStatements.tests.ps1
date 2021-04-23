@@ -1,4 +1,8 @@
-﻿Import-Module PSScriptAnalyzer
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+
+Import-Module PSScriptAnalyzer
 $violationMessage = "Trap found."
 $violationName = "PSAvoidTrapStatement"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

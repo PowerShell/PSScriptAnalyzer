@@ -4,8 +4,8 @@
 BeforeAll {
     $reservedCharMessage = "The cmdlet 'Use-#Reserved' uses a reserved char in its name."
     $reservedCharName = "PSReservedCmdletChar"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingReservedCharNames.ps1 | Where-Object {$_.RuleName -eq $reservedCharName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $reservedCharName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidUsingReservedCharNames.ps1 | Where-Object {$_.RuleName -eq $reservedCharName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $reservedCharName}
 }
 
 Describe "Avoid Using Reserved Char" {

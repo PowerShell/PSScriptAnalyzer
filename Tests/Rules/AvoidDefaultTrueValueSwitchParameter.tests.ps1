@@ -4,8 +4,8 @@
 BeforeAll {
     $violationMessage = "File 'AvoidDefaultTrueValueSwitchParameter.ps1' has a switch parameter default to true."
     $violationName = "PSAvoidDefaultValueSwitchParameter"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidDefaultTrueValueSwitchParameter.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidDefaultTrueValueSwitchParameterNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidDefaultTrueValueSwitchParameter.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidDefaultTrueValueSwitchParameterNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "AvoidDefaultTrueValueSwitchParameter" {

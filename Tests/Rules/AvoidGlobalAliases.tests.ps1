@@ -6,8 +6,8 @@ $IsV3OrV4 = ($PSVersionTable.PSVersion.Major -eq 3) -or ($PSVersionTable.PSVersi
 BeforeAll {
     $AvoidGlobalAliasesError = "Avoid creating aliases with a Global scope."
     $violationName = "PSAvoidGlobalAliases"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalAliases.psm1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalAliasesNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidGlobalAliases.psm1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidGlobalAliasesNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "$violationName " {

@@ -84,7 +84,8 @@ Describe "UseCompatibleCmdlets" {
 
     Context "script has violation" {
         It "detects violation" {
-            $ruleTestDirectory = Join-Path $PSScriptRoot 'UseCompatibleCmdlets'
+            $assetRoot = (Resolve-Path "$PSScriptRoot/../assets").Path
+            $ruleTestDirectory = Join-Path $assetRoot 'UseCompatibleCmdlets'
             $violationFilePath = Join-Path $ruleTestDirectory 'ScriptWithViolation.ps1'
             $settingsFilePath = Join-Path $ruleTestDirectory 'PSScriptAnalyzerSettings.psd1'
             $diagnosticRecords = Invoke-ScriptAnalyzer -Path $violationFilePath -IncludeRule $ruleName -Settings $settingsFilePath

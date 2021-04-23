@@ -7,8 +7,9 @@ BeforeAll {
 
     $violationMessage = "The variable 'declaredVar2' is assigned but never used."
     $violationName = "PSUseDeclaredVarsMoreThanAssignments"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\UseDeclaredVarsMoreThanAssignments.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\UseDeclaredVarsMoreThanAssignmentsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $assetRoot = (Resolve-Path "$PSScriptRoot/../assets").Path
+    $violations = Invoke-ScriptAnalyzer $assetRoot\UseDeclaredVarsMoreThanAssignments.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $assetRoot\UseDeclaredVarsMoreThanAssignmentsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "UseDeclaredVarsMoreThanAssignments" {

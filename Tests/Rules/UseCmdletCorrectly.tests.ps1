@@ -5,8 +5,8 @@
 BeforeAll {
     $violationMessage = "Cmdlet 'Write-Warning' may be used incorrectly. Please check that all mandatory parameters are supplied."
     $violationName = "PSUseCmdletCorrectly"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\UseCmdletCorrectly.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\UseCmdletCorrectly.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "UseCmdletCorrectly" {

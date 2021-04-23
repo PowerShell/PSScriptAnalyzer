@@ -3,7 +3,7 @@
 
 BeforeAll {
     $ruleName = 'PSDSCUseIdenticalMandatoryParametersForDSC'
-    $resourceBasepath = "$PSScriptRoot\DSCResourceModule\DSCResources"
+    $resourceBasepath = (Resolve-Path "$PSScriptRoot\..\assets\DSCResourceModule\DSCResources").Path
     $badResourceFilepath = [System.IO.Path]::Combine(
         $resourceBasepath,
         'MSFT_WaitForAnyNoIdenticalMandatoryParameter',

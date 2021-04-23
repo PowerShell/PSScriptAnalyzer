@@ -5,8 +5,8 @@ BeforeAll {
     $functionErroMessage = "Avoid creating functions with a Global scope."
     $violationName = "PSAvoidGlobalFunctions"
 
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalFunctions.psm1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidGlobalFunctionsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidGlobalFunctions.psm1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\AvoidGlobalFunctionsNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "$violationName " {

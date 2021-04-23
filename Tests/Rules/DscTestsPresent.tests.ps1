@@ -3,12 +3,13 @@
 
 BeforeAll {
     $ruleName = "PSDSCDscTestsPresent"
+    $assetRoot = (Resolve-Path "$PSScriptRoot/../assets").Path
 }
 
  Describe "DscTestsPresent rule in class based resource" -Skip:($PSVersionTable.PSVersion -lt '5.0') {
     BeforeAll {
-        $testsPath = "$PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\Tests"
-        $classResourcePath = "$PSScriptRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1"
+        $testsPath = "$assetRoot\DSCResourceModule\DSCResources\MyDscResource\Tests"
+        $classResourcePath = "$assetRoot\DSCResourceModule\DSCResources\MyDscResource\MyDscResource.psm1"
     }
 
     Context "When tests absent" {
@@ -45,7 +46,7 @@ BeforeAll {
 
 Describe "DscTestsPresent rule in regular (non-class) based resource" {
     BeforeAll {
-        $resourcePath = "$PSScriptRoot\DSCResourceModule\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1"
+        $resourcePath = "$assetRoot\DSCResourceModule\DSCResources\MSFT_WaitForAll\MSFT_WaitForAll.psm1"
     }
 
     Context "When tests absent" {
@@ -65,7 +66,7 @@ Describe "DscTestsPresent rule in regular (non-class) based resource" {
 
     Context "When tests present" {
         BeforeAll {
-            $testsPath = "$PSScriptRoot\DSCResourceModule\Tests"
+            $testsPath = "$assetRoot\DSCResourceModule\Tests"
             New-Item -Path $testsPath -ItemType Directory -force
             New-Item -Path "$testsPath\MSFT_WaitForAll_Test.psm1" -ItemType File -force
             $noViolations = Invoke-ScriptAnalyzer -ErrorAction SilentlyContinue $resourcePath | Where-Object {$_.RuleName -eq $ruleName}

@@ -4,11 +4,11 @@
 BeforeAll {
     $violationMessage = "'cls' is an alias of 'Clear-Host'. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content."
     $violationName = "PSAvoidUsingCmdletAliases"
-    $testRootDirectory = Split-Path -Parent $PSScriptRoot
-    $violationFilepath = Join-Path $PSScriptRoot 'AvoidUsingAlias.ps1'
+    $testRootDirectory = (Resolve-Path "$PSScriptRoot\..\assets").Path
+    $violationFilepath = Join-Path $testRootDirectory 'AvoidUsingAlias.ps1'
     $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidUsingAliasNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    Import-Module (Join-Path $testRootDirectory "PSScriptAnalyzerTestHelper.psm1")
+    $noViolations = Invoke-ScriptAnalyzer $testRootDirectory\AvoidUsingAliasNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    Import-Module (Join-Path $PSScriptRoot ".." "PSScriptAnalyzerTestHelper.psm1")
 }
 
 Describe "AvoidUsingAlias" {
@@ -93,7 +93,7 @@ Configuration MyDscConfiguration {
 
         It "honors the allowlist provided through settings file" {
             # even though join-path returns string, if we do not use tostring, then invoke-scriptanalyzer cannot cast it to string type
-            $settingsFilePath = (Join-Path $PSScriptRoot (Join-Path 'TestSettings' 'AvoidAliasSettings.psd1')).ToString()
+            $settingsFilePath = (Join-Path $testRootDirectory (Join-Path 'TestSettings' 'AvoidAliasSettings.psd1')).ToString()
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $allowListTestScriptDef -Settings $settingsFilePath -IncludeRule $violationName
             $violations.Count | Should -Be 1
         }

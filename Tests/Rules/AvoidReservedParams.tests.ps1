@@ -4,8 +4,8 @@
 BeforeAll {
     $violationMessage = [regex]::Escape("Verb-Files' defines the reserved common parameter 'Verbose'.")
     $violationName = "PSReservedParams"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\BadCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\GoodCmdlet.ps1 | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "AvoidReservedParams" {

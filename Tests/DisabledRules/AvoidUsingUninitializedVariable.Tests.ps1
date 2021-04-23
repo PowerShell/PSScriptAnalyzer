@@ -1,4 +1,7 @@
-﻿Import-Module PSScriptAnalyzer
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module PSScriptAnalyzer
 $AvoidUninitializedVariable = "PSAvoidUninitializedVariable"
 $violationMessage = "Variable 'MyVerbosePreference' is not initialized. Non-global variables must be initialized. To fix a violation of this rule, please initialize non-global variables."
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -12,7 +15,7 @@ Describe "AvoidUsingUninitializedVariable" {
         }
 
         It "has the correct description message for UninitializedVariable rule violation" {
-            $violations[0].Message | Should -Be $violationMessage            
+            $violations[0].Message | Should -Be $violationMessage
         }
     }
 

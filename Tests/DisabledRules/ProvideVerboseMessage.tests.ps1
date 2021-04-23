@@ -1,4 +1,7 @@
-﻿Import-Module PSScriptAnalyzer
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module PSScriptAnalyzer
 $violationMessage = [regex]::Escape("There is no call to Write-Verbose in the function 'Verb-Files'.")
 $violationName = "PSProvideVerboseMessage"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

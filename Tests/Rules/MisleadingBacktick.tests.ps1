@@ -3,10 +3,11 @@
 
 BeforeAll {
     $writeHostName = "PSMisleadingBacktick"
-    $violationFilepath = Join-Path $PSScriptRoot 'MisleadingBacktick.ps1'
+    $assetRoot = (Resolve-Path "$PSScriptRoot/../assets").Path
+    $violationFilepath = Join-Path $assetRoot 'MisleadingBacktick.ps1'
     $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object {$_.RuleName -eq $writeHostName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\NoMisleadingBacktick.ps1 | Where-Object {$_.RuleName -eq $clearHostName}
-    Import-Module (Join-Path $PSScriptRoot "PSScriptAnalyzerTestHelper.psm1")
+    $noViolations = Invoke-ScriptAnalyzer $assetRoot\NoMisleadingBacktick.ps1 | Where-Object {$_.RuleName -eq $clearHostName}
+    Import-Module (Join-Path $PSScriptRoot ".." "PSScriptAnalyzerTestHelper.psm1")
 }
 
 Describe "Avoid Misleading Backticks" {
@@ -15,13 +16,13 @@ Describe "Avoid Misleading Backticks" {
             $violations.Count | Should -Be 5
         }
 
-	It "suggests correction" {
-	   Test-CorrectionExtent $violationFilepath $violations[0] 1 ' ' ''
-	   Test-CorrectionExtent $violationFilepath $violations[1] 1 ' ' ''
-	   Test-CorrectionExtent $violationFilepath $violations[2] 1 ' ' ''
-	   Test-CorrectionExtent $violationFilepath $violations[3] 1 '                     ' ''
-	   Test-CorrectionExtent $violationFilepath $violations[4] 1 '      ' ''
-	}
+        It "suggests correction" {
+            Test-CorrectionExtent $violationFilepath $violations[0] 1 ' ' ''
+            Test-CorrectionExtent $violationFilepath $violations[1] 1 ' ' ''
+            Test-CorrectionExtent $violationFilepath $violations[2] 1 ' ' ''
+            Test-CorrectionExtent $violationFilepath $violations[3] 1 '                     ' ''
+            Test-CorrectionExtent $violationFilepath $violations[4] 1 '      ' ''
+        }
     }
 
     Context "When there are no violations" {

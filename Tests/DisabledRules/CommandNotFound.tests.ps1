@@ -1,4 +1,7 @@
-﻿Import-Module -Verbose ScriptAnalyzer
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module -Verbose ScriptAnalyzer
 $violationMessage = "Command Get-WrongCommand Is Not Found"
 $violationName = "PSCommandNotFound"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

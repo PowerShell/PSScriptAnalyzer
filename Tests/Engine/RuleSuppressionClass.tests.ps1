@@ -7,8 +7,8 @@ BeforeAll {
         $script:skipForV3V4 = $false
     }
 
-    $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
-    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
+    $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\..\assets\RuleSuppression.ps1")
+    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\..\assets\RuleSuppression.ps1"
 }
 
 Describe "RuleSuppressionWithoutScope" {
