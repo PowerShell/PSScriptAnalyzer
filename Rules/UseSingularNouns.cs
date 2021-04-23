@@ -19,6 +19,7 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using Pluralize.NET;
 #else
 using System.ComponentModel.Composition;
+using System.Data.Entity.Design.PluralizationServices;
 #endif
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -207,7 +208,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #else
         private class PluralizerProxy
         {
-            private static readonly PluralizationService s_pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(
+            private static readonly PluralizationService s_pluralizationService = PluralizationService.CreateService(
                 CultureInfo.GetCultureInfo("en-us"));
 
             public bool CanOnlyBePlural(string noun) =>
