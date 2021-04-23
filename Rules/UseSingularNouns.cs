@@ -208,7 +208,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private class PluralizerProxy
         {
             private static readonly PluralizationService s_pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(
-                CultureInfo.GetCultureInfo('en-us'));
+                CultureInfo.GetCultureInfo("en-us"));
 
             public bool CanOnlyBePlural(string noun) =>
                 !s_pluralizationService.IsSingular(noun) && s_pluralizationService.IsPlural(noun);
