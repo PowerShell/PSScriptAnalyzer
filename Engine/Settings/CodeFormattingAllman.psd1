@@ -1,4 +1,4 @@
-@{
+﻿@{
     IncludeRules = @(
         'PSPlaceOpenBrace',
         'PSPlaceCloseBrace',

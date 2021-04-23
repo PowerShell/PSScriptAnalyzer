@@ -1,4 +1,4 @@
-Function Get-ExtentTextFromContent
+﻿Function Get-ExtentTextFromContent
 {
 	    Param(
 	[Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent] $violation,

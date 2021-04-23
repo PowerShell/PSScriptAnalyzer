@@ -1,4 +1,4 @@
-Function Get-SolutionPath
+﻿Function Get-SolutionPath
 {
     Split-Path $PSScriptRoot -Parent
 }

@@ -1,4 +1,4 @@
-﻿# AlignAssignmentStatement
+# AlignAssignmentStatement
 
 **Severity Level: Warning**
 

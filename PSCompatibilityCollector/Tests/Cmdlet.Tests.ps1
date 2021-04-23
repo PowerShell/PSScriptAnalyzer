@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 # TODO: These tests don't work in-process; they load too much and in AppVeyor, the module doesn't load properly.

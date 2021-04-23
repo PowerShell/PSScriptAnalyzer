@@ -1,4 +1,4 @@
-Function New-RuleObject
+﻿Function New-RuleObject
 {
     param(
         [string] $Name,
