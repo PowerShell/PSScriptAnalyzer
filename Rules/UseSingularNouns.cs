@@ -161,7 +161,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Cmdlet doesn't use CamelCase, so assume it's something like an initialism that shouldn't be singularized
-            if (!char.IsLower(cmdletName[^1]))
+            if (!char.IsLower(cmdletName[cmdletName.Length - 1]))
             {
                 return null;
             }
