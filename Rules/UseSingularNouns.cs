@@ -53,9 +53,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> funcAsts = ast.FindAll(item => item is FunctionDefinitionAst, true);
 
-            char[] funcSeperator = { '-' };
-            string[] funcNamePieces = new string[2];
-            
             var pluralizer = new PluralizerProxy();
 
             foreach (FunctionDefinitionAst funcAst in funcAsts)
