@@ -88,7 +88,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetName(),
                         DiagnosticSeverity.Warning,
                         fileName,
-                        suggestedCorrections: new CorrectionExtent[] { GetCorrection(pluralizer, extent, noun) });
+                        suggestedCorrections: new CorrectionExtent[] { GetCorrection(pluralizer, extent, funcAst.Name, noun) });
                 }
             }
 
@@ -146,10 +146,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
-        private CorrectionExtent GetCorrection(PluralizerProxy pluralizer, IScriptExtent extent, string noun)
+        private CorrectionExtent GetCorrection(PluralizerProxy pluralizer, IScriptExtent extent, string commandName, string noun)
         {
             string singularNoun = pluralizer.Singularize(noun);
-            return new CorrectionExtent(extent, singularNoun, extent.File, $"Singularized correction of '{extent.Text}'");
+            string newCommandName = commandName.Substring(0, commandName.Length - noun.Length) + singularNoun;
+            return new CorrectionExtent(extent, newCommandName, extent.File, $"Singularized correction of '{extent.Text}'");
         }
 
         /// <summary>
