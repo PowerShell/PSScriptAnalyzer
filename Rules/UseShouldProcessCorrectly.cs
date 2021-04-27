@@ -350,7 +350,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private bool TryGetShouldProcessValueFromAst(FunctionInfo functionInfo, out bool hasShouldProcessSet)
         {
             // Get the body of the function
-            ScriptBlockAst functionBodyAst = (ScriptBlockAst)functionInfo.ScriptBlock.Ast.Find(ast => ast is ScriptBlockAst, searchNestedScriptBlocks: false);
+            ScriptBlockAst functionBodyAst = (ScriptBlockAst)functionInfo.ScriptBlock.Ast.Find(ast => ast is ScriptBlockAst, searchNestedScriptBlocks: true);
 
             // Go through attributes on the parameter block, since this is where [CmdletBinding()] will be
             foreach (AttributeAst attributeAst in functionBodyAst.ParamBlock.Attributes)
