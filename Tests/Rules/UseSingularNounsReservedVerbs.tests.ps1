@@ -63,8 +63,6 @@ Write-Output "Adding some data"
         ) {
             param([string]$Script, $Extent, $Correction)
 
-            Write-Host "Test: $Script"
-
             $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $Script
 
             if (-not $Extent)
