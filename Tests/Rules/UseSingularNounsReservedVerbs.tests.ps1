@@ -53,16 +53,14 @@ Write-Output "Adding some data"
     }
 
     Context "Inline tests" {
-        $testCases = @(
+        It 'Correctly diagnoses and corrects <Script>' -TestCases @(
             @{ Script = 'function Get-Horses { "horses" }'; Extent = @{ StartCol = 10; EndCol = 20 }; Correction = 'Get-Horse' }
             @{ Script = 'function ConvertTo-StartingCriteria { "criteria" }'; Extent = @{ StartCol = 10; EndCol = 36 }; Correction = 'ConvertTo-StartingCriterion' }
             @{ Script = 'function Invoke-Data { "data" }' }
             @{ Script = 'function Get-Horse { "horses" }' }
             @{ Script = 'function get-horse { "horses" }' }
             @{ Script = 'function horse { "horses" }' }
-        )
-
-        It 'Correctly diagnoses and corrects <Script>' -TestCases $testCases {
+        ) {
             param([string]$Script, $Extent, $Correction)
 
             Write-Host "Test: $Script"
