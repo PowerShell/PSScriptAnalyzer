@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 BeforeAll {
@@ -49,6 +49,45 @@ Write-Output "Adding some data"
     Context "When there are no violations" {
         It "returns no violations" {
             $nounNoViolations.Count | Should -Be 0
+        }
+    }
+
+    Context "Inline tests" {
+        BeforeAll {
+            $testCases = @(
+                @{ Script = 'function Get-Horses { "horses" }'; Extent = @{ StartCol = 10; EndCol = 20 }; Correction = 'Get-Horse' }
+                @{ Script = 'function ConvertTo-StartingCriteria { "criteria" }'; Extent = @{ StartCol = 10; EndCol = 36 }; Correction = 'ConvertTo-StartingCriterion' }
+                @{ Script = 'function Invoke-Data { "data" }' }
+                @{ Script = 'function Get-Horse { "horses" }' }
+                @{ Script = 'function get-horse { "horses" }' }
+                @{ Script = 'function horse { "horses" }' }
+            )
+        }
+
+        It 'Correctly diagnoses and corrects <Script>' -TestCases $testCases {
+            param([string]$Script, $Extent, $Correction)
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $Script
+
+            if (-not $Extent)
+            {
+                $diagnostics | Should -BeNullOrEmpty
+                return
+            }
+
+            $expectedStartLine = if ($Extent.StartLine) { $Extent.StartLine } else { 1 }
+            $expectedEndLine = if ($Extent.EndLine) { $Extent.EndLine } else { 1 }
+
+            $diagnostics.Extent.StartLineNumber | Should -BeExactly $expectedStartLine
+            $diagnostics.Extent.EndLineNumber | Should -BeExactly $expectedEndLine
+            $diagnostics.Extent.StartColumnNumber | Should -BeExactly $Extent.StartCol
+            $diagnostics.Extent.EndColumnNumber | Should -BeExactly $Extent.EndCol
+
+            $diagnostics.SuggestedCorrections.StartLineNumber | Should -BeExactly $expectedStartLine
+            $diagnostics.SuggestedCorrections.EndLineNumber | Should -BeExactly $expectedEndLine
+            $diagnostics.SuggestedCorrections.StartColumnNumber | Should -BeExactly $Extent.StartCol
+            $diagnostics.SuggestedCorrections.EndColumnNumber | Should -BeExactly $Extent.EndCol
+            $diagnostics.SuggestedCorrections.Text | Should -BeExactly $Correction
         }
     }
 }
