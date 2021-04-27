@@ -22,7 +22,6 @@ using System.ComponentModel.Composition;
 using System.Data.Entity.Design.PluralizationServices;
 #endif
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
@@ -71,12 +70,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (pluralizer.CanOnlyBePlural(noun))
                 {
-                    IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
-
                     if (nounAllowList.Contains(noun, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
+
+                    IScriptExtent extent = Helper.Instance.GetScriptExtentForFunctionName(funcAst);
 
                     if (extent is null)
                     {
@@ -88,7 +87,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         extent,
                         GetName(),
                         DiagnosticSeverity.Warning,
-                        fileName);
+                        fileName,
+                        suggestedCorrections: new CorrectionExtent[] { GetCorrection(pluralizer, extent, noun) });
                 }
             }
 
@@ -146,6 +146,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
 
+        private CorrectionExtent GetCorrection(PluralizerProxy pluralizer, IScriptExtent extent, string noun)
+        {
+            string singularNoun = pluralizer.Singularize(noun);
+            return new CorrectionExtent(extent, singularNoun, extent.File, $"Singularized correction of '{extent.Text}'");
+        }
+
         /// <summary>
         /// Gets the last word in a standard syntax, CamelCase cmdlet.
         /// If the cmdlet name is non-standard, returns null.
@@ -195,6 +201,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public bool CanOnlyBePlural(string noun) =>
                 !_pluralizer.IsSingular(noun) && _pluralizer.IsPlural(noun);
+
+            public string Singularize(string noun) => _pluralizer.Singularize(noun);
         }
 #else
         private class PluralizerProxy
@@ -204,6 +212,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             public bool CanOnlyBePlural(string noun) =>
                 !s_pluralizationService.IsSingular(noun) && s_pluralizationService.IsPlural(noun);
+
+            public string Singularize(string noun) => s_pluralizationService.Singularize(noun);
         }
 #endif
     }
