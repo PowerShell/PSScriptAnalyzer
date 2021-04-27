@@ -1,4 +1,4 @@
-Describe "TextEdit Class" {
+﻿Describe "TextEdit Class" {
     BeforeAll {
         $type = [Microsoft.Windows.PowerShell.ScriptAnalyzer.TextEdit]
     }

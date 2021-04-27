@@ -1,4 +1,7 @@
-﻿Import-Module PSScriptAnalyzer
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module PSScriptAnalyzer
 $violationMessage = @'
 The file path "D:\\Code" of AvoidUsingFilePath.ps1 is rooted. This should be avoided if AvoidUsingFilePath.ps1 is published online
 '@

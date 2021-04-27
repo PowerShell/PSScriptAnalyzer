@@ -1,8 +1,9 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 BeforeAll {
-    $settingsTestDirectory = [System.IO.Path]::Combine($PSScriptRoot, "SettingsTest")
+    $assetRoot = (Resolve-Path "$PSScriptRoot/../assets").Path
+    $settingsTestDirectory = [System.IO.Path]::Combine($assetRoot, "SettingsTest")
     $project1Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project1")
     $project2Root = [System.IO.Path]::Combine($settingsTestDirectory, "Project2")
     $settingsTypeName = 'Microsoft.Windows.PowerShell.ScriptAnalyzer.Settings'

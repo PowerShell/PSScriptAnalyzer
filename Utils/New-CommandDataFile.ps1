@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Create a JSON file containing module found in $pshome and their corresponding exported commands
 

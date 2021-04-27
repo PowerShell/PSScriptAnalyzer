@@ -1,4 +1,4 @@
-﻿# CHANGELOG
+# CHANGELOG
 
 ## [1.19.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.19.1) - 2020-07-28
 

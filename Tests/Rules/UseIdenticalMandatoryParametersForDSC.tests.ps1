@@ -1,9 +1,9 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 BeforeAll {
     $ruleName = 'PSDSCUseIdenticalMandatoryParametersForDSC'
-    $resourceBasepath = "$PSScriptRoot\DSCResourceModule\DSCResources"
+    $resourceBasepath = (Resolve-Path "$PSScriptRoot\..\assets\DSCResourceModule\DSCResources").Path
     $badResourceFilepath = [System.IO.Path]::Combine(
         $resourceBasepath,
         'MSFT_WaitForAnyNoIdenticalMandatoryParameter',

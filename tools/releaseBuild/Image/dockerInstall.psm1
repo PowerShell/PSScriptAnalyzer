@@ -1,4 +1,4 @@
-function Install-ChocolateyPackage
+﻿function Install-ChocolateyPackage
 {
     param(
         [Parameter(Mandatory=$true)]

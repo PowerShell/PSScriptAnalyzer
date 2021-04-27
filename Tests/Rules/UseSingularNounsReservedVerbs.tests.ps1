@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 BeforeAll {
@@ -6,10 +6,10 @@ BeforeAll {
     $verbViolationMessage = "The cmdlet 'Verb-Files' uses an unapproved verb."
     $nounViolationName = "PSUseSingularNouns"
     $verbViolationName = "PSUseApprovedVerbs"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\BadCmdlet.ps1
+    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\BadCmdlet.ps1
     $nounViolations = $violations | Where-Object {$_.RuleName -eq $nounViolationName}
     $verbViolations = $violations | Where-Object {$_.RuleName -eq $verbViolationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\GoodCmdlet.ps1
+    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\GoodCmdlet.ps1
     $nounNoViolations = $noViolations | Where-Object {$_.RuleName -eq $nounViolationName}
     $verbNoViolations = $noViolations | Where-Object {$_.RuleName -eq $verbViolationName}
 }

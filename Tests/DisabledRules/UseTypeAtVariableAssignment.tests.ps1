@@ -1,4 +1,7 @@
-﻿$violationMessage = [regex]::Escape('Specify type at the assignment of variable $test')
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+$violationMessage = [regex]::Escape('Specify type at the assignment of variable $test')
 $violationName = "PSUseTypeAtVariableAssignment"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\UseTypeAtVariableAssignment.ps1 | Where-Object {$_.RuleName -eq $violationName}

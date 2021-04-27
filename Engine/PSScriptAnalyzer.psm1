@@ -1,4 +1,4 @@
-#
+﻿#
 # Script module for module 'PSScriptAnalyzer'
 #
 Set-StrictMode -Version Latest

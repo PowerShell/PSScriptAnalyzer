@@ -8,6 +8,7 @@ BeforeAll {
     $rules = Get-ScriptAnalyzerRule -Name ($singularNouns, "PSUseApprovedVerbs")
     $avoidRules = Get-ScriptAnalyzerRule -Name "PSAvoid*"
     $useRules = "PSUse*"
+    $assetRoot = (Resolve-Path "$PSScriptRoot/../assets").Path
 }
 
 Describe "Test available parameters" {
@@ -129,7 +130,7 @@ Describe "Test ScriptDefinition" {
 Describe "Test Path" {
     Context "When given a single file" {
         It "Has the same effect as without Path parameter" {
-            $scriptPath = Join-Path $PSScriptRoot "TestScript.ps1"
+            $scriptPath = Join-Path $assetRoot "TestScript.ps1"
             $withPath = Invoke-ScriptAnalyzer $scriptPath
             $withoutPath = Invoke-ScriptAnalyzer -Path $scriptPath
             $withPath.Count | Should -Be $withoutPath.Count
@@ -148,8 +149,8 @@ Describe "Test Path" {
     Context "DiagnosticRecord  " {
         It "has valid ScriptPath and ScriptName properties when an input file is given" {
             $scriptName = "TestScript.ps1"
-            $scriptPath = Join-Path $PSScriptRoot $scriptName
-            $expectedScriptPath = Resolve-Path $PSScriptRoot\TestScript.ps1
+            $scriptPath = Join-Path $assetRoot $scriptName
+            $expectedScriptPath = Resolve-Path $assetRoot\TestScript.ps1
             $diagnosticRecords = Invoke-ScriptAnalyzer $scriptPath -IncludeRule "PSAvoidUsingEmptyCatchBlock"
             $diagnosticRecords[0].ScriptPath | Should -Be $expectedScriptPath.Path
             $diagnosticRecords[0].ScriptName | Should -Be $scriptName
@@ -164,8 +165,8 @@ Describe "Test Path" {
 
     Context "When given a glob" -Skip:$testingLibraryUsage {
         It "Invokes on all the matching files" {
-            $numFilesResult = (Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
-            $numFilesExpected = (Get-ChildItem -Path $PSScriptRoot\TestTestPath*.ps1).Count
+            $numFilesResult = (Invoke-ScriptAnalyzer -Path $assetRoot\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
+            $numFilesExpected = (Get-ChildItem -Path $assetRoot\TestTestPath*.ps1).Count
             $numFilesResult | Should -Be $numFilesExpected
         }
     }
@@ -189,7 +190,7 @@ Describe "Test Path" {
         It "Recognizes the path" {
             $freeDriveNameLen = 2
             $freeDrive, $freeDriveName = GetFreeDrive $freeDriveNameLen
-            New-PSDrive -Name $freeDriveName -PSProvider FileSystem -Root $PSScriptRoot
+            New-PSDrive -Name $freeDriveName -PSProvider FileSystem -Root $assetRoot
             $numFilesExpected = (Get-ChildItem -Path $freeDrive\TestTestPath*.ps1).Count
             $numFilesResult = (Invoke-ScriptAnalyzer -Path $freeDrive\TestTestPath*.ps1 | Select-Object -Property ScriptName -Unique).Count
             Remove-PSDrive $freeDriveName
@@ -199,23 +200,23 @@ Describe "Test Path" {
 
     Context "When piping in files" -Skip:$testingLibraryUsage {
         It "Can be piped in from a string" {
-            $piped = ("$PSScriptRoot\TestScript.ps1" | Invoke-ScriptAnalyzer)
-            $explicit = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1
+            $piped = ("$assetRoot\TestScript.ps1" | Invoke-ScriptAnalyzer)
+            $explicit = Invoke-ScriptAnalyzer -Path $assetRoot\TestScript.ps1
 
             $piped.Count | Should -Be $explicit.Count
         }
 
         It "Can be piped from Get-ChildItem" {
-            $piped = ( Get-ChildItem -Path $PSScriptRoot -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
-            $explicit = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestTestPath*.ps1
+            $piped = ( Get-ChildItem -Path $assetRoot -Filter TestTestPath*.ps1 | Invoke-ScriptAnalyzer)
+            $explicit = Invoke-ScriptAnalyzer -Path $assetRoot\TestTestPath*.ps1
             $piped.Count | Should -Be $explicit.Count
         }
     }
 
     Context "When given a directory" {
         BeforeAll {
-            $withoutPathWithDirectory = Invoke-ScriptAnalyzer -Recurse $PSScriptRoot\RecursionDirectoryTest
-            $withPathWithDirectory = Invoke-ScriptAnalyzer -Recurse -Path $PSScriptRoot\RecursionDirectoryTest
+            $withoutPathWithDirectory = Invoke-ScriptAnalyzer -Recurse $assetRoot\RecursionDirectoryTest
+            $withPathWithDirectory = Invoke-ScriptAnalyzer -Recurse -Path $assetRoot\RecursionDirectoryTest
         }
 
         It "Has the same count as without Path parameter" {
@@ -237,27 +238,27 @@ Describe "Test Path" {
 Describe "Test ExcludeRule" {
     Context "When used correctly" {
         It "excludes 1 rule" {
-            $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $singularNouns | Where-Object { $_.RuleName -eq $singularNouns }
+            $noViolations = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -ExcludeRule $singularNouns | Where-Object { $_.RuleName -eq $singularNouns }
             $noViolations.Count | Should -Be 0
         }
 
         It "excludes 3 rules" {
-            $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $rules | Where-Object { $rules -contains $_.RuleName }
+            $noViolations = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -ExcludeRule $rules | Where-Object { $rules -contains $_.RuleName }
             $noViolations.Count | Should -Be 0
         }
     }
 
     Context "When used incorrectly" {
         It "does not exclude any rules" {
-            $noExclude = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1
-            $withExclude = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule "This is a wrong rule"
+            $noExclude = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1
+            $withExclude = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -ExcludeRule "This is a wrong rule"
             $withExclude.Count -eq $noExclude.Count | Should -BeTrue
         }
     }
 
     Context "Support wild card" {
         It "supports wild card exclusions of input rules" {
-            $excludeWildCard = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -ExcludeRule $avoidRules | Where-Object { $_.RuleName -match $avoidRules }
+            $excludeWildCard = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -ExcludeRule $avoidRules | Where-Object { $_.RuleName -match $avoidRules }
         }
     }
 }
@@ -265,7 +266,7 @@ Describe "Test ExcludeRule" {
 Describe "Test IncludeRule" {
     Context "When used correctly" {
         It "includes 1 rule" {
-            $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $approvedVerb | Where-Object { $_.RuleName -eq $approvedVerb }
+            $violations = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -IncludeRule $approvedVerb | Where-Object { $_.RuleName -eq $approvedVerb }
             $violations.Count | Should -Be 1
         }
 
@@ -276,21 +277,21 @@ Describe "Test IncludeRule" {
             {
                 $expectedNumViolations = 1
             }
-            $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $rules
+            $violations = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -IncludeRule $rules
             $violations.Count | Should -Be $expectedNumViolations
         }
     }
 
     Context "When used incorrectly" {
         It "does not include any rules" {
-            $wrongInclude = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule "This is a wrong rule"
+            $wrongInclude = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -IncludeRule "This is a wrong rule"
             $wrongInclude.Count | Should -Be 0
         }
     }
 
     Context "IncludeRule supports wild card" {
         It "includes 1 wildcard rule" {
-            $includeWildcard = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
+            $includeWildcard = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -IncludeRule $avoidRules
             $includeWildcard.Count | Should -Be 0
         }
 
@@ -301,8 +302,8 @@ Describe "Test IncludeRule" {
             {
                 $expectedNumViolations = 3
             }
-            $includeWildcard = Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $avoidRules
-            $includeWildcard += Invoke-ScriptAnalyzer $PSScriptRoot\..\Rules\BadCmdlet.ps1 -IncludeRule $useRules
+            $includeWildcard = Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -IncludeRule $avoidRules
+            $includeWildcard += Invoke-ScriptAnalyzer $assetRoot\BadCmdlet.ps1 -IncludeRule $useRules
             $includeWildcard.Count | Should -Be $expectedNumViolations
         }
     }
@@ -310,12 +311,12 @@ Describe "Test IncludeRule" {
 
 Describe "Test Exclude And Include" {
     It "Exclude and Include different rules" {
-        $violations = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -IncludeRule "PSAvoidUsingEmptyCatchBlock" -ExcludeRule "PSAvoidUsingPositionalParameters"
+        $violations = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -IncludeRule "PSAvoidUsingEmptyCatchBlock" -ExcludeRule "PSAvoidUsingPositionalParameters"
         $violations.Count | Should -Be 1
     }
 
     It "Exclude and Include the same rule" {
-        $violations = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -IncludeRule "PSAvoidUsingEmptyCatchBlock" -ExcludeRule "PSAvoidUsingEmptyCatchBlock"
+        $violations = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -IncludeRule "PSAvoidUsingEmptyCatchBlock" -ExcludeRule "PSAvoidUsingEmptyCatchBlock"
         $violations.Count | Should -Be 0
     }
 }
@@ -353,26 +354,25 @@ Describe "Test Severity" {
 
     Context "When used correctly" {
         It "works with one argument" {
-            $errors = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -Severity Information
+            $errors = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -Severity Information
             $errors.Count | Should -Be 0
         }
 
         It "works with 2 arguments" {
-            $errors = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -Severity Information, Warning
+            $errors = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -Severity Information, Warning
             $errors.Count | Should -Be 1
         }
 
         It "works with lowercase argument" {
-            $errors = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -Severity information, warning
+            $errors = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -Severity information, warning
             $errors.Count | Should -Be 1
         }
 
         It "works for dsc rules" {
-            $testDataPath = [System.IO.Path]::Combine($(Split-Path $PSScriptRoot -Parent), `
-                    'Rules', `
-                    'DSCResourceModule', `
-                    'DSCResources', `
-                    'MSFT_WaitForAll', `
+            $testDataPath = [System.IO.Path]::Combine($assetRoot,
+                    'DSCResourceModule',
+                    'DSCResources',
+                    'MSFT_WaitForAll',
                     'MSFT_WaitForAll.psm1')
 
             Function Get-Count { begin { $count = 0 } process { $count++ } end { $count } }
@@ -391,7 +391,7 @@ Describe "Test Severity" {
 
     Context "When used incorrectly" {
         It "throws error" {
-            { Invoke-ScriptAnalyzer -Severity "Wrong" $PSScriptRoot\TestScript.ps1 } | Should -Throw
+            { Invoke-ScriptAnalyzer -Severity "Wrong" $assetRoot\TestScript.ps1 } | Should -Throw
         }
     }
 }
@@ -402,33 +402,33 @@ Describe "Test CustomizedRulePath" {
     }
     Context "When used correctly" {
         It "with the module folder path" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules | Where-Object { $_.RuleName -eq $measureRequired }
+            $customizedRulePath = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -CustomizedRulePath $assetRoot\CommunityAnalyzerRules | Where-Object { $_.RuleName -eq $measureRequired }
             $customizedRulePath.Count | Should -Be 1
         }
 
         It "with the psd1 path" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1 | Where-Object { $_.RuleName -eq $measureRequired }
+            $customizedRulePath = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -CustomizedRulePath $assetRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psd1 | Where-Object { $_.RuleName -eq $measureRequired }
             $customizedRulePath.Count | Should -Be 1
 
         }
 
         It "with the psm1 path" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 | Where-Object { $_.RuleName -eq $measureRequired }
+            $customizedRulePath = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -CustomizedRulePath $assetRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 | Where-Object { $_.RuleName -eq $measureRequired }
             $customizedRulePath.Count | Should -Be 1
         }
 
         It "with IncludeRule" {
-            $customizedRulePathInclude = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -IncludeRule "Measure-RequiresModules"
+            $customizedRulePathInclude = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -CustomizedRulePath $assetRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -IncludeRule "Measure-RequiresModules"
             $customizedRulePathInclude.Count | Should -Be 1
         }
 
         It "with ExcludeRule" {
-            $customizedRulePathExclude = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -ExcludeRule "Measure-RequiresModules" | Where-Object { $_.RuleName -eq $measureRequired }
+            $customizedRulePathExclude = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -CustomizedRulePath $assetRoot\CommunityAnalyzerRules\CommunityAnalyzerRules.psm1 -ExcludeRule "Measure-RequiresModules" | Where-Object { $_.RuleName -eq $measureRequired }
             $customizedRulePathExclude.Count | Should -Be 0
         }
 
         It "When supplied with a collection of paths" {
-            $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomRulePath ("$PSScriptRoot\CommunityAnalyzerRules", "$PSScriptRoot\samplerule", "$PSScriptRoot\samplerule\samplerule2")
+            $customizedRulePath = Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -CustomRulePath ("$assetRoot\CommunityAnalyzerRules", "$assetRoot\samplerule", "$assetRoot\samplerule\samplerule2")
             $customizedRulePath.Count | Should -Be 3
         }
     }
@@ -436,7 +436,7 @@ Describe "Test CustomizedRulePath" {
     Context "When used from settings file" -Skip:$testingLibraryUsage {
         It "Should process relative settings path" {
             try {
-                Push-Location $PSScriptRoot
+                Push-Location $assetRoot
                 $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings .\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1
                 $warnings.Count | Should -Be 1
             }
@@ -447,7 +447,7 @@ Describe "Test CustomizedRulePath" {
 
         It "Should process relative settings path even when settings path object is not resolved to a string yet" {
             try {
-                Push-Location $PSScriptRoot
+                Push-Location $assetRoot
                 $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -Settings (Join-Path (Get-Location).Path '.\SettingsTest\..\SettingsTest\Project1\PSScriptAnalyzerSettings.psd1')
                 $warnings.Count | Should -Be 1
             }
@@ -465,34 +465,34 @@ Describe "Test CustomizedRulePath" {
 
         It "Should use the CustomRulePath parameter" {
             $settings = @{
-                CustomRulePath        = "$PSScriptRoot\CommunityAnalyzerRules"
+                CustomRulePath        = "$assetRoot\CommunityAnalyzerRules"
                 IncludeDefaultRules   = $false
                 RecurseCustomRulePath = $false
             }
 
-            $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
+            $v = Invoke-ScriptAnalyzer -Path $assetRoot\TestScript.ps1 -Settings $settings
             $v.Count | Should -Be 1
         }
 
         It "Should use the IncludeDefaultRulePath parameter" {
             $settings = @{
-                CustomRulePath        = "$PSScriptRoot\CommunityAnalyzerRules"
+                CustomRulePath        = "$assetRoot\CommunityAnalyzerRules"
                 IncludeDefaultRules   = $true
                 RecurseCustomRulePath = $false
             }
 
-            $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
+            $v = Invoke-ScriptAnalyzer -Path $assetRoot\TestScript.ps1 -Settings $settings
             $v.Count | Should -Be 2
         }
 
         It "Should use the RecurseCustomRulePath parameter" {
             $settings = @{
-                CustomRulePath        = "$PSScriptRoot\samplerule"
+                CustomRulePath        = "$assetRoot\samplerule"
                 IncludeDefaultRules   = $false
                 RecurseCustomRulePath = $true
             }
 
-            $v = Invoke-ScriptAnalyzer -Path $PSScriptRoot\TestScript.ps1 -Settings $settings
+            $v = Invoke-ScriptAnalyzer -Path $assetRoot\TestScript.ps1 -Settings $settings
             $v.Count | Should -Be 3
         }
     }
@@ -500,18 +500,18 @@ Describe "Test CustomizedRulePath" {
     Context "When used from settings file and command line simulataneusly" -Skip:$testingLibraryUsage {
         BeforeAll {
             $settings = @{
-                CustomRulePath        = "$PSScriptRoot\samplerule"
+                CustomRulePath        = "$assetRoot\samplerule"
                 IncludeDefaultRules   = $false
                 RecurseCustomRulePath = $false
             }
             $isaParams = @{
-                Path     = "$PSScriptRoot\TestScript.ps1"
+                Path     = "$assetRoot\TestScript.ps1"
                 Settings = $settings
             }
         }
 
         It "Should combine CustomRulePaths" {
-            $v = Invoke-ScriptAnalyzer @isaParams -CustomRulePath "$PSScriptRoot\CommunityAnalyzerRules"
+            $v = Invoke-ScriptAnalyzer @isaParams -CustomRulePath "$assetRoot\CommunityAnalyzerRules"
             $v.Count | Should -Be 2
         }
 
@@ -530,7 +530,7 @@ Describe "Test CustomizedRulePath" {
         It "file cannot be found" {
             try
             {
-                Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomRulePath "Invalid CustomRulePath"
+                Invoke-ScriptAnalyzer $assetRoot\TestScript.ps1 -CustomRulePath "Invalid CustomRulePath"
             }
             catch
             {
@@ -547,8 +547,8 @@ Describe "Test -Fix Switch" {
 
     BeforeAll {
         $scriptName = "TestScriptWithFixableWarnings.ps1"
-        $testSource = Join-Path $PSScriptRoot $scriptName
-        $fixedScript = Join-Path $PSScriptRoot TestScriptWithFixableWarnings_AfterFix.ps1
+        $testSource = Join-Path $assetRoot $scriptName
+        $fixedScript = Join-Path $assetRoot TestScriptWithFixableWarnings_AfterFix.ps1
         $expectedScriptContent = Get-Content $fixedScript -Raw
         $testScript = Join-Path $TESTDRIVE $scriptName
     }

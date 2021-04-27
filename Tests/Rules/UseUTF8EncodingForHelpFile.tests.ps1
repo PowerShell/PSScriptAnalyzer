@@ -5,9 +5,9 @@ Describe "UseUTF8EncodingForHelpFile" {
     BeforeAll {
         $violationMessage = "File about_utf16.help.txt has to use UTF8 instead of System.Text.UTF32Encoding encoding because it is a powershell help file."
         $violationName = "PSUseUTF8EncodingForHelpFile"
-        $violations = Invoke-ScriptAnalyzer $PSScriptRoot\about_utf16.help.txt | Where-Object {$_.RuleName -eq $violationName}
-        $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\about_utf8.help.txt | Where-Object {$_.RuleName -eq $violationName}
-        $notHelpFileViolations = Invoke-ScriptAnalyzer $PSScriptRoot\utf16.txt | Where-Object {$_.RuleName -eq $violationName}
+        $violations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\about_utf16.help.txt | Where-Object {$_.RuleName -eq $violationName}
+        $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\about_utf8.help.txt | Where-Object {$_.RuleName -eq $violationName}
+        $notHelpFileViolations = Invoke-ScriptAnalyzer $PSScriptRoot\..\assets\utf16.txt | Where-Object {$_.RuleName -eq $violationName}
     }
 
     Context "When there are violations" {

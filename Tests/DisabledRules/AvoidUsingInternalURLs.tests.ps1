@@ -1,4 +1,7 @@
-﻿Import-Module PSScriptAnalyzer
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module PSScriptAnalyzer
 $violationMessage = "could be an internal URL. Using internal URL directly in the script may cause potential information disclosure."
 $violationName = "PSAvoidUsingInternalURLs"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

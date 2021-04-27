@@ -1,4 +1,4 @@
-﻿# UseSupportsShouldProcess
+# UseSupportsShouldProcess
 **Severity Level: Warning**
 
 ## Description

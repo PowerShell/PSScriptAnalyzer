@@ -5,8 +5,10 @@ BeforeAll {
     $testRootDirectory = Split-Path -Parent $PSScriptRoot
     Import-Module (Join-Path $testRootDirectory 'PSScriptAnalyzerTestHelper.psm1')
 
-    $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$PSScriptRoot\RuleSuppression.ps1")
-    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\RuleSuppression.ps1"
+    $assetRoot = (Resolve-Path "$PSScriptRoot/../assets").Path
+
+    $violationsUsingScriptDefinition = Invoke-ScriptAnalyzer -ScriptDefinition (Get-Content -Raw "$assetRoot/RuleSuppression.ps1")
+    $violations = Invoke-ScriptAnalyzer "$assetRoot\RuleSuppression.ps1"
 
     $ruleSuppressionBad = @'
     Function do-something
@@ -126,7 +128,7 @@ function SuppressPwdParam()
 '@
             Invoke-ScriptAnalyzer `
                 -ScriptDefinition $externalRuleSuppression `
-                -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") `
+                -CustomRulePath (Join-Path $assetRoot "CommunityAnalyzerRules") `
                 -OutVariable ruleViolations `
                 -SuppressedOnly
             $ruleViolations.Count | Should -Be 1

@@ -1,4 +1,7 @@
-﻿Import-Module PSScriptAnalyzer
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module PSScriptAnalyzer
 $oneCharMessage = "The cmdlet name O only has one character."
 $oneCharName = "PSOneChar"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

@@ -1,4 +1,7 @@
-﻿Import-Module -Verbose PSScriptAnalyzer
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+Import-Module -Verbose PSScriptAnalyzer
 $violationMessage = "Type Stre is not found"
 $violationName = "PSTypeNotFound"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path

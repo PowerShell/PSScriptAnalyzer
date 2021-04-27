@@ -315,7 +315,7 @@ Describe 'UseCompatibleCommands' {
                 }
             }
 
-            $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings -Severity Information,Warning,Error
+            $diagnostics = Invoke-ScriptAnalyzer -Path "$PSScriptRoot/../assets/CompatibilityRuleAssets/IncompatibleScript.ps1" -IncludeRule $script:RuleName -Settings $settings -Severity Information,Warning,Error
 
             # Classes cause diagnostics to be emitted in PS 3 and 4
             $expectedNumber = 17

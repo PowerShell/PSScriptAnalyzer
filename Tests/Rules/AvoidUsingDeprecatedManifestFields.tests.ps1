@@ -3,9 +3,9 @@
 
 BeforeAll {
     $violationName = "PSAvoidUsingDeprecatedManifestFields"
-    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\TestBadModule\TestDeprecatedManifestFields.psd1" | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer "$PSScriptRoot\TestGoodModule\TestGoodModule.psd1" | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations2 = Invoke-ScriptAnalyzer "$PSScriptRoot\TestGoodModule\TestDeprecatedManifestFieldsWithVersion2.psd1" | Where-Object {$_.RuleName -eq $violationName}
+    $violations = Invoke-ScriptAnalyzer "$PSScriptRoot\..\assets\TestBadModule\TestDeprecatedManifestFields.psd1" | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations = Invoke-ScriptAnalyzer "$PSScriptRoot\..\assets\TestGoodModule\TestGoodModule.psd1" | Where-Object {$_.RuleName -eq $violationName}
+    $noViolations2 = Invoke-ScriptAnalyzer "$PSScriptRoot\..\assets\TestGoodModule\TestDeprecatedManifestFieldsWithVersion2.psd1" | Where-Object {$_.RuleName -eq $violationName}
 }
 
 Describe "AvoidUsingDeprecatedManifestFields" {
@@ -28,7 +28,7 @@ Describe "AvoidUsingDeprecatedManifestFields" {
     Context "When given a non module manifest file" {
         It "does not flag a PowerShell data file" {
             Invoke-ScriptAnalyzer `
-                -Path "$PSScriptRoot/TestManifest/PowerShellDataFile.psd1" `
+                -Path "$PSScriptRoot/..\assets\TestManifest/PowerShellDataFile.psd1" `
                 -IncludeRule "PSAvoidUsingDeprecatedManifestFields" `
                 -OutVariable ruleViolation
             $ruleViolation.Count | Should -Be 0
