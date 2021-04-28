@@ -54,7 +54,7 @@ Write-Output "Adding some data"
 
     Context "Inline tests" {
         It 'Correctly diagnoses and corrects <Script>' -TestCases @(
-            @{ Script = 'function Get-Horses { "horses" }'; Extent = @{ StartCol = 10; EndCol = 20 }; Correction = 'Get-Horse' }
+            @{ Script = 'function Get-Bananas { "bananas" }'; Extent = @{ StartCol = 10; EndCol = 19 }; Correction = 'Get-Banana' }
             @{ Script = 'function ConvertTo-StartingCriteria { "criteria" }'; Extent = @{ StartCol = 10; EndCol = 36 }; Correction = 'ConvertTo-StartingCriterion' }
             @{ Script = 'function Invoke-Data { "data" }' }
             @{ Script = 'function Get-Horse { "horses" }' }
