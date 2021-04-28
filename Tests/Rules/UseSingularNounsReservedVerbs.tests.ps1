@@ -57,9 +57,9 @@ Write-Output "Adding some data"
             @{ Script = 'function Get-Bananas { "bananas" }'; Extent = @{ StartCol = 10; EndCol = 21 }; Correction = 'Get-Banana' }
             @{ Script = 'function ConvertTo-StartingCriteria { "criteria" }'; Extent = @{ StartCol = 10; EndCol = 36 }; Correction = 'ConvertTo-StartingCriterion' }
             @{ Script = 'function Invoke-Data { "data" }' }
-            @{ Script = 'function Get-Horse { "horses" }' }
-            @{ Script = 'function get-horse { "horses" }' }
-            @{ Script = 'function horse { "horses" }' }
+            @{ Script = 'function Get-Banana { "bananas" }' }
+            @{ Script = 'function get-banana { "bananas" }' }
+            @{ Script = 'function banana { "bananas" }' }
         ) {
             param([string]$Script, $Extent, $Correction)
 
