@@ -311,14 +311,17 @@ function Start-ScriptAnalyzerBuild
         $settingsFiles = Get-Childitem "$projectRoot\Engine\Settings" | ForEach-Object -MemberName FullName
         Publish-File $settingsFiles (Join-Path -Path $script:destinationDir -ChildPath Settings)
 
+        $rulesProjectOutputDir = if ($env:TF_BUILD) {
+            "$projectRoot\bin\${buildConfiguration}\${framework}" }
+        else {
+            "$projectRoot\Rules\bin\${buildConfiguration}\${framework}"
+        }
         if ($framework -eq 'net452') {
-            if ( $env:TF_BUILD ) {
-                $nsoft =  "$projectRoot\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll"
-            }
-            else {
-                $nsoft =  "$projectRoot\Rules\bin\${buildConfiguration}\${framework}\Newtonsoft.Json.dll"
-            }
+            $nsoft = Join-Path $rulesProjectOutputDir 'Newtonsoft.Json.dll'
             Copy-Item -path $nsoft -Destination $destinationDirBinaries
+        }
+        else {
+            Copy-Item -Path (Join-Path $rulesProjectOutputDir 'Pluralize.NET.dll') -Destination $destinationDirBinaries
         }
 
         Pop-Location

@@ -7,6 +7,7 @@
     <AssemblyVersion>1.20.0</AssemblyVersion>
     <PackageId>Rules</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies> <!-- Needed in order for Pluralize.NET DLL to appear in bin folder - https://github.com/NuGet/Home/issues/4488 -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
-    <Compile Remove="UseSingularNouns.cs" />
+    <PackageReference Include="Pluralize.NET" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">

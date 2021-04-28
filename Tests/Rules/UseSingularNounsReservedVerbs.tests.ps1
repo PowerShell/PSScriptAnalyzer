@@ -1,4 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 BeforeAll {
@@ -15,7 +15,7 @@ BeforeAll {
 }
 
 # UseSingularNouns rule doesn't exist in the non desktop version of PSScriptAnalyzer due to missing .Net Pluralization API
-Describe "UseSingularNouns" -Skip:$IsCoreCLR {
+Describe "UseSingularNouns" {
     Context "When there are violations" {
         It "has a cmdlet singular noun violation" {
             $nounViolations.Count | Should -Be 1
@@ -49,6 +49,41 @@ Write-Output "Adding some data"
     Context "When there are no violations" {
         It "returns no violations" {
             $nounNoViolations.Count | Should -Be 0
+        }
+    }
+
+    Context "Inline tests" {
+        It 'Correctly diagnoses and corrects <Script>' -TestCases @(
+            @{ Script = 'function Get-Bananas { "bananas" }'; Extent = @{ StartCol = 10; EndCol = 21 }; Correction = 'Get-Banana' }
+            @{ Script = 'function ConvertTo-StartingCriteria { "criteria" }'; Extent = @{ StartCol = 10; EndCol = 36 }; Correction = 'ConvertTo-StartingCriterion' }
+            @{ Script = 'function Invoke-Data { "data" }' }
+            @{ Script = 'function Get-Banana { "bananas" }' }
+            @{ Script = 'function get-banana { "bananas" }' }
+            @{ Script = 'function banana { "bananas" }' }
+        ) {
+            param([string]$Script, $Extent, $Correction)
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $Script
+
+            if (-not $Extent)
+            {
+                $diagnostics | Should -BeNullOrEmpty
+                return
+            }
+
+            $expectedStartLine = if ($Extent.StartLine) { $Extent.StartLine } else { 1 }
+            $expectedEndLine = if ($Extent.EndLine) { $Extent.EndLine } else { 1 }
+
+            $diagnostics.Extent.StartLineNumber | Should -BeExactly $expectedStartLine
+            $diagnostics.Extent.EndLineNumber | Should -BeExactly $expectedEndLine
+            $diagnostics.Extent.StartColumnNumber | Should -BeExactly $Extent.StartCol
+            $diagnostics.Extent.EndColumnNumber | Should -BeExactly $Extent.EndCol
+
+            $diagnostics.SuggestedCorrections.StartLineNumber | Should -BeExactly $expectedStartLine
+            $diagnostics.SuggestedCorrections.EndLineNumber | Should -BeExactly $expectedEndLine
+            $diagnostics.SuggestedCorrections.StartColumnNumber | Should -BeExactly $Extent.StartCol
+            $diagnostics.SuggestedCorrections.EndColumnNumber | Should -BeExactly $Extent.EndCol
+            $diagnostics.SuggestedCorrections.Text | Should -BeExactly $Correction
         }
     }
 }

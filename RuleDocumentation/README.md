@@ -57,7 +57,7 @@
 |[UseProcessBlockForPipelineCommand](./UseProcessBlockForPipelineCommand.md) | Warning | |
 |[UsePSCredentialType](./UsePSCredentialType.md) | Warning | |
 |[UseShouldProcessForStateChangingFunctions](./UseShouldProcessForStateChangingFunctions.md) | Warning | |
-|[UseSingularNouns<sup>*</sup>](./UseSingularNouns.md) | Warning | |
+|[UseSingularNouns](./UseSingularNouns.md) | Warning | |
 |[UseSupportsShouldProcess](./UseSupportsShouldProcess.md) | Warning | |
 |[UseToExportFieldsInManifest](./UseToExportFieldsInManifest.md) | Warning | |
 |[UseCompatibleCmdlets](./UseCompatibleCmdlets.md) | Warning | Yes |
