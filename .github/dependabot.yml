@@ -7,3 +7,11 @@ updates:
     time: "13:00"
     timezone: America/Los_Angeles
   open-pull-requests-limit: 10
+  reviewers:
+    - "rjmholt"
+    - "JamesWTruher"
+    - "bergmeister"
+  ignore:
+    - dependency-name: "System.Management.Automation"
+    - dependency-name: "Newtonsoft.Json"
+    - dependency-name: "PowerShellStandard.Library"
