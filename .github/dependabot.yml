@@ -1,12 +1,4 @@
 version: 2
-registries:
-  powershell-gallery:
-    type: nuget-feed
-    url: https://www.powershellgallery.com/api/v2/
-  nuget-org:
-    type: nuget-feed
-    url: https://api.nuget.org/v3/index.json
-
 updates:
 - package-ecosystem: nuget
   directory: "/"
@@ -15,7 +7,3 @@ updates:
     time: "13:00"
     timezone: America/Los_Angeles
   open-pull-requests-limit: 10
-  registries:
-  - powershell-gallery
-  - nuget-org
-
