@@ -13,7 +13,7 @@ updates:
   schedule:
     interval: daily
     time: "13:00"
-    timezone: America/LosAngeles
+    timezone: America/Los_Angeles
   open-pull-requests-limit: 10
   registries:
   - powershell-gallery
