@@ -28,12 +28,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private FunctionReferenceDigraph funcDigraph;
         private List<DiagnosticRecord> diagnosticRecords;
         private readonly Vertex shouldProcessVertex;
+        private readonly Vertex shouldContinueVertex;
         private readonly Vertex implicitShouldProcessVertex;
 
         public UseShouldProcessCorrectly()
         {
             diagnosticRecords = new List<DiagnosticRecord>();
             shouldProcessVertex = new Vertex("ShouldProcess", null);
+            shouldContinueVertex = new Vertex("ShouldContinue", null);
             implicitShouldProcessVertex = new Vertex("implicitShouldProcessVertex", null);
         }
 
@@ -151,8 +153,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (DeclaresSupportsShouldProcess(fast))
             {
                 bool callsShouldProcess = funcDigraph.IsConnected(v, shouldProcessVertex);
+                bool callsShouldContinue = funcDigraph.IsConnected(v, shouldContinueVertex);
                 bool callsCommandWithShouldProcess = funcDigraph.IsConnected(v, implicitShouldProcessVertex);
                 if (!callsShouldProcess
+                    && !callsShouldContinue
                     && !callsCommandWithShouldProcess)
                 {
                     return new DiagnosticRecord(
@@ -168,7 +172,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
             else
             {
-                if (callsShouldProcessDirectly(v))
+                bool callsShouldProc = callsShouldProcessDirectly(v);
+                if (callsShouldProc || callsShouldContinueDirectly(v))
                 {
                     // check if upstream function declares SupportShouldProcess
                     // if so, this might just be a helper function
@@ -179,14 +184,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
 
                     return new DiagnosticRecord(
-                         string.Format(
-                             CultureInfo.CurrentCulture,
-                             Strings.ShouldProcessErrorHasCmdlet,
-                             fast.Name),
-                            GetShouldProcessCallExtent(fast),
+                            string.Format(
+                              CultureInfo.CurrentCulture,
+                              Strings.ShouldProcessErrorHasCmdlet,
+                              fast.Name),
+                            callsShouldProc ? GetShouldProcessCallExtent(fast) : GetShouldContinueCallExtent(fast),
                             GetName(),
                             GetDianosticSeverity(),
-                            fileName);
+                            fileName)
+;
                 }
             }
 
@@ -198,7 +204,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         private static IScriptExtent GetShouldProcessCallExtent(FunctionDefinitionAst functionDefinitionAst)
         {
-            var invokeMemberExpressionAstFound = functionDefinitionAst.Find(IsShouldProcessCall, true);
+            var invokeMemberExpressionAstFound = functionDefinitionAst.Find(IsShouldProcessCall, true); 
+            if (invokeMemberExpressionAstFound == null)
+            {
+                return functionDefinitionAst.Extent;
+            }
+
+            return (invokeMemberExpressionAstFound as InvokeMemberExpressionAst).Member.Extent;
+        }
+        /// <summary>
+        /// Gets the extent of ShouldContinue call
+        /// </summary>
+        private static IScriptExtent GetShouldContinueCallExtent(FunctionDefinitionAst functionDefinitionAst)
+        {
+            var invokeMemberExpressionAstFound = functionDefinitionAst.Find(IsShouldContinueCall, true); 
             if (invokeMemberExpressionAstFound == null)
             {
                 return functionDefinitionAst.Extent;
@@ -208,7 +227,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
         /// <summary>
-        /// Returns true if ast if of the form $PSCmdlet.PSShouldProcess()
+        /// Returns true if ast is of the form $PSCmdlet.PSShouldProcess()
         /// </summary>
         private static bool IsShouldProcessCall(Ast ast)
         {
@@ -224,7 +243,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 return false;
             }
 
-            if ("ShouldProcess".Equals(memberExprAst.Value, StringComparison.OrdinalIgnoreCase))
+            if ("ShouldProcess".Equals(memberExprAst.Value, StringComparison.OrdinalIgnoreCase)) 
             {
                 return true;
             }
@@ -232,9 +251,37 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return false;
         }
 
+        /// <summary>
+        /// Returns true if ast is of the form $PSCmdlet.PSShouldProcess()
+        /// </summary>
+        private static bool IsShouldContinueCall(Ast ast)
+        {
+            var invokeMemberExpressionAst = ast as InvokeMemberExpressionAst;
+            if (invokeMemberExpressionAst == null)
+            {
+                return false;
+            }
+
+            var memberExprAst = invokeMemberExpressionAst.Member as StringConstantExpressionAst;
+            if (memberExprAst == null)
+            {
+                return false;
+            }
+
+            if ("ShouldContinue".Equals(memberExprAst.Value, StringComparison.OrdinalIgnoreCase)) 
+            {
+                return true;
+            }
+
+            return false;
+        }
         private bool callsShouldProcessDirectly(Vertex vertex)
         {
             return funcDigraph.GetNeighbors(vertex).Contains(shouldProcessVertex);
+        }
+        private bool callsShouldContinueDirectly(Vertex vertex)
+        {
+            return funcDigraph.GetNeighbors(vertex).Contains(shouldContinueVertex);
         }
 
         /// <summary>
