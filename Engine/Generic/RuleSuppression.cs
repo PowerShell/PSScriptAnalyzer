@@ -110,7 +110,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         }
 
         /// <summary>
-        /// Returns rule suppression from an attribute ast that has the type suppressmessageattribute
+        /// Returns rule suppression from an attribute ast that has the type Suppressmessageattribute
         /// </summary>
         /// <param name="attrAst"></param>
         /// <param name="start"></param>
