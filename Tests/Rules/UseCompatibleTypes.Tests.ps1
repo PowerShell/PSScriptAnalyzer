@@ -68,6 +68,20 @@ Describe 'UseCompatibleTypes' {
 
         $TargetProfileConfigKey = 'TargetProfiles'
 
+        $Srv2012_3_profile = 'win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework'
+        $Srv2012r2_4_profile = 'win-8_x64_6.3.9600.0_4.0_x64_4.0.30319.42000_framework'
+        $Srv2016_5_profile = 'win-8_x64_10.0.14393.0_5.1.14393.2791_x64_4.0.30319.42000_framework'
+        $Srv2016_6_2_profile = 'win-8_x64_10.0.14393.0_6.2.4_x64_4.0.30319.42000_core'
+        $Srv2016_7_profile = 'win-8_x64_10.0.14393.0_7.0.0_x64_3.1.2_core'
+        $Srv2019_5_profile = 'win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
+        $Srv2019_6_2_profile = 'win-8_x64_10.0.17763.0_6.2.4_x64_4.0.30319.42000_core'
+        $Srv2019_7_profile = 'win-8_x64_10.0.17763.0_7.0.0_x64_3.1.2_core'
+        $Win10_5_profile = 'win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework'
+        $Win10_6_2_profile = 'win-4_x64_10.0.18362.0_6.2.4_x64_4.0.30319.42000_core'
+        $Win10_7_profile = 'win-4_x64_10.0.18362.0_7.0.0_x64_3.1.2_core'
+        $Ubuntu1804_6_2_profile = 'ubuntu_x64_18.04_6.2.4_x64_4.0.30319.42000_core'
+        $Ubuntu1804_7_profile = 'ubuntu_x64_18.04_7.0.0_x64_3.1.2_core'
+
         $AzF_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azurefunctions.json").Path
         $AzA_profile = (Resolve-Path "$PSScriptRoot/../../PSCompatibilityCollector/optional_profiles/azureautomation.json").Path
     }
