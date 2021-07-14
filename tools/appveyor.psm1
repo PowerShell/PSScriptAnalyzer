@@ -137,6 +137,13 @@ function Invoke-AppveyorTest {
     # Run all tests
     Import-Module PSScriptAnalyzer
     Import-Module Pester
+
+    Write-Verbose -Verbose "Module versions:"
+    Get-Module PSScriptAnalyzer,Pester,PowershellGet -ErrorAction SilentlyContinue |
+        ForEach-Object {
+            Write-Verbose -Verbose "$($_.Name): $($_.Version)"
+        }
+
     $configuration = [PesterConfiguration]::Default
     $configuration.CodeCoverage.Enabled = $false
     $configuration.Output.Verbosity = 'Normal'
