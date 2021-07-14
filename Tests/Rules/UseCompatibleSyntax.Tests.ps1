@@ -1,9 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-BeforeAll {
-    $script:RuleName = 'PSUseCompatibleSyntax'
-}
+$script:RuleName = 'PSUseCompatibleSyntax'
 
 $testCases = @(
     @{ Script = '$x = [MyClass]::new()'; Versions = @(3,4) }

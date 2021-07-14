@@ -1,9 +1,7 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-BeforeAll {
 $script:RuleName = 'PSUseCompatibleTypes'
-}
 
 $script:TargetProfileConfigKey = 'TargetProfiles'
 

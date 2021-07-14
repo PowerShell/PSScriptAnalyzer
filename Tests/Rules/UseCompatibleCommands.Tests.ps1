@@ -1,9 +1,7 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-BeforeAll {
-    $script:RuleName = 'PSUseCompatibleCommands'
-}
+$script:RuleName = 'PSUseCompatibleCommands'
 
 $script:RunningInCIOnUbuntu = $IsLinux -and ($env:TF_BUILD -or $env:APPVEYOR) # some test cases randomly start and stop to fail in Ubuntu CI tests
 $script:TargetProfileConfigKey = 'TargetProfiles'
