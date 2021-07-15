@@ -45,7 +45,8 @@ Function Test-CorrectionExtentFromContent {
         [string] $correctionText
     )
 
-	Import-Module Pester
+	Import-Module Pester -ErrorAction Stop
+
 
 	$corrections = $diagnosticRecord.SuggestedCorrections
 	$corrections.Count | Should -Be $correctionsCount
