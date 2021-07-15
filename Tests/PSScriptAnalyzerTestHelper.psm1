@@ -1,3 +1,5 @@
+$script:SafeShould = (Get-Command -Module Pester -Name Should -ErrorAction Stop)
+
 Function Get-ExtentTextFromContent
 {
 	    Param(
@@ -48,8 +50,9 @@ Function Test-CorrectionExtentFromContent {
 	$corrections = $diagnosticRecord.SuggestedCorrections
 	$corrections.Count | Should -Be $correctionsCount
 	$corrections[0].Text | Should -Be $correctionText
-	Get-ExtentTextFromContent $corrections[0] $rawContent | `
-		       Should -Be $violationText
+	$extent = Get-ExtentTextFromContent $corrections[0] $rawContent
+
+	& $script:SafeShould -ActualValue $extent -Be $violationText
 }
 
 Function Get-Count
