@@ -168,6 +168,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         private bool suppressedOnly;
 
         /// <summary>
+        /// ShowAll: Show the suppressed and non-suppressed message
+        /// </summary>
+        [Parameter(Mandatory = false)]
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        public SwitchParameter IncludeSuppressions
+        {
+            get { return includeSuppressions; }
+            set { includeSuppressions = value; }
+        }
+        private bool includeSuppressions;
+
+        /// <summary>
         /// Resolves rule violations automatically where possible.
         /// </summary>
         [Parameter(Mandatory = false, ParameterSetName = "File")]
@@ -341,7 +353,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 combRulePaths == null || combIncludeDefaultRules,
-                this.suppressedOnly);
+                this.suppressedOnly,
+                this.includeSuppressions);
         }
 
         /// <summary>

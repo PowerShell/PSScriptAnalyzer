@@ -1348,50 +1348,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
-            var offsetArr = GetOffsetArray(diagnostics);
-            int recordIndex = 0;
-            int startRecord = 0;
-            bool[] suppressed = new bool[diagnostics.Count];
-            foreach (RuleSuppression ruleSuppression in ruleSuppressions)
+            bool[] applied = new bool[ruleSuppressions.Count];
+
+            foreach(DiagnosticRecord diagnostic in diagnostics)
             {
-                int suppressionCount = 0;
-                while (startRecord < diagnostics.Count
-                    // && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
-                    // && diagnostics[startRecord].Extent.StartLineNumber < ruleSuppression.st)
-                    && offsetArr[startRecord] != null && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
+                var curOffset = GetOffsetArray(diagnostic);
+                List<RuleSuppression> suppressions = new List<RuleSuppression>();
+                for (int ruleSuppressionIndex = 0; ruleSuppressionIndex < ruleSuppressions.Count; ruleSuppressionIndex++)
                 {
-                    startRecord += 1;
-                }
-
-                // at this point, start offset of startRecord is greater or equals to rulesuppression.startoffset
-                recordIndex = startRecord;
-
-                while (recordIndex < diagnostics.Count)
-                {
-                    DiagnosticRecord record = diagnostics[recordIndex];
-                    var curOffset = offsetArr[recordIndex];
-
-                    //if (record.Extent.EndOffset > ruleSuppression.EndOffset)
-                    if (curOffset != null && curOffset.Item2 > ruleSuppression.EndOffset)
+                    RuleSuppression ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
+                    //if (diagnostic.Extent.StartOffset < ruleSuppression.StartOffset||diagnostic.Extent.EndOffset > ruleSuppression.EndOffset)
+                    if (curOffset != null && (curOffset.Item1 < ruleSuppression.StartOffset || curOffset.Item2 > ruleSuppression.EndOffset))
                     {
-                        break;
+                        continue;
                     }
 
                     // we suppress if there is no suppression id or if there is suppression id and it matches
-                    if (string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID)
-                        || (!String.IsNullOrWhiteSpace(record.RuleSuppressionID) &&
-                            string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase)))
+                    if (string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) ||
+                        (!String.IsNullOrWhiteSpace(diagnostic.RuleSuppressionID) && 
+                        string.Equals(ruleSuppression.RuleSuppressionID, diagnostic.RuleSuppressionID, StringComparison.OrdinalIgnoreCase)))
                     {
-                        suppressed[recordIndex] = true;
-                        suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
-                        suppressionCount += 1;
+                        ruleSuppression.Kind = RuleSuppression.SuppressionKind.InSource;
+                        suppressions.Add(ruleSuppression);
+                        applied[ruleSuppressionIndex] = true;
                     }
-
-                    recordIndex += 1;
                 }
 
-                // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
-                if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
+                if (suppressions.Count() != 0)
+                {
+                    suppressedRecords.Add(new SuppressedRecord(diagnostic, suppressions));
+                }
+                else
+                {
+                    unSuppressedRecords.Add(diagnostic);
+                }
+            }
+
+            // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
+            for (int ruleSuppressionIndex = 0; ruleSuppressionIndex < ruleSuppressions.Count; ruleSuppressionIndex++)
+            {
+                RuleSuppression ruleSuppression = ruleSuppressions[ruleSuppressionIndex];
+                if ((!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID)) && !applied[ruleSuppressionIndex])
                 {
                     // checks whether are given a string or a file path
                     if (String.IsNullOrWhiteSpace(diagnostics.First().Extent.File))
@@ -1409,70 +1406,56 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            for (int i = 0; i < suppressed.Length; i += 1)
-            {
-                if (!suppressed[i])
-                {
-                    unSuppressedRecords.Add(diagnostics[i]);
-                }
-            }
-
             return result;
         }
 
-        private Tuple<int,int>[] GetOffsetArray(List<DiagnosticRecord> diagnostics)
+        private Tuple<int,int> GetOffsetArray(DiagnosticRecord diagnostic)
         {
             Func<int,int,Tuple<int,int>> GetTuple = (x, y) => new Tuple<int, int>(x, y);
-            Func<Tuple<int, int>> GetDefaultTuple = () => GetTuple(0, 0);
-            var offsets = new Tuple<int, int>[diagnostics.Count];
-            for (int k = 0; k < diagnostics.Count; k++)
+            var offset = new Tuple<int, int>(0, 0);
+            var ext = diagnostic.Extent;
+            if (ext == null)
             {
-                var ext = diagnostics[k].Extent;
-                if (ext == null)
-                {
-                    continue;
-                }
-                if (ext.StartOffset == 0 && ext.EndOffset == 0)
-                {
-                    // check if line and column number correspond to 0 offsets
-                    if (ext.StartLineNumber == 1
-                        && ext.StartColumnNumber == 1
-                        && ext.EndLineNumber == 1
-                        && ext.EndColumnNumber == 1)
-                    {
-                        offsets[k] = GetDefaultTuple();
-                        continue;
-                    }
-                    // created using the ScriptExtent constructor, which sets
-                    // StartOffset and EndOffset to 0
-                    // find the token the corresponding start line and column number
-                    var startToken = Tokens.Where(x
-                        => x.Extent.StartLineNumber == ext.StartLineNumber
-                        && x.Extent.StartColumnNumber == ext.StartColumnNumber)
-                        .FirstOrDefault();
-                    if (startToken == null)
-                    {
-                        offsets[k] = GetDefaultTuple();
-                        continue;
-                    }
-                    var endToken = Tokens.Where(x
-                        => x.Extent.EndLineNumber == ext.EndLineNumber
-                        && x.Extent.EndColumnNumber == ext.EndColumnNumber)
-                        .FirstOrDefault();
-                    if (endToken == null)
-                    {
-                        offsets[k] = GetDefaultTuple();
-                        continue;
-                    }
-                    offsets[k] = GetTuple(startToken.Extent.StartOffset, endToken.Extent.EndOffset);
-                }
-                else
-                {
-                    // Extent has valid offsets
-                    offsets[k] = GetTuple(ext.StartOffset, ext.EndOffset);
-                }
+                return null;
             }
-            return offsets;
+            if (ext.StartOffset == 0 && ext.EndOffset == 0)
+            {
+                // check if line and column number correspond to 0 offsets
+                if (ext.StartLineNumber == 1
+                    && ext.StartColumnNumber == 1
+                    && ext.EndLineNumber == 1
+                    && ext.EndColumnNumber == 1)
+                {
+                    return offset;
+                }
+                // created using the ScriptExtent constructor, which sets
+                // StartOffset and EndOffset to 0
+                // find the token the corresponding start line and column number
+                var startToken = Tokens.Where(x
+                    => x.Extent.StartLineNumber == ext.StartLineNumber
+                    && x.Extent.StartColumnNumber == ext.StartColumnNumber)
+                    .FirstOrDefault();
+                if (startToken == null)
+                {
+                    return offset;
+                }
+                var endToken = Tokens.Where(x
+                    => x.Extent.EndLineNumber == ext.EndLineNumber
+                    && x.Extent.EndColumnNumber == ext.EndColumnNumber)
+                    .FirstOrDefault();
+                if (endToken == null)
+                {
+                    return offset;
+                }
+                offset = GetTuple(startToken.Extent.StartOffset, endToken.Extent.EndOffset);
+            }
+            else
+            {
+                // Extent has valid offsets
+                offset = GetTuple(ext.StartOffset, ext.EndOffset);
+            }
+            
+            return offset;
         }
 
         public static string[] ProcessCustomRulePaths(string[] rulePaths, SessionState sessionState, bool recurse = false)

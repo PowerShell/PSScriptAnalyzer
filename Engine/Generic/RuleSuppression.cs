@@ -97,6 +97,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             set;
         }
 
+        /// <summary>
+        /// Returns the kind of the suppression
+        /// </summary>
+        public SuppressionKind Kind
+        {
+            get;
+            set;
+        }
+
         private static HashSet<string> scopeSet;
 
         /// <summary>
@@ -375,6 +384,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// A string that indicates where the suppression is persisted.
+        /// </summary>
+        public enum SuppressionKind 
+        {
+            None,
+            InSource,
+            External
         }
     }
 }
