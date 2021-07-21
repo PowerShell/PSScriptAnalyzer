@@ -1364,20 +1364,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             {
                 Tuple<int, int> offsetPair = GetOffset(diagnostic);
                 
-                // If we have no offset, we can't suppress anything
-                if (offsetPair is null)
-                {
-                    unsuppressedRecords.Add(diagnostic);
-                    continue;
-                }
-                
-                (int startOffset, int endOffset) = offsetPair;
-                
                 var appliedSuppressions = new List<RuleSuppression>();
                 foreach (RuleSuppression suppression in ruleSuppressions)
                 {
-                    // Check that the diagnostic is within the suppressed extent
-                    if (startOffset < suppression.StartOffset || endOffset > suppression.EndOffset)
+                    // Check that the diagnostic is within the suppressed extent, if we have such an extent
+                    if (!(offsetPair is null)
+                        && (offsetPair.Item1 < suppression.StartOffset || offsetPair.Item2 > suppression.EndOffset))
                     {
                         continue;
                     }
