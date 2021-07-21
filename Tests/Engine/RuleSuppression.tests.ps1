@@ -124,8 +124,7 @@ function MyFunc
             $suppressions[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
             $suppressions[0].RuleSuppressionID | Should -BeExactly "password1"
             $suppressions[0].Suppression | Should -HaveCount 2
-            $suppressions[0].Suppression[0].Justification | Should -BeExactly 'a'
-            $suppressions[0].Suppression[1].Justification | Should -BeExactly 'b'
+            $suppressions[0].Suppression.Justification | Sort-Object | Should -Be @('a', 'b')
         }
     }
 
