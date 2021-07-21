@@ -1353,6 +1353,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             // We need to report errors for any rule suppressions with IDs that are not applied to anything
+            // Start by assuming all suppressions are unapplied and then we'll remove them as we apply them later
             var unappliedSuppressions = new HashSet<RuleSuppression>();
             foreach (RuleSuppression suppression in ruleSuppressions)
             {
@@ -1400,7 +1401,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
             
-            // Do any error reporting for misused RuleSuppressionIDs here
+            // Do any error reporting for misused RuleSuppressionIDs here.
+            // If the user applied a suppression qualified by a suppression ID,
+            // but that suppression didn't apply only because the suppression ID didn't match
+            // we let the user know in the form of an error.
             string analyzedFile = diagnostics[0]?.Extent?.File;
             bool appliedToFile = !string.IsNullOrEmpty(analyzedFile);
             string analyzedFileName = appliedToFile ? Path.GetFileName(analyzedFile) : null;
