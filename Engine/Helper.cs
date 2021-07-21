@@ -1323,6 +1323,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Suppress the rules from the diagnostic records list.
         /// Returns a list of suppressed records as well as the ones that are not suppressed
         /// </summary>
+        /// <param name="ruleName">The name of the rule possibly being suppressed.</param>
+        /// <param name="ruleSuppressionsDict">A lookup table from rule name to suppressions of that rule.</param>
+        /// <param name="diagnostics">The list of all diagnostics emitted by the given rule.</param>
+        /// <param name="errors">Any errors that arise due to misconfigured suppression settings.</param>
+        /// <returns>A pair, with the first item being the list of suppressed diagnostics, and the second the list of unsuppressed diagnostics.</returns>
         public Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
             string ruleName,
             Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict,
