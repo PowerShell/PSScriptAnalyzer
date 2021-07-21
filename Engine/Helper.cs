@@ -1396,7 +1396,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
             
             // Do any error reporting for misused RuleSuppressionIDs here
-            string analyzedFile = diagnostics[0].Extent.File;
+            string analyzedFile = diagnostics[0]?.Extent?.File;
             bool appliedToFile = !string.IsNullOrEmpty(analyzedFile);
             string analyzedFileName = appliedToFile ? Path.GetFileName(analyzedFile) : null;
             foreach (RuleSuppression unappliedSuppression in unappliedSuppressions)
