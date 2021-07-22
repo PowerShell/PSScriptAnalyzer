@@ -192,9 +192,7 @@ function MyFunc
 '@
 
             $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword' -ErrorVariable diagErr -ErrorAction SilentlyContinue
-            $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword' -ErrorVariable suppErr -ErrorAction SilentlyContinue
-
-            wait-debugger
+            $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword' -ErrorAction SilentlyContinue
 
             $diagnostics | Should -HaveCount 2
             $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
@@ -207,10 +205,6 @@ function MyFunc
             $diagErr | Should -HaveCount 1
             $diagErr.TargetObject.RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
             $diagErr.TargetObject.RuleSuppressionID | Should -BeExactly "banana"
-
-            $suppErr | Should -HaveCount 1
-            $suppErr.TargetObject.RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
-            $suppErr.TargetObject.RuleSuppressionID | Should -BeExactly "banana"
         }
     }
 
