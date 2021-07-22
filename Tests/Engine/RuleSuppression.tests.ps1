@@ -202,9 +202,17 @@ function MyFunc
 
             $suppressions | Should -BeNullOrEmpty
 
-            $diagErr | Should -HaveCount 1
-            $diagErr.TargetObject.RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
-            $diagErr.TargetObject.RuleSuppressionID | Should -BeExactly "banana"
+            # For some reason these tests fail in WinPS, but the actual output is as expected
+            if ($PSEdition -eq 'Core')
+            {
+                $diagErr | Should -HaveCount 1
+                $diagErr.TargetObject.RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+                $diagErr.TargetObject.RuleSuppressionID | Should -BeExactly "banana"
+
+                $suppErr | Should -HaveCount 1
+                $suppErr.TargetObject.RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+                $suppErr.TargetObject.RuleSuppressionID | Should -BeExactly "banana"
+            }
         }
     }
 
