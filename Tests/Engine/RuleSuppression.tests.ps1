@@ -192,7 +192,7 @@ function MyFunc
 '@
 
             $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword' -ErrorVariable diagErr -ErrorAction SilentlyContinue
-            $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword' -ErrorAction SilentlyContinue
+            $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword' -ErrorVariable suppErr -ErrorAction SilentlyContinue
 
             $diagnostics | Should -HaveCount 2
             $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
