@@ -1323,156 +1323,177 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// Suppress the rules from the diagnostic records list.
         /// Returns a list of suppressed records as well as the ones that are not suppressed
         /// </summary>
-        /// <param name="ruleSuppressions"></param>
-        /// <param name="diagnostics"></param>
+        /// <param name="ruleName">The name of the rule possibly being suppressed.</param>
+        /// <param name="ruleSuppressionsDict">A lookup table from rule name to suppressions of that rule.</param>
+        /// <param name="diagnostics">The list of all diagnostics emitted by the given rule.</param>
+        /// <param name="errors">Any errors that arise due to misconfigured suppression settings.</param>
+        /// <returns>A pair, with the first item being the list of suppressed diagnostics, and the second the list of unsuppressed diagnostics.</returns>
         public Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> SuppressRule(
             string ruleName,
             Dictionary<string, List<RuleSuppression>> ruleSuppressionsDict,
             List<DiagnosticRecord> diagnostics,
-            out List<ErrorRecord> errorRecords)
+            out List<ErrorRecord> errors)
         {
-            List<SuppressedRecord> suppressedRecords = new List<SuppressedRecord>();
-            List<DiagnosticRecord> unSuppressedRecords = new List<DiagnosticRecord>();
-            Tuple<List<SuppressedRecord>, List<DiagnosticRecord>> result = Tuple.Create(suppressedRecords, unSuppressedRecords);
-            errorRecords = new List<ErrorRecord>();
-            if (diagnostics == null || diagnostics.Count == 0)
+            var suppressedRecords = new List<SuppressedRecord>();
+            var unsuppressedRecords = new List<DiagnosticRecord>();
+            errors = new List<ErrorRecord>();
+            var result = new Tuple<List<SuppressedRecord>, List<DiagnosticRecord>>(suppressedRecords, unsuppressedRecords);
+
+            if (diagnostics is null || diagnostics.Count == 0)
             {
                 return result;
             }
 
-            if (ruleSuppressionsDict == null || !ruleSuppressionsDict.ContainsKey(ruleName)
-                || ruleSuppressionsDict[ruleName].Count == 0)
+            if (ruleSuppressionsDict is null
+                || !ruleSuppressionsDict.TryGetValue(ruleName, out List<RuleSuppression> ruleSuppressions)
+                || ruleSuppressions.Count == 0)
             {
-                unSuppressedRecords.AddRange(diagnostics);
+                unsuppressedRecords.AddRange(diagnostics);
                 return result;
             }
 
-            List<RuleSuppression> ruleSuppressions = ruleSuppressionsDict[ruleName];
-            var offsetArr = GetOffsetArray(diagnostics);
-            int recordIndex = 0;
-            int startRecord = 0;
-            bool[] suppressed = new bool[diagnostics.Count];
-            foreach (RuleSuppression ruleSuppression in ruleSuppressions)
+            // We need to report errors for any rule suppressions with IDs that are not applied to anything
+            // Start by assuming all suppressions are unapplied and then we'll remove them as we apply them later
+            var unappliedSuppressions = new HashSet<RuleSuppression>();
+            foreach (RuleSuppression suppression in ruleSuppressions)
             {
-                int suppressionCount = 0;
-                while (startRecord < diagnostics.Count
-                    // && diagnostics[startRecord].Extent.StartOffset < ruleSuppression.StartOffset)
-                    // && diagnostics[startRecord].Extent.StartLineNumber < ruleSuppression.st)
-                    && offsetArr[startRecord] != null && offsetArr[startRecord].Item1 < ruleSuppression.StartOffset)
+                if (!string.IsNullOrWhiteSpace(suppression.RuleSuppressionID))
                 {
-                    startRecord += 1;
-                }
-
-                // at this point, start offset of startRecord is greater or equals to rulesuppression.startoffset
-                recordIndex = startRecord;
-
-                while (recordIndex < diagnostics.Count)
-                {
-                    DiagnosticRecord record = diagnostics[recordIndex];
-                    var curOffset = offsetArr[recordIndex];
-
-                    //if (record.Extent.EndOffset > ruleSuppression.EndOffset)
-                    if (curOffset != null && curOffset.Item2 > ruleSuppression.EndOffset)
-                    {
-                        break;
-                    }
-
-                    // we suppress if there is no suppression id or if there is suppression id and it matches
-                    if (string.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID)
-                        || (!String.IsNullOrWhiteSpace(record.RuleSuppressionID) &&
-                            string.Equals(ruleSuppression.RuleSuppressionID, record.RuleSuppressionID, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        suppressed[recordIndex] = true;
-                        suppressedRecords.Add(new SuppressedRecord(record, ruleSuppression));
-                        suppressionCount += 1;
-                    }
-
-                    recordIndex += 1;
-                }
-
-                // If we cannot found any error but the rulesuppression has a rulesuppressionid then it must be used wrongly
-                if (!String.IsNullOrWhiteSpace(ruleSuppression.RuleSuppressionID) && suppressionCount == 0)
-                {
-                    // checks whether are given a string or a file path
-                    if (String.IsNullOrWhiteSpace(diagnostics.First().Extent.File))
-                    {
-                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormatScriptDefinition, ruleSuppression.StartAttributeLine,
-                                String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                    }
-                    else
-                    {
-                        ruleSuppression.Error = String.Format(CultureInfo.CurrentCulture, Strings.RuleSuppressionErrorFormat, ruleSuppression.StartAttributeLine,
-                                System.IO.Path.GetFileName(diagnostics.First().Extent.File), String.Format(Strings.RuleSuppressionIDError, ruleSuppression.RuleSuppressionID));
-                    }
-                    errorRecords.Add(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
-                    //this.outputWriter.WriteError(new ErrorRecord(new ArgumentException(ruleSuppression.Error), ruleSuppression.Error, ErrorCategory.InvalidArgument, ruleSuppression));
+                    unappliedSuppressions.Add(suppression);
                 }
             }
-
-            for (int i = 0; i < suppressed.Length; i += 1)
+            
+            // We have suppressions and diagnostics
+            // For each diagnostic, collect all the suppressions that apply to it
+            // and if there are any, record the diagnostic as suppressed
+            foreach (DiagnosticRecord diagnostic in diagnostics)
             {
-                if (!suppressed[i])
+                Tuple<int, int> offsetPair = GetOffset(diagnostic);
+                
+                var appliedSuppressions = new List<RuleSuppression>();
+                foreach (RuleSuppression suppression in ruleSuppressions)
                 {
-                    unSuppressedRecords.Add(diagnostics[i]);
+                    // Check that the diagnostic is within the suppressed extent, if we have such an extent
+                    if (!(offsetPair is null)
+                        && (offsetPair.Item1 < suppression.StartOffset || offsetPair.Item2 > suppression.EndOffset))
+                    {
+                        continue;
+                    }
+                    
+                    // If there's a rule suppression ID, check that it matches the diagnostic
+                    if (!string.IsNullOrWhiteSpace(suppression.RuleSuppressionID)
+                        && !string.Equals(diagnostic.RuleSuppressionID, suppression.RuleSuppressionID, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                    
+                    unappliedSuppressions.Remove(suppression);
+                    appliedSuppressions.Add(suppression);
                 }
+                
+                if (appliedSuppressions.Count > 0)
+                {
+                    suppressedRecords.Add(new SuppressedRecord(diagnostic, appliedSuppressions));
+                }
+                else
+                {
+                    unsuppressedRecords.Add(diagnostic);
+                }
+            }
+            
+            // Do any error reporting for misused RuleSuppressionIDs here.
+            // If the user applied a suppression qualified by a suppression ID,
+            // but that suppression didn't apply only because the suppression ID didn't match
+            // we let the user know in the form of an error.
+            string analyzedFile = diagnostics[0]?.Extent?.File;
+            bool appliedToFile = !string.IsNullOrEmpty(analyzedFile);
+            string analyzedFileName = appliedToFile ? Path.GetFileName(analyzedFile) : null;
+            foreach (RuleSuppression unappliedSuppression in unappliedSuppressions)
+            {
+                string suppressionIDError = string.Format(Strings.RuleSuppressionIDError, unappliedSuppression.RuleSuppressionID);
+
+                if (appliedToFile)
+                {
+                    unappliedSuppression.Error = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.RuleSuppressionErrorFormat,
+                        unappliedSuppression.StartAttributeLine,
+                        analyzedFileName,
+                        suppressionIDError);
+                }
+                else
+                {
+                    unappliedSuppression.Error = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.RuleSuppressionErrorFormatScriptDefinition,
+                        unappliedSuppression.StartAttributeLine,
+                        suppressionIDError);
+                }
+                
+                errors.Add(
+                    new ErrorRecord(
+                        new ArgumentException(unappliedSuppression.Error),
+                        unappliedSuppression.Error,
+                        ErrorCategory.InvalidArgument,
+                        unappliedSuppression));
             }
 
             return result;
         }
 
-        private Tuple<int,int>[] GetOffsetArray(List<DiagnosticRecord> diagnostics)
+        private Tuple<int, int> GetOffset(DiagnosticRecord diagnostic)
         {
-            Func<int,int,Tuple<int,int>> GetTuple = (x, y) => new Tuple<int, int>(x, y);
-            Func<Tuple<int, int>> GetDefaultTuple = () => GetTuple(0, 0);
-            var offsets = new Tuple<int, int>[diagnostics.Count];
-            for (int k = 0; k < diagnostics.Count; k++)
+            IScriptExtent extent = diagnostic.Extent;
+
+            if (extent is null)
             {
-                var ext = diagnostics[k].Extent;
-                if (ext == null)
+                return null;
+            }
+
+            if (extent.StartOffset != 0 && extent.EndOffset != 0)
+            {
+                return Tuple.Create(extent.StartOffset, extent.EndOffset);
+            }
+
+            // We're forced to determine the offset ourselves from the lines and columns now
+            // Rather than counting every line in the file, we scan through the tokens looking for ones matching the offset
+
+            Token startToken = null;
+            int i = 0;
+            for (; i < Tokens.Length; i++)
+            {
+                Token curr = Tokens[i];
+                if (curr.Extent.StartLineNumber == extent.StartLineNumber
+                    && curr.Extent.StartColumnNumber == extent.StartColumnNumber)
                 {
-                    continue;
-                }
-                if (ext.StartOffset == 0 && ext.EndOffset == 0)
-                {
-                    // check if line and column number correspond to 0 offsets
-                    if (ext.StartLineNumber == 1
-                        && ext.StartColumnNumber == 1
-                        && ext.EndLineNumber == 1
-                        && ext.EndColumnNumber == 1)
-                    {
-                        offsets[k] = GetDefaultTuple();
-                        continue;
-                    }
-                    // created using the ScriptExtent constructor, which sets
-                    // StartOffset and EndOffset to 0
-                    // find the token the corresponding start line and column number
-                    var startToken = Tokens.Where(x
-                        => x.Extent.StartLineNumber == ext.StartLineNumber
-                        && x.Extent.StartColumnNumber == ext.StartColumnNumber)
-                        .FirstOrDefault();
-                    if (startToken == null)
-                    {
-                        offsets[k] = GetDefaultTuple();
-                        continue;
-                    }
-                    var endToken = Tokens.Where(x
-                        => x.Extent.EndLineNumber == ext.EndLineNumber
-                        && x.Extent.EndColumnNumber == ext.EndColumnNumber)
-                        .FirstOrDefault();
-                    if (endToken == null)
-                    {
-                        offsets[k] = GetDefaultTuple();
-                        continue;
-                    }
-                    offsets[k] = GetTuple(startToken.Extent.StartOffset, endToken.Extent.EndOffset);
-                }
-                else
-                {
-                    // Extent has valid offsets
-                    offsets[k] = GetTuple(ext.StartOffset, ext.EndOffset);
+                    startToken = curr;
+                    break;
                 }
             }
-            return offsets;
+
+            if (startToken is null)
+            {
+                return Tuple.Create(0, 0);
+            }
+
+            Token endToken = null;
+            for (; i < Tokens.Length; i++)
+            {
+                Token curr = Tokens[i];
+                if (curr.Extent.EndLineNumber == extent.EndLineNumber
+                    && curr.Extent.EndColumnNumber == extent.EndColumnNumber)
+                {
+                    endToken = curr;
+                    break;
+                }
+            }
+
+            if (endToken is null)
+            {
+                return Tuple.Create(0, 0);
+            }
+
+            return Tuple.Create(startToken.Extent.StartOffset, endToken.Extent.EndOffset);
         }
 
         public static string[] ProcessCustomRulePaths(string[] rulePaths, SessionState sessionState, bool recurse = false)
