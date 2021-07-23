@@ -62,7 +62,6 @@ Describe "RuleSuppressionWithoutScope" {
               -SuppressedOnly
             $ruleViolations.Count | Should -Be 1
 	    }
-
     }
 
     Context "Script" {
@@ -99,6 +98,121 @@ function SuppressPwdParam()
               -OutVariable ruleViolations `
               -SuppressedOnly
             $ruleViolations.Count | Should -Be 1
+        }
+
+        It "Records multiple suppressions applied to a single diagnostic" {
+            $script = @'
+function MyFunc
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("PSAvoidUsingPlainTextForPassword", "password1", Justification='a')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("PSAvoidUsingPlainTextForPassword", "password1", Justification='b')]
+    param(
+        [string]$password1,
+        [string]$password2
+    )
+}
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword'
+            $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword'
+
+            $diagnostics | Should -HaveCount 1
+            $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[0].RuleSuppressionID | Should -BeExactly "password2"
+
+            $suppressions | Should -HaveCount 1
+            $suppressions[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $suppressions[0].RuleSuppressionID | Should -BeExactly "password1"
+            $suppressions[0].Suppression | Should -HaveCount 2
+            $suppressions[0].Suppression.Justification | Sort-Object | Should -Be @('a', 'b')
+        }
+
+        It "Records multiple suppressions applied to a single diagnostic when they have identical justifications" {
+            $script = @'
+function MyFunc
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("PSAvoidUsingPlainTextForPassword", "password1", Justification='a')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("PSAvoidUsingPlainTextForPassword", "password1", Justification='a')]
+    param(
+        [string]$password1,
+        [string]$password2
+    )
+}
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword'
+            $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword'
+
+            $diagnostics | Should -HaveCount 1
+            $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[0].RuleSuppressionID | Should -BeExactly "password2"
+
+            $suppressions | Should -HaveCount 1
+            $suppressions[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $suppressions[0].RuleSuppressionID | Should -BeExactly "password1"
+            $suppressions[0].Suppression | Should -HaveCount 2
+            $suppressions[0].Suppression.Justification | Sort-Object | Should -Be @('a', 'a')
+        }
+
+        It "Records no suppressions for a different rule" {
+            $script = @'
+function MyFunc
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("DifferentRule", "password1", Justification='a')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("DifferentRule", "password1", Justification='b')]
+    param(
+        [string]$password1,
+        [string]$password2
+    )
+}
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword'
+            $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword'
+
+            $diagnostics | Should -HaveCount 2
+            $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[0].RuleSuppressionID | Should -BeExactly "password1"
+            $diagnostics[1].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[1].RuleSuppressionID | Should -BeExactly "password2"
+
+            $suppressions | Should -BeNullOrEmpty
+        }
+
+        It "Issues an error for a unapplied suppression with a suppression ID" {
+            $script = @'
+function MyFunc
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("PSAvoidUsingPlainTextForPassword", "banana")]
+    param(
+        [string]$password1,
+        [string]$password2
+    )
+}
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword' -ErrorVariable diagErr -ErrorAction SilentlyContinue
+            $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword' -ErrorVariable suppErr -ErrorAction SilentlyContinue
+
+            $diagnostics | Should -HaveCount 2
+            $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[0].RuleSuppressionID | Should -BeExactly "password1"
+            $diagnostics[1].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[1].RuleSuppressionID | Should -BeExactly "password2"
+
+            $suppressions | Should -BeNullOrEmpty
+
+            # For some reason these tests fail in WinPS, but the actual output is as expected
+            if ($PSEdition -eq 'Core')
+            {
+                $diagErr | Should -HaveCount 1
+                $diagErr.TargetObject.RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+                $diagErr.TargetObject.RuleSuppressionID | Should -BeExactly "banana"
+
+                $suppErr | Should -HaveCount 1
+                $suppErr.TargetObject.RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+                $suppErr.TargetObject.RuleSuppressionID | Should -BeExactly "banana"
+            }
         }
     }
 

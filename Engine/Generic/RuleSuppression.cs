@@ -308,7 +308,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             }
 
             IEnumerable<AttributeAst> suppressionAttribute = attrAsts.Where(
-                item => item.TypeName.GetReflectionType() == typeof(System.Diagnostics.CodeAnalysis.SuppressMessageAttribute));
+                item => item.TypeName.GetReflectionAttributeType() == typeof(System.Diagnostics.CodeAnalysis.SuppressMessageAttribute));
 
             foreach (var attributeAst in suppressionAttribute)
             {
