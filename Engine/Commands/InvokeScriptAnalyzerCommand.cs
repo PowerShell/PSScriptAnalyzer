@@ -21,7 +21,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke,
         "ScriptAnalyzer",
-        DefaultParameterSetName = "File",
+        DefaultParameterSetName = "FilePartial",
         SupportsShouldProcess = true,
         HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
     [OutputType(typeof(DiagnosticRecord))]
@@ -37,7 +37,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// Path: The path to the file or folder to invoke PSScriptAnalyzer on.
         /// </summary>
         [Parameter(Position = 0,
-            ParameterSetName = "File",
+            ParameterSetName = "FilePartial",
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = "FileAll",
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -54,7 +59,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// ScriptDefinition: a script definition in the form of a string to run rules on.
         /// </summary>
         [Parameter(Position = 0,
-            ParameterSetName = "ScriptDefinition",
+            ParameterSetName = "ScriptDefinitionPartial",
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = "ScriptDefinitionAll",
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -158,31 +168,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// ShowSuppressed: Show the suppressed message
         /// </summary>
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, ParameterSetName = "FilePartial")]
+        [Parameter(Mandatory = false, ParameterSetName = "ScriptDefinitionPartial")]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public SwitchParameter SuppressedOnly
-        {
-            get { return suppressedOnly; }
-            set { suppressedOnly = value; }
-        }
-        private bool suppressedOnly;
+        public SwitchParameter SuppressedOnly { get; set; }
 
         /// <summary>
         /// ShowAll: Show the suppressed and non-suppressed message
         /// </summary>
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = true, ParameterSetName = "FileAll")]
+        [Parameter(Mandatory = true, ParameterSetName = "ScriptDefinitionAll")]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public SwitchParameter IncludeSuppressions
-        {
-            get { return includeSuppressions; }
-            set { includeSuppressions = value; }
-        }
-        private bool includeSuppressions;
+        public SwitchParameter IncludeSuppressions { get; set; }
 
         /// <summary>
         /// Resolves rule violations automatically where possible.
         /// </summary>
-        [Parameter(Mandatory = false, ParameterSetName = "File")]
+        [Parameter(Mandatory = false, ParameterSetName = "FilePartial")]
+        [Parameter(Mandatory = false, ParameterSetName = "FileAll")]
         public SwitchParameter Fix
         {
             get { return fix; }
@@ -353,8 +356,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 combRulePaths == null || combIncludeDefaultRules,
-                this.suppressedOnly,
-                this.includeSuppressions);
+                this.SuppressedOnly,
+                this.IncludeSuppressions);
         }
 
         /// <summary>
@@ -433,7 +436,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     WriteToOutput(diagnosticsList);
                 }
             }
-            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
+            else if (IsScriptParameterSet())
             {
                 diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition, out _, out _);
                 WriteToOutput(diagnosticsList);
@@ -512,7 +515,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         private bool IsFileParameterSet()
         {
-            return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
+            return String.Equals(this.ParameterSetName, "FilePartial", StringComparison.OrdinalIgnoreCase) || String.Equals(this.ParameterSetName, "FileAll", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsScriptParameterSet()
+        {
+            return String.Equals(this.ParameterSetName, "ScriptDefinitionPartial", StringComparison.OrdinalIgnoreCase) || String.Equals(this.ParameterSetName, "ScriptDefinitionAll", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool OverrideSwitchParam(bool paramValue, string paramName)
