@@ -113,7 +113,7 @@ function MyFunc
 }
 '@
 
-            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword'
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword' | Where-Object { $_.RuleName -eq 'PSAvoidUsingPlainTextForPassword' }
             $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword'
 
             $diagnostics | Should -HaveCount 1
@@ -140,7 +140,7 @@ function MyFunc
 }
 '@
 
-            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword'
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword' | Where-Object { $_.RuleName -eq 'PSAvoidUsingPlainTextForPassword' }
             $suppressions = Invoke-ScriptAnalyzer -ScriptDefinition $script -SuppressedOnly -IncludeRule 'PSAvoidUsingPlainTextForPassword'
 
             $diagnostics | Should -HaveCount 1
