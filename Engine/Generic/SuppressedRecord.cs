@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Collections.Generic;
+
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
 {
     /// <summary>
@@ -11,20 +13,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         /// <summary>
         /// The rule suppression of this record
         /// </summary>
-        public RuleSuppression Suppression
+        public IList<RuleSuppression> Suppressions
         {
-            get;
-            set;
+            get
+            {
+                if (suppressions == null) suppressions = new List<RuleSuppression>();
+
+                return suppressions;
+            }
+            set
+            {
+                suppressions = value;
+            }
         }
+        private IList<RuleSuppression> suppressions;
 
         /// <summary>
         /// Creates a suppressed record based on a diagnostic record and the rule suppression
         /// </summary>
         /// <param name="record"></param>
         /// <param name="Suppression"></param>
-        public SuppressedRecord(DiagnosticRecord record, RuleSuppression suppression)
+        public SuppressedRecord(DiagnosticRecord record, IList<RuleSuppression> suppressions)
         {
-            Suppression = suppression;
+            Suppressions = suppressions;
             if (record != null)
             {
                 RuleName = record.RuleName;

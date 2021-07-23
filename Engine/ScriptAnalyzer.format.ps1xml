@@ -81,6 +81,10 @@
           <Width>60</Width>
           <Label>Justification</Label>
         </TableColumnHeader>
+        <TableColumnHeader>
+          <Width>10</Width>
+          <Label>Kind</Label>
+        </TableColumnHeader>
       </TableHeaders>
       <TableRowEntries>
         <TableRowEntry>
@@ -100,6 +104,9 @@
             </TableColumnItem>
             <TableColumnItem>
               <PropertyName>Justification</PropertyName>
+            </TableColumnItem>
+            <TableColumnItem>
+              <PropertyName>Kind</PropertyName>
             </TableColumnItem>
           </TableColumnItems>
         </TableRowEntry>

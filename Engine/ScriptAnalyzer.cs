@@ -42,6 +42,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         List<Regex> includeRegexList;
         List<Regex> excludeRegexList;
         bool suppressedOnly;
+        bool includeSuppressions;
 #if !PSV3
         ModuleDependencyHandler moduleHandler;
 #endif
@@ -118,7 +119,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] excludeRuleNames = null,
             string[] severity = null,
             bool includeDefaultRules = false,
-            bool suppressedOnly = false)
+            bool suppressedOnly = false,
+            bool includeSuppressions = false)
             where TCmdlet : PSCmdlet, IOutputWriter
         {
             if (cmdlet == null)
@@ -135,7 +137,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 excludeRuleNames,
                 severity,
                 includeDefaultRules,
-                suppressedOnly);
+                suppressedOnly,
+                includeSuppressions);
         }
 
         /// <summary>
@@ -150,6 +153,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] severity = null,
             bool includeDefaultRules = false,
             bool suppressedOnly = false,
+            bool includeSuppressions = false,
             string profile = null)
         {
             if (runspace == null)
@@ -174,6 +178,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 severity,
                 includeDefaultRules,
                 suppressedOnly,
+                includeSuppressions,
                 profile);
         }
 
@@ -188,6 +193,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             includeRegexList = null;
             excludeRegexList = null;
             suppressedOnly = false;
+            includeSuppressions = false;
         }
 
         /// <summary>
@@ -672,6 +678,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] severity,
             bool includeDefaultRules = false,
             bool suppressedOnly = false,
+            bool includeSuppressions = false,
             string profile = null)
         {
             if (outputWriter == null)
@@ -731,6 +738,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             this.suppressedOnly = suppressedOnly;
+            this.includeSuppressions = includeSuppressions;
             this.includeRegexList = new List<Regex>();
             this.excludeRegexList = new List<Regex>();
 
@@ -2323,9 +2331,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
             IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics.Reverse();
+            IEnumerable<DiagnosticRecord> suppressedList = suppressed.OfType<DiagnosticRecord>();
+            IEnumerable<DiagnosticRecord> allRecordsList = diagnosticsList.Concat(suppressedList);
 
             return this.suppressedOnly ?
-                suppressed.OfType<DiagnosticRecord>() :
+                suppressedList : this.includeSuppressions ?
+                allRecordsList :
                 diagnosticsList;
         }
     }

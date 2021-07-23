@@ -41,6 +41,9 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 
 				[Parameter(Mandatory = $false)]
 				[switch] $SuppressedOnly,
+				
+				[Parameter(Mandatory = $false)]
+				[switch] $IncludeSuppressions,
 
 				[Parameter(Mandatory = $false)]
 				[switch] $Fix,
@@ -72,7 +75,8 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 				$ExcludeRule,
 				$Severity,
 				$IncludeDefaultRules.IsPresent,
-				$SuppressedOnly.IsPresent
+				$SuppressedOnly.IsPresent,
+				$IncludeSuppressions.IsPresent
 			);
 
 			if ($PSCmdlet.ParameterSetName -eq "File")

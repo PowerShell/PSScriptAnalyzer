@@ -55,14 +55,14 @@ Describe "RuleSuppressionWithoutScope" {
         }
 
         It "Suppresses rule with extent created using ScriptExtent constructor" {
-            Invoke-ScriptAnalyzer `
-              -ScriptDefinition $ruleSuppressionAvoidUsernameAndPassword `
-              -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" `
-              -OutVariable ruleViolations `
-              -SuppressedOnly
-            $ruleViolations.Count | Should -Be 1
-	    }
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionAvoidUsernameAndPassword -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -SuppressedOnly
+            $suppressed.Count | Should -Be 1
+        }
 
+        It "All PSAvoidUsingUserNameAndPassWordParams violations with extent created using ScriptExtent constructor" {
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionAvoidUsernameAndPassword -IncludeRule "PSAvoidUsingUserNameAndPassWordParams" -IncludeSuppressions
+            $allrecords.Count | Should -Be 1
+        }
     }
 
     Context "Script" {
@@ -93,12 +93,80 @@ function SuppressPwdParam()
     )
 }
 '@
-            Invoke-ScriptAnalyzer `
-              -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword `
-              -IncludeRule "PSAvoidUsingPlainTextForPassword" `
-              -OutVariable ruleViolations `
-              -SuppressedOnly
-            $ruleViolations.Count | Should -Be 1
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword -IncludeRule "PSAvoidUsingPlainTextForPassword" -SuppressedOnly
+            $suppressed.Count | Should -Be 1
+        }
+
+        It "All PSAvoidUsingPlainTextForPassword violations including suppresses violation for the given ID" {
+            $ruleSuppressionIdAvoidPlainTextPassword1 = @'
+function SuppressPwdParam()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1")]
+    param(
+    [string] $password1
+    )
+}
+'@
+            $allrecords1 = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword1 -IncludeRule "PSAvoidUsingPlainTextForPassword" -IncludeSuppressions
+            $allrecords1.Count | Should -Be 1
+
+            $ruleSuppressionIdAvoidPlainTextPassword2 = @'
+function SuppressPwdParam()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1")]
+    param(
+    [string] $password1,
+    [string] $password2
+    )
+}
+'@
+            $allrecords2 = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword2 -IncludeRule "PSAvoidUsingPlainTextForPassword" -IncludeSuppressions
+            $allrecords2.Count | Should -Be 2
+        }
+
+        It "PSAvoidUsingPlainTextForPassword violation for the given ID with sereval suppressions" {
+            $ruleSuppressionIdAvoidPlainTextPassword = @'
+function SuppressPwdParam()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1",Justification="a")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1",Justification="b")]
+    param(
+    [string] $password1,
+    [string] $password2
+    )
+}
+'@
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword -IncludeRule "PSAvoidUsingPlainTextForPassword" -SuppressedOnly
+            $suppressed.Count | Should -Be 1
+        }
+
+        It "All PSAvoidUsingPlainTextForPassword violations including those for the given ID and suppressed several times" {
+            $ruleSuppressionIdAvoidPlainTextPassword1 = @'
+function SuppressPwdParam()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1",Justification="a")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1",Justification="b")]
+    param(
+    [string] $password1
+    )
+}
+'@
+            $allrecords1 = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword1 -IncludeRule "PSAvoidUsingPlainTextForPassword" -IncludeSuppressions
+            $allrecords1.Count | Should -Be 1
+
+             $ruleSuppressionIdAvoidPlainTextPassword2 = @'
+function SuppressPwdParam()
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1",Justification="a")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "password1",Justification="b")]
+    param(
+    [string] $password1,
+    [string] $password2
+    )
+}
+'@
+            $allrecords2 = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionIdAvoidPlainTextPassword2 -IncludeRule "PSAvoidUsingPlainTextForPassword" -IncludeSuppressions
+            $allrecords2.Count | Should -Be 2
         }
     }
 
@@ -106,6 +174,11 @@ function SuppressPwdParam()
         It "Suppresses rule" -skip:($IsLinux -or $IsMacOS -or ($PSVersionTable.PSVersion.Major -lt 5)) {
             $suppressedRule = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -SuppressedOnly
             $suppressedRule.Count | Should -Be 1
+        }
+
+        It "All rule violations" -skip:($IsLinux -or $IsMacOS -or ($PSVersionTable.PSVersion.Major -lt 5)) {
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $ruleSuppressionInConfiguration -IncludeSuppressions
+            $allrecords.Count | Should -Be 3
         }
     }
 
@@ -124,12 +197,40 @@ function SuppressPwdParam()
     param() # without the param block, powershell parser throws up!
     Write-Host "write-host"
 '@
-            Invoke-ScriptAnalyzer `
-                -ScriptDefinition $externalRuleSuppression `
-                -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") `
-                -OutVariable ruleViolations `
-                -SuppressedOnly
-            $ruleViolations.Count | Should -Be 1
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $externalRuleSuppression -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") -SuppressedOnly
+            $suppressed.Count | Should -Be 1
+        }
+
+        It "Violations of an external ast rule including suppresses violation" {
+            $externalRuleSuppression = @'
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','')]
+    param() # without the param block, powershell parser throws up!
+    Write-Host "write-host"
+'@
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $externalRuleSuppression -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") -IncludeSuppressions
+            $allrecords.Count | Should -Be 1
+        }
+
+        It "Violation of an external ast rule with sereval suppressions" {
+            $externalRuleSuppression = @'
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','',Justification="a")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','',Justification="b")]
+    param() # without the param block, powershell parser throws up!
+    Write-Host "write-host"
+'@
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $externalRuleSuppression -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") -SuppressedOnly
+            $suppressed.Count | Should -Be 1
+        }
+
+        It "Violations of an external ast rule including violation suppressed sereval times" {
+            $externalRuleSuppression = @'
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','',Justification="a")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('CommunityAnalyzerRules\Measure-WriteHost','',Justification="b")]
+    param() # without the param block, powershell parser throws up!
+    Write-Host "write-host"
+'@
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $externalRuleSuppression -CustomRulePath (Join-Path $PSScriptRoot "CommunityAnalyzerRules") -IncludeSuppressions
+            $allrecords.Count | Should -Be 1
         }
     }
 }
@@ -168,6 +269,79 @@ Describe "RuleSuppressionWithScope" {
             $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
             $suppressed.Count | Should -Be 2
         }
+        It "all objects violating PSAvoidUsingWriteHost including suppresses objects that match the regular expression" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-ba[rz]')]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function start-baz {
+                write-host "start-baz"
+            }
+
+            function start-bam {
+                write-host "start-bam"
+            }
+'@
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -IncludeSuppressions
+            $allrecords.Count | Should -Be 4
+        }
+
+        It "objects that match the regular expression with several suppressions" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-ba[rz]',Justification="a")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-bar',Justification="b")]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function start-baz {
+                write-host "start-baz"
+            }
+
+            function start-bam {
+                write-host "start-bam"
+            }
+'@
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
+            $suppressed.Count | Should -Be 2
+        }
+
+        It "all objects violating PSAvoidUsingWriteHost including those that match the regular expression and suppressed several times" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-ba[rz]',Justification="a")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-bar',Justification="b")]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function start-baz {
+                write-host "start-baz"
+            }
+
+            function start-bam {
+                write-host "start-bam"
+            }
+'@
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -IncludeSuppressions
+            $allrecords.Count | Should -Be 4
+        }
 
         It "suppresses objects that match glob pattern with glob in the end" {
             $scriptDef = @'
@@ -189,7 +363,69 @@ Describe "RuleSuppressionWithScope" {
             $suppressed.Count | Should -Be 2
         }
 
-        It "suppresses objects that match glob pattern with glob in the begining" {
+        It "all objects violating PSAvoidUsingWriteHost including suppresses objects that match glob pattern with glob in the end" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-*')]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function stop-bar {
+                write-host "stop-bar"
+            }
+'@
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -IncludeSuppressions
+            $allrecords.Count | Should -Be 3
+        }
+
+        It "objects that match glob pattern with glob in the end and suppressed several times" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-*',Justification="a")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-*',Justification="b")]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function stop-bar {
+                write-host "stop-bar"
+            }
+'@
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
+            $suppressed.Count | Should -Be 2
+        }
+
+        It "all objects violating PSAvoidUsingWriteHost including those that match glob pattern with glob in the end and suppressed several times" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-*',Justification="a")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-*',Justification="b")]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function stop-bar {
+                write-host "stop-bar"
+            }
+'@
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -IncludeSuppressions
+            $allrecords.Count | Should -Be 3
+        }
+
+        It "suppresses objects that match glob pattern with glob in the beginning" {
             $scriptDef = @'
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*-bar')]
             param()
@@ -207,6 +443,68 @@ Describe "RuleSuppressionWithScope" {
 '@
             $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
             $suppressed.Count | Should -Be 1
+        }
+
+        It "all objects violating PSAvoidUsingWriteHost including suppresses objects that match glob pattern with glob in the beginning" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*-bar')]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function start-baz {
+                write-host "start-baz"
+            }
+'@
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -IncludeSuppressions
+            $allrecords.Count | Should -Be 3
+        }
+
+        It "objects that match glob pattern with glob in the beginning and suppressed several times" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*-bar',Justification="a")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*-bar',Justification="b")]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function start-baz {
+                write-host "start-baz"
+            }
+'@
+            $suppressed = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -SuppressedOnly
+            $suppressed.Count | Should -Be 1
+        }
+
+        It "all objects violating PSAvoidUsingWriteHost including those that match glob pattern with glob in the beginning and suppressed several times" {
+            $scriptDef = @'
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*-bar',Justification="a")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*-bar',Justification="b")]
+            param()
+            function start-foo {
+                write-host "start-foo"
+            }
+
+            function start-bar {
+                write-host "start-bar"
+            }
+
+            function start-baz {
+                write-host "start-baz"
+            }
+'@
+            $allrecords = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef -IncludeRule 'PSAvoidUsingWriteHost' -IncludeSuppressions
+            $allrecords.Count | Should -Be 3
         }
     }
  }

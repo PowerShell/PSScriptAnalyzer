@@ -12,14 +12,14 @@ Evaluates a script or module based on selected best practice rules
 ### UNNAMED_PARAMETER_SET_1
 ```
 Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
- [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix] [-EnableExit] [-ReportSummary]
+ [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-IncludeSuppressions] [-Fix] [-EnableExit] [-ReportSummary]
  [-Settings <String>]
 ```
 
 ### UNNAMED_PARAMETER_SET_2
 ```
 Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String>] [-RecurseCustomRulePath]
- [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-EnableExit] [-ReportSummary]
+ [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-IncludeSuppressions] [-EnableExit] [-ReportSummary]
  [-Settings <String>]
 ```
 
@@ -38,6 +38,8 @@ You can also include a rule in the analysis, but suppress the output of that rul
 This feature should be used only when absolutely necessary.
 To get rules that were suppressed, run Invoke-ScriptAnalyzer with the -SuppressedOnly parameter.
 For instructions on suppressing a rule, see the description of the SuppressedOnly parameter.
+
+To get all violations including suppressed one, run Invoke-ScriptAnalyzer with the -IncludeSuppressions parameter.
 
 For usage in CI systems, the -EnableExit exits the shell with an exit code equal to  the number of error records.
 
@@ -142,6 +144,61 @@ The output reports the suppressed rules.
 
 ### -------------------------- EXAMPLE 8 --------------------------
 ```
+function Get-Widgets
+{
+    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingCmdletAliases", "", Justification="Resolution in progress.")]
+    Param()
+
+    dir $pshome
+    ...
+}
+
+PS C:\> Invoke-ScriptAnalyzer -Path .\Get-Widgets.ps1
+
+RuleName                            Severity     FileName   Line  Message
+--------                            --------     --------   ----  -------
+PSProvideCommentHelp                Information  ManageProf 14    The cmdlet 'Get-Widget' does not have a help comment.
+                                                 iles.psm1
+
+PS C:\> Invoke-ScriptAnalyzer -Path .\Get-Widgets.ps1 -SuppressedOnly
+
+Rule Name                           Severity     File Name  Line  Justification
+---------                           --------     ---------  ----  -------------
+PSAvoidUsingCmdletAliases           Warning      ManageProf 21    Resolution in progress.
+                                                 iles.psm1
+PSUseSingularNouns                  Warning      ManageProf 14
+                                                 iles.psm1
+
+PS C:\> Invoke-ScriptAnalyzer -Path .\Get-Widgets.ps1 -IncludeSuppressions
+
+Rule Name                           Severity     File Name  Line  Justification
+---------                           --------     ---------  ----  -------------
+PSProvideCommentHelp                Information  ManageProf 14    The cmdlet 'Get-Widget' does not have a help comment.
+                                                 iles.psm1
+PSAvoidUsingCmdletAliases           Warning      ManageProf 21    Resolution in progress.
+                                                 iles.psm1
+PSUseSingularNouns                  Warning      ManageProf 14
+                                                 iles.psm1
+```
+
+This example shows how to discover all rule violations that are nonsuppressed and suppressed.
+
+The first command runs Script Analyzer on the script that contains the Get-Widgets function.
+The output reports a rule
+violation, but neither of the suppressed rules is listed, even though they are violated.
+
+The second command uses the SuppressedOnly parameter to discover the rules that are supressed in the Get-Widgets.ps1
+file.
+The output reports the suppressed rules.
+
+The third command uses the IncludeSuppressions parameter to discover all rule violations even though they are violated in the Get-Widgets.ps1
+file.
+The output reports the nonsuppressed and suppressed rules.
+
+### -------------------------- EXAMPLE 9 --------------------------
+```
 # In .\ScriptAnalyzerProfile.txt
 @{
     Severity = @('Error', 'Warning')
@@ -162,7 +219,7 @@ Script Analyzer profile.
 If you include a conflicting parameter in the Invoke-ScriptAnalyzer command, such as '-Severity Error',
 Invoke-ScriptAnalyzer uses the profile value and ignores the parameter.
 
-### -------------------------- EXAMPLE 9 --------------------------
+### -------------------------- EXAMPLE 10 --------------------------
 ```
 Invoke-ScriptAnalyzer -ScriptDefinition "function Get-Widgets {Write-Host 'Hello'}"
 
@@ -366,6 +423,25 @@ When you used SuppressedOnly, Invoke-ScriptAnalyzer returns a SuppressedRecord o
 
 To suppress a rule, use the SuppressMessageAttribute.
 For help, see the examples.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeSuppressions
+Returns all rule violations even though they are suppressed, instead of analyzing the files in the path.
+
+When you used IncludeSuppressions, Invoke-ScriptAnalyzer returns both SuppressedRecord and DiagnosticRecord objects
+(Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.SuppressedRecord)
+(Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord).
 
 ```yaml
 Type: SwitchParameter

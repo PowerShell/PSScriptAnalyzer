@@ -50,7 +50,13 @@
       <ScriptProperty>
         <Name>Justification</Name>
         <GetScriptBlock>
-          $this.Suppression.Justification
+          $this.Suppressions.Justification
+        </GetScriptBlock>
+      </ScriptProperty>
+       <ScriptProperty>
+        <Name>Kind</Name>
+        <GetScriptBlock>
+          $this.Suppressions.Kind
         </GetScriptBlock>
       </ScriptProperty>
       <MemberSet>
@@ -64,6 +70,7 @@
               <Name>Line</Name>
               <Name>Column</Name>
               <Name>Justification</Name>
+              <Name>Kind</Name>
             </ReferencedProperties>
           </PropertySet>
         </Members>
