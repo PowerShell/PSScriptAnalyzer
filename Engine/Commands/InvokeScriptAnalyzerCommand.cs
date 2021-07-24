@@ -21,11 +21,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke,
         "ScriptAnalyzer",
-        DefaultParameterSetName = "File",
+        DefaultParameterSetName = ParameterSet_File_IncludeSuppressed,
         SupportsShouldProcess = true,
         HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
-    [OutputType(typeof(DiagnosticRecord))]
-    [OutputType(typeof(SuppressedRecord))]
+    [OutputType(typeof(DiagnosticRecord), typeof(SuppressedRecord))]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
         private const string ParameterSet_File_SuppressedOnly = "File_SuppressedOnly";
