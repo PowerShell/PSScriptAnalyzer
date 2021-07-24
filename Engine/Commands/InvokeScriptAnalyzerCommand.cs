@@ -29,11 +29,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
         private const string ParameterSet_File_SuppressedOnly = "File_SuppressedOnly";
-
         private const string ParameterSet_File_IncludeSuppressed = "File_IncludeSuppressed";
-
         private const string ParameterSet_Inline_SuppressedOnly = "Inline_SuppressedOnly";
-
         private const string ParameterSet_Inline_IncludeSuppressed = "Inline_IncludeSuppressed";
 
         #region Private variables

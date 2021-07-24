@@ -154,6 +154,32 @@ function MyFunc
             $suppressions[0].Suppression.Justification | Sort-Object | Should -Be @('a', 'a')
         }
 
+        It "Includes both emitted and suppressed diagnostics when -IncludeSuppressed is used" {
+            $script = @'
+function MyFunc
+{
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("PSAvoidUsingPlainTextForPassword", "password1", Justification='a')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("PSAvoidUsingPlainTextForPassword", "password1", Justification='a')]
+    param(
+        [string]$password1,
+        [string]$password2
+    )
+}
+'@
+
+            $diagnostics = Invoke-ScriptAnalyzer -ScriptDefinition $script -IncludeRule 'PSAvoidUsingPlainTextForPassword' -IncludeSuppressed
+
+            $diagnostics | Should -HaveCount 2
+            $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[0].RuleSuppressionID | Should -BeExactly "password2"
+
+            $diagnostics[1].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
+            $diagnostics[1].RuleSuppressionID | Should -BeExactly "password1"
+            $diagnostics[1].Suppression | Should -HaveCount 2
+            $diagnostics[1].Suppression.Justification | Sort-Object | Should -Be @('a', 'a')
+        }
+
+
         It "Records no suppressions for a different rule" {
             $script = @'
 function MyFunc

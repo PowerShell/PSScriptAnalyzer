@@ -84,34 +84,20 @@ Describe "Test available parameters" {
     }
 
     Context "It has 2 parameter sets: File and ScriptDefinition" {
-        It "Has 2 parameter sets" {
-            $sa.ParameterSets.Count | Should -Be 2
+        It "Has 4 parameter sets" {
+            $sa.ParameterSets.Count | Should -Be 4
         }
 
-        It "Has File parameter set" {
-            $hasFile = $false
-            foreach ($paramSet in $sa.ParameterSets) {
-                if ($paramSet.Name -eq "File") {
-                    $hasFile = $true
-                    break
-                }
-            }
+        It "Has <SetName> parameter set" -TestCases @(
+            @{ SetName = "File_IncludeSuppressions" }
+            @{ SetName = "File_SuppressedOnly" }
+            @{ SetName = "Inline_IncludeSuppressions" }
+            @{ SetName = "Inline_SuppressedOnly" }
+        ) {
+            param([string]$SetName)
 
-            $hasFile | Should -BeTrue
+            $sa.ParameterSets | Select-Object -ExpandProperty Name | Should -Contain $SetName
         }
-
-        It "Has ScriptDefinition parameter set" {
-            $hasFile = $false
-            foreach ($paramSet in $sa.ParameterSets) {
-                if ($paramSet.Name -eq "ScriptDefinition") {
-                    $hasFile = $true
-                    break
-                }
-            }
-
-            $hasFile | Should -BeTrue
-        }
-
     }
 }
 
@@ -638,5 +624,11 @@ Describe "Test -EnableExit Switch" {
             $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
             Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
         }
+    }
+}
+
+Describe 'Suppression switch parameter sets' {
+    It 'Should not allow both suppression switches to be used' {
+        { Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -IncludeSuppressed -SuppressedOnly } | Should -Throw -ErrorId 'AmbiguousParameterSet,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand'
     }
 }
