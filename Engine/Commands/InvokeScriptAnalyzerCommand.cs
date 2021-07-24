@@ -440,7 +440,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     WriteToOutput(diagnosticsList);
                 }
             }
-            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
+            else
             {
                 diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition, out _, out _);
                 WriteToOutput(diagnosticsList);
@@ -517,10 +517,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
         }
 
-        private bool IsFileParameterSet()
-        {
-            return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
-        }
+        private bool IsFileParameterSet() => Path is not null;
 
         private bool OverrideSwitchParam(bool paramValue, string paramName)
         {
