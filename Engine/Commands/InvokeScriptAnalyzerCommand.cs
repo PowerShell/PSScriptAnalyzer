@@ -28,6 +28,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     [OutputType(typeof(SuppressedRecord))]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
+        private const string ParameterSet_File_SuppressedOnly = "File_SuppressedOnly";
+
+        private const string ParameterSet_File_IncludeSuppressed = "File_IncludeSuppressed";
+
+        private const string ParameterSet_Inline_SuppressedOnly = "Inline_SuppressedOnly";
+
+        private const string ParameterSet_Inline_IncludeSuppressed = "Inline_IncludeSuppressed";
+
         #region Private variables
         List<string> processedPaths;
         #endregion // Private variables
@@ -37,7 +45,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// Path: The path to the file or folder to invoke PSScriptAnalyzer on.
         /// </summary>
         [Parameter(Position = 0,
-            ParameterSetName = "File",
+            ParameterSetName = ParameterSet_File_IncludeSuppressed,
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = ParameterSet_File_SuppressedOnly,
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -54,7 +67,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// ScriptDefinition: a script definition in the form of a string to run rules on.
         /// </summary>
         [Parameter(Position = 0,
-            ParameterSetName = "ScriptDefinition",
+            ParameterSetName = ParameterSet_Inline_IncludeSuppressed,
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = ParameterSet_Inline_SuppressedOnly,
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -84,7 +102,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// RecurseCustomRulePath: Find rules within subfolders under the path
         /// </summary>
         [Parameter(Mandatory = false)]
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public SwitchParameter RecurseCustomRulePath
         {
             get { return recurseCustomRulePath; }
@@ -96,7 +113,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// IncludeDefaultRules: Invoke default rules along with Custom rules
         /// </summary>
         [Parameter(Mandatory = false)]
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public SwitchParameter IncludeDefaultRules
         {
             get { return includeDefaultRules; }
@@ -146,8 +162,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// Recurse: Apply to all files within subfolders under the path
         /// </summary>
-        [Parameter(Mandatory = false)]
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        [Parameter(ParameterSetName = ParameterSet_File_IncludeSuppressed)]
+        [Parameter(ParameterSetName = ParameterSet_File_SuppressedOnly)]
         public SwitchParameter Recurse
         {
             get { return recurse; }
@@ -158,14 +174,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// ShowSuppressed: Show the suppressed message
         /// </summary>
-        [Parameter(Mandatory = false)]
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public SwitchParameter SuppressedOnly
-        {
-            get { return suppressedOnly; }
-            set { suppressedOnly = value; }
-        }
-        private bool suppressedOnly;
+        [Parameter(ParameterSetName = ParameterSet_File_SuppressedOnly)]
+        [Parameter(ParameterSetName = ParameterSet_Inline_SuppressedOnly)]
+        public SwitchParameter SuppressedOnly { get; set; }
+
+        /// <summary>
+        /// Include suppressed diagnostics in the output.
+        /// </summary>
+        [Parameter(ParameterSetName = ParameterSet_File_IncludeSuppressed)]
+        [Parameter(ParameterSetName = ParameterSet_Inline_IncludeSuppressed)]
+        public SwitchParameter IncludeSuppressed { get; set; }
 
         /// <summary>
         /// Resolves rule violations automatically where possible.
@@ -334,6 +352,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         this.settings));
             }
 
+            SuppressionPreference suppressionPreference = SuppressedOnly
+                ? SuppressionPreference.SuppressedOnly
+                : IncludeSuppressed
+                    ? SuppressionPreference.Include
+                    : SuppressionPreference.Omit;
+
             ScriptAnalyzer.Instance.Initialize(
                 this,
                 combRulePaths,
@@ -341,7 +365,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 combRulePaths == null || combIncludeDefaultRules,
-                this.suppressedOnly);
+                suppressionPreference);
         }
 
         /// <summary>

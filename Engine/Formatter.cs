@@ -60,7 +60,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                 var currentSettings = GetCurrentSettings(settings, rule);
                 ScriptAnalyzer.Instance.UpdateSettings(currentSettings);
-                ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, false);
+                ScriptAnalyzer.Instance.Initialize(cmdlet, null, null, null, null, true, SuppressionPreference.Omit);
 
                 text = ScriptAnalyzer.Instance.Fix(text, range, skipParsing, out Range updatedRange, out bool fixesWereApplied, ref scriptAst, ref scriptTokens, skipVariableAnalysis: true);
                 skipParsing = !fixesWereApplied;
