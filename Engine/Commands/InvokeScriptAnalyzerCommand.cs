@@ -21,7 +21,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke,
         "ScriptAnalyzer",
-        DefaultParameterSetName = ParameterSet_File_IncludeSuppressed,
+        DefaultParameterSetName = ParameterSet_File_SuppressedOnly,
         SupportsShouldProcess = true,
         HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
     [OutputType(typeof(DiagnosticRecord), typeof(SuppressedRecord))]
@@ -177,8 +177,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// Include suppressed diagnostics in the output.
         /// </summary>
-        [Parameter(ParameterSetName = ParameterSet_File_IncludeSuppressed)]
-        [Parameter(ParameterSetName = ParameterSet_Inline_IncludeSuppressed)]
+        [Parameter(ParameterSetName = ParameterSet_File_IncludeSuppressed, Mandatory = true)]
+        [Parameter(ParameterSetName = ParameterSet_Inline_IncludeSuppressed, Mandatory = true)]
         public SwitchParameter IncludeSuppressed { get; set; }
 
         /// <summary>
