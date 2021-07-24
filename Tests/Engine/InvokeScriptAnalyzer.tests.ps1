@@ -10,6 +10,15 @@ BeforeAll {
     $useRules = "PSUse*"
 }
 
+Describe "PSScriptAnalyzer module being tested" {
+    It "Is the development asset" {
+        $repoRoot = Split-Path (Split-Path $PSScriptRoot)
+        $outDir = Join-Path $repoRoot 'out'
+        $modulePath = (Get-Module -Name PSScriptAnalyzer).Path
+        $modulePath.StartsWith($outDir) | Should -BeTrue -Because 'PSScriptAnalyzer module path should be under the output directory'
+    }
+}
+
 Describe "Test available parameters" {
     BeforeAll {
         $params = $sa.Parameters
