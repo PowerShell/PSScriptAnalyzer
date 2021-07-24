@@ -566,13 +566,17 @@ Describe "Test -EnableExit Switch" {
             $pwshExe = 'powershell'
         }
 
-        & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        $pssaPath = (Get-Module PSScriptAnalyzer).Path
+
+        & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit"
 
         $LASTEXITCODE  | Should -Be 1
     }
 
     Describe "-ReportSummary switch" {
         BeforeAll {
+            $pssaPath = (Get-Module PSScriptAnalyzer).Path
+
             if ($IsCoreCLR)
             {
                 $pwshExe = (Get-Process -Id $PID).Path
@@ -586,12 +590,12 @@ Describe "Test -EnableExit Switch" {
         }
 
         It "prints the correct report summary using the -NoReportSummary switch" {
-            $result = & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary'
+            $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary"
 
             "$result" | Should -BeLike $reportSummaryFor1Warning
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
-            $result = & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci'
+            $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci"
 
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning
         }

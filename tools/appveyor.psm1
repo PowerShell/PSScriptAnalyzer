@@ -141,7 +141,7 @@ function Invoke-AppveyorTest {
     Write-Verbose -Verbose "Module versions:"
     Get-Module PSScriptAnalyzer,Pester,PowershellGet -ErrorAction SilentlyContinue |
         ForEach-Object {
-            Write-Verbose -Verbose "$($_.Name): $($_.Version)"
+            Write-Verbose -Verbose "$($_.Name): $($_.Version) [$($_.Path)]"
         }
 
     $configuration = [PesterConfiguration]::Default
