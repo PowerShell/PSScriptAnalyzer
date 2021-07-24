@@ -2,17 +2,14 @@
 # Licensed under the MIT License.
 
 BeforeAll {
+    # NOTE: We also run these tests with a custom Invoke-ScriptAnalyzer function defined in LibraryUsage.Tests.ps1
+    #       This can cause issues if the cmdlet is updated and the function isn't
     $sa = Get-Command Invoke-ScriptAnalyzer
     $singularNouns = "PSUseSingularNouns"
     $approvedVerb = "PSUseApprovedVerbs"
     $rules = Get-ScriptAnalyzerRule -Name ($singularNouns, "PSUseApprovedVerbs")
     $avoidRules = Get-ScriptAnalyzerRule -Name "PSAvoid*"
     $useRules = "PSUse*"
-
-    # Dump out Invoke-ScriptAnalyzer info to debug weird failures
-    Write-Verbose -Verbose "Command: $($sa)"
-    Write-Verbose -Verbose "Module: $($sa.Module.Path)"
-    Write-Verbose -Verbose "Version: $($sa.Module.Version)"
 }
 
 Describe "Test available parameters" {
