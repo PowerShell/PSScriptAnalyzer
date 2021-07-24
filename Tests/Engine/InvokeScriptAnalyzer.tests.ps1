@@ -10,8 +10,8 @@ BeforeAll {
     $useRules = "PSUse*"
 
     # Dump out Invoke-ScriptAnalyzer info to debug weird failures
-    Write-Verbose -Verbose "Module:" ($sa.Module.Path)
-    Write-Verbose -Verbose "Version:" ($sa.Module.Version)
+    Write-Verbose -Verbose "Module: $($sa.Module.Path)"
+    Write-Verbose -Verbose "Version: $($sa.Module.Version)"
 }
 
 Describe "Test available parameters" {
