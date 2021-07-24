@@ -83,21 +83,15 @@ Describe "Test available parameters" {
         }
     }
 
-    Context "It has 2 parameter sets: File and ScriptDefinition" {
-        It "Has 4 parameter sets" {
-            $sa.ParameterSets.Count | Should -Be 4
-        }
+    It "Has 4 parameter sets" {
+        $parameterSets = @(
+            'Path_IncludeSuppressed'
+            'Path_SuppressedOnly'
+            'ScriptDefinition_IncludeSuppressed'
+            'ScriptDefinition_SuppressedOnly'
+        )
 
-        It "Has <SetName> parameter set" -TestCases @(
-            @{ SetName = "File_IncludeSuppressions" }
-            @{ SetName = "File_SuppressedOnly" }
-            @{ SetName = "Inline_IncludeSuppressions" }
-            @{ SetName = "Inline_SuppressedOnly" }
-        ) {
-            param([string]$SetName)
-
-            $sa.ParameterSets | Select-Object -ExpandProperty Name | Should -Contain $SetName
-        }
+        $sa.ParameterSets | Select-Object -ExpandProperty Name | Sort-Object | Should -Be $parameterSets
     }
 }
 
