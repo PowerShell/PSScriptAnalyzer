@@ -155,11 +155,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         }
         private string[] severity;
 
+        // TODO: This should be only in the Path parameter sets, and is ignored otherwise,
+        //       but we already have a test that depends on it being otherwise
+        //[Parameter(ParameterSetName = ParameterSet_Path_IncludeSuppressed)]
+        //[Parameter(ParameterSetName = ParameterSet_Path_SuppressedOnly)]
+        //
         /// <summary>
         /// Recurse: Apply to all files within subfolders under the path
         /// </summary>
-        [Parameter(ParameterSetName = ParameterSet_Path_IncludeSuppressed)]
-        [Parameter(ParameterSetName = ParameterSet_Path_SuppressedOnly)]
+        [Parameter]
         public SwitchParameter Recurse
         {
             get { return recurse; }
