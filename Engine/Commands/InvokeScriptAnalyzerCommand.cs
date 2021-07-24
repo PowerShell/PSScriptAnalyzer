@@ -21,16 +21,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke,
         "ScriptAnalyzer",
-        DefaultParameterSetName = ParameterSet_File_SuppressedOnly,
+        DefaultParameterSetName = ParameterSet_Path_SuppressedOnly,
         SupportsShouldProcess = true,
         HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
     [OutputType(typeof(DiagnosticRecord), typeof(SuppressedRecord))]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
-        private const string ParameterSet_File_SuppressedOnly = "File_SuppressedOnly";
-        private const string ParameterSet_File_IncludeSuppressed = "File_IncludeSuppressed";
-        private const string ParameterSet_Inline_SuppressedOnly = "Inline_SuppressedOnly";
-        private const string ParameterSet_Inline_IncludeSuppressed = "Inline_IncludeSuppressed";
+        private const string ParameterSet_Path_SuppressedOnly = nameof(Path) + "_" + nameof(SuppressedOnly);
+        private const string ParameterSet_Path_IncludeSuppressed = nameof(Path) + "_" + nameof(IncludeSuppressed);
+        private const string ParameterSet_ScriptDefinition_SuppressedOnly = nameof(ScriptDefinition) + "_" + nameof(SuppressedOnly);
+        private const string ParameterSet_ScriptDefinition_IncludeSuppressed = nameof(ScriptDefinition) + "_" + nameof(IncludeSuppressed);
 
         #region Private variables
         List<string> processedPaths;
@@ -41,12 +41,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// Path: The path to the file or folder to invoke PSScriptAnalyzer on.
         /// </summary>
         [Parameter(Position = 0,
-            ParameterSetName = ParameterSet_File_IncludeSuppressed,
+            ParameterSetName = ParameterSet_Path_IncludeSuppressed,
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
         [Parameter(Position = 0,
-            ParameterSetName = ParameterSet_File_SuppressedOnly,
+            ParameterSetName = ParameterSet_Path_SuppressedOnly,
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -63,12 +63,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// ScriptDefinition: a script definition in the form of a string to run rules on.
         /// </summary>
         [Parameter(Position = 0,
-            ParameterSetName = ParameterSet_Inline_IncludeSuppressed,
+            ParameterSetName = ParameterSet_ScriptDefinition_IncludeSuppressed,
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
         [Parameter(Position = 0,
-            ParameterSetName = ParameterSet_Inline_SuppressedOnly,
+            ParameterSetName = ParameterSet_ScriptDefinition_SuppressedOnly,
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -158,8 +158,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// Recurse: Apply to all files within subfolders under the path
         /// </summary>
-        [Parameter(ParameterSetName = ParameterSet_File_IncludeSuppressed)]
-        [Parameter(ParameterSetName = ParameterSet_File_SuppressedOnly)]
+        [Parameter(ParameterSetName = ParameterSet_Path_IncludeSuppressed)]
+        [Parameter(ParameterSetName = ParameterSet_Path_SuppressedOnly)]
         public SwitchParameter Recurse
         {
             get { return recurse; }
@@ -170,21 +170,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// ShowSuppressed: Show the suppressed message
         /// </summary>
-        [Parameter(ParameterSetName = ParameterSet_File_SuppressedOnly)]
-        [Parameter(ParameterSetName = ParameterSet_Inline_SuppressedOnly)]
+        [Parameter(ParameterSetName = ParameterSet_Path_SuppressedOnly)]
+        [Parameter(ParameterSetName = ParameterSet_ScriptDefinition_SuppressedOnly)]
         public SwitchParameter SuppressedOnly { get; set; }
 
         /// <summary>
         /// Include suppressed diagnostics in the output.
         /// </summary>
-        [Parameter(ParameterSetName = ParameterSet_File_IncludeSuppressed, Mandatory = true)]
-        [Parameter(ParameterSetName = ParameterSet_Inline_IncludeSuppressed, Mandatory = true)]
+        [Parameter(ParameterSetName = ParameterSet_Path_IncludeSuppressed, Mandatory = true)]
+        [Parameter(ParameterSetName = ParameterSet_ScriptDefinition_IncludeSuppressed, Mandatory = true)]
         public SwitchParameter IncludeSuppressed { get; set; }
 
         /// <summary>
         /// Resolves rule violations automatically where possible.
         /// </summary>
-        [Parameter(Mandatory = false, ParameterSetName = "File")]
+        [Parameter(Mandatory = false, ParameterSetName = ParameterSet_Path_IncludeSuppressed)]
+        [Parameter(Mandatory = false, ParameterSetName = ParameterSet_Path_SuppressedOnly)]
         public SwitchParameter Fix
         {
             get { return fix; }
