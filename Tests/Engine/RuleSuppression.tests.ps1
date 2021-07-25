@@ -119,8 +119,10 @@ function MyFunc
             $diagnostics | Should -HaveCount 1
             $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
             $diagnostics[0].RuleSuppressionID | Should -BeExactly "password2"
+            $diagnostics[0].IsSuppressed | Should -BeFalse
 
             $suppressions | Should -HaveCount 1
+            $suppressions[0].IsSuppressed | Should -BeTrue
             $suppressions[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
             $suppressions[0].RuleSuppressionID | Should -BeExactly "password1"
             $suppressions[0].Suppression | Should -HaveCount 2
@@ -172,11 +174,13 @@ function MyFunc
             $diagnostics | Should -HaveCount 2
             $diagnostics[0].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
             $diagnostics[0].RuleSuppressionID | Should -BeExactly "password2"
+            $diagnostics[0].IsSuppressed | Should -BeFalse
 
             $diagnostics[1].RuleName | Should -BeExactly "PSAvoidUsingPlainTextForPassword"
             $diagnostics[1].RuleSuppressionID | Should -BeExactly "password1"
             $diagnostics[1].Suppression | Should -HaveCount 2
             $diagnostics[1].Suppression.Justification | Sort-Object | Should -Be @('a', 'a')
+            $diagnostics[1].IsSuppressed | Should -BeTrue
         }
 
 
