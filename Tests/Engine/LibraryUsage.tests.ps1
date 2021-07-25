@@ -83,21 +83,21 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 				$IncludeSuppressed
 			);
 
-			if ($PSCmdlet.ParameterSetName -eq "File")
+			if ($Path)
 			{
 				$supportsShouldProcessFunc = [Func[string, string, bool]] { return $PSCmdlet.Shouldprocess }
-				if ($Fix.IsPresent)
+				if ($Fix)
 				{
-					$results = $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+					$results = $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse);
 				}
 				else
 				{
-					$results = $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+					$results = $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse);
 				}
 			}
 			else
 			{
-        $results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition, [ref] $null, [ref] $null)
+				$results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition, [ref] $null, [ref] $null)
 			}
 
 			$results

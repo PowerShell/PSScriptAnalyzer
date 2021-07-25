@@ -629,6 +629,16 @@ Describe "Test -EnableExit Switch" {
 
 Describe 'Suppression switch parameter sets' {
     It 'Should not allow both suppression switches to be used' {
-        { Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -IncludeSuppressed -SuppressedOnly } | Should -Throw -ErrorId 'AmbiguousParameterSet,Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands.InvokeScriptAnalyzerCommand'
+        try
+        {
+            Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -IncludeSuppressed -SuppressedOnly
+        }
+        catch
+        {
+            $errorId = $_.FullyQualifiedErrorId
+        }
+
+        $errorId = $errorId.Substring(0, $errorId.IndexOf(','))
+        $errorId | Should -BeExactly 'AmbiguousParameterSet'
     }
 }
