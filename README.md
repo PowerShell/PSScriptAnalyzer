@@ -54,9 +54,25 @@ Usage
 ``` PowerShell
 Get-ScriptAnalyzerRule [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-Name <String[]>] [-Severity <String[]>] [<CommonParameters>]
 
-Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-ExcludeRule <String[]>] [-IncludeDefaultRules] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-Fix] [-EnableExit] [-ReportSummary] [-Settings <Object>] [-SaveDscDependency] [<CommonParameters>]
+Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath]
+ [-IncludeDefaultRules] [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse]
+ [-SuppressedOnly] [-Fix] [-EnableExit] [-Settings <Object>] [-SaveDscDependency] [-ReportSummary] [-WhatIf]
+ [-Confirm] [<CommonParameters>]
 
-Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-ExcludeRule <String[]>] [-IncludeDefaultRules] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse] [-SuppressedOnly] [-EnableExit] [-ReportSummary] [-Settings <Object>] [-SaveDscDependency] [<CommonParameters>]
+Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath]
+ [-IncludeDefaultRules] [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>] [-Recurse]
+ [-IncludeSuppressed] [-Fix] [-EnableExit] [-Settings <Object>] [-SaveDscDependency] [-ReportSummary] [-WhatIf]
+ [-Confirm] [<CommonParameters>]
+
+Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath]
+ [-IncludeDefaultRules] [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>]
+ [-IncludeSuppressed] [-EnableExit] [-Settings <Object>] [-SaveDscDependency] [-ReportSummary] [-WhatIf]
+ [-Confirm] [<CommonParameters>]
+
+Invoke-ScriptAnalyzer [-ScriptDefinition] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath]
+ [-IncludeDefaultRules] [-ExcludeRule <String[]>] [-IncludeRule <String[]>] [-Severity <String[]>]
+ [-SuppressedOnly] [-EnableExit] [-Settings <Object>] [-SaveDscDependency] [-ReportSummary] [-WhatIf]
+ [-Confirm] [<CommonParameters>]
 
 Invoke-Formatter [-ScriptDefinition] <String> [[-Settings] <Object>] [[-Range] <Int32[]>] [<CommonParameters>]
 ```
