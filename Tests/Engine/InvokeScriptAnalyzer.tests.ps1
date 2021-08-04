@@ -2,6 +2,8 @@
 # Licensed under the MIT License.
 
 BeforeAll {
+    # NOTE: We also run these tests with a custom Invoke-ScriptAnalyzer function defined in LibraryUsage.Tests.ps1
+    #       This can cause issues if the cmdlet is updated and the function isn't
     $sa = Get-Command Invoke-ScriptAnalyzer
     $singularNouns = "PSUseSingularNouns"
     $approvedVerb = "PSUseApprovedVerbs"
@@ -83,35 +85,15 @@ Describe "Test available parameters" {
         }
     }
 
-    Context "It has 2 parameter sets: File and ScriptDefinition" {
-        It "Has 2 parameter sets" {
-            $sa.ParameterSets.Count | Should -Be 2
-        }
+    It "Has 4 parameter sets" {
+        $parameterSets = @(
+            'Path_IncludeSuppressed'
+            'Path_SuppressedOnly'
+            'ScriptDefinition_IncludeSuppressed'
+            'ScriptDefinition_SuppressedOnly'
+        )
 
-        It "Has File parameter set" {
-            $hasFile = $false
-            foreach ($paramSet in $sa.ParameterSets) {
-                if ($paramSet.Name -eq "File") {
-                    $hasFile = $true
-                    break
-                }
-            }
-
-            $hasFile | Should -BeTrue
-        }
-
-        It "Has ScriptDefinition parameter set" {
-            $hasFile = $false
-            foreach ($paramSet in $sa.ParameterSets) {
-                if ($paramSet.Name -eq "ScriptDefinition") {
-                    $hasFile = $true
-                    break
-                }
-            }
-
-            $hasFile | Should -BeTrue
-        }
-
+        $sa.ParameterSets | Select-Object -ExpandProperty Name | Sort-Object | Should -Be $parameterSets
     }
 }
 
@@ -577,13 +559,17 @@ Describe "Test -EnableExit Switch" {
             $pwshExe = 'powershell'
         }
 
-        & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit'
+        $pssaPath = (Get-Module PSScriptAnalyzer).Path
+
+        & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit"
 
         $LASTEXITCODE  | Should -Be 1
     }
 
     Describe "-ReportSummary switch" {
         BeforeAll {
+            $pssaPath = (Get-Module PSScriptAnalyzer).Path
+
             if ($IsCoreCLR)
             {
                 $pwshExe = (Get-Process -Id $PID).Path
@@ -597,12 +583,12 @@ Describe "Test -EnableExit Switch" {
         }
 
         It "prints the correct report summary using the -NoReportSummary switch" {
-            $result = & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary'
+            $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary"
 
             "$result" | Should -BeLike $reportSummaryFor1Warning
         }
         It "does not print the report summary when not using -NoReportSummary switch" {
-            $result = & $pwshExe -Command 'Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -ScriptDefinition gci'
+            $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci"
 
             "$result" | Should -Not -BeLike $reportSummaryFor1Warning
         }
@@ -638,5 +624,21 @@ Describe "Test -EnableExit Switch" {
             $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
             Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
         }
+    }
+}
+
+Describe 'Suppression switch parameter sets' {
+    It 'Should not allow both suppression switches to be used' {
+        try
+        {
+            Invoke-ScriptAnalyzer -ScriptDefinition 'gci' -IncludeSuppressed -SuppressedOnly
+        }
+        catch
+        {
+            $errorId = $_.FullyQualifiedErrorId
+        }
+
+        $errorId = $errorId.Substring(0, $errorId.IndexOf(','))
+        $errorId | Should -BeExactly 'AmbiguousParameterSet'
     }
 }

@@ -25,6 +25,13 @@ using System.Text;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
+    internal enum SuppressionPreference
+    {
+        Omit = 0,
+        Include = 1,
+        SuppressedOnly = 2,
+    }
+
     public sealed class ScriptAnalyzer
     {
         #region Private members
@@ -41,7 +48,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         string[] severity;
         List<Regex> includeRegexList;
         List<Regex> excludeRegexList;
-        bool suppressedOnly;
+        private SuppressionPreference _suppressionPreference;
 #if !PSV3
         ModuleDependencyHandler moduleHandler;
 #endif
@@ -118,7 +125,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] excludeRuleNames = null,
             string[] severity = null,
             bool includeDefaultRules = false,
-            bool suppressedOnly = false)
+            SuppressionPreference suppressionPreference = SuppressionPreference.Omit)
             where TCmdlet : PSCmdlet, IOutputWriter
         {
             if (cmdlet == null)
@@ -135,7 +142,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 excludeRuleNames,
                 severity,
                 includeDefaultRules,
-                suppressedOnly);
+                suppressionPreference);
         }
 
         /// <summary>
@@ -150,6 +157,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] severity = null,
             bool includeDefaultRules = false,
             bool suppressedOnly = false,
+            bool includeSuppression = false,
             string profile = null)
         {
             if (runspace == null)
@@ -163,6 +171,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 outputWriter);
             Helper.Instance.Initialize();
 
+            SuppressionPreference suppressionPreference = suppressedOnly
+                ? SuppressionPreference.SuppressedOnly
+                : includeSuppression
+                    ? SuppressionPreference.Include
+                    : SuppressionPreference.Omit;
 
             this.Initialize(
                 outputWriter,
@@ -173,7 +186,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 excludeRuleNames,
                 severity,
                 includeDefaultRules,
-                suppressedOnly,
+                suppressionPreference,
                 profile);
         }
 
@@ -187,7 +200,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             severity = null;
             includeRegexList = null;
             excludeRegexList = null;
-            suppressedOnly = false;
+            _suppressionPreference = SuppressionPreference.Omit;
         }
 
         /// <summary>
@@ -671,7 +684,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             string[] excludeRuleNames,
             string[] severity,
             bool includeDefaultRules = false,
-            bool suppressedOnly = false,
+            SuppressionPreference suppressionPreference = SuppressionPreference.Omit,
             string profile = null)
         {
             if (outputWriter == null)
@@ -730,7 +743,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 }
             }
 
-            this.suppressedOnly = suppressedOnly;
+            _suppressionPreference = suppressionPreference;
             this.includeRegexList = new List<Regex>();
             this.excludeRegexList = new List<Regex>();
 
@@ -2324,9 +2337,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Need to reverse the concurrentbag to ensure that results are sorted in the increasing order of line numbers
             IEnumerable<DiagnosticRecord> diagnosticsList = diagnostics.Reverse();
 
-            return this.suppressedOnly ?
-                suppressed.OfType<DiagnosticRecord>() :
-                diagnosticsList;
+            return _suppressionPreference switch
+            {
+                SuppressionPreference.SuppressedOnly => suppressed.OfType<DiagnosticRecord>(),
+                SuppressionPreference.Omit => diagnosticsList,
+                SuppressionPreference.Include => diagnosticsList.Concat(suppressed.OfType<DiagnosticRecord>()),
+                _ => throw new ArgumentException($"SuppressionPreference has invalid value '{_suppressionPreference}'"),
+            };
         }
     }
 }

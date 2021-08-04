@@ -7,13 +7,15 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 		# wraps the usage of ScriptAnalyzer as a .NET library
 		function Invoke-ScriptAnalyzer {
 			param (
-				[CmdletBinding(DefaultParameterSetName="File", SupportsShouldProcess = $true)]
+				[CmdletBinding(DefaultParameterSetName="Path_SuppressedOnly", SupportsShouldProcess = $true)]
 
-				[parameter(Mandatory = $true, Position = 0, ParameterSetName="File")]
+				[parameter(Mandatory = $true, Position = 0, ParameterSetName="Path_SuppressedOnly")]
+				[parameter(Mandatory = $true, Position = 0, ParameterSetName="Path_IncludeSuppressed")]
 				[Alias("PSPath")]
 				[string] $Path,
 
-				[parameter(Mandatory = $true, ParameterSetName="ScriptDefinition")]
+				[parameter(Mandatory = $true, ParameterSetName="ScriptDefinition_SuppressedOnly")]
+				[parameter(Mandatory = $true, ParameterSetName="ScriptDefinition_IncludeSuppressed")]
 				[string] $ScriptDefinition,
 
 				[Parameter(Mandatory = $false)]
@@ -39,8 +41,13 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 				[Parameter(Mandatory = $false)]
 				[switch] $IncludeDefaultRules,
 
-				[Parameter(Mandatory = $false)]
+				[Parameter(Mandatory = $false, ParameterSetName = "Path_SuppressedOnly")]
+				[Parameter(Mandatory = $false, ParameterSetName = "ScriptDefinition_SuppressedOnly")]
 				[switch] $SuppressedOnly,
+
+				[Parameter(Mandatory, ParameterSetName = "Path_IncludeSuppressed")]
+				[Parameter(Mandatory, ParameterSetName = "ScriptDefinition_IncludeSuppressed")]
+				[switch] $IncludeSuppressed,
 
 				[Parameter(Mandatory = $false)]
 				[switch] $Fix,
@@ -71,25 +78,26 @@ Describe 'Library Usage' -Skip:$IsCoreCLR {
 				$IncludeRule,
 				$ExcludeRule,
 				$Severity,
-				$IncludeDefaultRules.IsPresent,
-				$SuppressedOnly.IsPresent
+				$IncludeDefaultRules,
+				$SuppressedOnly,
+				$IncludeSuppressed
 			);
 
-			if ($PSCmdlet.ParameterSetName -eq "File")
+			if ($Path)
 			{
 				$supportsShouldProcessFunc = [Func[string, string, bool]] { return $PSCmdlet.Shouldprocess }
-				if ($Fix.IsPresent)
+				if ($Fix)
 				{
-					$results = $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+					$results = $scriptAnalyzer.AnalyzeAndFixPath($Path, $supportsShouldProcessFunc, $Recurse);
 				}
 				else
 				{
-					$results = $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse.IsPresent);
+					$results = $scriptAnalyzer.AnalyzePath($Path, $supportsShouldProcessFunc, $Recurse);
 				}
 			}
 			else
 			{
-        $results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition, [ref] $null, [ref] $null)
+				$results = $scriptAnalyzer.AnalyzeScriptDefinition($ScriptDefinition, [ref] $null, [ref] $null)
 			}
 
 			$results

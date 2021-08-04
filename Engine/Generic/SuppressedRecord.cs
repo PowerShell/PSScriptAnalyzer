@@ -24,6 +24,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         public SuppressedRecord(DiagnosticRecord record, IReadOnlyList<RuleSuppression> suppressions)
         {
             Suppression = new ReadOnlyCollection<RuleSuppression>(new List<RuleSuppression>(suppressions));
+            IsSuppressed = true;
             if (record != null)
             {
                 RuleName = record.RuleName;

@@ -344,7 +344,6 @@ Function Add-RuleTest($Rule)
     $ruleTestFilePath = Get-RuleTestFilePath $Rule
     New-Item -Path $ruleTestFilePath -ItemType File
     $ruleTestTemplate = @'
-Import-Module PSScriptAnalyzer
 $ruleName = "{0}"
 
 Describe "{0}" {{

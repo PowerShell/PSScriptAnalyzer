@@ -21,13 +21,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
     /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke,
         "ScriptAnalyzer",
-        DefaultParameterSetName = "File",
+        DefaultParameterSetName = ParameterSet_Path_SuppressedOnly,
         SupportsShouldProcess = true,
         HelpUri = "https://go.microsoft.com/fwlink/?LinkId=525914")]
-    [OutputType(typeof(DiagnosticRecord))]
-    [OutputType(typeof(SuppressedRecord))]
+    [OutputType(typeof(DiagnosticRecord), typeof(SuppressedRecord))]
     public class InvokeScriptAnalyzerCommand : PSCmdlet, IOutputWriter
     {
+        private const string ParameterSet_Path_SuppressedOnly = nameof(Path) + "_" + nameof(SuppressedOnly);
+        private const string ParameterSet_Path_IncludeSuppressed = nameof(Path) + "_" + nameof(IncludeSuppressed);
+        private const string ParameterSet_ScriptDefinition_SuppressedOnly = nameof(ScriptDefinition) + "_" + nameof(SuppressedOnly);
+        private const string ParameterSet_ScriptDefinition_IncludeSuppressed = nameof(ScriptDefinition) + "_" + nameof(IncludeSuppressed);
+
         #region Private variables
         List<string> processedPaths;
         #endregion // Private variables
@@ -37,7 +41,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// Path: The path to the file or folder to invoke PSScriptAnalyzer on.
         /// </summary>
         [Parameter(Position = 0,
-            ParameterSetName = "File",
+            ParameterSetName = ParameterSet_Path_IncludeSuppressed,
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = ParameterSet_Path_SuppressedOnly,
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -54,7 +63,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// ScriptDefinition: a script definition in the form of a string to run rules on.
         /// </summary>
         [Parameter(Position = 0,
-            ParameterSetName = "ScriptDefinition",
+            ParameterSetName = ParameterSet_ScriptDefinition_IncludeSuppressed,
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [Parameter(Position = 0,
+            ParameterSetName = ParameterSet_ScriptDefinition_SuppressedOnly,
             Mandatory = true,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -84,7 +98,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// RecurseCustomRulePath: Find rules within subfolders under the path
         /// </summary>
         [Parameter(Mandatory = false)]
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public SwitchParameter RecurseCustomRulePath
         {
             get { return recurseCustomRulePath; }
@@ -96,7 +109,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// IncludeDefaultRules: Invoke default rules along with Custom rules
         /// </summary>
         [Parameter(Mandatory = false)]
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public SwitchParameter IncludeDefaultRules
         {
             get { return includeDefaultRules; }
@@ -143,11 +155,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         }
         private string[] severity;
 
+        // TODO: This should be only in the Path parameter sets, and is ignored otherwise,
+        //       but we already have a test that depends on it being otherwise
+        //[Parameter(ParameterSetName = ParameterSet_Path_IncludeSuppressed)]
+        //[Parameter(ParameterSetName = ParameterSet_Path_SuppressedOnly)]
+        //
         /// <summary>
         /// Recurse: Apply to all files within subfolders under the path
         /// </summary>
-        [Parameter(Mandatory = false)]
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
+        [Parameter]
         public SwitchParameter Recurse
         {
             get { return recurse; }
@@ -158,19 +174,22 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// <summary>
         /// ShowSuppressed: Show the suppressed message
         /// </summary>
-        [Parameter(Mandatory = false)]
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public SwitchParameter SuppressedOnly
-        {
-            get { return suppressedOnly; }
-            set { suppressedOnly = value; }
-        }
-        private bool suppressedOnly;
+        [Parameter(ParameterSetName = ParameterSet_Path_SuppressedOnly)]
+        [Parameter(ParameterSetName = ParameterSet_ScriptDefinition_SuppressedOnly)]
+        public SwitchParameter SuppressedOnly { get; set; }
+
+        /// <summary>
+        /// Include suppressed diagnostics in the output.
+        /// </summary>
+        [Parameter(ParameterSetName = ParameterSet_Path_IncludeSuppressed, Mandatory = true)]
+        [Parameter(ParameterSetName = ParameterSet_ScriptDefinition_IncludeSuppressed, Mandatory = true)]
+        public SwitchParameter IncludeSuppressed { get; set; }
 
         /// <summary>
         /// Resolves rule violations automatically where possible.
         /// </summary>
-        [Parameter(Mandatory = false, ParameterSetName = "File")]
+        [Parameter(Mandatory = false, ParameterSetName = ParameterSet_Path_IncludeSuppressed)]
+        [Parameter(Mandatory = false, ParameterSetName = ParameterSet_Path_SuppressedOnly)]
         public SwitchParameter Fix
         {
             get { return fix; }
@@ -334,6 +353,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         this.settings));
             }
 
+            SuppressionPreference suppressionPreference = SuppressedOnly
+                ? SuppressionPreference.SuppressedOnly
+                : IncludeSuppressed
+                    ? SuppressionPreference.Include
+                    : SuppressionPreference.Omit;
+
             ScriptAnalyzer.Instance.Initialize(
                 this,
                 combRulePaths,
@@ -341,7 +366,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                 this.excludeRule,
                 this.severity,
                 combRulePaths == null || combIncludeDefaultRules,
-                this.suppressedOnly);
+                suppressionPreference);
         }
 
         /// <summary>
@@ -402,29 +427,32 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         private void ProcessInput()
         {
-            IEnumerable<DiagnosticRecord> diagnosticsList = Enumerable.Empty<DiagnosticRecord>();
-            if (IsFileParameterSet())
+            WriteToOutput(RunAnalysis());
+        }
+
+        private IEnumerable<DiagnosticRecord> RunAnalysis()
+        {
+            if (!IsFileParameterSet())
             {
-                foreach (var p in processedPaths)
+                return ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition, out _, out _);
+            }
+
+            var diagnostics = new List<DiagnosticRecord>();
+            foreach (string path in this.processedPaths)
+            {
+                if (fix)
                 {
-                    if (fix)
-                    {
-                        ShouldProcess(p, $"Analyzing and fixing path with Recurse={this.recurse}");
-                        diagnosticsList = ScriptAnalyzer.Instance.AnalyzeAndFixPath(p, this.ShouldProcess, this.recurse);
-                    }
-                    else
-                    {
-                        ShouldProcess(p, $"Analyzing path with Recurse={this.recurse}");
-                        diagnosticsList = ScriptAnalyzer.Instance.AnalyzePath(p, this.ShouldProcess, this.recurse);
-                    }
-                    WriteToOutput(diagnosticsList);
+                    ShouldProcess(path, $"Analyzing and fixing path with Recurse={this.recurse}");
+                    diagnostics.AddRange(ScriptAnalyzer.Instance.AnalyzeAndFixPath(path, this.ShouldProcess, this.recurse));
+                }
+                else
+                {
+                    ShouldProcess(path, $"Analyzing path with Recurse={this.recurse}");
+                    diagnostics.AddRange(ScriptAnalyzer.Instance.AnalyzePath(path, this.ShouldProcess, this.recurse));
                 }
             }
-            else if (String.Equals(this.ParameterSetName, "ScriptDefinition", StringComparison.OrdinalIgnoreCase))
-            {
-                diagnosticsList = ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition, out _, out _);
-                WriteToOutput(diagnosticsList);
-            }
+
+            return diagnostics;
         }
 
         private void WriteToOutput(IEnumerable<DiagnosticRecord> diagnosticRecords)
@@ -497,10 +525,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
         }
 
-        private bool IsFileParameterSet()
-        {
-            return String.Equals(this.ParameterSetName, "File", StringComparison.OrdinalIgnoreCase);
-        }
+        private bool IsFileParameterSet() => Path is not null;
 
         private bool OverrideSwitchParam(bool paramValue, string paramName)
         {

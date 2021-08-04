@@ -1,5 +1,4 @@
-﻿Import-Module -Verbose ScriptAnalyzer
-$violationMessage = "Command Get-WrongCommand Is Not Found"
+﻿$violationMessage = "Command Get-WrongCommand Is Not Found"
 $violationName = "PSCommandNotFound"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\CommandNotFound.ps1 | Where-Object {$_.RuleName -eq $violationName}

@@ -1,5 +1,4 @@
-﻿Import-Module PSScriptAnalyzer
-$violationMessage = "Trap found."
+﻿$violationMessage = "Trap found."
 $violationName = "PSAvoidTrapStatement"
 $directory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $violations = Invoke-ScriptAnalyzer $directory\AvoidTrapStatements.ps1 | Where-Object {$_.RuleName -eq $violationName}
