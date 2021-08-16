@@ -129,8 +129,10 @@ stages:
         # the certificate ID to use
         # we'll need to change this to the 3rd party cert id
         certificateId: "CP-231522"
-        # the file pattern to use - only sign newtonsoft
-        pattern: 'Newtonsoft*.dll'
+        # the file pattern to use - only sign newtonsoft and pluralize
+        pattern: |
+            **/Pluralize*.dll
+            **/Newtonsoft*.dll
 
     # now create the nupkg which we will use to publish the module
     # to the powershell gallery (not part of this yaml)
