@@ -129,8 +129,12 @@ stages:
         # the certificate ID to use
         # we'll need to change this to the 3rd party cert id
         certificateId: "CP-231522"
-        # the file pattern to use - only sign newtonsoft
-        pattern: 'Newtonsoft*.dll'
+        # use minimatch because we need to exclude the NewtonSoft assembly
+        useMinimatch: true
+        # the file pattern to use - only sign newtonsoft and pluralize
+        pattern: |
+            **/Pluralize*.dll
+            **/Newtonsoft*.dll
 
     # now create the nupkg which we will use to publish the module
     # to the powershell gallery (not part of this yaml)
@@ -173,7 +177,7 @@ stages:
         # component-governance - the path to sources
         sourceScanPath: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA'
         # binskim - this isn't recursive, so you need the path to the assemblies
-        AnalyzeTarget: '$(Pipeline.Workspace)\build\bin\PSV7Release\netcoreapp3.1\*.dll'
+        AnalyzeTarget: '$(Pipeline.Workspace)\build\bin\PSV7Release\netcoreapp3.1\Microsoft.Windows.PowerShell.ScriptAnalyzer*.dll'
         # credscan - scan the repo for credentials
         # you can suppress some files with this.
         suppressionsFile: '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/tools/ReleaseBuild/CredScan.Suppressions.json'
