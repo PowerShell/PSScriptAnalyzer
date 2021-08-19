@@ -1,5 +1,19 @@
 ﻿# CHANGELOG
 
+## [1.20.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.20.0) - 2021-08-xx
+
+### Fixes
+
+### New Rule
+
+### Miscellaneous
+
+### Documentation
+
+### Testing
+
+### Development Improvements
+
 ## [1.19.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.19.1) - 2020-07-28
 
 ### Fixes
