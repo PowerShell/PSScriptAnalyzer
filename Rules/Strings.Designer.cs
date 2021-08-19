@@ -466,6 +466,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid Multiple Types Parameter.
+        /// </summary>
+        internal static string AvoidMultipleTypesParameterCommonName {
+            get {
+                return ResourceManager.GetString("AvoidMultipleTypesParameterCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prameter should not have more than one type specifier..
+        /// </summary>
+        internal static string AvoidMultipleTypesParameterDescription {
+            get {
+                return ResourceManager.GetString("AvoidMultipleTypesParameterDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; has more than one type specifier..
+        /// </summary>
+        internal static string AvoidMultipleTypesParameterError {
+            get {
+                return ResourceManager.GetString("AvoidMultipleTypesParameterError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidMultipleTypesParameter.
+        /// </summary>
+        internal static string AvoidMultipleTypesParameterName {
+            get {
+                return ResourceManager.GetString("AvoidMultipleTypesParameterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid using null or empty HelpMessage parameter attribute..
         /// </summary>
         internal static string AvoidNullOrEmptyHelpMessageAttributeCommonName {
@@ -1285,7 +1321,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When using a process block, only a begin or end block is allowed inside the function but no code..
+        ///   Looks up a localized string similar to When using an explicit process block, no preceding code is allowed, only begin, end and dynamicparams blocks..
         /// </summary>
         internal static string InvalidSyntaxAroundProcessBlockError {
             get {
