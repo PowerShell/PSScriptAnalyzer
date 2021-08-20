@@ -1,12 +1,24 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 BeforeAll {
-    $violationMessage = 'Parameter ''\$s1'' has more than one type specifier.'
-    $violationName = "PSAvoidMultipleTypesParameter"
-    $violations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidMultipleTypesParameter.ps1 | Where-Object {$_.RuleName -eq $violationName}
-    $noViolations = Invoke-ScriptAnalyzer $PSScriptRoot\AvoidMultipleTypesParameterNoViolations.ps1 | Where-Object {$_.RuleName -eq $violationName}
+    $ruleName = "PSAvoidMultipleTypesParameter"
+
+    $settings = @{
+        IncludeRules = @($ruleName)
+    }
 }
 
-Describe "AvoidMultipleTypesParameter" {
-    Context "When there are violations" {
+Describe 'AvoidMultipleTypesParameter' {
+    Context 'When there are violations' {
+        BeforeAll {
+            $scriptDefinition = @'
+function F10 ([int][switch] $s1, [int] $p1){}
+function F11 ([switch][boolean] $s1, [int] $p1){}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+            $violationMessage = 'Parameter ''\$s1'' has more than one type specifier.'
+        }
         It "has two AvoidMultipleTypesParameter violations" {
             $violations.Count | Should -Be 2
         }
@@ -18,8 +30,16 @@ Describe "AvoidMultipleTypesParameter" {
     }
 
     Context "When there are no violations" {
+        BeforeAll {
+            $scriptDefinition = @'
+function F10 ([switch] $s1, [int] $p1){}
+function F11 ([boolean] $s1, [int] $p1){}
+'@
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -Settings $settings
+        }
+
         It "returns no violations" {
-            $noViolations.Count | Should -Be 0
+            $violations.Count | Should -Be 0
         }
     }
 }
