@@ -12,7 +12,6 @@
 ### New Rule
 
 - Make UseSingularNouns rule work in PowerShell 7 (#1627) (by @bergmeister)
-
 - UseConsistentWhitespace: Create option to ignore assignment operator inside hashtable (#1566) (thanks @daviesj)
 
 ### Miscellaneous
