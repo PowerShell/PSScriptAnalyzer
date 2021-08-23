@@ -13,16 +13,7 @@
 
 - Make UseSingularNouns rule work in PowerShell 7 (#1627) (by @bergmeister)
 
-- UseConsistentWhitespace - Create option to ignore assignment operator inside hash table (#1566) (thanks @daviesj)
-  * UseConsistentWhitespace - Create option to ignore assignment operator inside hash table
-  * Undo whitespace changes to settings files
-  * Begin implementation of visitor to find token in AST
-  * Fleshed out FindAstPositionVistor and fixed test
-  * Make visitor internal
-  * correct spelling
-  * fix off-by-one error in visitor
-  * Simplify code in visitor
-  * Move private method to the bottom & small summary correction (leaf => leaf-most)
+- UseConsistentWhitespace: Create option to ignore assignment operator inside hashtable (#1566) (thanks @daviesj)
 
 ### Miscellaneous
 
