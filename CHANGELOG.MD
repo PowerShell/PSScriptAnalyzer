@@ -29,7 +29,7 @@
 ### Documentation
 
 - Link to the rules from the readme (#1642) (thanks @bbodenmiller)
-- Add HelpInfoUri (#1651) (by @sdwheeler)
+- Add HelpInfoUri to module manifest (#1651) (by @sdwheeler)
 - Add documentation around CustomRulePath in Settings file to README.md (#1636) (thanks @johlju)
     * Add documentation CustomRulePath in README.md
     * Fix table of contents
