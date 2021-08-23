@@ -25,7 +25,7 @@
 
 ### Documentation
 
-- Link to the rules from the readme (#1642) (thanks @bbodenmiller)
+- Link to PSScriptAnalyzer rule documentation from the README (#1642) (thanks @bbodenmiller)
 - Add HelpInfoUri to module manifest (#1651) (by @sdwheeler)
 - Add documentation around CustomRulePath in Settings file to README.md (#1636) (thanks @johlju)
 - Use allowlist and blocklist terminology, supply alternate configuration key for PSAvoidUsingCmdletAliases (#1604) (by @bergmeister)
