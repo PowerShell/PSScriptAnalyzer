@@ -31,8 +31,6 @@
 - Link to the rules from the readme (#1642) (thanks @bbodenmiller)
 - Add HelpInfoUri to module manifest (#1651) (by @sdwheeler)
 - Add documentation around CustomRulePath in Settings file to README.md (#1636) (thanks @johlju)
-    * Add documentation CustomRulePath in README.md
-    * Fix table of contents
 - Use allowlist and blocklist terminology, supply alternate configuration key for PSAvoidUsingCmdletAliases (#1604) (by @bergmeister)
 - Fix suppression example errors in README (#1593) (by @rjmholt)
 - Fix AvoidLongLines documentation example (#1554) (thanks @floh96)
