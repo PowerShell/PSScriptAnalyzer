@@ -1,5 +1,63 @@
 ﻿# CHANGELOG
 
+## [1.20.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.20.0) - 2021-08-20
+
+### Fixes
+
+- Replace unhelpful warning around `process` aliasing `Get-Process` with warning about misused syntax (#1638) (by @bergmeister)
+- Fix `FunctionInfo` fallback AST attribute analysis for UseShouldProcessCorrectly (#1659) (thanks @hubuk)
+- Do not increase indentation after a left parenthesis if the previous token is a newline and the next token is not a newline (#1469) (by @bergmeister)
+- UseConsistentWhitespace - CheckOpenBrace setting: Do not warn when being preceded by open parenthesis (#1633) (by @bergmeister)
+
+### New Rule
+
+- Make UseSingularNouns rule work in PowerShell 7 (#1627) (by @bergmeister)
+- UseConsistentWhitespace: Create option to ignore assignment operator inside hashtable (#1566) (thanks @daviesj)
+
+### Miscellaneous
+
+- Implement -IncludeSuppressions parameter (#1701) (by @rjmholt)
+- Combine multiple suppressions applied to the same diagnostic (#1699) (by @rjmholt)
+- Use dependabot to keep dependencies up to date (#1664) (by @rjmholt)
+- Add reviewers and explicit dependency exclusions to dependabot (#1676) (by @rjmholt)
+- Remove explicit registries in dependabot (#1671) (by @rjmholt)
+
+### Documentation
+
+- Link to PSScriptAnalyzer rule documentation from the README (#1642) (thanks @bbodenmiller)
+- Add HelpInfoUri to module manifest (#1651) (by @sdwheeler)
+- Add documentation around CustomRulePath in Settings file to README.md (#1636) (thanks @johlju)
+- Use allowlist and blocklist terminology, supply alternate configuration key for PSAvoidUsingCmdletAliases (#1604) (by @bergmeister)
+- Fix suppression example errors in README (#1593) (by @rjmholt)
+- Fix AvoidLongLines documentation example (#1554) (thanks @floh96)
+- Remove broken waffle.io links from readme.md (#1558) (thanks @clcaldwell)
+- Fix typo in AvoidUsingCmdletAliases documentation (#1590) (thanks @rubengonzalez-dev)
+
+### Testing
+
+- Fix compatibility rule tests (#1697) (by @rjmholt)
+- Fix missing space in AvoidPositionalParameter test asset (#1573) (by @jameswtruher)
+
+### Development/Build Improvements
+
+- Fix build module tests (#1654) (thanks @clcaldwell)
+- Move to new signing process for release build and prep for 1.20.0 (#1625) (by @jameswtruher)
+- Handle cases where the signature generator fails (#1661) (by @jameswtruher)
+- Update .NET SDK to 3.1.408 (#1630) (by @bergmeister)
+- Simplify devcontainer setup and resolve git line ending conflicts (#1637) (by @bergmeister)
+- Speedup CI by bootstrapping PowerShell module installations in background and in parallel, whilst the .NET SDK is being installed (#1634) (by @bergmeister)
+- Upgrade release Dockerfile from Ubuntu 16.04 to 20.04 (#1631) (by @bergmeister)
+- Remove old powershell-core NuGet feed, which sometimes causes build failures (#1632) (by @bergmeister)
+- Remove reference to myget.org as a package resource (#1640) (by @jameswtruher)
+- Add Ubuntu 20.04 to build matrix (#1628) (by @bergmeister)
+- Remove conditional compilation for PSv6/netstandard2.0 for Engine and Rules projects (#1600) (by @bergmeister)
+- Upgrade Microsoft.CSharp, Microsoft.Win32.Registry and System.Reflection.TypeExtensions from 4.5.0 to 4.7.0 (#1599) (by @bergmeister)
+- Use PowerShell preview extension for Github Codespaces (#1596) (by @bergmeister)
+- Update SMA reference for netcoreapp3.1 to from 7.0.0 to 7.0.3 (#1597) (by @bergmeister)
+- 🧹 Make usage of Microsoft.Management.Infrastructure consistent and reference it only once in CrossCompatibility project (#1601) (by @bergmeister)
+- Update launch.json (#1603) (by @bergmeister)
+- Make CI fail if tests fail and fix failing tests by making them Pester v5 compatible (#1553) (coauthored by @bergmeister)
+
 ## [1.19.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.19.1) - 2020-07-28
 
 ### Fixes
