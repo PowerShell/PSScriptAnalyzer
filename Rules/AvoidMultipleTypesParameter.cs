@@ -29,7 +29,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
             // Finds all ParamAsts.
-            IEnumerable<Ast> paramAsts = ast.FindAll(testAst => testAst is ParameterAst, true);
+            IEnumerable<Ast> paramAsts = ast.FindAll(testAst => testAst is ParameterAst, searchNestedScriptBlocks: true);
 
             // Iterates all ParamAsts and check the number of its types.
             foreach (ParameterAst paramAst in paramAsts)
