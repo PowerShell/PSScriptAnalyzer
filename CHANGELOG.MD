@@ -47,7 +47,7 @@
 - Fix build module tests (#1654) (thanks @clcaldwell)
 - Move to new signing process for release build and prep for 1.20.0 (#1625) (by @jameswtruher)
 - Handle cases where the signature generator fails (#1661) (by @jameswtruher)
-- Update .Net SDK to 3.1.408 (#1630) (by @bergmeister)
+- Update .NET SDK to 3.1.408 (#1630) (by @bergmeister)
 - Simplify devcontainer setup and resolve git line ending conflicts (#1637) (by @bergmeister)
 - Speedup CI by bootstrapping PowerShell module installations in background and in parallel, whilst the .NET SDK is being installed (#1634) (by @bergmeister)
 - Upgrade release Dockerfile from Ubuntu 16.04 to 20.04 (#1631) (by @bergmeister)
