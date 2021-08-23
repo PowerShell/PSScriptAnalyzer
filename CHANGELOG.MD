@@ -6,7 +6,7 @@
 
 - Replace unhelpful warning around `process` aliasing `Get-Process` with warning about misused syntax (#1638) (by @bergmeister)
 - Fix `FunctionInfo` fallback AST attribute analysis for UseShouldProcessCorrectly (#1659) (thanks @hubuk)
-- Do not increase indentation after LParen if the previous token is a Newline and the next token is not a Newline (#1469) (by @bergmeister)
+- Do not increase indentation after a left parenthesis if the previous token is a newline and the next token is not a newline (#1469) (by @bergmeister)
 - UseConsistenWhitespace - CheckOpenBrace setting: Do not warn when being preceded by open parenthesis (#1633) (by @bergmeister)
 
 ### New Rule
