@@ -19,9 +19,6 @@
 
 - Implement -IncludeSuppressions parameter (#1701) (by @rjmholt)
 - Combine multiple suppressions applied to the same diagnostic (#1699) (by @rjmholt)
-  * Ensure multiply suppressed diagnostics only create one output
-  * Add extra tests
-  * Use other API to get suppression attribute types
 - Use dependabot to keep dependencies up to date (#1664) (by @rjmholt)
 - Add reviewers and explicit dependency exclusions to dependabot (#1676) (by @rjmholt)
 - Remove explicit registries in dependabot (#1671) (by @rjmholt)
