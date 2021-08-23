@@ -54,7 +54,7 @@
 - Remove old powershell-core NuGet feed, which sometimes causes build failures (#1632) (by @bergmeister)
 - Remove reference to myget.org as a package resource (#1640) (by @jameswtruher)
 - Add Ubuntu 20.04 to build matrix (#1628) (by @bergmeister)
-- Remove conditional compilation for PSv6 and therefore netstandard2.0 for Engine and Rules projects (#1600) (by @bergmeister)
+- Remove conditional compilation for PSv6/netstandard2.0 for Engine and Rules projects (#1600) (by @bergmeister)
 - Upgrade Microsoft.CSharp, Microsoft.Win32.Registry and System.Reflection.TypeExtensions from 4.5.0 to 4.7.0 (#1599) (by @bergmeister)
 - Use PowerShell preview extension for Github Codespaces (#1596) (by @bergmeister)
 - Update SMA reference for netcoreapp3.1 to from 7.0.0 to 7.0.3 (#1597) (by @bergmeister)
