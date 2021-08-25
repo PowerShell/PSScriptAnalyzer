@@ -1153,7 +1153,7 @@
     <value>When using an explicit process block, no preceding code is allowed, only begin, end and dynamicparams blocks.</value>
   </data>
   <data name="AvoidMultipleTypesParameterCommonName" xml:space="preserve">
-    <value>Avoid Multiple Types Parameter</value>
+    <value>Avoid multiple type specifiers on parameters</value>
   </data>
   <data name="AvoidMultipleTypesParameterDescription" xml:space="preserve">
     <value>Prameter should not have more than one type specifier.</value>

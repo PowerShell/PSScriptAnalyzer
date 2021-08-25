@@ -4,11 +4,11 @@
 
 ## Description
 
-Parameter should not have more than one type specifier.
+Parameters should not have more than one type specifier. Multiple type specifiers on parameters will cause a runtime error.
 
 ## How
 
-Make each parameter has only 1 type spcifier.
+Ensure each parameter has only 1 type spcifier.
 
 ## Example
 
@@ -25,7 +25,7 @@ function Test-Script
 
         [switch]
         [boolean]
-        $Switch=$True
+        $Switch
     )
     ...
 }
@@ -43,7 +43,7 @@ function Test-Script
         $Param1,
 
         [switch]
-        $Switch=$False
+        $Switch
     )
     ...
 }

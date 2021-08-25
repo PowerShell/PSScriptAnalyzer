@@ -26,7 +26,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            if (ast == null) 
+            {
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
+            }
 
             // Finds all ParamAsts.
             IEnumerable<Ast> paramAsts = ast.FindAll(testAst => testAst is ParameterAst, true);
@@ -38,7 +41,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     yield return new DiagnosticRecord(
                         String.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypesParameterError, paramAst.Name),
-                        paramAst.Name.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                        paramAst.Name.Extent,
+                        GetName(), 
+                        DiagnosticSeverity.Warning, 
+                        fileName);
                 }
             }
         }
