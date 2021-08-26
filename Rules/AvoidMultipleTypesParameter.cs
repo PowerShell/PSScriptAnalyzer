@@ -26,7 +26,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
-            if (ast == null) 
+            if (ast is null) 
             {
                 throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
