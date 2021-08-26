@@ -8,7 +8,7 @@ Parameters should not have more than one type specifier. Multiple type specifier
 
 ## How
 
-Ensure each parameter has only 1 type spcifier.
+Ensure each parameter has only 1 type specifier.
 
 ## Example
 
@@ -24,7 +24,7 @@ function Test-Script
         $Param1,
 
         [switch]
-        [boolean]
+        [bool]
         $Switch
     )
     ...
