@@ -466,38 +466,38 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Avoid Multiple Types Parameter.
+        ///   Looks up a localized string similar to Avoid multiple type specifiers on parameters.
         /// </summary>
-        internal static string AvoidMultipleTypesParameterCommonName {
+        internal static string AvoidMultipleTypeAttributesCommonName {
             get {
-                return ResourceManager.GetString("AvoidMultipleTypesParameterCommonName", resourceCulture);
+                return ResourceManager.GetString("AvoidMultipleTypeAttributesCommonName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Prameter should not have more than one type specifier..
         /// </summary>
-        internal static string AvoidMultipleTypesParameterDescription {
+        internal static string AvoidMultipleTypeAttributesDescription {
             get {
-                return ResourceManager.GetString("AvoidMultipleTypesParameterDescription", resourceCulture);
+                return ResourceManager.GetString("AvoidMultipleTypeAttributesDescription", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Parameter &apos;{0}&apos; has more than one type specifier..
         /// </summary>
-        internal static string AvoidMultipleTypesParameterError {
+        internal static string AvoidMultipleTypeAttributesError {
             get {
-                return ResourceManager.GetString("AvoidMultipleTypesParameterError", resourceCulture);
+                return ResourceManager.GetString("AvoidMultipleTypeAttributesError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to AvoidMultipleTypesParameter.
+        ///   Looks up a localized string similar to AvoidMultipleTypeAttributes.
         /// </summary>
-        internal static string AvoidMultipleTypesParameterName {
+        internal static string AvoidMultipleTypeAttributesName {
             get {
-                return ResourceManager.GetString("AvoidMultipleTypesParameterName", resourceCulture);
+                return ResourceManager.GetString("AvoidMultipleTypeAttributesName", resourceCulture);
             }
         }
         

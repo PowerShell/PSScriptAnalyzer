@@ -14,15 +14,15 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidMultipleTypesParameter: Check that parameter does not be assigned to multiple types.
+    /// AvoidMultipleTypeAttributes: Check that parameter does not be assigned to multiple types.
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public sealed class AvoidMultipleTypesParameter : IScriptRule
+    public sealed class AvoidMultipleTypeAttributes : IScriptRule
     {
         /// <summary>
-        /// AvoidMultipleTypesParameter: Check that parameter does not be assigned to multiple types.
+        /// AvoidMultipleTypeAttributes: Check that parameter does not be assigned to multiple types.
         /// </summary>
         public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
@@ -40,7 +40,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (paramAst.Attributes.Where(typeAst => typeAst is TypeConstraintAst).Count() > 1)
                 {
                     yield return new DiagnosticRecord(
-                        String.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypesParameterError, paramAst.Name),
+                        String.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypeAttributesError, paramAst.Name),
                         paramAst.Name.Extent,
                         GetName(), 
                         DiagnosticSeverity.Warning, 
@@ -55,7 +55,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The name of this rule</returns>
         public string GetName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidMultipleTypesParameterName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidMultipleTypeAttributesName);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The common name of this rule</returns>
         public string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypesParameterCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypeAttributesCommonName);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypesParameterDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidMultipleTypeAttributesDescription);
         }
 
         /// <summary>

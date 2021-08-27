@@ -1,4 +1,4 @@
-# AvoidMultipleTypesParameter
+# AvoidMultipleTypeAttributes
 
 **Severity Level: Warning**
 

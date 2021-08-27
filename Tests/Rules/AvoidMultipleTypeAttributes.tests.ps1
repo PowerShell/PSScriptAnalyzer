@@ -2,14 +2,14 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    $ruleName = "PSAvoidMultipleTypesParameter"
+    $ruleName = "AvoidMultipleTypeAttributes"
 
     $settings = @{
         IncludeRules = @($ruleName)
     }
 }
 
-Describe 'AvoidMultipleTypesParameter' {
+Describe 'AvoidMultipleTypeAttributes' {
     It 'Correctly diagnoses and corrects <Script>' -TestCases @(
         @{ Script = 'function F1 ($s1, $p1){}' }
         @{ Script = 'function F2 ([int] $s2, [int] $p2){}' }
