@@ -13,6 +13,7 @@
 |[AvoidGlobalVars](./AvoidGlobalVars.md) | Warning | |
 |[AvoidInvokingEmptyMembers](./AvoidInvokingEmptyMembers.md) | Warning | |
 |[AvoidLongLines](./AvoidLongLines.md) | Warning | |
+|[AvoidMultipleTypeAttributes](./AvoidMultipleTypeAttributes.md) | Warning | |
 |[AvoidOverwritingBuiltInCmdlets](./AvoidOverwritingBuiltInCmdlets.md) | Warning | |
 |[AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md) | Warning | |
 |[AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md) | Warning | |

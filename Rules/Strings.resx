@@ -1152,4 +1152,16 @@
   <data name="InvalidSyntaxAroundProcessBlockError" xml:space="preserve">
     <value>When using an explicit process block, no preceding code is allowed, only begin, end and dynamicparams blocks.</value>
   </data>
+  <data name="AvoidMultipleTypeAttributesCommonName" xml:space="preserve">
+    <value>Avoid multiple type specifiers on parameters</value>
+  </data>
+  <data name="AvoidMultipleTypeAttributesDescription" xml:space="preserve">
+    <value>Prameter should not have more than one type specifier.</value>
+  </data>
+  <data name="AvoidMultipleTypeAttributesError" xml:space="preserve">
+    <value>Parameter '{0}' has more than one type specifier.</value>
+  </data>
+  <data name="AvoidMultipleTypeAttributesName" xml:space="preserve">
+    <value>AvoidMultipleTypeAttributes</value>
+  </data>
 </root>
