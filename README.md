@@ -51,7 +51,7 @@ usage of Invoke-Expression etc. Additional functionalities such as exclude/inclu
 Usage
 ======================
 
-``` PowerShell
+```powershell
 Get-ScriptAnalyzerRule [-CustomRulePath <String[]>] [-RecurseCustomRulePath] [-Name <String[]>] [-Severity <String[]>] [<CommonParameters>]
 
 Invoke-ScriptAnalyzer [-Path] <String> [-CustomRulePath <String[]>] [-RecurseCustomRulePath]
@@ -188,7 +188,7 @@ Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests
 
 * Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) or higher is installed
 * In the root folder of your local repository, run:
-``` PowerShell
+```powershell
 ./build -Test
 ```
 
@@ -251,7 +251,7 @@ Suppressing Rules
 You can suppress a rule by decorating a script/function or script/function parameter with .NET's [SuppressMessageAttribute](https://docs.microsoft.com/dotnet/api/system.diagnostics.codeanalysis.suppressmessageattribute).
 `SuppressMessageAttribute`'s constructor takes two parameters: a category and a check ID. Set the `categoryID` parameter to the name of the rule you want to suppress and set the `checkID` parameter to a null or empty string. You can optionally add a third named parameter with a justification for suppressing the message:
 
-``` PowerShell
+```powershell
 function SuppressMe()
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Justification='Just an example')]
@@ -265,7 +265,7 @@ function SuppressMe()
 All rule violations within the scope of the script/function/parameter you decorate will be suppressed.
 
 To suppress a message on a specific parameter, set the `SuppressMessageAttribute`'s `CheckId` parameter to the name of the parameter:
-``` PowerShell
+```powershell
 function SuppressTwoVariables()
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideDefaultParameterValue', 'b')]
@@ -280,7 +280,7 @@ Use the `SuppressMessageAttribute`'s `Scope` property to limit rule suppression 
 
 Use the value `Function` to suppress violations on all functions within the attribute's scope. Use the value `Class` to suppress violations on all classes within the attribute's scope:
 
-``` PowerShell
+```powershell
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSProvideCommentHelp', '', Scope='Function')]
 param(
 )
@@ -296,7 +296,7 @@ function InternalFunction
 You can further restrict suppression based on a function/parameter/class/variable/object's name by setting the `SuppressMessageAttribute's` `Target` property to a regular expression or a glob pattern. Few examples are given below.
 
 Suppress `PSAvoidUsingWriteHost` rule violation in `start-bar` and `start-baz` but not in `start-foo` and `start-bam`:
-``` PowerShell
+```powershell
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-ba[rz]')]
 param()
 function start-foo {
@@ -317,13 +317,13 @@ function start-bam {
 ```
 
 Suppress violations in all the functions:
-``` PowerShell
+```powershell
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='*')]
 Param()
 ```
 
 Suppress violation in `start-bar`, `start-baz` and `start-bam` but not in `start-foo`:
-``` PowerShell
+```powershell
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Scope='Function', Target='start-b*')]
 Param()
 ```
@@ -354,7 +354,7 @@ Along with `PSGallery` there are a few other built-in presets, including, `DSC` 
 The following example excludes two rules from the default set of rules and any rule
 that does not output an Error or Warning diagnostic record.
 
-``` PowerShell
+```powershell
 # PSScriptAnalyzerSettings.psd1
 @{
     Severity=@('Error','Warning')
@@ -365,13 +365,13 @@ that does not output an Error or Warning diagnostic record.
 
 Then invoke that settings file when using `Invoke-ScriptAnalyzer`:
 
-``` PowerShell
+```powershell
 Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 ```
 
 The next example selects a few rules to execute instead of all the default rules.
 
-``` PowerShell
+```powershell
 # PSScriptAnalyzerSettings.psd1
 @{
     IncludeRules=@('PSAvoidUsingPlainTextForPassword',
@@ -380,7 +380,7 @@ The next example selects a few rules to execute instead of all the default rules
 ```
 
 Then invoke that settings file:
-``` PowerShell
+```powershell
 Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 ```
 
@@ -388,7 +388,7 @@ Invoke-ScriptAnalyzer -Path MyScript.ps1 -Settings PSScriptAnalyzerSettings.psd1
 
 If you place a PSScriptAnayzer settings file named `PSScriptAnalyzerSettings.psd1` in your project root, PSScriptAnalyzer will discover it if you pass the project root as the `Path` parameter.
 
-```PowerShell
+```powershell
 Invoke-ScriptAnalyzer -Path "C:\path\to\project" -Recurse
 ```
 
