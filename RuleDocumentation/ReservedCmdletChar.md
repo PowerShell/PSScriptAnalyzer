@@ -7,7 +7,7 @@
 You cannot use following reserved characters in a function or cmdlet name as these can cause parsing
 or runtime errors.
 
-Reserved Characters include: `#,(){}[]&/\\$^;:\"'<>|?@``*%+=~`
+Reserved Characters include: ``#,(){}[]&/\\$^;:\"'<>|?@`*%+=~``
 
 ## How
 
