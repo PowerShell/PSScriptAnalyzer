@@ -22,6 +22,7 @@ using System.Collections.ObjectModel;
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 {
@@ -1263,13 +1264,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                         foreach (var psobject in psobjects)
                         {
-                            DiagnosticSeverity severity;
-                            IScriptExtent extent;
-                            string message = string.Empty;
-                            string ruleName = string.Empty;
-                            string ruleSuppressionID = string.Empty;
-                            IEnumerable<CorrectionExtent> suggestedCorrections;
-
                             if (psobject != null && psobject.ImmediateBaseObject != null)
                             {
                                 // Because error stream is merged to output stream,
@@ -1282,28 +1276,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                 }
 
                                 // DiagnosticRecord may not be correctly returned from external rule.
-                                try
+                                if (TryConvertPSObjectToDiagnostic(psobject, filePath, out DiagnosticRecord diagnostic))
                                 {
-                                    severity = (DiagnosticSeverity)Enum.Parse(typeof(DiagnosticSeverity), psobject.Properties["Severity"].Value.ToString());
-                                    message = psobject.Properties["Message"].Value.ToString();
-                                    extent = (IScriptExtent)psobject.Properties["Extent"].Value;
-                                    ruleName = psobject.Properties["RuleName"].Value.ToString();
-                                    ruleSuppressionID = psobject.Properties["RuleSuppressionID"].Value?.ToString();
-                                    suggestedCorrections = (IEnumerable<CorrectionExtent>)psobject.Properties["SuggestedCorrections"].Value;
-                                }
-                                catch (Exception ex)
-                                {
-                                    this.outputWriter.WriteError(new ErrorRecord(ex, ex.HResult.ToString("X"), ErrorCategory.NotSpecified, this));
-                                    continue;
-                                }
-
-                                if (!string.IsNullOrEmpty(message))
-                                {
-                                    diagnostics.Add(new DiagnosticRecord(message, extent, ruleName, severity, filePath)
-                                    {
-                                        SuggestedCorrections = suggestedCorrections,
-                                        RuleSuppressionID = ruleSuppressionID,
-                                    });
+                                    diagnostics.Add(diagnostic);
                                 }
                             }
                         }
@@ -1659,6 +1634,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             updatedRange = range;
             return text;
         }
+
+        private bool TryConvertPSObjectToDiagnostic(PSObject psObject, string filePath, out DiagnosticRecord diagnostic)
+        {
+            string message = psObject.Properties["Message"]?.Value?.ToString();
+            var extent = (IScriptExtent)psObject.Properties["Extent"]?.Value;
+            string ruleName = psObject.Properties["RuleName"]?.Value?.ToString();
+            string ruleSuppressionID = psObject.Properties["RuleSuppressionID"]?.Value?.ToString();
+            CorrectionExtent[] suggestedCorrections = psObject.TryGetPropertyValue("SuggestedCorrections", out object correctionsValue)
+                ? LanguagePrimitives.ConvertTo<CorrectionExtent[]>(correctionsValue)
+                : null;
+            DiagnosticSeverity severity = psObject.TryGetPropertyValue("Severity", out object severityValue)
+                ? LanguagePrimitives.ConvertTo<DiagnosticSeverity>(severityValue)
+                : DiagnosticSeverity.Warning;
+
+            bool isValid = true;
+            isValid &= CheckHasRequiredProperty("Message", message);
+            isValid &= CheckHasRequiredProperty("Extent", extent);
+            isValid &= CheckHasRequiredProperty("RuleName", ruleName);
+
+            if (!isValid)
+            {
+                diagnostic = null;
+                return false;
+            }
+
+            diagnostic = new DiagnosticRecord(message, extent, ruleName, severity, filePath, ruleSuppressionID, suggestedCorrections);
+            return true;
+        }
+
+        private bool CheckHasRequiredProperty(string propertyName, object propertyValue)
+        {
+            if (propertyValue is null)
+            {
+                var exception = new ArgumentNullException(propertyName, $"The '{propertyName}' property is required on custom rule diagnostics");
+                this.outputWriter.WriteError(new ErrorRecord(exception, "CustomRuleDiagnosticPropertyMissing", ErrorCategory.InvalidArgument, this));
+                return false;
+            }
+
+            return true;
+        }
+
 
         private static Encoding GetFileEncoding(string path)
         {

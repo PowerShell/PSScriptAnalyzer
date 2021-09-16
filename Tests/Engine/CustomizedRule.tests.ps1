@@ -199,6 +199,19 @@ Describe "Test importing correct customized rules" {
             $violations[0].RuleSuppressionID   | Should -Be "MyRuleSuppressionID"
         }
 
+		It "Does not throw an exception when optional diagnostic properties are not present" {
+			$violations = Invoke-ScriptAnalyzer -Path "$PSScriptRoot\CustomRuleNREAssets\CLMTest.ps1" -CustomizedRulePath "$PSScriptRoot\CustomRuleNREAssets\MyCustom.psm1"
+
+			$violations.Count | Should -Be 1
+			$violations[0].RuleName | Should -BeExactly 'MyCustom\Test-StaticMethod'
+			$violations[0].Severity | Should -Be 'Warning'
+			$violations[0].ScriptName | Should -BeExactly 'CLMTest.ps1'
+			$violations[0].Extent.StartLineNumber | Should -Be 4
+			$violations[0].Message | Should -BeExactly 'Avoid Using Static Methods'
+			$violations[0].RuleSuppressionID | Should -BeNullOrEmpty
+			$violations[0].SuggestedCorrections | Should -BeNullOrEmpty
+		}
+
 		Context "Test Invoke-ScriptAnalyzer with customized rules - Advanced test cases" -Skip:$testingLibraryUsage {
             It "will show the custom rule in the results when given a rule folder path with trailing backslash" {
 				# needs fixing for Linux

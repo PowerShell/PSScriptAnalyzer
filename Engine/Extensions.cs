@@ -178,5 +178,19 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions
 
             return false;
         }
+
+        internal static bool TryGetPropertyValue(this PSObject psObject, string propertyName, out object value)
+        {
+            PSMemberInfo property = psObject.Properties[propertyName];
+
+            if (property is null)
+            {
+                value = default;
+                return false;
+            }
+
+            value = property.Value;
+            return true;
+        }
     }
 }
