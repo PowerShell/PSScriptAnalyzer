@@ -1638,7 +1638,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private bool TryConvertPSObjectToDiagnostic(PSObject psObject, string filePath, out DiagnosticRecord diagnostic)
         {
             string message = psObject.Properties["Message"]?.Value?.ToString();
-            var extent = (IScriptExtent)psObject.Properties["Extent"]?.Value;
+            var extent = psObject.Properties["Extent"]?.Value as IScriptExtent;
             string ruleName = psObject.Properties["RuleName"]?.Value?.ToString();
             string ruleSuppressionID = psObject.Properties["RuleSuppressionID"]?.Value?.ToString();
             CorrectionExtent[] suggestedCorrections = psObject.TryGetPropertyValue("SuggestedCorrections", out object correctionsValue)
