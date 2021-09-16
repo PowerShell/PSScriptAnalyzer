@@ -1638,7 +1638,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         private bool TryConvertPSObjectToDiagnostic(PSObject psObject, string filePath, out DiagnosticRecord diagnostic)
         {
             string message = psObject.Properties["Message"]?.Value?.ToString();
-            var extent = psObject.Properties["Extent"]?.Value as IScriptExtent;
+            object extentValue = psObject.Properties["Extent"]?.Value;
             string ruleName = psObject.Properties["RuleName"]?.Value?.ToString();
             string ruleSuppressionID = psObject.Properties["RuleSuppressionID"]?.Value?.ToString();
             CorrectionExtent[] suggestedCorrections = psObject.TryGetPropertyValue("SuggestedCorrections", out object correctionsValue)
@@ -1650,8 +1650,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             bool isValid = true;
             isValid &= CheckHasRequiredProperty("Message", message);
-            isValid &= CheckHasRequiredProperty("Extent", extent);
             isValid &= CheckHasRequiredProperty("RuleName", ruleName);
+
+            if (extentValue is not null && extentValue is not IScriptExtent)
+            {
+                this.outputWriter.WriteError(
+                    new ErrorRecord(
+                        new ArgumentException($"Property 'Extent' is expected to be of type '{typeof(IScriptExtent)}' but was instead of type '{extentValue.GetType()}'"),
+                        "CustomRuleDiagnosticPropertyInvalidType",
+                        ErrorCategory.InvalidArgument,
+                        this));
+                isValid = false;
+            }
 
             if (!isValid)
             {
@@ -1659,7 +1669,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 return false;
             }
 
-            diagnostic = new DiagnosticRecord(message, extent, ruleName, severity, filePath, ruleSuppressionID, suggestedCorrections);
+            diagnostic = new DiagnosticRecord(message, (IScriptExtent)extentValue, ruleName, severity, filePath, ruleSuppressionID, suggestedCorrections);
             return true;
         }
 
