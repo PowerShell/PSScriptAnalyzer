@@ -976,6 +976,18 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 this.ScriptRules = null;
             }
 
+            if (result.TryGetValue("ValidDllPaths", out List<string> validDllPaths)
+                && validDllPaths.Count > 0)
+            {
+                if (this.ScriptRules == null)
+                {
+                    this.ScriptRules = Enumerable.Empty<IScriptRule>();
+                }
+
+                this.ScriptRules = this.ScriptRules.Concat(
+                    validDllPaths.SelectMany(GetInterfaceImplementationsFromAssembly<IScriptRule>));
+            }
+
             // Gets external rules.
             if (result.ContainsKey("ValidModPaths") && result["ValidModPaths"].Count > 0)
             {
