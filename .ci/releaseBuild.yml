@@ -1,4 +1,4 @@
-# The name of the build that will be seen in mscodehub
+ # The name of the build that will be seen in mscodehub
 name: PSSA-Release-$(Build.BuildId)
 # how is the build triggered
 # since this is a release build, no trigger as it's a manual release
@@ -34,7 +34,7 @@ stages:
 - stage: Build
   displayName: Build
   pool:
-    name: Package ES CodeHub Lab E
+    name: PowerShell1ES # was Package ES CodeHub Lab E
   jobs:
   - job: Build_Job
     displayName: Build Microsoft.PowerShell.ScriptAnalyzer
@@ -162,7 +162,7 @@ stages:
   jobs:
   - job: Compliance_Job
     pool:
-      name: Package ES CodeHub Lab E
+      name: PowerShell1ES # was Package ES CodeHub Lab E
     steps:
     - checkout: self
     - checkout: ComplianceRepo
