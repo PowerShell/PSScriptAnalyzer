@@ -43,6 +43,6 @@ try
 }
 catch [DivideByZeroException]
 {
-    Throw "DivideByZeroException"
+    throw "DivideByZeroException"
 }
 ```

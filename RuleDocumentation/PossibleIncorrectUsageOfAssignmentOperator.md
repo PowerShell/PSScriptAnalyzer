@@ -4,8 +4,7 @@
 
 ## Description
 
-In many programming languages, the equality operator is denoted as `==` or `=` in many programming
-languages, but `PowerShell` uses `-eq`. Therefore, it can easily happen that the wrong operator is
+In many programming languages, the equality operator is denoted as `==` or `=`, but `PowerShell` uses `-eq`. Therefore, it can easily happen that the wrong operator is
 used unintentionally. This rule catches a few special cases where the likelihood of that is quite
 high.
 

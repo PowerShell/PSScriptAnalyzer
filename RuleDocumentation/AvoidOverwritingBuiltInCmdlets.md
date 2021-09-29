@@ -41,4 +41,4 @@ with the
 script and use it by placing the created `JSON` into the `Settings` folder of the `PSScriptAnalyzer`
 module installation folder, then the `PowerShellVersion` parameter is just its file name (that can
 also be changed if desired). Note that the `core-6.0.2-*` files were removed in PSScriptAnalyzer
-1.18 since PowerShell 6.0 reached it's end of life.
+1.18 since PowerShell 6.0 reached end of life.
