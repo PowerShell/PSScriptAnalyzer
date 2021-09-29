@@ -7,14 +7,16 @@
 All DSC resources are required to implement the correct functions.
 
 For non-class based resources:
-* `Set-TargetResource`
-* `Test-TargetResource`
-* `Get-TargetResource`
+
+- `Set-TargetResource`
+- `Test-TargetResource`
+- `Get-TargetResource`
 
 For class based resources:
-* `Set`
-* `Test`
-* `Get`
+
+- `Set`
+- `Test`
+- `Get`
 
 ## How
 
@@ -24,7 +26,7 @@ Add the missing functions to the resource.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 function Get-TargetResource
 {
     [OutputType([Hashtable])]
@@ -50,7 +52,7 @@ function Set-TargetResource
 ```
 ### Correct
 
-``` PowerShell
+```powershell
 function Get-TargetResource
 {
     [OutputType([Hashtable])]
@@ -91,7 +93,7 @@ function Test-TargetResource
 
 ### Wrong
 
-``` PowerShell
+```powershell
 [DscResource()]
 class MyDSCResource
 {
@@ -111,7 +113,7 @@ class MyDSCResource
 
 ### Correct
 
-``` PowerShell
+```powershell
 [DscResource()]
 class MyDSCResource
 {

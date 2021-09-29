@@ -4,23 +4,25 @@
 
 ## Description
 
-Functions that support pipeline input should always handle parameter input in a process block. Unexpected behavior can result if input is handled directly in the body of a function where parameters declare pipeline support.
+Functions that support pipeline input should always handle parameter input in a process block.
+Unexpected behavior can result if input is handled directly in the body of a function where
+parameters declare pipeline support.
 
 ## Example
 
 ### Wrong
 
-``` PowerShell
+```powershell
 Function Get-Number
 {
-	[CmdletBinding()]
-	Param(
-		[Parameter(ValueFromPipeline)]
-		[int]
-		$Number
-	)
-	
-	$Number
+    [CmdletBinding()]
+    Param(
+        [Parameter(ValueFromPipeline)]
+        [int]
+        $Number
+    )
+
+    $Number
 }
 ```
 
@@ -33,20 +35,20 @@ PS C:\> 1..5 | Get-Number
 
 ### Correct
 
-``` PowerShell
+```powershell
 Function Get-Number
 {
-	[CmdletBinding()]
-	Param(
-		[Parameter(ValueFromPipeline)]
-		[int]
-		$Number
-	)
-	
-	process
-	{
-		$Number
-	}
+    [CmdletBinding()]
+    Param(
+        [Parameter(ValueFromPipeline)]
+        [int]
+        $Number
+    )
+
+    process
+    {
+        $Number
+    }
 }
 ```
 

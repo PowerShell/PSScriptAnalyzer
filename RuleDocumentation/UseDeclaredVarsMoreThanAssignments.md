@@ -4,7 +4,8 @@
 
 ## Description
 
-Generally variables that are not used more than their assignments are considered wasteful and not needed.
+Generally variables that are not used more than their assignments are considered wasteful and not
+needed.
 
 ## How
 
@@ -14,7 +15,7 @@ Remove the variables that are declared but not used.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 function Test
 {
     $declaredVar = "Declared just for fun"
@@ -25,7 +26,7 @@ function Test
 
 ### Correct
 
-``` PowerShell
+```powershell
 function Test
 {
     $declaredVar = "Declared just for fun"

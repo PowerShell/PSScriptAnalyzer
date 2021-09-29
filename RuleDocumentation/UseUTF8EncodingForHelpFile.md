@@ -4,4 +4,4 @@
 
 ## Description
 
-Check if help file uses utf8 encoding
+Check if help file uses UTF-8 encoding.

@@ -4,7 +4,8 @@
 
 ## Description
 
-The `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions of DSC Resource must have the same parameters.
+The `Get-TargetResource`, `Test-TargetResource` and `Set-TargetResource` functions of DSC Resource
+must have the same parameters.
 
 ## How
 
@@ -14,7 +15,7 @@ Correct the parameters for the functions in DSC resource.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 function Get-TargetResource
 {
     [OutputType([Hashtable])]
@@ -56,7 +57,7 @@ function Test-TargetResource
 
 ### Correct
 
-``` PowerShell
+```powershell
 function Get-TargetResource
 {
     [OutputType([Hashtable])]

@@ -14,7 +14,7 @@ Change the name of the parameter.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 function Test
 {
     [CmdletBinding]
@@ -28,7 +28,7 @@ function Test
 
 ### Correct
 
-``` PowerShell
+```powershell
 function Test
 {
     [CmdletBinding]

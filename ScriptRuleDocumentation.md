@@ -10,7 +10,7 @@ The purpose of this documentation is to serve as a basic guide on creating your 
 
 - Functions should have comment-based help. Make sure .DESCRIPTION field is there, as it will be consumed as rule description for the customized rule.
 
-``` PowerShell
+```powershell
 <#
 .SYNOPSIS
     Name of your rule.
@@ -25,13 +25,13 @@ The purpose of this documentation is to serve as a basic guide on creating your 
 
 - Output type should be DiagnosticRecord:
 
-``` PowerShell
+```powershell
 [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
 ```
 
 - Make sure each function takes either a Token array or an Ast as a parameter. The _Ast_ parameter name must end with 'Ast' and the _Token_ parameter name must end with 'Token'
 
-``` PowerShell
+```powershell
 Param
 (
     [Parameter(Mandatory = $true)]
@@ -41,7 +41,7 @@ Param
 )
 ```
 
-``` PowerShell
+```powershell
 Param
 (
     [Parameter(Mandatory = $true)]
@@ -53,7 +53,7 @@ Param
 
 - DiagnosticRecord should have at least four properties: Message, Extent, RuleName and Severity
 
-``` PowerShell
+```powershell
 $result = [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]]@{
     "Message"  = "This is a sample rule"
     "Extent"   = $ast.Extent
@@ -87,13 +87,13 @@ $suggestedCorrections.add($correctionExtent) | out-null
 
 - Make sure you export the function(s) at the end of the script using Export-ModuleMember
 
-``` PowerShell
+```powershell
 Export-ModuleMember -Function (FunctionName)
 ```
 
 ### Example
 
-``` PowerShell
+```powershell
 <#
         .SYNOPSIS
         Uses #Requires -RunAsAdministrator instead of your own methods.

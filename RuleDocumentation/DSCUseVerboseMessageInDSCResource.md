@@ -4,7 +4,8 @@
 
 ## Description
 
-Best practice recommends that additional user information is provided within commands, functions and scripts using `Write-Verbose`.
+Best practice recommends that additional user information is provided within commands, functions and
+scripts using `Write-Verbose`.
 
 ## How
 
@@ -14,7 +15,7 @@ Make use of the `Write-Verbose` command.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 Function Test-Function
 {
     [CmdletBinding()]
@@ -25,7 +26,7 @@ Function Test-Function
 
 ### Correct
 
-``` PowerShell
+```powershell
 Function Test-Function
 {
     [CmdletBinding()]

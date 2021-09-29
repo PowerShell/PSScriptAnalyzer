@@ -4,17 +4,18 @@
 
 ## Description
 
-To standardize command parameters, credentials should be accepted as objects of type ```PSCredential```. Functions should not make use of username or password parameters.
+To standardize command parameters, credentials should be accepted as objects of type
+**PSCredential**. Functions should not make use of username or password parameters.
 
 ## How
 
-Change the parameter to type ```PSCredential```.
+Change the parameter to type **PSCredential**.
 
 ## Example
 
 ### Wrong
 
-``` PowerShell
+```powershell
 function Test-Script
 {
     [CmdletBinding()]
@@ -31,7 +32,7 @@ function Test-Script
 
 ### Correct
 
-``` PowerShell
+```powershell
 function Test-Script
 {
     [CmdletBinding()]

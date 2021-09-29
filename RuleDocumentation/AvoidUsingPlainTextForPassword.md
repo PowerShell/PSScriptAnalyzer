@@ -4,28 +4,30 @@
 
 ## Description
 
-Password parameters that take in plaintext will expose passwords and compromise the security of your system. Passwords should be stored in the
-```SecureString``` type.
+Password parameters that take in plaintext will expose passwords and compromise the security of your
+system. Passwords should be stored in the **SecureString** type.
 
 The following parameters are considered password parameters (this is not case sensitive):
-* Password
-* Pass
-* Passwords
-* Passphrase
-* Passphrases
-* PasswordParam
 
-If a parameter is defined with a name in the above list, it should be declared with type ```SecureString```
+- Password
+- Pass
+- Passwords
+- Passphrase
+- Passphrases
+- PasswordParam
+
+If a parameter is defined with a name in the above list, it should be declared with type
+**SecureString**.
 
 ## How
 
-Change the type to ```SecureString```.
+Change the type to **SecureString**.
 
 ## Example
 
 ### Wrong
 
-``` PowerShell
+```powershell
 function Test-Script
 {
     [CmdletBinding()]
@@ -40,7 +42,7 @@ function Test-Script
 
 ### Correct
 
-``` PowerShell
+```powershell
 function Test-Script
 {
     [CmdletBinding()]

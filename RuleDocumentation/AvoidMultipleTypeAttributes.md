@@ -4,7 +4,8 @@
 
 ## Description
 
-Parameters should not have more than one type specifier. Multiple type specifiers on parameters will cause a runtime error.
+Parameters should not have more than one type specifier. Multiple type specifiers on parameters
+cause runtime errors.
 
 ## How
 
@@ -14,7 +15,7 @@ Ensure each parameter has only 1 type specifier.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 function Test-Script
 {
     [CmdletBinding()]
@@ -33,7 +34,7 @@ function Test-Script
 
 ### Correct
 
-``` PowerShell
+```powershell
 function Test-Script
 {
     [CmdletBinding()]

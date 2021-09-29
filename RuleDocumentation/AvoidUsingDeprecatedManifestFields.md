@@ -4,7 +4,7 @@
 
 ## Description
 
-In PowerShell 5.0, a number of fields in module manifest files (.psd1) have been changed.
+In PowerShell 5.0, a number of fields in module manifest files (`.psd1`) have been changed.
 
 The field `ModuleToProcess` has been replaced with the `RootModule` field.
 
@@ -16,7 +16,7 @@ Replace `ModuleToProcess` with `RootModule` in the module manifest.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 ModuleToProcess ='psscriptanalyzer'
 
 ModuleVersion = '1.0'
@@ -24,7 +24,7 @@ ModuleVersion = '1.0'
 
 ### Correct
 
-``` PowerShell
+```powershell
 RootModule ='psscriptanalyzer'
 
 ModuleVersion = '1.0'

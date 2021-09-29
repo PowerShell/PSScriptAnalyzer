@@ -4,9 +4,11 @@
 
 ## Description
 
-Care must be taken when using the `Invoke-Expression` command. The `Invoke-Expression` executes the specified string and returns the results.
+Care must be taken when using the `Invoke-Expression` command. The `Invoke-Expression` executes the
+specified string and returns the results.
 
-Code injection into your application or script can occur if the expression passed as a string includes any data provided from the user.
+Code injection into your application or script can occur if the expression passed as a string
+includes any data provided from the user.
 
 ## How
 
@@ -16,12 +18,12 @@ Remove the use of `Invoke-Expression`.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 Invoke-Expression "Get-Process"
 ```
 
 ### Correct
 
-``` PowerShell
+```powershell
 Get-Process
 ```

@@ -14,7 +14,7 @@ Change the default value of the switch parameter to be false.
 
 ### Wrong
 
-``` PowerShell
+```powershell
 function Test-Script
 {
     [CmdletBinding()]
@@ -32,7 +32,7 @@ function Test-Script
 
 ### Correct
 
-``` PowerShell
+```powershell
 function Test-Script
 {
     [CmdletBinding()]
