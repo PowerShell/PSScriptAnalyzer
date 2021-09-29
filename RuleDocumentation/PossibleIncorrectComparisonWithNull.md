@@ -24,7 +24,7 @@ Move `$null` to the left side of the comparison.
 
 ## Example
 
-### Wrong?
+### Wrong
 
 ```powershell
 function Test-CompareWithNull

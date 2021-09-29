@@ -4,7 +4,7 @@
 
 ## Description
 
-Open brace placement should follow a consistent style. It can either follow KR style (on same line)
+Open brace placement should follow a consistent style. It can either follow K&R style (on same line)
 or the Allman style (not on same line).
 
 **Note**: This rule is not enabled by default. The user needs to enable it through settings.

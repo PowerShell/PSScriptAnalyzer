@@ -18,13 +18,13 @@ Create the hashtable using a literal hashtable expression.
 
 ## Example
 
-### Wrong???
+### Wrong
 
 ```powershell
 $hashtable = [hashtable]::new()
 ```
 
-### Wrong???
+### Wrong
 
 ```powershell
 $hashtable = New-Object -TypeName hashtable
