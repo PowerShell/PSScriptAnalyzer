@@ -14,8 +14,8 @@ Use a standard encrypted variable to perform any SecureString conversions.
 ## Recommendations
 
 If you do need an ability to retrieve the password from somewhere without prompting the user,
-consider using Windows Credential Store as used in the
-[SecretManagement](https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretManagement)
+consider using the
+[SecretStore](https://www.powershellgallery.com/packages/Microsoft.PowerShell.SecretStore)
 module from the PowerShell Gallery.
 
 ## Example

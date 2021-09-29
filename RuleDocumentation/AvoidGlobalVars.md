@@ -38,6 +38,6 @@ function Test-NotGlobal ($var)
 $var1 = $null
 function Test-NotGlobal ($var1, $var2)
 {
-        $a = $var1 + $var2
+    $a = $var1 + $var2
 }
 ```

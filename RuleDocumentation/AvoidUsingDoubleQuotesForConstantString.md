@@ -13,7 +13,7 @@ characters such as `$` within that string expression without needing to escape t
 
 There are exceptions to that when double quoted strings are more readable. For example, when the
 string value itself must contain a single quote or other special characters, such as newline
-(`"``n"`), are already being escaped. The rule does not warn in these cases.
+(`` "`n" ``), are already being escaped. The rule does not warn in these cases.
 
 ## Example
 

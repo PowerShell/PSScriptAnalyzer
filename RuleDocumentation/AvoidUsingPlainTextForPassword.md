@@ -1,6 +1,6 @@
 # AvoidUsingPlainTextForPassword
 
---Severity Level: Warning--
+**Severity Level: Warning**
 
 ## Description
 

@@ -4,11 +4,11 @@
 
 ## Description
 
-If a ScriptBlock is intended to be run in a new RunSpace, variables inside it should use the
-`$using:` scope modifier, or be initialized within the **ScriptBlock**. This applies to:
+If a scriptblock is intended to be run in a new runspace, variables inside it should use the
+`$using:` scope modifier, or be initialized within the scriptblock. This applies to:
 
 - `Invoke-Command`- Only with the **ComputerName** or **Session** parameter.
-- `Workflow { InlineScript {}}`
+- `Workflow { InlineScript {} }`
 - `Foreach-Object` - Only with the **Parallel** parameter
 - `Start-Job`
 - `Start-ThreadJob`
