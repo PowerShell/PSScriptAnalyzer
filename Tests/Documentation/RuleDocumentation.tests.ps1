@@ -1,6 +1,6 @@
 Describe "Validate rule documentation files" {
     BeforeAll {
-        $ruleDocDirectory = Join-Path $PSScriptRoot '../../RuleDocumentation'
+        $ruleDocDirectory = Join-Path $PSScriptRoot '../../docs/Rules'
         $docs = Get-ChildItem $ruleDocDirectory/*.md -Exclude README.md |
             ForEach-Object { "PS" + $_.BaseName} | Sort-Object
 
