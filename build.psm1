@@ -102,7 +102,7 @@ function Remove-Build
 function Start-DocumentationBuild
 {
     $docsPath = Join-Path $projectRoot docs
-    $markdownDocsPath = Join-Path $docsPath markdown
+    $markdownDocsPath = Join-Path $docsPath Cmdlets
     $outputDocsPath = Join-Path $script:destinationDir en-US
     $platyPS = Get-Module -ListAvailable platyPS
     if ($null -eq $platyPS -or ($platyPS | Sort-Object Version -Descending | Select-Object -First 1).Version -lt [version]0.12)
