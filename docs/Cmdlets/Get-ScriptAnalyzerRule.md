@@ -39,7 +39,7 @@ determine if it fulfils best practice standards.
 Get-ScriptAnalyzerRule
 ```
 
-### EXAMPLE - Gets only rules with the Error severity
+### EXAMPLE 2 - Gets only rules with the Error severity
 
 ```powershell
 Get-ScriptAnalyzerRule -Severity Error
@@ -59,7 +59,7 @@ Invoke-ScriptAnalyzerRule -Path $Path -IncludeRule $DSCError -Recurse
 Using the **IncludeRule** parameter of `Invoke-ScriptAnalyzerRule` is more efficient than using its
 **Severity** parameter, which is applied only after using all rules to analyze all module files.
 
-### EXAMPLE 4 - Get rules with by name and severity
+### EXAMPLE 4 - Get rules by name and severity
 
 This example gets rules with "Parameter" or "Alias" in the name that generate an Error or Warning.
 You can use this set of rules to test the parameters of your script or module.
@@ -70,9 +70,9 @@ $TestParameters = Get-ScriptAnalyzerRule -Severity Error, Warning -Name *Paramet
 
 ### EXAMPLE 5 - Get custom rules
 
-This examle gets the standard rules and the rules in the VeryStrictRules and ExtremelyStrictRules
-modules. The command uses the **RecurseCustomRulePath** parameter to get rules defined in
-subdirectories of the matching paths.
+This example gets the standard rules and the rules in the **VeryStrictRules** and
+**ExtremelyStrictRules** modules. The command uses the **RecurseCustomRulePath** parameter to get
+rules defined in subdirectories of the matching paths.
 
 ```powershell
 Get-ScriptAnalyzerRule -CustomRulePath $home\Documents\WindowsPowerShell\Modules\*StrictRules -RecurseCustomRulePath
