@@ -115,11 +115,6 @@ Describe "Cmdlet help" {
 	It "gets example code from <CommandName>" -TestCases $testCases {
 		($Help.Examples.Example | Select-Object -First 1).Code | Should -Not -BeNullOrEmpty
 	}
-
-	# Should be at least one example description
-	It "gets example help from $commandName" -TestCases $testCases {
-		($Help.Examples.Example.Remarks | Select-Object -First 1).Text | Should -Not -BeNullOrEmpty
-	}
 }
 
 Describe 'Cmdlet parameter help' {
