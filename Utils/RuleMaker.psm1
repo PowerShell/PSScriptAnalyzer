@@ -198,7 +198,7 @@ Function Remove-RuleSource($Rule)
 Function Get-RuleDocumentationPath($Rule)
 {
     $root = Get-SolutionRoot
-    $ruleDocDir = Join-Path $root 'Rules'
+    $ruleDocDir = Join-Path $root 'docs/Rules'
     $ruleDocPath = Join-Path $ruleDocDir ($Rule.Name + ".md")
     $ruleDocPath
 }
