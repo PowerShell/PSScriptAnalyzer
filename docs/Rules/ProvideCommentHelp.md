@@ -17,9 +17,9 @@ presence of comment based help and not on the validity or format.
 For assistance on comment based help, use the command `Get-Help about_comment_based_help` or the
 following articles:
 
-- [Writing Comment-based Help](https://docs.microsoft.com/powershell/scripting/developer/help/writing-comment-based-help-topics)
-- [Writing Help for PowerShell Cmdlets](https://docs.microsoft.com/powershell/scripting/developer/help/writing-help-for-windows-powershell-cmdlets)
-- [Create XML-based help using PlatyPS](https://docs.microsoft.com/powershell/scripting/dev-cross-plat/create-help-using-platyps)
+- [Writing Comment-based Help](/powershell/scripting/developer/help/writing-comment-based-help-topics)
+- [Writing Help for PowerShell Cmdlets](/powershell/scripting/developer/help/writing-help-for-windows-powershell-cmdlets)
+- [Create XML-based help using PlatyPS](/powershell/scripting/dev-cross-plat/create-help-using-platyps)
 
 ## Configuration
 

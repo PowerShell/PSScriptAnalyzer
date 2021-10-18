@@ -29,7 +29,7 @@ For class based resources:
 
 Add the missing functions to the resource.
 
-## Example
+## Example 1
 
 ### Wrong
 
@@ -57,6 +57,7 @@ function Set-TargetResource
     ...
 }
 ```
+
 ### Correct
 
 ```powershell
@@ -96,7 +97,7 @@ function Test-TargetResource
 }
 ```
 
-## Example
+## Example 2
 
 ### Wrong
 

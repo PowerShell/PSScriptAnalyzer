@@ -18,7 +18,7 @@ The names of computers should never be hard coded as this will expose sensitive 
 
 Remove hard coded computer names.
 
-## Example
+## Example 1
 
 ### Wrong
 
@@ -38,7 +38,7 @@ Function Invoke-MyCommand ($ComputerName)
 }
 ```
 
-## Example
+## Example 2
 
 ### Wrong
 

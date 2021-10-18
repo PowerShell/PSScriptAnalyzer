@@ -29,7 +29,7 @@ For class based resources:
 
 Ensure that each function returns the correct type.
 
-## Example
+## Example 1
 
 ### Wrong
 
@@ -107,7 +107,7 @@ function Test-TargetResource
 }
 ```
 
-## Example
+## Example 2
 
 ### Wrong
 

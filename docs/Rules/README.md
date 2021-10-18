@@ -72,7 +72,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [UseProcessBlockForPipelineCommand](./UseProcessBlockForPipelineCommand.md)                       | Warning     |        Yes         |                 |
 | [UsePSCredentialType](./UsePSCredentialType.md)                                                   | Warning     |        Yes         |                 |
 | [UseShouldProcessForStateChangingFunctions](./UseShouldProcessForStateChangingFunctions.md)       | Warning     |        Yes         |                 |
-| [UseSingularNouns<sup>1</sup>](./UseSingularNouns.md)                                             | Warning     |        Yes         |                 |
+| [UseSingularNouns](./UseSingularNouns.md)                                                         | Warning     |        Yes         |                 |
 | [UseSupportsShouldProcess](./UseSupportsShouldProcess.md)                                         | Warning     |        Yes         |                 |
 | [UseToExportFieldsInManifest](./UseToExportFieldsInManifest.md)                                   | Warning     |        Yes         |                 |
 | [UseUsingScopeModifierInNewRunspaces](./UseUsingScopeModifierInNewRunspaces.md)                   | Warning     |        Yes         |                 |
