@@ -1,3 +1,10 @@
+---
+description: Use UTF8 Encoding For Help File
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: UseUTF8EncodingForHelpFile
+---
 # UseUTF8EncodingForHelpFile
 
 **Severity Level: Warning**

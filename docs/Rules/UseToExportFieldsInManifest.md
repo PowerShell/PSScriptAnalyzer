@@ -1,3 +1,10 @@
+---
+description: Use the *ToExport module manifest fields.
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: UseToExportFieldsInManifest
+---
 # UseToExportFieldsInManifest
 
 **Severity Level: Warning**
@@ -19,7 +26,7 @@ module auto-discovery.
 
 Use an explicit list in the entries.
 
-## Example
+## Example 1
 
 Suppose there are no functions in your module to export. Then,
 
@@ -35,7 +42,7 @@ FunctionsToExport = $null
 FunctionToExport = @()
 ```
 
-## Example
+## Example 2
 
 Suppose there are only two functions in your module, `Get-Foo` and `Set-Foo` that you want to
 export. Then,

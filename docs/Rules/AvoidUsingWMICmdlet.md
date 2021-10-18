@@ -1,3 +1,10 @@
+---
+description: Avoid Using Get-WMIObject, Remove-WMIObject, Invoke-WmiMethod, Register-WmiEvent, Set-WmiInstance
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: AvoidUsingWMICmdlet
+---
 # AvoidUsingWMICmdlet
 
 **Severity Level: Warning**

@@ -1,6 +1,13 @@
+---
+description: List of PSScriptAnalyzer rules
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: List of PSScriptAnalyzer rules
+---
 # PSScriptAnalyzer Rules
 
-## Table of Contents
+The PSScriptAnalyzer contains the following rule definitions.
 
 |                                               Rule                                                |  Severity   | Enabled by default |  Configurable   |
 | ------------------------------------------------------------------------------------------------- | ----------- | :----------------: | :-------------: |
