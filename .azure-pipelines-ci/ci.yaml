@@ -22,8 +22,6 @@ stages:
       - job:
         strategy:
           matrix:
-            Ubuntu_16_04:
-              vmImage: ubuntu-16.04
             Ubuntu_18_04:
               vmImage: ubuntu-18.04
             Ubuntu_20_04:
