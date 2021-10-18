@@ -13,10 +13,6 @@ title: UseSingularNouns
 
 PowerShell team best practices state cmdlets should use singular nouns and not plurals.
 
-> [!NOTE]
-> This rule is only available in Windows PowerShell because the rule uses the
-> **PluralizationService** API internally.
-
 ## How
 
 Change plurals to singular.
