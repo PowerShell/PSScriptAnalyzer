@@ -1,12 +1,19 @@
+---
+description: Equal sign is not an assignment operator. Did you mean the equality operator \'-eq\'?
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: PossibleIncorrectUsageOfAssignmentOperator
+---
 # PossibleIncorrectUsageOfAssignmentOperator
 
 **Severity Level: Information**
 
 ## Description
 
-In many programming languages, the equality operator is denoted as `==` or `=`, but `PowerShell` uses `-eq`. Therefore, it can easily happen that the wrong operator is
-used unintentionally. This rule catches a few special cases where the likelihood of that is quite
-high.
+In many programming languages, the equality operator is denoted as `==` or `=`, but `PowerShell`
+uses `-eq`. Therefore, it can easily happen that the wrong operator is used unintentionally. This
+rule catches a few special cases where the likelihood of that is quite high.
 
 The rule looks for usages of `==` and `=` operators inside `if`, `else if`, `while` and `do-while`
 statements but it does not warn if any kind of command or expression is used at the right hand side

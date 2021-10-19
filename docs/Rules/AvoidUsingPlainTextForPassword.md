@@ -1,3 +1,10 @@
+---
+description: Avoid Using Plain Text For Password Parameter
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: AvoidUsingPlainTextForPassword
+---
 # AvoidUsingPlainTextForPassword
 
 **Severity Level: Warning**

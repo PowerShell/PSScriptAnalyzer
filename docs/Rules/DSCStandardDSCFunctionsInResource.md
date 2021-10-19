@@ -1,3 +1,10 @@
+---
+description: Use Standard Get/Set/Test TargetResource functions in DSC Resource
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: DSCStandardDSCFunctionsInResource
+---
 # StandardDSCFunctionsInResource
 
 **Severity Level: Error**
@@ -22,7 +29,7 @@ For class based resources:
 
 Add the missing functions to the resource.
 
-## Example
+## Example 1
 
 ### Wrong
 
@@ -50,6 +57,7 @@ function Set-TargetResource
     ...
 }
 ```
+
 ### Correct
 
 ```powershell
@@ -89,7 +97,7 @@ function Test-TargetResource
 }
 ```
 
-## Example
+## Example 2
 
 ### Wrong
 
