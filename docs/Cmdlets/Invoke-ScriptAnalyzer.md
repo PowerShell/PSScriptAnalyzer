@@ -514,7 +514,7 @@ following keys:
 
 The keys and values in the profile are interpreted as if they were standard parameters and values of
 `Invoke-ScriptAnalyzer`, similar to splatting. For more information, see
-[about_Splatting](/powershell/module/microsoft.powershell.com/about/about_splatting).
+[about_Splatting](https://docs.microsoft.com/powershell/module/microsoft.powershell.com/about/about_splatting).
 
 ```yaml
 Type: Object
