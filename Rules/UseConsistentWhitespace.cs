@@ -233,6 +233,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (lcurly.Previous == null
                     || !IsPreviousTokenOnSameLine(lcurly)
                     || lcurly.Previous.Value.Kind == TokenKind.LCurly
+                    || lcurly.Previous.Value.Kind == TokenKind.Dot
                     || ((lcurly.Previous.Value.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName))
                 {
                     continue;
@@ -242,6 +243,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
+
                 
                 yield return new DiagnosticRecord(
                     GetError(ErrorKind.BeforeOpeningBrace),
