@@ -243,7 +243,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     continue;
                 }
-
                 
                 yield return new DiagnosticRecord(
                     GetError(ErrorKind.BeforeOpeningBrace),
