@@ -72,6 +72,11 @@ if ($true)
             Invoke-ScriptAnalyzer -ScriptDefinition '$ast.Find({ $oneAst -is [TypeExpressionAst] })' -Settings $settings |
                 Should -BeNullOrEmpty
         }
+
+        It 'Should not find a violation if an open paren is preceded by a Dot token' {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$foo.{bar}' -Settings $settings |
+                Should -BeNullOrEmpty
+        }
     }
 
     Context "When a parenthesis follows a keyword" {
