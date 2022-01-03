@@ -1,3 +1,10 @@
+---
+description: Use identical mandatory parameters for DSC Get/Test/Set TargetResource functions
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: DSCUseIdenticalMandatoryParametersForDSC
+---
 # UseIdenticalMandatoryParametersForDSC
 
 **Severity Level: Error**

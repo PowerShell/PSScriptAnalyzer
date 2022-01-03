@@ -1,3 +1,10 @@
+---
+description: No Global Variables
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: AvoidGlobalVars
+---
 # AvoidGlobalVars
 
 **Severity Level: Warning**

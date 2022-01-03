@@ -1,3 +1,10 @@
+---
+description: Return Correct Types For DSC Functions
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: DSCReturnCorrectTypesForDSCFunctions
+---
 # ReturnCorrectTypesForDSCFunctions
 
 **Severity Level: Information**
@@ -22,7 +29,7 @@ For class based resources:
 
 Ensure that each function returns the correct type.
 
-## Example
+## Example 1
 
 ### Wrong
 
@@ -100,7 +107,7 @@ function Test-TargetResource
 }
 ```
 
-## Example
+## Example 2
 
 ### Wrong
 

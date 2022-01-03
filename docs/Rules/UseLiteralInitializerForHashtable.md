@@ -1,3 +1,10 @@
+---
+description: Create hashtables with literal initializers
+ms.custom: PSSA v1.20.0
+ms.date: 10/18/2021
+ms.topic: reference
+title: UseLiteralInitializerForHashtable
+---
 # UseLiteralInitializerForHashtable
 
 **Severity Level: Warning**

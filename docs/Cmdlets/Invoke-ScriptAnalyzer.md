@@ -1,6 +1,7 @@
-﻿---
+---
 external help file: Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml
 Module Name: PSScriptAnalyzer
+ms.custom: PSSA v1.20.0
 ms.date: 10/07/2021
 online version: https://docs.microsoft.com/powershell/module/psscriptanalyzer/invoke-scriptanalyzer?view=ps-modules&wt.mc_id=ps-gethelp
 schema: 2.0.0
@@ -513,7 +514,7 @@ following keys:
 
 The keys and values in the profile are interpreted as if they were standard parameters and values of
 `Invoke-ScriptAnalyzer`, similar to splatting. For more information, see
-[about_Splatting](/powershell/module/microsoft.powershell.com/about/about_splatting).
+[about_Splatting](https://docs.microsoft.com/powershell/module/microsoft.powershell.core/about/about_splatting).
 
 ```yaml
 Type: Object
