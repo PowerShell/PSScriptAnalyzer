@@ -141,7 +141,6 @@ stages:
       parameters:
         BuildDropPath: $(signOutPath)
         Build_Repository_Uri: 'https://github.com/powershell/crescendo'
-      displayName: create manifest
 
     # now create the nupkg which we will use to publish the module
     # to the powershell gallery (not part of this yaml)
