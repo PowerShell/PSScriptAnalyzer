@@ -140,7 +140,7 @@ stages:
     - template: Sbom.yml@ComplianceRepo
       parameters:
         BuildDropPath: $(signOutPath)
-        Build_Repository_Uri: 'https://github.com/powershell/crescendo'
+        Build_Repository_Uri: 'https://github.com/powershell/PSScriptAnalyzer'
 
     # now create the nupkg which we will use to publish the module
     # to the powershell gallery (not part of this yaml)

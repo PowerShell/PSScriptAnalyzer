@@ -771,27 +771,20 @@ function Copy-CrossCompatibilityModule
 function Copy-Manifest
 {
     param ( [switch]$signed )
-    try {
-        if ( $signed ) {
-            $buildRoot = "signed"
-        }
-        else {
-            $buildRoot = "out"
-        }
-        $analyzerVersion = Get-AnalyzerVersion
-        # location where analyzer goes
-        $baseDir = [io.path]::Combine($projectRoot,${buildRoot},"${analyzerName}", $analyzerVersion)
-        Push-Location -Path $baseDir
-        # debugging
-        (Get-ChildItem -File -Recurse)|ForEach-Object {Write-Verbose -Verbose -Message $_}
-        # copy the manifest files
-        if ( Test-Path _manifest ) {
-            Copy-Item -Path _manifest -Destination $baseDir -Verbose
-        }
+    if ( $signed ) {
+        $buildRoot = "signed"
     }
-    finally {
-       Pop-Location
-       Unregister-PSRepository -Name $repoName
+    else {
+        $buildRoot = "out"
+    }
+    $analyzerVersion = Get-AnalyzerVersion
+    # location where analyzer goes
+    # debugging
+    (Get-ChildItem -File -Recurse)|ForEach-Object {Write-Verbose -Verbose -Message $_}
+    $baseDir = [io.path]::Combine($projectRoot,${buildRoot},"${analyzerName}", $analyzerVersion)
+    # copy the manifest files
+    if ( Test-Path _manifest ) {
+        Copy-Item -Path _manifest -Destination $baseDir -Verbose
     }
 }
 
