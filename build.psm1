@@ -785,7 +785,7 @@ function Copy-Manifest
     # copy the manifest files
     Push-Location $buildRoot
     if ( Test-Path _manifest ) {
-        Copy-Item -Path _manifest -Destination $modBaseDir -Verbose
+        Copy-Item -Recurse -Path _manifest -Destination $modBaseDir -Verbose
     }
     else {
         Write-Warning -Message "_manifest not found in $PWD"
