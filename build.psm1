@@ -783,12 +783,14 @@ function Copy-Manifest
     (Get-ChildItem -File -Recurse)|ForEach-Object {Write-Verbose -Verbose -Message $_}
     $modBaseDir = [io.path]::Combine($projectRoot,${buildRoot},"${analyzerName}", $analyzerVersion)
     # copy the manifest files
+    Push-Location $buildRoot
     if ( Test-Path _manifest ) {
         Copy-Item -Path _manifest -Destination $modBaseDir -Verbose
     }
     else {
         Write-Warning -Message "_manifest not found in $PWD"
     }
+    Pop-Location
 }
 
 # creates the nuget package which can be used for publishing to the gallery
