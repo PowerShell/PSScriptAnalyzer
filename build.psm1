@@ -781,10 +781,13 @@ function Copy-Manifest
     # location where analyzer goes
     # debugging
     (Get-ChildItem -File -Recurse)|ForEach-Object {Write-Verbose -Verbose -Message $_}
-    $baseDir = [io.path]::Combine($projectRoot,${buildRoot},"${analyzerName}", $analyzerVersion)
+    $modBaseDir = [io.path]::Combine($projectRoot,${buildRoot},"${analyzerName}", $analyzerVersion)
     # copy the manifest files
     if ( Test-Path _manifest ) {
-        Copy-Item -Path _manifest -Destination $baseDir -Verbose
+        Copy-Item -Path _manifest -Destination $modBaseDir -Verbose
+    }
+    else {
+        Write-Warning -Message "_manifest not found in $PWD"
     }
 }
 
@@ -804,6 +807,7 @@ function Start-CreatePackage
         $nupkgDir = Join-Path $PSScriptRoot $buildRoot
         $null = Register-PSRepository -Name $repoName -InstallationPolicy Trusted -SourceLocation $nupkgDir
         Push-Location $nupkgDir
+
         Publish-Module -Path $PWD/PSScriptAnalyzer -Repository $repoName
     }
     finally {
