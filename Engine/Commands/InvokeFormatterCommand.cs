@@ -25,14 +25,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         ///
         /// *NOTE*: Unlike ScriptBlock parameter, the ScriptDefinition parameter require a string value.
         /// </summary>
-        [ParameterAttribute(Mandatory = true, Position = 1, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+        [ParameterAttribute(Mandatory = true, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, Position = 1)]
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
         /// <summary>
         /// A settings hashtable or a path to a PowerShell data file (.psd1) file that contains the settings.
         /// </summary>
-        [Parameter(Mandatory = false, Position = 2)]
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, Position = 2)]
         [ValidateNotNull]
         public object Settings { get; set; } = defaultSettingsPreset;
 
@@ -44,7 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         /// end column number. These numbers must be greater than 0.
         /// </summary>
         /// <returns></returns>
-        [Parameter(Mandatory = false, Position = 3)]
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, Position = 3)]
         [ValidateNotNull]
         [ValidateCount(4, 4)]
         public int[] Range { get; set; }

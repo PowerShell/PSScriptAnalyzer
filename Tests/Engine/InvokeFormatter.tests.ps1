@@ -18,8 +18,12 @@ Describe "Invoke-Formatter Cmdlet" {
         It 'Value from Pipeline' {
             'foo' | Invoke-Formatter | Should -Be 'foo'
         }
-        It 'Value from Pipeline by Property Name' {
+        It 'Value from Pipeline by Property Name with just the mandatory ScriptDefinition parameter' {
             [pscustomobject]@{ 'ScriptDefinition' = 'foo' } | Invoke-Formatter | Should -Be 'foo'
+        }
+        It 'Value from Pipeline by Property Name with all parameters' {
+            [pscustomobject]@{ ScriptDefinition = 'foo'; Settings = @(); Range = 1, 1, 1, 4 } |
+                Invoke-Formatter | Should -Be 'foo'
         }
     }
 
