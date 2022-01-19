@@ -25,7 +25,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         ///
         /// *NOTE*: Unlike ScriptBlock parameter, the ScriptDefinition parameter require a string value.
         /// </summary>
-        [ParameterAttribute(Mandatory = true, Position = 1)]
+        [ParameterAttribute(Mandatory = true, Position = 1, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
         [ValidateNotNull]
         public string ScriptDefinition { get; set; }
 
