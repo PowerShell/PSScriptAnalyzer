@@ -136,11 +136,17 @@ stages:
             **/Pluralize*.dll
             **/Newtonsoft*.dll
 
+    # Create the manifest for the module
+    - template: Sbom.yml@ComplianceRepo
+      parameters:
+        BuildDropPath: $(signOutPath)
+        Build_Repository_Uri: 'https://github.com/powershell/PSScriptAnalyzer'
+
     # now create the nupkg which we will use to publish the module
     # to the powershell gallery (not part of this yaml)
     - pwsh: |
         Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
-        ./build -BuildNupkg -signed
+        ./build -BuildNupkg -CopyManifest -signed
       displayName: Create nupkg for publishing
 
     # finally publish the parts of the build which will be used in the next stages
