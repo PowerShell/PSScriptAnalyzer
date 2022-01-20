@@ -767,6 +767,32 @@ function Copy-CrossCompatibilityModule
     }
 }
 
+# copy the manifest into the module if is present
+function Copy-Manifest
+{
+    param ( [switch]$signed )
+    if ( $signed ) {
+        $buildRoot = "signed"
+    }
+    else {
+        $buildRoot = "out"
+    }
+    $analyzerVersion = Get-AnalyzerVersion
+    # location where analyzer goes
+    # debugging
+    (Get-ChildItem -File -Recurse)|ForEach-Object {Write-Verbose -Verbose -Message $_}
+    $modBaseDir = [io.path]::Combine($projectRoot,${buildRoot},"${analyzerName}", $analyzerVersion)
+    # copy the manifest files
+    Push-Location $buildRoot
+    if ( Test-Path _manifest ) {
+        Copy-Item -Recurse -Path _manifest -Destination $modBaseDir -Verbose
+    }
+    else {
+        Write-Warning -Message "_manifest not found in $PWD"
+    }
+    Pop-Location
+}
+
 # creates the nuget package which can be used for publishing to the gallery
 function Start-CreatePackage
 {
@@ -783,6 +809,7 @@ function Start-CreatePackage
         $nupkgDir = Join-Path $PSScriptRoot $buildRoot
         $null = Register-PSRepository -Name $repoName -InstallationPolicy Trusted -SourceLocation $nupkgDir
         Push-Location $nupkgDir
+
         Publish-Module -Path $PWD/PSScriptAnalyzer -Repository $repoName
     }
     finally {
