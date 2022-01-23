@@ -55,7 +55,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [ReservedCmdletChar](./ReservedCmdletChar.md)                                                     | Error       |        Yes         |                 |
 | [ReservedParams](./ReservedParams.md)                                                             | Error       |        Yes         |                 |
 | [ReviewUnusedParameter](./ReviewUnusedParameter.md)                                               | Warning     |        Yes         |                 |
-| [ShouldProcess](./ShouldProcess.md)                                                               | Error       |        Yes         |                 |
+| [ShouldProcess](./ShouldProcess.md)                                                               | Warning     |        Yes         |                 |
 | [UseApprovedVerbs](./UseApprovedVerbs.md)                                                         | Warning     |        Yes         |                 |
 | [UseBOMForUnicodeEncodedFile](./UseBOMForUnicodeEncodedFile.md)                                   | Warning     |        Yes         |                 |
 | [UseCmdletCorrectly](./UseCmdletCorrectly.md)                                                     | Warning     |        Yes         |                 |
