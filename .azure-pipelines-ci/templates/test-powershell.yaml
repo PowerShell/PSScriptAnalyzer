@@ -6,6 +6,7 @@ steps:
     targetPath: '$(Build.SourcesDirectory)/out'
 - task: PowerShell@2
   displayName: 'Test'
+  retryCountOnTaskFailure: 2
   inputs:
     targetType: inline
     pwsh: false
