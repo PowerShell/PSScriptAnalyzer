@@ -103,7 +103,7 @@ Describe "Test ScriptDefinition" {
             # this is a script with 12 parse errors
             $script = ');' * 12
             $moreThanTenErrors = Invoke-ScriptAnalyzer -ScriptDefinition $script
-            $moreThanTenErrors.Count | Should -Be 12
+            $moreThanTenErrors.Count | Should -Be 13
         }
     }
 }
