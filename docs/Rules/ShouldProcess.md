@@ -16,8 +16,8 @@ If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also 
 but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not declare
 `SupportsShouldProcess`.
 
-For more information, please refer to `about_Functions_Advanced_Methods` and
-`about_Functions_CmdletBindingAttribute`.
+For more information, see `Get-Help about_Functions_Advanced_Methods` and
+`Get-Help about_Functions_CmdletBindingAttribute`.
 
 ## How
 
