@@ -161,7 +161,7 @@ function Start-ScriptAnalyzerBuild
         # install the proper version
         Install-Dotnet
         if ( -not (Test-SuitableDotnet) ) {
-            $requiredVersion = Get-GlobalJsonSdkVersion
+            $requiredVersion = $script:wantedVersion
             $foundVersion = Get-InstalledCLIVersion
             Write-Warning "No suitable dotnet CLI found, requires version '$requiredVersion' found only '$foundVersion'"
         }
@@ -545,7 +545,7 @@ function ConvertTo-PortableVersion {
 function Test-SuitableDotnet {
     param (
         $availableVersions = $( Get-InstalledCliVersion),
-        $requiredVersion = $( Get-GlobalJsonSdkVersion )
+        $requiredVersion = $script:wantedVersion
         )
 
     if ( $requiredVersion -is [String] -or $requiredVersion -is [Version] ) {
@@ -610,7 +610,7 @@ function Get-InstalledCLIVersion {
 function Test-DotnetInstallation
 {
     param (
-        $requestedVersion = $( Get-GlobalJsonSdkVersion ),
+        $requestedVersion = $script:wantedVersion,
         $installedVersions = $( Get-InstalledCLIVersion )
         )
     return (Test-SuitableDotnet -availableVersions $installedVersions -requiredVersion $requestedVersion )
@@ -671,7 +671,8 @@ function Receive-DotnetInstallScript
 
 function Get-DotnetExe
 {
-    $discoveredDotnet = Get-Command -CommandType Application dotnet -ErrorAction SilentlyContinu
+    param ( $version = $script:wantedVersion )
+    $discoveredDotnet = Get-Command -CommandType Application dotnet -ErrorAction SilentlyContinue -All
     if ( $discoveredDotnet ) {
         # it's possible that there are multiples. Take the highest version we find
         # the problem is that invoking dotnet on a version which is lower than the specified
@@ -682,13 +683,17 @@ function Get-DotnetExe
         # file points to a version of the sdk which is *not* installed. However, the format of the new list
         # with --version has a couple of spaces at the beginning of the line, so we need to be resilient
         # against that.
-        $latestDotnet = $discoveredDotNet |
-            Where-Object { try { & $_ --version 2>$null } catch { } } |
-            Sort-Object { $pv = ConvertTo-PortableVersion (& $_ --version 2>$null| %{$_.Trim().Split()[0]}); "$pv" } |
+        $properDotnet = $discoveredDotNet |
+            Where-Object {
+                & $_ --list-sdks |
+                    Where-Object {
+                        $_ -match $version
+                    }
+            } |
             Select-Object -Last 1
-        if ( $latestDotnet ) {
-            $script:DotnetExe = $latestDotnet
-            return $latestDotnet
+        if ( $properDotnet ) {
+            $script:DotnetExe = $properDotnet
+            return $properDotnet
         }
     }
     # it's not in the path, try harder to find it by checking some usual places
@@ -714,6 +719,9 @@ function Get-DotnetExe
 }
 
 try {
+    # The version we want based on the global.JSON file
+    # suck this before getting the dotnet exe
+    $script:wantedVersion = Get-GlobalJsonSdkVersion -Raw
     $script:DotnetExe = Get-DotnetExe
 }
 catch {
