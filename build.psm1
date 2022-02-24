@@ -276,7 +276,7 @@ function Start-ScriptAnalyzerBuild
                 Write-Verbose -Verbose -Message "dotnet is $(${script:DotnetExe}.Source)"
                 $dotnetArgs | Foreach-Object {"dotnetArg: $_"} | Write-Verbose -Verbose
                 Get-PSCallStack | Write-Verbose -Verbose
-                throw "$buildOutput"
+                throw $buildOutput
             }
             Write-Verbose -Verbose:$verboseWanted -message "$buildOutput"
         }
