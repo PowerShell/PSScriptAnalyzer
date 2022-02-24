@@ -273,7 +273,7 @@ function Start-ScriptAnalyzerBuild
             }
             $buildOutput = & $script:DotnetExe $dotnetArgs 2>&1
             if ( $LASTEXITCODE -ne 0 ) {
-                Write-Verbose -Verbose -Message "dotnet is ${script:DotnetExe}"
+                Write-Verbose -Verbose -Message "dotnet is $(${script:DotnetExe}.Source)"
                 $dotnetArgs | Foreach-Object {"dotnetArg: $_"} | Write-Verbose -Verbose
                 Get-PSCallStack | Write-Verbose -Verbose
                 throw "$buildOutput"
@@ -281,8 +281,8 @@ function Start-ScriptAnalyzerBuild
             Write-Verbose -Verbose:$verboseWanted -message "$buildOutput"
         }
         catch {
-            Write-Warning $_
-            Write-Error "Failure to build for PSVersion '$PSVersion' using framework '$framework' and configuration '$config'"
+            $_.TargetObject | Write-Warning
+            Write-Error "Failure to build for PSVersion '$PSVersion' using framework '$framework' and configuration '$buildConfiguration'"
             throw
         }
         finally {
