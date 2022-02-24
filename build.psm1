@@ -273,6 +273,8 @@ function Start-ScriptAnalyzerBuild
             }
             $buildOutput = & $script:DotnetExe $dotnetArgs 2>&1
             if ( $LASTEXITCODE -ne 0 ) {
+                Write-Verbose -Verbose -Message "dotnet is ${script:DotnetExe}"
+                $dotnetArgs | Foreach-Object {"dotnetArg: $_"} | Write-Verbose -Verbose
                 Get-PSCallStack | Write-Verbose -Verbose
                 throw "$buildOutput"
             }
