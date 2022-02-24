@@ -35,6 +35,8 @@ stages:
   displayName: Build
   pool:
     name: PowerShell1ES # was Package ES CodeHub Lab E
+    demands:
+      - ImageOverride -equals PSMMS2019-Secure
   jobs:
   - job: Build_Job
     displayName: Build Microsoft.PowerShell.ScriptAnalyzer
