@@ -184,6 +184,7 @@ function Start-ScriptAnalyzerBuild
         {
             # Build all the versions of the analyzer
             foreach ($psVersion in 3, 4, 5, 7) {
+                Write-Verbose -Verbose -Message "Configuration: $Configuration PSVersion: $psVersion"
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion -Verbose:$verboseWanted
             }
             if ( $Catalog ) {
@@ -271,7 +272,10 @@ function Start-ScriptAnalyzerBuild
                 $dotnetArgs += "${PSScriptRoot}\bin\${buildConfiguration}\${framework}"
             }
             $buildOutput = & $script:DotnetExe $dotnetArgs 2>&1
-            if ( $LASTEXITCODE -ne 0 ) { throw "$buildOutput" }
+            if ( $LASTEXITCODE -ne 0 ) {
+                Get-PSCallStack | Write-Verbose -Verbose
+                throw "$buildOutput"
+            }
             Write-Verbose -Verbose:$verboseWanted -message "$buildOutput"
         }
         catch {
