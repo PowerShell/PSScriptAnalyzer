@@ -1,7 +1,7 @@
 ---
 description: Should Process
 ms.custom: PSSA v1.20.0
-ms.date: 10/18/2021
+ms.date: 03/24/2022
 ms.topic: reference
 title: ShouldProcess
 ---
@@ -16,8 +16,11 @@ If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also 
 but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not declare
 `SupportsShouldProcess`
 
-For more information, please refer to `about_Functions_Advanced_Methods` and
-`about_Functions_CmdletBindingAttribute`
+For more information, see the following articles:
+
+- [about_Functions_Advanced_Methods](/powershell/modules/microsoft.powershell.core/about/about_Functions_Advanced_Methods)
+- [about_Functions_CmdletBindingAttribute](/powershell/modules/microsoft.powershell.core/about/about_Functions_CmdletBindingAttribute)
+- [Everything you wanted to know about ShouldProcess](/powershell/scripting/learn/deep-dives/everything-about-shouldprocess)
 
 ## How
 
@@ -30,39 +33,43 @@ calling `ShouldProcess`
 ### Wrong
 
 ```powershell
-    function Set-File
-    {
-        [CmdletBinding(SupportsShouldProcess=$true)]
-        Param
-        (
-            # Path to file
-            [Parameter(Mandatory=$true)]
-            $Path
-        )
-        "String" | Out-File -FilePath $FilePath
-    }
+function Set-File
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    Param
+    (
+        # Path to file
+        [Parameter(Mandatory=$true)]
+        $Path
+    )
+    "String" | Out-File -FilePath $Path
+}
 ```
 
 ### Correct
 
 ```powershell
-    function Set-File
-    {
-        [CmdletBinding(SupportsShouldProcess=$true)]
-        Param
-        (
-            # Path to file
-            [Parameter(Mandatory=$true)]
-            $Path
-        )
+function Set-File
+{
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    Param
+    (
+        # Path to file
+        [Parameter(Mandatory=$true)]
+        $Path,
 
-        if ($PSCmdlet.ShouldProcess("Target", "Operation"))
-        {
-            "String" | Out-File -FilePath $FilePath
-        }
-        else
-        {
-            Write-Host ('Write "String" to file {0}' -f $FilePath)
-        }
+        [Parameter(Mandatory=$true)]
+        [string]$Content
+    )
+
+    if ($PSCmdlet.ShouldProcess($Path, ("Setting content to '{0}'" -f $Content)))
+    {
+        $Content | Out-File -FilePath $Path
     }
+    else
+    {
+        # Code that should be processed if doing a WhatIf operation
+        # Must NOT change anything outside of the function / script
+    }
+}
 ```
