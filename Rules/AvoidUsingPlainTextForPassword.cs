@@ -64,37 +64,43 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        private List<CorrectionExtent> GetCorrectionExtent(ParameterAst paramAst)
+        private IEnumerable<CorrectionExtent> GetCorrectionExtent(ParameterAst paramAst)
         {
             //Find the parameter type extent and replace that with secure string
             IScriptExtent extent;
             var typeAttributeAst = GetTypeAttributeAst(paramAst);
             var corrections = new List<CorrectionExtent>();
             string correctionText;
-            if (typeAttributeAst == null)
+
+            foreach (string correctionType in new[] { "SecureString", "PSCredential" })
             {
-                // cannot find any type attribute
-                extent = paramAst.Name.Extent;
-                correctionText = string.Format("[SecureString] {0}", paramAst.Name.Extent.Text);
+                if (typeAttributeAst == null)
+                {
+                    // cannot find any type attribute
+                    extent = paramAst.Name.Extent;
+                    correctionText = $"[{correctionType}] {paramAst.Name.Extent.Text}";
+                }
+                else
+                {
+                    // replace only the existing type with [SecureString]
+                    extent = typeAttributeAst.Extent;
+                    correctionText = typeAttributeAst.TypeName.IsArray ? $"[{correctionType}[]]" : $"[{correctionType}]";
+                }
+                string description = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.AvoidUsingPlainTextForPasswordCorrectionDescription,
+                    paramAst.Name.Extent.Text,
+                    correctionType);
+                corrections.Add(new CorrectionExtent(
+                    extent.StartLineNumber,
+                    extent.EndLineNumber,
+                    extent.StartColumnNumber,
+                    extent.EndColumnNumber,
+                    correctionText.ToString(),
+                    paramAst.Extent.File,
+                    description));
             }
-            else
-            {
-                // replace only the existing type with [SecureString]
-                extent = typeAttributeAst.Extent;
-                correctionText = typeAttributeAst.TypeName.IsArray ? "[SecureString[]]" : "[SecureString]";
-            }
-            string description = string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.AvoidUsingPlainTextForPasswordCorrectionDescription,
-                paramAst.Name.Extent.Text);
-            corrections.Add(new CorrectionExtent(
-                extent.StartLineNumber,
-                extent.EndLineNumber,
-                extent.StartColumnNumber,
-                extent.EndColumnNumber,
-                correctionText.ToString(),
-                paramAst.Extent.File,
-                description));
+
             return corrections;
         }
 

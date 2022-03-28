@@ -19,7 +19,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -1042,7 +1042,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Set {0} type to SecureString.
+        ///   Looks up a localized string similar to Set {0} type to {1}.
         /// </summary>
         internal static string AvoidUsingPlainTextForPasswordCorrectionDescription {
             get {
@@ -1060,7 +1060,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; should use SecureString, otherwise this will expose sensitive information. See ConvertTo-SecureString for more information..
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; should not use String type but either SecureString or PSCredential, otherwise it increases the chance to to expose this sensitive information..
         /// </summary>
         internal static string AvoidUsingPlainTextForPasswordError {
             get {
