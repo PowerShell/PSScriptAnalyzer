@@ -26,14 +26,12 @@ stages:
               vmImage: ubuntu-18.04
             Ubuntu_20_04:
               vmImage: ubuntu-20.04
-            macOS_10_14_Mojave:
-              vmImage: macOS-10.14
-            macOS_10_15_Catalina:
-              vmImage: macOS-10.15
-            Windows_Server2016_PowerShell_Core:
-              vmImage: vs2017-win2016
+            mac_Latest:
+              vmImage: macOS-latest
             Windows_Server2019_PowerShell_Core:
               vmImage: windows-2019
+            Windows_Server2022_PowerShell_Core:
+              vmImage: windows-2022
         pool:
           vmImage: $[ variables['vmImage'] ]
         steps:
@@ -41,11 +39,11 @@ stages:
       - job:
         strategy:
           matrix:
-            Windows_Server2016_PowerShell_5_1:
-              vmImage: vs2017-win2016
-              pwsh: false
-            Windows_Server2019_PowerShell_5_1:
+            Windows_Server2019_PowerShell_Core:
               vmImage: windows-2019
+              pwsh: false
+            Windows_Server2022_PowerShell_Core:
+              vmImage: windows-2022
               pwsh: false
         pool:
           vmImage: $[ variables['vmImage'] ]
