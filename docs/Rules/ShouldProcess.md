@@ -57,12 +57,20 @@ function Set-File
     (
         # Path to file
         [Parameter(Mandatory=$true)]
-        $Path
+        $Path,
+
+        [Parameter(Mandatory=$true)]
+        [string]$Content
     )
 
-    if ($PSCmdlet.ShouldProcess($Path, "Write"))
+    if ($PSCmdlet.ShouldProcess($Path, ("Setting content to '{0}'" -f $Content)))
     {
-        "String" | Out-File -FilePath $Path
+        $Content | Out-File -FilePath $Path
+    }
+    else
+    {
+        # Code that should be processed if doing a WhatIf operation
+        # Must NOT change anything outside of the function / script
     }
 }
 ```
