@@ -26,8 +26,8 @@ stages:
               vmImage: ubuntu-18.04
             Ubuntu_20_04:
               vmImage: ubuntu-20.04
-            macOS_10_15_Catalina:
-              vmImage: macOS-10.15
+            mac_Latest:
+              vmImage: macOS-latest
             Windows_Server2016_PowerShell_Core:
               vmImage: vs2017-win2016
             Windows_Server2019_PowerShell_Core:
