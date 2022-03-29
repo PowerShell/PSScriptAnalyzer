@@ -1,7 +1,7 @@
 ---
 description: Should Process
 ms.custom: PSSA v1.20.0
-ms.date: 01/23/2022
+ms.date: 03/24/2022
 ms.topic: reference
 title: ShouldProcess
 ---
@@ -16,11 +16,11 @@ If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also 
 but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not declare
 `SupportsShouldProcess`.
 
-For more information, please refer to [about_Functions_Advanced_Methods][1] and
-[about_Functions_CmdletBindingAttribute][2].
+For more information, see the following articles:
 
-[1]: /powershell/module/Microsoft.PowerShell.Core/About/about_Functions_Advanced_Methods
-[2]: /powershell/module/Microsoft.PowerShell.Core/About/about_Functions_CmdletBindingAttribute
+- [about_Functions_Advanced_Methods](/powershell/modules/microsoft.powershell.core/about/about_Functions_Advanced_Methods)
+- [about_Functions_CmdletBindingAttribute](/powershell/modules/microsoft.powershell.core/about/about_Functions_CmdletBindingAttribute)
+- [Everything you wanted to know about ShouldProcess](/powershell/scripting/learn/deep-dives/everything-about-shouldprocess)
 
 ## How
 
@@ -42,7 +42,6 @@ function Set-File
         [Parameter(Mandatory=$true)]
         $Path
     )
-
     "String" | Out-File -FilePath $Path
 }
 ```
