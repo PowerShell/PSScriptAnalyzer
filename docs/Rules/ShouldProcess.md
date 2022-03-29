@@ -67,10 +67,5 @@ function Set-File
     {
         $Content | Out-File -FilePath $Path
     }
-    else
-    {
-        # Code that should be processed if doing a WhatIf operation
-        # Must NOT change anything outside of the function / script
-    }
 }
 ```
