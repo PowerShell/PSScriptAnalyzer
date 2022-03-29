@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    $violationMessage = [regex]::Escape("Parameter '`$password' should use SecureString, otherwise this will expose sensitive information. See ConvertTo-SecureString for more information.")
+    $violationMessage = [regex]::Escape("Parameter '`$password' should not use String type but either ")
     $violationName = "PSAvoidUsingPlainTextForPassword"
     $violationFilepath = Join-Path $PSScriptRoot 'AvoidUsingPlainTextForPassword.ps1'
     $violations = Invoke-ScriptAnalyzer $violationFilepath | Where-Object { $_.RuleName -eq $violationName }
@@ -17,15 +17,15 @@ Describe "AvoidUsingPlainTextForPassword" {
         }
 
         It "suggests corrections" {
-            Test-CorrectionExtent $violationFilepath $violations[0] 1 '$passphrases' '[SecureString] $passphrases'
+            Test-CorrectionExtent $violationFilepath $violations[0] 2 '$passphrases' '[SecureString] $passphrases'
             $violations[0].SuggestedCorrections[0].Description | Should -Be 'Set $passphrases type to SecureString'
 
-            Test-CorrectionExtent $violationFilepath $violations[1] 1 '$passwordparam' '[SecureString] $passwordparam'
-            Test-CorrectionExtent $violationFilepath $violations[2] 1 '$credential' '[SecureString] $credential'
-            Test-CorrectionExtent $violationFilepath $violations[3] 1 '$password' '[SecureString] $password'
-            Test-CorrectionExtent $violationFilepath $violations[4] 1 '[string]' '[SecureString]'
-            Test-CorrectionExtent $violationFilepath $violations[5] 1 '[string[]]' '[SecureString[]]'
-            Test-CorrectionExtent $violationFilepath $violations[6] 1 '[string]' '[SecureString]'
+            Test-CorrectionExtent $violationFilepath $violations[1] 2 '$passwordparam' '[SecureString] $passwordparam'
+            Test-CorrectionExtent $violationFilepath $violations[2] 2 '$credential' '[SecureString] $credential'
+            Test-CorrectionExtent $violationFilepath $violations[3] 2 '$password' '[SecureString] $password'
+            Test-CorrectionExtent $violationFilepath $violations[4] 2 '[string]' '[SecureString]'
+            Test-CorrectionExtent $violationFilepath $violations[5] 2 '[string[]]' '[SecureString[]]'
+            Test-CorrectionExtent $violationFilepath $violations[6] 2 '[string]' '[SecureString]'
         }
 
         It "has the correct violation message" {
