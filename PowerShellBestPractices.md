@@ -9,18 +9,18 @@ The following guidelines come from a combined effort from both the PowerShell te
 
 ### Severity: Warning
 
-- Use Only Approved Verbs [UseApprovedVerbs](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseApprovedVerbs.md)
-- Cmdlets Names: Characters that cannot be Used [AvoidReservedCharInCmdlet](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/ReservedCmdletChar.md)
-- Parameter Names that cannot be Used [AvoidReservedParams](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/ReservedParams.md)
-- Support Confirmation Requests [UseShouldProcessForStateChangingFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseShouldProcessForStateChangingFunctions.md) and [UseShouldProcessForStateChangingFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseShouldProcessForStateChangingFunctions.md)
-- Must call ShouldProcess when ShouldProcess attribute is present and vice versa.[UseShouldProcess](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/ShouldProcess.md)
-- Nouns should be singular [UseSingularNouns](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseSingularNouns.md)
-- Module Manifest Fields [MissingModuleManifestField](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/MissingModuleManifestField.md)
+- Use Only Approved Verbs [UseApprovedVerbs](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/UseApprovedVerbs.md)
+- Cmdlets Names: Characters that cannot be Used [AvoidReservedCharInCmdlet](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/ReservedCmdletChar.md)
+- Parameter Names that cannot be Used [AvoidReservedParams](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/ReservedParams.md)
+- Support Confirmation Requests [UseShouldProcessForStateChangingFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/UseShouldProcessForStateChangingFunctions.md)
+- Must call ShouldProcess when ShouldProcess attribute is present and vice versa.[UseShouldProcess](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/ShouldProcess.md)
+- Nouns should be singular [UseSingularNouns](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/UseSingularNouns.md)
+- Module Manifest Fields [MissingModuleManifestField](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/MissingModuleManifestField.md)
   - Version
   - Author
   - Description
   - LicenseUri (for PowerShell Gallery)
-- Switch parameters should not default to true  [AvoidDefaultValueSwitchParameter](https://github.com/PowetrShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidDefaultValueSwitchParameter.md)
+- Switch parameters should not default to true  [AvoidDefaultValueSwitchParameter](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidDefaultValueSwitchParameter.md)
 
 ### Severity: Information
 
@@ -45,15 +45,15 @@ The following guidelines come from a combined effort from both the PowerShell te
 
 ### Severity: Warning
 
-- Avoid using alias [AvoidUsingCmdletAliases](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingCmdletAliases.md)
-- Avoid using deprecated WMI cmdlets [AvoidUsingWMICmdlet](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingWMICmdlet.md)
-- Empty catch block should not be used [AvoidUsingEmptyCatchBlock](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingEmptyCatchBlock.md)
-- Invoke existing cmdlet with correct parameters [UseCmdletCorrectly](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseCmdletCorrectly.md)
-- Cmdlets should have ShouldProcess/ShouldContinue and Force param if certain system-modding verbs are present (Update, Set, Remove, New): [UseShouldProcessForStateChangingFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseShouldProcessForStateChangingFunctions.md)
-- Positional parameters should be avoided [AvoidUsingPositionalParameters](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingPositionalParameters.md)
-- Global variables should be avoided. [AvoidGlobalVars](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidGlobalVars.md)
-- Declared variables must be used in more than just their assignment. [UseDeclaredVarsMoreThanAssignments](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseDeclaredVarsMoreThanAssignments.md)
-- No Invoke-Expression [AvoidUsingInvokeExpression](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingInvokeExpression.md)
+- Avoid using alias [AvoidAlias](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidAlias.md) #TODO not found
+- Avoid using deprecated WMI cmdlets [AvoidUsingWMICmdlet](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingWMICmdlet.md)
+- Empty catch block should not be used [AvoidEmptyCatchBlock](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingEmptyCatchBlock.md)
+- Invoke existing cmdlet with correct parameters [UseCmdletCorrectly](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/UseCmdletCorrectly.md)
+- Cmdlets should have ShouldProcess/ShouldContinue and Force param if certain system-modding verbs are present (Update, Set, Remove, New): [UseShouldProcessForStateChangingFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/UseShouldProcessForStateChangingFunctions.md)
+- Positional parameters should be avoided [AvoidPositionalParameters](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingPositionalParameters.md)
+- Global variables should be avoided. [AvoidGlobalVars](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidGlobalVars.md)
+- Declared variables must be used in more than just their assignment. [UseDeclaredVarsMoreThanAssignments](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/UseDeclaredVarsMoreThanAssignments.md)
+- No Invoke-Expression [AvoidUsingInvokeExpression](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingInvokeExpression.md)
 
 ### Severity: Information
 
@@ -77,11 +77,11 @@ The following guidelines come from a combined effort from both the PowerShell te
 
 ### Severity: Warning 
 
-- Don't use `Write-Host` unless writing to the host is all you want to do [AvoidUsingWriteHost](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingWriteHost.md)
+- Don't use `Write-Host` unless writing to the host is all you want to do [AvoidUsingWriteHost](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingWriteHost.md)
 
 ### Severity: Information
 
-- Write comment-based help [ProvideCommentHelp](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/ProvideCommentHelp.md)
+- Write comment-based help [ProvideCommentHelp](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/ProvideCommentHelp.md)
 
 ### Severity: TBD
 
@@ -96,13 +96,13 @@ The following guidelines come from a combined effort from both the PowerShell te
 
 ### Severity: Error
 
-- Password should be secure string [AvoidUsingPlainTextForPassword](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingPlainTextForPassword.md)- Should never have both -Username and -Password parameters (should take credentials): [UsePSCredentialType](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UsePSCredentialType.md)
-- `-ComputerName` Parameter argument hardcoded should not be used (information disclosure): [AvoidUsingComputerNameHardcoded](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingComputerNameHardcoded.md)
-- ConvertTo-SecureString with plaintext should not be used (information disclosure): [AvoidUsingConvertToSecureStringWithPlainText](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingConvertToSecureStringWithPlainText.md)
+- Password should be secure string [AvoidUsingPlainTextForPassword](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingPlainTextForPassword.md)- Should never have both -Username and -Password parameters (should take credentials): [UsePSCredentialType](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/UsePSCredentialType.md)
+- `-ComputerName` Parameter argument hardcoded should not be used (information disclosure): [AvoidUsingComputerNameHardcoded](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingComputerNameHardcoded.md)
+- ConvertTo-SecureString with plaintext should not be used (information disclosure): [AvoidUsingConvertToSecureStringWithPlainText](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingConvertToSecureStringWithPlainText.md)
 
 ### Severity: Warning
 
-- Password = 'string' should not be used. (information disclosure) [AvoidUsingUsernameAndPasswordParams](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/AvoidUsingUsernameAndPasswordParams.md)
+- Password = 'string' should not be used. (information disclosure) [AvoidUserNameAndPasswordParams](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/AvoidUsingUsernameAndPasswordParams.md)
 
 ### Severity: Information
 
@@ -114,20 +114,20 @@ The following guidelines come from a combined effort from both the PowerShell te
 
 ### Severity: Error
 
-- Use standard DSC methods [StandardDSCFunctionsInResource](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/StandardDSCFunctionsInResource.md)
-- Use identical mandatory parameters for all DSC methods [UseIdenticalMandatoryParametersForDSC](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseIdenticalMandatoryParametersForDSC.md)
-- Use identical parameters for Set and Test DSC methods [UseIdenticalParametersForDSC](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/UseIdenticalParametersForDSC.md)
+- Use standard DSC methods [UseStandardDSCFunctionsInResource](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/DSCStandardDSCFunctionsInResource.md)
+- Use identical mandatory parameters for all DSC methods [UseIdenticalMandatoryParametersDSC](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/DSCUseIdenticalMandatoryParametersForDSC.md)
+- Use identical parameters for Set and Test DSC methods [UseIdenticalParametersDSC](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/DSCUseIdenticalParametersForDSC.md)
 
 ### Severity: Warning
 
 ### Severity: Information
 
-- All of the following three rule are grouped by: [ReturnCorrectTypesForDSCFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/ReturnCorrectTypesForDSCFunctions.md)
+- All of the following three rule are grouped by: [ReturnCorrectTypesForDSCFunctions](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/DSCReturnCorrectTypesForDSCFunctions.md)
 - Avoid return any object from a `Set-TargetResource` or Set (Class Based) function
 - Returning a Boolean object from a `Test-TargetResource` or Test (Class Based) function
 - Returning an object from a `Get-TargetResource` or Get (Class Based) function
-- DSC resources should have DSC tests [DSCTestsPresent](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/DscTestsPresent.md)
-- DSC resources should have DSC examples [DSCExamplesPresent](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/RuleDocumentation/DscExamplesPresent.md)
+- DSC resources should have DSC tests [DSCTestsPresent](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/DSCDscTestsPresent.md)
+- DSC resources should have DSC examples [DSCExamplesPresent](https://github.com/PowerShell/PSScriptAnalyzer/blob/master/docs/Rules/DSCDscExamplesPresent.md)
 
 ### Severity: TBD
 
