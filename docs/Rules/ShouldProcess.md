@@ -14,7 +14,7 @@ title: ShouldProcess
 If a cmdlet declares the `SupportsShouldProcess` attribute, then it should also call
 `ShouldProcess`. A violation is any function which either declares `SupportsShouldProcess` attribute
 but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not declare
-`SupportsShouldProcess`
+`SupportsShouldProcess`.
 
 For more information, see the following articles:
 
@@ -26,7 +26,7 @@ For more information, see the following articles:
 
 To fix a violation of this rule, please call `ShouldProcess` method when a cmdlet declares
 `SupportsShouldProcess` attribute. Or please add `SupportsShouldProcess` attribute argument when
-calling `ShouldProcess`
+calling `ShouldProcess`.
 
 ## Example
 
@@ -65,11 +65,6 @@ function Set-File
     if ($PSCmdlet.ShouldProcess($Path, ("Setting content to '{0}'" -f $Content)))
     {
         $Content | Out-File -FilePath $Path
-    }
-    else
-    {
-        # Code that should be processed if doing a WhatIf operation
-        # Must NOT change anything outside of the function / script
     }
 }
 ```
