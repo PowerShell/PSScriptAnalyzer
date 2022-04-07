@@ -240,10 +240,12 @@ built-in rules.
   bad diff of the `*.Designer.cs` files.
 
 #### Tests
+
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
 * Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) or higher is installed
 * In the root folder of your local repository, run:
+
 ```powershell
 ./build -Test
 ```
@@ -492,8 +494,8 @@ the rules (the functions) with the verb `Measure` so that is used for the proper
 }
 ```
 
-It is also possible to used default rules by adding those to `IncludeRules`. When including default
-rules is important that the property `IncludeDefaultRules` is set to `$true` otherwise the default
+It is also possible to use default rules by adding those to `IncludeRules`. When including default
+rules it is important that the property `IncludeDefaultRules` is set to `$true` otherwise the default
 rules will not be triggered.
 
 ```powershell
@@ -535,6 +537,7 @@ Code. This is done by adding a Visual Studio Code workspace settings file (`.vsc
 ScriptAnalyzer engine and functionality can now be directly consumed as a library.
 
 Here are the public interfaces:
+
 ``` c#
 using Microsoft.Windows.PowerShell.ScriptAnalyzer;
 
