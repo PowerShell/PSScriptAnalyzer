@@ -1164,4 +1164,16 @@
   <data name="AvoidMultipleTypeAttributesName" xml:space="preserve">
     <value>AvoidMultipleTypeAttributes</value>
   </data>
+  <data name="AvoidUsingBrokenHashAlgorithmsCommonName" xml:space="preserve">
+    <value>Avoid Using Broken Hash Algorithms</value>
+  </data>
+  <data name="AvoidUsingBrokenHashAlgorithmsDescription" xml:space="preserve">
+    <value>Avoid using the broken algorithms MD5 or SHA-1.</value>
+  </data>
+  <data name="AvoidUsingBrokenHashAlgorithmsError" xml:space="preserve">
+    <value>The Algorithm parameter of cmdlet '{0}' was used with the broken algorithm '{1}'.</value>
+  </data>
+  <data name="AvoidUsingBrokenHashAlgorithmsName" xml:space="preserve">
+    <value>AvoidUsingBrokenHashAlgorithms</value>
+  </data>
 </root>
