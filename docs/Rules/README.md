@@ -25,6 +25,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidOverwritingBuiltInCmdlets](./AvoidOverwritingBuiltInCmdlets.md)                             | Warning     |        Yes         |       Yes       |
 | [AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md)                           | Warning     |        Yes         |                 |
 | [AvoidTrailingWhitespace](./AvoidTrailingWhitespace.md)                                           | Warning     |        Yes         |                 |
+| [AvoidUsingBrokenHashAlgorithms](./AvoidUsingBrokenHashAlgorithms.md)                             | Error       |        Yes         |                 |
 | [AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md)                                           | Warning     |        Yes         | Yes<sup>2</sup> |
 | [AvoidUsingComputerNameHardcoded](./AvoidUsingComputerNameHardcoded.md)                           | Error       |        Yes         |                 |
 | [AvoidUsingConvertToSecureStringWithPlainText](./AvoidUsingConvertToSecureStringWithPlainText.md) | Error       |        Yes         |                 |
