@@ -22,8 +22,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     {
         private readonly string[] brokenAlgorithms = new string[]
         {
-            "md5",
-            "sha1",
+            "MD5",
+            "SHA1",
         };
 
         private string algorithm;
@@ -53,10 +53,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (String.Equals(cmdParamAst.ParameterName, "algorithm", StringComparison.OrdinalIgnoreCase))
                 {
                     Ast hashAlgorithmArgument = cmdParamAst.Argument;
-                    if (hashAlgorithmArgument == null)
+                    if (hashAlgorithmArgument is null)
                     {
                         hashAlgorithmArgument = GetHashAlgorithmArg(CmdAst, cmdParamAst.Extent.StartOffset);
-                        if (hashAlgorithmArgument == null)
+                        if (hashAlgorithmArgument is null)
                         {
                             return false;
                         }
@@ -110,7 +110,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns></returns>
         public override string GetError(string FileName, CommandAst CmdAst)
         {
-            if (CmdAst == null)
+            if (CmdAst is null)
             {
                 return string.Empty;
             }
