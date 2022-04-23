@@ -44,8 +44,8 @@
     <file src="__INPATHROOT__\out\PSCompatibilityCollector\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\netstandard2.0\Microsoft.PowerShell.CrossCompatibility.dll" />
     <file src="__INPATHROOT__\out\PSCompatibilityCollector\netstandard2.0\Newtonsoft.Json.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\netstandard2.0\Newtonsoft.Json.dll" />
  </job>
- <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Compatibility Analyzer net452 DLLs" approvers="vigarg;gstolt">
-    <file src="__INPATHROOT__\out\PSCompatibilityCollector\net452\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\net452\Microsoft.PowerShell.CrossCompatibility.dll" />
-    <file src="__INPATHROOT__\out\PSCompatibilityCollector\net452\Newtonsoft.Json.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\net452\Newtonsoft.Json.dll" />
+ <job platform="" configuration="" dest="__OUTPATHROOT__\signed" jobname="PowerShell Compatibility Analyzer net462 DLLs" approvers="vigarg;gstolt">
+    <file src="__INPATHROOT__\out\PSCompatibilityCollector\net462\Microsoft.PowerShell.CrossCompatibility.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\net462\Microsoft.PowerShell.CrossCompatibility.dll" />
+    <file src="__INPATHROOT__\out\PSCompatibilityCollector\net462\Newtonsoft.Json.dll" signType="Authenticode" dest="__OUTPATHROOT__\PSCompatibilityCollector\net462\Newtonsoft.Json.dll" />
  </job>
 </SignConfigXML>

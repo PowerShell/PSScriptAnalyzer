@@ -30,7 +30,7 @@ build_script:
              ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion 3
           }
           ./build.ps1 -Configuration "$env:BuildConfiguration" -PSVersion "$env:PSVersion"
-          ./PSCompatibilityCollector/build.ps1 -Configuration "$env:BuildConfiguration" -Framework 'net452'
+          ./PSCompatibilityCollector/build.ps1 -Configuration "$env:BuildConfiguration" -Framework 'net462'
       }
   - pwsh: |
       if ($env:PowerShellEdition -eq 'PowerShellCore') {

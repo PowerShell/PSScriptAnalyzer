@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>1.20.0</VersionPrefix>
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
     <AssemblyVersion>1.20.0</AssemblyVersion>
   </PropertyGroup>
 
@@ -16,7 +16,7 @@
     <PackageReference Include="PowerShellStandard.Library" Version="3.0.0-preview-02" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
   </ItemGroup>

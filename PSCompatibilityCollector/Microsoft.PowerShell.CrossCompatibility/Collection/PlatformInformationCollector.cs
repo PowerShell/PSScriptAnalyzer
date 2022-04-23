@@ -330,7 +330,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return (Architecture)RuntimeInformation.ProcessArchitecture;
 #else
             // We assume .NET Framework must be on an Intel architecture
-            // net452 does not reliably have the above API
+            // net462 does not reliably have the above API
             return Environment.Is64BitProcess
                 ? Architecture.X64
                 : Architecture.X86;
@@ -344,7 +344,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
             return (Architecture)RuntimeInformation.OSArchitecture;
 #else
             // We assume .NET Framework must be on an Intel architecture
-            // net452 does not reliably have the above API
+            // net462 does not reliably have the above API
             return Environment.Is64BitOperatingSystem
                 ? Architecture.X64
                 : Architecture.X86;

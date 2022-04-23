@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>1.20.0</VersionPrefix>
-    <TargetFrameworks>netcoreapp3.1;net452</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net462</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
     <AssemblyVersion>1.20.0</AssemblyVersion>
     <PackageId>Rules</PackageId>
@@ -22,12 +22,12 @@
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data.Entity.Design" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <DebugType>portable</DebugType>
   </PropertyGroup>
 

@@ -200,13 +200,13 @@ function Start-ScriptAnalyzerBuild
             Set-Variable -Name profilesCopied -Value $true -Scope 1
         }
 
-        $framework = 'net452'
+        $framework = 'net462'
         if ($PSVersion -eq 7) {
             $framework = 'netcoreapp3.1'
         }
 
         # build the appropriate assembly
-        if ($PSVersion -match "[34]" -and $Framework -ne "net452")
+        if ($PSVersion -match "[34]" -and $Framework -ne "net462")
         {
             throw ("ScriptAnalyzer for PS version '{0}' is not applicable to {1} framework" -f $PSVersion,$Framework)
         }
@@ -316,7 +316,7 @@ function Start-ScriptAnalyzerBuild
         else {
             "$projectRoot\Rules\bin\${buildConfiguration}\${framework}"
         }
-        if ($framework -eq 'net452') {
+        if ($framework -eq 'net462') {
             $nsoft = Join-Path $rulesProjectOutputDir 'Newtonsoft.Json.dll'
             Copy-Item -path $nsoft -Destination $destinationDirBinaries
         }
