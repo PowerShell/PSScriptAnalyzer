@@ -337,7 +337,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
          }
 #endif
 
-#if !(net462 || PSV6) // net462 includes V3,4,5
+#if !(NET462 || PSV7) // net462 includes V3,4,5
          public override AstVisitAction VisitPipelineChain(PipelineChainAst pipelineChainAst)
          {
              return Visit(pipelineChainAst);
