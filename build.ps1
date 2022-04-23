@@ -43,6 +43,9 @@ param(
     [switch] $BuildNupkg,
 
     [Parameter(ParameterSetName='Package')]
+    [switch] $CopyManifest,
+
+    [Parameter(ParameterSetName='Package')]
     [switch] $Signed
 
 )
@@ -92,6 +95,9 @@ END {
             return
         }
         "Package" {
+            if($CopyManifest) {
+                Copy-Manifest -signed:$Signed
+            }
             Start-CreatePackage -signed:$Signed
         }
         "Test" {
