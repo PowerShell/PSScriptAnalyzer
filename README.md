@@ -43,7 +43,7 @@ The goal of this migration is to have the user documentation on docs.microsoft.c
 repository should only contain documentation for the code base, such as how to build the code or how
 to contribute to the code.
 
-User documentation that has been:
+User documentation that has been migrated:
 
 - Most of the contents of this README can be found in the
   [PSScriptAnalyzer overview](https://docs.microsoft.com/powershell/utility-modules/psscriptanalyzer/overview)
