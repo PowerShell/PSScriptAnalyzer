@@ -456,7 +456,7 @@ function Install-Dotnet
         $installScriptPath = Receive-DotnetInstallScript
         $installScriptName = [System.IO.Path]::GetFileName($installScriptPath)
         If ( $PSCmdlet.ShouldProcess("$installScriptName for $version")) {
-            & "${installScriptPath}" -c release -version $version
+            & "${installScriptPath}" -c release -version $version -SkipNonVersionedFiles
         }
         # this may be the first time that dotnet has been installed,
         # set up the executable variable
