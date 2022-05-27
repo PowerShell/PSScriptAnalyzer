@@ -29,11 +29,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         private static readonly ConcurrentDictionary<string, IReadOnlyList<string>> s_pkgMgmtMandatoryParameters =
             new ConcurrentDictionary<string, IReadOnlyList<string>>(new Dictionary<string, IReadOnlyList<string>>
             {
-                { "Find-Package", new string[0] },
-                { "Find-PackageProvider", new string[0] },
-                { "Get-Package", new string[0] },
-                { "Get-PackageProvider", new string[0] },
-                { "Get-PackageSource", new string[0] },
+                { "Find-Package", Array.Empty<string>() },
+                { "Find-PackageProvider", Array.Empty<string>() },
+                { "Get-Package", Array.Empty<string>() },
+                { "Get-PackageProvider", Array.Empty<string>() },
+                { "Get-PackageSource", Array.Empty<string>() },
                 { "Import-PackageProvider", new string[] { "Name" } },
                 { "Install-Package", new string[] { "Name" } },
                 { "Install-PackageProvider", new string[] { "Name" } },

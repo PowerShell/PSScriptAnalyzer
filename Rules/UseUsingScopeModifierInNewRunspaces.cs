@@ -183,7 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         return AstVisitAction.Continue;
                     }
 
-                    HashSet<string> varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
+                    IReadOnlyCollection<string> varsInLocalAssignments = FindVarsInAssignmentAsts(scriptBlockExpressionAst);
                     if (varsInLocalAssignments != null)
                     {
                         AddAssignedVarsToSession(sessionName, varsInLocalAssignments);
@@ -205,7 +205,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// Example: `$foo = "foo"` ==> the VariableExpressionAst for $foo is returned
             /// </summary>
             /// <param name="ast"></param>
-            private static HashSet<string> FindVarsInAssignmentAsts(Ast ast)
+            private static IReadOnlyCollection<string> FindVarsInAssignmentAsts(Ast ast)
             {
                 HashSet<string> variableDictionary =
                     new HashSet<string>();
@@ -264,7 +264,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// <param name="ast"></param>
             /// <param name="varsInAssignments"></param>
             private static IEnumerable<VariableExpressionAst> FindNonAssignedNonUsingVarAsts(
-                Ast ast, HashSet<string> varsInAssignments)
+                Ast ast, IReadOnlyCollection<string> varsInAssignments)
             {
                 // Find all variables that are not locally assigned, and don't have $using: scope modifier
                 foreach (VariableExpressionAst variable in ast.FindAll(IsNonUsingNonSpecialVariableExpressionAst, true))
@@ -368,7 +368,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// GetAssignedVarsInSession: Retrieves all previously declared vars for a given session (as in Invoke-Command -Session $session).
             /// </summary>
             /// <param name="sessionName"></param>
-            private HashSet<string> GetAssignedVarsInSession(string sessionName)
+            private IReadOnlyCollection<string> GetAssignedVarsInSession(string sessionName)
             {
                 return _varsDeclaredPerSession[sessionName];
             }
@@ -378,7 +378,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             /// </summary>
             /// <param name="sessionName"></param>
             /// <param name="variablesToAdd"></param>
-            private void AddAssignedVarsToSession(string sessionName, HashSet<string> variablesToAdd)
+            private void AddAssignedVarsToSession(string sessionName, IReadOnlyCollection<string> variablesToAdd)
             {
                 if (!_varsDeclaredPerSession.ContainsKey(sessionName))
                 {
