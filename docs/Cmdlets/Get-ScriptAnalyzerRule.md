@@ -1,7 +1,7 @@
 ---
 external help file: Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml
 Module Name: PSScriptAnalyzer
-ms.custom: PSSA v1.20.0
+ms.custom: PSSA v1.21.0
 ms.date: 10/07/2021
 online version: https://docs.microsoft.com/powershell/module/psscriptanalyzer/get-scriptanalyzerrule?view=ps-modules&wt.mc_id=ps-gethelp
 schema: 2.0.0
