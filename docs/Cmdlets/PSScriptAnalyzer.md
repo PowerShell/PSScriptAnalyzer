@@ -1,10 +1,10 @@
 ---
 Download Help Link: https://aka.ms/ps-modules-help
-Help Version: 1.20.0
+Help Version: 1.21.0
 Locale: en-US
 Module Guid: d6245802-193d-4068-a631-8863a4342a18
 Module Name: PSScriptAnalyzer
-ms.custom: PSSA v1.20.0
+ms.custom: PSSA v1.21.0
 ms.date: 10/07/2021
 ---
 

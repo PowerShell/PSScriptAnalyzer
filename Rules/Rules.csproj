@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.20.0</VersionPrefix>
+    <VersionPrefix>1.21.0</VersionPrefix>
     <TargetFrameworks>netcoreapp3.1;net452</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
-    <AssemblyVersion>1.20.0</AssemblyVersion>
+    <AssemblyVersion>1.21.0</AssemblyVersion>
     <PackageId>Rules</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies> <!-- Needed in order for Pluralize.NET DLL to appear in bin folder - https://github.com/NuGet/Home/issues/4488 -->
