@@ -154,7 +154,7 @@ Describe "Test RuleExtension" {
 Describe "TestSeverity" {
     It "filters rules based on the specified rule severity" {
         $rules = Get-ScriptAnalyzerRule -Severity Error
-        $rules.Count | Should -Be 8
+        $rules.Count | Should -Be 7
     }
 
     It "filters rules based on multiple severity inputs"{
