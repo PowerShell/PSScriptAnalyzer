@@ -1,6 +1,6 @@
 # AvoidUsingBrokenHashAlgorithms
 
-**Severity Level: Error**
+**Severity Level: Warning**
 
 ## Description
 
