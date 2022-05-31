@@ -1,3 +1,10 @@
+---
+description: Cmdlet Verbs
+ms.custom: PSSA v1.21.0
+ms.date: 05/31/2022
+ms.topic: reference
+title: AvoidUsingBrokenHashAlgorithms
+---
 # AvoidUsingBrokenHashAlgorithms
 
 **Severity Level: Warning**
