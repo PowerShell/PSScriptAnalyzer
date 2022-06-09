@@ -18,7 +18,7 @@
 - [Code of Conduct](#code-of-conduct)
 
 <!-- tocstop -->
-
+ 
 ## Introduction
 
 PSScriptAnalyzer is a static code checker for PowerShell modules and scripts. PSScriptAnalyzer
