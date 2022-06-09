@@ -20,7 +20,7 @@
 <!-- tocstop -->
 
 ## Introduction
-
+ 
 PSScriptAnalyzer is a static code checker for PowerShell modules and scripts. PSScriptAnalyzer
 checks the quality of PowerShell code by running a [set of rules](docs/Rules). The rules are based
 on PowerShell best practices identified by PowerShell Team and the community. It generates
