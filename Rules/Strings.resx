@@ -921,6 +921,18 @@
   <data name="AvoidLongLinesError" xml:space="preserve">
     <value>Line exceeds the configured maximum length of {0} characters</value>
   </data>
+  <data name="AvoidSemicolonsAsLineTerminatorsName" xml:space="preserve">
+    <value>AvoidSemicolonsAsLineTerminators</value>
+  </data>
+  <data name="AvoidSemicolonsAsLineTerminatorsCommonName" xml:space="preserve">
+    <value>Avoid semicolons as line terminators</value>
+  </data>
+  <data name="AvoidSemicolonsAsLineTerminatorsDescription" xml:space="preserve">
+    <value>Line should not end with a semicolon</value>
+  </data>
+  <data name="AvoidSemicolonsAsLineTerminatorsError" xml:space="preserve">
+    <value>Line ends with a semicolon</value>
+  </data>
   <data name="PlaceOpenBraceName" xml:space="preserve">
     <value>PlaceOpenBrace</value>
   </data>
