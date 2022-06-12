@@ -466,6 +466,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid long lines.
+        /// </summary>
+        internal static string AvoidSemicolonsAsLineTerminatorsCommonName {
+            get {
+                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line should not end with a semicolon.
+        /// </summary>
+        internal static string AvoidSemicolonsAsLineTerminatorsDescription {
+            get {
+                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line ends with a semicolon.
+        /// </summary>
+        internal static string AvoidSemicolonsAsLineTerminatorsError {
+            get {
+                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidSemicolonsAsLineTerminators.
+        /// </summary>
+        internal static string AvoidSemicolonsAsLineTerminatorsName {
+            get {
+                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsName", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Avoid multiple type specifiers on parameters.
         /// </summary>
         internal static string AvoidMultipleTypeAttributesCommonName {

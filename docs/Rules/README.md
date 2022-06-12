@@ -20,6 +20,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidGlobalVars](./AvoidGlobalVars.md)                                                           | Warning     |        Yes         |                 |
 | [AvoidInvokingEmptyMembers](./AvoidInvokingEmptyMembers.md)                                       | Warning     |        Yes         |                 |
 | [AvoidLongLines](./AvoidLongLines.md)                                                             | Warning     |         No         |       Yes       |
+| [AvoidSemicolonsAsLineTerminators](./AvoidSemicolonsAsLineTerminators.md)                         | Warning     |         No         |                 |
 | [AvoidMultipleTypeAttributes<sup>1</sup>](./AvoidMultipleTypeAttributes.md)                       | Warning     |        Yes         |                 |
 | [AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md)                 | Warning     |        Yes         |                 |
 | [AvoidOverwritingBuiltInCmdlets](./AvoidOverwritingBuiltInCmdlets.md)                             | Warning     |        Yes         |       Yes       |
