@@ -8,7 +8,7 @@ param(
     $Configuration = 'Debug',
 
     [Parameter()]
-    [ValidateSet('netstandard2.0', 'net452')]
+    [ValidateSet('netstandard2.0', 'net462')]
     [string]
     $Framework,
 
@@ -24,7 +24,7 @@ $ErrorActionPreference = 'Stop'
 if ($IsWindows -eq $false) {
     $script:TargetFrameworks = 'netstandard2.0'
 } else {
-    $script:TargetFrameworks = 'netstandard2.0','net452'
+    $script:TargetFrameworks = 'netstandard2.0','net462'
 }
 
 $script:ModuleName = Split-Path $PSScriptRoot -Leaf
@@ -36,7 +36,7 @@ $script:BinModDir = [System.IO.Path]::Combine($PSScriptRoot, 'out', "$script:Mod
 $script:BinModSrcDir = Join-Path $PSScriptRoot 'Microsoft.PowerShell.CrossCompatibility'
 
 $script:PublishDlls = @{
-    'net452' = @('Microsoft.PowerShell.CrossCompatibility.dll', 'Microsoft.PowerShell.CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
+    'net462' = @('Microsoft.PowerShell.CrossCompatibility.dll', 'Microsoft.PowerShell.CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
     'netstandard2.0' = @('Microsoft.PowerShell.CrossCompatibility.dll', 'Microsoft.PowerShell.CrossCompatibility.pdb', 'Newtonsoft.Json.dll')
 }
 
@@ -44,7 +44,7 @@ function Invoke-CrossCompatibilityModuleBuild
 {
     param(
         [Parameter()]
-        [ValidateSet('netstandard2.0', 'net452')]
+        [ValidateSet('netstandard2.0', 'net462')]
         [string]
         $Framework = 'netstandard2.0',
 
