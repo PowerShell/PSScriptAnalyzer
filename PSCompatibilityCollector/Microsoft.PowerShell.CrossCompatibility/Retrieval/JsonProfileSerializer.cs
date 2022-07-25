@@ -84,6 +84,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Retrieval
                 Converters = GetFormatConverters(),
                 MissingMemberHandling = MissingMemberHandling.Ignore,
                 DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                MaxDepth = 128,
             };
 
             var serializer = JsonSerializer.Create(settings);
