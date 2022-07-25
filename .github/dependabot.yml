@@ -13,5 +13,4 @@ updates:
     - "bergmeister"
   ignore:
     - dependency-name: "System.Management.Automation"
-    - dependency-name: "Newtonsoft.Json"
     - dependency-name: "PowerShellStandard.Library"
