@@ -39,10 +39,10 @@ stages:
       - job:
         strategy:
           matrix:
-            Windows_Server2019_PowerShell_Core:
+            Windows_Server2019_PowerShell_5_1:
               vmImage: windows-2019
               pwsh: false
-            Windows_Server2022_PowerShell_Core:
+            Windows_Server2022_PowerShell_5_1:
               vmImage: windows-2022
               pwsh: false
         pool:

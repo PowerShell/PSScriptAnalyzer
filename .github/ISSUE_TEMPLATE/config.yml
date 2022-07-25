@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a User documentation issue
+    url: https://github.com/MicrosoftDocs/PowerShell-Docs-Modules/issues/new/choose
+    about: Report issues about the user documentation available on docs.microsoft.com.

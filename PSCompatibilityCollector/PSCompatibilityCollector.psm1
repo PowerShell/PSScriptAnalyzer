@@ -8,5 +8,5 @@ if ($PSVersionTable.PSVersion.Major -ge 6)
 }
 else
 {
-    Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'net452', 'Microsoft.PowerShell.CrossCompatibility.dll')) -Force
+    Import-Module ([System.IO.Path]::Combine($PSScriptRoot, 'net462', 'Microsoft.PowerShell.CrossCompatibility.dll')) -Force
 }

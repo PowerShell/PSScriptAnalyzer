@@ -260,6 +260,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                             if (pipelineIndentationStyle == PipelineIndentationStyle.None && PreviousLineEndedWithPipe(tokens, tokenIndex, token))
                             {
+                                onNewLine = false;
                                 continue;
                             }
 

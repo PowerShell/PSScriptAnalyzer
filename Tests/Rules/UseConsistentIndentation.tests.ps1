@@ -391,6 +391,11 @@ bar
 foo |
     bar
 '@
+            },
+            @{ IdempotentScriptDefinition = @'
+foo |
+    bar -Parameter1
+'@
             }
             ) {
         param ($IdempotentScriptDefinition)
