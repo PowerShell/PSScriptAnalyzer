@@ -63,7 +63,7 @@ Describe "Test Name parameters" {
 
         It "get Rules with no parameters supplied" {
             $defaultRules = Get-ScriptAnalyzerRule
-            $expectedNumRules = 66
+            $expectedNumRules = 67
             if ($PSVersionTable.PSVersion.Major -le 4)
             {
                 # for PSv3 PSAvoidGlobalAliases is not shipped because

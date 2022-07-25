@@ -23,6 +23,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidMultipleTypeAttributes<sup>1</sup>](./AvoidMultipleTypeAttributes.md)                       | Warning     |        Yes         |                 |
 | [AvoidNullOrEmptyHelpMessageAttribute](./AvoidNullOrEmptyHelpMessageAttribute.md)                 | Warning     |        Yes         |                 |
 | [AvoidOverwritingBuiltInCmdlets](./AvoidOverwritingBuiltInCmdlets.md)                             | Warning     |        Yes         |       Yes       |
+| [AvoidSemicolonsAsLineTerminators](./AvoidSemicolonsAsLineTerminators.md)                         | Warning     |         No         |                 |
 | [AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md)                           | Warning     |        Yes         |                 |
 | [AvoidTrailingWhitespace](./AvoidTrailingWhitespace.md)                                           | Warning     |        Yes         |                 |
 | [AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md)                                           | Warning     |        Yes         | Yes<sup>2</sup> |
