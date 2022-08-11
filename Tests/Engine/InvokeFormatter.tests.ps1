@@ -14,6 +14,19 @@ Describe "Invoke-Formatter Cmdlet" {
         }
     }
 
+    Context 'Accept Value from Pipeline' {
+        It 'Value from Pipeline' {
+            'foo' | Invoke-Formatter | Should -Be 'foo'
+        }
+        It 'Value from Pipeline by Property Name with just the mandatory ScriptDefinition parameter' {
+            [pscustomobject]@{ 'ScriptDefinition' = 'foo' } | Invoke-Formatter | Should -Be 'foo'
+        }
+        It 'Value from Pipeline by Property Name with all parameters' {
+            [pscustomobject]@{ ScriptDefinition = 'foo'; Settings = @(); Range = 1, 1, 1, 4 } |
+                Invoke-Formatter | Should -Be 'foo'
+        }
+    }
+
     Context "When positional parameters are given" {
         It "Should use the positional parameters" {
             $def = @"
