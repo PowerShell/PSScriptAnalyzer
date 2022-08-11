@@ -763,6 +763,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid Using Broken Hash Algorithms.
+        /// </summary>
+        internal static string AvoidUsingBrokenHashAlgorithmsCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUsingBrokenHashAlgorithmsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid using the broken algorithms MD5 or SHA-1..
+        /// </summary>
+        internal static string AvoidUsingBrokenHashAlgorithmsDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingBrokenHashAlgorithmsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Algorithm parameter of cmdlet &apos;{0}&apos; was used with the broken algorithm &apos;{1}&apos;..
+        /// </summary>
+        internal static string AvoidUsingBrokenHashAlgorithmsError {
+            get {
+                return ResourceManager.GetString("AvoidUsingBrokenHashAlgorithmsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUsingBrokenHashAlgorithms.
+        /// </summary>
+        internal static string AvoidUsingBrokenHashAlgorithmsName {
+            get {
+                return ResourceManager.GetString("AvoidUsingBrokenHashAlgorithmsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using Clear-Host.
         /// </summary>
         internal static string AvoidUsingClearHostCommonName {
