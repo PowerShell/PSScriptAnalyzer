@@ -5,11 +5,13 @@
 ### New Rule
 
 - Add AvoidMultipleTypeAttributes rule (#1705) (thanks @hankyi95)
-Add the AvoidSemicolonsAsLineTerminators rule to warn about lines ending with a semicolon. Fix (#824) (#1806) (thanks @tempora-mutantur)
+- Add the AvoidSemicolonsAsLineTerminators rule to warn about lines ending with a semicolon. Fix (#824) (#1806) (thanks @tempora-mutantur)
+- Add AvoidUsingBrokenHashAlgorithms (#1787) (thanks @MJVL)
 
 ### Enhancements
 
-Also return suggestion to use PSCredential for AvoidUsingPlainTextForPassword rule (#1782) (by @bergmeister)
+- Also return suggestion to use PSCredential for AvoidUsingPlainTextForPassword rule (#1782) (by @bergmeister)
+- Invoke-Formatter: Accept input from pipeline (#1763) (by @bergmeister)
 
 ### Fixes
 
@@ -19,6 +21,7 @@ Also return suggestion to use PSCredential for AvoidUsingPlainTextForPassword ru
 
 ### Build, Documenation and Maintenance
 
+- Tweak documentation for AvoidUsingBrokenHashAlgorithms (#1829) (thanks @michaeltlombardi)
 - Set MaxDepth in JsonSerializerSettings for more secure handling of exceptional conditions in Newtonsoft.Json (#1824) (by @bergmeister)
 - Use latest Newtonsoft.Json version for Windows PowerShell builds and not exclude it any more in Dependabot (#1825) (by @bergmeister)
 - Update minimum PowerShell version to 7.1.7 (#1769) (by @bergmeister)
