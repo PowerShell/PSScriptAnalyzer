@@ -24,7 +24,7 @@
 - Tweak documentation for AvoidUsingBrokenHashAlgorithms (#1829) (thanks @michaeltlombardi)
 - Set MaxDepth in JsonSerializerSettings for more secure handling of exceptional conditions in Newtonsoft.Json (#1824) (by @bergmeister)
 - Use latest Newtonsoft.Json version for Windows PowerShell builds and not exclude it any more in Dependabot (#1825) (by @bergmeister)
-- Update minimum PowerShell version to 7.1.7 (#1769) (by @bergmeister)
+- Fix minimum PowerShell version to be 7.0.11 instead of 7.1.7 (#1830) (by @bergmeister)
 - Add `.github/fabricbot.json` (#1812)
 - Sync changes from docs repo (#1814) (by @sdwheeler)
 - Fix name of PowerShell 5.1 test stage in CI (#1820) (by @bergmeister)
