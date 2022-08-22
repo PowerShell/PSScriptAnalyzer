@@ -12,7 +12,7 @@ title: AvoidMultipleTypeAttributes
 ## Description
 
 Parameters should not have more than one type specifier. Multiple type specifiers on parameters
-cause runtime errors.
+can cause runtime errors.
 
 ## How
 
@@ -28,14 +28,10 @@ function Test-Script
     [CmdletBinding()]
     Param
     (
-        [String]
-        $Param1,
-
         [switch]
-        [bool]
+        [int]
         $Switch
     )
-    ...
 }
 ```
 
@@ -47,12 +43,8 @@ function Test-Script
     [CmdletBinding()]
     Param
     (
-        [String]
-        $Param1,
-
         [switch]
         $Switch
     )
-    ...
 }
 ```
