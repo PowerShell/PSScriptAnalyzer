@@ -234,6 +234,25 @@ Describe 'Cmdlet parameter help' {
 			# To avoid calling Trim method on a null object.
 			$helpType = if ($parameterHelp.parameterValue) { $parameterHelp.parameterValue.Trim() }
 			$helpType | Should -Be $codeType -Because "help for $commandName has correct parameter type for $parameterName"
+
+			foreach($parameterAttribute in $parameter.Attributes) {
+				if ($parameterAttribute.ValueFromPipeline -eq $null) { continue }
+
+				$parameterHelpPipelineInput = if ($parameterHelp.pipelineInput -eq 'True (ByPropertyName, ByValue)') {
+					$true
+				}
+				else {
+					[System.Boolean]::Parse($parameterHelp.pipelineInput)
+				}
+
+				$parameterHelpPipelineInput | Should -Be $parameterAttribute.ValueFromPipelineByPropertyName `
+					-Because "Parameter $parameterName of command $CommandName and parameter set $($parameterAttribute.ParameterSetName) has correct ValueFromPipelineByPropertyName attribute"
+
+				if ($parameterHelp.pipelineInput -eq 'True (ByPropertyName, ByValue)') {
+					$parameterAttribute.ValueFromPipeline | Should -BeTrue `
+						-Because "Parameter $parameterName of command $CommandName and parameter set $($parameterAttribute.ParameterSetName) has correct ValueFromPipeline attribute"
+				}
+			}
 		}
 
 		foreach ($helpParam in $HelpParameterNames) {
