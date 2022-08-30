@@ -24,6 +24,7 @@
 - Tweak documentation for AvoidUsingBrokenHashAlgorithms (#1829) (thanks @michaeltlombardi)
 - Set MaxDepth in JsonSerializerSettings for more secure handling of exceptional conditions in Newtonsoft.Json (#1824) (by @bergmeister)
 - Use latest Newtonsoft.Json version for Windows PowerShell builds and not exclude it any more in Dependabot (#1825) (by @bergmeister)
+- Correct pipeline acceptance docs for Invoke-Formatter.md (#1833) (by @bergmeister)
 - Update AvoidMultipleTypeAttributes.md with example that has runtime error (#1831) (by @bergmeister)
 - Fix minimum PowerShell version to be 7.0.11 instead of 7.1.7 (#1830) (by @bergmeister)
 - Add `.github/fabricbot.json` (#1812)
