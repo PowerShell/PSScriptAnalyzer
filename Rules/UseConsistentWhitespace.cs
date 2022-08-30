@@ -260,7 +260,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach (var lCurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
             {
                 if (lCurly.Next == null
-                    || !IsPreviousTokenOnSameLine(lCurly)
+                    || !(lCurly.Previous == null || IsPreviousTokenOnSameLine(lCurly))
                     || lCurly.Next.Value.Kind == TokenKind.NewLine
                     || lCurly.Next.Value.Kind == TokenKind.LineContinuation
                     || lCurly.Next.Value.Kind == TokenKind.RCurly
@@ -616,7 +616,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
 
 
-        private bool IsPreviousTokenOnSameLine(LinkedListNode<Token> lparen)
+        private static bool IsPreviousTokenOnSameLine(LinkedListNode<Token> lparen)
         {
             return lparen.Previous.Value.Extent.EndLineNumber == lparen.Value.Extent.StartLineNumber;
         }

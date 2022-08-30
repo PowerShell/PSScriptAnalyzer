@@ -508,6 +508,10 @@ if ($true) { Get-Item `
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
+
+        It "Should not throw when analysing a partial scriptblock" {
+            { Invoke-ScriptAnalyzer -ScriptDefinition '{ }' -Settings $settings -ErrorAction Stop } | Should -Not -Throw
+        }
     }
 
 
