@@ -28,6 +28,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal const string Matches = "Matches";
         internal const string PSVersionTable = "PSVersionTable";
         internal const string OFS = "OFS";
+        internal const string FormatEnumerationLimit = "FormatEnumerationLimit";
 
         internal static readonly string[] InitializedVariables;
 
@@ -59,8 +60,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                    PSCommandPath,
                                                                    ExecutionContext,
                                                                    Matches,
-                                                                   PSVersionTable,
-                                                                   OFS
+                                                                   PSVersionTable,                                                                   
+                                                                   OFS,
+                                                                   FormatEnumerationLimit,
                                                                };
         internal static readonly Type[] AutomaticVariableTypes = new Type[]  
                                                                  {  
@@ -76,7 +78,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                    /* ExecutionContext */  typeof(EngineIntrinsics),
                                                                    /* Matches */           typeof(System.Collections.Hashtable),
                                                                    /* PSVersionTable */    typeof(System.Collections.Hashtable),
-                                                                   /* OFS */               typeof(object)
+                                                                   /* OFS */               typeof(object),
+                                                                   /* FormatEnumerationLimit */ typeof(int)
                                                                  };
 
 
