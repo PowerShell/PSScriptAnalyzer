@@ -26,6 +26,7 @@
 - Use latest Newtonsoft.Json version for Windows PowerShell builds and not exclude it any more in Dependabot (#1825) (by @bergmeister)
 - Correct pipeline acceptance docs for Invoke-Formatter.md (#1833) (by @bergmeister)
 - Sync remaining docs changes from Microsoft docs (#1835) (by @bergmeister)
+- Reformat note block (#1837) (by @sdwheeler)
 - Update AvoidMultipleTypeAttributes.md with example that has runtime error (#1831) (by @bergmeister)
 - Fix minimum PowerShell version to be 7.0.11 instead of 7.1.7 (#1830) (by @bergmeister)
 - Add `.github/fabricbot.json` (#1812)
