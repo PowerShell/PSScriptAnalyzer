@@ -27,10 +27,13 @@ on PowerShell best practices identified by PowerShell Team and the community. It
 DiagnosticResults (errors and warnings) to inform users about potential code defects and suggests
 possible solutions for improvements.
 
-PSScriptAnalyzer is shipped with a collection of built-in rules that checks various aspects of
-PowerShell code such as presence of uninitialized variables, usage of PSCredential Type, usage of
-Invoke-Expression etc. Additional functionalities such as exclude/include specific rules are also
-supported.
+PSScriptAnalyzer ships with a collection of built-in rules that check various aspects of
+PowerShell code such as:
+
+- The presence of uninitialized variables
+- Use of **PSCredential** type
+- Use of `Invoke-Expression`
+- And many more
 
 [Back to ToC](#table-of-contents)
 
