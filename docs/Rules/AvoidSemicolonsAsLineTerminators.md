@@ -13,7 +13,8 @@ title: AvoidSemicolonsAsLineTerminators
 
 Lines should not end with a semicolon.
 
-**Note**: This rule is not enabled by default. The user needs to enable it through settings.
+> [!NOTE]
+> This rule is not enabled by default. The user needs to enable it through settings.
 
 ## Example
 
