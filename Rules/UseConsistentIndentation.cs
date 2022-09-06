@@ -133,7 +133,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var currentIndenationLevelIncreaseDueToPipelines = 0;
             var onNewLine = true;
             var pipelineAsts = ast.FindAll(testAst => testAst is PipelineAst && (testAst as PipelineAst).PipelineElements.Count > 1, true).ToList();
-            int minimumPipelineAstIndex = 0;
             /*
                 When an LParen and LBrace are on the same line, it can lead to too much de-indentation.
                 In order to prevent the RParen code from de-indenting too much, we keep a stack of when we skipped the indentation
@@ -273,7 +272,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (pipelineIndentationStyle == PipelineIndentationStyle.None) { continue; }
 
                 // Check if the current token matches the end of a PipelineAst
-                PipelineAst matchingPipeLineAstEnd = MatchingPipelineAstEnd(pipelineAsts, ref minimumPipelineAstIndex, token);
+                PipelineAst matchingPipeLineAstEnd = MatchingPipelineAstEnd(pipelineAsts, token);
                 if (matchingPipeLineAstEnd == null)
                 {
                     continue;
@@ -412,10 +411,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return lastPipeOnFirstLineWithPipeUsage;
         }
 
-        private static PipelineAst MatchingPipelineAstEnd(List<Ast> pipelineAsts, ref int minimumPipelineAstIndex, Token token)
+        private static PipelineAst MatchingPipelineAstEnd(List<Ast> pipelineAsts, Token token)
         {
             PipelineAst matchingPipeLineAstEnd = null;
-            for (int i = minimumPipelineAstIndex; i < pipelineAsts.Count; i++)
+            for (int i = 0; i < pipelineAsts.Count; i++)
             {
                 if (pipelineAsts[i].Extent.EndScriptPosition.LineNumber > token.Extent.EndScriptPosition.LineNumber)
                 {
@@ -425,7 +424,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (PositionIsEqual(pipelineAsts[i].Extent.EndScriptPosition, token.Extent.EndScriptPosition))
                 {
                     matchingPipeLineAstEnd = pipelineAsts[i] as PipelineAst;
-                    minimumPipelineAstIndex = i;
                     break;
                 }
             }
