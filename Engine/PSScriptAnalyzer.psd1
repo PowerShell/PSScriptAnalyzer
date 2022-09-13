@@ -91,7 +91,7 @@ PrivateData = @{
 }
 
 # HelpInfo URI of this module
-HelpInfoURI = 'https://aka.ms/ps-modules-help'
+HelpInfoURI = 'https://docs.microsoft.com/powershell/module/psscriptanalyzer'
 
 # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
 # DefaultCommandPrefix = ''
