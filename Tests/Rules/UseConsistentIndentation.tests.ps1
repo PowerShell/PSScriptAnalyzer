@@ -399,8 +399,9 @@ foo |
             },
             @{ IdempotentScriptDefinition = @'
 Get-TransportRule |
+Where-Object @{ $_.name -match "a"} |
 Select-Object @{ E = $SenderDomainIs | Sort-Object }
-baz
+Foreach-Object { $_.FullName }
 '@
             }
             ) {
