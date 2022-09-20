@@ -466,42 +466,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Avoid semicolons as line terminators.
-        /// </summary>
-        internal static string AvoidSemicolonsAsLineTerminatorsCommonName {
-            get {
-                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsCommonName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Line should not end with a semicolon.
-        /// </summary>
-        internal static string AvoidSemicolonsAsLineTerminatorsDescription {
-            get {
-                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Line ends with a semicolon.
-        /// </summary>
-        internal static string AvoidSemicolonsAsLineTerminatorsError {
-            get {
-                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to AvoidSemicolonsAsLineTerminators.
-        /// </summary>
-        internal static string AvoidSemicolonsAsLineTerminatorsName {
-            get {
-                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsName", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to Avoid multiple type specifiers on parameters.
         /// </summary>
         internal static string AvoidMultipleTypeAttributesCommonName {
@@ -606,6 +570,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string AvoidOverwritingBuiltInCmdletsName {
             get {
                 return ResourceManager.GetString("AvoidOverwritingBuiltInCmdletsName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid semicolons as line terminators.
+        /// </summary>
+        internal static string AvoidSemicolonsAsLineTerminatorsCommonName {
+            get {
+                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line should not end with a semicolon.
+        /// </summary>
+        internal static string AvoidSemicolonsAsLineTerminatorsDescription {
+            get {
+                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line ends with a semicolon.
+        /// </summary>
+        internal static string AvoidSemicolonsAsLineTerminatorsError {
+            get {
+                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidSemicolonsAsLineTerminators.
+        /// </summary>
+        internal static string AvoidSemicolonsAsLineTerminatorsName {
+            get {
+                return ResourceManager.GetString("AvoidSemicolonsAsLineTerminatorsName", resourceCulture);
             }
         }
         
@@ -2644,7 +2644,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cmdlet/Function/Parameter does not match its exact casing &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Function/Cmdlet &apos;{0}&apos; does not match its exact casing &apos;{1}&apos;..
         /// </summary>
         internal static string UseCorrectCasingError {
             get {
@@ -2658,6 +2658,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string UseCorrectCasingName {
             get {
                 return ResourceManager.GetString("UseCorrectCasingName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; of function/cmdlet &apos;{1}&apos; does not match its exact casing &apos;{2}&apos;..
+        /// </summary>
+        internal static string UseCorrectCasingParameterError {
+            get {
+                return ResourceManager.GetString("UseCorrectCasingParameterError", resourceCulture);
             }
         }
         
