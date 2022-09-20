@@ -209,7 +209,7 @@ The PRs for those improvements are:
 
 ## [1.18.3](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.3) - 2019-09-13
 
-This release adds one more important fix, which prevents a leak of runspaces when repeatedly invoking the PSScriptAnalyzer cmdlets. Furthermore it ups the minimum version of PowerShell Core to `6.2.0` due to `6.1` reaching its [end of life](https://learn.microsoft.com/powershell/scripting/install/PowerShell-Support-Lifecycle?view=powershell-7.2#powershell-end-of-support-dates) this month.
+This release adds one more important fix, which prevents a leak of runspaces when repeatedly invoking the PSScriptAnalyzer cmdlets. Furthermore it ups the minimum version of PowerShell Core to `6.2.0` due to `6.1` reaching its [end of life](https://learn.microsoft.com/powershell/scripting/install/PowerShell-Support-Lifecycle#powershell-end-of-support-dates) this month.
 
 - Change CommandInfoCache to implement IDisposable and clean up the runspace pool (#1335) (by @JamesWTruher)
 - Update Newtonsoft json to 12.0.1 due to PowerShell 6.1 going out of support (#1336) (by @bergmeister)
@@ -768,7 +768,8 @@ A big **Thank You!** to the following folks for making PSScriptAnalyzer even bet
 ### Fixes:
 #### Engine:
 - Engine update to prevent script based injection attacks
-- CustomizedRulePath is now called CustomRulePath â&euro;" Fixes to handle folder paths
+- CustomizedRulePath is now called CustomRulePath
+- Fixes to handle folder paths
 - Fixes for RecurseCustomRulePath functionality
 - Fix to binplace cmdlet help file as part of build process
 - ScriptAnalyzer Profile is now called Settings
@@ -786,7 +787,8 @@ A big **Thank You!** to the following folks for making PSScriptAnalyzer even bet
 - Update to Credential based rules to validate the presence of CredentialAttribute and PSCredential type
 
 ### Documentation:
-- Rule & Cmdlet documentation updates â&euro;" Cmdlet help file addition
+- Rule & Cmdlet documentation updates
+- Cmdlet help file addition
 
 ## [1.1.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.1.1) - 2015-11-03
 ### Features:
@@ -827,7 +829,7 @@ A big **Thank You!** to the following folks for making PSScriptAnalyzer even bet
 
 ### Rules:
 - New rule to validate the presence of deprecated module manifest fields.
-- Removed PSAvoidTrapStatement rule from the builtin set â&euro;" since this is not deprecated and using trap is a better choice in certain scenarios.
+- Removed PSAvoidTrapStatement rule from the builtin set since this is not deprecated and using trap is a better choice in certain scenarios.
 
 ### Fixes:
 - Verbose Message rule applies to only DSC cmdlet based resources.
