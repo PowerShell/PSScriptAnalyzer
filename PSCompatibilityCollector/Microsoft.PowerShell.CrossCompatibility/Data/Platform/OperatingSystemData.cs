@@ -69,7 +69,7 @@ namespace Microsoft.PowerShell.CrossCompatibility.Data
         /// <summary>
         /// The Windows SKU identifier, corresponding to
         /// the GetProductInfo() sysinfo API:
-        /// https://docs.microsoft.com/en-us/windows/desktop/api/sysinfoapi/nf-sysinfoapi-getproductinfo
+        /// https://learn.microsoft.com/windows/desktop/api/sysinfoapi/nf-sysinfoapi-getproductinfo
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public uint? SkuId { get; set; }

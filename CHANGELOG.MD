@@ -76,7 +76,7 @@
 
 ### Miscellaneous
 
-- Set Assembly version attribute (#1549) (by @JamesWTruher) 
+- Set Assembly version attribute (#1549) (by @JamesWTruher)
 
 ### Documentation
 
@@ -209,7 +209,7 @@ The PRs for those improvements are:
 
 ## [1.18.3](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.18.3) - 2019-09-13
 
-This release adds one more important fix, which prevents a leak of runspaces when repeatedly invoking the PSScriptAnalyzer cmdlets. Furthermore it ups the minimum version of PowerShell Core to `6.2.0` due to `6.1` reaching its [end of life](https://docs.microsoft.com/en-us/powershell/scripting/powershell-support-lifecycle?view=powershell-6#powershell-releases-end-of-life) this month.
+This release adds one more important fix, which prevents a leak of runspaces when repeatedly invoking the PSScriptAnalyzer cmdlets. Furthermore it ups the minimum version of PowerShell Core to `6.2.0` due to `6.1` reaching its [end of life](https://learn.microsoft.com/powershell/scripting/install/PowerShell-Support-Lifecycle?view=powershell-7.2#powershell-end-of-support-dates) this month.
 
 - Change CommandInfoCache to implement IDisposable and clean up the runspace pool (#1335) (by @JamesWTruher)
 - Update Newtonsoft json to 12.0.1 due to PowerShell 6.1 going out of support (#1336) (by @bergmeister)
@@ -275,11 +275,11 @@ The benefit to the user will be some enhancements and fixes in the formatter, es
   - Convert compatibility module to binary module, fix compatibility with Azure environments (#1212) (by @rjmholt)
   - Prevent .NET members with names differing only by case from crashing the compatibility profiler (#1195) (by @rjmholt)
   - Fix compatibility profile query API so that aliases referring to other modules appear (#1194) (by @rjmholt)
-  
+
 - DSC
   - Instead of using the first cimClass and then having no superClass, use the first cimClass that has a non-null superClass (#1200) (by @bergmeister, thanks to @ykuijs! for the great collaboration)
   - Make `-SaveDscDependency` work on Linux (#1246) (by @bergmeister)
-  
+
 - Enable suppression of custom rules when used together with `-IncludeDefaultRules` to allow all possible scenarios from 1.17.1 and 1.18.0. This removes also the check if the rule name in the suppression attribute can be found because this check is technically not possible in all scenarios (#1245) (by @bergmeister)
 - Fix NullReferenceException for class type (#1182) (by @bergmeister)
 
@@ -492,7 +492,7 @@ Multi-threading efficiency was highly improved leading to a speedup whilst keepi
 - Add simple GitHub Pull Request template based off the one for PowerShell Core (#866) (by @bergmeister)
 - Add a simple GitHub issue template based on the one of PowerShell Core. (#865, #884) (by @bergmeister)
 - Fix Example 7 in Invoke-ScriptAnalyzer.md (#862) (Thanks @sethvs!)
-- Use the typewriter apostrophe instead the typographic apostrophe (#855) (Thanks @alexandear!) 
+- Use the typewriter apostrophe instead the typographic apostrophe (#855) (Thanks @alexandear!)
 - Add justification to ReadMe (#848) (Thanks @KevinMarquette!)
 - Fix typo in README (#845) (Thanks @misterGF!)
 
@@ -768,7 +768,7 @@ A big **Thank You!** to the following folks for making PSScriptAnalyzer even bet
 ### Fixes:
 #### Engine:
 - Engine update to prevent script based injection attacks
-- CustomizedRulePath is now called CustomRulePath â€“ Fixes to handle folder paths
+- CustomizedRulePath is now called CustomRulePath â&euro;" Fixes to handle folder paths
 - Fixes for RecurseCustomRulePath functionality
 - Fix to binplace cmdlet help file as part of build process
 - ScriptAnalyzer Profile is now called Settings
@@ -786,7 +786,7 @@ A big **Thank You!** to the following folks for making PSScriptAnalyzer even bet
 - Update to Credential based rules to validate the presence of CredentialAttribute and PSCredential type
 
 ### Documentation:
-- Rule & Cmdlet documentation updates â€“ Cmdlet help file addition
+- Rule & Cmdlet documentation updates â&euro;" Cmdlet help file addition
 
 ## [1.1.1](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.1.1) - 2015-11-03
 ### Features:
@@ -827,7 +827,7 @@ A big **Thank You!** to the following folks for making PSScriptAnalyzer even bet
 
 ### Rules:
 - New rule to validate the presence of deprecated module manifest fields.
-- Removed PSAvoidTrapStatement rule from the builtin set â€“ since this is not deprecated and using trap is a better choice in certain scenarios.
+- Removed PSAvoidTrapStatement rule from the builtin set â&euro;" since this is not deprecated and using trap is a better choice in certain scenarios.
 
 ### Fixes:
 - Verbose Message rule applies to only DSC cmdlet based resources.
