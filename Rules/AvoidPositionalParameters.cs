@@ -69,8 +69,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     // not in pipeline so just raise it normally
                     else
                     {
-                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
-                            cmdAst.Extent, GetName(), DiagnosticSeverity.Information, fileName, cmdAst.GetCommandName());
+                        string commandName = cmdAst.GetCommandName();
+                        // AZ CLI entrypoint became an az.ps1 script in 2.40.0 so do not raise for it since it is still a CLI https://github.com/PowerShell/PSScriptAnalyzer/issues/1845
+                        if (commandName != "az") {
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, commandName),
+                                cmdAst.Extent, GetName(), DiagnosticSeverity.Information, fileName, commandName);
+                        }
                     }
                 }
             }

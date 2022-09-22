@@ -36,6 +36,10 @@ Describe "AvoidPositionalParameters" {
         It "returns no violations for DSC configuration" {
             $noViolationsDSC.Count | Should -Be 0
         }
+
+        It "returns no violations for AZ CLI" {
+            Invoke-ScriptAnalyzer -ScriptDefinition 'az group deployment list' | Should -BeNullOrEmpty
+        }
     }
 
     Context "Function defined and called in script, which has 3 or more positional parameters triggers rule." {
