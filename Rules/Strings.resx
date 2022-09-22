@@ -1099,7 +1099,7 @@
     <value>For better readability and consistency, use the exact casing of the cmdlet/function/parameter.</value>
   </data>
   <data name="UseCorrectCasingError" xml:space="preserve">
-    <value>Cmdlet/Function/Parameter does not match its exact casing '{0}'.</value>
+    <value>Function/Cmdlet '{0}' does not match its exact casing '{1}'.</value>
   </data>
   <data name="UseCorrectCasingName" xml:space="preserve">
     <value>UseCorrectCasing</value>
@@ -1187,5 +1187,8 @@
   </data>
   <data name="AvoidUsingBrokenHashAlgorithmsName" xml:space="preserve">
     <value>AvoidUsingBrokenHashAlgorithms</value>
+  </data>
+  <data name="UseCorrectCasingParameterError" xml:space="preserve">
+    <value>Parameter '{0}' of function/cmdlet '{1}' does not match its exact casing '{2}'.</value>
   </data>
 </root>

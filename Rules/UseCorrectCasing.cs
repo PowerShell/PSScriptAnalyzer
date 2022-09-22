@@ -58,7 +58,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 if (!commandName.Equals(correctlyCasedCommandName, StringComparison.Ordinal))
                 {
                     yield return new DiagnosticRecord(
-                        string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingError, commandName, shortName),
+                        string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingError, commandName, correctlyCasedCommandName),
                         GetCommandExtent(commandAst),
                         GetName(),
                         DiagnosticSeverity.Warning,
@@ -91,7 +91,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         if (!parameterName.Equals(correctlyCasedParameterName, StringComparison.Ordinal))
                         {
                             yield return new DiagnosticRecord(
-                                string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingError, commandName, parameterName),
+                                string.Format(CultureInfo.CurrentCulture, Strings.UseCorrectCasingParameterError, parameterName, commandName, correctlyCasedParameterName),
                                 GetCommandExtent(commandAst),
                                 GetName(),
                                 DiagnosticSeverity.Warning,
