@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using System.Linq;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -18,12 +19,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #if !CORECLR
 [Export(typeof(IScriptRule))]
 #endif
-    public class AvoidPositionalParameters : IScriptRule
+    public class AvoidPositionalParameters : ConfigurableRule
     {
+        [ConfigurableRuleProperty(defaultValue: new string[] { "az" })]
+        public string[] CommandAllowList { get; set; }
+
+        public AvoidPositionalParameters()
+        {
+            Enable = true; // keep it enabled by default, user can still override this with settings
+        }
+
         /// <summary>
         /// AnalyzeScript: Analyze the ast to check that positional parameters are not used.
         /// </summary>
-        public IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
+        public override IEnumerable<DiagnosticRecord> AnalyzeScript(Ast ast, string fileName)
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
@@ -57,21 +66,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     PipelineAst parent = cmdAst.Parent as PipelineAst;
 
+                    string commandName = cmdAst.GetCommandName();
                     if (parent != null && parent.PipelineElements.Count > 1)
                     {
                         // raise if it's the first element in pipeline. otherwise no.
-                        if (parent.PipelineElements[0] == cmdAst)
+                        if (parent.PipelineElements[0] == cmdAst && !CommandAllowList.Contains(commandName, StringComparer.OrdinalIgnoreCase))
                         {
-                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, cmdAst.GetCommandName()),
-                                cmdAst.Extent, GetName(), DiagnosticSeverity.Information, fileName, cmdAst.GetCommandName());
+                            yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, commandName),
+                                cmdAst.Extent, GetName(), DiagnosticSeverity.Information, fileName, commandName);
                         }
                     }
                     // not in pipeline so just raise it normally
                     else
                     {
-                        string commandName = cmdAst.GetCommandName();
-                        // AZ CLI entrypoint became an az.ps1 script in 2.40.0 so do not raise for it since it is still a CLI https://github.com/PowerShell/PSScriptAnalyzer/issues/1845
-                        if (commandName != "az") {
+                        if (!CommandAllowList.Contains(commandName, StringComparer.OrdinalIgnoreCase))
+                        {
                             yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersError, commandName),
                                 cmdAst.Extent, GetName(), DiagnosticSeverity.Information, fileName, commandName);
                         }
@@ -84,7 +93,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetName: Retrieves the name of this rule.
         /// </summary>
         /// <returns>The name of this rule</returns>
-        public string GetName()
+        public override string GetName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.NameSpaceFormat, GetSourceName(), Strings.AvoidUsingPositionalParametersName);
         }
@@ -93,7 +102,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetCommonName: Retrieves the common name of this rule.
         /// </summary>
         /// <returns>The common name of this rule</returns>
-        public string GetCommonName()
+        public override string GetCommonName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersCommonName);
         }
@@ -102,7 +111,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetDescription: Retrieves the description of this rule.
         /// </summary>
         /// <returns>The description of this rule</returns>
-        public string GetDescription()
+        public override string GetDescription()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingPositionalParametersDescription);
         }
@@ -110,7 +119,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Method: Retrieves the type of the rule: builtin, managed or module.
         /// </summary>
-        public SourceType GetSourceType()
+        public override SourceType GetSourceType()
         {
             return SourceType.Builtin;
         }
@@ -119,7 +128,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// GetSeverity: Retrieves the severity of the rule: error, warning of information.
         /// </summary>
         /// <returns></returns>
-        public RuleSeverity GetSeverity()
+        public override RuleSeverity GetSeverity()
         {
             return RuleSeverity.Information;
         }
@@ -127,7 +136,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <summary>
         /// Method: Retrieves the module/assembly name the rule is from.
         /// </summary>
-        public string GetSourceName()
+        public override string GetSourceName()
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
