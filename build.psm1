@@ -546,7 +546,7 @@ function ConvertTo-PortableVersion {
     }
 }
 
-# see https://docs.microsoft.com/en-us/dotnet/core/tools/global-json for rules
+# see https://learn.microsoft.com/dotnet/core/tools/global-json for rules
 # on how version checks are done
 function Test-SuitableDotnet {
     param (

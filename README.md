@@ -40,33 +40,33 @@ PowerShell code such as:
 ## DOCUMENTATION NOTICE
 
 Conceptual user documentation has been moved out of the source code repository and into the
-documentation repository so that it can be published on docs.microsoft.com.
+documentation repository so that it can be published on learn.microsoft.com.
 
-The goal of this migration is to have the user documentation on docs.microsoft.com. The source code
+The goal of this migration is to have the user documentation on learn.microsoft.com. The source code
 repository should only contain documentation for the code base, such as how to build the code or how
 to contribute to the code.
 
 User documentation that has been migrated:
 
 - Most of the contents of this README can be found in the
-  [PSScriptAnalyzer overview](https://docs.microsoft.com/powershell/utility-modules/psscriptanalyzer/overview)
+  [PSScriptAnalyzer overview](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/overview)
 - For cmdlet reference, see
-  [PSScriptAnalyzer](https://docs.microsoft.com/powershell/module/psscriptanalyzer)
+  [PSScriptAnalyzer](https://learn.microsoft.com/powershell/module/psscriptanalyzer)
 - For rules, see
-  [Rules overview](https://docs.microsoft.com/powershell/utility-modules/psscriptanalyzer/rules/readme)
+  [Rules overview](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/rules/readme)
 - The `PowerShellBestPractices.md` content has been moved to
-  [PSScriptAnalyzer rules and recommendations](https://docs.microsoft.com/powershell/utility-modules/psscriptanalyzer/rules-recommendations)
+  [PSScriptAnalyzer rules and recommendations](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/rules-recommendations)
 - The `ScriptRuleDocumentation.md` content has been moved to
-  [Creating custom rules](https://docs.microsoft.com/powershell/utility-modules/psscriptanalyzer/create-custom-rule)
+  [Creating custom rules](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/create-custom-rule)
 
 There is one exception - the documentation for the rules and cmdlets will remain in the [docs](docs)
 folder to facilitate build testing and to be archived as part of each release. Only the
-documentation for the latest release is published on on docs.microsoft.com.
+documentation for the latest release is published on on learn.microsoft.com.
 
 ## Installation
 
 To install **PSScriptAnalyzer** from the PowerShell Gallery, see
-[Installing PSScriptAnalyzer](https://docs.microsoft.com/powershell/utility-modules/psscriptanalyzer/overview#installing-psscriptanalyzer).
+[Installing PSScriptAnalyzer](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/overview#installing-psscriptanalyzer).
 
 To install **PSScriptAnalyzer** from source code:
 
@@ -190,7 +190,7 @@ Get-TestFailures
 ## Using PSScriptAnalyzer
 
 The documentation in this section can be found in
-[Using PSScriptAnalyzer](https://docs.microsoft.com/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer).
+[Using PSScriptAnalyzer](https://learn.microsoft.com/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer).
 
 ## Contributions are welcome
 
