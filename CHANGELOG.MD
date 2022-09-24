@@ -1,6 +1,6 @@
 ﻿# CHANGELOG
 
-## [1.21.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.21.0) - 2022-08-11
+## [1.21.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.21.0) - 2022-09-26
 
 ### New Rule
 
@@ -12,10 +12,13 @@
 
 - Also return suggestion to use PSCredential for AvoidUsingPlainTextForPassword rule (#1782) (by @bergmeister)
 - Invoke-Formatter: Accept input from pipeline (#1763) (by @bergmeister)
+- Make messages of UseCorrectCasing more detailed (#1843)
+- Exclude automatic variable FormatEnumerationLimit from analysis by PSAvoidGlobalVars and PSUseDeclaredVarsMoreThanAssignments (#1836) (by @bergmeister)
 
 ### Fixes
 
 - Fix PSUseConsistentIndentation.PipelineIndentation.None to not remove code when the previous line ended with a pipe (#1746) (by @bergmeister)
+- Fix edge case of UseConsistentIndentation where child pipeline is on the same line as hashtable (#1838) (by @bergmeister)
 - Skip OpenBrace check when preceded by Dot token (#1750) (by @bergmeister)
 - Fix NRE (NullReferenceException) when custom rules omit optional properties in diagnostics (#1715) (by @rjmholt)
 
@@ -26,6 +29,7 @@
 - Use latest Newtonsoft.Json version for Windows PowerShell builds and not exclude it any more in Dependabot (#1825) (by @bergmeister)
 - Correct pipeline acceptance docs for Invoke-Formatter.md (#1833) (by @bergmeister)
 - Sync remaining docs changes from Microsoft docs (#1835) (by @bergmeister)
+- (MAINT) Update URLs for site rebrand from docs.microsoft.com to learn.microsoft.com (#1844) (by @sdwheeler)
 - Reformat note block (#1837) (by @sdwheeler)
 - Update AvoidMultipleTypeAttributes.md with example that has runtime error (#1831) (by @bergmeister)
 - Fix minimum PowerShell version to be 7.0.11 instead of 7.1.7 (#1830) (by @bergmeister)
