@@ -27,11 +27,11 @@ Describe "AvoidPositionalParameters" {
         }
 
         It "returns violations for command that is not in allow list of settings" {
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'az group deployment list' -Settings @{
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Join-Path a b c d' -Settings @{
                 IncludeRules = @('PSAvoidUsingPositionalParameters')
-                Rules        = @{ PSAvoidUsingPositionalParameters = @{ CommandAllowList = 'Join-Path' } }
+                Rules        = @{ PSAvoidUsingPositionalParameters = @{ CommandAllowList = 'Test-Path' } }
             }
-            $violations.Count | Should -Be 1 # ensure that defaults get removed if setting is supplied
+            $violations.Count | Should -Be 1
             $violations.RuleName | Should -Be 'PSAvoidUsingPositionalParameters'
         }
     }
