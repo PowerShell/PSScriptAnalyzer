@@ -22,12 +22,14 @@ stages:
       - job:
         strategy:
           matrix:
-            Ubuntu_18_04:
-              vmImage: ubuntu-18.04
             Ubuntu_20_04:
               vmImage: ubuntu-20.04
-            mac_Latest:
-              vmImage: macOS-latest
+            Ubuntu_22_04:
+              vmImage: ubuntu-22.04
+            macOS_11:
+              vmImage: macOS-11
+            macOS_12:
+              vmImage: macOS-12
             Windows_Server2019_PowerShell_Core:
               vmImage: windows-2019
             Windows_Server2022_PowerShell_Core:
