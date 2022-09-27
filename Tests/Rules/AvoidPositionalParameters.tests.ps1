@@ -26,6 +26,14 @@ Describe "AvoidPositionalParameters" {
             $violations.RuleName | Should -Contain 'PSAvoidUsingCmdletAliases'
         }
 
+        It "returns violations for command that is not in allow list of settings" {
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition 'Join-Path a b c d' -Settings @{
+                IncludeRules = @('PSAvoidUsingPositionalParameters')
+                Rules        = @{ PSAvoidUsingPositionalParameters = @{ CommandAllowList = 'Test-Path' } }
+            }
+            $violations.Count | Should -Be 1
+            $violations.RuleName | Should -Be 'PSAvoidUsingPositionalParameters'
+        }
     }
 
     Context "When there are no violations" {
@@ -35,6 +43,17 @@ Describe "AvoidPositionalParameters" {
 
         It "returns no violations for DSC configuration" {
             $noViolationsDSC.Count | Should -Be 0
+        }
+
+        It "returns no violations for AZ CLI by default" {
+            Invoke-ScriptAnalyzer -ScriptDefinition 'az group deployment list' | Should -BeNullOrEmpty
+        }
+
+        It "returns no violations for command from allow list defined in settings and is case invariant" {
+            Invoke-ScriptAnalyzer -ScriptDefinition 'join-patH a b c' -Settings @{
+                IncludeRules = @('PSAvoidUsingPositionalParameters')
+                Rules        = @{ PSAvoidUsingPositionalParameters = @{ CommandAllowList = 'az', 'Join-Path' } }
+            } | Should -BeNullOrEmpty
         }
     }
 
