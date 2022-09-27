@@ -1,6 +1,6 @@
 ﻿# CHANGELOG
 
-## [1.21.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.21.0) - 2022-09-26
+## [1.21.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.21.0) - 2022-09-27
 
 ### New Rule
 
@@ -14,6 +14,7 @@
 - Invoke-Formatter: Accept input from pipeline (#1763) (by @bergmeister)
 - Make messages of UseCorrectCasing more detailed (#1843)
 - Exclude automatic variable FormatEnumerationLimit from analysis by PSAvoidGlobalVars and PSUseDeclaredVarsMoreThanAssignments (#1836) (by @bergmeister)
+- PSAvoidUsingPositionalParameters: Do not warn on AZ CLI (#1846) (by @bergmeister)
 
 ### Fixes
 
