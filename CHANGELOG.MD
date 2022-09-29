@@ -1,5 +1,67 @@
 ﻿# CHANGELOG
 
+## [1.21.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.21.0) - 2022-09-27
+
+### New Rule
+
+- Add AvoidMultipleTypeAttributes rule (#1705) (thanks @hankyi95)
+- Add the AvoidSemicolonsAsLineTerminators rule to warn about lines ending with a semicolon. Fix (#824) (#1806) (thanks @tempora-mutantur)
+- Add AvoidUsingBrokenHashAlgorithms (#1787) (thanks @MJVL)
+
+### Enhancements
+
+- Also return suggestion to use PSCredential for AvoidUsingPlainTextForPassword rule (#1782) (by @bergmeister)
+- Invoke-Formatter: Accept input from pipeline (#1763) (by @bergmeister)
+- Make messages of UseCorrectCasing more detailed (#1843)
+- Exclude automatic variable FormatEnumerationLimit from analysis by PSAvoidGlobalVars and PSUseDeclaredVarsMoreThanAssignments (#1836) (by @bergmeister)
+- PSAvoidUsingPositionalParameters: Do not warn on AZ CLI (#1846) (by @bergmeister)
+
+### Fixes
+
+- Fix PSUseConsistentIndentation.PipelineIndentation.None to not remove code when the previous line ended with a pipe (#1746) (by @bergmeister)
+- Fix edge case of UseConsistentIndentation where child pipeline is on the same line as hashtable (#1838) (by @bergmeister)
+- Skip OpenBrace check when preceded by Dot token (#1750) (by @bergmeister)
+- Fix NRE (NullReferenceException) when custom rules omit optional properties in diagnostics (#1715) (by @rjmholt)
+
+### Build, Documenation and Maintenance
+
+- Tweak documentation for AvoidUsingBrokenHashAlgorithms (#1829) (thanks @michaeltlombardi)
+- Set MaxDepth in JsonSerializerSettings for more secure handling of exceptional conditions in Newtonsoft.Json (#1824) (by @bergmeister)
+- Use latest Newtonsoft.Json version for Windows PowerShell builds and not exclude it any more in Dependabot (#1825) (by @bergmeister)
+- Correct pipeline acceptance docs for Invoke-Formatter.md (#1833) (by @bergmeister)
+- Sync remaining docs changes from Microsoft docs (#1835) (by @bergmeister)
+- (MAINT) Update URLs for site rebrand from docs.microsoft.com to learn.microsoft.com (#1844) (by @sdwheeler)
+- Reformat note block (#1837) (by @sdwheeler)
+- Update AvoidMultipleTypeAttributes.md with example that has runtime error (#1831) (by @bergmeister)
+- Fix minimum PowerShell version to be 7.0.11 instead of 7.1.7 (#1830) (by @bergmeister)
+- Add `.github/fabricbot.json` (#1812)
+- Sync changes from docs repo (#1814) (by @sdwheeler)
+- Fix name of PowerShell 5.1 test stage in CI (#1820) (by @bergmeister)
+- CI: Retry test tasks in cas1e of failure to reduce sporadic failures (#1770)
+- Upgrade from net452 to net462 for Windows PowerShell (#1789)
+- Move issue template config into folder (#1804) (thanks @michaeltlombardi)
+- Bump version from 1.20.0 to 1.21.0 (#1796) (by @bergmeister)
+- Bump .NET SDK and SMA patch version (#1795) (by @bergmeister)
+- Be sure not to clobber existing files when installing dotnet. (#1788) (by @JamesWTruher)
+- Add link to issues chooser for reporting docs issues (#1794) (by @sdwheeler)
+- Update README and delete docs that were migrated (#1790) (by @sdwheeler)
+- Fix errors in ShouldProcess rule document (#1766) (thanks @masaru-iritani)
+- Replicate changes from docs repo (#1781) (by @sdwheeler)
+- Update Windows CI images as windows-2016 has been deprecated (#1784) (by @bergmeister)
+- Use latest mac image rather than a specific version. (#1777) (by @JamesWTruher)
+- Add docs migration notice & fix formatting (#1779) (by @sdwheeler)
+- use compliant build environment for release build. (#1776) (by @JamesWTruher)
+- Enable SBOM creation for script analyzer (#1762) (by @JamesWTruher)
+- Fix links to work on GitHub (#1738) (by @andschwa)
+- Update AvoidUsingWMICmdlet.md (#1737) (thanks @C0smin)
+- Fix broken doc link in README (#1735) (thanks @AndrewRathbun)
+- Add metadata to docs (#1731) (by @sdwheeler)
+- Remove Ubuntu 16.04 from test matrix (#1733) (by @rjmholt)
+- Use PowerShell1ES pool for official build (#1719) (by @JamesWTruher)
+- Update cmdlet docs for 1.20.0 (#1726) (by @sdwheeler)
+- Fixes #1720 - move rule docs and update tests (#1724) (by @sdwheeler)
+- Update rule docs (#1711)  (by @sdwheeler)
+
 ## [1.20.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.20.0) - 2021-08-20
 
 ### Fixes
