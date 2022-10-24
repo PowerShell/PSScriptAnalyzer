@@ -4,8 +4,8 @@
 $ErrorActionPreference = 'Stop'
 
 function Install-Pester {
-    $requiredPesterVersion = '5.2.2'
-    $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -eq $requiredPesterVersion }
+    $requiredPesterVersion = '5.3'
+    $pester = Get-Module Pester -ListAvailable | Where-Object { $_.Version -ge $requiredPesterVersion }
     if ($null -eq $pester) {
         if ($null -eq (Get-Module -ListAvailable PowershellGet)) {
             # WMF 4 image build
