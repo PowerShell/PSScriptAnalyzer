@@ -57,8 +57,7 @@ Describe "AvoidPositionalParameters" {
         }
 
         It "returns no violations for script with no defined parameters" {
-            Invoke-ScriptAnalyzer -ScriptDefinition 'join-patH a b c'
-            } | Should -BeNullOrEmpty
+            Invoke-ScriptAnalyzer -ScriptDefinition 'join-patH a b c' | Should -BeNullOrEmpty
         }
     }
 
