@@ -132,7 +132,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// Gets the severity of the returned diagnostic record: error, warning, or information.
         /// </summary>
         /// <returns></returns>
-        public DiagnosticSeverity GetDiagnosticSeverity()
+        private DiagnosticSeverity GetDiagnosticSeverity()
         {
             return DiagnosticSeverity.Warning;
         }
