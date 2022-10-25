@@ -55,10 +55,6 @@ Describe "AvoidPositionalParameters" {
                 Rules        = @{ PSAvoidUsingPositionalParameters = @{ CommandAllowList = 'az', 'Join-Path' } }
             } | Should -BeNullOrEmpty
         }
-
-        It "returns no violations for script with no defined parameters" {
-            Invoke-ScriptAnalyzer -ScriptDefinition 'join-patH a b c' | Should -BeNullOrEmpty
-        }
     }
 
     Context "Function defined and called in script, which has 3 or more positional parameters triggers rule." {
