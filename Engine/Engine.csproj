@@ -54,8 +54,9 @@
   -->
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
-      <Generator>MSBuild:Compile</Generator><!-- Tell Visual Studio to run a build if the resx file changes -->
-      <!-- <LastGenOutput>Strings.Designer.cs</LastGenOutput> -->
+      <!-- Tell Visual Studio that MSBuild will do the generation and run a build if resx file changes. -->
+      <Generator>MSBuild:Compile</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
       <StronglyTypedFileName>$(IntermediateOutputPath)\Strings.Designer.cs</StronglyTypedFileName>
       <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
       <StronglyTypedNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</StronglyTypedNamespace>
