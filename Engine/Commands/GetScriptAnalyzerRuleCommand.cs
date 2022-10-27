@@ -84,8 +84,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
             // Initialize helper
             Helper.Instance = new Helper(
-                SessionState.InvokeCommand,
-                this);
+                SessionState.InvokeCommand);
             Helper.Instance.Initialize();
 
             string[] rulePaths = Helper.ProcessCustomRulePaths(customRulePath,

@@ -15,17 +15,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
     internal class CommandInfoCache : IDisposable
     {
         private readonly ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>> _commandInfoCache;
-        private readonly Helper _helperInstance;
         private readonly RunspacePool _runspacePool;
         private bool disposed = false;
 
         /// <summary>
         /// Create a fresh command info cache instance.
         /// </summary>
-        public CommandInfoCache(Helper pssaHelperInstance)
+        public CommandInfoCache()
         {
             _commandInfoCache = new ConcurrentDictionary<CommandLookupKey, Lazy<CommandInfo>>();
-            _helperInstance = pssaHelperInstance;
             _runspacePool = RunspaceFactory.CreateRunspacePool(1, 10);
             _runspacePool.Open();
         }
