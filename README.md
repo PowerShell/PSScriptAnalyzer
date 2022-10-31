@@ -163,8 +163,7 @@ built-in rules.
 
 Pester-based ScriptAnalyzer Tests are located in `path/to/PSScriptAnalyzer/Tests` folder.
 
-- Ensure [Pester 4.3.1](https://www.powershellgallery.com/packages/Pester/4.3.1) or higher is
-  installed
+- Ensure [Pester](https://www.powershellgallery.com/packages/Pester) of at least version 5.3 is installed
 - In the root folder of your local repository, run:
 
 ```powershell
