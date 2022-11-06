@@ -37,7 +37,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         private readonly string[] nounAllowList =
         {
-            "Data"
+            "Data",
+            "Windows"
         };
 
         /// <summary>
