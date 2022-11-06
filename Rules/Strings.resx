@@ -1191,4 +1191,16 @@
   <data name="UseCorrectCasingParameterError" xml:space="preserve">
     <value>Parameter '{0}' of function/cmdlet '{1}' does not match its exact casing '{2}'.</value>
   </data>
+  <data name="AvoidUsingAllowUnencryptedAuthenticationCommonName" xml:space="preserve">
+    <value>Avoid AllowUnencryptedAuthentication Switch</value>
+  </data>
+  <data name="AvoidUsingAllowUnencryptedAuthenticationDescription" xml:space="preserve">
+    <value>Avoid sending credentials and secrets over unencrypted connections.</value>
+  </data>
+  <data name="AvoidUsingAllowUnencryptedAuthenticationError" xml:space="preserve">
+    <value>The insecure AllowUsingUnencryptedAuthentication switch was used. This should be avoided except for compatability with legacy systems.</value>
+  </data>
+  <data name="AvoidUsingAllowUnencryptedAuthenticationName" xml:space="preserve">
+    <value>AvoidUsingAllowUnencryptedAuthentication</value>
+  </data>
 </root>

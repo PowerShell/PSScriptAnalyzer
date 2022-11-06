@@ -763,6 +763,42 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid AllowUnencryptedAuthentication Switch.
+        /// </summary>
+        internal static string AvoidUsingAllowUnencryptedAuthenticationCommonName {
+            get {
+                return ResourceManager.GetString("AvoidUsingAllowUnencryptedAuthenticationCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid sending credentials and secrets over unencrypted connections..
+        /// </summary>
+        internal static string AvoidUsingAllowUnencryptedAuthenticationDescription {
+            get {
+                return ResourceManager.GetString("AvoidUsingAllowUnencryptedAuthenticationDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The insecure AllowUsingUnencryptedAuthentication switch was used. This should be avoided except for compatability with legacy systems..
+        /// </summary>
+        internal static string AvoidUsingAllowUnencryptedAuthenticationError {
+            get {
+                return ResourceManager.GetString("AvoidUsingAllowUnencryptedAuthenticationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidUsingAllowUnencryptedAuthentication.
+        /// </summary>
+        internal static string AvoidUsingAllowUnencryptedAuthenticationName {
+            get {
+                return ResourceManager.GetString("AvoidUsingAllowUnencryptedAuthenticationName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid Using Broken Hash Algorithms.
         /// </summary>
         internal static string AvoidUsingBrokenHashAlgorithmsCommonName {
