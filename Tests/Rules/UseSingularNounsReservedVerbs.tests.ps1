@@ -44,6 +44,20 @@ Write-Output "Adding some data"
                 -OutVariable violations
             $violations.Count | Should -Be 0
         }
+
+        It "ignores function name ending with Windows" {
+            $nounViolationScript = @'
+Function Test-Windows
+{
+Write-Output "Testing Microsoft Windows"
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
+                -IncludeRule "PSUseSingularNouns" `
+                -OutVariable violations
+            $violations.Count | Should -Be 0
+        }
+
     }
 
     Context "When there are no violations" {
