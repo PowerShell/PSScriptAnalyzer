@@ -11,7 +11,7 @@ title: AvoidUsingAllowUnencryptedAuthentication
 
 ## Description
 
-Avoid using the AllowUnencryptedAuthentication switch, which sends credentials and secrets over unencrypted connections.
+Avoid using the `AllowUnencryptedAuthentication` switch on `Invoke-WebRequest`, which sends credentials and secrets over unencrypted connections.
 This should be avoided except for compatability with legacy systems.
 
 ## How
