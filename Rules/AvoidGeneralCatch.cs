@@ -13,7 +13,7 @@ using System.Globalization;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidGeneralCatch: Check if any empty catch block is used.
+    /// AvoidGeneralCatch: Check if catch clause type is RuntimeException and caution against using it  
     /// </summary>
 #if !CORECLR
 [Export(typeof(IScriptRule))]
@@ -35,18 +35,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 CatchClauseAst catchAst = (CatchClauseAst)foundAst;
 
-//code goes here
-               /* if (catchAst.Body.Statements.Count == 0)
-               no need for statement check?
-
-                {
-                 #   yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchError),
-                  #      catchAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
-                  if getName == RuntimeExcewption>
-                  is getName catch clause?
-                
+                //CatchClauseAst catchAst = (CatchClauseAst)foundAst;
+                if (catchAst.CatchTypes.Count == 0) {
+                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchError),
+                        catchAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
-                */
+
+                else{
+
+                    print("successful compile");
+
+                    foreach (CatchClauseAst catchAst in Catch.CatchTypes) {
+                        if (catchAst.type == RuntimeException) {
+                        
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchError),
+                            catchAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+
+                        }
+                    }
+                }
             }
         }
 
@@ -101,9 +108,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
-
     }
 }
+
+    
 
 
 
