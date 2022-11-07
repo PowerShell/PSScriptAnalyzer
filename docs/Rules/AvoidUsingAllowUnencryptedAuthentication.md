@@ -11,8 +11,10 @@ title: AvoidUsingAllowUnencryptedAuthentication
 
 ## Description
 
-Avoid using the `AllowUnencryptedAuthentication` switch on `Invoke-WebRequest`, which sends credentials and secrets over unencrypted connections.
+Avoid using the `AllowUnencryptedAuthentication` switch on `Invoke-WebRequest`, `Invoke-RestMethod`, and other webrequest cmdlets, which sends credentials and secrets over unencrypted connections.
 This should be avoided except for compatability with legacy systems.
+
+For more details, see the documentation warning [here](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/invoke-webrequest?view=powershell-7.2#-allowunencryptedauthentication).
 
 ## How
 
