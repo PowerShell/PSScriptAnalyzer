@@ -18,7 +18,7 @@ For more details, see the documentation warning [here](https://learn.microsoft.c
 
 ## How
 
-Avoid using the AllowUnencryptedAuthentication switch.
+Avoid using the `AllowUnencryptedAuthentication` switch.
 
 ## Example 1
 
