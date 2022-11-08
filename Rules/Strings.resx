@@ -126,7 +126,7 @@
   <data name="AvoidUsingEmptyCatchBlockDescription" xml:space="preserve">
     <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, using Write-Error or throw statements in catch blocks.</value>
   </data>
-  <data name="AvoidUsingGeneralCatchDescription" xml:space="preserve">
+  <data name="AvoidGeneralCatchDescription" xml:space="preserve">
     <value>A catch block with the type system.management.automation.runtimeexception should not be used in a catch block as it will incorrectly catch all exceptions </value>
   </data>
   <data name="AvoidUsingEmptyCatchBlockCommonName" xml:space="preserve">
@@ -383,6 +383,9 @@
   </data>
   <data name="AvoidUsingEmptyCatchBlockName" xml:space="preserve">
     <value>AvoidUsingEmptyCatchBlock</value>
+  </data>
+  <data name="AvoidGeneralCatchName" xml:space="preserve">
+    <value>AvoidGeneralCatch</value>
   </data>
   <data name="AvoidUsingInvokeExpressionRuleName" xml:space="preserve">
     <value>AvoidUsingInvokeExpression</value>

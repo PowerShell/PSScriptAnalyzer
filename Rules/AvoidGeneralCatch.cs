@@ -43,13 +43,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 else{
 
-                    print("successful compile");
+                    //print("successful compile");
 
-                    foreach (CatchClauseAst catchAst in Catch.CatchTypes) {
-                        if (catchAst.type == RuntimeException) {
+                    foreach (TypeConstraintAst caughtAst in catchAst.CatchTypes) {
+                        if (caughtAst.TypeName.FullName.Equals("runtimeexception")) {
                         
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchError),
-                            catchAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+                            caughtAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
 
                         }
                     }
@@ -81,7 +81,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <returns>The description of this rule</returns>
         public string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidUsingGeneralCatchDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchDescription);
         }
 
         /// <summary>
