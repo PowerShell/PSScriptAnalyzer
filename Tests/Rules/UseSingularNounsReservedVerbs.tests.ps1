@@ -65,9 +65,6 @@ Function Get-Bananas
 Write-Output "Bananas"
 }
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
-                -IncludeRule "PSUseSingularNouns" `
-                -OutVariable violations
             Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript -Settings @{
                 IncludeRules = @("PSUseSingularNouns")
                 Rules        = @{ PSUseSingularNouns = @{ NounAllowList = "Bananas" } }
