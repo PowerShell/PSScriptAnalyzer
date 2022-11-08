@@ -32,7 +32,7 @@ Describe "UseSingularNouns" {
 
     Context "When function names have nouns from allowlist" {
 
-        It "ignores function name ending with Data" {
+        It "ignores function name ending with Data by default" {
             $nounViolationScript = @'
 Function Add-SomeData
 {
@@ -45,7 +45,7 @@ Write-Output "Adding some data"
             $violations.Count | Should -Be 0
         }
 
-        It "ignores function name ending with Windows" {
+        It "ignores function name ending with Windows by default" {
             $nounViolationScript = @'
 Function Test-Windows
 {
@@ -56,6 +56,22 @@ Write-Output "Testing Microsoft Windows"
                 -IncludeRule "PSUseSingularNouns" `
                 -OutVariable violations
             $violations.Count | Should -Be 0
+        }
+
+        It "ignores function names defined in settings" {
+            $nounViolationScript = @'
+Function Get-Bananas
+{
+Write-Output "Bananas"
+}
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript `
+                -IncludeRule "PSUseSingularNouns" `
+                -OutVariable violations
+            Invoke-ScriptAnalyzer -ScriptDefinition $nounViolationScript -Settings @{
+                IncludeRules = @("PSUseSingularNouns")
+                Rules        = @{ PSUseSingularNouns = @{ NounAllowList = "Bananas" } }
+            } | Should -BeNullOrEmpty
         }
 
     }
