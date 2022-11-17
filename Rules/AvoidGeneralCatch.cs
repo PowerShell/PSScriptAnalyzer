@@ -35,18 +35,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 CatchClauseAst catchAst = (CatchClauseAst)foundAst;
 
-                //CatchClauseAst catchAst = (CatchClauseAst)foundAst;
-                if (catchAst.CatchTypes.Count == 0) {
+                if (catchAst.CatchTypes.Count == 0) 
+                {
                     yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchError),
                         catchAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
-
-                else{
-
-                    //print("successful compile");
+                else
+                {
 
                     foreach (TypeConstraintAst caughtAst in catchAst.CatchTypes) {
-                        if (caughtAst.TypeName.FullName.Equals("runtimeexception")) {
+                        if (string.Equals(caughtAst.TypeName.FullName, "RuntimeException", StringComparison.CurrentCultureIgnoreCase) | string.Equals(caughtAst.TypeName.FullName, "System.Management.Automation.RuntimeException", StringComparison.CurrentCultureIgnoreCase)); {
                         
                         yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchError),
                             caughtAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
