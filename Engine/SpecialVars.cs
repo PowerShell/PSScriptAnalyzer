@@ -116,7 +116,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                     /* ConfirmPreference */ typeof(ConfirmImpact),
                                                                     /* ProgressPreference */ typeof(Enum),
                                                                     /* InformationPreference */ typeof(ActionPreference),
-                                                                    /* ErrorView */         typeof(ErrorView),
+                                                                    /* ErrorView */         typeof(Enum), //ErrorView type not available on PS3
                                                                 };
 
         internal enum AutomaticVariable
