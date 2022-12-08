@@ -12,14 +12,14 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <!--  The version of Newtonsoft.Json needs to be newer than the version in the oldest supported version of PowerShell 7: https://github.com/PowerShell/PowerShell/blob/v7.0.11/src/System.Management.Automation/System.Management.Automation.csproj#L15 -->
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
     <PackageReference Include="PowerShellStandard.Library" Version="3.0.0-preview-02" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
     <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
   </ItemGroup>
