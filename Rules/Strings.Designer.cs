@@ -290,7 +290,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         /// </summary>
         internal static string AvoidGeneralCatchError {
             get {
-                return ResourceManager.GetString("AvoidLongGeneralCatchError", resourceCulture);
+                return ResourceManager.GetString("AvoidGeneralCatchError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string when no specific exception is caught.
+        /// </summary>
+        internal static string AvoidGeneralCatchErrorEmpty {
+            get {
+                return ResourceManager.GetString("AvoidGeneralCatchErrorEmpty", resourceCulture);
             }
         }
         

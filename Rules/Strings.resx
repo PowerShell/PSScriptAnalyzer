@@ -525,6 +525,9 @@
   <data name="AvoidGeneralCatchError" xml:space="preserve">
     <value>Runtime Exception is used in catch block. Avoid using this as it will catch all exceptions.</value>
   </data>
+  <data name="AvoidGeneralCatchErrorEmpty" xml:space="preserve">
+    <value>No specific exception is being caught.</value>
+  </data>
   <data name="AvoidUsingCmdletAliasesError" xml:space="preserve">
     <value>'{0}' is an alias of '{1}'. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content.</value>
   </data>

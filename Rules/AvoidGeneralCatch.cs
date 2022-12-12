@@ -37,10 +37,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 if (catchAst.CatchTypes.Count == 0) 
                 {
-                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchError),
+                    yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchErrorEmpty),
                         catchAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
                 }
                 else
+                {
+
+                    foreach (TypeConstraintAst caughtAst in catchAst.CatchTypes) {
+                        if (string.Equals(caughtAst.TypeName.FullName, "RuntimeException", StringComparison.CurrentCultureIgnoreCase) || string.Equals(caughtAst.TypeName.FullName, "System.Management.Automation.RuntimeException", StringComparison.CurrentCultureIgnoreCase)) {
+                        
+                        yield return new DiagnosticRecord(string.Format(CultureInfo.CurrentCulture, Strings.AvoidGeneralCatchError),
+                            caughtAst.Extent, GetName(), DiagnosticSeverity.Warning, fileName);
+
+                        }
+                    }
+                }
+
+/**
+                if (catchAst.CatchTypes.Count != 0)
                 {
 
                     foreach (TypeConstraintAst caughtAst in catchAst.CatchTypes) {
@@ -52,6 +66,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         }
                     }
                 }
+                **/
             }
         }
 
