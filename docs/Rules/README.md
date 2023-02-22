@@ -31,7 +31,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidUsingComputerNameHardcoded](./AvoidUsingComputerNameHardcoded.md)                           | Error       |        Yes         |                 |
 | [AvoidUsingConvertToSecureStringWithPlainText](./AvoidUsingConvertToSecureStringWithPlainText.md) | Error       |        Yes         |                 |
 | [AvoidUsingDeprecatedManifestFields](./AvoidUsingDeprecatedManifestFields.md)                     | Warning     |        Yes         |                 |
-| [AvoidUsingDoubleQuotesForConstantString](./AvoidUsingDoubleQuotesForConstantString.md)           | Warning     |         No         |       Yes       |
+| [AvoidUsingDoubleQuotesForConstantString](./AvoidUsingDoubleQuotesForConstantString.md)           | Information |         No         |                 |
 | [AvoidUsingEmptyCatchBlock](./AvoidUsingEmptyCatchBlock.md)                                       | Warning     |        Yes         |                 |
 | [AvoidUsingInvokeExpression](./AvoidUsingInvokeExpression.md)                                     | Warning     |        Yes         |                 |
 | [AvoidUsingPlainTextForPassword](./AvoidUsingPlainTextForPassword.md)                             | Warning     |        Yes         |                 |
