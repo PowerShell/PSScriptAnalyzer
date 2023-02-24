@@ -21,7 +21,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
