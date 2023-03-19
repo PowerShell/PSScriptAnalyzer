@@ -88,6 +88,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                         GetName(),
                         DiagnosticSeverity.Warning,
                         fileName,
+                        funcAst.Name,
                         suggestedCorrections: new CorrectionExtent[] { GetCorrection(pluralizer, extent, funcAst.Name, noun) });
                 }
             }
