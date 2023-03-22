@@ -292,7 +292,7 @@
     <value>Password parameters that take in plaintext will expose passwords and compromise the security of your system.</value>
   </data>
   <data name="AvoidUsingPlainTextForPasswordError" xml:space="preserve">
-    <value>Parameter '{0}' should not use String type but either SecureString or PSCredential, otherwise it increases the chance to to expose this sensitive information.</value>
+    <value>Parameter '{0}' should not use String type but either SecureString or PSCredential, otherwise it increases the chance to expose this sensitive information.</value>
   </data>
   <data name="AvoidUsingPlainTextForPasswordCommonName" xml:space="preserve">
     <value>Avoid Using Plain Text For Password Parameter</value>
