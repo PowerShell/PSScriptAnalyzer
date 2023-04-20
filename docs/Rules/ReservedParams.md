@@ -11,7 +11,7 @@ title: ReservedParams
 
 ## Description
 
-You cannot use reserved common parameters in an advanced function.
+You cannot use [reserved common parameters](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters) in an advanced function.
 
 ## How
 
@@ -24,7 +24,7 @@ Change the name of the parameter.
 ```powershell
 function Test
 {
-    [CmdletBinding]
+    [CmdletBinding()]
     Param
     (
         $ErrorVariable,
@@ -38,7 +38,7 @@ function Test
 ```powershell
 function Test
 {
-    [CmdletBinding]
+    [CmdletBinding()]
     Param
     (
         $Err,
