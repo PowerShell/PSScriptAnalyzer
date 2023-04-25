@@ -11,7 +11,7 @@ title: ReservedParams
 
 ## Description
 
-You cannot use [reserved common parameters](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters) in an advanced function.
+You cannot use [reserved common parameters](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_commonparameters) in an advanced function.
 
 ## How
 
