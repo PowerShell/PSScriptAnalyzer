@@ -25,7 +25,7 @@ Remove hard coded computer names.
 ```powershell
 Function Invoke-MyRemoteCommand ()
 {
-    Invoke-Command -Port 343 -ComputerName "hardcoderemotehostname"
+    Invoke-Command -Port 343 -ComputerName hardcoderemotehostname
 }
 ```
 
@@ -45,7 +45,7 @@ Function Invoke-MyCommand ($ComputerName)
 ```powershell
 Function Invoke-MyLocalCommand ()
 {
-    Invoke-Command -Port 343 -ComputerName "hardcodelocalhostname"
+    Invoke-Command -Port 343 -ComputerName 'hardcodelocalhostname'
 }
 ```
 

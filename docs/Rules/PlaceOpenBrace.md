@@ -46,5 +46,5 @@ Enforce a new line character after an open brace. The default value is true.
 #### IgnoreOneLineBlock: bool (Default value is `$true`)
 
 Indicates if open braces in a one line block should be ignored or not. For example,
-` $x = if ($true) { "blah" } else { "blah blah" }`, if the property is set to true then the rule
+` $x = if ($true) { 'blah' } else { 'blah blah' }`, if the property is set to true then the rule
 doesn't fire a violation.

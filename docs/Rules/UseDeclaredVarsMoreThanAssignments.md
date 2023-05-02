@@ -15,7 +15,7 @@ Variables that are assigned but not used are not needed.
 
 > [!NOTE]
 > For this rule, the variable must be used within the same scriptblock that it was declared or it
-> won't be considered to be "used".
+> won't be considered to be 'used'.
 
 ## How
 
@@ -28,8 +28,8 @@ Remove the variables that are declared but not used.
 ```powershell
 function Test
 {
-    $declaredVar = "Declared just for fun"
-    $declaredVar2 = "Not used"
+    $declaredVar = 'Declared just for fun'
+    $declaredVar2 = 'Not used'
     Write-Output $declaredVar
 }
 ```
@@ -39,7 +39,7 @@ function Test
 ```powershell
 function Test
 {
-    $declaredVar = "Declared just for fun"
+    $declaredVar = 'Declared just for fun'
     Write-Output $declaredVar
 }
 ```

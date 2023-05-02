@@ -22,9 +22,9 @@ PowerShell versions because they aren't able to parse the incompatible syntaxes.
         PSUseCompatibleSyntax = @{
             Enable = $true
             TargetVersions = @(
-                "6.0",
-                "5.1",
-                "4.0"
+                '6.0',
+                '5.1',
+                '4.0'
             )
         }
     }

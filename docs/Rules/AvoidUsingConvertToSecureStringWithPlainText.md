@@ -30,14 +30,14 @@ module from the PowerShell Gallery.
 ### Wrong
 
 ```powershell
-$UserInput = Read-Host "Please enter your secure code"
+$UserInput = Read-Host 'Please enter your secure code'
 $EncryptedInput = ConvertTo-SecureString -String $UserInput -AsPlainText -Force
 ```
 
 ### Correct
 
 ```powershell
-$SecureUserInput = Read-Host "Please enter your secure code" -AsSecureString
+$SecureUserInput = Read-Host 'Please enter your secure code' -AsSecureString
 $EncryptedInput = ConvertFrom-SecureString -String $SecureUserInput
 $SecureString = ConvertTo-SecureString -String $EncryptedInput
 ```

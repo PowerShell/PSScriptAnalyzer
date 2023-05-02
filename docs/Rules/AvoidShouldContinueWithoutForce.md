@@ -33,7 +33,7 @@ Function Test-ShouldContinue
         $MyString = 'blah'
     )
 
-    if ($PsCmdlet.ShouldContinue("ShouldContinue Query", "ShouldContinue Caption"))
+    if ($PsCmdlet.ShouldContinue('ShouldContinue Query', 'ShouldContinue Caption'))
     {
         ...
     }
@@ -52,7 +52,7 @@ Function Test-ShouldContinue
         [Switch]$Force
     )
 
-    if ($Force -or $PsCmdlet.ShouldContinue("ShouldContinue Query", "ShouldContinue Caption"))
+    if ($Force -or $PsCmdlet.ShouldContinue('ShouldContinue Query', 'ShouldContinue Caption'))
     {
         ...
     }

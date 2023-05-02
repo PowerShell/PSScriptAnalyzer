@@ -38,7 +38,7 @@ Function Test-Function
 {
     [CmdletBinding()]
     Param()
-    Write-Verbose "Verbose output"
+    Write-Verbose 'Verbose output'
     ...
 }
 ```

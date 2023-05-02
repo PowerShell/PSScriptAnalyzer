@@ -23,7 +23,7 @@ the following your settings file:
 @{
     'Rules' = @{
         'PSUseCompatibleCmdlets' = @{
-            'compatibility' = @("core-6.1.0-windows")
+            'compatibility' = @('core-6.1.0-windows')
         }
     }
 }
