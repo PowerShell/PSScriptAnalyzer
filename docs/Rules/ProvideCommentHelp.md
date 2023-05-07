@@ -30,7 +30,7 @@ Rules = @{
         ExportedOnly = $false
         BlockComment = $true
         VSCodeSnippetCorrection = $false
-        Placement = "before"
+        Placement = 'before'
     }
 }
 ```

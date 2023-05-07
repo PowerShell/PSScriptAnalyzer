@@ -45,6 +45,6 @@ function Get-Foo
         Param(
         )
 
-        return "four"
+        return 'four'
 }
 ```

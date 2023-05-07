@@ -26,7 +26,7 @@ Remove the use of `Invoke-Expression`.
 ### Wrong
 
 ```powershell
-Invoke-Expression "Get-Process"
+Invoke-Expression 'Get-Process'
 ```
 
 ### Correct

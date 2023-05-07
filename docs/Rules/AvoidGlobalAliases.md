@@ -28,7 +28,7 @@ Use other scope modifiers for new aliases.
 ### Wrong
 
 ```powershell
-New-Alias -Name Name -Value Value -Scope "Global"
+New-Alias -Name Name -Value Value -Scope Global
 ```
 
 ### Correct

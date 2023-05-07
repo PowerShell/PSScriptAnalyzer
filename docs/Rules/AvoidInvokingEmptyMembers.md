@@ -23,13 +23,13 @@ Provide the requested members for a given type or class.
 ### Wrong
 
 ```powershell
-$MyString = "abc"
+$MyString = 'abc'
 $MyString.('len'+'gth')
 ```
 
 ### Correct
 
 ```powershell
-$MyString = "abc"
+$MyString = 'abc'
 $MyString.('length')
 ```

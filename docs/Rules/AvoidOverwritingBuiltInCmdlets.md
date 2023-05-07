@@ -26,7 +26,7 @@ following your settings file.
 @{
     'Rules' = @{
         'PSAvoidOverwritingBuiltInCmdlets' = @{
-            'PowerShellVersion' = @("core-6.1.0-windows")
+            'PowerShellVersion' = @('core-6.1.0-windows')
         }
     }
 }
@@ -38,8 +38,8 @@ following your settings file.
 
 The parameter `PowerShellVersion` is a list of allowlists that ship with PSScriptAnalyzer.
 
-**Note**: The default value for `PowerShellVersion` is `"core-6.1.0-windows"` if PowerShell 6 or
-later is installed, and `"desktop-5.1.14393.206-windows"` if it is not.
+**Note**: The default value for `PowerShellVersion` is `core-6.1.0-windows` if PowerShell 6 or
+later is installed, and `desktop-5.1.14393.206-windows` if it is not.
 
 Usually, patched versions of PowerShell have the same cmdlet data, therefore only settings of major
 and minor versions of PowerShell are supplied. One can also create a custom settings file as well

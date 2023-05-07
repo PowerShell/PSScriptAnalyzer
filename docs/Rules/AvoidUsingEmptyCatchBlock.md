@@ -41,7 +41,7 @@ try
 }
 catch [DivideByZeroException]
 {
-    Write-Error "DivideByZeroException"
+    Write-Error 'DivideByZeroException'
 }
 
 try
@@ -50,6 +50,6 @@ try
 }
 catch [DivideByZeroException]
 {
-    throw "DivideByZeroException"
+    throw 'DivideByZeroException'
 }
 ```
