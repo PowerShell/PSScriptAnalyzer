@@ -45,7 +45,7 @@ Function Invoke-MyCommand ($ComputerName)
 ```powershell
 Function Invoke-MyLocalCommand ()
 {
-    Invoke-Command -Port 343 -ComputerName 'hardcodelocalhostname'
+    Invoke-Command -Port 343 -ComputerName hardcodelocalhostname
 }
 ```
 
