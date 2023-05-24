@@ -62,7 +62,7 @@ function Set-File
         [string]$Content
     )
 
-    if ($PSCmdlet.ShouldProcess($Path, ('Setting content to '{0}'' -f $Content)))
+    if ($PSCmdlet.ShouldProcess($Path, ("Setting content to '{0}'" -f $Content)))
     {
         $Content | Out-File -FilePath $Path
     }
