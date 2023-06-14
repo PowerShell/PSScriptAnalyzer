@@ -286,6 +286,51 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Avoid exclamation point operator.
+        /// </summary>
+        internal static string AvoidExclamationPointOperatorCommonName {
+            get {
+                return ResourceManager.GetString("AvoidExclamationPointOperatorCommonName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace ! with -not.
+        /// </summary>
+        internal static string AvoidExclamationPointOperatorCorrectionDescription {
+            get {
+                return ResourceManager.GetString("AvoidExclamationPointOperatorCorrectionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The negation operator ! should not be used. Use -not instead..
+        /// </summary>
+        internal static string AvoidExclamationPointOperatorDescription {
+            get {
+                return ResourceManager.GetString("AvoidExclamationPointOperatorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid using the ! operator.
+        /// </summary>
+        internal static string AvoidExclamationPointOperatorError {
+            get {
+                return ResourceManager.GetString("AvoidExclamationPointOperatorError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidExclamationPointOperator.
+        /// </summary>
+        internal static string AvoidExclamationPointOperatorName {
+            get {
+                return ResourceManager.GetString("AvoidExclamationPointOperatorName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Avoid global aliases..
         /// </summary>
         internal static string AvoidGlobalAliasesCommonName {
@@ -1132,7 +1177,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; should not use String type but either SecureString or PSCredential, otherwise it increases the chance to to expose this sensitive information..
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; should not use String type but either SecureString or PSCredential, otherwise it increases the chance to expose this sensitive information..
         /// </summary>
         internal static string AvoidUsingPlainTextForPasswordError {
             get {
