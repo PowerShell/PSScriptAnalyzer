@@ -10,7 +10,7 @@ title: AvoidExclamationPointOperator
 
 ## Description
 
-The negation operator ! should not be used. Use -not instead.
+The negation operator `!` should not be used for readability purposes. Use `-not` instead.
 
 **Note**: This rule is not enabled by default. The user needs to enable it through settings.
 
