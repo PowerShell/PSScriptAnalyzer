@@ -286,47 +286,47 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Avoid exclamation point operator.
+        ///   Looks up a localized string similar to Avoid exclaim operator.
         /// </summary>
-        internal static string AvoidExclamationPointOperatorCommonName {
+        internal static string AvoidExclaimOperatorCommonName {
             get {
-                return ResourceManager.GetString("AvoidExclamationPointOperatorCommonName", resourceCulture);
+                return ResourceManager.GetString("AvoidExclaimOperatorCommonName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Replace ! with -not.
         /// </summary>
-        internal static string AvoidExclamationPointOperatorCorrectionDescription {
+        internal static string AvoidExclaimOperatorCorrectionDescription {
             get {
-                return ResourceManager.GetString("AvoidExclamationPointOperatorCorrectionDescription", resourceCulture);
+                return ResourceManager.GetString("AvoidExclaimOperatorCorrectionDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The negation operator ! should not be used. Use -not instead..
+        ///   Looks up a localized string similar to The negation operator ! should not be used for readability purposes. Use -not instead..
         /// </summary>
-        internal static string AvoidExclamationPointOperatorDescription {
+        internal static string AvoidExclaimOperatorDescription {
             get {
-                return ResourceManager.GetString("AvoidExclamationPointOperatorDescription", resourceCulture);
+                return ResourceManager.GetString("AvoidExclaimOperatorDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Avoid using the ! operator.
+        ///   Looks up a localized string similar to Avoid using the ! negation operator.
         /// </summary>
-        internal static string AvoidExclamationPointOperatorError {
+        internal static string AvoidExclaimOperatorError {
             get {
-                return ResourceManager.GetString("AvoidExclamationPointOperatorError", resourceCulture);
+                return ResourceManager.GetString("AvoidExclaimOperatorError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to AvoidExclamationPointOperator.
+        ///   Looks up a localized string similar to AvoidExclaimOperator.
         /// </summary>
-        internal static string AvoidExclamationPointOperatorName {
+        internal static string AvoidExclaimOperatorName {
             get {
-                return ResourceManager.GetString("AvoidExclamationPointOperatorName", resourceCulture);
+                return ResourceManager.GetString("AvoidExclaimOperatorName", resourceCulture);
             }
         }
         

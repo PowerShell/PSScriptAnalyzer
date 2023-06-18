@@ -15,18 +15,18 @@ using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 {
     /// <summary>
-    /// AvoidExclamationPointOperator: Checks for use of the exclamation point operator
+    /// AvoidExclaimOperator: Checks for use of the exclaim operator
     /// </summary>
 #if !CORECLR
     [Export(typeof(IScriptRule))]
 #endif
-    public class AvoidExclamationPointOperator : ConfigurableRule
+    public class AvoidExclaimOperator : ConfigurableRule
     {
 
         /// <summary>
-        /// Construct an object of AvoidExclamationPointOperator type.
+        /// Construct an object of AvoidExclaimOperator type.
         /// </summary>
-        public AvoidExclamationPointOperator() {
+        public AvoidExclaimOperator() {
             Enable = false;
         }
 
@@ -44,7 +44,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is UnaryExpressionAst, true);
             if (foundAsts != null) {
-                var CorrectionDescription = Strings.AvoidExclamationPointOperatorCorrectionDescription;
+                var correctionDescription = Strings.AvoidExclaimOperatorCorrectionDescription;
                 foreach (UnaryExpressionAst foundAst in foundAsts) {
                     if (foundAst.TokenKind == TokenKind.Exclaim) {
                         // If the exclaim is not followed by a space, add one
@@ -60,13 +60,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                 foundAst.Extent.StartColumnNumber + 1,
                                 replaceWith,
                                 fileName,
-                                CorrectionDescription
+                                correctionDescription
                             )
                         };
                         diagnosticRecords.Add(new DiagnosticRecord(
                                 string.Format(
                                     CultureInfo.CurrentCulture, 
-                                    Strings.AvoidExclamationPointOperatorError
+                                    Strings.AvoidExclaimOperatorError
                                 ), 
                                 foundAst.Extent, 
                                 GetName(),
@@ -85,7 +85,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public override string GetCommonName()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidExclamationPointOperatorCommonName);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidExclaimOperatorCommonName);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         public override string GetDescription()
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidExclamationPointOperatorDescription);
+            return string.Format(CultureInfo.CurrentCulture, Strings.AvoidExclaimOperatorDescription);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 CultureInfo.CurrentCulture,
                 Strings.NameSpaceFormat,
                 GetSourceName(),
-                Strings.AvoidExclamationPointOperatorName);
+                Strings.AvoidExclaimOperatorName);
         }
 
         /// <summary>
@@ -142,3 +142,4 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
+

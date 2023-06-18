@@ -46,7 +46,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                 "PSAvoidUsingCmdletAliases",
                 "PSAvoidUsingDoubleQuotesForConstantString",
                 "PSAvoidSemicolonsAsLineTerminators",
-                "PSAvoidExclamationPointOperator",
+                "PSAvoidExclaimOperator",
             };
 
             var text = new EditableText(scriptDefinition);

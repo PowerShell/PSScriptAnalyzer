@@ -1,11 +1,11 @@
 ---
-description: Avoid exclamation point operator
+description: Avoid exclaim operator
 ms.custom: PSSA v1.21.0
 ms.date: 06/14/2023
 ms.topic: reference
-title: AvoidExclamationPointOperator
+title: AvoidExclaimOperator
 ---
-# AvoidExclamationPointOperator
+# AvoidExclaimOperator
 **Severity Level: Warning**
 
 ## Description
@@ -31,7 +31,7 @@ $MyVar = -not $true
 
 ```powershell
 Rules = @{
-    PSAvoidExclamationPointOperator  = @{
+    PSAvoidExclaimOperator  = @{
         Enable = $true
     }
 }

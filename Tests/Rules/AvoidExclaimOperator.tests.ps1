@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    $ruleName = "PSAvoidExclamationPointOperator"
+    $ruleName = "PSAvoidExclaimOperator"
 
     $ruleSettings = @{
         Enable = $true
@@ -13,7 +13,7 @@ BeforeAll {
     }
 }
 
-Describe "AvoidExclamationPointOperator" {
+Describe "AvoidExclaimOperator" {
     Context "When the rule is not enabled explicitly" {
         It "Should not find violations" {
             $def = '!$true'
@@ -22,7 +22,7 @@ Describe "AvoidExclamationPointOperator" {
         }
     }
 
-    Context "Given a line with the exclamation point operator" {
+    Context "Given a line with the exclaim operator" {
         It "Should find one violation" {
             $def = '!$true'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -30,15 +30,15 @@ Describe "AvoidExclamationPointOperator" {
         }
     }
 
-    Context "Given a line with the exclamation point operator" {
-        It "Should replace the exclamation point operator with the -not operator" {
+    Context "Given a line with the exclaim operator" {
+        It "Should replace the exclaim operator with the -not operator" {
             $def = '!$true'
             $expected = '-not $true'
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
         }
     }
-    Context "Given a line with the exclamation point operator followed by a space" {
-        It "Should replace the exclamation point operator without adding an additional space" {
+    Context "Given a line with the exlaim operator followed by a space" {
+        It "Should replace the exclaim operator without adding an additional space" {
             $def = '! $true'
             $expected = '-not $true'
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -Be $expected
