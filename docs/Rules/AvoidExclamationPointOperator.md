@@ -32,7 +32,7 @@ $MyVar = -not $true
 ```powershell
 Rules = @{
     PSAvoidExclamationPointOperator  = @{
-        Enable     = $true
+        Enable = $true
     }
 }
 ```
