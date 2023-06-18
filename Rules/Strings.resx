@@ -1201,7 +1201,7 @@
     <value>The negation operator ! should not be used. Use -not instead.</value>
   </data>
   <data name="AvoidExclamationPointOperatorError" xml:space="preserve">
-    <value>Avoid using the ! operator</value>
+    <value>Avoid using the ! negation operator</value>
   </data>
   <data name="AvoidExclamationPointOperatorCorrectionDescription" xml:space="preserve">
     <value>Replace ! with -not</value>
