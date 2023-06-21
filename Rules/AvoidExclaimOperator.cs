@@ -45,19 +45,21 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             IEnumerable<Ast> foundAsts = ast.FindAll(testAst => testAst is UnaryExpressionAst, true);
             if (foundAsts != null) {
                 var correctionDescription = Strings.AvoidExclaimOperatorCorrectionDescription;
-                foreach (UnaryExpressionAst foundAst in foundAsts) {
-                    if (foundAst.TokenKind == TokenKind.Exclaim) {
-                        // If the exclaim is not followed by a space, add one
+                foreach (UnaryExpressionAst unaryExpressionAst in foundAsts) {
+                    if (unaryExpressionAst.TokenKind == TokenKind.Exclaim) {
                         var replaceWith = "-not";
-                        if (foundAst.Child != null && foundAst.Child.Extent.StartColumnNumber == foundAst.Extent.StartColumnNumber + 1) {
+                        // The UnaryExpressionAST should have a single child, the argument that the unary operator is acting upon.
+                        // If the child's extent starts 1 after the parent's extent then there's no whitespace between the exclaim
+                        // token and any variable/expression; in that case the replacement -not should include a space
+                        if (unaryExpressionAst.Child != null && unaryExpressionAst.Child.Extent.StartColumnNumber == unaryExpressionAst.Extent.StartColumnNumber + 1) {
                             replaceWith = "-not ";
                         }
                         var corrections = new List<CorrectionExtent> {
                             new CorrectionExtent(
-                                foundAst.Extent.StartLineNumber,
-                                foundAst.Extent.EndLineNumber,
-                                foundAst.Extent.StartColumnNumber,
-                                foundAst.Extent.StartColumnNumber + 1,
+                                unaryExpressionAst.Extent.StartLineNumber,
+                                unaryExpressionAst.Extent.EndLineNumber,
+                                unaryExpressionAst.Extent.StartColumnNumber,
+                                unaryExpressionAst.Extent.StartColumnNumber + 1,
                                 replaceWith,
                                 fileName,
                                 correctionDescription
@@ -68,7 +70,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                                     CultureInfo.CurrentCulture, 
                                     Strings.AvoidExclaimOperatorError
                                 ), 
-                                foundAst.Extent, 
+                                unaryExpressionAst.Extent, 
                                 GetName(),
                                 GetDiagnosticSeverity(), 
                                 fileName,
