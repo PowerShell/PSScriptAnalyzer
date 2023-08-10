@@ -1,7 +1,7 @@
 ---
 description: Avoid Using Get-WMIObject, Remove-WMIObject, Invoke-WmiMethod, Register-WmiEvent, Set-WmiInstance
 ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: AvoidUsingWMICmdlet
 ---
@@ -17,7 +17,7 @@ The following cmdlets should not be used:
 
 - `Get-WmiObject`
 - `Remove-WmiObject`
-- `Invoke-WmiObject`
+- `Invoke-WmiMethod`
 - `Register-WmiEvent`
 - `Set-WmiInstance`
 
@@ -38,7 +38,7 @@ Change to the equivalent CIM based cmdlet.
 
 - `Get-WmiObject` -> `Get-CimInstance`
 - `Remove-WmiObject` -> `Remove-CimInstance`
-- `Invoke-WmiObject` -> `Invoke-CimMethod`
+- `Invoke-WmiMethod` -> `Invoke-CimMethod`
 - `Register-WmiEvent` -> `Register-CimIndicationEvent`
 - `Set-WmiInstance` -> `Set-CimInstance`
 
