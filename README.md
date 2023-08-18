@@ -144,7 +144,7 @@ To install **PSScriptAnalyzer** from source code:
 - Import the module
 
   ```powershell
-  Import-Module .\out\PSScriptAnalyzer\PSScriptAnalyzer.psd1
+  Import-Module .\out\PSScriptAnalyzer\[version]\PSScriptAnalyzer.psd1
   ```
 
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the
