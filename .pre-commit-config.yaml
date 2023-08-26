@@ -1,6 +1,5 @@
 repos:
-#-   repo: https://github.com/PowerShell/PSScriptAnalyzer
--   repo: https://github.com/juju4/PSScriptAnalyzer
+-   repo: https://github.com/PowerShell/PSScriptAnalyzer
     rev: 3e3b2d7b7548fc5513b367cb3a80860d5bfd24db
     hooks:
     -   id: powershell_scriptanalyzer
