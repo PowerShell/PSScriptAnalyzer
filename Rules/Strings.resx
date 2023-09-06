@@ -1191,4 +1191,19 @@
   <data name="UseCorrectCasingParameterError" xml:space="preserve">
     <value>Parameter '{0}' of function/cmdlet '{1}' does not match its exact casing '{2}'.</value>
   </data>
+  <data name="AvoidExclaimOperatorName" xml:space="preserve">
+    <value>AvoidExclaimOperator</value>
+  </data>
+  <data name="AvoidExclaimOperatorCommonName" xml:space="preserve">
+    <value>Avoid exclaim operator</value>
+  </data>
+  <data name="AvoidExclaimOperatorDescription" xml:space="preserve">
+    <value>The negation operator ! should not be used for readability purposes. Use -not instead.</value>
+  </data>
+  <data name="AvoidExclaimOperatorError" xml:space="preserve">
+    <value>Avoid using the ! negation operator</value>
+  </data>
+  <data name="AvoidExclaimOperatorCorrectionDescription" xml:space="preserve">
+    <value>Replace ! with -not</value>
+  </data>
 </root>
