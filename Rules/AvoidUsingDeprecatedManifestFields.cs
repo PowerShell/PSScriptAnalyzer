@@ -70,10 +70,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                                 if (value != null)
                                 {
-                                    Version psVersion = null;
 
                                     // get the version
-                                    if (Version.TryParse((value as StringConstantExpressionAst).Value, out psVersion))
+                                    if (Version.TryParse((value as StringConstantExpressionAst).Value, out Version psVersion))
                                     {
                                         // if version exists and version less than 3, don't raise rule
                                         if (psVersion.Major < 3)

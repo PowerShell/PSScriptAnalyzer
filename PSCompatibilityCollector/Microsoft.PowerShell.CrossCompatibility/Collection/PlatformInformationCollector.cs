@@ -351,18 +351,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Collection
 #endif
         }
 
-        private DotnetRuntime GetDotnetRuntime()
-        {
-#if CoreCLR
-            // Our CoreCLR is actuall .NET Standard, so we could be loaded into net47
-            return RuntimeInformation.FrameworkDescription.StartsWith(".NET Core")
-                ? DotnetRuntime.Core
-                : DotnetRuntime.Framework;
-#else
-            return DotnetRuntime.Framework;
-#endif
-        }
-
         /// <summary>
         /// Get the Windows SKU ID of the current PowerShell session.
         /// </summary>
