@@ -72,6 +72,11 @@ function MyFunc2() {
     }
 
     Context "When there are no violations" {
+        It "No warning is issued for assignment without use of preference variable ErrorView" {
+            $results = Invoke-ScriptAnalyzer -ScriptDefinition '$ErrorView = NormalView'
+            $results.Count | Should -Be 0
+        }
+
         It "returns no violations" {
             $noViolations.Count | Should -Be 0
         }

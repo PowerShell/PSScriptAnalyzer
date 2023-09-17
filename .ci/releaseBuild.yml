@@ -171,6 +171,9 @@ stages:
   - job: Compliance_Job
     pool:
       name: PowerShell1ES # was Package ES CodeHub Lab E
+      demands:
+        - ImageOverride -equals PSMMS2019-Secure
+
     steps:
     - checkout: self
     - checkout: ComplianceRepo

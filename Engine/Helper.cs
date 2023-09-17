@@ -24,7 +24,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         #region Private members
 
         private CommandInvocationIntrinsics invokeCommand;
-        private IOutputWriter outputWriter;
         private readonly static Version minSupportedPSVersion = new Version(3, 0);
         private Dictionary<string, Dictionary<string, object>> ruleArguments;
         private PSVersionTable psVersionTable;
@@ -115,7 +114,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         private Helper()
         {
-            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache(pssaHelperInstance: this));
+            _commandInfoCacheLazy = new Lazy<CommandInfoCache>(() => new CommandInfoCache());
         }
 
         /// <summary>
@@ -125,16 +124,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// A CommandInvocationIntrinsics instance for use in gathering
         /// information about available commands and aliases.
         /// </param>
-        /// <param name="outputWriter">
-        /// An IOutputWriter instance for use in writing output
-        /// to the PowerShell environment.
-        /// </param>
         public Helper(
-            CommandInvocationIntrinsics invokeCommand,
-            IOutputWriter outputWriter) : this()
+            CommandInvocationIntrinsics invokeCommand
+            ): this()
         {
             this.invokeCommand = invokeCommand;
-            this.outputWriter = outputWriter;
         }
 
         #region Methods
