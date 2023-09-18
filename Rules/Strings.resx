@@ -126,8 +126,14 @@
   <data name="AvoidUsingEmptyCatchBlockDescription" xml:space="preserve">
     <value>Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, using Write-Error or throw statements in catch blocks.</value>
   </data>
+  <data name="AvoidGeneralCatchDescription" xml:space="preserve">
+    <value>A catch block with the type system.management.automation.runtimeexception should not be used in a catch block as it will incorrectly catch all exceptions </value>
+  </data>
   <data name="AvoidUsingEmptyCatchBlockCommonName" xml:space="preserve">
     <value>Avoid Using Empty Catch Block</value>
+  </data>
+  <data name="AvoidGeneralCatchCommonName" xml:space="preserve">
+    <value>Avoid using General Catch type</value>
   </data>
   <data name="AvoidUsingInvokeExpressionRuleDescription" xml:space="preserve">
     <value>The Invoke-Expression cmdlet evaluates or runs a specified string as a command and returns the results of the expression or command. It can be extraordinarily powerful so it is not that you want to never use it but you need to be very careful about using it.  In particular, you are probably on safe ground if the data only comes from the program itself.  If you include any data provided from the user - you need to protect yourself from Code Injection. To fix a violation of this rule, please remove Invoke-Expression from script and find other options instead.</value>
@@ -378,6 +384,9 @@
   <data name="AvoidUsingEmptyCatchBlockName" xml:space="preserve">
     <value>AvoidUsingEmptyCatchBlock</value>
   </data>
+  <data name="AvoidGeneralCatchName" xml:space="preserve">
+    <value>AvoidGeneralCatch</value>
+  </data>
   <data name="AvoidUsingInvokeExpressionRuleName" xml:space="preserve">
     <value>AvoidUsingInvokeExpression</value>
   </data>
@@ -512,6 +521,12 @@
   </data>
   <data name="AvoidEmptyCatchBlockError" xml:space="preserve">
     <value>Empty catch block is used. Please use Write-Error or throw statements in catch blocks.</value>
+  </data>
+  <data name="AvoidGeneralCatchError" xml:space="preserve">
+    <value>Runtime Exception is used in catch block. Avoid using this as it will catch all exceptions.</value>
+  </data>
+  <data name="AvoidGeneralCatchErrorEmpty" xml:space="preserve">
+    <value>No specific exception is being caught.</value>
   </data>
   <data name="AvoidUsingCmdletAliasesError" xml:space="preserve">
     <value>'{0}' is an alias of '{1}'. Alias can introduce possible problems and make scripts hard to maintain. Please consider changing alias to its full content.</value>

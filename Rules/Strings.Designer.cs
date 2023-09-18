@@ -284,6 +284,24 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidEmptyCatchBlockError", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to General catch block is used.
+        /// </summary>
+        internal static string AvoidGeneralCatchError {
+            get {
+                return ResourceManager.GetString("AvoidGeneralCatchError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string when no specific exception is caught.
+        /// </summary>
+        internal static string AvoidGeneralCatchErrorEmpty {
+            get {
+                return ResourceManager.GetString("AvoidGeneralCatchErrorEmpty", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Avoid exclaim operator.
@@ -1058,6 +1076,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidUsingEmptyCatchBlockCommonName", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Avoid Using catch block of type RuntimeException.
+        /// </summary>
+        internal static string AvoidGeneralCatchCommonName {
+            get {
+                return ResourceManager.GetString("AvoidGeneralCatchCommonName", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, using Write-Error or throw statements in catch blocks..
@@ -1067,6 +1094,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
                 return ResourceManager.GetString("AvoidUsingEmptyCatchBlockDescription", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Empty catch blocks are considered poor design decisions because if an error occurs in the try block, this error is simply swallowed and not acted upon. While this does not inherently lead to bad things. It can and this should be avoided if possible. To fix a violation of this rule, using Write-Error or throw statements in catch blocks..
+        /// </summary>
+        internal static string AvoidGeneralCatchDescription {
+            get {
+                return ResourceManager.GetString("AvoidGeneralCatchDescription", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to AvoidUsingEmptyCatchBlock.
@@ -1074,6 +1110,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer {
         internal static string AvoidUsingEmptyCatchBlockName {
             get {
                 return ResourceManager.GetString("AvoidUsingEmptyCatchBlockName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AvoidGeneralCatchBlock.
+        /// </summary>
+        internal static string AvoidGeneralCatchName {
+            get {
+                return ResourceManager.GetString("AvoidUsingEmptyCatchName", resourceCulture);
             }
         }
         
