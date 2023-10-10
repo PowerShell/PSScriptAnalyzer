@@ -104,5 +104,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         {
 
         }
+
+        /// <summary>
+        /// Outputs a CorrectionExtent as a string.
+        /// </summary>
+        /// <returns>Returns the text in a CorrectionExtent.</returns>
+        public override string ToString() {
+            return this.Text;
+        }
     }
 }
