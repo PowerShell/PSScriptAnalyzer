@@ -22,6 +22,7 @@ using System.Collections.ObjectModel;
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 
 namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
@@ -2172,18 +2173,20 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                             result.Add(new ErrorRecord(scriptRuleException, Strings.RuleErrorMessage, ErrorCategory.InvalidOperation, scriptAst.Extent.File));
                         }
 
-                        verboseOrErrors.Add(result);
-                    }));
-                    Task.Factory.ContinueWhenAll(tasks.ToArray(), t => verboseOrErrors.CompleteAdding());
-                    while (!verboseOrErrors.IsCompleted)
+                        return result;
+                    }).WithTimeout(TimeSpan.FromSeconds(10))).ToList();
+                    while (tasks.Count > 0)
                     {
-                        List<object> data = null;
-                        try
+                        var data = new JoinableTaskContext().Factory.Run(async () =>
                         {
-                            data = verboseOrErrors.Take();
-                        }
-                        catch (InvalidOperationException) { }
-
+                            var task = await Task.WhenAny(tasks.ToArray());
+                            tasks.Remove(task);
+                            if (task.IsCanceled || task.IsFaulted)
+                            {
+                                return null;
+                            }
+                            return await task;
+                        });
                         if (data != null)
                         {
                             this.outputWriter.WriteVerbose(data[0] as string);
