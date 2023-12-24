@@ -92,6 +92,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal const string ProgressPreference = "ProgressPreference";
         internal const string InformationPreference = "InformationPreference";
         internal const string ErrorView = "ErrorView";
+        internal const string PSNativeCommandUseErrorActionPreference = "PSNativeCommandUseErrorActionPreference";
 
         internal static readonly string[] PreferenceVariables = new string[]
                                                                 {
@@ -103,7 +104,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                     ConfirmPreference,
                                                                     ProgressPreference,
                                                                     InformationPreference,
-                                                                    ErrorView
+                                                                    ErrorView,
+                                                                    PSNativeCommandUseErrorActionPreference,
                                                                 };
 
         internal static readonly Type[] PreferenceVariableTypes = new Type[]
@@ -117,6 +119,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                     /* ProgressPreference */ typeof(Enum),
                                                                     /* InformationPreference */ typeof(ActionPreference),
                                                                     /* ErrorView */         typeof(Enum), //ErrorView type not available on PS3
+                                                                    /* PSNativeCommandUseErrorActionPreference */ typeof(bool),
                                                                 };
 
         internal enum AutomaticVariable
