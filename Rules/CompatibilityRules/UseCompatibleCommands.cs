@@ -263,8 +263,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             PlatformData platform,
             IScriptExtent extent,
             string analyzedFileName,
-            IRule rule,
-            IEnumerable<CorrectionExtent> suggestedCorrections = null)
+            IRule rule)
         {
             string message = string.Format(
                 CultureInfo.CurrentCulture,

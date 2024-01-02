@@ -1,7 +1,7 @@
 ---
 description: Avoid Using Positional Parameters
 ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: AvoidUsingPositionalParameters
 ---
@@ -24,7 +24,7 @@ supplied. A simple example where the risk of using positional parameters is negl
 
 ```powershell
 Rules = @{
-    AvoidUsingPositionalParameters = @{
+    PSAvoidUsingPositionalParameters = @{
         CommandAllowList = 'Join-Path', 'MyCmdletOrScript'
         Enable           = $true
     }
@@ -33,7 +33,7 @@ Rules = @{
 
 ### Parameters
 
-#### AvoidUsingPositionalParameters: string[] (Default value is @()')
+#### CommandAllowList: string[] (Default value is @()')
 
 Commands or scripts to be excluded from this rule.
 
