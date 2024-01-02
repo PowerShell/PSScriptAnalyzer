@@ -17,7 +17,7 @@ Suppression allows to suppress just specific function names, for example
 
 ```
 function Get-Elements {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', 'Get-Element')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', 'Get-Elements')]
     Param()
 }
 ```
