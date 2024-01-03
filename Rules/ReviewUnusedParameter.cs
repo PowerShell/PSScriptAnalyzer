@@ -239,7 +239,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             IEnumerable<Ast> foundScriptBlocks = ast.FindAll(oneAst => oneAst is ScriptBlockExpressionAst, false)
-                .Where(oneAst => oneAst?.Parent is CommandAst && ((CommandAst)oneAst.Parent).CommandElements[0] is StringConstantExpressionAst && TraverseCommands.Contains(((StringConstantExpressionAst)((CommandAst)oneAst.Parent).CommandElements[0]).Value))
+                .Where(oneAst => oneAst?.Parent is CommandAst && ((CommandAst)oneAst.Parent).CommandElements[0] is StringConstantExpressionAst && TraverseCommands.Contains(((StringConstantExpressionAst)((CommandAst)oneAst.Parent).CommandElements[0]).Value, StringComparer.OrdinalIgnoreCase))
                 .Select(oneAst => ((ScriptBlockExpressionAst)oneAst).ScriptBlock);
             foreach (Ast astItem in foundScriptBlocks)
                 if (astItem != ast)
