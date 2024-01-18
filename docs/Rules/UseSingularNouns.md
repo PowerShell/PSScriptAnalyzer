@@ -22,6 +22,27 @@ function Get-Elements {
 }
 ```
 
+## Configuration
+
+```powershell
+Rules = @{
+    UseSingularNouns = @{
+        NounAllowList    = 'Data', 'Windows', 'Foos'
+        Enable           = $true
+    }
+}
+```
+
+### Parameters
+
+#### `UseSingularNouns: string[]` (Default value is `{'Data', 'Windows'}`)
+
+Commands to be excluded from this rule. `Data` and `Windows` are common false positives and are excluded by default
+
+#### Enable: `bool` (Default value is `$true`)
+
+Enable or disable the rule during ScriptAnalyzer invocation.
+
 ## How
 
 Change plurals to singular.
