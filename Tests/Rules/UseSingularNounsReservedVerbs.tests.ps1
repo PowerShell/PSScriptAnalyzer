@@ -113,6 +113,18 @@ Write-Output "Bananas"
             $diagnostics.SuggestedCorrections.Text | Should -BeExactly $Correction
         }
     }
+    Context 'Suppression' {
+        It 'Can be suppressed by RuleSuppressionId' {
+            $scriptDef = @"
+function Get-Elements {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('$nounViolationName', 'Get-Elements')]
+    param()
+}
+"@
+            $warnings = @(Invoke-ScriptAnalyzer -ScriptDefinition $scriptDef)
+            $warnings.Count | Should -Be 0
+        }
+    }
 }
 
 Describe "UseApprovedVerbs" {

@@ -285,17 +285,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             return dictionary;
         }
 
-        private bool IsStringOrStringArray(object val)
-        {
-            if (val is string)
-            {
-                return true;
-            }
-
-            var valArr = val as object[];
-            return val == null ? false : valArr.All(x => x is string);
-        }
-
         private List<string> GetData(object val, string key)
         {
             // value must be either string or or an array of strings

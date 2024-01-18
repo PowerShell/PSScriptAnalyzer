@@ -127,6 +127,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
             RuleSuppressionID = ruleId;
             this.suggestedCorrections = suggestedCorrections;
         }
+
+        /// <summary>
+        /// Outputs a DiagnosticRecord as a string.
+        /// </summary>
+        /// <returns>Returns the message in a DiagnosticRecord.</returns>
+        public override string ToString() {
+            return this.Message;
+        }
     }
 
 

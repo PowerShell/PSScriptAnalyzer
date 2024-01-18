@@ -22,7 +22,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
         private string moduleRepository;
         private string tempPath; // path to the user temporary directory 
         private string tempModulePath; // path to temp directory containing modules
-        Dictionary<string, PSObject> modulesFound;
         private string localAppdataPath;
         private string pssaAppDataPath;
         private const string symLinkName = "TempModuleDir";
@@ -270,8 +269,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic
                 string.IsNullOrWhiteSpace(pssaAppDataPath)
                         ? "PSScriptAnalyzer"
                         : pssaAppDataPath);
-
-            modulesFound = new Dictionary<string, PSObject>(StringComparer.OrdinalIgnoreCase);            
 
             // TODO Add PSSA Version in the path
             symLinkPath = Path.Combine(pssaAppDataPath, symLinkName);

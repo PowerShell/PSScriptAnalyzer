@@ -13,8 +13,6 @@ namespace Microsoft.PowerShell.CrossCompatibility.Commands
     /// </summary>
     internal static class CommandUtilities
     {
-        private const string COMPATIBILITY_ERROR_ID = "CompatibilityAnalysisError";
-
         public const string MODULE_PREFIX = "PSCompatibility";
 
         /// <summary>

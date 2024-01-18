@@ -203,7 +203,7 @@ function Start-ScriptAnalyzerBuild
 
         $framework = 'net462'
         if ($PSVersion -eq 7) {
-            $framework = 'netcoreapp3.1'
+            $framework = 'net6'
         }
 
         # build the appropriate assembly
