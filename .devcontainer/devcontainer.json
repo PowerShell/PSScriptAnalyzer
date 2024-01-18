@@ -9,7 +9,7 @@
 			},
 			"extensions": [
 				"ms-dotnettools.csharp",
-				"ms-vscode.powershell-preview"
+				"ms-vscode.powershell"
 			]
 		}
 	}
