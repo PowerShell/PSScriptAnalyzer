@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1.419
+FROM mcr.microsoft.com/dotnet/sdk:6.0
     
 RUN pwsh --command Install-Module platyPS,Pester -Force

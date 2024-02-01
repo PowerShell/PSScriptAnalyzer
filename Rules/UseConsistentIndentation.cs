@@ -563,11 +563,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return x > 0 ? x : 0;
         }
 
-        private int GetIndentationColumnNumber(int indentationLevel)
-        {
-            return GetIndentation(indentationLevel) + 1;
-        }
-
         private int GetIndentation(int indentationLevel)
         {
             // todo if condition can be evaluated during rule configuration

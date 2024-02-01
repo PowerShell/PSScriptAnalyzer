@@ -124,11 +124,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             ScriptAnalyzer.Instance.CleanUp();
             base.StopProcessing();
         }
-
-        private void ValidateInputSettings()
-        {
-            // todo implement this
-            return;
-        }
     }
 }

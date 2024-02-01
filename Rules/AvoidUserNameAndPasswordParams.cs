@@ -86,7 +86,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     yield return new DiagnosticRecord(
                         String.Format(CultureInfo.CurrentCulture, Strings.AvoidUsernameAndPasswordParamsError, funcAst.Name),
-                        GetExtent(usernameAst, passwordAst, ast), GetName(), DiagnosticSeverity.Error, fileName);
+                        GetExtent(usernameAst, passwordAst), GetName(), DiagnosticSeverity.Error, fileName);
                 }
             }
         }
@@ -111,7 +111,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="usernameAst"></param>
         /// <param name="passwordAst"></param>
         /// <returns>IScriptExtent</returns>
-        private IScriptExtent GetExtent(ParameterAst usernameAst, ParameterAst passwordAst, Ast scriptAst)
+        private IScriptExtent GetExtent(ParameterAst usernameAst, ParameterAst passwordAst)
         {
             var usrExt = usernameAst.Extent;
             var pwdExt = passwordAst.Extent;
