@@ -100,7 +100,7 @@ Describe "ReviewUnusedParameter" {
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName -Settings @{
 				Rules = @{
 					PSReviewUnusedParameter = @{
-						traverseList = @('Invoke-PSFProtectedCommand')
+						CommandsToTraverse = @('Invoke-PSFProtectedCommand')
 					}
 				}
 			}

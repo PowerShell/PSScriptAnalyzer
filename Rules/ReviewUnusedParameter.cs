@@ -21,7 +21,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class ReviewUnusedParameter : IScriptRule
     {
-        private readonly string TraverseArgName = "traverseList";
+        private readonly string TraverseArgName = "CommandsToTraverse";
         public List<string> TraverseCommands { get; private set; }
 
         /// <summary>
