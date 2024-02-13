@@ -1,6 +1,6 @@
 ---
 description: Avoid semicolons as line terminators
-ms.custom: PSSA v1.21.0
+ms.custom: PSSA v1.22.0
 ms.date: 06/28/2023
 ms.topic: reference
 title: AvoidSemicolonsAsLineTerminators
