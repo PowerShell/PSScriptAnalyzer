@@ -1,6 +1,6 @@
 ---
 description: Avoid exclaim operator
-ms.custom: PSSA v1.21.0
+ms.custom: PSSA v1.22.0
 ms.date: 06/14/2023
 ms.topic: reference
 title: AvoidExclaimOperator
