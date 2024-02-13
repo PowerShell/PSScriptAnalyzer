@@ -609,14 +609,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// </summary>
         /// <param name="cmdAst"></param>
         /// <returns></returns>
-        public bool IsKnownCmdletFunctionOrExternalScript(CommandAst cmdAst)
+        public bool IsKnownCmdletFunctionOrExternalScript(CommandAst cmdAst, out CommandInfo commandInfo)
         {
+            commandInfo = null;
             if (cmdAst == null)
             {
                 return false;
             }
 
-            var commandInfo = GetCommandInfo(cmdAst.GetCommandName());
+            commandInfo = GetCommandInfo(cmdAst.GetCommandName());
             if (commandInfo == null)
             {
                 return false;
