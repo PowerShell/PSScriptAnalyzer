@@ -1,7 +1,7 @@
 ---
 description: Avoid sending credentials and secrets over unencrypted connections
 ms.custom: PSSA v1.22.0
-ms.date: 11/06/2022
+ms.date: 02/28/2024
 ms.topic: reference
 title: AvoidUsingAllowUnencryptedAuthentication
 ---
@@ -11,14 +11,15 @@ title: AvoidUsingAllowUnencryptedAuthentication
 
 ## Description
 
-Avoid using the `AllowUnencryptedAuthentication` switch on `Invoke-WebRequest`, `Invoke-RestMethod`, and other webrequest cmdlets, which sends credentials and secrets over unencrypted connections.
-This should be avoided except for compatability with legacy systems.
+Avoid using the **AllowUnencryptedAuthentication** parameter of `Invoke-WebRequest` and
+`Invoke-RestMethod`. When using this parameter, the cmdlets send credentials and secrets over
+unencrypted connections. This should be avoided except for compatibility with legacy systems.
 
-For more details, see the documentation warning [here](https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-webrequest#-allowunencryptedauthentication).
+For more details, see [Invoke-RestMethod](xref:Microsoft.PowerShell.Utility.Invoke-RestMethod).
 
 ## How
 
-Avoid using the `AllowUnencryptedAuthentication` switch.
+Avoid using the **AllowUnencryptedAuthentication** parameter.
 
 ## Example 1
 
