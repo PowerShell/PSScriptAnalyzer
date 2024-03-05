@@ -1,7 +1,7 @@
 ---
 description: Avoid exclaim operator
 ms.custom: PSSA v1.22.0
-ms.date: 06/14/2023
+ms.date: 02/13/2024
 ms.topic: reference
 title: AvoidExclaimOperator
 ---
@@ -10,20 +10,23 @@ title: AvoidExclaimOperator
 
 ## Description
 
-The negation operator `!` should not be used for readability purposes. Use `-not` instead.
+Avoid using the negation operator (`!`). Use `-not` for improved readability.
 
-**Note**: This rule is not enabled by default. The user needs to enable it through settings.
+> [!NOTE]
+> This rule is not enabled by default. The user needs to enable it through settings.
 
 ## How to Fix
 
 ## Example
+
 ### Wrong：
-```PowerShell
+
+```powershell
 $MyVar = !$true
 ```
 
 ### Correct:
-```PowerShell
+```powershell
 $MyVar = -not $true
 ```
 
