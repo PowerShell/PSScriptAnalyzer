@@ -31,11 +31,21 @@ extends:
   parameters:
     customTags: 'ES365AIMigrationTooling'
     globalSdl:
-      runMode: stage
-      perStage:
-        stageName:
-          tsa:
-            configFile: $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config/tsaoptions.json
+      sbom:
+        enabled: false
+      codeql:
+        compiled:
+          enabled: false
+      asyncSdl: # https://aka.ms/obpipelines/asyncsdl
+        enabled: true
+        forStages: [Build]
+        credscan:
+          enabled: true
+          scanFolder:  $(Build.ArtifactStagingDirectory)\OSS_Microsoft_PSSA
+        binskim:
+          enabled: true
+        apiscan:
+          enabled: false
 
     stages:
     - stage: Build
@@ -47,6 +57,10 @@ extends:
         - group: ESRP
         - name: ob_outputDirectory
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
+        - name: repoRoot
+          value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
+        - name: ob_sdl_tsa_configFile
+          value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
         pool:
           type: windows
         steps:
@@ -99,40 +113,61 @@ extends:
             Write-Host "##$vstsCommandString"
           displayName: Setup variables for signing
 
-        - template: EsrpSign.yml@ComplianceRepo
-          parameters:
-            buildOutputPath: $(signSrcPath)
-            signOutputPath: $(signOutStep1)
-            certificateId: "CP-230012"
-            useMinimatch: true
-            pattern: |
-              **\*.psd1
-              **\*.psm1
-              **\*.ps1xml
-              **\Microsoft*.dll
-        - template: EsrpSign.yml@ComplianceRepo
-          parameters:
-            buildOutputPath: $(signOutStep1)
-            signOutputPath: $(signOutPath)
-            certificateId: "CP-231522"
-            useMinimatch: true
-            pattern: |
-              **/Pluralize*.dll
-              **/Newtonsoft*.dll
+        - task: onebranch.pipeline.signing@1
+          displayName: 'Sign the build output'
+          inputs:
+            command: 'sign'
+            cp_code: 'CP-230012'
+            files_to_sign: '**\*.psd1;**\*.psm1','**\*.ps1xml','**\Microsoft*.dll'
+            search_root: $(signSrcPath)
+
+        - task: onebranch.pipeline.signing@1
+          displayName: 'Sign the build output'
+          inputs:
+            command: 'sign'
+            cp_code: 'CP-231522'
+            files_to_sign: '**/Pluralize*.dll', '**/Newtonsoft*.dll'
+            search_root: $(signSrcPath)
+
+        # - template: EsrpSign.yml@ComplianceRepo
+        #   parameters:
+        #     buildOutputPath: $(signSrcPath)
+        #     signOutputPath: $(signOutStep1)
+        #     certificateId: "CP-230012"
+        #     useMinimatch: true
+        #     pattern: |
+        #       **\*.psd1
+        #       **\*.psm1
+        #       **\*.ps1xml
+        #       **\Microsoft*.dll
+
+        # - template: EsrpSign.yml@ComplianceRepo
+        #   parameters:
+        #     buildOutputPath: $(signOutStep1)
+        #     signOutputPath: $(signOutPath)
+        #     certificateId: "CP-231522"
+        #     useMinimatch: true
+        #     pattern: |
+        #       **/Pluralize*.dll
+        #       **/Newtonsoft*.dll
+
         - template: Sbom.yml@ComplianceRepo
           parameters:
             BuildDropPath: $(signOutPath)
             Build_Repository_Uri: 'https://github.com/powershell/PSScriptAnalyzer'
+
         - pwsh: |
             Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
             ./build -BuildNupkg -CopyManifest -signed
           displayName: Create nupkg for publishing
+
         - task: CopyFiles@2
           displayName: "Copy Files for 'publish build directory' publish task"
           inputs:
             SourceFolder: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
             Contents: '**'
             TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/build
+
         - task: CopyFiles@2
           displayName: "Copy Files for 'Publish module nupkg' publish task"
           inputs:
