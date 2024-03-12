@@ -118,7 +118,7 @@ extends:
           inputs:
             command: 'sign'
             cp_code: 'CP-230012'
-            files_to_sign: '**\*.psd1;**\*.psm1';'**\*.ps1xml';'**\Microsoft*.dll'
+            files_to_sign: '**\*.psd1';'**\*.psm1';'**\*.ps1xml';'**\Microsoft*.dll'
             search_root: $(signSrcPath)
 
         - task: onebranch.pipeline.signing@1
