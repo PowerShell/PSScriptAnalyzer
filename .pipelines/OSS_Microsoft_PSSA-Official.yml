@@ -35,7 +35,7 @@ extends:
         enabled: false
       codeql:
         compiled:
-          enabled: false
+          enabled: true
       asyncSdl: # https://aka.ms/obpipelines/asyncsdl
         enabled: true
         forStages: [Build]
@@ -68,21 +68,22 @@ extends:
         - checkout: ComplianceRepo
 
         - pwsh: |
-            if (-not (Test-Path $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config/tsaoptions.json)) {
+            if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
               Get-ChildItem $(Build.SourcesDirectory) -recurse -ErrorAction SilentlyContinue
               throw "tsaoptions.json does not exist under $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config"
             }
           displayName: Test if tsaoptions.json exists
 
-        - pwsh: |
-            New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/.config -Force -Verbose
-            Copy-Item '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config/tsaoptions.json' '$(Build.SourcesDirectory)/.config/tsaoptions.json' -Force -Verbose
-          displayName: Copy tsaoptions
+        #- pwsh: |
+        #    New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/.config -Force -Verbose
+        #    Copy-Item '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config/tsaoptions.json' '$(Build.SourcesDirectory)/.config/tsaoptions.json' -Force -Verbose
+        #  displayName: Copy tsaoptions
 
         - pwsh: |
             Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
             try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
           displayName: Execute build
+
         - pwsh: |
             $signSrcPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
             # Set signing src path variable
@@ -113,43 +114,27 @@ extends:
             Write-Host "##$vstsCommandString"
           displayName: Setup variables for signing
 
-        - task: onebranch.pipeline.signing@1
-          displayName: 'Sign the build output'
-          inputs:
-            command: 'sign'
-            cp_code: 'CP-230012'
-            files_to_sign: '**\*.psd1;**\*.psm1;**\*.ps1xml;**\Microsoft*.dll'
-            search_root: $(signSrcPath)
+        - template: EsrpSign.yml@ComplianceRepo
+          parameters:
+            buildOutputPath: $(signSrcPath)
+            signOutputPath: $(signOutStep1)
+            certificateId: "CP-230012"
+            useMinimatch: true
+            pattern: |
+              **\*.psd1
+              **\*.psm1
+              **\*.ps1xml
+              **\Microsoft*.dll
 
-        - task: onebranch.pipeline.signing@1
-          displayName: 'Sign the build output'
-          inputs:
-            command: 'sign'
-            cp_code: 'CP-231522'
-            files_to_sign: '**/Pluralize*.dll;**/Newtonsoft*.dll'
-            search_root: $(signSrcPath)
-
-        # - template: EsrpSign.yml@ComplianceRepo
-        #   parameters:
-        #     buildOutputPath: $(signSrcPath)
-        #     signOutputPath: $(signOutStep1)
-        #     certificateId: "CP-230012"
-        #     useMinimatch: true
-        #     pattern: |
-        #       **\*.psd1
-        #       **\*.psm1
-        #       **\*.ps1xml
-        #       **\Microsoft*.dll
-
-        # - template: EsrpSign.yml@ComplianceRepo
-        #   parameters:
-        #     buildOutputPath: $(signOutStep1)
-        #     signOutputPath: $(signOutPath)
-        #     certificateId: "CP-231522"
-        #     useMinimatch: true
-        #     pattern: |
-        #       **/Pluralize*.dll
-        #       **/Newtonsoft*.dll
+        - template: EsrpSign.yml@ComplianceRepo
+          parameters:
+            buildOutputPath: $(signOutStep1)
+            signOutputPath: $(signOutPath)
+            certificateId: "CP-231522"
+            useMinimatch: true
+            pattern: |
+              **/Pluralize*.dll
+              **/Newtonsoft*.dll
 
         - template: Sbom.yml@ComplianceRepo
           parameters:
