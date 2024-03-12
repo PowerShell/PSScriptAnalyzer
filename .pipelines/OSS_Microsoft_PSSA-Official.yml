@@ -41,7 +41,7 @@ extends:
         forStages: [Build]
         credscan:
           enabled: true
-          scanFolder:  $(Build.ArtifactStagingDirectory)\OSS_Microsoft_PSSA
+          scanFolder:  $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
         binskim:
           enabled: true
         apiscan:
