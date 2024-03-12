@@ -114,27 +114,43 @@ extends:
             Write-Host "##$vstsCommandString"
           displayName: Setup variables for signing
 
-        - template: EsrpSign.yml@ComplianceRepo
-          parameters:
-            buildOutputPath: $(signSrcPath)
-            signOutputPath: $(signOutStep1)
-            certificateId: "CP-230012"
-            useMinimatch: true
-            pattern: |
-              **\*.psd1
-              **\*.psm1
-              **\*.ps1xml
-              **\Microsoft*.dll
+        - task: onebranch.pipeline.signing@1
+          displayName: 'Sign the build output'
+          inputs:
+            command: 'sign'
+            cp_code: 'CP-230012'
+            files_to_sign: '**\*.psd1;**\*.psm1','**\*.ps1xml','**\Microsoft*.dll'
+            search_root: $(signSrcPath)
 
-        - template: EsrpSign.yml@ComplianceRepo
-          parameters:
-            buildOutputPath: $(signOutStep1)
-            signOutputPath: $(signOutPath)
-            certificateId: "CP-231522"
-            useMinimatch: true
-            pattern: |
-              **/Pluralize*.dll
-              **/Newtonsoft*.dll
+        - task: onebranch.pipeline.signing@1
+          displayName: 'Sign the build output'
+          inputs:
+            command: 'sign'
+            cp_code: 'CP-231522'
+            files_to_sign: '**/Pluralize*.dll', '**/Newtonsoft*.dll'
+            search_root: $(signSrcPath)
+
+        # - template: EsrpSign.yml@ComplianceRepo
+        #   parameters:
+        #     buildOutputPath: $(signSrcPath)
+        #     signOutputPath: $(signOutStep1)
+        #     certificateId: "CP-230012"
+        #     useMinimatch: true
+        #     pattern: |
+        #       **\*.psd1
+        #       **\*.psm1
+        #       **\*.ps1xml
+        #       **\Microsoft*.dll
+
+        # - template: EsrpSign.yml@ComplianceRepo
+        #   parameters:
+        #     buildOutputPath: $(signOutStep1)
+        #     signOutputPath: $(signOutPath)
+        #     certificateId: "CP-231522"
+        #     useMinimatch: true
+        #     pattern: |
+        #       **/Pluralize*.dll
+        #       **/Newtonsoft*.dll
 
         - template: Sbom.yml@ComplianceRepo
           parameters:
