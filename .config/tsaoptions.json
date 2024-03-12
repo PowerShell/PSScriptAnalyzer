@@ -1,15 +1,10 @@
 {
     "instanceUrl": "https://msazure.visualstudio.com",
     "projectName": "One",
-    "areaPath": "One\\MGMT\\Compute\\Powershell\\Powershell",
+    "areaPath": "One\\MGMT\\Compute\\Powershell\\Powershell\\PowerShell Core",
     "notificationAliases": [
         "jimtru@microsoft.com",
         "slee@microsoft.com"
     ],
-    "codebaseName": "PSSA_202403",
-    "tools": [
-        "CredScan",
-        "PoliCheck",
-        "BinSkim"
-    ]
+    "codebaseName": "PSSA_202403"
 }
