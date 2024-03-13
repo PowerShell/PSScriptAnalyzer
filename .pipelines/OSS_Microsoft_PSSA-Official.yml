@@ -112,7 +112,7 @@ extends:
           displayName: Setup variables for signing
 
         - task: onebranch.pipeline.signing@1
-          displayName: 'Sign the build output'
+          displayName: Sign 1st party files
           inputs:
             command: 'sign'
             signing_profile: external_distribution
@@ -120,7 +120,7 @@ extends:
             search_root: $(signSrcPath)
 
         - task: onebranch.pipeline.signing@1
-          displayName: 'Sign the build output'
+          displayName: Sign 3rd Party files
           inputs:
             command: 'sign'
             signing_profile: 135020002
