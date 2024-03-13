@@ -66,6 +66,9 @@ extends:
           value: -|**\*
         - name: ob_sdl_sbom_enabled
           value: false
+        - name: ob_signing_setup_enabled
+          value: false
+
         pool:
           type: windows
         steps:
