@@ -130,8 +130,8 @@ extends:
 
         - pwsh: |
             Set-Location "$(signSrcPath)"
-            dir -recurse *
-          displayName: Capture artifacts
+            dir -dir -recurse *
+          displayName: Capture artifacts structure
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
@@ -150,7 +150,7 @@ extends:
             search_root: $(signSrcPath)
 
         - task: CopyFiles@2
-          displayName: "Copy Files for 'publish build directory' publish task"
+          displayName: "Copy signed files to ob_outputDirectory"
           inputs:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
@@ -192,8 +192,8 @@ extends:
 
         - pwsh: |
             Set-Location "$(signOutPath)"
-            dir -recurse *
-          displayName: Capture artifacts
+            dir -dir -recurse *
+          displayName: Capture artifacts structure
 
         - pwsh: |
             Set-Location "$(repoRoot)"
@@ -211,8 +211,13 @@ extends:
         #     files_to_sign: '**\*.nupkg'
         #     search_root: $(signOutPath)
 
+        - pwsh: |
+            Set-Location "$(repoRoot)"
+            dir -file -recurse *.nupkg
+          displayName: Find Nupkg
+
         - task: CopyFiles@2
-          displayName: "Copy Files for 'Publish module nupkg' publish task"
+          displayName: "Copy nupkg to ob_outputDirectory"
           inputs:
-            Contents: "$(signOutPath)/PSScriptAnalyzer.$(moduleVersion).nupkg"
+            Contents: "$(repoRoot)/**/PSScriptAnalyzer.*.nupkg"
             TargetFolder: $(ob_outputDirectory)
