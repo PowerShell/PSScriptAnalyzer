@@ -110,6 +110,9 @@ extends:
             Write-Host "sending $vstsCommandString"
             Write-Host "##$vstsCommandString"
           displayName: Setup variables for signing
+          # make sure signing is still setup
+          env:
+            ob_restore_phase: true
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
