@@ -91,6 +91,45 @@ extends:
             try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
           displayName: Execute build
 
+        - task: CopyFiles@2
+          displayName: "Copy Files for 'publish build directory' publish task"
+          inputs:
+            SourceFolder: "$(signSrcPath)"
+            Contents: '**'
+            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
+
+      - job: jobsign
+        dependsOn: jobbuild
+        displayName: Sign Microsoft.PowerShell.ScriptAnalyzer Files
+        variables:
+          - name: ob_outputDirectory
+            value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
+          - name: repoRoot
+            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
+          - name: ob_sdl_tsa_configFile
+            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
+          - name: ob_sdl_sbom_enabled
+            value: true
+          - name: ob_sdl_codeql_compiled_enabled
+            value: false
+          - name: signSrcPath
+            value: $(repoRoot)/out
+        pool:
+          type: windows
+        steps:
+        - checkout: self
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download build files'
+          inputs:
+            targetPath: $(signSrcPath)
+            artifact: drop_stagebuild_jobbuild
+
+        - pwsh: |
+            Set-Location "$(signSrcPath)"
+            dir -recurse *
+          displayName: Capture artifacts
+
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
           inputs:
@@ -108,14 +147,14 @@ extends:
             search_root: $(signSrcPath)
 
         - task: CopyFiles@2
-          displayName: "Copy signed module files to ob_outputDirectory"
+          displayName: "Copy Files for 'publish build directory' publish task"
           inputs:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
             TargetFolder: $(ob_outputDirectory)
 
       - job: nupkg
-        dependsOn: jobbuild
+        dependsOn: jobsign
         displayName: Package Microsoft.PowerShell.ScriptAnalyzer
         variables:
           - name: ob_outputDirectory
@@ -167,7 +206,7 @@ extends:
             search_root: $(signOutPath)
 
         - task: CopyFiles@2
-          displayName: "Copy Files nupkg to ob_outputDirectory"
+          displayName: "Copy Files for 'Publish module nupkg' publish task"
           inputs:
             Contents: "$(signOutPath)/PSScriptAnalyzer.$(moduleVersion).nupkg"
             TargetFolder: $(ob_outputDirectory)
