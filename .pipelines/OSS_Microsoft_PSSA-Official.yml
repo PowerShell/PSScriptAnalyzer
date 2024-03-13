@@ -9,12 +9,12 @@ pr:
     - master
     - release*
 variables:
-- name: DOTNET_CLI_TELEMETRY_OPTOUT
-  value: 1
-- name: POWERSHELL_TELEMETRY_OPTOUT
-  value: 1
-- name: WindowsContainerImage
-  value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
+  - name: DOTNET_CLI_TELEMETRY_OPTOUT
+    value: 1
+  - name: POWERSHELL_TELEMETRY_OPTOUT
+    value: 1
+  - name: WindowsContainerImage
+    value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
 resources:
   repositories:
   - repository: ComplianceRepo
