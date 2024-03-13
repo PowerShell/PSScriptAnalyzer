@@ -140,7 +140,7 @@ extends:
           inputs:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
-            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
+            TargetFolder: $(ob_outputDirectory)
 
       - job: nupkg
         dependsOn: jobbuild
@@ -190,4 +190,4 @@ extends:
           displayName: "Copy Files nupkg to ob_outputDirectory"
           inputs:
             Contents: "$(signOutPath)/PSScriptAnalyzer.$(moduleVersion).nupkg"
-            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
+            TargetFolder: $(ob_outputDirectory)
