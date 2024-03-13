@@ -50,31 +50,6 @@ extends:
     - stage: stagebuild
       displayName: Build and Package Microsoft.PowerShell.ScriptAnalyzer
       jobs:
-      - job: sdksearch
-        displayName: SDK search
-        variables:
-        - name: ob_outputDirectory
-          value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
-        - name: repoRoot
-          value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
-        - name: ob_sdl_tsa_configFile
-          value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
-        - name: signSrcPath
-          value: $(repoRoot)/out
-        # the next job signs, so skip sbom generation, and signing validation
-        - name: ob_sdl_codeSignValidation_excludes
-          value: -|**\*
-        - name: ob_sdl_sbom_enabled
-          value: false
-        pool:
-          type: windows
-        steps:
-        - checkout: self
-
-        - pwsh: |
-            dir C:\dotnet.exe -recurse -erroraction:silentlycontinue
-          displayName: Search for dotnet.exet
-
       - job: jobbuild
         displayName: Build Microsoft.PowerShell.ScriptAnalyzer Files
         variables:
