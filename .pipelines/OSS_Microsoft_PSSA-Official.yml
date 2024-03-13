@@ -57,12 +57,15 @@ extends:
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
         - name: repoRoot
           value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
-        - name: ob_sdl_sbom_enabled
-          value: false
         - name: ob_sdl_tsa_configFile
           value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
         - name: signSrcPath
           value: $(repoRoot)/out
+        # the next job signs, so skip sbom generation, and signing validation
+        - name: ob_sdl_codeSignValidation_excludes
+          value: -|**\*
+        - name: ob_sdl_sbom_enabled
+          value: false
         pool:
           type: windows
         steps:
