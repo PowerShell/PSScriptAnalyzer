@@ -72,6 +72,10 @@ extends:
         - checkout: self
 
         - pwsh: |
+            dir C:\dotnet.exe -recurse -erroraction:silentlycontinue
+          displayName: Search for dotnet.exet
+
+        - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
               Get-ChildItem $(Build.SourcesDirectory) -recurse -ErrorAction SilentlyContinue
               throw "tsaoptions.json does not exist under $(repoRoot)/.config"
