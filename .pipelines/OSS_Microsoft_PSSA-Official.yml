@@ -158,6 +158,14 @@ extends:
             ./build -BuildNupkg -CopyManifest -signed
           displayName: Create nupkg for publishing
 
+        - task: onebranch.pipeline.signing@1
+          displayName: Sign nupkg
+          inputs:
+            command: 'sign'
+            signing_profile: external_distribution
+            files_to_sign: '**\*.nupkg'
+            search_root: $(signOutPath)
+
         - task: CopyFiles@2
           displayName: "Copy Files nupkg to ob_outputDirectory"
           inputs:
