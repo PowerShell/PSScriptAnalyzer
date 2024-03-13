@@ -17,11 +17,6 @@ variables:
     value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
 resources:
   repositories:
-  - repository: ComplianceRepo
-    type: github
-    endpoint: ComplianceGHRepo
-    name: PowerShell/compliance
-    ref: master
   - repository: onebranchTemplates
     type: git
     name: OneBranch.Pipelines/GovernedTemplates
@@ -51,7 +46,7 @@ extends:
 
     stages:
     - stage: stagebuild
-      displayName: Build Files
+      displayName: Build and Package Microsoft.PowerShell.ScriptAnalyzer
       jobs:
       - job: jobbuild
         displayName: Build Microsoft.PowerShell.ScriptAnalyzer Files
@@ -66,7 +61,6 @@ extends:
           type: windows
         steps:
         - checkout: self
-        - checkout: ComplianceRepo
 
         - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
@@ -141,6 +135,7 @@ extends:
             TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
 
       - job: nupkg
+        dependsOn: jobbuild
         displayName: Package Microsoft.PowerShell.ScriptAnalyzer
         variables:
           - name: ob_outputDirectory
@@ -157,7 +152,6 @@ extends:
           type: windows
         steps:
         - checkout: self
-        - checkout: ComplianceRepo
 
         - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
