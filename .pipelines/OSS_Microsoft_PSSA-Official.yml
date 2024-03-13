@@ -200,13 +200,16 @@ extends:
             ./build -BuildNupkg -CopyManifest -signed
           displayName: Create nupkg for publishing
 
-        - task: onebranch.pipeline.signing@1
-          displayName: Sign nupkg
-          inputs:
-            command: 'sign'
-            signing_profile: external_distribution
-            files_to_sign: '**\*.nupkg'
-            search_root: $(signOutPath)
+        # same problem as build, the previous step breaks signing
+        # this is not required at this point.
+        # So, we'll leave this for future work.
+        # - task: onebranch.pipeline.signing@1
+        #   displayName: Sign nupkg
+        #   inputs:
+        #     command: 'sign'
+        #     signing_profile: external_distribution
+        #     files_to_sign: '**\*.nupkg'
+        #     search_root: $(signOutPath)
 
         - task: CopyFiles@2
           displayName: "Copy Files for 'Publish module nupkg' publish task"
