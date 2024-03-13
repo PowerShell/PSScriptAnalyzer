@@ -1,0 +1,160 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
+# This pipeline will be extended to the OneBranch template
+name: PSSA-Release-$(Build.BuildId)
+trigger: none
+pr:
+  branches:
+    include:
+    - master
+    - release*
+variables:
+- name: DOTNET_CLI_TELEMETRY_OPTOUT
+  value: 1
+- name: POWERSHELL_TELEMETRY_OPTOUT
+  value: 1
+- name: WindowsContainerImage
+  value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
+resources:
+  repositories:
+  - repository: ComplianceRepo
+    type: github
+    endpoint: ComplianceGHRepo
+    name: PowerShell/compliance
+    ref: master
+  - repository: onebranchTemplates
+    type: git
+    name: OneBranch.Pipelines/GovernedTemplates
+    ref: refs/heads/main
+extends:
+  template: v2/OneBranch.Official.CrossPlat.yml@onebranchTemplates
+  parameters:
+    customTags: 'ES365AIMigrationTooling'
+    globalSdl:
+      sbom:
+        enabled: false
+      codeql:
+        compiled:
+          enabled: true
+      asyncSdl: # https://aka.ms/obpipelines/asyncsdl
+        enabled: true
+        forStages: [Build]
+        credscan:
+          enabled: true
+          scanFolder:  $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
+        binskim:
+          enabled: true
+        apiscan:
+          enabled: false
+
+    stages:
+    - stage: Build
+      displayName: Build
+      jobs:
+      - job: Build_Job
+        displayName: Build Microsoft.PowerShell.ScriptAnalyzer
+        variables:
+        - group: ESRP
+        - name: ob_outputDirectory
+          value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
+        - name: repoRoot
+          value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
+        - name: ob_sdl_tsa_configFile
+          value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
+        pool:
+          type: windows
+        steps:
+        - checkout: self
+        - checkout: ComplianceRepo
+
+        - pwsh: |
+            if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
+              Get-ChildItem $(Build.SourcesDirectory) -recurse -ErrorAction SilentlyContinue
+              throw "tsaoptions.json does not exist under $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config"
+            }
+          displayName: Test if tsaoptions.json exists
+
+        #- pwsh: |
+        #    New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/.config -Force -Verbose
+        #    Copy-Item '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config/tsaoptions.json' '$(Build.SourcesDirectory)/.config/tsaoptions.json' -Force -Verbose
+        #  displayName: Copy tsaoptions
+
+        - pwsh: |
+            Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+            try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
+          displayName: Execute build
+
+        - pwsh: |
+            $signSrcPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
+            # Set signing src path variable
+            $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
+            Write-Host "sending $vstsCommandString"
+            Write-Host "##$vstsCommandString"
+            $signOutStep1 = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Step1"
+            $null = New-Item -ItemType Directory -Path $signOutStep1
+            # Set signing out path variable
+            $vstsCommandString = "vso[task.setvariable variable=signOutStep1]${signOutStep1}"
+            Write-Host "sending $vstsCommandString"
+            Write-Host "##$vstsCommandString"
+            $signOutPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/signed"
+            $null = New-Item -ItemType Directory -Path $signOutPath
+            # Set signing out path variable
+            $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
+            Write-Host "sending $vstsCommandString"
+            Write-Host "##$vstsCommandString"
+            # Set path variable for guardian codesign validation
+            $vstsCommandString = "vso[task.setvariable variable=GDN_CODESIGN_TARGETDIRECTORY]${signOutPath}"
+            Write-Host "sending $vstsCommandString"
+            Write-Host "##$vstsCommandString"
+            # Get version and create a variable
+            $moduleData = Import-PowerShellDataFile "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Engine/PSScriptAnalyzer.psd1"
+            $moduleVersion = $moduleData.ModuleVersion
+            $vstsCommandString = "vso[task.setvariable variable=moduleVersion]${moduleVersion}"
+            Write-Host "sending $vstsCommandString"
+            Write-Host "##$vstsCommandString"
+          displayName: Setup variables for signing
+
+        - template: EsrpSign.yml@ComplianceRepo
+          parameters:
+            buildOutputPath: $(signSrcPath)
+            signOutputPath: $(signOutStep1)
+            certificateId: "CP-230012"
+            useMinimatch: true
+            pattern: |
+              **\*.psd1
+              **\*.psm1
+              **\*.ps1xml
+              **\Microsoft*.dll
+
+        - template: EsrpSign.yml@ComplianceRepo
+          parameters:
+            buildOutputPath: $(signOutStep1)
+            signOutputPath: $(signOutPath)
+            certificateId: "CP-231522"
+            useMinimatch: true
+            pattern: |
+              **/Pluralize*.dll
+              **/Newtonsoft*.dll
+
+        - template: Sbom.yml@ComplianceRepo
+          parameters:
+            BuildDropPath: $(signOutPath)
+            Build_Repository_Uri: 'https://github.com/powershell/PSScriptAnalyzer'
+
+        - pwsh: |
+            Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+            ./build -BuildNupkg -CopyManifest -signed
+          displayName: Create nupkg for publishing
+
+        - task: CopyFiles@2
+          displayName: "Copy Files for 'publish build directory' publish task"
+          inputs:
+            SourceFolder: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+            Contents: '**'
+            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/build
+
+        - task: CopyFiles@2
+          displayName: "Copy Files for 'Publish module nupkg' publish task"
+          inputs:
+            Contents: "$(signOutPath)/PSScriptAnalyzer.$(moduleVersion).nupkg"
+            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/nupkg
