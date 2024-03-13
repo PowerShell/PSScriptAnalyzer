@@ -172,6 +172,11 @@ extends:
             value: false
           - name: signOutPath
             value: $(repoRoot)/signed
+          - name: ob_signing_setup_enabled
+            value: true
+          - name: ob_codeql_compiled_enabled
+            value: false
+
         pool:
           type: windows
         steps:
@@ -203,13 +208,13 @@ extends:
         # same problem as build, the previous step breaks signing
         # this is not required at this point.
         # So, we'll leave this for future work.
-        # - task: onebranch.pipeline.signing@1
-        #   displayName: Sign nupkg
-        #   inputs:
-        #     command: 'sign'
-        #     signing_profile: external_distribution
-        #     files_to_sign: '**\*.nupkg'
-        #     search_root: $(signOutPath)
+        - task: onebranch.pipeline.signing@1
+          displayName: Sign nupkg
+          inputs:
+            command: 'sign'
+            signing_profile: external_distribution
+            files_to_sign: '**\*.nupkg'
+            search_root: $(signOutPath)
 
         - pwsh: |
             Set-Location "$(repoRoot)"
