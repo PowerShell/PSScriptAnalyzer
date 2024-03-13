@@ -77,7 +77,7 @@ extends:
 
         - task: UseDotNet@2
           displayName: 'Install .NET dependencies'
-            inputs:
+          inputs:
             packageType: 'sdk'
             useGlobalJson: true
             # this is to ensure that we are installing the dotnet at the same location as container by default install the dotnet sdks
