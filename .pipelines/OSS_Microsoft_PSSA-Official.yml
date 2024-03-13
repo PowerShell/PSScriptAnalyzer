@@ -68,16 +68,17 @@ extends:
               throw "tsaoptions.json does not exist under $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config"
             }
           displayName: Test if tsaoptions.json exists
-
-        #- pwsh: |
-        #    New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/.config -Force -Verbose
-        #    Copy-Item '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config/tsaoptions.json' '$(Build.SourcesDirectory)/.config/tsaoptions.json' -Force -Verbose
-        #  displayName: Copy tsaoptions
+          # make sure this happens before signing setup
+          env:
+            ob_restore_phase: true
 
         - pwsh: |
             Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
             try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
           displayName: Execute build
+          # make sure this happens before signing setup
+          env:
+            ob_restore_phase: true
 
         - pwsh: |
             $signSrcPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
@@ -110,7 +111,7 @@ extends:
             Write-Host "sending $vstsCommandString"
             Write-Host "##$vstsCommandString"
           displayName: Setup variables for signing
-          # make sure signing is still setup
+          # make sure this happens before signing setup
           env:
             ob_restore_phase: true
 
