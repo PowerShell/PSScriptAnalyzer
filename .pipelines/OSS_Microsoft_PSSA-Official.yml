@@ -31,8 +31,10 @@ extends:
   parameters:
     customTags: 'ES365AIMigrationTooling'
     globalSdl:
+      disableLegacyManifest: true
       sbom:
-        enabled: false
+        enabled: true
+        packageName: Microsoft.PowerShell.ScriptAnalyzer
       codeql:
         compiled:
           enabled: true
@@ -48,13 +50,12 @@ extends:
           enabled: false
 
     stages:
-    - stage: Build
-      displayName: Build
+    - stage: stagebuild
+      displayName: Build Files
       jobs:
-      - job: Build_Job
-        displayName: Build Microsoft.PowerShell.ScriptAnalyzer
+      - job: jobbuild
+        displayName: Build Microsoft.PowerShell.ScriptAnalyzer Files
         variables:
-        - group: ESRP
         - name: ob_outputDirectory
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
         - name: repoRoot
@@ -110,6 +111,8 @@ extends:
             $moduleData = Import-PowerShellDataFile "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Engine/PSScriptAnalyzer.psd1"
             $moduleVersion = $moduleData.ModuleVersion
             $vstsCommandString = "vso[task.setvariable variable=moduleVersion]${moduleVersion}"
+            $vstsCommandString = "vso[task.setvariable variable=ob_sdl_sbom_packageversion]${moduleVersion}"
+
             Write-Host "sending $vstsCommandString"
             Write-Host "##$vstsCommandString"
           displayName: Setup variables for signing
@@ -118,7 +121,7 @@ extends:
           displayName: 'Sign the build output'
           inputs:
             command: 'sign'
-            cp_code: 'CP-230012'
+            signing_profile: external_distribution
             files_to_sign: '**\*.psd1;**\*.psm1;**\*.ps1xml;**\Microsoft*.dll'
             search_root: $(signSrcPath)
 
@@ -126,51 +129,60 @@ extends:
           displayName: 'Sign the build output'
           inputs:
             command: 'sign'
-            cp_code: 'CP-231522'
+            signing_profile: 135020002
             files_to_sign: '**/Pluralize*.dll;**/Newtonsoft*.dll'
             search_root: $(signSrcPath)
-
-        # - template: EsrpSign.yml@ComplianceRepo
-        #   parameters:
-        #     buildOutputPath: $(signSrcPath)
-        #     signOutputPath: $(signOutStep1)
-        #     certificateId: "CP-230012"
-        #     useMinimatch: true
-        #     pattern: |
-        #       **\*.psd1
-        #       **\*.psm1
-        #       **\*.ps1xml
-        #       **\Microsoft*.dll
-
-        # - template: EsrpSign.yml@ComplianceRepo
-        #   parameters:
-        #     buildOutputPath: $(signOutStep1)
-        #     signOutputPath: $(signOutPath)
-        #     certificateId: "CP-231522"
-        #     useMinimatch: true
-        #     pattern: |
-        #       **/Pluralize*.dll
-        #       **/Newtonsoft*.dll
-
-        - template: Sbom.yml@ComplianceRepo
-          parameters:
-            BuildDropPath: $(signOutPath)
-            Build_Repository_Uri: 'https://github.com/powershell/PSScriptAnalyzer'
-
-        - pwsh: |
-            Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
-            ./build -BuildNupkg -CopyManifest -signed
-          displayName: Create nupkg for publishing
 
         - task: CopyFiles@2
           displayName: "Copy Files for 'publish build directory' publish task"
           inputs:
             SourceFolder: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
             Contents: '**'
-            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/build
+            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
+
+      - job: nupkg
+        displayName: Package Microsoft.PowerShell.ScriptAnalyzer
+        variables:
+          - name: ob_outputDirectory
+            value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
+          - name: repoRoot
+            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
+          - name: ob_sdl_tsa_configFile
+            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
+          - name: ob_sdl_sbom_enabled
+            value: false
+          - name: ob_sdl_codeql_compiled_enabled
+            value: false
+        pool:
+          type: windows
+        steps:
+        - checkout: self
+        - checkout: ComplianceRepo
+
+        - pwsh: |
+            if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
+              Get-ChildItem $(Build.SourcesDirectory) -recurse -ErrorAction SilentlyContinue
+              throw "tsaoptions.json does not exist under $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config"
+            }
+          displayName: Test if tsaoptions.json exists
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download build files'
+          inputs:
+            targetPath: $(Build.SourcesDirectory)/artifacts/build
+        ## download
+        - pwsh: |
+            Set-Location "$(Build.SourcesDirectory)/artifacts/"
+            dir -recurse *
+          displayName: Capture artifacts
+
+        - pwsh: |
+            Set-Location "$(Build.SourcesDirectory)/artifacts/build"
+            ./build -BuildNupkg -CopyManifest -signed
+          displayName: Create nupkg for publishing
 
         - task: CopyFiles@2
           displayName: "Copy Files for 'Publish module nupkg' publish task"
           inputs:
             Contents: "$(signOutPath)/PSScriptAnalyzer.$(moduleVersion).nupkg"
-            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/nupkg
+            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
