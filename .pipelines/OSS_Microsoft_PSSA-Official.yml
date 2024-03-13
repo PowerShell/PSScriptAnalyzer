@@ -55,47 +55,39 @@ extends:
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
         - name: repoRoot
           value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
+        - name: ob_sdl_sbom_enabled
+          value: false
         - name: ob_sdl_tsa_configFile
           value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
+        - name: signSrcPath
+          value: $(repoRoot)/out
         pool:
           type: windows
         steps:
         - checkout: self
-          # make sure this happens before signing setup
-          env:
-            ob_restore_phase: true
 
         - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
               Get-ChildItem $(Build.SourcesDirectory) -recurse -ErrorAction SilentlyContinue
-              throw "tsaoptions.json does not exist under $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config"
+              throw "tsaoptions.json does not exist under $(repoRoot)/.config"
             }
           displayName: Test if tsaoptions.json exists
-          # make sure this happens before signing setup
-          env:
-            ob_restore_phase: true
 
+        # this is installing .NET
         - pwsh: |
-            Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+            Set-Location "$(repoRoot)"
             try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
           displayName: Execute build
-          # make sure this happens before signing setup
-          env:
-            ob_restore_phase: true
 
         - pwsh: |
-            $signSrcPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
-            # Set signing src path variable
-            $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-            $signOutStep1 = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Step1"
+            $signSrcPath = $env:SIGNSRCPATH
+            $signOutStep1 = "$(repoRoot)/Step1"
             $null = New-Item -ItemType Directory -Path $signOutStep1
             # Set signing out path variable
             $vstsCommandString = "vso[task.setvariable variable=signOutStep1]${signOutStep1}"
             Write-Host "sending $vstsCommandString"
             Write-Host "##$vstsCommandString"
-            $signOutPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/signed"
+            $signOutPath = "$(repoRoot)/signed"
             $null = New-Item -ItemType Directory -Path $signOutPath
             # Set signing out path variable
             $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
@@ -106,7 +98,7 @@ extends:
             Write-Host "sending $vstsCommandString"
             Write-Host "##$vstsCommandString"
             # Get version and create a variable
-            $moduleData = Import-PowerShellDataFile "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Engine/PSScriptAnalyzer.psd1"
+            $moduleData = Import-PowerShellDataFile "$(repoRoot)/Engine/PSScriptAnalyzer.psd1"
             $moduleVersion = $moduleData.ModuleVersion
             $vstsCommandString = "vso[task.setvariable variable=moduleVersion]${moduleVersion}"
             $vstsCommandString = "vso[task.setvariable variable=ob_sdl_sbom_packageversion]${moduleVersion}"
@@ -114,9 +106,45 @@ extends:
             Write-Host "sending $vstsCommandString"
             Write-Host "##$vstsCommandString"
           displayName: Setup variables for signing
-          # make sure this happens before signing setup
-          env:
-            ob_restore_phase: true
+
+        - task: CopyFiles@2
+          displayName: "Copy Files for 'publish build directory' publish task"
+          inputs:
+            SourceFolder: "$(signSrcPath)"
+            Contents: '**'
+            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
+
+      - job: jobsign
+        dependsOn: jobbuild
+        displayName: Sign Microsoft.PowerShell.ScriptAnalyzer Files
+        variables:
+          - name: ob_outputDirectory
+            value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
+          - name: repoRoot
+            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
+          - name: ob_sdl_tsa_configFile
+            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
+          - name: ob_sdl_sbom_enabled
+            value: true
+          - name: ob_sdl_codeql_compiled_enabled
+            value: false
+          - name: signSrcPath
+            value: $(repoRoot)/out
+        pool:
+          type: windows
+        steps:
+        - checkout: self
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download build files'
+          inputs:
+            targetPath: $(signSrcPath)
+            artifact: drop_stagebuild_jobbuild
+
+        - pwsh: |
+            Set-Location "$(signSrcPath)"
+            dir -recurse *
+          displayName: Capture artifacts
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
@@ -137,12 +165,12 @@ extends:
         - task: CopyFiles@2
           displayName: "Copy Files for 'publish build directory' publish task"
           inputs:
-            SourceFolder: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+            SourceFolder: "$(signSrcPath)"
             Contents: '**'
             TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
 
       - job: nupkg
-        dependsOn: jobbuild
+        dependsOn: jobsign
         displayName: Package Microsoft.PowerShell.ScriptAnalyzer
         variables:
           - name: ob_outputDirectory
@@ -155,6 +183,8 @@ extends:
             value: false
           - name: ob_sdl_codeql_compiled_enabled
             value: false
+          - name: signSrcPath
+            value: $(repoRoot)/out
         pool:
           type: windows
         steps:
@@ -163,22 +193,23 @@ extends:
         - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
               Get-ChildItem $(Build.SourcesDirectory) -recurse -ErrorAction SilentlyContinue
-              throw "tsaoptions.json does not exist under $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config"
+              throw "tsaoptions.json does not exist under $(repoRoot)/.config"
             }
           displayName: Test if tsaoptions.json exists
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download build files'
           inputs:
-            targetPath: $(Build.SourcesDirectory)/artifacts/build
+            targetPath: $(signSrcPath)
+            artifact: drop_stagebuild_jobsign
         ## download
         - pwsh: |
-            Set-Location "$(Build.SourcesDirectory)/artifacts/"
+            Set-Location "$(signSrcPath)"
             dir -recurse *
           displayName: Capture artifacts
 
         - pwsh: |
-            Set-Location "$(Build.SourcesDirectory)/artifacts/build"
+            Set-Location "$(repoRoot)"
             ./build -BuildNupkg -CopyManifest -signed
           displayName: Create nupkg for publishing
 
