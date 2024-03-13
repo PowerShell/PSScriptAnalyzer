@@ -14,7 +14,7 @@ variables:
   - name: POWERSHELL_TELEMETRY_OPTOUT
     value: 1
   - name: WindowsContainerImage
-    value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
+    value: onebranch.azurecr.io/windows/ltsc2022/vse2022:latest
 resources:
   repositories:
   - repository: onebranchTemplates
