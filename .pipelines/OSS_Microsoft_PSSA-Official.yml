@@ -128,8 +128,8 @@ extends:
             value: false
           - name: ob_sdl_codeql_compiled_enabled
             value: false
-          - name: signSrcPath
-            value: $(repoRoot)/out
+          - name: signOutPath
+            value: $(repoRoot)/signed
         pool:
           type: windows
         steps:
@@ -145,11 +145,11 @@ extends:
         - task: DownloadPipelineArtifact@2
           displayName: 'Download build files'
           inputs:
-            targetPath: $(signSrcPath)
+            targetPath: $(signOutPath)
             artifact: drop_stagebuild_jobbuild
 
         - pwsh: |
-            Set-Location "$(signSrcPath)"
+            Set-Location "$(signOutPath)"
             dir -recurse *
           displayName: Capture artifacts
 
