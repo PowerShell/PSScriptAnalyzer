@@ -61,6 +61,9 @@ extends:
           type: windows
         steps:
         - checkout: self
+          # make sure this happens before signing setup
+          env:
+            ob_restore_phase: true
 
         - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
