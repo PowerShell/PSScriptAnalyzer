@@ -91,34 +91,6 @@ extends:
             try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
           displayName: Execute build
 
-        - pwsh: |
-            $signSrcPath = $env:SIGNSRCPATH
-            $signOutStep1 = "$(repoRoot)/Step1"
-            $null = New-Item -ItemType Directory -Path $signOutStep1
-            # Set signing out path variable
-            $vstsCommandString = "vso[task.setvariable variable=signOutStep1]${signOutStep1}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-            $signOutPath = "$(repoRoot)/signed"
-            $null = New-Item -ItemType Directory -Path $signOutPath
-            # Set signing out path variable
-            $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-            # Set path variable for guardian codesign validation
-            $vstsCommandString = "vso[task.setvariable variable=GDN_CODESIGN_TARGETDIRECTORY]${signOutPath}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-            # Get version and create a variable
-            $moduleData = Import-PowerShellDataFile "$(repoRoot)/Engine/PSScriptAnalyzer.psd1"
-            $moduleVersion = $moduleData.ModuleVersion
-            $vstsCommandString = "vso[task.setvariable variable=moduleVersion]${moduleVersion}"
-            $vstsCommandString = "vso[task.setvariable variable=ob_sdl_sbom_packageversion]${moduleVersion}"
-
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-          displayName: Setup variables for signing
-
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
           inputs:
