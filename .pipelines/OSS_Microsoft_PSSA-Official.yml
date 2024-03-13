@@ -75,6 +75,16 @@ extends:
             }
           displayName: Test if tsaoptions.json exists
 
+        - task: UseDotNet@2
+          displayName: 'Install .NET dependencies'
+            inputs:
+            packageType: 'sdk'
+            useGlobalJson: true
+            # this is to ensure that we are installing the dotnet at the same location as container by default install the dotnet sdks
+            # This prevents signing from breaking
+            installationPath: 'C:\Program Files\dotnet\'
+            workingDirectory: $(repoRoot)
+
         # this is installing .NET
         - pwsh: |
             Set-Location "$(repoRoot)"
@@ -109,45 +119,6 @@ extends:
             Write-Host "##$vstsCommandString"
           displayName: Setup variables for signing
 
-        - task: CopyFiles@2
-          displayName: "Copy Files for 'publish build directory' publish task"
-          inputs:
-            SourceFolder: "$(signSrcPath)"
-            Contents: '**'
-            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
-
-      - job: jobsign
-        dependsOn: jobbuild
-        displayName: Sign Microsoft.PowerShell.ScriptAnalyzer Files
-        variables:
-          - name: ob_outputDirectory
-            value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
-          - name: repoRoot
-            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
-          - name: ob_sdl_tsa_configFile
-            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
-          - name: ob_sdl_sbom_enabled
-            value: true
-          - name: ob_sdl_codeql_compiled_enabled
-            value: false
-          - name: signSrcPath
-            value: $(repoRoot)/out
-        pool:
-          type: windows
-        steps:
-        - checkout: self
-
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download build files'
-          inputs:
-            targetPath: $(signSrcPath)
-            artifact: drop_stagebuild_jobbuild
-
-        - pwsh: |
-            Set-Location "$(signSrcPath)"
-            dir -recurse *
-          displayName: Capture artifacts
-
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
           inputs:
@@ -165,14 +136,14 @@ extends:
             search_root: $(signSrcPath)
 
         - task: CopyFiles@2
-          displayName: "Copy Files for 'publish build directory' publish task"
+          displayName: "Copy signed module files to ob_outputDirectory"
           inputs:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
             TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
 
       - job: nupkg
-        dependsOn: jobsign
+        dependsOn: jobbuild
         displayName: Package Microsoft.PowerShell.ScriptAnalyzer
         variables:
           - name: ob_outputDirectory
@@ -203,8 +174,8 @@ extends:
           displayName: 'Download build files'
           inputs:
             targetPath: $(signSrcPath)
-            artifact: drop_stagebuild_jobsign
-        ## download
+            artifact: drop_stagebuild_jobbuild
+
         - pwsh: |
             Set-Location "$(signSrcPath)"
             dir -recurse *
@@ -216,7 +187,7 @@ extends:
           displayName: Create nupkg for publishing
 
         - task: CopyFiles@2
-          displayName: "Copy Files for 'Publish module nupkg' publish task"
+          displayName: "Copy Files nupkg to ob_outputDirectory"
           inputs:
             Contents: "$(signOutPath)/PSScriptAnalyzer.$(moduleVersion).nupkg"
             TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
