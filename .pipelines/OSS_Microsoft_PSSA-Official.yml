@@ -134,7 +134,7 @@ extends:
             search_root: $(signSrcPath)
 
         - task: CopyFiles@2
-          displayName: "Copy signed files to ob_outputDirectory"
+          displayName: "Copy signed files to ob_outputDirectory - '$(ob_outputDirectory)'"
           inputs:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
@@ -212,7 +212,7 @@ extends:
           displayName: Find Nupkg
 
         - task: CopyFiles@2
-          displayName: "Copy nupkg to ob_outputDirectory"
+          displayName: "Copy nupkg to ob_outputDirectory - '$(ob_outputDirectory)'"
           inputs:
             Contents: "$(repoRoot)/**/PSScriptAnalyzer.*.nupkg"
             TargetFolder: $(ob_outputDirectory)
