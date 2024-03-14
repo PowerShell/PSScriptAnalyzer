@@ -93,7 +93,6 @@ extends:
             packageType: 'sdk'
             useGlobalJson: true
             # this is to ensure that we are installing the dotnet at the same location as container by default install the dotnet sdks
-            # This prevents signing from breaking
             installationPath: 'C:\Program Files\dotnet\'
             workingDirectory: $(repoRoot)
 
@@ -199,9 +198,6 @@ extends:
             ./build -BuildNupkg -CopyManifest -signed
           displayName: Create nupkg for publishing
 
-        # same problem as build, the previous step breaks signing
-        # this is not required at this point.
-        # So, we'll leave this for future work.
         - task: onebranch.pipeline.signing@1
           displayName: Sign nupkg
           inputs:
