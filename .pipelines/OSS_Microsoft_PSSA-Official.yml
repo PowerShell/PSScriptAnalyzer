@@ -61,13 +61,11 @@ extends:
           value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
         - name: signSrcPath
           value: $(repoRoot)/out
-        # the next job signs, so skip sbom generation, and signing validation
-        - name: ob_sdl_codeSignValidation_excludes
-          value: -|**\*
         - name: ob_sdl_sbom_enabled
-          value: false
+          value: true
         - name: ob_signing_setup_enabled
           value: true
+        #CodeQL tasks added manually to workaround signing failures
         - name: ob_codeql_compiled_enabled
           value: false
 
@@ -142,6 +140,15 @@ extends:
             SourceFolder: "$(signSrcPath)"
             Contents: '**'
             TargetFolder: $(ob_outputDirectory)
+
+        - pwsh: |
+            $moduleData = Import-PowerShellDataFile "$(repoRoot)/Engine/PSScriptAnalyzer.psd1"
+            $moduleVersion = $moduleData.ModuleVersion
+            $vstsCommandString = "vso[task.setvariable variable=ob_sdl_sbom_packageversion]${moduleVersion}"
+
+            Write-Host "sending $vstsCommandString"
+            Write-Host "##$vstsCommandString"
+          displayName: Setup SBOM Package Version
 
       - job: nupkg
         dependsOn: jobbuild
