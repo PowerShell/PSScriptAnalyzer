@@ -67,12 +67,16 @@ extends:
         - name: ob_sdl_sbom_enabled
           value: false
         - name: ob_signing_setup_enabled
+          value: true
+        - name: ob_codeql_compiled_enabled
           value: false
 
         pool:
           type: windows
         steps:
         - checkout: self
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
         - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
@@ -80,9 +84,13 @@ extends:
               throw "tsaoptions.json does not exist under $(repoRoot)/.config"
             }
           displayName: Test if tsaoptions.json exists
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
         - task: UseDotNet@2
           displayName: 'Install .NET dependencies'
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
           inputs:
             packageType: 'sdk'
             useGlobalJson: true
@@ -91,50 +99,26 @@ extends:
             installationPath: 'C:\Program Files\dotnet\'
             workingDirectory: $(repoRoot)
 
+        - task: CodeQL3000Init@0 # Add CodeQL Init task right before your 'Build' step.
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
+          inputs:
+            Enabled: true
+            AnalyzeInPipeline: true
+            Language: csharp
+
         # this is installing .NET
         - pwsh: |
             Set-Location "$(repoRoot)"
             try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
           displayName: Execute build
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
-        - task: CopyFiles@2
-          displayName: "Copy Files for 'publish build directory' publish task"
-          inputs:
-            SourceFolder: "$(signSrcPath)"
-            Contents: '**'
-            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT
-
-      - job: jobsign
-        dependsOn: jobbuild
-        displayName: Sign Microsoft.PowerShell.ScriptAnalyzer Files
-        variables:
-          - name: ob_outputDirectory
-            value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
-          - name: repoRoot
-            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
-          - name: ob_sdl_tsa_configFile
-            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
-          - name: ob_sdl_sbom_enabled
-            value: true
-          - name: ob_sdl_codeql_compiled_enabled
-            value: false
-          - name: signSrcPath
-            value: $(repoRoot)/out
-        pool:
-          type: windows
-        steps:
-        - checkout: self
-
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download build files'
-          inputs:
-            targetPath: $(signSrcPath)
-            artifact: drop_stagebuild_jobbuild
-
-        - pwsh: |
-            Set-Location "$(signSrcPath)"
-            dir -dir -recurse *
-          displayName: Capture artifacts structure
+        - task: CodeQL3000Finalize@0 # Add CodeQL Finalize task right after your 'Build' step.
+          condition: always()
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign 1st party files
@@ -160,7 +144,7 @@ extends:
             TargetFolder: $(ob_outputDirectory)
 
       - job: nupkg
-        dependsOn: jobsign
+        dependsOn: jobbuild
         displayName: Package Microsoft.PowerShell.ScriptAnalyzer
         variables:
           - name: ob_outputDirectory
