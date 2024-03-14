@@ -9,19 +9,14 @@ pr:
     - master
     - release*
 variables:
-- name: DOTNET_CLI_TELEMETRY_OPTOUT
-  value: 1
-- name: POWERSHELL_TELEMETRY_OPTOUT
-  value: 1
-- name: WindowsContainerImage
-  value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
+  - name: DOTNET_CLI_TELEMETRY_OPTOUT
+    value: 1
+  - name: POWERSHELL_TELEMETRY_OPTOUT
+    value: 1
+  - name: WindowsContainerImage
+    value: onebranch.azurecr.io/windows/ltsc2022/vse2022:latest
 resources:
   repositories:
-  - repository: ComplianceRepo
-    type: github
-    endpoint: ComplianceGHRepo
-    name: PowerShell/compliance
-    ref: master
   - repository: onebranchTemplates
     type: git
     name: OneBranch.Pipelines/GovernedTemplates
@@ -29,10 +24,14 @@ resources:
 extends:
   template: v2/OneBranch.Official.CrossPlat.yml@onebranchTemplates
   parameters:
+    featureFlags:
+      WindowsHostVersion: '1ESWindows2022'
     customTags: 'ES365AIMigrationTooling'
     globalSdl:
+      disableLegacyManifest: true
       sbom:
-        enabled: false
+        enabled: true
+        packageName: Microsoft.PowerShell.ScriptAnalyzer
       codeql:
         compiled:
           enabled: true
@@ -48,113 +47,172 @@ extends:
           enabled: false
 
     stages:
-    - stage: Build
-      displayName: Build
+    - stage: stagebuild
+      displayName: Build and Package Microsoft.PowerShell.ScriptAnalyzer
       jobs:
-      - job: Build_Job
-        displayName: Build Microsoft.PowerShell.ScriptAnalyzer
+      - job: jobbuild
+        displayName: Build Microsoft.PowerShell.ScriptAnalyzer Files
         variables:
-        - group: ESRP
         - name: ob_outputDirectory
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
         - name: repoRoot
           value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
         - name: ob_sdl_tsa_configFile
           value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
+        - name: signSrcPath
+          value: $(repoRoot)/out
+        - name: ob_sdl_sbom_enabled
+          value: true
+        - name: ob_signing_setup_enabled
+          value: true
+        #CodeQL tasks added manually to workaround signing failures
+        - name: ob_sdl_codeql_compiled_enabled
+          value: false
+
         pool:
           type: windows
         steps:
         - checkout: self
-        - checkout: ComplianceRepo
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
         - pwsh: |
             if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
               Get-ChildItem $(Build.SourcesDirectory) -recurse -ErrorAction SilentlyContinue
-              throw "tsaoptions.json does not exist under $(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config"
+              throw "tsaoptions.json does not exist under $(repoRoot)/.config"
+            }
+          displayName: Test if tsaoptions.json exists
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
+
+        - task: UseDotNet@2
+          displayName: 'Install .NET dependencies'
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
+          inputs:
+            packageType: 'sdk'
+            useGlobalJson: true
+            # this is to ensure that we are installing the dotnet at the same location as container by default install the dotnet sdks
+            installationPath: 'C:\Program Files\dotnet\'
+            workingDirectory: $(repoRoot)
+
+        - task: CodeQL3000Init@0 # Add CodeQL Init task right before your 'Build' step.
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
+          inputs:
+            Enabled: true
+            AnalyzeInPipeline: true
+            Language: csharp
+
+        # this is installing .NET
+        - pwsh: |
+            Set-Location "$(repoRoot)"
+            try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
+          displayName: Execute build
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
+
+        - task: CodeQL3000Finalize@0 # Add CodeQL Finalize task right after your 'Build' step.
+          condition: always()
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
+
+        - task: onebranch.pipeline.signing@1
+          displayName: Sign 1st party files
+          inputs:
+            command: 'sign'
+            signing_profile: external_distribution
+            files_to_sign: '**\*.psd1;**\*.psm1;**\*.ps1xml;**\Microsoft*.dll'
+            search_root: $(signSrcPath)
+
+        - task: onebranch.pipeline.signing@1
+          displayName: Sign 3rd Party files
+          inputs:
+            command: 'sign'
+            signing_profile: 135020002
+            files_to_sign: '**/Pluralize*.dll;**/Newtonsoft*.dll'
+            search_root: $(signSrcPath)
+
+        - task: CopyFiles@2
+          displayName: "Copy signed files to ob_outputDirectory - '$(ob_outputDirectory)'"
+          inputs:
+            SourceFolder: "$(signSrcPath)"
+            Contents: '**'
+            TargetFolder: $(ob_outputDirectory)
+
+        - pwsh: |
+            $moduleData = Import-PowerShellDataFile "$(repoRoot)/Engine/PSScriptAnalyzer.psd1"
+            $moduleVersion = $moduleData.ModuleVersion
+            $vstsCommandString = "vso[task.setvariable variable=ob_sdl_sbom_packageversion]${moduleVersion}"
+
+            Write-Host "sending $vstsCommandString"
+            Write-Host "##$vstsCommandString"
+          displayName: Setup SBOM Package Version
+
+      - job: nupkg
+        dependsOn: jobbuild
+        displayName: Package Microsoft.PowerShell.ScriptAnalyzer
+        variables:
+          - name: ob_outputDirectory
+            value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
+          - name: repoRoot
+            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA
+          - name: ob_sdl_tsa_configFile
+            value: $(Build.SourcesDirectory)\OSS_Microsoft_PSSA\.config\tsaoptions.json
+         # Disable because SBOM was already built in the previous job
+          - name: ob_sdl_sbom_enabled
+            value: false
+          - name: signOutPath
+            value: $(repoRoot)/signed
+          - name: ob_signing_setup_enabled
+            value: true
+         # This job is not compiling code, so disable codeQL
+          - name: ob_sdl_codeql_compiled_enabled
+            value: false
+
+        pool:
+          type: windows
+        steps:
+        - checkout: self
+
+        - pwsh: |
+            if (-not (Test-Path $(repoRoot)/.config/tsaoptions.json)) {
+              Get-ChildItem $(Build.SourcesDirectory) -recurse -ErrorAction SilentlyContinue
+              throw "tsaoptions.json does not exist under $(repoRoot)/.config"
             }
           displayName: Test if tsaoptions.json exists
 
-        #- pwsh: |
-        #    New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/.config -Force -Verbose
-        #    Copy-Item '$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/.config/tsaoptions.json' '$(Build.SourcesDirectory)/.config/tsaoptions.json' -Force -Verbose
-        #  displayName: Copy tsaoptions
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download build files'
+          inputs:
+            targetPath: $(signOutPath)
+            artifact: drop_stagebuild_jobbuild
 
         - pwsh: |
-            Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
-            try { ./build.ps1 -Configuration Release -All } catch { throw $_ }
-          displayName: Execute build
+            Set-Location "$(signOutPath)"
+            dir -dir -recurse *
+          displayName: Capture artifacts structure
 
         - pwsh: |
-            $signSrcPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/out"
-            # Set signing src path variable
-            $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-            $signOutStep1 = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Step1"
-            $null = New-Item -ItemType Directory -Path $signOutStep1
-            # Set signing out path variable
-            $vstsCommandString = "vso[task.setvariable variable=signOutStep1]${signOutStep1}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-            $signOutPath = "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/signed"
-            $null = New-Item -ItemType Directory -Path $signOutPath
-            # Set signing out path variable
-            $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-            # Set path variable for guardian codesign validation
-            $vstsCommandString = "vso[task.setvariable variable=GDN_CODESIGN_TARGETDIRECTORY]${signOutPath}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-            # Get version and create a variable
-            $moduleData = Import-PowerShellDataFile "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA/Engine/PSScriptAnalyzer.psd1"
-            $moduleVersion = $moduleData.ModuleVersion
-            $vstsCommandString = "vso[task.setvariable variable=moduleVersion]${moduleVersion}"
-            Write-Host "sending $vstsCommandString"
-            Write-Host "##$vstsCommandString"
-          displayName: Setup variables for signing
-
-        - template: EsrpSign.yml@ComplianceRepo
-          parameters:
-            buildOutputPath: $(signSrcPath)
-            signOutputPath: $(signOutStep1)
-            certificateId: "CP-230012"
-            useMinimatch: true
-            pattern: |
-              **\*.psd1
-              **\*.psm1
-              **\*.ps1xml
-              **\Microsoft*.dll
-
-        - template: EsrpSign.yml@ComplianceRepo
-          parameters:
-            buildOutputPath: $(signOutStep1)
-            signOutputPath: $(signOutPath)
-            certificateId: "CP-231522"
-            useMinimatch: true
-            pattern: |
-              **/Pluralize*.dll
-              **/Newtonsoft*.dll
-
-        - template: Sbom.yml@ComplianceRepo
-          parameters:
-            BuildDropPath: $(signOutPath)
-            Build_Repository_Uri: 'https://github.com/powershell/PSScriptAnalyzer'
-
-        - pwsh: |
-            Set-Location "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
+            Set-Location "$(repoRoot)"
             ./build -BuildNupkg -CopyManifest -signed
           displayName: Create nupkg for publishing
 
-        - task: CopyFiles@2
-          displayName: "Copy Files for 'publish build directory' publish task"
+        - task: onebranch.pipeline.signing@1
+          displayName: Sign nupkg
           inputs:
-            SourceFolder: "$(Build.SourcesDirectory)/OSS_Microsoft_PSSA"
-            Contents: '**'
-            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/build
+            command: 'sign'
+            signing_profile: external_distribution
+            files_to_sign: '**\*.nupkg'
+            search_root: $(signOutPath)
+
+        - pwsh: |
+            Set-Location "$(repoRoot)"
+            dir -file -recurse *.nupkg
+          displayName: Find Nupkg
 
         - task: CopyFiles@2
-          displayName: "Copy Files for 'Publish module nupkg' publish task"
+          displayName: "Copy nupkg to ob_outputDirectory - '$(ob_outputDirectory)'"
           inputs:
-            Contents: "$(signOutPath)/PSScriptAnalyzer.$(moduleVersion).nupkg"
-            TargetFolder: $(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/nupkg
+            Contents: "$(repoRoot)/**/PSScriptAnalyzer.*.nupkg"
+            TargetFolder: $(ob_outputDirectory)
