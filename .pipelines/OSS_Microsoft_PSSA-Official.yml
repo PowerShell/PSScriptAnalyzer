@@ -66,7 +66,7 @@ extends:
         - name: ob_signing_setup_enabled
           value: true
         #CodeQL tasks added manually to workaround signing failures
-        - name: ob_codeql_compiled_enabled
+        - name: ob_sdl_codeql_compiled_enabled
           value: false
 
         pool:
@@ -167,7 +167,7 @@ extends:
           - name: ob_signing_setup_enabled
             value: true
          # This job is not compiling code, so disable codeQL
-          - name: ob_codeql_compiled_enabled
+          - name: ob_sdl_codeql_compiled_enabled
             value: false
 
         pool:
