@@ -1,7 +1,7 @@
 ---
 description: ReviewUnusedParameter
 ms.custom: PSSA v1.22.0
-ms.date: 06/28/2023
+ms.date: 03/26/2024
 ms.topic: reference
 title: ReviewUnusedParameter
 ---
@@ -16,14 +16,14 @@ been used in that scope.
 
 ## Configuration settings
 
-|Configuration key|Meaning|Accepted values|Mandatory|Example|
-|---|---|---|---|---|
-|CommandsToTraverse|By default, this command will not consider child scopes other than scriptblocks provided to Where-Object or ForEach-Object. This setting allows you to add additional commands that accept scriptblocks that this rule should traverse into.|string[]: list of commands whose scriptblock to traverse.|`@('Invoke-PSFProtectedCommand')`|
+By default, this rule doesn't consider child scopes other than scriptblocks provided to
+`Where-Object` or `ForEach-Object`. The `CommandsToTraverse` setting is an string array allows you
+to add additional commands that accept scriptblocks that this rule should examine.
 
 ```powershell
 @{
     Rules = @{
-        ReviewUnusedParameter = @{
+        PSReviewUnusedParameter = @{
             CommandsToTraverse = @(
                 'Invoke-PSFProtectedCommand'
             )

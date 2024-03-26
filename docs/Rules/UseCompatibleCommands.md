@@ -102,7 +102,7 @@ An example configuration might look like:
 ```powershell
 @{
     Rules = @{
-        PSUseCompatibleCommmands = @{
+        PSUseCompatibleCommands = @{
             Enable = $true
             TargetProfiles = @(
                 'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
