@@ -1,7 +1,7 @@
 ---
 description: Cmdlet Singular Noun
 ms.custom: PSSA v1.22.0
-ms.date: 03/26/2024
+ms.date: 03/27/2024
 ms.topic: reference
 title: UseSingularNouns
 ---
@@ -25,23 +25,23 @@ function Get-Elements {
 
 ```powershell
 Rules = @{
-    UseSingularNouns = @{
-        NounAllowList    = 'Data', 'Windows', 'Foos'
+    PSUseSingularNouns = @{
         Enable           = $true
+        NounAllowList    = 'Data', 'Windows', 'Foos'
     }
 }
 ```
 
 ### Parameters
 
-- `UseSingularNouns`: `string[]` (Default value is `{'Data', 'Windows'}`)
-
-  Commands to be excluded from this rule. `Data` and `Windows` are common false positives and are
-  excluded by default.
-
 - `Enable`: `bool` (Default value is `$true`)
 
   Enable or disable the rule during ScriptAnalyzer invocation.
+
+- `NounAllowList`: `string[]` (Default value is `{'Data', 'Windows'}`)
+
+  Commands to be excluded from this rule. `Data` and `Windows` are common false positives and are
+  excluded by default.
 
 ## How
 
