@@ -1,7 +1,7 @@
 ---
 description: Cmdlet Singular Noun
 ms.custom: PSSA v1.22.0
-ms.date: 02/13/2024
+ms.date: 03/26/2024
 ms.topic: reference
 title: UseSingularNouns
 ---
@@ -11,9 +11,8 @@ title: UseSingularNouns
 
 ## Description
 
-PowerShell team best practices state cmdlets should use singular nouns and not plurals.
-
-Suppression allows to suppress just specific function names, for example
+PowerShell team best practices state cmdlets should use singular nouns and not plurals. Suppression
+allows you to suppress the rule for specific function names. For example:
 
 ```
 function Get-Elements {
@@ -35,13 +34,14 @@ Rules = @{
 
 ### Parameters
 
-#### `UseSingularNouns: string[]` (Default value is `{'Data', 'Windows'}`)
+- `UseSingularNouns`: `string[]` (Default value is `{'Data', 'Windows'}`)
 
-Commands to be excluded from this rule. `Data` and `Windows` are common false positives and are excluded by default
+  Commands to be excluded from this rule. `Data` and `Windows` are common false positives and are
+  excluded by default.
 
-#### Enable: `bool` (Default value is `$true`)
+- `Enable`: `bool` (Default value is `$true`)
 
-Enable or disable the rule during ScriptAnalyzer invocation.
+  Enable or disable the rule during ScriptAnalyzer invocation.
 
 ## How
 
