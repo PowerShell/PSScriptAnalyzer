@@ -1,11 +1,95 @@
 ﻿# CHANGELOG
 
+## [1.22.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.22.0) - 2024-03-05
+
+Minimum required version when using PowerShell 7 is now `7.2.11`.
+
+## New Rule
+
+- Add AvoidUsingAllowUnencryptedAuthentication by @MJVL in (#1857)
+- Add the AvoidExclaimOperator rule to warn about the use of the ! negation operator. Fixes (#1826) by
+  @liamjpeters in (#1922)
+
+## Enhancements
+
+- Enable suppression of PSAvoidAssignmentToAutomaticVariable for specific variable or parameter by
+  @fflaten in (#1896)
+- Upgrade to use .NET 6 since PowerShell 7.0 is now out out of support by @bergmeister in (#1873)
+- Convert UseSingularNouns to configurable rule and add Windows to allowlist by @MJVL in (#1858)
+- Add ErrorView to SpecialVars.cs by @ewisniew0 in (#1865)
+- Allow suppression of  PSUseSingularNouns for specific function by @fflaten in (#1903)
+- Adding ToString() methods to [CorrectionExtent] and [DiagnosticRecord] by @StartAutomating in (#1946)
+- Add PSNativeCommandUseErrorActionPreference preference variable by @aelij in (#1954)
+- AvoidUsingPositionalParameter: Check if command has parameters to avoid having az in default
+  CommandAllowList by @bergmeister in (#1850)
+- PSReviewUnusedParameter: Add CommandsToTraverse option by @FriedrichWeinmann in (#1921)
+
+## Fixes
+
+- Prevent NullReferenceException for null analysis type. by @hubuk in (#1949)
+
+## Build & Test, Documentation and Maintenance
+
+- UseApprovedVerbs.md: Backport minor change of PR 104 in PowerShell-Docs-Modules by @bergmeister in
+  (#1849)
+- Improve Pester bootstrap logic for CI by @bergmeister in (#1853)
+- Bump .NET SDK from 3.1.419 to 3.1.424 by @bergmeister in (#1852)
+- AvoidLongLines: Make internal function DiagnosticSeverity private by @bergmeister in (#1851)
+- SupportsShouldProcess.md: Fix Typo - MicrosoftDocs backport of PR 121 there by @sdwheeler in (#1869)
+- Minor test fix for UseCorrectCasing rule by @kilasuit in (#1885)
+- Make Invoke-Formatter test case assertion fail in case of incorrect casing by @alexandear in (#1888)
+- Fix `AvoidUsingDoubleQuotesForConstantString` information in overview README by @michaeltlombardi
+  in (#1883)
+- Update dependabot reviewers to remove Rob by @fflaten in (#1897)
+- Fix typo in AvoidUsingPlainTextForPassword error message: 'to' being repeated two times by
+  @ALiwoto in (#1902)
+- CI: Use new Ubuntu 22.04  image and remove deprecated Ubuntu 18.04 by @bergmeister in (#1847)
+- Change double quotes to single where possible by @sdwheeler in (#1911)
+- Backport MicrosoftDocs PR 143 by @sdwheeler in (#1910)
+- Fix typos in rules documentation by @sdwheeler in (#1913)
+- add demand for compliance job by @TravisEz13 in (#1920)
+- FabricBot: Onboarding to GitOps.ResourceManagement because of FabricBot decommissioning by
+  @microsoft-github-policy-service in (#1925)
+- Sync changes from Docs repository by @sdwheeler in (#1929)
+- Developer documentation fix and message fix of
+  PossibleIncorrectUsageOfRedirectionOperatorDescription by @JoelTipke in (#1928)
+- Documentation corrections for AvoidUsingPositionalParameters by @ImportTaste in (#1917)
+- Update minimum PowerShell Core version to 7.2.11 as 7.0 is now EOL by @bergmeister in (#1872)
+- Remove dead code and simplify by @bergmeister in (#1856)
+- PSReservedParams - link about_CommonParameters by @petervandivier in (#1908)
+- Generate strongly typed resources as part of build by @bergmeister in (#1855)
+- Bump Newtonsoft.Json to 13.0.3 by @dependabot in (#1866)
+- Use latest .NET 6.0 SDK patch version and update devcontainer to use .NET 6 as well by
+  @bergmeister in (#1955)
+- Bump Microsoft.Management.Infrastructure from 1.0.0 to 3.0.0 for PowerShell 7 only by @dependabot
+  in (#1947)
+- Bump version from 1.21.0 to 1.22.0 by @bergmeister in (#1965)
+- Remove Appveyor badge from main README by @bergmeister in (#1962)
+- Do not hard code common parameters in module help test any more by @bergmeister in (#1963)
+
+## New Contributors
+
+- @fflaten made their first contribution in (#1897)
+- @ALiwoto made their first contribution in (#1902)
+- @microsoft-github-policy-service made their first contribution in (#1925)
+- @JoelTipke made their first contribution in (#1928)
+- @ImportTaste made their first contribution in (#1917)
+- @liamjpeters made their first contribution in (#1922)
+- @petervandivier made their first contribution in (#1908)
+- @ewisniew0 made their first contribution in (#1865)
+- @StartAutomating made their first contribution in (#1946)
+- @aelij made their first contribution in (#1954)
+- @FriedrichWeinmann made their first contribution in (#1921)
+
+**Full Changelog**: <https://github.com/PowerShell/PSScriptAnalyzer/compare/1.21.0...1.22.0>
+
 ## [1.21.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.21.0) - 2022-09-27
 
 ### New Rule
 
 - Add AvoidMultipleTypeAttributes rule (#1705) (thanks @hankyi95)
-- Add the AvoidSemicolonsAsLineTerminators rule to warn about lines ending with a semicolon. Fix (#824) (#1806) (thanks @tempora-mutantur)
+- Add the AvoidSemicolonsAsLineTerminators rule to warn about lines ending with a semicolon. Fix
+  (#824) (#1806) (thanks @tempora-mutantur)
 - Add AvoidUsingBrokenHashAlgorithms (#1787) (thanks @MJVL)
 
 ### Enhancements
@@ -13,7 +97,8 @@
 - Also return suggestion to use PSCredential for AvoidUsingPlainTextForPassword rule (#1782) (by @bergmeister)
 - Invoke-Formatter: Accept input from pipeline (#1763) (by @bergmeister)
 - Make messages of UseCorrectCasing more detailed (#1843)
-- Exclude automatic variable FormatEnumerationLimit from analysis by PSAvoidGlobalVars and PSUseDeclaredVarsMoreThanAssignments (#1836) (by @bergmeister)
+- Exclude automatic variable FormatEnumerationLimit from analysis by PSAvoidGlobalVars and
+  PSUseDeclaredVarsMoreThanAssignments (#1836) (by @bergmeister)
 - PSAvoidUsingPositionalParameters: Do not warn on AZ CLI (#1846) (by @bergmeister)
 
 ### Fixes
@@ -59,7 +144,7 @@
 - Remove Ubuntu 16.04 from test matrix (#1733) (by @rjmholt)
 - Use PowerShell1ES pool for official build (#1719) (by @JamesWTruher)
 - Update cmdlet docs for 1.20.0 (#1726) (by @sdwheeler)
-- Fixes #1720 - move rule docs and update tests (#1724) (by @sdwheeler)
+- Fixes (#1720) - move rule docs and update tests (#1724) (by @sdwheeler)
 - Update rule docs (#1711)  (by @sdwheeler)
 
 ## [1.20.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.20.0) - 2021-08-20
@@ -170,7 +255,7 @@
 
 ### Compatibility Rules
 
-- Make CompatibilityCollector able to parse a single version String #1446 (by @bergmeister)
+- Make CompatibilityCollector able to parse a single version String (#1446) (by @bergmeister)
 - Update compatibility profiles for PowerShell 7 (#1429) (by @rjmholt)
 - Ps7 syntax (#1426) (by @rjmholt)
 - Fix ps3 syntax check (#1395) (by @rjmholt)
@@ -728,10 +813,10 @@ Here are some improvements since the last release.
 - Add build script to automate building and testing the solution
 
 A big **Thank You!** to the following folks for making PSScriptAnalyzer even better:
-- [Kieran Jacobsen (@kjacobsen)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=kjacobsen): Fix rule documentation of `PSDSCExamplesPresent` [PR #591](https://github.com/PowerShell/PSScriptAnalyzer/pull/591)
-- [Charlie Schmidt (@charlieschmidt)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=charlieschmidt): Suppress External Rules [PR #585](https://github.com/PowerShell/PSScriptAnalyzer/pull/585)
+- [Kieran Jacobsen (@kjacobsen)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=kjacobsen): Fix rule documentation of `PSDSCExamplesPresent` [PR #591](#591)
+- [Charlie Schmidt (@charlieschmidt)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=charlieschmidt): Suppress External Rules [PR #585](#585)
 - [June Blender (@juneb)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=juneb): Add tests for module help [058f65e1](https://github.com/PowerShell/PSScriptAnalyzer/commit/058f65e1f6278222378fedf444eecb2e32865b1e)
-- [Shayde Nofziger (@Blackbaud-ShaydeNofziger)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=Blackbaud-ShaydeNofziger): Fix rule name typo and comment [PR #560](https://github.com/PowerShell/PSScriptAnalyzer/pull/560)
+- [Shayde Nofziger (@Blackbaud-ShaydeNofziger)](https://github.com/PowerShell/PSScriptAnalyzer/commits/development?author=Blackbaud-ShaydeNofziger): Fix rule name typo and comment [PR #560](#560)
 
 ## [1.6.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.6.0) - 2016-06-07
 
