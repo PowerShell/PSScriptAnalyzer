@@ -1,6 +1,6 @@
 ---
 description: Reserved Parameters
-ms.custom: PSSA v1.22.0
+ms.custom: PSSA v1.22.1
 ms.date: 03/06/2024
 ms.topic: reference
 title: ReservedParams

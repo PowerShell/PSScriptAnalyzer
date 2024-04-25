@@ -1,6 +1,6 @@
 ---
 description: Avoid sending credentials and secrets over unencrypted connections
-ms.custom: PSSA v1.22.0
+ms.custom: PSSA v1.22.1
 ms.date: 02/28/2024
 ms.topic: reference
 title: AvoidUsingAllowUnencryptedAuthentication

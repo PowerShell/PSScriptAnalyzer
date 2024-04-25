@@ -1,6 +1,6 @@
 ---
 description: Avoid Using Username and Password Parameters
-ms.custom: PSSA v1.22.0
+ms.custom: PSSA v1.22.1
 ms.date: 06/28/2023
 ms.topic: reference
 title: AvoidUsingUsernameAndPasswordParams

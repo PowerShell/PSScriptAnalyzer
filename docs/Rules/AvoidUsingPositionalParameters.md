@@ -1,6 +1,6 @@
 ---
 description: Avoid Using Positional Parameters
-ms.custom: PSSA v1.22.0
+ms.custom: PSSA v1.22.1
 ms.date: 02/13/2024
 ms.topic: reference
 title: AvoidUsingPositionalParameters
