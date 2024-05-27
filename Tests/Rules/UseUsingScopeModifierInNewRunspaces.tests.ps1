@@ -295,7 +295,7 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
             # ScriptBlock with variables in params(), issue #1504: https://github.com/PowerShell/PSScriptAnalyzer/issues/1504
             ## Microsoft.PowerShell.Core \ Start-Job
             @{
-                Description = 'Does not warn when variable is defined inside params() - Start-Job'
+                Description = 'Does not warn when variable is defined inside param() - Start-Job'
                 ScriptBlock = '{
                     Start-Job -ScriptBlock {
                         Param($Foo)
@@ -305,7 +305,7 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
             }
             ## Microsoft.PowerShell.ThreadJob \ Start-ThreadJob
             @{
-                Description = 'Does not warn when variable is defined inside params() - Start-Job'
+                Description = 'Does not warn when variable is defined inside param() - Start-Job'
                 ScriptBlock = '{
                     Start-ThreadJob -ScriptBlock {
                         Param($Foo)
