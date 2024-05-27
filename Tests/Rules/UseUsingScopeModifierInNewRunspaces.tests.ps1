@@ -278,20 +278,27 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
             # Issue 1492: https://github.com/PowerShell/PSScriptAnalyzer/issues/1492
             @{
                 Description = 'Does not throw when the same variable name is used in two different sessions'
-                ScriptBlock = @'
-function Get-One{
-    Invoke-Command -Session $sourceRemoteSession {
-        $a = $sccmModule
-        foo $a
-    }
-}
-function Get-Two{
-    Invoke-Command -Session $sourceRemoteSession {
-        $a = $sccmModule
-        foo $a
-    }
-}
-'@
+                ScriptBlock = '{
+                    function Get-One {
+                        Invoke-Command -Session -ScriptBlock $sourceRemoteSession {
+                            $a = $sccmModule
+                            foo $a
+                        }
+                    }
+                    function Get-Two {
+                        Invoke-Command -Session -ScriptBlock $sourceRemoteSession {
+                            $a = $sccmModule
+                            foo $a
+                        }
+                    }
+                }'
+            }
+            # Script block with variables in params(), issue #1504: https://github.com/PowerShell/PSScriptAnalyzer/issues/1504
+            @{
+                Description = 'Does not throw when variable is defined inside params()'
+                ScriptBlock = '{
+
+                }'
             }
         )
     }
