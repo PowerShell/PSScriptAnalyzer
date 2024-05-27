@@ -146,7 +146,6 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
     }
 
     Context "Should not detect anything" {
-
         It "should not emit anything for: <Description>" {
             [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptBlock -Settings $settings
             $warnings.Count | Should -Be 0
@@ -293,11 +292,25 @@ Describe "UseUsingScopeModifierInNewRunspaces" {
                     }
                 }'
             }
-            # Script block with variables in params(), issue #1504: https://github.com/PowerShell/PSScriptAnalyzer/issues/1504
+            # ScriptBlock with variables in params(), issue #1504: https://github.com/PowerShell/PSScriptAnalyzer/issues/1504
+            ## Microsoft.PowerShell.Core \ Start-Job
             @{
-                Description = 'Does not throw when variable is defined inside params()'
+                Description = 'Does not throw when variable is defined inside params() - Start-Job'
                 ScriptBlock = '{
-
+                    Start-Job -ScriptBlock {
+                        Param($Foo)
+                        $Foo
+                    } -ArgumentList "Bar" | Receive-Job -Wait -AutoRemoveJob
+                }'
+            }
+            ## Microsoft.PowerShell.ThreadJob \ Start-ThreadJob
+            @{
+                Description = 'Does not throw when variable is defined inside params() - Start-Job'
+                ScriptBlock = '{
+                    Start-ThreadJob -ScriptBlock {
+                        Param($Foo)
+                        $Foo
+                    } -ArgumentList "Bar" | Receive-Job -Wait -AutoRemoveJob
                 }'
             }
         )
