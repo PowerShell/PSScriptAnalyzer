@@ -184,6 +184,8 @@ extends:
 
         - task: DownloadPipelineArtifact@2
           displayName: 'Download build files'
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
           inputs:
             targetPath: $(signOutPath)
             artifact: drop_stagebuild_jobbuild
@@ -192,11 +194,15 @@ extends:
             Set-Location "$(signOutPath)"
             dir -dir -recurse *
           displayName: Capture artifacts structure
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
         - pwsh: |
             Set-Location "$(repoRoot)"
             ./build -BuildNupkg -CopyManifest -signed
           displayName: Create nupkg for publishing
+          env:
+            ob_restore_phase: true # Set ob_restore_phase to run this step before '🔒 Setup Signing' step.
 
         - task: onebranch.pipeline.signing@1
           displayName: Sign nupkg
