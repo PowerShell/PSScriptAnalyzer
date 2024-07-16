@@ -79,7 +79,7 @@
           <PropertySet>
             <Name>DefaultDisplayPropertySet</Name>
             <ReferencedProperties>
-              <Name>Name</Name>
+              <Name>RuleName</Name>
               <Name>Severity</Name>
               <Name>Description</Name>
               <Name>SourceName</Name>
