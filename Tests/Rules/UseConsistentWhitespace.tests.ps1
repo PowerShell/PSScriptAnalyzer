@@ -540,6 +540,12 @@ bar -h i `
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
 
+        It "Should not find a violation when redirect operators, spearated by 1 space, are used and not in stream order" {
+            # Related to Issue #2000
+            $def = 'foo 3>&1 1>$null 2>&1'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
         It "Should find 1 violation if there is 1 space too much before a parameter" {
             $def = 'foo  -bar'
             $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
@@ -577,6 +583,14 @@ bar -h i `
 -switch}
             Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
                 Should -Be "$expected"
+        }
+
+        It "Should fix script when redirects are involved and whitespace is not consistent" {
+            # Related to Issue #2000
+            $def = 'foo   3>&1  1>$null   2>&1'
+            $expected = 'foo 3>&1 1>$null 2>&1'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings |
+                Should -Be $expected
         }
     }
 }
