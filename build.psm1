@@ -386,7 +386,6 @@ function Test-ScriptAnalyzer
         else {
             $testModulePath = Join-Path "${projectRoot}" -ChildPath out
         }
-        $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
         $testScripts = "'${projectRoot}\Tests\Build','${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
         try {
             if ( $major -lt 5 ) {
@@ -395,7 +394,7 @@ function Test-ScriptAnalyzer
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
             $analyzerPsd1Path = Join-Path -Path $script:destinationDir -ChildPath "$analyzerName.psd1"
-            $scriptBlock = [scriptblock]::Create("Import-Module '$analyzerPsd1Path'; Invoke-Pester -Path $testScripts")
+            $scriptBlock = [scriptblock]::Create("Import-Module '$analyzerPsd1Path'; Invoke-Pester -Path $testScripts -CI")
             if ( $InProcess ) {
                 & $scriptBlock
             }
