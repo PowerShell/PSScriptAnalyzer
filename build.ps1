@@ -33,20 +33,11 @@ param(
     [Parameter(ParameterSetName='Test')]
     [switch] $InProcess,
 
-    [Parameter(ParameterSetName='Bootstrap')]
-    [switch] $Bootstrap,
-
     [Parameter(ParameterSetName='BuildAll')]
     [switch] $Catalog,
 
     [Parameter(ParameterSetName='Package')]
-    [switch] $BuildNupkg,
-
-    [Parameter(ParameterSetName='Package')]
-    [switch] $CopyManifest,
-
-    [Parameter(ParameterSetName='Package')]
-    [switch] $Signed
+    [switch] $BuildNupkg
 
 )
 
@@ -90,15 +81,8 @@ END {
             }
             Start-ScriptAnalyzerBuild @buildArgs
         }
-        "Bootstrap" {
-            Install-DotNet
-            return
-        }
         "Package" {
-            if($CopyManifest) {
-                Copy-Manifest -signed:$Signed
-            }
-            Start-CreatePackage -signed:$Signed
+            Start-CreatePackage
         }
         "Test" {
             Test-ScriptAnalyzer -InProcess:$InProcess
