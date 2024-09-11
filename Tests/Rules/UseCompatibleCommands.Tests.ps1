@@ -401,6 +401,9 @@ Describe 'UseCompatibleCommands' {
                         )
                         IgnoreCommands = @(
                             'Install-Module'
+                            'Publish-Module'
+                            'Register-PSRepository'
+                            'Unregister-PSRepository'
                             # Some PowerShell profiles have Pester installed by default
                             # So Pester is legitimately flagged
                             'Describe'
