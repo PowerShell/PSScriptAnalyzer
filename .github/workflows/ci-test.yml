@@ -34,6 +34,10 @@ jobs:
         run: ./build.ps1 -Configuration Release -All
         shell: pwsh
 
+      - name: Package
+        run: ./build.ps1 -BuildNupkg
+        shell: pwsh
+
       - name: Test
         run: ./build.ps1 -Test
         shell: pwsh
@@ -44,6 +48,13 @@ jobs:
            ./build.ps1 -Test
         if: matrix.os == 'windows-latest'
         shell: powershell
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PSScriptAnalyzer-package-${{ matrix.os }}
+          path: out/**/*.nupkg
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

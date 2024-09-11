@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+param(
+    [ValidateSet("PSGallery", "CFS")]
+    [string]$PSRepository = "PSGallery"
+)
 
-$ErrorActionPreference = 'Stop'
-
-Set-PSRepository -Name PSGallery -InstallationPolicy Trusted | Out-Null
-if ($PSVersionTable.PSVersion.Major -lt 6) {
-    throw "The build script requires PowerShell 7!"
+if ($PSRepository -eq "CFS" -and -not (Get-PSResourceRepository -Name CFS -ErrorAction SilentlyContinue)) {
+    Register-PSResourceRepository -Name CFS -Uri "https://pkgs.dev.azure.com/powershell/PowerShell/_packaging/powershell/nuget/v3/index.json"
 }
 
-# TODO: Switch to Install-PSResource when CI uses PowerShell 7.4
-Install-Module -Name platyPS -Scope CurrentUser
-Install-Module -Name Pester -Scope CurrentUser
+Install-PSResource -Repository $PSRepository -TrustRepository -Name platyPS
+Install-PSResource -Repository $PSRepository -TrustRepository -Name Pester
