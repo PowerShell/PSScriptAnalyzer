@@ -8,7 +8,8 @@
 # Support:        https://aka.ms/onebranchsup                                   #
 #################################################################################
 
-trigger: none
+trigger:
+- main
 
 schedules:
 - cron: '20 16 * * 4'
@@ -116,7 +117,7 @@ extends:
                 *.nupkg
     - stage: release
       dependsOn: build
-      condition: ne(variables['Build.Reason'], 'Schedule')
+      condition: eq(variables['Build.Reason'], 'Manual')
       variables:
         version: $[ stageDependencies.build.main.outputs['package.version'] ]
         drop: $(Pipeline.Workspace)/drop_build_main
