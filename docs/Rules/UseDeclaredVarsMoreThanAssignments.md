@@ -1,6 +1,5 @@
 ---
 description: Extra Variables
-ms.custom: PSSA v1.22.0
 ms.date: 03/06/2024
 ms.topic: reference
 title: UseDeclaredVarsMoreThanAssignments
