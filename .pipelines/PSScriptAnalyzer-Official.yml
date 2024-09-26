@@ -63,8 +63,8 @@ extends:
           ob_outputDirectory: $(Build.SourcesDirectory)/out
         steps:
           - pwsh: |
-              [xml]$xml = Get-Content Engine/Engine.csproj
-              $version = $xml.SelectSingleNode(".//VersionPrefix")."#text"
+              [xml]$xml = Get-Content ./Directory.Build.props
+              $version = $xml.Project.PropertyGroup.ModuleVersion
               Write-Output "##vso[task.setvariable variable=version;isOutput=true]$version"
             name: package
             displayName: Get version from project properties
