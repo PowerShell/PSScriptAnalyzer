@@ -1,0 +1,6 @@
+# Default owners
+* @andyleejordan @bergmeister
+
+# Version bumps and documentation updates
+Directory.Build.props @sdwheeler @michaeltlombardi
+/docs/ @sdwheeler @michaeltlombardi
