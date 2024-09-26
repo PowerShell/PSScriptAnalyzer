@@ -1,6 +1,5 @@
 ---
 description: Cmdlet Singular Noun
-ms.custom: PSSA v1.22.0
 ms.date: 03/27/2024
 ms.topic: reference
 title: UseSingularNouns
