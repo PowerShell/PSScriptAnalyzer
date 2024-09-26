@@ -7,8 +7,8 @@ $analyzerName = "PSScriptAnalyzer"
 
 function Get-AnalyzerVersion
 {
-    [xml]$xml = Get-Content $([io.path]::Combine($projectRoot,"Engine","Engine.csproj"))
-    $xml.SelectSingleNode(".//VersionPrefix")."#text"
+    [xml]$xml = Get-Content $([io.path]::Combine($projectRoot, "Directory.Build.props"))
+    $xml.Project.PropertyGroup.ModuleVersion
 }
 
 $analyzerVersion = Get-AnalyzerVersion
@@ -159,9 +159,15 @@ function Start-ScriptAnalyzerBuild
             throw "Not in solution root"
         }
 
+        # "Copy" the module file with the version placeholder replaced
+        $manifestContent = Get-Content -LiteralPath "$projectRoot\Engine\PSScriptAnalyzer.psd1" -Raw
+        $newManifestContent = $manifestContent -replace '{{ModuleVersion}}', $analyzerVersion
+        Set-Content -LiteralPath "$script:destinationDir\PSScriptAnalyzer.psd1" -Encoding utf8 -Value $newManifestContent
+
         $itemsToCopyCommon = @(
-            "$projectRoot\Engine\PSScriptAnalyzer.psd1", "$projectRoot\Engine\PSScriptAnalyzer.psm1",
-            "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
+            "$projectRoot\Engine\PSScriptAnalyzer.psm1",
+            "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml",
+            "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
 
         switch ($PSVersion)
