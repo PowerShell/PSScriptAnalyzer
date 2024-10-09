@@ -51,7 +51,7 @@ extends:
       EnableCDPxPAT: false
       WindowsHostVersion:
         Version: 2022
-        Network: Netlock
+        Network: KS3
     stages:
     - stage: build
       jobs:
