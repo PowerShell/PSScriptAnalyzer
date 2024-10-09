@@ -52,6 +52,8 @@ extends:
       WindowsHostVersion:
         Version: 2022
         Network: KS3
+    release:
+      category: NonAzure
     stages:
     - stage: build
       jobs:
@@ -119,25 +121,25 @@ extends:
       dependsOn: build
       condition: eq(variables['Build.Reason'], 'Manual')
       variables:
+        ob_release_environment: Production
         version: $[ stageDependencies.build.main.outputs['package.version'] ]
-        drop: $(Pipeline.Workspace)/drop_build_main
       jobs:
       - job: github
         displayName: Publish draft to GitHub
         pool:
-          type: windows
-        variables:
-          ob_outputDirectory: $(Build.SourcesDirectory)/out
+          type: release
+        templateContext:
+          inputs:
+          - input: pipelineArtifact
+            artifactName: drop_build_main
         steps:
-        - download: current
-          displayName: Download artifacts
         - task: GitHubRelease@1
           displayName: Create GitHub release
           inputs:
             gitHubConnection: GitHub
             repositoryName: PowerShell/PSScriptAnalyzer
-            assets: |
-              $(drop)/PSScriptAnalyzer.$(version).nupkg
+            target: main
+            assets: $(Pipeline.Workspace)/PSScriptAnalyzer.$(version).nupkg
             tagSource: userSpecifiedTag
             tag: v$(version)
             isDraft: true
@@ -147,7 +149,7 @@ extends:
       - job: validation
         displayName: Manual validation
         pool:
-          type: agentless
+          type: server
         timeoutInMinutes: 1440
         steps:
         - task: ManualValidation@0
@@ -160,16 +162,16 @@ extends:
         dependsOn: validation
         displayName: Publish to PowerShell Gallery
         pool:
-          type: windows
-        variables:
-          ob_outputDirectory: $(Build.SourcesDirectory)/out
+          type: release
+        templateContext:
+          inputs:
+          - input: pipelineArtifact
+            artifactName: drop_build_main
         steps:
-        - download: current
-          displayName: Download artifacts
         - task: NuGetCommand@2
           displayName: Publish module to PowerShell Gallery
           inputs:
             command: push
-            packagesToPush: $(drop)/PSScriptAnalyzer.$(version).nupkg
+            packagesToPush: $(Pipeline.Workspace)/PSScriptAnalyzer.$(version).nupkg
             nuGetFeedType: external
             publishFeedCredentials: PowerShellGallery
