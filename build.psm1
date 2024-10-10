@@ -165,6 +165,10 @@ function Start-ScriptAnalyzerBuild
         Set-Content -LiteralPath "$script:destinationDir\PSScriptAnalyzer.psd1" -Encoding utf8 -Value $newManifestContent
 
         $itemsToCopyCommon = @(
+            "$projectRoot\LICENSE",
+            "$projectRoot\README.md",
+            "$projectRoot\SECURITY.md",
+            "$projectRoot\ThirdPartyNotices.txt",
             "$projectRoot\Engine\PSScriptAnalyzer.psm1",
             "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml",
             "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
