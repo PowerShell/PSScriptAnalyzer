@@ -83,9 +83,9 @@ AliasesToExport = @()
 PrivateData = @{
     PSData = @{
         Tags = 'lint', 'bestpractice'
-        LicenseUri = 'https://github.com/PowerShell/PSScriptAnalyzer/blob/master/LICENSE'
+        LicenseUri = 'https://github.com/PowerShell/PSScriptAnalyzer/blob/main/LICENSE'
         ProjectUri = 'https://github.com/PowerShell/PSScriptAnalyzer'
-        IconUri = 'https://raw.githubusercontent.com/powershell/psscriptanalyzer/master/logo.png'
+        IconUri = 'https://raw.githubusercontent.com/powershell/psscriptanalyzer/main/logo.png'
         ReleaseNotes = ''
     }
 }
