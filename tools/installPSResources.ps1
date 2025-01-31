@@ -6,8 +6,19 @@ param(
 )
 
 if ($PSRepository -eq "CFS" -and -not (Get-PSResourceRepository -Name CFS -ErrorAction SilentlyContinue)) {
-    Register-PSResourceRepository -Name CFS -Uri "https://pkgs.dev.azure.com/powershell/PowerShell/_packaging/powershell/nuget/v3/index.json"
+    Register-PSResourceRepository -Name CFS -Uri "https://pkgs.dev.azure.com/powershell/PowerShell/_packaging/PowerShellGalleryMirror/nuget/v3/index.json"
 }
 
-Install-PSResource -Repository $PSRepository -TrustRepository -Name platyPS
-Install-PSResource -Repository $PSRepository -TrustRepository -Name Pester
+# NOTE: Due to a bug in Install-PSResource with upstream feeds, we have to
+# request an exact version. Otherwise, if a newer version is available in the
+# upstream feed, it will fail to install any version at all.
+Install-PSResource -Verbose -TrustRepository -RequiredResource  @{
+    platyPS = @{
+        version = "0.14.2"
+        repository = $PSRepository
+    }
+    Pester = @{
+        version = "5.7.1"
+        repository = $PSRepository
+    }
+}
