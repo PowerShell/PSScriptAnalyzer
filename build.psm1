@@ -351,7 +351,7 @@ function Test-ScriptAnalyzer
             }
             else {
                 $powershell = (Get-Process -id $PID).MainModule.FileName
-                & ${powershell} -Command $scriptBlock
+                & ${powershell} -NoProfile -Command $scriptBlock
             }
         }
         finally {
