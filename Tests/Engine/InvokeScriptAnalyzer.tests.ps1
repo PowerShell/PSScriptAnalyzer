@@ -600,7 +600,7 @@ Describe "-ReportSummary switch" {
             $pwshExe = 'powershell'
         }
 
-        $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
+        $reportSummaryFor1Warning = '*1 rule violation found. Severity distribution: Error = 0, Warning = 1, Information = 0*'
     }
 
     It "prints the correct report summary using the -NoReportSummary switch" {
