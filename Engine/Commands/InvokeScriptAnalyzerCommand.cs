@@ -434,29 +434,39 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             WriteToOutput(RunAnalysis());
         }
 
-        private List<DiagnosticRecord> RunAnalysis()
+        private IEnumerable<DiagnosticRecord> RunAnalysis()
         {
             if (!IsFileParameterSet())
             {
-                return ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition, out _, out _);
+                foreach (var record in ScriptAnalyzer.Instance.AnalyzeScriptDefinition(scriptDefinition, out _, out _))
+                {
+                    yield return record;
+                }
+                yield break;
             }
 
-            var diagnostics = new List<DiagnosticRecord>();
-            foreach (string path in this.processedPaths)
+            foreach (var path in this.processedPaths)
             {
+                if (!ShouldProcess(path, $"Analyzing path with Fix={this.fix} and Recurse={this.recurse}"))
+                {
+                    continue;
+                }
+
                 if (fix)
                 {
-                    ShouldProcess(path, $"Analyzing and fixing path with Recurse={this.recurse}");
-                    diagnostics.AddRange(ScriptAnalyzer.Instance.AnalyzeAndFixPath(path, this.ShouldProcess, this.recurse));
+                    foreach (var record in ScriptAnalyzer.Instance.AnalyzeAndFixPath(path, this.ShouldProcess, this.recurse))
+                    {
+                        yield return record;
+                    }
                 }
                 else
                 {
-                    ShouldProcess(path, $"Analyzing path with Recurse={this.recurse}");
-                    diagnostics.AddRange(ScriptAnalyzer.Instance.AnalyzePath(path, this.ShouldProcess, this.recurse));
+                    foreach (var record in ScriptAnalyzer.Instance.AnalyzePath(path, this.ShouldProcess, this.recurse))
+                    {
+                        yield return record;
+                    }
                 }
             }
-
-            return diagnostics;
         }
 
         private void WriteToOutput(IEnumerable<DiagnosticRecord> diagnosticRecords)
