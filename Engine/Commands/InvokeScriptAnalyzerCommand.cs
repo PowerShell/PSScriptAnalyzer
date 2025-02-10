@@ -416,36 +416,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             ScriptAnalyzer.Instance.CleanUp();
             base.EndProcessing();
 
-            var infoCount = diagnosticCounts[DiagnosticSeverity.Information];
-            var warningCount = diagnosticCounts[DiagnosticSeverity.Warning];
-            var errorCount = diagnosticCounts[DiagnosticSeverity.Error];
-            var parseErrorCount = diagnosticCounts[DiagnosticSeverity.ParseError];
+            var diagnosticCount = diagnosticCounts.Values.Sum();
 
             if (ReportSummary.IsPresent)
             {
-                var numberOfRuleViolations = infoCount + warningCount + errorCount;
-                if (numberOfRuleViolations == 0)
+                if (diagnosticCount == 0)
                 {
                     Host.UI.WriteLine("0 rule violations found.");
                 }
                 else
                 {
-                    var pluralS = numberOfRuleViolations > 1 ? "s" : string.Empty;
-                    var message = $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}";
-                    if (warningCount + errorCount == 0)
-                    {
-                        ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "WarningForegroundColor", "WarningBackgroundColor", message);
-                    }
-                    else
-                    {
-                        ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "ErrorForegroundColor", "ErrorBackgroundColor", message);
-                    }
+                    var infoCount = diagnosticCounts[DiagnosticSeverity.Information];
+                    var warningCount = diagnosticCounts[DiagnosticSeverity.Warning];
+                    var errorCount = diagnosticCounts[DiagnosticSeverity.Error] + diagnosticCounts[DiagnosticSeverity.ParseError];
+                    var severeDiagnosticCount = diagnosticCount - infoCount;
+
+                    var colorPropertyPrefix = severeDiagnosticCount == 0 ? "Warning" : "Error";
+                    var pluralS = diagnosticCount > 1 ? "s" : string.Empty;
+                    ConsoleHostHelper.DisplayMessageUsingSystemProperties(
+                            Host, colorPropertyPrefix + "ForegroundColor", colorPropertyPrefix + "BackgroundColor",
+                            $"{diagnosticCount} rule violation{pluralS} found. Severity distribution: " +
+                            $"{DiagnosticSeverity.Error} = {errorCount}, " +
+                            $"{DiagnosticSeverity.Warning} = {warningCount}, " +
+                            $"{DiagnosticSeverity.Information} = {infoCount}");
                 }
             }
 
             if (EnableExit)
             {
-                this.Host.SetShouldExit(diagnosticCounts.Values.Sum());
+                this.Host.SetShouldExit(diagnosticCount);
             }
         }
 
