@@ -561,9 +561,29 @@ Describe "Test -EnableExit Switch" {
 
         $pssaPath = (Get-Module PSScriptAnalyzer).Path
 
-        & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit"
+        & $pwshExe -NoProfile -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -EnableExit"
 
-        $LASTEXITCODE  | Should -Be 1
+        $LASTEXITCODE | Should -Be 1
+    }
+
+    It "Returns exit code equivalent to number of warnings for multiple piped files" {
+        if ($IsCoreCLR)
+        {
+            $pwshExe = (Get-Process -Id $PID).Path
+        }
+        else
+        {
+            $pwshExe = 'powershell'
+        }
+
+        $pssaPath = (Get-Module PSScriptAnalyzer).Path
+
+        & $pwshExe -NoProfile {
+            Import-Module $Args[0]
+            Get-ChildItem $Args[1] | Invoke-ScriptAnalyzer -EnableExit
+        } -Args $pssaPath, "$PSScriptRoot\RecursionDirectoryTest"
+
+        $LASTEXITCODE | Should -Be 2
     }
 
     Describe "-ReportSummary switch" {
