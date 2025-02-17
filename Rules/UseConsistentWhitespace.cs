@@ -396,8 +396,17 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     testAst => testAst is CommandAst, true);
             foreach (CommandAst commandAst in commandAsts)
             {
+                /// When finding all the command parameter elements, there is no guarantee that
+                /// we will read them from the AST in the order they appear in the script (in token
+                /// order). So we first sort the tokens by their starting line number, followed by
+                /// their starting column number.
                 List<Ast> commandParameterAstElements = commandAst.FindAll(
-                    testAst => testAst.Parent == commandAst, searchNestedScriptBlocks: false).ToList();
+                        testAst => testAst.Parent == commandAst, searchNestedScriptBlocks: false
+                    ).OrderBy(
+                        e => e.Extent.StartLineNumber
+                    ).ThenBy(
+                        e => e.Extent.StartColumnNumber
+                    ).ToList();
                 for (int i = 0; i < commandParameterAstElements.Count - 1; i++)
                 {
                     IScriptExtent leftExtent = commandParameterAstElements[i].Extent;
