@@ -372,6 +372,7 @@ Describe "Test CustomizedRulePath" {
     BeforeAll {
         $measureRequired = "CommunityAnalyzerRules\Measure-RequiresModules"
     }
+
     Context "When used correctly" {
         It "with the module folder path" {
             $customizedRulePath = Invoke-ScriptAnalyzer $PSScriptRoot\TestScript.ps1 -CustomizedRulePath $PSScriptRoot\CommunityAnalyzerRules | Where-Object { $_.RuleName -eq $measureRequired }
@@ -516,7 +517,6 @@ Describe "Test CustomizedRulePath" {
 }
 
 Describe "Test -Fix Switch" {
-
     BeforeAll {
         $scriptName = "TestScriptWithFixableWarnings.ps1"
         $testSource = Join-Path $PSScriptRoot $scriptName
@@ -585,65 +585,65 @@ Describe "Test -EnableExit Switch" {
 
         $LASTEXITCODE | Should -Be 2
     }
+}
 
-    Describe "-ReportSummary switch" {
-        BeforeAll {
-            $pssaPath = (Get-Module PSScriptAnalyzer).Path
+Describe "-ReportSummary switch" {
+    BeforeAll {
+        $pssaPath = (Get-Module PSScriptAnalyzer).Path
 
-            if ($IsCoreCLR)
-            {
-                $pwshExe = (Get-Process -Id $PID).Path
-            }
-            else
-            {
-                $pwshExe = 'powershell'
-            }
-
-            $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
+        if ($IsCoreCLR)
+        {
+            $pwshExe = (Get-Process -Id $PID).Path
+        }
+        else
+        {
+            $pwshExe = 'powershell'
         }
 
-        It "prints the correct report summary using the -NoReportSummary switch" {
-            $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary"
-
-            "$result" | Should -BeLike $reportSummaryFor1Warning
-        }
-        It "does not print the report summary when not using -NoReportSummary switch" {
-            $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci"
-
-            "$result" | Should -Not -BeLike $reportSummaryFor1Warning
-        }
+        $reportSummaryFor1Warning = '*1 rule violation found.    Severity distribution:  Error = 0, Warning = 1, Information = 0*'
     }
 
-    # using statements are only supported in v5+
-    Describe "Handles parse errors due to unknown types" -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt '5.0')) {
-        BeforeAll {
-            $script = @'
-                using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
-                using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
-                Import-Module "AzureRm"
-                class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
+    It "prints the correct report summary using the -NoReportSummary switch" {
+        $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary"
+
+        "$result" | Should -BeLike $reportSummaryFor1Warning
+    }
+    It "does not print the report summary when not using -NoReportSummary switch" {
+        $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci"
+
+        "$result" | Should -Not -BeLike $reportSummaryFor1Warning
+    }
+}
+
+# using statements are only supported in v5+
+Describe "Handles parse errors due to unknown types" -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt '5.0')) {
+    BeforeAll {
+        $script = @'
+            using namespace Microsoft.Azure.Commands.ResourceManager.Cmdlets.SdkModels
+            using namespace Microsoft.Azure.Commands.Common.Authentication.Abstractions
+            Import-Module "AzureRm"
+            class MyClass { [IStorageContext]$StorageContext } # This will result in a parser error due to [IStorageContext] type that comes from the using statement but is not known at parse time
 '@
-        }
-        It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
-            $warnings.Count | Should -Be 1
-            $warnings.RuleName | Should -Be 'TypeNotFound'
-        }
-
-        It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
-            $testFilePath = "TestDrive:\testfile.ps1"
-            Set-Content $testFilePath -Value $script
-            $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
-            $warnings.Count | Should -Be 1
-            $warnings.RuleName | Should -Be 'TypeNotFound'
-        }
+    }
+    It "does not throw and detect one expected warning after the parse error has occured when using -ScriptDefintion parameter set" {
+        $warnings = Invoke-ScriptAnalyzer -ScriptDefinition $script
+        $warnings.Count | Should -Be 1
+        $warnings.RuleName | Should -Be 'TypeNotFound'
     }
 
-    Describe 'Handles static Singleton (issue 1182)' -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt '5.0')) {
-        It 'Does not throw or return diagnostic record' {
-            $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
-            Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
-        }
+    It "does not throw and detect one expected warning after the parse error has occured when using -Path parameter set" {
+        $testFilePath = "TestDrive:\testfile.ps1"
+        Set-Content $testFilePath -Value $script
+        $warnings = Invoke-ScriptAnalyzer -Path $testFilePath
+        $warnings.Count | Should -Be 1
+        $warnings.RuleName | Should -Be 'TypeNotFound'
+    }
+}
+
+Describe 'Handles static Singleton (issue 1182)' -Skip:($testingLibraryUsage -or ($PSVersionTable.PSVersion -lt '5.0')) {
+    It 'Does not throw or return diagnostic record' {
+        $scriptDefinition = 'class T { static [T]$i }; function foo { [CmdletBinding()] param () $script:T.WriteLog() }'
+        Invoke-ScriptAnalyzer -ScriptDefinition $scriptDefinition -ErrorAction Stop | Should -BeNullOrEmpty
     }
 }
 
