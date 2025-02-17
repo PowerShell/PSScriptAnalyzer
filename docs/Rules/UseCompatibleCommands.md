@@ -1,6 +1,5 @@
 ---
 description: Use compatible commands
-ms.custom: PSSA v1.22.0
 ms.date: 06/28/2023
 ms.topic: reference
 title: UseCompatibleCommands
@@ -102,7 +101,7 @@ An example configuration might look like:
 ```powershell
 @{
     Rules = @{
-        PSUseCompatibleCommmands = @{
+        PSUseCompatibleCommands = @{
             Enable = $true
             TargetProfiles = @(
                 'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'

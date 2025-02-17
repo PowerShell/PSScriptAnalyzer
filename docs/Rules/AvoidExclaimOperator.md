@@ -1,29 +1,33 @@
 ---
 description: Avoid exclaim operator
-ms.custom: PSSA v1.22.0
-ms.date: 06/14/2023
+ms.date: 03/26/2024
 ms.topic: reference
 title: AvoidExclaimOperator
 ---
 # AvoidExclaimOperator
+
 **Severity Level: Warning**
 
 ## Description
 
-The negation operator `!` should not be used for readability purposes. Use `-not` instead.
+Avoid using the negation operator (`!`). Use `-not` for improved readability.
 
-**Note**: This rule is not enabled by default. The user needs to enable it through settings.
+> [!NOTE]
+> This rule is not enabled by default. The user needs to enable it through settings.
 
 ## How to Fix
 
 ## Example
-### Wrong：
-```PowerShell
+
+### Wrong
+
+```powershell
 $MyVar = !$true
 ```
 
-### Correct:
-```PowerShell
+### Correct
+
+```powershell
 $MyVar = -not $true
 ```
 
@@ -39,6 +43,6 @@ Rules = @{
 
 ### Parameters
 
-#### Enable: bool (Default value is `$false`)
+- `Enable`: **bool** (Default value is `$false`)
 
-Enable or disable the rule during ScriptAnalyzer invocation.
+  Enable or disable the rule during ScriptAnalyzer invocation.

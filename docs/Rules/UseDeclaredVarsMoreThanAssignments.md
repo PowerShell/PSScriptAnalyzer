@@ -1,7 +1,6 @@
 ---
 description: Extra Variables
-ms.custom: PSSA v1.22.0
-ms.date: 06/28/2023
+ms.date: 03/06/2024
 ms.topic: reference
 title: UseDeclaredVarsMoreThanAssignments
 ---
@@ -44,10 +43,13 @@ function Test
 }
 ```
 
-### Special case
+### Special cases
 
-The following example triggers the **PSUseDeclaredVarsMoreThanAssignments** warning because `$bar`
-is not used within the scriptblock where it was defined.
+The following examples trigger the **PSUseDeclaredVarsMoreThanAssignments** warning. This behavior
+is a limitation of the rule. There is no way to avoid these false positive warnings.
+
+In this case, the warning is triggered because `$bar` is not used within the scriptblock where it
+was defined.
 
 ```powershell
 $foo | ForEach-Object {
@@ -59,4 +61,12 @@ $foo | ForEach-Object {
 if($bar){
     Write-Host 'Collection contained a false case.'
 }
+```
+
+In the next example, the warning is triggered because `$errResult` isn't recognized as being used in
+the `Write-Host` command.
+
+```powershell
+$errResult = $null
+Write-Host 'Ugh:' -ErrorVariable errResult
 ```
