@@ -1,7 +1,6 @@
 ---
 description: Avoid global aliases.
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: AvoidGlobalAliases
 ---
@@ -28,7 +27,7 @@ Use other scope modifiers for new aliases.
 ### Wrong
 
 ```powershell
-New-Alias -Name Name -Value Value -Scope "Global"
+New-Alias -Name Name -Value Value -Scope Global
 ```
 
 ### Correct

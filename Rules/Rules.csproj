@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.21.0</VersionPrefix>
-    <TargetFrameworks>netcoreapp3.1;net462</TargetFrameworks>
+    <VersionPrefix>$(ModuleVersion)</VersionPrefix>
+    <TargetFrameworks>net6;net462</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
-    <AssemblyVersion>1.21.0</AssemblyVersion>
+    <AssemblyVersion>$(ModuleVersion)</AssemblyVersion>
     <PackageId>Rules</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies> <!-- Needed in order for Pluralize.NET DLL to appear in bin folder - https://github.com/NuGet/Home/issues/4488 -->
@@ -16,16 +16,15 @@
 
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <!--  The version of Newtonsoft.Json needs to be newer than the version in the oldest supported version of PowerShell 7: https://github.com/PowerShell/PowerShell/blob/v7.0.11/src/System.Management.Automation/System.Management.Automation.csproj#L15 -->
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
-    <PackageReference Include="Pluralize.NET" Version="1.0.2" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6' ">
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Reflection.TypeExtensions" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" />
+    <PackageReference Include="Pluralize.NET" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data.Entity.Design" />
   </ItemGroup>
@@ -34,21 +33,26 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Update="Strings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
+  <!--
+       This ItemGroup and PropertyGroup block is required for resource generation to work for
+       .NET CLI, Visual Studio and VS-Code: https://github.com/dotnet/msbuild/issues/4751
+  -->
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <!-- Tell Visual Studio that MSBuild will do the generation and run a build if resx file changes. -->
+      <Generator>MSBuild:Compile</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <StronglyTypedFileName>$(IntermediateOutputPath)\Strings.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</StronglyTypedNamespace>
+      <StronglyTypedClassName>Strings</StronglyTypedClassName>
     </EmbeddedResource>
   </ItemGroup>
-  
+  <!-- For VS Code/OmniSharp support, ensure that CoreResGen runs before CoreCompile -->
+  <PropertyGroup>
+    <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' OR '$(Configuration)' == 'PSV3Debug'">
     <DefineConstants>$(DefineConstants);PSV3</DefineConstants>
   </PropertyGroup>
@@ -57,7 +61,7 @@
     <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>
 

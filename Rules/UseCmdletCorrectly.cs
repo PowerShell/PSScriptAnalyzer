@@ -100,7 +100,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Positional parameters could be mandatory, so we assume all is well
-            if (Helper.Instance.PositionalParameterUsed(cmdAst) && Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst))
+            if (Helper.Instance.PositionalParameterUsed(cmdAst) && Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst, out _))
             {
                 return true;
             }

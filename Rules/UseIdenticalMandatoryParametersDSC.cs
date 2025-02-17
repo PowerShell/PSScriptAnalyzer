@@ -32,7 +32,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
     public class UseIdenticalMandatoryParametersDSC : IDSCResourceRule
     {
         private bool isDSCClassCacheInitialized = false;
-        private Ast ast;
         private string fileName;
         private IDictionary<string, string> propAttrDict;
         private IEnumerable<FunctionDefinitionAst> resourceFunctions;
@@ -94,7 +93,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
 
             // Get the keys in the corresponding mof file
-            this.ast = ast;
             this.fileName = fileName;
             this.propAttrDict = GetKeys(fileName);
             this.resourceFunctions = Helper.Instance.DscResourceFunctions(ast)

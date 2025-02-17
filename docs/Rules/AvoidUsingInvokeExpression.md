@@ -1,7 +1,6 @@
 ---
 description: Avoid Using Invoke-Expression
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: AvoidUsingInvokeExpression
 ---
@@ -26,7 +25,7 @@ Remove the use of `Invoke-Expression`.
 ### Wrong
 
 ```powershell
-Invoke-Expression "Get-Process"
+Invoke-Expression 'Get-Process'
 ```
 
 ### Correct

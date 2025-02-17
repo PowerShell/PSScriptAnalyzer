@@ -1,7 +1,6 @@
 ---
 description: Avoid Using Positional Parameters
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 02/13/2024
 ms.topic: reference
 title: AvoidUsingPositionalParameters
 ---
@@ -24,8 +23,8 @@ supplied. A simple example where the risk of using positional parameters is negl
 
 ```powershell
 Rules = @{
-    AvoidUsingPositionalParameters = @{
-        CommandAllowList = 'az', 'Join-Path'
+    PSAvoidUsingPositionalParameters = @{
+        CommandAllowList = 'Join-Path', 'MyCmdletOrScript'
         Enable           = $true
     }
 }
@@ -33,9 +32,9 @@ Rules = @{
 
 ### Parameters
 
-#### AvoidUsingPositionalParameters: string[] (Default value is 'az')
+#### CommandAllowList: string[] (Default value is @()')
 
-Commands to be excluded from this rule. `az` is excluded by default because starting with version 2.40.0 the entrypoint of the AZ CLI became an `az.ps1` script but this script does not have any named parameters and just passes them on using `$args` as is to the Python process that it starts, therefore it is still a CLI and not a PowerShell command.
+Commands or scripts to be excluded from this rule.
 
 #### Enable: bool (Default value is `$true`)
 

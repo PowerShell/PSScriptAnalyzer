@@ -32,6 +32,12 @@ Describe "ReviewUnusedParameter" {
             $Violations.Count | Should -Be 1
         }
 
+		It "doesn't traverse scriptblock scope for a random command" {
+            $ScriptDefinition = '{ param ($Param1) 1..3 | Invoke-Parallel { $Param1 }}'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 1
+        }
+
         It "violations have correct rule and severity" {
             $ScriptDefinition = 'function BadFunc1 { param ($Param1, $Param2) $Param1}'
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
@@ -80,6 +86,24 @@ Describe "ReviewUnusedParameter" {
         It "has no violations when case of parameter and variable usage do not match" -skip {
             $ScriptDefinition = 'function foo { param ($Param1, $param2) $param1; $Param2}'
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+		It "does traverse scriptblock scope for Foreach-Object" {
+            $ScriptDefinition = '{ param ($Param1) 1..3 | ForEach-Object { $Param1 }}'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+		It "does traverse scriptblock scope for commands added to the traversal list" {
+            $ScriptDefinition = '{ param ($Param1) Invoke-PSFProtectedCommand { $Param1 } }'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName -Settings @{
+				Rules = @{
+					PSReviewUnusedParameter = @{
+						CommandsToTraverse = @('Invoke-PSFProtectedCommand')
+					}
+				}
+			}
             $Violations.Count | Should -Be 0
         }
     }

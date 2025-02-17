@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.21.0</VersionPrefix>
+    <VersionPrefix>$(ModuleVersion)</VersionPrefix>
     <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
-    <AssemblyVersion>1.21.0</AssemblyVersion>
+    <AssemblyVersion>$(ModuleVersion)</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
@@ -11,21 +11,20 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <!--  The version of Newtonsoft.Json needs to be newer than the version in the oldest supported version of PowerShell 7: https://github.com/PowerShell/PowerShell/blob/v7.0.11/src/System.Management.Automation/System.Management.Automation.csproj#L15 -->
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
-    <PackageReference Include="PowerShellStandard.Library" Version="3.0.0-preview-02" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" />
+    <PackageReference Include="PowerShellStandard.Library" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="1.0.0" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" VersionOverride="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.CSharp" />
   </ItemGroup>
 
 </Project>

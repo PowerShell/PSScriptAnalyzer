@@ -1,7 +1,6 @@
 ---
 description: Null Comparison
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: PossibleIncorrectComparisonWithNull
 ---
@@ -66,7 +65,7 @@ This is how the comparison operator works by-design. But, as demonstrated, this 
 to non-intuitive behavior, especially when the intent is simple test for null.
 
 The following example demonstrates the designed behavior of the comparison operator when the
-left-hand side is a collection. Each element in the collection is compared the right-hand side
+left-hand side is a collection. Each element in the collection is compared to the right-hand side
 value. When true, that element of the collection is returned.
 
 ```powershell

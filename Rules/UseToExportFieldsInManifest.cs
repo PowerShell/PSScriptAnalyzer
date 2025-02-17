@@ -69,7 +69,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             foreach(string field in manifestFields)
             {
                 IScriptExtent extent;
-                if (!HasAcceptableExportField(field, hashtableAst, ast.Extent.Text, out extent) && extent != null)
+                if (!HasAcceptableExportField(field, hashtableAst, out extent) && extent != null)
                 {
                     yield return new DiagnosticRecord(
                         GetError(field), 
@@ -200,10 +200,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// </summary>
         /// <param name="key"></param>
         /// <param name="hast"></param>
-        /// <param name="scriptText"></param>
         /// <param name="extent"></param>
         /// <returns>A boolean value indicating if the the ToExport fields are explicitly set to arrays or not.</returns>
-        private bool HasAcceptableExportField(string key, HashtableAst hast, string scriptText, out IScriptExtent extent)
+        private bool HasAcceptableExportField(string key, HashtableAst hast, out IScriptExtent extent)
         {
             extent = null;
             foreach (var pair in hast.KeyValuePairs)

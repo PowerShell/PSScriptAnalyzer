@@ -1,7 +1,6 @@
 ---
 description: Use compatible commands
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: UseCompatibleCommands
 ---
@@ -82,7 +81,7 @@ The default profile directory is under the PSScriptAnalzyer module at
 `$PSScriptRoot/compatibility_profiles` (where `$PSScriptRoot` here refers to the directory
 containing `PSScriptAnalyzer.psd1`).
 
-The compatibility analysis compares a command used to both a target profile and a "union" profile
+The compatibility analysis compares a command used to both a target profile and a 'union' profile
 (containing all commands available in *any* profile in the profile dir). If a command is not present
 in the union profile, it is assumed to be locally created and ignored. Otherwise, if a command is
 present in the union profile but not present in a target, it is deemed to be incompatible with that
@@ -102,7 +101,7 @@ An example configuration might look like:
 ```powershell
 @{
     Rules = @{
-        PSUseCompatibleCommmands = @{
+        PSUseCompatibleCommands = @{
             Enable = $true
             TargetProfiles = @(
                 'ubuntu_x64_18.04_6.1.3_x64_4.0.30319.42000_core'
@@ -126,17 +125,17 @@ Command compatibility diagnostics can be suppressed with an attribute on the `pa
 scriptblock as with other rules.
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
 ```
 
 The rule can also be suppressed only for particular commands:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "Start-Service")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', 'Start-Service')]
 ```
 
 And also suppressed only for parameters:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "Import-Module/FullyQualifiedName")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', 'Import-Module/FullyQualifiedName')]
 ```

@@ -34,6 +34,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         #region Private variables
         List<string> processedPaths;
+        private int totalDiagnosticCount = 0;
         #endregion // Private variables
 
         #region Parameters
@@ -283,8 +284,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             }
 #endif
             Helper.Instance = new Helper(
-                SessionState.InvokeCommand,
-                this);
+                SessionState.InvokeCommand);
             Helper.Instance.Initialize();
 
             var psVersionTable = this.SessionState.PSVariable.GetValue("PSVersionTable") as Hashtable;
@@ -411,6 +411,10 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
         {
             ScriptAnalyzer.Instance.CleanUp();
             base.EndProcessing();
+
+            if (EnableExit) {
+                this.Host.SetShouldExit(totalDiagnosticCount);
+            }
         }
 
         protected override void StopProcessing()
@@ -425,10 +429,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         private void ProcessInput()
         {
-            WriteToOutput(RunAnalysis());
+            var diagnosticRecords = RunAnalysis();
+            WriteToOutput(diagnosticRecords);
+            totalDiagnosticCount += diagnosticRecords.Count;
         }
 
-        private IEnumerable<DiagnosticRecord> RunAnalysis()
+        private List<DiagnosticRecord> RunAnalysis()
         {
             if (!IsFileParameterSet())
             {
@@ -453,7 +459,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             return diagnostics;
         }
 
-        private void WriteToOutput(IEnumerable<DiagnosticRecord> diagnosticRecords)
+        private void WriteToOutput(List<DiagnosticRecord> diagnosticRecords)
         {
             foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
             {
@@ -505,11 +511,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                         }
                     }
                 }
-            }
-
-            if (EnableExit.IsPresent)
-            {
-                this.Host.SetShouldExit(diagnosticRecords.Count());
             }
         }
 

@@ -175,7 +175,7 @@ Describe 'Cmdlet parameter help' {
 			)
 
 			BEGIN {
-				$Common = 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable'
+				$Common = [System.Management.Automation.PSCmdlet]::CommonParameters
 				$parameters = @()
 			}
 			PROCESS {
