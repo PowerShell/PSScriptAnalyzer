@@ -1,0 +1,64 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ci:
+    name: pester
+    strategy:
+      matrix:
+        os: [ windows-latest, macos-latest, ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Install PSResources
+        run: ./tools/installPSResources.ps1
+        shell: pwsh
+
+      - name: Build
+        run: ./build.ps1 -Configuration Release -All
+        shell: pwsh
+
+      - name: Package
+        run: ./build.ps1 -BuildNupkg
+        shell: pwsh
+
+      - name: Test
+        run: ./build.ps1 -Test
+        shell: pwsh
+
+      - name: Test Windows PowerShell
+        run: |
+           Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck
+           ./build.ps1 -Test
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PSScriptAnalyzer-package-${{ matrix.os }}
+          path: out/**/*.nupkg
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PSScriptAnalyzer-tests-${{ matrix.os }}
+          path: testResults.xml
