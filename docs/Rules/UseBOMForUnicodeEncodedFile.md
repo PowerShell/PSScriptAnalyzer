@@ -1,6 +1,5 @@
 ---
 description: Use BOM encoding for non-ASCII files
-ms.custom: PSSA v1.22.0
 ms.date: 06/28/2023
 ms.topic: reference
 title: UseBOMForUnicodeEncodedFile

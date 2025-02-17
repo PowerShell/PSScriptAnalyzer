@@ -1,0 +1,177 @@
+#################################################################################
+#                               OneBranch Pipelines                             #
+# This pipeline was created by EasyStart from a sample located at:              #
+#   https://aka.ms/obpipelines/easystart/samples                                #
+# Documentation:  https://aka.ms/obpipelines                                    #
+# Yaml Schema:    https://aka.ms/obpipelines/yaml/schema                        #
+# Retail Tasks:   https://aka.ms/obpipelines/tasks                              #
+# Support:        https://aka.ms/onebranchsup                                   #
+#################################################################################
+
+trigger:
+- main
+
+schedules:
+- cron: '20 16 * * 4'
+  displayName: Weekly CodeQL
+  branches:
+    include:
+    - main
+  always: true
+
+parameters:
+- name: debug
+  displayName: Enable debug output
+  type: boolean
+  default: false
+
+variables:
+  system.debug: ${{ parameters.debug }}
+  BuildConfiguration: Release
+  WindowsContainerImage: onebranch.azurecr.io/windows/ltsc2022/vse2022:latest
+  DOTNET_NOLOGO: true
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+
+extends:
+  # https://aka.ms/obpipelines/templates
+  template: v2/OneBranch.Official.CrossPlat.yml@templates
+  parameters:
+    globalSdl: # https://aka.ms/obpipelines/sdl
+      asyncSdl:
+        enabled: true
+        forStages: [build]
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    release:
+      category: NonAzure
+    stages:
+    - stage: build
+      jobs:
+      - job: main
+        displayName: Build package
+        pool:
+          type: windows
+        variables:
+          ob_outputDirectory: $(Build.SourcesDirectory)/out
+        steps:
+          - pwsh: |
+              [xml]$xml = Get-Content ./Directory.Build.props
+              $version = $xml.Project.PropertyGroup.ModuleVersion
+              Write-Output "##vso[task.setvariable variable=version;isOutput=true]$version"
+            name: package
+            displayName: Get version from project properties
+          - task: onebranch.pipeline.version@1
+            displayName: Set OneBranch version
+            inputs:
+              system: Custom
+              customVersion: $(package.version)
+          - task: UseDotNet@2
+            displayName: Use .NET SDK
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+          - pwsh: |
+              Register-PSRepository -Name CFS -SourceLocation "https://pkgs.dev.azure.com/powershell/PowerShell/_packaging/powershell/nuget/v2" -InstallationPolicy Trusted
+              Install-Module -Repository CFS -Name Microsoft.PowerShell.PSResourceGet
+              ./tools/installPSResources.ps1 -PSRepository CFS
+            displayName: Install PSResources
+          - pwsh: ./build.ps1 -Configuration Release -All
+            displayName: Build
+          - task: onebranch.pipeline.signing@1
+            displayName: Sign 1st-party files
+            inputs:
+              command: sign
+              signing_profile: external_distribution
+              search_root: $(Build.SourcesDirectory)/out
+              files_to_sign: |
+                **/Microsoft.*.dll;
+                **/*.psd1;
+                **/*.psm1;
+                **/*.ps1xml;
+          - task: onebranch.pipeline.signing@1
+            displayName: Sign 3rd-party files
+            inputs:
+              command: sign
+              signing_profile: 135020002
+              search_root: $(Build.SourcesDirectory)/out
+              files_to_sign: |
+                **/Newtonsoft.Json.dll;
+                **/Pluralize.NET.dll;
+          - pwsh: ./build.ps1 -BuildNupkg
+            displayName: Package module
+          - task: onebranch.pipeline.signing@1
+            displayName: Sign NuGet package
+            inputs:
+              command: sign
+              signing_profile: external_distribution
+              search_root: $(Build.SourcesDirectory)/out
+              files_to_sign: |
+                *.nupkg
+    - stage: release
+      dependsOn: build
+      condition: eq(variables['Build.Reason'], 'Manual')
+      variables:
+        ob_release_environment: Production
+        version: $[ stageDependencies.build.main.outputs['package.version'] ]
+      jobs:
+      - job: github
+        displayName: Publish draft to GitHub
+        pool:
+          type: release
+        templateContext:
+          inputs:
+          - input: pipelineArtifact
+            artifactName: drop_build_main
+        steps:
+        - task: GitHubRelease@1
+          displayName: Create GitHub release
+          inputs:
+            gitHubConnection: GitHub
+            repositoryName: PowerShell/PSScriptAnalyzer
+            target: main
+            assets: $(Pipeline.Workspace)/PSScriptAnalyzer.$(version).nupkg
+            tagSource: userSpecifiedTag
+            tag: v$(version)
+            isDraft: true
+            addChangeLog: false
+            releaseNotesSource: inline
+            releaseNotesInline: "<!-- TODO: Generate release notes on GitHub! -->"
+      - job: validation
+        displayName: Manual validation
+        pool:
+          type: server
+        timeoutInMinutes: 1440
+        steps:
+        - task: ManualValidation@0
+          displayName: Wait 24 hours for validation
+          inputs:
+            notifyUsers: $(Build.RequestedForEmail)
+            instructions: Please validate the release and then publish it!
+            timeoutInMinutes: 1440
+      - job: publish
+        dependsOn: validation
+        displayName: Publish to PowerShell Gallery
+        pool:
+          type: release
+        templateContext:
+          inputs:
+          - input: pipelineArtifact
+            artifactName: drop_build_main
+        steps:
+        - task: NuGetCommand@2
+          displayName: Publish module to PowerShell Gallery
+          inputs:
+            command: push
+            packagesToPush: $(Pipeline.Workspace)/PSScriptAnalyzer.$(version).nupkg
+            nuGetFeedType: external
+            publishFeedCredentials: PowerShellGallery
