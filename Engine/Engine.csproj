@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.22.0</VersionPrefix>
+    <VersionPrefix>$(ModuleVersion)</VersionPrefix>
     <TargetFrameworks>net6;net462</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer</AssemblyName>
-    <AssemblyVersion>1.22.0</AssemblyVersion>
+    <AssemblyVersion>$(ModuleVersion)</AssemblyVersion>
     <PackageId>Engine</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
     <LangVersion>9.0</LangVersion>
@@ -45,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <!--
@@ -70,22 +70,22 @@
 
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
-    <PackageReference Include="System.Management.Automation" Version="7.0.11" />
+    <PackageReference Include="System.Management.Automation" />
   </ItemGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' AND '$(Configuration)' == 'PSV3Release' AND '$(Configuration)' != 'PSV4Release'">
-    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
+    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' AND '$(Configuration)' == 'PSV4Release'">
-    <PackageReference Include="Microsoft.PowerShell.4.ReferenceAssemblies" Version="1.0.0" />
+    <PackageReference Include="Microsoft.PowerShell.4.ReferenceAssemblies" />
   </ItemGroup>
    
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' AND '$(Configuration)' != 'PSV3Release'">
-    <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
+    <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" />
   </ItemGroup>
    
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">
