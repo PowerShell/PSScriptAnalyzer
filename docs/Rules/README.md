@@ -1,7 +1,6 @@
 ---
 description: List of PSScriptAnalyzer rules
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 03/27/2024
 ms.topic: reference
 title: List of PSScriptAnalyzer rules
 ---
@@ -15,6 +14,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidAssignmentToAutomaticVariable](./AvoidAssignmentToAutomaticVariable.md)                     | Warning     |        Yes         |                 |
 | [AvoidDefaultValueForMandatoryParameter](./AvoidDefaultValueForMandatoryParameter.md)             | Warning     |        Yes         |                 |
 | [AvoidDefaultValueSwitchParameter](./AvoidDefaultValueSwitchParameter.md)                         | Warning     |        Yes         |                 |
+| [AvoidExclaimOperator](./AvoidExclaimOperator.md)                                                 | Warning     |         No         |                 |
 | [AvoidGlobalAliases<sup>1</sup>](./AvoidGlobalAliases.md)                                         | Warning     |        Yes         |                 |
 | [AvoidGlobalFunctions](./AvoidGlobalFunctions.md)                                                 | Warning     |        Yes         |                 |
 | [AvoidGlobalVars](./AvoidGlobalVars.md)                                                           | Warning     |        Yes         |                 |
@@ -26,12 +26,13 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [AvoidSemicolonsAsLineTerminators](./AvoidSemicolonsAsLineTerminators.md)                         | Warning     |         No         |                 |
 | [AvoidShouldContinueWithoutForce](./AvoidShouldContinueWithoutForce.md)                           | Warning     |        Yes         |                 |
 | [AvoidTrailingWhitespace](./AvoidTrailingWhitespace.md)                                           | Warning     |        Yes         |                 |
+| [AvoidUsingAllowUnencryptedAuthentication](./AvoidUsingAllowUnencryptedAuthentication.md)         | Warning     |        Yes         |                 |
 | [AvoidUsingBrokenHashAlgorithms](./AvoidUsingBrokenHashAlgorithms.md)                             | Warning     |        Yes         |                 |
 | [AvoidUsingCmdletAliases](./AvoidUsingCmdletAliases.md)                                           | Warning     |        Yes         | Yes<sup>2</sup> |
 | [AvoidUsingComputerNameHardcoded](./AvoidUsingComputerNameHardcoded.md)                           | Error       |        Yes         |                 |
 | [AvoidUsingConvertToSecureStringWithPlainText](./AvoidUsingConvertToSecureStringWithPlainText.md) | Error       |        Yes         |                 |
 | [AvoidUsingDeprecatedManifestFields](./AvoidUsingDeprecatedManifestFields.md)                     | Warning     |        Yes         |                 |
-| [AvoidUsingDoubleQuotesForConstantString](./AvoidUsingDoubleQuotesForConstantString.md)           | Warning     |         No         |       Yes       |
+| [AvoidUsingDoubleQuotesForConstantString](./AvoidUsingDoubleQuotesForConstantString.md)           | Information |         No         |                 |
 | [AvoidUsingEmptyCatchBlock](./AvoidUsingEmptyCatchBlock.md)                                       | Warning     |        Yes         |                 |
 | [AvoidUsingInvokeExpression](./AvoidUsingInvokeExpression.md)                                     | Warning     |        Yes         |                 |
 | [AvoidUsingPlainTextForPassword](./AvoidUsingPlainTextForPassword.md)                             | Warning     |        Yes         |                 |
@@ -56,7 +57,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [ProvideCommentHelp](./ProvideCommentHelp.md)                                                     | Information |        Yes         |       Yes       |
 | [ReservedCmdletChar](./ReservedCmdletChar.md)                                                     | Error       |        Yes         |                 |
 | [ReservedParams](./ReservedParams.md)                                                             | Error       |        Yes         |                 |
-| [ReviewUnusedParameter](./ReviewUnusedParameter.md)                                               | Warning     |        Yes         |                 |
+| [ReviewUnusedParameter](./ReviewUnusedParameter.md)                                               | Warning     |        Yes         | Yes<sup>2</sup> |
 | [ShouldProcess](./ShouldProcess.md)                                                               | Warning     |        Yes         |                 |
 | [UseApprovedVerbs](./UseApprovedVerbs.md)                                                         | Warning     |        Yes         |                 |
 | [UseBOMForUnicodeEncodedFile](./UseBOMForUnicodeEncodedFile.md)                                   | Warning     |        Yes         |                 |
@@ -74,7 +75,7 @@ The PSScriptAnalyzer contains the following rule definitions.
 | [UseProcessBlockForPipelineCommand](./UseProcessBlockForPipelineCommand.md)                       | Warning     |        Yes         |                 |
 | [UsePSCredentialType](./UsePSCredentialType.md)                                                   | Warning     |        Yes         |                 |
 | [UseShouldProcessForStateChangingFunctions](./UseShouldProcessForStateChangingFunctions.md)       | Warning     |        Yes         |                 |
-| [UseSingularNouns](./UseSingularNouns.md)                                                         | Warning     |        Yes         |                 |
+| [UseSingularNouns](./UseSingularNouns.md)                                                         | Warning     |        Yes         |       Yes       |
 | [UseSupportsShouldProcess](./UseSupportsShouldProcess.md)                                         | Warning     |        Yes         |                 |
 | [UseToExportFieldsInManifest](./UseToExportFieldsInManifest.md)                                   | Warning     |        Yes         |                 |
 | [UseUsingScopeModifierInNewRunspaces](./UseUsingScopeModifierInNewRunspaces.md)                   | Warning     |        Yes         |                 |
@@ -82,5 +83,5 @@ The PSScriptAnalyzer contains the following rule definitions.
 
 - <sup>1</sup> Rule is not available on all PowerShell versions, editions, or OS platforms. See the
   rule's documentation for details.
-- <sup>2</sup> The rule a configurable property, but the rule can't be disabled like other
+- <sup>2</sup> The rule has a configurable property, but the rule can't be disabled like other
   configurable rules.

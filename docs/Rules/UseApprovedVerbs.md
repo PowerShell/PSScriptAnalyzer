@@ -1,7 +1,6 @@
 ---
 description: Cmdlet Verbs
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 03/26/2024
 ms.topic: reference
 title: UseApprovedVerbs
 ---
@@ -15,10 +14,9 @@ All cmdlets must used approved verbs.
 
 Approved verbs can be found by running the command `Get-Verb`.
 
-Additional documentation on approved verbs can be found at
-[Approved Verbs for PowerShell Commands](https://learn.microsoft.com/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands).
-Some unapproved verbs are documented on the approved verbs page and point to approved alternatives.
-Try searching for the verb you used to find its approved form. For example, searching for `Read`,
+For a more information about approved verbs, see [Approved Verbs for PowerShell Commands][01]. Some
+unapproved verbs are documented on the approved verbs page and point to approved alternatives. Try
+searching for the verb you used to find its approved form. For example, searching for `Read`,
 `Open`, or `Search` leads you to `Get`.
 
 ## How
@@ -44,3 +42,6 @@ function Update-Item
     ...
 }
 ```
+
+<!-- link references -->
+[01]: /powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands

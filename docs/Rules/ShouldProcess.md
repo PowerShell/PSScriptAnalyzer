@@ -1,7 +1,6 @@
 ---
 description: Should Process
-ms.custom: PSSA v1.21.0
-ms.date: 03/24/2022
+ms.date: 06/28/2023
 ms.topic: reference
 title: ShouldProcess
 ---
@@ -18,9 +17,9 @@ but makes no calls to `ShouldProcess` or it calls `ShouldProcess` but does not d
 
 For more information, see the following articles:
 
-- [about_Functions_Advanced_Methods](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_functions_advanced_methods)
-- [about_Functions_CmdletBindingAttribute](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_Functions_CmdletBindingAttribute)
-- [Everything you wanted to know about ShouldProcess](https://learn.microsoft.com/powershell/scripting/learn/deep-dives/everything-about-shouldprocess)
+- [about_Functions_Advanced_Methods][01]
+- [about_Functions_CmdletBindingAttribute][02]
+- [Everything you wanted to know about ShouldProcess][03]
 
 ## How
 
@@ -42,7 +41,7 @@ function Set-File
         [Parameter(Mandatory=$true)]
         $Path
     )
-    "String" | Out-File -FilePath $Path
+    'String' | Out-File -FilePath $Path
 }
 ```
 
@@ -73,3 +72,7 @@ function Set-File
     }
 }
 ```
+<!-- link references -->
+[01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_functions_advanced_methods
+[02]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_Functions_CmdletBindingAttribute
+[03]: https://learn.microsoft.com/powershell/scripting/learn/deep-dives/everything-about-shouldprocess

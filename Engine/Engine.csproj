@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.21.0</VersionPrefix>
-    <TargetFrameworks>netcoreapp3.1;net462</TargetFrameworks>
+    <VersionPrefix>$(ModuleVersion)</VersionPrefix>
+    <TargetFrameworks>net6;net462</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer</AssemblyName>
-    <AssemblyVersion>1.21.0</AssemblyVersion>
+    <AssemblyVersion>$(ModuleVersion)</AssemblyVersion>
     <PackageId>Engine</PackageId>
     <RootNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</RootNamespace> <!-- Namespace needs to match Assembly name for ressource binding -->
     <LangVersion>9.0</LangVersion>
@@ -18,11 +18,11 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6' ">
     <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6' ">
     <Compile Remove="SafeDirectoryCatalog.cs" />
   </ItemGroup>
 
@@ -45,41 +45,47 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Strings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
+  <!--
+       This ItemGroup and PropertyGroup block is required for resource generation to work for
+       .NET CLI, Visual Studio and VS-Code: https://github.com/dotnet/msbuild/issues/4751
+  -->
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <!-- Tell Visual Studio that MSBuild will do the generation and run a build if resx file changes. -->
+      <Generator>MSBuild:Compile</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <StronglyTypedFileName>$(IntermediateOutputPath)\Strings.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>Microsoft.Windows.PowerShell.ScriptAnalyzer</StronglyTypedNamespace>
+      <StronglyTypedClassName>Strings</StronglyTypedClassName>
     </EmbeddedResource>
   </ItemGroup>
+  <!-- For VS Code/OmniSharp support, ensure that CoreResGen runs before CoreCompile -->
+  <PropertyGroup>
+    <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
+  </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="System.Management.Automation" Version="7.0.11" />
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
+    <PackageReference Include="System.Management.Automation" />
   </ItemGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' AND '$(Configuration)' == 'PSV3Release' AND '$(Configuration)' != 'PSV4Release'">
-    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
+    <PackageReference Include="Microsoft.PowerShell.3.ReferenceAssemblies" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' AND '$(Configuration)' == 'PSV4Release'">
-    <PackageReference Include="Microsoft.PowerShell.4.ReferenceAssemblies" Version="1.0.0" />
+    <PackageReference Include="Microsoft.PowerShell.4.ReferenceAssemblies" />
   </ItemGroup>
    
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' AND '$(Configuration)' != 'PSV3Release'">
-    <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" Version="1.1.0" />
+    <PackageReference Include="Microsoft.PowerShell.5.ReferenceAssemblies" />
   </ItemGroup>
    
   <PropertyGroup Condition=" '$(Configuration)' == 'PSV3Release' ">

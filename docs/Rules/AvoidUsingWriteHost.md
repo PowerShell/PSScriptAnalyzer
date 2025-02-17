@@ -1,7 +1,6 @@
 ---
 description: Avoid Using Write-Host
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: AvoidUsingWriteHost
 ---
@@ -12,7 +11,7 @@ title: AvoidUsingWriteHost
 ## Description
 
 The use of `Write-Host` is greatly discouraged unless in the use of commands with the `Show` verb.
-The `Show` verb explicitly means "show on the screen, with no other possibilities".
+The `Show` verb explicitly means 'show on the screen, with no other possibilities'.
 
 Commands with the `Show` verb do not have this check applied.
 
@@ -29,7 +28,7 @@ logging or returning one or more objects.
 function Get-MeaningOfLife
 {
     ...
-    Write-Host "Computing the answer to the ultimate question of life, the universe and everything"
+    Write-Host 'Computing the answer to the ultimate question of life, the universe and everything'
     ...
     Write-Host 42
 }
@@ -42,13 +41,13 @@ function Get-MeaningOfLife
 {
     [CmdletBinding()]Param() # to make it possible to set the VerbosePreference when calling the function
     ...
-    Write-Verbose "Computing the answer to the ultimate question of life, the universe and everything"
+    Write-Verbose 'Computing the answer to the ultimate question of life, the universe and everything'
     ...
     Write-Output 42
 }
 
 function Show-Something
 {
-    Write-Host "show something on screen";
+    Write-Host 'show something on screen'
 }
 ```

@@ -1,7 +1,6 @@
 ---
 description: Use SupportsShouldProcess
-ms.custom: PSSA v1.21.0
-ms.date: 12/06/2022
+ms.date: 06/28/2023
 ms.topic: reference
 title: UseSupportsShouldProcess
 ---

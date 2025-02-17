@@ -168,8 +168,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
             //initialize helper
             Helper.Instance = new Helper(
-                runspace.SessionStateProxy.InvokeCommand,
-                outputWriter);
+                runspace.SessionStateProxy.InvokeCommand);
             Helper.Instance.Initialize();
 
             SuppressionPreference suppressionPreference = suppressedOnly
@@ -1489,7 +1488,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         /// <param name="scriptTokens">Parsed tokens of <paramref name="scriptDefinition"/.></param>
         /// <param name="skipVariableAnalysis">Whether variable analysis can be skipped (applicable if rules do not use variable analysis APIs).</param>
         /// <returns></returns>
-        public IEnumerable<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, out ScriptBlockAst scriptAst, out Token[] scriptTokens, bool skipVariableAnalysis = false)
+        public List<DiagnosticRecord> AnalyzeScriptDefinition(string scriptDefinition, out ScriptBlockAst scriptAst, out Token[] scriptTokens, bool skipVariableAnalysis = false)
         {
             scriptAst = null;
             scriptTokens = null;
@@ -1504,7 +1503,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             catch (Exception e)
             {
                 this.outputWriter.WriteWarning(e.ToString());
-                return null;
+                return new();
             }
 
             var relevantParseErrors = RemoveTypeNotFoundParseErrors(errors, out List<DiagnosticRecord> diagnosticRecords);
@@ -1529,7 +1528,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             }
 
             // now, analyze the script definition
-            return diagnosticRecords.Concat(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, String.Empty, skipVariableAnalysis));
+            diagnosticRecords.AddRange(this.AnalyzeSyntaxTree(scriptAst, scriptTokens, null, skipVariableAnalysis));
+            return diagnosticRecords;
         }
 
         /// <summary>

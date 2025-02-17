@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 using System.Linq;
+using System.Management.Automation;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -21,7 +22,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class AvoidPositionalParameters : ConfigurableRule
     {
-        [ConfigurableRuleProperty(defaultValue: new string[] { "az" })]
+        [ConfigurableRuleProperty(defaultValue: new string[] { })]
         public string[] CommandAllowList { get; set; }
 
         public AvoidPositionalParameters()
@@ -61,9 +62,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // MSDN: CommandAst.GetCommandName Method
                 if (cmdAst.GetCommandName() == null) continue;
                 
-                if ((Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst) || declaredFunctionNames.Contains(cmdAst.GetCommandName())) &&
+                if ((Helper.Instance.IsKnownCmdletFunctionOrExternalScript(cmdAst, out CommandInfo commandInfo) || declaredFunctionNames.Contains(cmdAst.GetCommandName())) &&
                     (Helper.Instance.PositionalParameterUsed(cmdAst, true)))
                 {
+                    if (commandInfo?.CommandType == CommandTypes.Application) continue;
+
                     PipelineAst parent = cmdAst.Parent as PipelineAst;
 
                     string commandName = cmdAst.GetCommandName();

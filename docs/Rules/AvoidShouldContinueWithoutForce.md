@@ -1,7 +1,6 @@
 ---
 description: Avoid Using ShouldContinue Without Boolean Force Parameter
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: AvoidShouldContinueWithoutForce
 ---
@@ -33,7 +32,7 @@ Function Test-ShouldContinue
         $MyString = 'blah'
     )
 
-    if ($PsCmdlet.ShouldContinue("ShouldContinue Query", "ShouldContinue Caption"))
+    if ($PsCmdlet.ShouldContinue('ShouldContinue Query', 'ShouldContinue Caption'))
     {
         ...
     }
@@ -52,7 +51,7 @@ Function Test-ShouldContinue
         [Switch]$Force
     )
 
-    if ($Force -or $PsCmdlet.ShouldContinue("ShouldContinue Query", "ShouldContinue Caption"))
+    if ($Force -or $PsCmdlet.ShouldContinue('ShouldContinue Query', 'ShouldContinue Caption'))
     {
         ...
     }

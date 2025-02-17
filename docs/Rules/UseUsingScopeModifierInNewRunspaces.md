@@ -1,7 +1,6 @@
 ---
 description: Use 'Using:' scope modifier in RunSpace ScriptBlocks
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: UseUsingScopeModifierInNewRunspaces
 ---
@@ -32,40 +31,40 @@ Within the ScriptBlock, instead of just using a variable from the parent scope, 
 ### Wrong
 
 ```powershell
-$var = "foo"
+$var = 'foo'
 1..2 | ForEach-Object -Parallel { $var }
 ```
 
 ### Correct
 
 ```powershell
-$var = "foo"
+$var = 'foo'
 1..2 | ForEach-Object -Parallel { $using:var }
 ```
 
 ## More correct examples
 
 ```powershell
-$bar = "bar"
-Invoke-Command -ComputerName "foo" -ScriptBlock { $using:bar }
+$bar = 'bar'
+Invoke-Command -ComputerName 'foo' -ScriptBlock { $using:bar }
 ```
 
 ```powershell
-$bar = "bar"
-$s = New-PSSession -ComputerName "foo"
+$bar = 'bar'
+$s = New-PSSession -ComputerName 'foo'
 Invoke-Command -Session $s -ScriptBlock { $using:bar }
 ```
 
 ```powershell
 # Remark: Workflow is supported on Windows PowerShell only
 Workflow {
-    $foo = "foo"
+    $foo = 'foo'
     InlineScript { $using:foo }
 }
 ```
 
 ```powershell
-$foo = "foo"
+$foo = 'foo'
 Start-ThreadJob -ScriptBlock { $using:foo }
 Start-Job -ScriptBlock {$using:foo }
 ```

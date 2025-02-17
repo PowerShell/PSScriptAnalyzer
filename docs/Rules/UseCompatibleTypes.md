@@ -1,7 +1,6 @@
 ---
 description: Use compatible types
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: UseCompatibleTypes
 ---
@@ -83,8 +82,8 @@ The default profile directory is under the PSScriptAnalzyer module at
 `$PSScriptRoot/PSCompatibilityCollector/profiles` (where `$PSScriptRoot` here refers to the
 directory containing `PSScriptAnalyzer.psd1`).
 
-The compatibility analysis compares a type used to both a target profile and a "union" profile
-(containing all types available in *any* profile in the profile dir). If a type is not present in
+The compatibility analysis compares a type used to both a target profile and a 'union' profile
+(containing all types available in _any_ profile in the profile dir). If a type is not present in
 the union profile, it is assumed to be locally created and ignored. Otherwise, if a type is present
 in the union profile but not present in a target, it is deemed to be incompatible with that target.
 
@@ -127,11 +126,11 @@ PS> $settings = @{
       Rules = @{
         PSUseCompatibleTypes = @{
           Enable = $true
-          TargetProfiles = @("win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework")
+          TargetProfiles = @('win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework')
         }
       }
 }
-PS> Invoke-ScriptAnalyzer -Settings $settings -ScriptDefinition '[System.Management.Automation.SemanticVersion]"1.18.0-rc1"'
+PS> Invoke-ScriptAnalyzer -Settings $settings -ScriptDefinition '[System.Management.Automation.SemanticVersion]'1.18.0-rc1''
 
 RuleName                Severity     ScriptName Line  Message
 --------                --------     ---------- ----  -------
@@ -146,17 +145,17 @@ Command compatibility diagnostics can be suppressed with an attribute on the `pa
 scriptblock as with other rules.
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleTypes", "")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleTypes', '')]
 ```
 
 The rule can also be suppressed only for particular types:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleTypes", "System.Management.Automation.Security.SystemPolicy")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleTypes', 'System.Management.Automation.Security.SystemPolicy')]
 ```
 
 And also suppressed only for type members:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCommands", "System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', 'System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName')]
 ```

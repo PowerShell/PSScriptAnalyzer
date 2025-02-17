@@ -1,7 +1,6 @@
 ---
 description: Place close braces
-ms.custom: PSSA v1.21.0
-ms.date: 10/18/2021
+ms.date: 06/28/2023
 ms.topic: reference
 title: PlaceCloseBrace
 ---
@@ -42,7 +41,7 @@ Create violation if there is an empty line before a close brace.
 #### IgnoreOneLineBlock: bool (Default value is `$true`)
 
 Indicates if closed brace pairs in a one line block should be ignored or not. For example,
-`$x = if ($true) { "blah" } else { "blah blah" }`, if the property is set to true then the rule
+`$x = if ($true) { 'blah' } else { 'blah blah' }`, if the property is set to true then the rule
 doesn't fire a violation.
 
 #### NewLineAfter: bool (Default value is `$true`)

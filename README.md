@@ -3,7 +3,6 @@
 <img src="logo.png" width="180">
 
 [![Build Status](https://dev.azure.com/powershell/psscriptanalyzer/_apis/build/status/psscriptanalyzer-ci?branchName=master)](https://dev.azure.com/powershell/psscriptanalyzer/_build/latest?definitionId=80&branchName=master)
-[![Build status](https://ci.appveyor.com/api/projects/status/h5mot3vqtvxw5d7l/branch/master?svg=true)](https://ci.appveyor.com/project/PowerShell/psscriptanalyzer/branch/master)
 [![Join the chat at https://gitter.im/PowerShell/PSScriptAnalyzer](https://badges.gitter.im/PowerShell/PSScriptAnalyzer.svg)](https://gitter.im/PowerShell/PSScriptAnalyzer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Table of Contents
@@ -16,6 +15,7 @@
 - [Contributions are welcome](#contributions-are-welcome)
 - [Creating a Release](#creating-a-release)
 - [Code of Conduct](#code-of-conduct)
+- [Security Policy](#security-policy)
 
 <!-- tocstop -->
 
@@ -72,8 +72,7 @@ To install **PSScriptAnalyzer** from source code:
 
 ### Requirements
 
-- [.NET Core 3.1.424 SDK](https://www.microsoft.com/net/download/dotnet-core/3.1#sdk-3.1.424) or
-  newer patch release
+- [Latest .NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 * If building for Windows PowerShell versions, then the .NET Framework 4.6.2 [targeting pack](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net462) (also referred to as developer/targeting pack) need to be installed. This is only possible on Windows.
 * Optionally but recommended for development: [Visual Studio 2017/2019](https://www.visualstudio.com/downloads)
 - [Pester v5 PowerShell module, available on PowerShell Gallery](https://github.com/pester/Pester)
@@ -144,7 +143,7 @@ To install **PSScriptAnalyzer** from source code:
 - Import the module
 
   ```powershell
-  Import-Module .\out\PSScriptAnalyzer\PSScriptAnalyzer.psd1
+  Import-Module .\out\PSScriptAnalyzer\[version]\PSScriptAnalyzer.psd1
   ```
 
 To confirm installation: run `Get-ScriptAnalyzerRule` in the PowerShell console to obtain the
@@ -229,10 +228,12 @@ New-Release
 
 ## Code of Conduct
 
-This project has adopted the
-[Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more
-information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or
-comments.
+Please see our [Code of Conduct](CODE_OF_CONDUCT.md) before participating in this project.
+
+[Back to ToC](#table-of-contents)
+
+## Security Policy
+
+For any security issues, please see our [Security Policy](SECURITY.md).
 
 [Back to ToC](#table-of-contents)

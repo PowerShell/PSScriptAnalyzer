@@ -48,60 +48,6 @@ Describe "Build Module Tests" {
         }
     }
 
-    Context "Test-DotnetInstallation" {
-        BeforeAll {
-            $availableVersions = ConvertTo-PortableVersion -strVersion "2.2.400","2.2.401","2.2.405"
-            $foundVersion = ConvertTo-PortableVersion -strVersion 2.2.402
-            $missingVersion = ConvertTo-PortableVersion -strVersion 2.2.410
-        }
-
-        It "Test-DotnetInstallation finds a good version" {
-            Mock Get-InstalledCLIVersion { return $availableVersions }
-            Mock Get-GlobalJSonSdkVersion { return $foundVersion }
-            $result = Test-DotnetInstallation -requestedVersion (Get-GlobalJsonSdkVersion) -installedVersions (Get-InstalledCLIVersion)
-            Assert-MockCalled "Get-InstalledCLIVersion" -Times 1
-            Assert-MockCalled "Get-GlobalJsonSdkVersion" -Times 1
-            $result | Should -Be $true
-        }
-
-        It "Test-DotnetInstallation cannot find a good version should return false" {
-            Mock Get-InstalledCLIVersion { return $availableVersions }
-            Mock Get-GlobalJSonSdkVersion { return $missingVersion }
-            $result = Test-DotnetInstallation -requestedVersion (Get-GlobalJsonSdkVersion) -installedVersions (Get-InstalledCLIVersion)
-            Assert-MockCalled "Get-InstalledCLIVersion" -Times 1
-            Assert-MockCalled "Get-GlobalJsonSdkVersion" -Times 1
-            $result | Should -Be $false
-        }
-    }
-
-    Context "Receive-DotnetInstallScript" {
-
-        Mock -ModuleName Build Receive-File { new-item -type file TestDrive:/dotnet-install.sh }
-        It "Downloads the proper non-Windows file" {
-            try {
-                push-location TestDrive:
-                Receive-DotnetInstallScript -platform NonWindows
-                "TestDrive:/dotnet-install.sh" | Should -Exist
-            }
-            finally {
-                Pop-Location
-            }
-        }
-
-        Mock -ModuleName Build Receive-File { new-item -type file TestDrive:/dotnet-install.ps1 }
-        It "Downloads the proper file Windows file" {
-            try {
-                push-location TestDrive:
-                Receive-DotnetInstallScript -platform "Windows"
-                "TestDrive:/dotnet-install.ps1" | Should -Exist
-            }
-            finally {
-                Pop-Location
-            }
-        }
-
-    }
-
     Context "Test result functions" {
         BeforeAll {
             $xmlFile = @'

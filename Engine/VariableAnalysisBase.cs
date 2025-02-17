@@ -995,7 +995,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
                                 #else
 
-                                TypeDefinitionAst psClass = Classes.FirstOrDefault(item => String.Equals(item.Name, analysis.Type.FullName, StringComparison.OrdinalIgnoreCase));
+                                TypeDefinitionAst psClass = Classes.FirstOrDefault(item => String.Equals(item.Name, analysis.Type?.FullName, StringComparison.OrdinalIgnoreCase));
                                 Type possibleType = AssignmentTarget.GetTypeFromMemberExpressionAst(memAst, analysis, psClass);
 
                                 #endif

@@ -7,9 +7,8 @@ $analyzerName = "PSScriptAnalyzer"
 
 function Get-AnalyzerVersion
 {
-    $csprojPath = [io.path]::Combine($projectRoot,"Engine","Engine.csproj")
-    $xml = [xml](Get-Content "${csprojPath}")
-    $xml.SelectSingleNode(".//VersionPrefix")."#text"
+    [xml]$xml = Get-Content $([io.path]::Combine($projectRoot, "Directory.Build.props"))
+    $xml.Project.PropertyGroup.ModuleVersion
 }
 
 $analyzerVersion = Get-AnalyzerVersion
@@ -26,61 +25,6 @@ function Publish-File
     foreach ($file in $itemsToCopy)
     {
         Copy-Item -Path $file -Destination (Join-Path $destination (Split-Path $file -Leaf)) -Force
-    }
-}
-
-# attempt to get the users module directory
-function Get-UserModulePath
-{
-    if ( $IsCoreCLR -and -not $IsWindows )
-    {
-        $platformType = "System.Management.Automation.Platform" -as [Type]
-        if ( $platformType ) {
-            ${platformType}::SelectProductNameForDirectory("USER_MODULES")
-        }
-        else {
-            throw "Could not determine users module path"
-        }
-    }
-    else {
-        "${HOME}/Documents/WindowsPowerShell/Modules"
-    }
-}
-
-
-function Uninstall-ScriptAnalyzer
-{
-    [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
-    END {
-        if ( $PSCmdlet.ShouldProcess("$modulePath") ) {
-            Remove-Item -Recurse -Path "$ModulePath" -Force
-        }
-    }
-}
-
-# install script analyzer, by default into the users module path
-function Install-ScriptAnalyzer
-{
-    [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
-    END {
-        if ( $PSCmdlet.ShouldProcess("$modulePath") ) {
-            Copy-Item -Recurse -Path "$script:destinationDir" -Destination "$ModulePath\." -Force
-        }
-    }
-}
-
-# if script analyzer is installed, remove it
-function Uninstall-ScriptAnalyzer
-{
-    [CmdletBinding(SupportsShouldProcess)]
-    param ( $ModulePath = $(Join-Path -Path (Get-UserModulePath) -ChildPath ${analyzerName}) )
-    END {
-        if ((Test-Path $ModulePath) -and (Get-Item $ModulePath).PSIsContainer )
-        {
-            Remove-Item -Force -Recurse $ModulePath
-        }
     }
 }
 
@@ -157,9 +101,6 @@ function Start-ScriptAnalyzerBuild
 
     BEGIN {
         # don't allow the build to be started unless we have the proper Cli version
-        # this will not actually install dotnet if it's already present, but it will
-        # install the proper version
-        Install-Dotnet
         if ( -not (Test-SuitableDotnet) ) {
             $requiredVersion = $script:wantedVersion
             $foundVersion = Get-InstalledCLIVersion
@@ -203,7 +144,7 @@ function Start-ScriptAnalyzerBuild
 
         $framework = 'net462'
         if ($PSVersion -eq 7) {
-            $framework = 'netcoreapp3.1'
+            $framework = 'net6'
         }
 
         # build the appropriate assembly
@@ -218,9 +159,19 @@ function Start-ScriptAnalyzerBuild
             throw "Not in solution root"
         }
 
+        # "Copy" the module file with the version placeholder replaced
+        $manifestContent = Get-Content -LiteralPath "$projectRoot\Engine\PSScriptAnalyzer.psd1" -Raw
+        $newManifestContent = $manifestContent -replace '{{ModuleVersion}}', $analyzerVersion
+        Set-Content -LiteralPath "$script:destinationDir\PSScriptAnalyzer.psd1" -Encoding utf8 -Value $newManifestContent
+
         $itemsToCopyCommon = @(
-            "$projectRoot\Engine\PSScriptAnalyzer.psd1", "$projectRoot\Engine\PSScriptAnalyzer.psm1",
-            "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml", "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
+            "$projectRoot\LICENSE",
+            "$projectRoot\README.md",
+            "$projectRoot\SECURITY.md",
+            "$projectRoot\ThirdPartyNotices.txt",
+            "$projectRoot\Engine\PSScriptAnalyzer.psm1",
+            "$projectRoot\Engine\ScriptAnalyzer.format.ps1xml",
+            "$projectRoot\Engine\ScriptAnalyzer.types.ps1xml"
             )
 
         switch ($PSVersion)
@@ -386,7 +337,6 @@ function Test-ScriptAnalyzer
         else {
             $testModulePath = Join-Path "${projectRoot}" -ChildPath out
         }
-        $testResultsFile = "'$(Join-Path ${projectRoot} -childPath TestResults.xml)'"
         $testScripts = "'${projectRoot}\Tests\Build','${projectRoot}\Tests\Engine','${projectRoot}\Tests\Rules','${projectRoot}\Tests\Documentation'"
         try {
             if ( $major -lt 5 ) {
@@ -395,7 +345,7 @@ function Test-ScriptAnalyzer
             $savedModulePath = $env:PSModulePath
             $env:PSModulePath = "${testModulePath}{0}${env:PSModulePath}" -f [System.IO.Path]::PathSeparator
             $analyzerPsd1Path = Join-Path -Path $script:destinationDir -ChildPath "$analyzerName.psd1"
-            $scriptBlock = [scriptblock]::Create("Import-Module '$analyzerPsd1Path'; Invoke-Pester -Path $testScripts")
+            $scriptBlock = [scriptblock]::Create("Import-Module '$analyzerPsd1Path'; Invoke-Pester -Path $testScripts -CI")
             if ( $InProcess ) {
                 & $scriptBlock
             }
@@ -430,49 +380,6 @@ function Get-TestFailures
     $logPath = (Resolve-Path $logfile).Path
     $results = [xml](Get-Content $logPath)
     $results.SelectNodes(".//test-case[@result='Failure']")
-}
-
-# BOOTSTRAPPING CODE FOR INSTALLING DOTNET
-# install dotnet cli tools based on the version mentioned in global.json
-function Install-Dotnet
-{
-    [CmdletBinding(SupportsShouldProcess=$true)]
-    param (
-        [Parameter()][Switch]$Force,
-        [Parameter()]$version = $( Get-GlobalJsonSdkVersion -Raw )
-        )
-
-    if ( Test-DotnetInstallation -requestedversion $version ) {
-        if ( $Force ) {
-            Write-Verbose -Verbose "Installing again"
-        }
-        else {
-            return
-        }
-    }
-
-    try {
-        Push-Location $PSScriptRoot
-        $installScriptPath = Receive-DotnetInstallScript
-        $installScriptName = [System.IO.Path]::GetFileName($installScriptPath)
-        If ( $PSCmdlet.ShouldProcess("$installScriptName for $version")) {
-            & "${installScriptPath}" -c release -version $version -SkipNonVersionedFiles
-        }
-        # this may be the first time that dotnet has been installed,
-        # set up the executable variable
-        if ( -not $script:DotnetExe ) {
-            $script:DotnetExe = Get-DotnetExe
-        }
-    }
-    catch {
-        throw $_
-    }
-    finally {
-        if ( Test-Path $installScriptPath ) {
-            Remove-Item $installScriptPath
-        }
-        Pop-Location
-    }
 }
 
 function Get-GlobalJsonSdkVersion {
@@ -613,68 +520,6 @@ function Get-InstalledCLIVersion {
     return (ConvertTo-PortableVersion $installedVersions)
 }
 
-function Test-DotnetInstallation
-{
-    param (
-        $requestedVersion = $script:wantedVersion,
-        $installedVersions = $( Get-InstalledCLIVersion )
-        )
-    return (Test-SuitableDotnet -availableVersions $installedVersions -requiredVersion $requestedVersion )
-}
-
-function Receive-File {
-    param ( [Parameter(Mandatory,Position=0)]$uri )
-
-    # enable Tls12 for the request
-    # -SslProtocol parameter for Invoke-WebRequest wasn't in PSv3
-    $securityProtocol = [System.Net.ServicePointManager]::SecurityProtocol
-    $tls12 = [System.Net.SecurityProtocolType]::Tls12
-    try {
-        if ( ([System.Net.ServicePointManager]::SecurityProtocol -band $tls12) -eq 0 ) {
-            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor $tls12
-        }
-        $null = Invoke-WebRequest -Uri ${uri} -OutFile "${installScriptName}"
-    }
-    finally {
-        [System.Net.ServicePointManager]::SecurityProtocol = $securityProtocol
-    }
-    if ( (Test-Path Variable:IsWindows) -and -not $IsWindows ) {
-        chmod +x $installScriptName
-    }
-    $installScript = Get-Item $installScriptName -ErrorAction Stop
-    if ( -not $installScript ) {
-        throw "Download failure of ${uri}"
-    }
-    return $installScript
-}
-
-function Receive-DotnetInstallScript
-{
-    # param '$platform' is a hook to enable forcing download of a specific
-    # install script, generally it should not be used except in testing.
-    param ( $platform = "" )
-
-    # if $platform has been set, it has priority
-    # if it's not set to Windows or NonWindows, it will be ignored
-    if ( $platform -eq "Windows" ) {
-        $installScriptName = "dotnet-install.ps1"
-    }
-    elseif ( $platform -eq "NonWindows" ) {
-        $installScriptName = "dotnet-install.sh"
-    }
-    elseif ( ((Test-Path Variable:IsWindows) -and -not $IsWindows) ) {
-        # if the variable IsWindows exists and it is set to false
-        $installScriptName = "dotnet-install.sh"
-    }
-    else { # the default case - we're running on a Windows system
-        $installScriptName = "dotnet-install.ps1"
-    }
-    $uri = "https://dot.net/v1/${installScriptName}"
-
-    $installScript = Receive-File -Uri $uri
-    return $installScript.FullName
-}
-
 function Get-DotnetExe
 {
     param ( $version = $script:wantedVersion )
@@ -731,7 +576,7 @@ try {
     $script:DotnetExe = Get-DotnetExe
 }
 catch {
-    Write-Warning "Could not find dotnet executable"
+    Write-Warning "The dotnet CLI was not found, please install it: https://aka.ms/dotnet-cli"
 }
 
 # Copies the built PSCompatibilityCollector module to the output destination for PSSA
@@ -781,44 +626,11 @@ function Copy-CrossCompatibilityModule
     }
 }
 
-# copy the manifest into the module if is present
-function Copy-Manifest
-{
-    param ( [switch]$signed )
-    if ( $signed ) {
-        $buildRoot = "signed"
-    }
-    else {
-        $buildRoot = "out"
-    }
-    $analyzerVersion = Get-AnalyzerVersion
-    # location where analyzer goes
-    # debugging
-    (Get-ChildItem -File -Recurse)|ForEach-Object {Write-Verbose -Verbose -Message $_}
-    $modBaseDir = [io.path]::Combine($projectRoot,${buildRoot},"${analyzerName}", $analyzerVersion)
-    # copy the manifest files
-    Push-Location $buildRoot
-    if ( Test-Path _manifest ) {
-        Copy-Item -Recurse -Path _manifest -Destination $modBaseDir -Verbose
-    }
-    else {
-        Write-Warning -Message "_manifest not found in $PWD"
-    }
-    Pop-Location
-}
-
 # creates the nuget package which can be used for publishing to the gallery
 function Start-CreatePackage
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', '')]
-    param ( [switch]$signed )
     try {
-        if ( $signed ) {
-            $buildRoot = "signed"
-        }
-        else {
-            $buildRoot = "out"
-        }
+        $buildRoot = "out"
         $repoName = [guid]::NewGuid().ToString()
         $nupkgDir = Join-Path $PSScriptRoot $buildRoot
         $null = Register-PSRepository -Name $repoName -InstallationPolicy Trusted -SourceLocation $nupkgDir

@@ -11,7 +11,7 @@ Describe "UseCorrectCasing" {
     }
 
     It "corrects case of of cmdlet inside interpolated string" {
-        Invoke-Formatter '"$(get-childitem)"' | Should -Be '"$(get-childitem)"'
+        Invoke-Formatter '"$(get-childitem)"' | Should -BeExactly '"$(Get-ChildItem)"'
     }
 
     It "Corrects alias correctly" {
