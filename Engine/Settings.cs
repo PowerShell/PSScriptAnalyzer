@@ -499,9 +499,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             var settingsMode = SettingsMode.None;
 
             // if the provided settings argument is wrapped in an expressions then PowerShell resolves it but it will be of type PSObject and we have to operate then on the BaseObject
-            if (settings is PSObject)
+            if (settings is PSObject settingsFoundPSObject)
             {
-                settings = ((PSObject)settings).BaseObject;
+                settings = settingsFoundPSObject.BaseObject;
             }
 
             settingsFound = settings;
