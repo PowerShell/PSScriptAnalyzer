@@ -431,9 +431,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         private void ProcessInput()
         {
-            var diagnosticRecords = RunAnalysis();
-            WriteToOutput(diagnosticRecords);
-            totalDiagnosticCount += diagnosticRecords.Count;
+            WriteToOutput(RunAnalysis());
         }
 
         private List<DiagnosticRecord> RunAnalysis()
@@ -461,56 +459,59 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             return diagnostics;
         }
 
-        private void WriteToOutput(List<DiagnosticRecord> diagnosticRecords)
+        private void WriteToOutput(IEnumerable<DiagnosticRecord> diagnosticRecords)
         {
-            foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
-            {
-                var errorCount = 0;
-                var warningCount = 0;
-                var infoCount = 0;
-                var parseErrorCount = 0;
+            var errorCount = 0;
+            var warningCount = 0;
+            var infoCount = 0;
+            var parseErrorCount = 0;
 
-                foreach (DiagnosticRecord diagnostic in diagnosticRecords)
+            foreach (DiagnosticRecord diagnostic in diagnosticRecords)
+            {
+                foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
                 {
                     logger.LogObject(diagnostic, this);
-                    switch (diagnostic.Severity)
-                    {
-                        case DiagnosticSeverity.Information:
-                            infoCount++;
-                            break;
-                        case DiagnosticSeverity.Warning:
-                            warningCount++;
-                            break;
-                        case DiagnosticSeverity.Error:
-                            errorCount++;
-                            break;
-                        case DiagnosticSeverity.ParseError:
-                            parseErrorCount++;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(diagnostic.Severity), $"Severity '{diagnostic.Severity}' is unknown");
-                    }
                 }
 
-                if (ReportSummary.IsPresent)
+                totalDiagnosticCount++;
+
+                switch (diagnostic.Severity)
                 {
-                    var numberOfRuleViolations = infoCount + warningCount + errorCount;
-                    if (numberOfRuleViolations == 0)
+                    case DiagnosticSeverity.Information:
+                        infoCount++;
+                        break;
+                    case DiagnosticSeverity.Warning:
+                        warningCount++;
+                        break;
+                    case DiagnosticSeverity.Error:
+                        errorCount++;
+                        break;
+                    case DiagnosticSeverity.ParseError:
+                        parseErrorCount++;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(diagnostic.Severity), $"Severity '{diagnostic.Severity}' is unknown");
+                }
+            }
+
+            if (ReportSummary.IsPresent)
+            {
+                var numberOfRuleViolations = infoCount + warningCount + errorCount;
+                if (numberOfRuleViolations == 0)
+                {
+                    Host.UI.WriteLine("0 rule violations found.");
+                }
+                else
+                {
+                    var pluralS = numberOfRuleViolations > 1 ? "s" : string.Empty;
+                    var message = $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}";
+                    if (warningCount + errorCount == 0)
                     {
-                        Host.UI.WriteLine("0 rule violations found.");
+                        ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "WarningForegroundColor", "WarningBackgroundColor", message);
                     }
                     else
                     {
-                        var pluralS = numberOfRuleViolations > 1 ? "s" : string.Empty;
-                        var message = $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}";
-                        if (warningCount + errorCount == 0)
-                        {
-                            ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "WarningForegroundColor", "WarningBackgroundColor", message);
-                        }
-                        else
-                        {
-                            ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "ErrorForegroundColor", "ErrorBackgroundColor", message);
-                        }
+                        ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "ErrorForegroundColor", "ErrorBackgroundColor", message);
                     }
                 }
             }
