@@ -535,7 +535,7 @@ bar -h i `
             Invoke-ScriptAnalyzer -ScriptDefinition "$def" -Settings $settings | Should -Be $null
         }
 
-        It "Should not find no violation if there is always 1 space between parameters except when using colon syntax" {
+        It "Should not find a violation if there is always 1 space between parameters except when using colon syntax" {
             $def = 'foo -bar $baz @splattedVariable -bat -parameterName:$parameterValue'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
