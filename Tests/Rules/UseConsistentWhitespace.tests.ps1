@@ -585,6 +585,42 @@ bar -h i `
                 Should -Be "$expected"
         }
 
+        It "Should fix script when a parameter value is a script block spanning multiple lines" {
+            $def = {foo { 
+    bar
+}     -baz}
+
+            $expected = {foo { 
+    bar
+} -baz}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
+        It "Should fix script when a parameter value is a hashtable spanning multiple lines" {
+            $def = {foo @{
+    a = 1
+}     -baz}
+
+            $expected = {foo @{
+    a = 1
+} -baz}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
+        It "Should fix script when a parameter value is an array spanning multiple lines" {
+            $def = {foo @(
+    1
+)     -baz}
+
+            $expected = {foo @(
+    1
+) -baz}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
         It "Should fix script when redirects are involved and whitespace is not consistent" {
             # Related to Issue #2000
             $def = 'foo   3>&1  1>$null   2>&1'
