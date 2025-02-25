@@ -604,7 +604,7 @@ Describe "-ReportSummary switch" {
     }
 
     It "prints the correct report summary using the -NoReportSummary switch" {
-        $result = & $pwshExe -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary"
+        $result = & $pwshExe -NoProfile -Command "Import-Module '$pssaPath'; Invoke-ScriptAnalyzer -ScriptDefinition gci -ReportSummary"
 
         "$result" | Should -BeLike $reportSummaryFor1Warning
     }
