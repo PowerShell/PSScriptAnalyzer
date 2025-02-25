@@ -451,6 +451,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 return node.Next != null
                     && node.Next.Value.Kind != TokenKind.NewLine
+                    && node.Next.Value.Kind != TokenKind.Comment
                     && node.Next.Value.Kind != TokenKind.EndOfInput // semicolon can be followed by end of input
                     && !IsPreviousTokenApartByWhitespace(node.Next);
             };

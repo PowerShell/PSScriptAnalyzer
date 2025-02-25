@@ -514,6 +514,48 @@ if ($true) { Get-Item `
         }
     }
 
+    Context "CheckSeparator" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $true
+        }
+
+        It "Should find a violation if there is no space after a comma" {
+            $def = '$Array = @(1,2)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -HaveCount 1
+        }
+
+        It "Should not find a violation if there is a space after a comma" {
+            $def = '$Array = @(1, 2)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if there is a new-line after a comma" {
+            $def = @'
+$Array = @(
+    1,
+    2
+)
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if there is a comment after the separator" {
+            $def = @'
+$Array = @(
+    'foo',     # Comment Line 1
+    'FizzBuzz' # Comment Line 2
+)
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+    }
+
 
     Context "CheckParameter" {
         BeforeAll {
