@@ -421,8 +421,8 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         int numberOfRedundantWhiteSpaces = rightExtent.StartColumnNumber - expectedStartColumnNumberOfRightExtent;
                         var correction = new CorrectionExtent(
-                            startLineNumber: leftExtent.StartLineNumber,
-                            endLineNumber: leftExtent.EndLineNumber,
+                            startLineNumber: leftExtent.EndLineNumber,
+                            endLineNumber: rightExtent.StartLineNumber,
                             startColumnNumber: leftExtent.EndColumnNumber + 1,
                             endColumnNumber: leftExtent.EndColumnNumber + 1 + numberOfRedundantWhiteSpaces,
                             text: string.Empty,

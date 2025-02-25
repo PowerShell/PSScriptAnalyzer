@@ -535,7 +535,7 @@ bar -h i `
             Invoke-ScriptAnalyzer -ScriptDefinition "$def" -Settings $settings | Should -Be $null
         }
 
-        It "Should not find no violation if there is always 1 space between parameters except when using colon syntax" {
+        It "Should not find a violation if there is always 1 space between parameters except when using colon syntax" {
             $def = 'foo -bar $baz @splattedVariable -bat -parameterName:$parameterValue'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
@@ -581,6 +581,42 @@ bar  -h  i `
 -h i |
 bar -h i `
 -switch}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
+        It "Should fix script when a parameter value is a script block spanning multiple lines" {
+            $def = {foo { 
+    bar
+}     -baz}
+
+            $expected = {foo { 
+    bar
+} -baz}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
+        It "Should fix script when a parameter value is a hashtable spanning multiple lines" {
+            $def = {foo @{
+    a = 1
+}     -baz}
+
+            $expected = {foo @{
+    a = 1
+} -baz}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
+        It "Should fix script when a parameter value is an array spanning multiple lines" {
+            $def = {foo @(
+    1
+)     -baz}
+
+            $expected = {foo @(
+    1
+) -baz}
             Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
                 Should -Be "$expected"
         }
