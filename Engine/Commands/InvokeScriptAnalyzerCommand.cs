@@ -34,7 +34,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         #region Private variables
         List<string> processedPaths;
-        private int totalDiagnosticCount = 0;
+        // initialize to zero for all severity enum values
+        private Dictionary<DiagnosticSeverity, int> diagnosticCounts =
+                Enum.GetValues(typeof(DiagnosticSeverity)).Cast<DiagnosticSeverity>().ToDictionary(s => s, _ => 0);
         #endregion // Private variables
 
         #region Parameters
@@ -414,8 +416,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
             ScriptAnalyzer.Instance.CleanUp();
             base.EndProcessing();
 
-            if (EnableExit) {
-                this.Host.SetShouldExit(totalDiagnosticCount);
+            var infoCount = diagnosticCounts[DiagnosticSeverity.Information];
+            var warningCount = diagnosticCounts[DiagnosticSeverity.Warning];
+            var errorCount = diagnosticCounts[DiagnosticSeverity.Error];
+            var parseErrorCount = diagnosticCounts[DiagnosticSeverity.ParseError];
+
+            if (ReportSummary.IsPresent)
+            {
+                var numberOfRuleViolations = infoCount + warningCount + errorCount;
+                if (numberOfRuleViolations == 0)
+                {
+                    Host.UI.WriteLine("0 rule violations found.");
+                }
+                else
+                {
+                    var pluralS = numberOfRuleViolations > 1 ? "s" : string.Empty;
+                    var message = $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}";
+                    if (warningCount + errorCount == 0)
+                    {
+                        ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "WarningForegroundColor", "WarningBackgroundColor", message);
+                    }
+                    else
+                    {
+                        ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "ErrorForegroundColor", "ErrorBackgroundColor", message);
+                    }
+                }
+            }
+
+            if (EnableExit)
+            {
+                this.Host.SetShouldExit(diagnosticCounts.Values.Sum());
             }
         }
 
@@ -431,7 +461,15 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
 
         private void ProcessInput()
         {
-            WriteToOutput(RunAnalysis());
+            foreach (var diagnostic in RunAnalysis())
+            {
+                diagnosticCounts[diagnostic.Severity]++;
+
+                foreach (var logger in ScriptAnalyzer.Instance.Loggers)
+                {
+                    logger.LogObject(diagnostic, this);
+                }
+            }
         }
 
         private IEnumerable<DiagnosticRecord> RunAnalysis()
@@ -464,64 +502,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.Commands
                     foreach (var record in ScriptAnalyzer.Instance.AnalyzePath(path, this.ShouldProcess, this.recurse))
                     {
                         yield return record;
-                    }
-                }
-            }
-        }
-
-        private void WriteToOutput(IEnumerable<DiagnosticRecord> diagnosticRecords)
-        {
-            var errorCount = 0;
-            var warningCount = 0;
-            var infoCount = 0;
-            var parseErrorCount = 0;
-
-            foreach (DiagnosticRecord diagnostic in diagnosticRecords)
-            {
-                foreach (ILogger logger in ScriptAnalyzer.Instance.Loggers)
-                {
-                    logger.LogObject(diagnostic, this);
-                }
-
-                totalDiagnosticCount++;
-
-                switch (diagnostic.Severity)
-                {
-                    case DiagnosticSeverity.Information:
-                        infoCount++;
-                        break;
-                    case DiagnosticSeverity.Warning:
-                        warningCount++;
-                        break;
-                    case DiagnosticSeverity.Error:
-                        errorCount++;
-                        break;
-                    case DiagnosticSeverity.ParseError:
-                        parseErrorCount++;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(diagnostic.Severity), $"Severity '{diagnostic.Severity}' is unknown");
-                }
-            }
-
-            if (ReportSummary.IsPresent)
-            {
-                var numberOfRuleViolations = infoCount + warningCount + errorCount;
-                if (numberOfRuleViolations == 0)
-                {
-                    Host.UI.WriteLine("0 rule violations found.");
-                }
-                else
-                {
-                    var pluralS = numberOfRuleViolations > 1 ? "s" : string.Empty;
-                    var message = $"{numberOfRuleViolations} rule violation{pluralS} found.    Severity distribution:  {DiagnosticSeverity.Error} = {errorCount}, {DiagnosticSeverity.Warning} = {warningCount}, {DiagnosticSeverity.Information} = {infoCount}";
-                    if (warningCount + errorCount == 0)
-                    {
-                        ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "WarningForegroundColor", "WarningBackgroundColor", message);
-                    }
-                    else
-                    {
-                        ConsoleHostHelper.DisplayMessageUsingSystemProperties(Host, "ErrorForegroundColor", "ErrorBackgroundColor", message);
                     }
                 }
             }
