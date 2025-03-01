@@ -43,11 +43,35 @@ jobs:
         shell: pwsh
 
       - name: Test Windows PowerShell
+        if: matrix.os == 'windows-latest'
         run: |
            Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck
            ./build.ps1 -Test
-        if: matrix.os == 'windows-latest'
         shell: powershell
+
+      - name: Download daily install script
+        uses: actions/checkout@v4
+        with:
+          repository: PowerShell/PowerShell
+          path: pwsh
+          sparse-checkout: tools/install-powershell.ps1
+          sparse-checkout-cone-mode: false
+
+      - name: Install daily
+        continue-on-error: true
+        run: ./pwsh/tools/install-powershell.ps1 -Daily -Destination ./daily
+        shell: pwsh
+
+      - name: Test daily
+        continue-on-error: true
+        run: |
+          if ($isWindows) {
+            $pwsh = (Resolve-Path .\daily\pwsh.exe)
+          } else {
+            $pwsh = (Resolve-Path .\daily\pwsh)
+          }
+          ./build.ps1 -Test -WithPowerShell:$pwsh
+        shell: pwsh
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
