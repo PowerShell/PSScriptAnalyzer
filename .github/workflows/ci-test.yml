@@ -43,11 +43,34 @@ jobs:
         shell: pwsh
 
       - name: Test Windows PowerShell
+        if: matrix.os == 'windows-latest'
         run: |
            Install-Module Pester -Scope CurrentUser -Force -SkipPublisherCheck
            ./build.ps1 -Test
-        if: matrix.os == 'windows-latest'
         shell: powershell
+
+      - name: Download PowerShell install script
+        uses: actions/checkout@v4
+        with:
+          repository: PowerShell/PowerShell
+          path: pwsh
+          sparse-checkout: tools/install-powershell.ps1
+          sparse-checkout-cone-mode: false
+
+      - name: Install preview
+        continue-on-error: true
+        run: ./pwsh/tools/install-powershell.ps1 -Preview
+        shell: pwsh
+
+      - name: Test preview
+        run: |
+          $PwshPreview = if ($isWindows) {
+            "$env:LOCALAPPDATA/Microsoft/powershell-preview/pwsh.exe"
+          } else {
+            "$HOME/.powershell-preview/pwsh"
+          }
+          ./build.ps1 -Test -WithPowerShell:$PwshPreview
+        shell: pwsh
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

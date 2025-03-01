@@ -308,7 +308,10 @@ function New-Catalog
 function Test-ScriptAnalyzer
 {
     [CmdletBinding()]
-    param ( [switch] $InProcess )
+    param (
+        [switch] $InProcess,
+        [string] $WithPowerShell
+    )
 
     END {
         # versions 3 and 4 don't understand versioned module paths, so we need to rename the directory of the version to
@@ -348,6 +351,9 @@ function Test-ScriptAnalyzer
             $scriptBlock = [scriptblock]::Create("Import-Module '$analyzerPsd1Path'; Invoke-Pester -Path $testScripts -CI")
             if ( $InProcess ) {
                 & $scriptBlock
+            }
+            elseif ( $WithPowerShell ) {
+                & ${WithPowerShell} -Command $scriptBlock
             }
             else {
                 $powershell = (Get-Process -id $PID).MainModule.FileName
