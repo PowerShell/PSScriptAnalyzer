@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -102,6 +103,25 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
                 foreach (ParameterAst parameterAst in parameterAsts)
                 {
+                    // Check if the parameter has the ValueFromPipeline attribute
+                    NamedAttributeArgumentAst valueFromPipeline = (NamedAttributeArgumentAst)parameterAst.Find(
+                        valFromPipelineAst => valFromPipelineAst is NamedAttributeArgumentAst namedAttrib && string.Equals(
+                            namedAttrib.ArgumentName, "ValueFromPipeline",
+                            StringComparison.OrdinalIgnoreCase
+                        ), 
+                        false
+                    );
+                    // If the parameter has the ValueFromPipeline attribute, check for usages of $_ or $PSItem
+                    if (valueFromPipeline?.GetValue() == true)
+                    {
+                        variableCount.TryGetValue("_", out int underscoreVariableCount);
+                        variableCount.TryGetValue("psitem", out int psitemVariableCount);
+                        if (underscoreVariableCount > 0 || psitemVariableCount > 0)
+                        {
+                            continue;
+                        }
+                    }
+
                     // there should be at least two usages of the variable since the parameter declaration counts as one
                     variableCount.TryGetValue(parameterAst.Name.VariablePath.UserPath, out int variableUsageCount);
                     if (variableUsageCount >= 2)

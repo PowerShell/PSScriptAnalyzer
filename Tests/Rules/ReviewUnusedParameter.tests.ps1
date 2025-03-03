@@ -20,6 +20,18 @@ Describe "ReviewUnusedParameter" {
             $Violations.Count | Should -Be 2
         }
 
+        It "has 1 violation - function with 1 parameter with ValueFromPipeline set to false and `$_ usage" {
+            $ScriptDefinition = 'function BadFunc1 { param ([Parameter(ValueFromPipeline = $false)] $Param1) $_}'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 1
+        }
+
+        It "has 1 violation - function with 1 parameter with ValueFromPipeline set to false and `$PSItem usage" {
+            $ScriptDefinition = 'function BadFunc1 { param ([Parameter(ValueFromPipeline = $false)] $Param1) $PSItem}'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 1
+        }
+
         It "has 1 violation - scriptblock with 1 unused parameter" {
             $ScriptDefinition = '{ param ($Param1) }'
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
@@ -55,6 +67,30 @@ Describe "ReviewUnusedParameter" {
 
         It "has no violations - function with splatting" {
             $ScriptDefinition = 'function GoodFunc1 { param ($Param1) $Splat = @{InputObject = $Param1}}'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+        It "has no violation - function with 1 parameter with ValueFromPipeline explictly set to true and `$_ usage" {
+            $ScriptDefinition = 'function BadFunc1 { param ([Parameter(ValueFromPipeline = $true)] $Param1) $_}'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+        It "has no violation - function with 1 parameter with ValueFromPipeline explictly set to true and `$PSItem usage" {
+            $ScriptDefinition = 'function BadFunc1 { param ([Parameter(ValueFromPipeline = $true)] $Param1) $PSItem}'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+        It "has no violation - function with 1 parameter with ValueFromPipeline implicitly set to true and `$_ usage" {
+            $ScriptDefinition = 'function BadFunc1 { param ([Parameter(ValueFromPipeline)] $Param1) $_}'
+            $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
+            $Violations.Count | Should -Be 0
+        }
+
+        It "has no violation - function with 1 parameter with ValueFromPipeline implicitly set to true and `$PSItem usage" {
+            $ScriptDefinition = 'function BadFunc1 { param ([Parameter(ValueFromPipeline)] $Param1) $PSItem}'
             $Violations = Invoke-ScriptAnalyzer -ScriptDefinition $ScriptDefinition -IncludeRule $RuleName
             $Violations.Count | Should -Be 0
         }
