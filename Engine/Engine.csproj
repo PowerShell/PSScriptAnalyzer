@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>$(ModuleVersion)</VersionPrefix>
-    <TargetFrameworks>net6;net462</TargetFrameworks>
+    <TargetFrameworks>net8;net462</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer</AssemblyName>
     <AssemblyVersion>$(ModuleVersion)</AssemblyVersion>
     <PackageId>Engine</PackageId>
@@ -18,11 +18,11 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net8' ">
     <DefineConstants>$(DefineConstants);CORECLR</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8' ">
     <Compile Remove="SafeDirectoryCatalog.cs" />
   </ItemGroup>
 
@@ -69,10 +69,10 @@
   </PropertyGroup>
 
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8'">
     <PackageReference Include="System.Management.Automation" />
   </ItemGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>
 
