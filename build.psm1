@@ -144,7 +144,7 @@ function Start-ScriptAnalyzerBuild
 
         $framework = 'net462'
         if ($PSVersion -eq 7) {
-            $framework = 'net6'
+            $framework = 'net8'
         }
 
         # build the appropriate assembly

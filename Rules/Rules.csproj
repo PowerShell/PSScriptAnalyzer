@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>$(ModuleVersion)</VersionPrefix>
-    <TargetFrameworks>net6;net462</TargetFrameworks>
+    <TargetFrameworks>net8;net462</TargetFrameworks>
     <AssemblyName>Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules</AssemblyName>
     <AssemblyVersion>$(ModuleVersion)</AssemblyVersion>
     <PackageId>Rules</PackageId>
@@ -16,7 +16,7 @@
 
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8' ">
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Reflection.TypeExtensions" />
     <PackageReference Include="Microsoft.Management.Infrastructure" />
@@ -61,7 +61,7 @@
     <DefineConstants>$(DefineConstants);PSV3;PSV4</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8'">
     <DefineConstants>$(DefineConstants);PSV7;CORECLR</DefineConstants>
   </PropertyGroup>
 
