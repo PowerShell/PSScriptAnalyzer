@@ -126,7 +126,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     );
                     // If the parameter has the ValueFromPipeline attribute and the scriptblock has a process block with
                     // $_ or $PSItem usage, then the parameter is considered used
-                    if (valueFromPipeline?.GetValue() && hasProcessBlockWithPSItemOrUnderscore)
+                    if (valueFromPipeline != null && valueFromPipeline.GetValue() && hasProcessBlockWithPSItemOrUnderscore)
 
                     {
                         continue;
