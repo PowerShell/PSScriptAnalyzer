@@ -1,5 +1,27 @@
 ﻿# CHANGELOG
 
+## [1.23.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.23.0) - 2024-10-09
+
+## What's Changed
+* Adding OneBranch pipeline YAML config file for OSS_Microsoft_PSSA-Official by @adityapatwardhan in https://github.com/PowerShell/PSScriptAnalyzer/pull/1981
+* Update format and grammar of AvoidUsingAllowUnencryptedAuthentication by @sdwheeler in https://github.com/PowerShell/PSScriptAnalyzer/pull/1974
+* Move to OneBranch Signing and SBOM generation by @TravisEz13 in https://github.com/PowerShell/PSScriptAnalyzer/pull/1982
+* Sync rule docs changes by @sdwheeler in https://github.com/PowerShell/PSScriptAnalyzer/pull/1985
+* Sync docs changes from MicrosoftDocs/PowerShell-Docs-Modules#213 by @sdwheeler in https://github.com/PowerShell/PSScriptAnalyzer/pull/1987
+* Update CHANGELOG for 1.22.0 release by @sdwheeler in https://github.com/PowerShell/PSScriptAnalyzer/pull/1990
+* Update Code of Conduct by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2002
+* Update default type definition of `RuleInfo` by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2011
+* PSUseConsistentWhitespace: Handle redirect operators which are not in stream order by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2001
+* Setup GitHub Actions CI by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2018
+* Setup new OneBranch pipeline by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2027
+* Bump SMA version by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2028
+* Package updates by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2030
+* v1.23.0: Update version for new release by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2032
+* Migrate release pipeline to DeployBox by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2033
+
+## New Contributors
+* @adityapatwardhan made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/1981
+
 ## [1.22.0](https://github.com/PowerShell/PSScriptAnalyzer/tree/1.22.0) - 2024-03-05
 
 Minimum required version when using PowerShell 7 is now `7.2.11`.
