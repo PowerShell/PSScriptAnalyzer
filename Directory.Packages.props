@@ -11,7 +11,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Pluralize.NET" Version="1.0.2" />
     <PackageVersion Include="PowerShellStandard.Library" Version="3.0.0-preview-02" />
-    <PackageVersion Include="System.Management.Automation" Version="7.2.23" />
+    <PackageVersion Include="System.Management.Automation" Version="7.4.7" />
     <PackageVersion Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
 </Project>
