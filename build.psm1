@@ -308,7 +308,10 @@ function New-Catalog
 function Test-ScriptAnalyzer
 {
     [CmdletBinding()]
-    param ( [switch] $InProcess )
+    param (
+        [switch] $InProcess,
+        [string] $WithPowerShell
+    )
 
     END {
         # versions 3 and 4 don't understand versioned module paths, so we need to rename the directory of the version to
@@ -347,11 +350,19 @@ function Test-ScriptAnalyzer
             $analyzerPsd1Path = Join-Path -Path $script:destinationDir -ChildPath "$analyzerName.psd1"
             $scriptBlock = [scriptblock]::Create("Import-Module '$analyzerPsd1Path'; Invoke-Pester -Path $testScripts -CI")
             if ( $InProcess ) {
+                Write-Verbose "Testing with PowerShell $($PSVersionTable.PSVersion)"
                 & $scriptBlock
+            }
+            elseif ( $WithPowerShell ) {
+                $pwshVersion = & $WithPowerShell --version
+                Write-Verbose "Testing with $pwshVersion"
+                & $WithPowerShell -Command $scriptBlock
             }
             else {
                 $powershell = (Get-Process -id $PID).MainModule.FileName
-                & ${powershell} -NoProfile -Command $scriptBlock
+                $pwshVersion = & $powershell --version
+                Write-Verbose "Testing with $pwshVersion"
+                & $powershell -NoProfile -Command $scriptBlock
             }
         }
         finally {
@@ -550,6 +561,13 @@ function Get-DotnetExe
     # it's not in the path, try harder to find it by checking some usual places
     if ( ! (test-path variable:IsWindows) -or $IsWindows ) {
         $dotnetHuntPath = "$HOME\AppData\Local\Microsoft\dotnet\dotnet.exe"
+        Write-Verbose -Verbose "checking Windows $dotnetHuntPath"
+        if ( test-path $dotnetHuntPath ) {
+            $script:DotnetExe = $dotnetHuntPath
+            return $dotnetHuntPath
+        }
+
+        $dotnetHuntPath = "C:\Program Files\dotnet\dotnet.exe"
         Write-Verbose -Verbose "checking Windows $dotnetHuntPath"
         if ( test-path $dotnetHuntPath ) {
             $script:DotnetExe = $dotnetHuntPath
