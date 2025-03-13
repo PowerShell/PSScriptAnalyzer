@@ -563,6 +563,13 @@ function Get-DotnetExe
             $script:DotnetExe = $dotnetHuntPath
             return $dotnetHuntPath
         }
+
+        $dotnetHuntPath = "/usr/share/dotnet/dotnet"
+        Write-Verbose -Verbose "checking non-Windows $dotnetHuntPath"
+        if ( test-path $dotnetHuntPath ) {
+            $script:DotnetExe = $dotnetHuntPath
+            return $dotnetHuntPath
+        }
     }
 
     Write-Warning "Could not find dotnet executable"
