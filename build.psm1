@@ -88,7 +88,7 @@ function Start-ScriptAnalyzerBuild
     param (
         [switch]$All,
 
-        [ValidateSet(3, 4, 5, 7)]
+        [ValidateSet(5, 7)]
         [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
         [ValidateSet("Debug", "Release")]
@@ -124,7 +124,7 @@ function Start-ScriptAnalyzerBuild
         if ( $All )
         {
             # Build all the versions of the analyzer
-            foreach ($psVersion in 3, 4, 5, 7) {
+            foreach ($psVersion in 5, 7) {
                 Write-Verbose -Verbose -Message "Configuration: $Configuration PSVersion: $psVersion"
                 Start-ScriptAnalyzerBuild -Configuration $Configuration -PSVersion $psVersion -Verbose:$verboseWanted
             }
@@ -145,12 +145,6 @@ function Start-ScriptAnalyzerBuild
         $framework = 'net462'
         if ($PSVersion -eq 7) {
             $framework = 'net8'
-        }
-
-        # build the appropriate assembly
-        if ($PSVersion -match "[34]" -and $Framework -ne "net462")
-        {
-            throw ("ScriptAnalyzer for PS version '{0}' is not applicable to {1} framework" -f $PSVersion,$Framework)
         }
 
         Push-Location -Path $projectRoot
@@ -176,14 +170,6 @@ function Start-ScriptAnalyzerBuild
 
         switch ($PSVersion)
         {
-            3
-            {
-                $destinationDirBinaries = "$script:destinationDir\PSv3"
-            }
-            4
-            {
-                $destinationDirBinaries = "$script:destinationDir\PSv4"
-            }
             5
             {
                 $destinationDirBinaries = "$script:destinationDir"
@@ -199,7 +185,7 @@ function Start-ScriptAnalyzerBuild
         }
 
         $buildConfiguration = $Configuration
-        if ((3, 4, 7) -contains $PSVersion) {
+        if ($PSVersion -eq 7) {
             $buildConfiguration = "PSV${PSVersion}${Configuration}"
         }
 
