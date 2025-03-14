@@ -204,7 +204,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 string.Format(CultureInfo.CurrentCulture, message, extent.Text, correction),
                 extent,
                 GetName(),
-                DiagnosticSeverity.Warning,
+                DiagnosticSeverity.Information,
                 fileName,
                 correction,
                 suggestedCorrections: GetCorrectionExtent(ast, extent, correction));
@@ -217,7 +217,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 string.Format(CultureInfo.CurrentCulture, message, extent.Text, correction),
                 extent,
                 GetName(),
-                DiagnosticSeverity.Warning,
+                DiagnosticSeverity.Information,
                 fileName,
                 correction,
                 suggestedCorrections: GetCorrectionExtent(ast, extent, correction));
