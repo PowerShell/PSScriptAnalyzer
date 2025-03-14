@@ -7,7 +7,7 @@ param(
     [switch]$All,
 
     [Parameter(ParameterSetName="BuildOne")]
-    [ValidateSet(3, 4, 5, 7)]
+    [ValidateSet(5, 7)]
     [int]$PSVersion = $PSVersionTable.PSVersion.Major,
 
     [Parameter(ParameterSetName="BuildOne")]

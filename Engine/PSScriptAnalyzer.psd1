@@ -20,13 +20,13 @@ GUID = 'd6245802-193d-4068-a631-8863a4342a18'
 CompanyName = 'Microsoft Corporation'
 
 # Copyright statement for this module
-Copyright = '(c) Microsoft Corporation 2016. All rights reserved.'
+Copyright = '(c) Microsoft Corporation 2025. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'PSScriptAnalyzer provides script analysis and checks for potential code defects in the scripts by applying a group of built-in or customized rules on the scripts being analyzed.'
 
 # Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '3.0'
+PowerShellVersion = '5.1'
 
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''

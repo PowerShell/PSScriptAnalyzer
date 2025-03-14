@@ -73,11 +73,11 @@ To install **PSScriptAnalyzer** from source code:
 ### Requirements
 
 - [Latest .NET 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
-* If building for Windows PowerShell versions, then the .NET Framework 4.6.2 [targeting pack](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net462) (also referred to as developer/targeting pack) need to be installed. This is only possible on Windows.
-* Optionally but recommended for development: [Visual Studio 2017/2019](https://www.visualstudio.com/downloads)
+- If building for Windows PowerShell versions, then the .NET Framework 4.6.2 [targeting pack](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net462) (also referred to as developer/targeting pack) need to be installed. This is only possible on Windows.
+- Optional but recommended for development: [Visual Studio 2022](https://www.visualstudio.com/downloads)
+- Or [Visual Studio Code](https://code.visualstudio.com/download)
 - [Pester v5 PowerShell module, available on PowerShell Gallery](https://github.com/pester/Pester)
 - [PlatyPS PowerShell module, available on PowerShell Gallery](https://github.com/PowerShell/platyPS/releases)
-- Optionally but recommended for development: [Visual Studio](https://www.visualstudio.com/downloads)
 
 ### Steps
 
@@ -110,18 +110,6 @@ To install **PSScriptAnalyzer** from source code:
     .\build.ps1 -PSVersion 5
     ```
 
-  - Windows PowerShell version 4.0
-
-    ```powershell
-    .\build.ps1 -PSVersion 4
-    ```
-
-  - Windows PowerShell version 3.0
-
-    ```powershell
-    .\build.ps1 -PSVersion 3
-    ```
-
   - PowerShell 7
 
     ```powershell
@@ -134,7 +122,7 @@ To install **PSScriptAnalyzer** from source code:
   .\build.ps1 -Documentation
   ```
 
-- Build all versions (PowerShell v3, v4, v5, and v6) and documentation
+- Build all versions (PowerShell v5 and v7) and documentation
 
   ```powershell
   .\build.ps1 -All
