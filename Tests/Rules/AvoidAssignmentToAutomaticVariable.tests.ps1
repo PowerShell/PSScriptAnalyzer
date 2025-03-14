@@ -65,13 +65,22 @@ Describe "AvoidAssignmentToAutomaticVariables" {
         It "Variable <VariableName> produces warning of Severity <ExpectedSeverity>" -TestCases $testCases_AutomaticVariables {
             param ($VariableName, $ExpectedSeverity)
 
-            $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$${VariableName} = 'foo'" -ExcludeRule PSUseDeclaredVarsMoreThanAssignments
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "`$${VariableName} = 'foo'" -ExcludeRule PSUseDeclaredVarsMoreThanAssignments
             $warnings.Count | Should -Be 1
             $warnings.Severity | Should -Be $ExpectedSeverity
             $warnings.RuleName | Should -Be $ruleName
         }
 
-        It "Using Variable <VariableName> as parameter name produces warning of Severity error" -TestCases $testCases_AutomaticVariables {
+        It "Using Variable <VariableName> as foreach assignment produces warning of Severity <ExpectedSeverity>" -TestCases $testCases_AutomaticVariables {
+            param ($VariableName, $ExpectedSeverity)
+
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "foreach (`$$VariableName in `$foo) {}"
+            $warnings.Count | Should -Be 1
+            $warnings.Severity | Should -Be $ExpectedSeverity
+            $warnings.RuleName | Should -Be $ruleName
+        }
+
+        It "Using Variable <VariableName> as parameter name produces warning of Severity <ExpectedSeverity>" -TestCases $testCases_AutomaticVariables {
             param ($VariableName, $ExpectedSeverity)
 
             [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo{Param(`$$VariableName)}" -ExcludeRule PSReviewUnusedParameter
@@ -80,7 +89,7 @@ Describe "AvoidAssignmentToAutomaticVariables" {
             $warnings.RuleName | Should -Be $ruleName
         }
 
-        It "Using Variable <VariableName> as parameter name in param block produces warning of Severity error" -TestCases $testCases_AutomaticVariables {
+        It "Using Variable <VariableName> as parameter name in param block produces warning of Severity <ExpectedSeverity>" -TestCases $testCases_AutomaticVariables {
             param ($VariableName, $ExpectedSeverity)
 
             [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition "function foo(`$$VariableName){}"
@@ -91,6 +100,13 @@ Describe "AvoidAssignmentToAutomaticVariables" {
 
         It "Does not flag parameter attributes" {
             [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'function foo{Param([Parameter(Mandatory=$true)]$param1)}' -ExcludeRule PSReviewUnusedParameter
+            $warnings.Count | Should -Be 0
+        }
+
+        It "Does not flag true or false being used in ValidateSet" {
+            # All other read-only automatic variables cannot be used in ValidateSet
+            # they result in a ParseError. $true and $false are permitted however.
+            [System.Array] $warnings = Invoke-ScriptAnalyzer -ScriptDefinition 'param([ValidateSet($true,$false)]$MyVar)$MyVar' -ExcludeRule PSReviewUnusedParameter
             $warnings.Count | Should -Be 0
         }
 

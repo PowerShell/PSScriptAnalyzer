@@ -32,6 +32,7 @@ param(
 
     [Parameter(ParameterSetName='Test')]
     [switch] $InProcess,
+    [string] $WithPowerShell,
 
     [Parameter(ParameterSetName='BuildAll')]
     [switch] $Catalog,
@@ -85,7 +86,12 @@ END {
             Start-CreatePackage
         }
         "Test" {
-            Test-ScriptAnalyzer -InProcess:$InProcess
+            $testArgs = @{
+                InProcess = $InProcess
+                WithPowerShell = $WithPowerShell
+                Verbose = $verboseWanted
+            }
+            Test-ScriptAnalyzer @testArgs
             return
         }
         default {
