@@ -822,13 +822,13 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
             // Ensure that rules were actually loaded
             if (rules == null || rules.Any() == false)
             {
-                string errorMessage = string.Format( CultureInfo.CurrentCulture, Strings.RulesNotFound);
+                string errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.RulesNotFound);
 
                 this.outputWriter.ThrowTerminatingError(
                     new ErrorRecord(
                         new Exception(errorMessage),
                         errorMessage,
-                        ErrorCategory.ResourceUnavailable,
+                        ErrorCategory.ObjectNotFound,
                         this));
             }
 
