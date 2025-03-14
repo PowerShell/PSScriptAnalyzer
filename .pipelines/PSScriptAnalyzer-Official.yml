@@ -138,7 +138,7 @@ extends:
             target: main
             assets: $(Pipeline.Workspace)/PSScriptAnalyzer.$(version).nupkg
             tagSource: userSpecifiedTag
-            tag: v$(version)
+            tag: $(version)
             isDraft: true
             addChangeLog: false
             releaseNotesSource: inline

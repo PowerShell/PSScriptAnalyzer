@@ -1,7 +1,7 @@
 <Project>
   <!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
   <PropertyGroup>
-    <ModuleVersion>1.23.0</ModuleVersion>
+    <ModuleVersion>1.24.0</ModuleVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 </Project>
