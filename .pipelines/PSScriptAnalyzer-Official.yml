@@ -80,10 +80,7 @@ extends:
             inputs:
               packageType: sdk
               useGlobalJson: true
-          - pwsh: |
-              Register-PSRepository -Name CFS -SourceLocation "https://pkgs.dev.azure.com/powershell/PowerShell/_packaging/powershell/nuget/v2" -InstallationPolicy Trusted
-              Install-Module -Repository CFS -Name Microsoft.PowerShell.PSResourceGet
-              ./tools/installPSResources.ps1 -PSRepository CFS
+          - pwsh: ./tools/installPSResources.ps1 -PSRepository CFS
             displayName: Install PSResources
           - pwsh: ./build.ps1 -Configuration Release -All
             displayName: Build

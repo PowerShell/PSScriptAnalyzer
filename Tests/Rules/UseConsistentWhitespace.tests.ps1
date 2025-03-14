@@ -514,6 +514,48 @@ if ($true) { Get-Item `
         }
     }
 
+    Context "CheckSeparator" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $true
+        }
+
+        It "Should find a violation if there is no space after a comma" {
+            $def = '$Array = @(1,2)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -HaveCount 1
+        }
+
+        It "Should not find a violation if there is a space after a comma" {
+            $def = '$Array = @(1, 2)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if there is a new-line after a comma" {
+            $def = @'
+$Array = @(
+    1,
+    2
+)
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+        }
+
+        It "Should not find a violation if there is a comment after the separator" {
+            $def = @'
+$Array = @(
+    'foo',     # Comment Line 1
+    'FizzBuzz' # Comment Line 2
+)
+'@
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+    }
+
 
     Context "CheckParameter" {
         BeforeAll {
@@ -535,7 +577,7 @@ bar -h i `
             Invoke-ScriptAnalyzer -ScriptDefinition "$def" -Settings $settings | Should -Be $null
         }
 
-        It "Should not find no violation if there is always 1 space between parameters except when using colon syntax" {
+        It "Should not find a violation if there is always 1 space between parameters except when using colon syntax" {
             $def = 'foo -bar $baz @splattedVariable -bat -parameterName:$parameterValue'
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
@@ -581,6 +623,42 @@ bar  -h  i `
 -h i |
 bar -h i `
 -switch}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
+        It "Should fix script when a parameter value is a script block spanning multiple lines" {
+            $def = {foo { 
+    bar
+}     -baz}
+
+            $expected = {foo { 
+    bar
+} -baz}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
+        It "Should fix script when a parameter value is a hashtable spanning multiple lines" {
+            $def = {foo @{
+    a = 1
+}     -baz}
+
+            $expected = {foo @{
+    a = 1
+} -baz}
+            Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
+                Should -Be "$expected"
+        }
+
+        It "Should fix script when a parameter value is an array spanning multiple lines" {
+            $def = {foo @(
+    1
+)     -baz}
+
+            $expected = {foo @(
+    1
+) -baz}
             Invoke-Formatter -ScriptDefinition "$def" -Settings $settings |
                 Should -Be "$expected"
         }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
+using Microsoft.Windows.PowerShell.ScriptAnalyzer.Extensions;
 #if !CORECLR
 using System.ComponentModel.Composition;
 #endif
@@ -97,11 +98,40 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 // find all declared parameters
                 IEnumerable<Ast> parameterAsts = scriptBlockAst.FindAll(oneAst => oneAst is ParameterAst, false);
 
+                // does the scriptblock have a process block where either $PSItem or $_ is referenced
+                bool hasProcessBlockWithPSItemOrUnderscore = false;
+                if (scriptBlockAst.ProcessBlock != null)
+                {
+                    IDictionary<string, int> processBlockVariableCount = GetVariableCount(scriptBlockAst.ProcessBlock);
+                    processBlockVariableCount.TryGetValue("_", out int underscoreVariableCount);
+                    processBlockVariableCount.TryGetValue("psitem", out int psitemVariableCount);
+                    if (underscoreVariableCount > 0 || psitemVariableCount > 0)
+                    {
+                        hasProcessBlockWithPSItemOrUnderscore = true;
+                    }
+                }
+
                 // list all variables
                 IDictionary<string, int> variableCount = GetVariableCount(scriptBlockAst);
 
                 foreach (ParameterAst parameterAst in parameterAsts)
                 {
+                    // Check if the parameter has the ValueFromPipeline attribute
+                    NamedAttributeArgumentAst valueFromPipeline = (NamedAttributeArgumentAst)parameterAst.Find(
+                        valFromPipelineAst => valFromPipelineAst is NamedAttributeArgumentAst namedAttrib && string.Equals(
+                            namedAttrib.ArgumentName, "ValueFromPipeline",
+                            StringComparison.OrdinalIgnoreCase
+                        ),
+                        false
+                    );
+                    // If the parameter has the ValueFromPipeline attribute and the scriptblock has a process block with
+                    // $_ or $PSItem usage, then the parameter is considered used
+                    if (valueFromPipeline != null && valueFromPipeline.GetValue() && hasProcessBlockWithPSItemOrUnderscore)
+
+                    {
+                        continue;
+                    }
+
                     // there should be at least two usages of the variable since the parameter declaration counts as one
                     variableCount.TryGetValue(parameterAst.Name.VariablePath.UserPath, out int variableUsageCount);
                     if (variableUsageCount >= 2)
@@ -220,7 +250,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         /// <param name="ast">The scriptblock ast to scan</param>
         /// <param name="data">Previously generated data. New findings are added to any existing dictionary if present</param>
         /// <returns>a dictionary including all variables in the scriptblock and their count</returns>
-        IDictionary<string, int> GetVariableCount(ScriptBlockAst ast, Dictionary<string, int> data = null)
+        IDictionary<string, int> GetVariableCount(Ast ast, Dictionary<string, int> data = null)
         {
             Dictionary<string, int> content = data;
             if (null == data)

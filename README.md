@@ -72,7 +72,7 @@ To install **PSScriptAnalyzer** from source code:
 
 ### Requirements
 
-- [Latest .NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+- [Latest .NET 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 * If building for Windows PowerShell versions, then the .NET Framework 4.6.2 [targeting pack](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net462) (also referred to as developer/targeting pack) need to be installed. This is only possible on Windows.
 * Optionally but recommended for development: [Visual Studio 2017/2019](https://www.visualstudio.com/downloads)
 - [Pester v5 PowerShell module, available on PowerShell Gallery](https://github.com/pester/Pester)
