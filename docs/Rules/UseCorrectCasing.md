@@ -16,6 +16,35 @@ This rule nonetheless ensures consistent casing for clarity and readability.
 Using lowercase keywords helps distinguish them from commands.
 Using lowercase operators helps distinguish them from parameters.
 
+## Configuration
+
+```powershell
+Rules = @{
+    PS UseCorrectCasing = @{
+        Enable        = $true
+        CheckCommands = $true
+        CheckKeyword  = $true
+        CheckOperator = $true
+    }
+}
+```
+
+### Enable: bool (Default value is `$false`)
+
+Enable or disable the rule during ScriptAnalyzer invocation.
+
+### CheckCommands: bool (Default value is `$true`)
+
+If true, require the case of all operators to be lowercase.
+
+### CheckKeyword: bool (Default value is `$true`)
+
+If true, require the case of all keywords to be lowercase.
+
+### CheckOperator: bool (Default value is `$true`)
+
+If true, require the case of all commands to match their actual casing.
+
 ## How
 
 Use exact casing for type names.
