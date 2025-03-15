@@ -1,6 +1,6 @@
 ---
 description: Avoid Using SecureString With Plain Text
-ms.date: 06/28/2023
+ms.date: 01/28/2025
 ms.topic: reference
 title: AvoidUsingConvertToSecureStringWithPlainText
 ---

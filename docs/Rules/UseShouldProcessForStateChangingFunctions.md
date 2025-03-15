@@ -74,5 +74,5 @@ function Set-ServiceObject
 <!-- link references -->
 [01]: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_functions_cmdletbindingattribute
 [02]: https://learn.microsoft.com/powershell/scripting/developer/cmdlet/requesting-confirmation-from-cmdlets
-[03]: https://learn.microsoft.com/powershell/scripting/developer/cmdlet/required-development-guidelines
+[03]: https://learn.microsoft.com/powershell/scripting/developer/cmdlet/required-development-guidelines#support-confirmation-requests-rd04
 [04]: https://learn.microsoft.com/powershell/scripting/learn/deep-dives/everything-about-shouldprocess

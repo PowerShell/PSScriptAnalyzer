@@ -74,4 +74,4 @@ function Test-Script
 - [Strongly Encouraged Development Guidelines][01]
 
 <!-- link references -->
-[01]: /powershell/scripting/developer/cmdlet/strongly-encouraged-development-guidelines#parameters-that-take-true-and-false
+[01]: https://learn.microsoft.com/powershell/scripting/developer/cmdlet/strongly-encouraged-development-guidelines#parameters-that-take-true-and-false
