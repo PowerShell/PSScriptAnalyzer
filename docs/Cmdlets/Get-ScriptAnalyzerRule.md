@@ -1,7 +1,7 @@
 ---
 external help file: Microsoft.Windows.PowerShell.ScriptAnalyzer.dll-Help.xml
 Module Name: PSScriptAnalyzer
-ms.date: 10/07/2021
+ms.date: 12/12/2024
 online version: https://learn.microsoft.com/powershell/module/psscriptanalyzer/get-scriptanalyzerrule?view=ps-modules&wt.mc_id=ps-gethelp
 schema: 2.0.0
 ---
@@ -92,7 +92,7 @@ one value, but wildcards are supported. To get rules in subdirectories of the pa
 **RecurseCustomRulePath** parameter.
 
 You can create custom rules using a .NET assembly or a PowerShell module, such as the
-[Community Analyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/blob/development/Tests/Engine/CommunityAnalyzerRules/CommunityAnalyzerRules.psm1)
+[Community Analyzer Rules](https://github.com/PowerShell/PSScriptAnalyzer/tree/main/Tests/Engine/CommunityAnalyzerRules)
 in the GitHub repository.
 
 ```yaml

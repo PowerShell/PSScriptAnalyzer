@@ -1,6 +1,6 @@
 ---
 description: Avoid Using SecureString With Plain Text
-ms.date: 06/28/2023
+ms.date: 01/28/2025
 ms.topic: reference
 title: AvoidUsingConvertToSecureStringWithPlainText
 ---
@@ -37,6 +37,4 @@ $EncryptedInput = ConvertTo-SecureString -String $UserInput -AsPlainText -Force
 
 ```powershell
 $SecureUserInput = Read-Host 'Please enter your secure code' -AsSecureString
-$EncryptedInput = ConvertFrom-SecureString -String $SecureUserInput
-$SecureString = ConvertTo-SecureString -String $EncryptedInput
 ```
