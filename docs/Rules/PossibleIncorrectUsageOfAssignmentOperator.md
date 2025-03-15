@@ -52,7 +52,7 @@ if ($a = Get-Something) # Only execute action if command returns something and a
 }
 ```
 
-## Implicit suppresion using Clang style
+## Implicit suppression using Clang style
 
 There are some rare cases where assignment of variable inside an `if` statement is by design.
 Instead of suppressing the rule, one can also signal that assignment was intentional by wrapping the

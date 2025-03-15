@@ -36,7 +36,7 @@ Rules = @{
 
 ### Parameters
 
-- `Enable`: **bool** (Default valus is `$true`)
+- `Enable`: **bool** (Default value is `$true`)
 
   Enable or disable the rule during ScriptAnalyzer invocation.
 

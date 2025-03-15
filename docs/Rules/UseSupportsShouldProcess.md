@@ -18,7 +18,7 @@ authors to provide the desired interactive experience while using the cmdlet.
 
 ## Example
 
-### Wrong:
+### Wrong
 
 ```powershell
 function foo {
@@ -30,7 +30,7 @@ function foo {
 }
 ```
 
-### Correct:
+### Correct
 
 ```powershell
 function foo {

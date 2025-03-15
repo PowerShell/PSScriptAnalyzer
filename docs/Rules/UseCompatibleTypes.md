@@ -1,6 +1,6 @@
 ---
 description: Use compatible types
-ms.date: 06/28/2023
+ms.date: 12/12/2024
 ms.topic: reference
 title: UseCompatibleTypes
 ---
@@ -47,27 +47,25 @@ your configuration.
 
 Platforms bundled by default are:
 
-| PowerShell Version |   Operating System    |                                  ID                                   |
-| ------------------ | --------------------- | --------------------------------------------------------------------- |
-| 3.0                | Windows Server 2012   | `win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework`              |
-| 4.0                | Windows Server 2012R2 | `win-8_x64_6.3.9600.0_4.0_x64_4.0.30319.42000_framework`              |
-| 5.1                | Windows Server 2016   | `win-8_x64_10.0.14393.0_5.1.14393.2791_x64_4.0.30319.42000_framework` |
-| 5.1                | Windows Server 2019   | `win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework`  |
-| 5.1                | Windows 10 1809 (RS5) | `win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework` |
-| 6.2                | Windows Server 2016   | `win-8_x64_10.0.14393.0_6.2.4_x64_4.0.30319.42000_core`               |
-| 6.2                | Windows Server 2019   | `win-8_x64_10.0.17763.0_6.2.4_x64_4.0.30319.42000_core`               |
-| 6.2                | Windows 10 1809 (RS5) | `win-4_x64_10.0.17763.0_6.2.4_x64_4.0.30319.42000_core`               |
-| 6.2                | Ubuntu 18.04 LTS      | `ubuntu_x64_18.04_6.2.4_x64_4.0.30319.42000_core`                     |
-| 7.0                | Windows Server 2016   | `win-8_x64_10.0.14393.0_7.0.0_x64_3.1.2_core`                         |
-| 7.0                | Windows Server 2019   | `win-8_x64_10.0.17763.0_7.0.0_x64_3.1.2_core`                         |
-| 7.0                | Windows 10 1809 (RS5) | `win-4_x64_10.0.17763.0_6.2.4_x64_3.1.2_core`                         |
-| 7.0                | Ubuntu 18.04 LTS      | `ubuntu_x64_18.04_6.2.4_x64_3.1.2_core`                               |
+| PowerShell Version |    Operating System    |                                  ID                                   |
+| :----------------: | ---------------------- | --------------------------------------------------------------------- |
+|        3.0         | Windows Server 2012    | `win-8_x64_6.2.9200.0_3.0_x64_4.0.30319.42000_framework`              |
+|        4.0         | Windows Server 2012 R2 | `win-8_x64_6.3.9600.0_4.0_x64_4.0.30319.42000_framework`              |
+|        5.1         | Windows Server 2016    | `win-8_x64_10.0.14393.0_5.1.14393.2791_x64_4.0.30319.42000_framework` |
+|        5.1         | Windows Server 2019    | `win-8_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework`  |
+|        5.1         | Windows 10 Pro         | `win-48_x64_10.0.17763.0_5.1.17763.316_x64_4.0.30319.42000_framework` |
+|        6.2         | Ubuntu 18.04 LTS       | `ubuntu_x64_18.04_6.2.4_x64_4.0.30319.42000_core`                     |
+|        6.2         | Windows 10.0.14393     | `win-8_x64_10.0.14393.0_6.2.4_x64_4.0.30319.42000_core`               |
+|        6.2         | Windows 10.0.17763     | `win-8_x64_10.0.17763.0_6.2.4_x64_4.0.30319.42000_core`               |
+|        6.2         | Windows 10.0.18362     | `win-4_x64_10.0.18362.0_6.2.4_x64_4.0.30319.42000_core`               |
+|        7.0         | Ubuntu 18.04 LTS       | `ubuntu_x64_18.04_7.0.0_x64_3.1.2_core`                               |
+|        7.0         | Windows 10.0.14393     | `win-8_x64_10.0.14393.0_7.0.0_x64_3.1.2_core`                         |
+|        7.0         | Windows 10.0.17763     | `win-8_x64_10.0.17763.0_7.0.0_x64_3.1.2_core`                         |
+|        7.0         | Windows 10.0.18362     | `win-4_x64_10.0.18362.0_7.0.0_x64_3.1.2_core`                         |
 
-Other profiles can be found in the
-[GitHub repo](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityCollector/optional_profiles).
+Other profiles can be found in the [GitHub repo][02].
 
-You can also generate your own platform profile using the
-[PSCompatibilityCollector module](https://github.com/PowerShell/PSScriptAnalyzer/tree/development/PSCompatibilityCollector).
+You can also generate your own platform profile using the [PSCompatibilityCollector module][01].
 
 The compatibility profile settings takes a list of platforms to target under `TargetProfiles`. A
 platform can be specified as:
@@ -130,7 +128,7 @@ PS> $settings = @{
         }
       }
 }
-PS> Invoke-ScriptAnalyzer -Settings $settings -ScriptDefinition '[System.Management.Automation.SemanticVersion]'1.18.0-rc1''
+PS> Invoke-ScriptAnalyzer -Settings $settings -ScriptDefinition "[System.Management.Automation.SemanticVersion]'1.18.0-rc1'"
 
 RuleName                Severity     ScriptName Line  Message
 --------                --------     ---------- ----  -------
@@ -151,11 +149,17 @@ scriptblock as with other rules.
 The rule can also be suppressed only for particular types:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleTypes', 'System.Management.Automation.Security.SystemPolicy')]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleTypes',
+    'System.Management.Automation.Security.SystemPolicy')]
 ```
 
 And also suppressed only for type members:
 
 ```powershell
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands', 'System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName')]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCommands',
+    'System.Management.Automation.LanguagePrimitives/ConvertTypeNameToPSTypeName')]
 ```
+
+<!-- link references -->
+[01]: https://github.com/PowerShell/PSScriptAnalyzer/tree/main/PSCompatibilityCollector
+[02]: https://github.com/PowerShell/PSScriptAnalyzer/tree/main/PSCompatibilityCollector/optional_profiles

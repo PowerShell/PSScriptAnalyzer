@@ -13,7 +13,6 @@ title: AvoidGlobalFunctions
 Globally scoped functions override existing functions within the sessions with matching names. This
 name collision can cause difficult to debug issues for consumers of modules.
 
-
 To understand more about scoping, see `Get-Help about_Scopes`.
 
 ## How
