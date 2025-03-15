@@ -192,7 +192,7 @@ value of the **Profile** parameter is the path to the Script Analyzer profile.
     ExcludeRules = '*WriteHost'
 }
 
-Invoke-ScriptAnalyzer -Path $pshome\Modules\BitLocker -Profile .\ScriptAnalyzerProfile.txt
+Invoke-ScriptAnalyzer -Path $pshome\Modules\BitLocker -Settings .\ScriptAnalyzerProfile.txt
 ```
 
 If you include a conflicting parameter in the `Invoke-ScriptAnalyzer` command, such as
@@ -513,7 +513,7 @@ following keys:
 
 The keys and values in the profile are interpreted as if they were standard parameters and values of
 `Invoke-ScriptAnalyzer`, similar to splatting. For more information, see
-[about_Splatting](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_splatting).
+[about_Splatting](/powershell/module/microsoft.powershell.core/about/about_splatting).
 
 ```yaml
 Type: Object
