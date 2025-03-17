@@ -3,39 +3,56 @@
 ## [1.24.0](https://github.com/PowerShell/PSScriptAnalyzer/releases/tag/1.24.0)
 
 ### What's Changed
-* Update links in module manifest by @martincostello in https://github.com/PowerShell/PSScriptAnalyzer/pull/2034
-* Copy more files to module root by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2037
+#### Breaking Changes
+
+Minimum required PowerShell version raised from 3 to 5.1
+* Drop v3 and v4 support from build by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2081
+
+#### New Features
+
+* Add new options (enabled by default) to formatting rule `UseCorrectCasing` to also correct operators, keywords and commands - Add UseConsistentCasing by @Jaykul in https://github.com/PowerShell/PSScriptAnalyzer/pull/1704
+
+#### Enhancements
+
+* PSAlignAssignmentStatement: Ignore hashtables with a single key-value pair by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/1986
 * Use `RequiredResource` hashtable to specify PowerShell module versions by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2053
 * Set exit code of `Invoke-ScriptAnalyzer -EnableExit` to total number of diagnostics (#2054) by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2055
-* Fix incorrect `-ReportSummary` Pester test grouping by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2057
 * PSAvoidAssignmentToAutomaticVariable: Ignore when a Parameter has an Attribute that contains a Variable expression by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/1988
-* PSAlignAssignmentStatement: Ignore hashtables with a single key-value pair by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/1986
 * Trim unnecessary trailing spaces from string resources in Strings.resx by @XPlantefeve in https://github.com/PowerShell/PSScriptAnalyzer/pull/1972
-* Fixed erroneous PSUseDeclaredVarsMoreThanAssignments for some globals variables by @John-Leitch in https://github.com/PowerShell/PSScriptAnalyzer/pull/2013
 * Do not print summary repeatedly for each logger by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2058
-* PSReservedParams: Make severity Error instead of Warning by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/1989
 * Make Settings type detection more robust by @Tadas in https://github.com/PowerShell/PSScriptAnalyzer/pull/1967
-* PSUseConsistentIndentation: Check indentation of lines where first token is a LParen not followed by comment or new line by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/1995
 * Add foreach Assignment to AvoidAssignmentToAutomaticVariable by @PoshAJ in https://github.com/PowerShell/PSScriptAnalyzer/pull/2021
 * Invoke-ScriptAnalyzer: Stream diagnostics instead of batching by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2062
+* Invoke-ScriptAnalyzer: Print summary only once per invocation by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2063
+* Invoke-ScriptAnalyzer: Include parse errors in reported error count by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2069
+* Add exception message for missing rules by @Tadas in https://github.com/PowerShell/PSScriptAnalyzer/pull/1968
+
+#### Bug Fixes
+
+* Update links in module manifest by @martincostello in https://github.com/PowerShell/PSScriptAnalyzer/pull/2034
+* Fix incorrect `-ReportSummary` Pester test grouping by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2057
+* Fixed erroneous PSUseDeclaredVarsMoreThanAssignments for some globals variables by @John-Leitch in https://github.com/PowerShell/PSScriptAnalyzer/pull/2013
+* PSReservedParams: Make severity Error instead of Warning by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/1989
+* PSUseConsistentIndentation: Check indentation of lines where first token is a LParen not followed by comment or new line by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/1995
 * PSUseConsistentWhitespace: Correctly fix whitespace between command parameters when parameter value spans multiple lines  by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2064
-* Use -NoProfile when invoking pwsh in Pester tests by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2061
 * PSAvoidTrailingWhitespace: Rule not applied when using formatter + single character lines with trailing whitespace are truncated by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/1993
 * PSUseConsistentWhitespace: Ignore whitespace between separator and comment by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2065
-* Invoke-ScriptAnalyzer: Print summary only once per invocation by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2063
+* PSReviewUnusedParameter false positive for ValueFromPipeline by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2072
+* Change severity of UseCorrectCasing to be Information by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2082
+
+#### Process Changes
+
+* Copy more files to module root by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2037
 * Upgrade to .NET 8 since .NET 6 is past EOL by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2073
+* Use -NoProfile when invoking pwsh in Pester tests by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2061
 * Add GitHub Actions Ubuntu's dotnet path by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2080
 * Update README.md with recent upgrade to .NET 8 by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2076
 * Update CHANGELOG.MD with 1.23.0 release notes by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2078
 * Bring back Codespaces by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2077
 * Update SMA version to 7.4.7 by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2075
-* PSReviewUnusedParameter false positive for ValueFromPipeline by @liamjpeters in https://github.com/PowerShell/PSScriptAnalyzer/pull/2072
-* Invoke-ScriptAnalyzer: Include parse errors in reported error count by @MatejKafka in https://github.com/PowerShell/PSScriptAnalyzer/pull/2069
 * Test PowerShell Preview in CI by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2070
-* Add UseConsistentCasing by @Jaykul in https://github.com/PowerShell/PSScriptAnalyzer/pull/1704
-* Change severity of UseCorrectCasing to be Information by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2082
-* Drop v3 and v4 support from build by @andyleejordan in https://github.com/PowerShell/PSScriptAnalyzer/pull/2081
-* Add exception message for missing rules by @Tadas in https://github.com/PowerShell/PSScriptAnalyzer/pull/1968
+* Backport MSDocs changes by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2085
+* Document new optional parameters added to UseCorrectCasing by @bergmeister in https://github.com/PowerShell/PSScriptAnalyzer/pull/2086
 
 ### New Contributors
 * @martincostello made their first contribution in https://github.com/PowerShell/PSScriptAnalyzer/pull/2034
