@@ -27,7 +27,7 @@ save files with a specific encoding.
 
 For more information, see the following articles:
 
-- [System.IO.StreamReader](xref:System.IO.StreamReader.CurrentEncoding%2A)
+- [System.IO.StreamReader](https://learn.microsoft.com/dotnet/api/system.io.streamreader.currentencoding)
 - [about_Character_Encoding](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_character_encoding)
-- [Set-Content](xref:Microsoft.PowerShell.Management.Set-Content)
+- [Set-Content](https://learn.microsoft.com/powershell/module/microsoft.powershell.management/set-content)
 - [Understanding file encoding in VS Code and PowerShell](https://learn.microsoft.com/powershell/scripting/dev-cross-plat/vscode/understanding-file-encoding)

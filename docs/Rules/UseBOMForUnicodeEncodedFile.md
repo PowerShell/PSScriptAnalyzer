@@ -37,6 +37,6 @@ files with a BOM.
 
 For more information, see the following articles:
 
-- [about_Character_Encoding](/powershell/module/microsoft.powershell.core/about/about_character_encoding)
-- [Set-Content](xref:Microsoft.PowerShell.Management.Set-Content)
-- [Understanding file encoding in VS Code and PowerShell](/powershell/scripting/dev-cross-plat/vscode/understanding-file-encoding)
+- [about_Character_Encoding](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_character_encoding)
+- [Set-Content](https://learn.microsoft.com/powershell/module/microsoft.powershell.management/set-content)
+- [Understanding file encoding in VS Code and PowerShell](https://learn.microsoft.com/powershell/scripting/dev-cross-plat/vscode/understanding-file-encoding)
