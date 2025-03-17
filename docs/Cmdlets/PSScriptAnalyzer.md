@@ -21,10 +21,13 @@ checks the quality of PowerShell code by running a set of rules.
 ## PSScriptAnalyzer Cmdlets
 
 ### [Get-ScriptAnalyzerRule](Get-ScriptAnalyzerRule.md)
+
 Gets the script analyzer rules on the local computer.
 
 ### [Invoke-Formatter](Invoke-Formatter.md)
+
 Formats a script text based on the input settings or default settings.
 
 ### [Invoke-ScriptAnalyzer](Invoke-ScriptAnalyzer.md)
+
 Evaluates a script or module based on selected best practice rules

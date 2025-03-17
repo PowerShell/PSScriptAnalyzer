@@ -16,6 +16,11 @@ only be assigned in certain special cases to achieve a certain effect as a speci
 
 To understand more about automatic variables, see `Get-Help about_Automatic_Variables`.
 
+<!-- TODO
+Ability to suppress was added in https://github.com/PowerShell/PSScriptAnalyzer/pull/1896
+Need documentation for how to configure suppression of this rule.
+-->
+
 ## How
 
 Use variable names in functions or their parameters that do not conflict with automatic variables.

@@ -192,7 +192,7 @@ value of the **Profile** parameter is the path to the Script Analyzer profile.
     ExcludeRules = '*WriteHost'
 }
 
-Invoke-ScriptAnalyzer -Path $pshome\Modules\BitLocker -Profile .\ScriptAnalyzerProfile.txt
+Invoke-ScriptAnalyzer -Path $pshome\Modules\BitLocker -Settings .\ScriptAnalyzerProfile.txt
 ```
 
 If you include a conflicting parameter in the `Invoke-ScriptAnalyzer` command, such as

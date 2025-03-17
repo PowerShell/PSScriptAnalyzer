@@ -1,6 +1,6 @@
 ---
 description: Use compatible cmdlets
-ms.date: 06/28/2023
+ms.date: 12/12/2024
 ms.topic: reference
 title: UseCompatibleCmdlets
 ---
@@ -10,8 +10,8 @@ title: UseCompatibleCmdlets
 
 ## Description
 
-This rule flags cmdlets that are not available in a given Edition/Version of PowerShell on a given
-Operating System. It works by comparing a cmdlet against a set of allowlists which ship with
+This rule flags cmdlets that aren't available in a given Edition and Version of PowerShell on a
+given Operating System. It works by comparing a cmdlet against a set of allowlists which ship with
 PSScriptAnalyzer. They can be found at `/path/to/PSScriptAnalyzerModule/Settings`. These files are
 of the form, `<psedition>-<psversion>-<os>.json` where `<psedition>` can be either `Core` or
 `Desktop`, `<os>` can be either `Windows`, `Linux` or `MacOS`, and `<psversion>` is the PowerShell
@@ -41,7 +41,10 @@ The parameter `compatibility` is a list that contain any of the following
 
 Usually, patched versions of PowerShell have the same cmdlet data, therefore only settings of major
 and minor versions of PowerShell are supplied. You can also create a custom settings file with the
-[New-CommandDataFile.ps1](https://github.com/PowerShell/PSScriptAnalyzer/blob/development/Utils/New-CommandDataFile.ps1)
-script. Place the created `.json` file in the `Settings` folder of the `PSScriptAnalyzer` module
-folder. Then the `compatibility` parameter values is just the filename. Note that the `core-6.0.2-*`
-files were removed in PSScriptAnalyzer 1.18 since PowerShell 6.0 reached it's end of life.
+[New-CommandDataFile.ps1][01] script. Place the created `.json` file in the `Settings` folder of the
+`PSScriptAnalyzer` module folder. Then the `compatibility` parameter values is just the filename.
+Note that the `core-6.0.2-*` files were removed in PSScriptAnalyzer 1.18 since PowerShell 6.0
+reached it's end of life.
+
+<!-- link references -->
+[01]: https://github.com/PowerShell/PSScriptAnalyzer/blob/main/Utils/New-CommandDataFile.ps1
