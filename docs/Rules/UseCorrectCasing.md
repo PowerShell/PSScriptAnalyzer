@@ -1,6 +1,6 @@
 ---
 description: Use exact casing of cmdlet/function/parameter name.
-ms.date: 06/28/2023
+ms.date: 03/19/2025
 ms.topic: reference
 title: UseCorrectCasing
 ---
@@ -10,10 +10,16 @@ title: UseCorrectCasing
 
 ## Description
 
-This is a style formatting rule. PowerShell is case insensitive where applicable. The casing of
-cmdlet names or parameters does not matter but this rule ensures that the casing matches for
-consistency and also because most cmdlets/parameters start with an upper case and using that
-improves readability to the human eye.
+This is a style/formatting rule. PowerShell is case insensitive wherever possible, so the casing of
+cmdlet names, parameters, keywords and operators does not matter. This rule nonetheless ensures
+consistent casing for clarity and readability. Using lowercase keywords helps distinguish them from
+commands. Using lowercase operators helps distinguish them from parameters.
+
+## How
+
+- Use exact casing for type names.
+- Use exact casing of the cmdlet and its parameters.
+- Use lowercase for language keywords and operators.
 
 ## Configuration
 
@@ -28,36 +34,33 @@ Rules = @{
 }
 ```
 
-### Enable: bool (Default value is `$false`)
+### Parameters
+
+#### Enable: bool (Default value is `$false`)
 
 Enable or disable the rule during ScriptAnalyzer invocation.
 
-### CheckCommands: bool (Default value is `$true`)
+#### CheckCommands: bool (Default value is `$true`)
 
 If true, require the case of all operators to be lowercase.
 
-### CheckKeyword: bool (Default value is `$true`)
+#### CheckKeyword: bool (Default value is `$true`)
 
 If true, require the case of all keywords to be lowercase.
 
-### CheckOperator: bool (Default value is `$true`)
+#### CheckOperator: bool (Default value is `$true`)
 
 If true, require the case of all commands to match their actual casing.
 
-## How
+## Examples
 
-Use exact casing of the cmdlet and its parameters, e.g.
-`Invoke-Command { 'foo' } -RunAsAdministrator`.
-
-## Example
-
-### Wrong
+### Wrong way
 
 ```powershell
 invoke-command { 'foo' } -runasadministrator
 ```
 
-### Correct
+### Correct way
 
 ```powershell
 Invoke-Command { 'foo' } -RunAsAdministrator
