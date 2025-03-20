@@ -57,11 +57,19 @@ If true, require the case of all commands to match their actual casing.
 ### Wrong way
 
 ```powershell
+ForEach ($file in Get-childitem -Recurse) {
+    $file.Extension -eq '.txt'
+}
+
 invoke-command { 'foo' } -runasadministrator
 ```
 
 ### Correct way
 
 ```powershell
+foreach ($file in Get-ChildiItem -Recurse) {
+    $file.Extension -eq '.txt'
+}
+
 Invoke-Command { 'foo' } -RunAsAdministrator
 ```
