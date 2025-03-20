@@ -67,7 +67,7 @@ invoke-command { 'foo' } -runasadministrator
 ### Correct way
 
 ```powershell
-foreach ($file in Get-ChildiItem -Recurse) {
+foreach ($file in Get-ChildItem -Recurse) {
     $file.Extension -eq '.txt'
 }
 
