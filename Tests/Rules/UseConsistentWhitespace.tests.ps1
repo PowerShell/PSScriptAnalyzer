@@ -212,9 +212,10 @@ $ht = @{
             $ruleConfiguration.CheckSeparator = $false
             $ruleConfiguration.IgnoreAssignmentOperatorInsideHashTable = $true
         }
+
         It "Should not find violation if assignment operator is in multi-line hash table and a using statement is present" {
             $def = @'
-using system
+using namespace System.IO
 
 $ht = @{
     variable = 3
@@ -223,7 +224,6 @@ $ht = @{
 '@
             Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
         }
-
 
         It "Should not find violation if assignment operator is in multi-line hash table" {
             $def = @'
