@@ -222,7 +222,7 @@ $ht = @{
     other    = 4
 }
 '@
-            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -Be $null
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
         }
 
         It "Should not find violation if assignment operator is in multi-line hash table" {
