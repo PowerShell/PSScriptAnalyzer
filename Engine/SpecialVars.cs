@@ -183,7 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                     PSEmailServer,
                                                                     PSDefaultParameterValues,
                                                                     PSModuleAutoLoadingPreference,
-                                                                    PSNativeCommandArgumentPassing.
+                                                                    PSNativeCommandArgumentPassing,
                                                                     pwd,
                                                                     Null,
                                                                     True,
