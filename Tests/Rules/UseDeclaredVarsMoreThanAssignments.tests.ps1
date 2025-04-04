@@ -58,6 +58,12 @@ function MyFunc2() {
             Should -Be 0
         }
 
+        It "does not flag `$PSNativeCommandArgumentPassing variable" {
+            Invoke-ScriptAnalyzer -ScriptDefinition '$PSNativeCommandArgumentPassing=None' -IncludeRule $violationName | `
+            Get-Count | `
+            Should -Be 0
+        }
+
         It "does not flag global variable" {
             Invoke-ScriptAnalyzer -ScriptDefinition '$global:x=$null' -IncludeRule $violationName  | `
             Get-Count | `

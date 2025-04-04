@@ -160,6 +160,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
         internal const string PSEmailServer = "PSEmailServer";
         internal const string PSDefaultParameterValues = "PSDefaultParameterValues";
         internal const string PSModuleAutoLoadingPreference = "PSModuleAutoLoadingPreference";
+        internal const string PSNativeCommandArgumentPassing = "PSNativeCommandArgumentPassing";
         internal const string pwd = "PWD";
         internal const string Null = "null";
         internal const string True = "true";
@@ -182,6 +183,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
                                                                     PSEmailServer,
                                                                     PSDefaultParameterValues,
                                                                     PSModuleAutoLoadingPreference,
+                                                                    PSNativeCommandArgumentPassing,
                                                                     pwd,
                                                                     Null,
                                                                     True,
