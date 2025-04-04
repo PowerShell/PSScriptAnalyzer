@@ -333,7 +333,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer
 
          public override AstVisitAction VisitUsingStatement(UsingStatementAst usingStatementAst)
          {
-             return Visit(usingStatementAst);
+             return AstVisitAction.Continue;
          }
 #endif
 
