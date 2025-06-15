@@ -10,8 +10,8 @@ BeforeAll {
 
 Describe "AvoidUsingNewObject" {
     Context "When there are violations" {
-        It "has 17 New-Object violations" {
-            $violations.Count | Should -Be 17
+        It "has 20 New-Object violations" {
+            $violations.Count | Should -Be 20
         }
 
         It "has the correct description message for New-Object" {

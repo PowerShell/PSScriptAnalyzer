@@ -88,3 +88,20 @@ function Test-Scope
     }
 }
 
+$scripbBlockTest = {
+    New-Object -TypeName System.Collections.Generic.HashSet[String] # Issue #18
+
+    [Hashtable] $params4 = @{
+        TypeName = 'System.Collections.Generic.HashSet[String]'
+    }
+
+    New-Object @params4 # Issue #19
+}
+
+$test = "co"
+$value = "WScript.Shell"
+[hashtable] $test1 = @{
+    "$test" = $value
+}
+
+New-Object @test1 # Issue #20

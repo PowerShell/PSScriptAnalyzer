@@ -8,10 +8,11 @@ New-Object @param
 
 function Test
 {
-    New-Object -ComObject "WScript.Shell"
+    $partialParameter = "CO"
+    New-Object -"$partialParameter" "WScript.Shell"
 
     [Hashtable] $param = @{
-        ComObject = "WScript.Shell"
+        ComO = "WScript.Shell"
     }
 
     New-Object @param
@@ -20,7 +21,7 @@ function Test
         New-Object -ComObject "WScript.Shell"
 
         [Hashtable] $param = @{
-            ComObject = "WScript.Shell"
+            CO = "WScript.Shell"
         }
 
         New-Object @param
@@ -34,7 +35,7 @@ function Test
         New-Object -ComObject "WScript.Shell"
 
         [Hashtable] $param = @{
-            ComObject = "WScript.Shell"
+            C = "WScript.Shell"
         }
 
         New-Object @param
@@ -84,3 +85,20 @@ function Test-Scope
     }
 }
 
+$scripbBlockTest = {
+    New-Object -ComObject "WScript.Shell"
+
+    [Hashtable] $params4 = @{
+        ComObject = 'WScript.Shell'
+    }
+
+    New-Object @params4
+}
+
+$partialKey = "COMO"
+$value = "WScript.Shell"
+[hashtable] $partialKeyParams = @{
+    "$partialKey" = $value
+}
+
+New-Object @partialKeyParams

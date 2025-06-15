@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Text.RegularExpressions;
 using Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic;
 
 #if !CORECLR
@@ -22,11 +23,35 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class AvoidUsingNewObject : IScriptRule
     {
+        #region Singleton members
         private const string _cmdletName = "New-Object";
-        private const string _comObjectParameterName = "ComObject";
-        private const string _typeNameParameterName = "TypeName";
 
+        // We only want to check for the first letter to allow for parameter appreviations.
+        // For Example: -ComObject, -Com, -C.
+        private static Regex _comObjectParameterRegex = new Regex(
+            "^C",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase,
+            TimeSpan.FromSeconds(1)
+        );
+
+        // We only want to check for the first letter to allow for parameter appreviations.
+        // For Example: -TypeName, -Type, -T.
+        private static Regex _typeNameParameterRegex = new Regex(
+            "^T",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase,
+            TimeSpan.FromSeconds(1)
+        );
+
+        #endregion
+
+        #region Private members
+
+        // Required to query New-Object Parameter Splats / Variable reassignments
         private Ast _rootAst;
+
+        #endregion
+
+        #region Public methods
 
         /// <summary>
         /// AnalyzeScript: Analyzes the given Ast and returns DiagnosticRecords based on the analysis.
@@ -38,7 +63,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null) throw new ArgumentNullException(Strings.NullAstErrorMessage);
 
-            // Required to query New-Object Parameter Splats / Variable reassignments
             _rootAst = ast;
 
             IEnumerable<Ast> commandAsts = ast.FindAll(testAst => testAst is CommandAst, true);
@@ -67,238 +91,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             }
         }
 
-        /// <summary>
-        /// Determines if the New-Object command is creating a COM object.
-        /// </summary>
-        /// <param name="cmdAst">The CommandAst representing the New-Object command</param>
-        /// <returns>True if the command is creating a COM object, false otherwise</returns>
-        private bool IsComObject(CommandAst cmdAst)
-        {
-            foreach (var element in cmdAst.CommandElements)
-            {
-                if (element is CommandParameterAst cmdParameterAst)
-                {
-                    if (string.Equals(cmdParameterAst.ParameterName, _comObjectParameterName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                    else if (string.Equals(cmdParameterAst.ParameterName, _typeNameParameterName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
+        #endregion
 
-                    continue;
-                }
-                else if (element is VariableExpressionAst splattedVarAst && splattedVarAst.Splatted)
-                {
-                    return ProcessParameterSplat(splattedVarAst);
-                }
-                else if (element is UsingExpressionAst usingExprAst && usingExprAst.SubExpression is VariableExpressionAst usingVarAst)
-                {
-                    if (!usingVarAst.Splatted)
-                    {
-                        continue;
-                    }
-
-                    return ProcessParameterSplat(usingVarAst);
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Processes a Parameter Splat to determine if it contains COM object parameter.
-        /// </summary>
-        /// <param name="splattedVarAst">The VariableExpressionAst representing the splatted variable</param>
-        /// <returns>True if the variable contains COM object parameter, false otherwise</returns>
-        private bool ProcessParameterSplat(VariableExpressionAst splattedVarAst)
-        {
-            var variableName = Helper.Instance.VariableNameWithoutScope(splattedVarAst.VariablePath);
-            var visitedVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            return ProcessVariable(variableName, visitedVariables);
-        }
-
-        /// <summary>
-        /// Recursively processes variable assignments to trace back to the original hashtable definition.
-        /// </summary>
-        /// <param name="variableName">The name of the variable to process</param>
-        /// <param name="visitedVariables">Set of already visited variables to prevent infinite recursion</param>
-        /// <returns>True if the variable chain leads to a COM object parameter, false otherwise</returns>
-        private bool ProcessVariable(string variableName, HashSet<string> visitedVariables)
-        {
-            // Prevent infinite recursion
-            if (visitedVariables.Contains(variableName))
-            {
-                return false;
-            }
-
-            visitedVariables.Add(variableName);
-
-            var assignments = FindAssignmentsInScope(variableName);
-
-            foreach (var assignment in assignments)
-            {
-                var hashtableAst = GetHashtableFromAssignment(assignment);
-                if (hashtableAst != null)
-                {
-                    return CheckHashtableForComObjectKey(hashtableAst);
-                }
-
-                var sourceVariable = GetVariableFromAssignment(assignment);
-                if (sourceVariable != null)
-                {
-                    var result = ProcessVariable(sourceVariable, visitedVariables);
-
-                    if (result)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Extracts the source variable name from a variable-to-variable assignment.
-        /// </summary>
-        /// <param name="assignmentAst">The AssignmentStatementAst to analyze</param>
-        /// <returns>The name of the source variable, or null if not a variable assignment</returns>
-        private static string GetVariableFromAssignment(AssignmentStatementAst assignmentAst)
-        {
-            var rightHandSide = assignmentAst.Right;
-
-            if (rightHandSide is PipelineAst pipelineAst &&
-                pipelineAst.PipelineElements.Count == 1 &&
-                pipelineAst.PipelineElements[0] is CommandExpressionAst cmdExpr &&
-                cmdExpr.Expression is VariableExpressionAst varExpr)
-            {
-                return Helper.Instance.VariableNameWithoutScope(varExpr.VariablePath);
-            }
-
-            if (rightHandSide is CommandExpressionAst commandExpr &&
-                commandExpr.Expression is VariableExpressionAst directVarExpr)
-            {
-                return Helper.Instance.VariableNameWithoutScope(directVarExpr.VariablePath);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Finds all assignment statements in the current scope that assign to the specified variable.
-        /// </summary>
-        /// <param name="variableName">The name of the variable to search for</param>
-        /// <returns>A list of AssignmentStatementAst objects that assign to the variable</returns>
-        private List<AssignmentStatementAst> FindAssignmentsInScope(string variableName)
-        {
-            var assignments = new List<AssignmentStatementAst>();
-
-            var allAssignments = _rootAst.FindAll(ast => ast is AssignmentStatementAst, true);
-
-            foreach (var assignment in allAssignments.Cast<AssignmentStatementAst>())
-            {
-                VariableExpressionAst leftVarAst = null;
-
-                // Handle direct variable assignment: $var = ...
-                if (assignment.Left is VariableExpressionAst leftVar)
-                {
-                    leftVarAst = leftVar;
-                }
-                // Handle typed assignment: [type]$var = ...
-                else if (assignment.Left is ConvertExpressionAst convertAst &&
-                         convertAst.Child is VariableExpressionAst typedVar)
-                {
-                    leftVarAst = typedVar;
-                }
-
-                if (leftVarAst == null)
-                {
-                    continue;
-                }
-
-                var leftVarName = Helper.Instance.VariableNameWithoutScope(leftVarAst.VariablePath);
-
-                if (string.Equals(leftVarName, variableName, StringComparison.OrdinalIgnoreCase))
-                {
-                    assignments.Add(assignment);
-                }
-            }
-
-            return assignments;
-        }
-
-        /// <summary>
-        /// Checks if a hashtable contains a ComObject key or TypeName key to determine if it's for COM object creation.
-        /// </summary>
-        /// <param name="hashtableAst">The HashtableAst to examine</param>
-        /// <returns>True if the hashtable contains a ComObject key, false if it contains TypeName or neither</returns>
-        private static bool CheckHashtableForComObjectKey(HashtableAst hashtableAst)
-        {
-            foreach (var keyValuePair in hashtableAst.KeyValuePairs)
-            {
-                if (keyValuePair.Item1 is StringConstantExpressionAst keyAst)
-                {
-                    // If the key is ComObject, it's a COM object
-                    if (string.Equals(keyAst.Value, _comObjectParameterName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                    // If the key is TypeName, it's not a COM object
-                    else if (string.Equals(keyAst.Value, _typeNameParameterName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Extracts a hashtable from an assignment statement's right-hand side.
-        /// </summary>
-        /// <param name="assignmentAst">The AssignmentStatementAst to analyze</param>
-        /// <returns>The HashtableAst if found, null otherwise</returns>
-        private static HashtableAst GetHashtableFromAssignment(AssignmentStatementAst assignmentAst)
-        {
-            var rightHandSide = assignmentAst.Right;
-
-            HashtableAst hashtable = ExtractHashtableFromStatement(rightHandSide);
-
-            if (hashtable != null)
-            {
-                return hashtable;
-            }
-
-            var hashtableNodes = rightHandSide.FindAll(ast => ast is HashtableAst, true);
-            return hashtableNodes.FirstOrDefault() as HashtableAst;
-        }
-
-        /// <summary>
-        /// Extracts a hashtable from various statement types (PipelineAst, CommandExpressionAst).
-        /// </summary>
-        /// <param name="statement">The StatementAst to analyze</param>
-        /// <returns>The HashtableAst if found, null otherwise</returns>
-        private static HashtableAst ExtractHashtableFromStatement(StatementAst statement)
-        {
-            switch (statement)
-            {
-                case PipelineAst pipelineAst when pipelineAst.PipelineElements.Count >= 1:
-                    if (pipelineAst.PipelineElements[0] is CommandExpressionAst cmdExpr &&
-                        cmdExpr.Expression is HashtableAst hashtableFromPipeline)
-                    {
-                        return hashtableFromPipeline;
-                    }
-                    break;
-
-                case CommandExpressionAst commandExpr when commandExpr.Expression is HashtableAst hashtableFromCommand:
-                    return hashtableFromCommand;
-            }
-
-            return null;
-        }
+        #region Private methods
 
         /// <summary>
         /// GetError: Retrieves the error message
@@ -369,5 +164,369 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.SourceName);
         }
+
+        /// <summary>
+        /// Determines if the New-Object command is creating a COM object.
+        /// </summary>
+        /// <param name="cmdAst">The CommandAst representing the New-Object command</param>
+        /// <returns>True if the command is creating a COM object, false otherwise</returns>
+        private bool IsComObject(CommandAst cmdAst)
+        {
+            foreach (var element in cmdAst.CommandElements)
+            {
+                if (element is CommandParameterAst cmdParameterAst)
+                {
+                    var paramName = cmdParameterAst.ParameterName;
+                    if (string.IsNullOrEmpty(paramName))
+                        continue;
+
+                    if (_comObjectParameterRegex.IsMatch(paramName))
+                        return true;
+
+                    if (_typeNameParameterRegex.IsMatch(paramName))
+                        return false;
+
+                    continue;
+                }
+
+                if (element is VariableExpressionAst splattedVarAst && splattedVarAst.Splatted)
+                    return ProcessVariableExpression(splattedVarAst);
+
+                if (element is ExpandableStringExpressionAst expandableStringAst)
+                    return ProcessExpandableExpression(expandableStringAst);
+
+                if (element is UsingExpressionAst usingExprAst)
+                {
+                    if (!(usingExprAst.SubExpression is VariableExpressionAst usingVarAst))
+                        continue;
+
+                    if (!usingVarAst.Splatted)
+                        continue;
+
+                    return ProcessVariableExpression(usingVarAst);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Recursively processes variable assignments to trace back to the original hashtable definition.
+        /// </summary>
+        /// <param name="variableName">The name of the variable to process</param>
+        /// <param name="visitedVariables">Set of already visited variables to prevent infinite recursion</param>
+        /// <returns>True if the variable chain leads to a COM object parameter, false otherwise</returns>
+        private bool ProcessVariable(string variableName, HashSet<string> visitedVariables)
+        {
+            if (visitedVariables.Contains(variableName))
+                return false;
+
+            visitedVariables.Add(variableName);
+
+            var assignments = FindAssignmentStatements(variableName);
+
+            foreach (var assignment in assignments)
+            {
+                var hashtableAst = GetHashtableFromAssignment(assignment);
+                if (hashtableAst != null)
+                    return ContainsComObjectKey(hashtableAst);
+
+                var sourceVariable = GetVariableFromAssignment(assignment);
+                if (sourceVariable != null)
+                {
+                    if (ProcessVariable(sourceVariable, visitedVariables))
+                        return true;
+
+                    continue;
+                }
+
+                var stringConstant = GetStringConstantFromAssignment(assignment);
+                if (stringConstant != null)
+                {
+                    if (_comObjectParameterRegex.IsMatch(stringConstant))
+                        return true;
+
+                    if (_typeNameParameterRegex.IsMatch(stringConstant))
+                        return false;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Extracts a string constant from an assignment statement's right-hand side.
+        /// </summary>
+        /// <param name="assignmentAst">The AssignmentStatementAst to analyze</param>
+        /// <returns>The string constant value if found, null otherwise</returns>
+        private static string GetStringConstantFromAssignment(AssignmentStatementAst assignmentAst)
+        {
+            var rightHandSide = assignmentAst.Right;
+
+            if (rightHandSide is PipelineAst pipelineAst)
+            {
+                if (pipelineAst.PipelineElements.Count != 1)
+                    return null;
+
+                if (!(pipelineAst.PipelineElements[0] is CommandExpressionAst cmdExpr))
+                    return null;
+
+                if (!(cmdExpr.Expression is StringConstantExpressionAst stringExpr))
+                    return null;
+
+                return stringExpr.Value;
+            }
+
+            // Handle direct CommandExpressionAst -> StringConstantExpressionAst
+            if (rightHandSide is CommandExpressionAst commandExpr)
+            {
+                if (!(commandExpr.Expression is StringConstantExpressionAst directStringExpr))
+                    return null;
+
+                return directStringExpr.Value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Processes VariableExpressionAst to determine if the variable potentially matches 'ComObject' parameter.
+        /// </summary>
+        /// <param name="variableAst">The VariableExpressionAst to process</param>
+        /// <returns>True if the variable contains COM object parameter, false otherwise</returns>
+        private bool ProcessVariableExpression(VariableExpressionAst variableAst)
+        {
+            var variableName = GetVariableNameWithoutScope(variableAst);
+            var visitedVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            return ProcessVariable(variableName, visitedVariables);
+        }
+
+        /// <summary>
+        /// Attempts to resolve expandable strings to its variable value.
+        /// </summary>
+        /// <param name="expandableAst">The ExpandableStringExpressionAst to resolve</param>
+        /// <returns>The resolved string value, or null if it cannot be determined</returns>
+        private bool ProcessExpandableExpression(ExpandableStringExpressionAst expandableAst)
+        {
+            if (expandableAst.NestedExpressions.Count == 0)
+                return false;
+
+            if (!(expandableAst.NestedExpressions[0] is VariableExpressionAst singleVar))
+                return false;
+
+            return ProcessVariableExpression(singleVar);
+        }
+
+        /// <summary>
+        /// Finds all assignment statements in the current scope that assign to the specified variable.
+        /// </summary>
+        /// <param name="variableName">The name of the variable to search for</param>
+        /// <returns>A list of AssignmentStatementAst objects that assign to the variable</returns>
+        private List<AssignmentStatementAst> FindAssignmentStatements(string variableName)
+        {
+            var assignments = new List<AssignmentStatementAst>();
+            var allAssignments = _rootAst.FindAll(ast => ast is AssignmentStatementAst, true);
+
+            foreach (var assignment in allAssignments.Cast<AssignmentStatementAst>())
+            {
+                VariableExpressionAst leftVarAst = GetLeftVariableFromAssignment(assignment);
+                if (leftVarAst == null)
+                    continue;
+
+                var leftVarName = GetVariableNameWithoutScope(leftVarAst);
+                if (!string.Equals(leftVarName, variableName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                assignments.Add(assignment);
+            }
+
+            return assignments;
+        }
+
+        /// <summary>
+        /// Checks if a hashtable contains a ComObject key or TypeName key to determine if it's for COM object creation.
+        /// </summary>
+        /// <param name="hashtableAst">The HashtableAst to examine</param>
+        /// <returns>True if the hashtable contains a ComObject key, false if it contains TypeName or neither</returns>
+        private bool ContainsComObjectKey(HashtableAst hashtableAst)
+        {
+            foreach (var keyValuePair in hashtableAst.KeyValuePairs)
+            {
+                if (keyValuePair.Item1 is StringConstantExpressionAst stringKey)
+                {
+                    string paramName = stringKey.Value;
+                    if (string.IsNullOrEmpty(paramName))
+                        continue;
+
+                    if (_comObjectParameterRegex.IsMatch(paramName))
+                        return true;
+
+                    if (_typeNameParameterRegex.IsMatch(paramName))
+                        return false;
+
+                    continue;
+                }
+
+                if (keyValuePair.Item1 is VariableExpressionAst varKey)
+                {
+                    if (ProcessVariableExpression(varKey))
+                        return true;
+
+                    continue;
+                }
+
+                if (keyValuePair.Item1 is ExpandableStringExpressionAst expandableKey)
+                {
+                    if (ProcessExpandableExpression(expandableKey))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Static methods
+
+        /// <summary>
+        /// Extracts a hashtable from various statement types (PipelineAst, CommandExpressionAst).
+        /// </summary>
+        /// <param name="statement">The StatementAst to analyze</param>
+        /// <returns>The HashtableAst if found, null otherwise</returns>
+        private static HashtableAst ExtractHashtableFromStatement(StatementAst statement)
+        {
+            if (statement is PipelineAst pipelineAst)
+            {
+                if (pipelineAst.PipelineElements.Count < 1)
+                    return null;
+
+                if (!(pipelineAst.PipelineElements[0] is CommandExpressionAst cmdExpr))
+                    return null;
+
+                if (!(cmdExpr.Expression is HashtableAst hashtableFromPipeline))
+                    return null;
+
+                return hashtableFromPipeline;
+            }
+
+            if (statement is CommandExpressionAst commandExpr)
+            {
+                if (!(commandExpr.Expression is HashtableAst hashtableFromCommand))
+                    return null;
+
+                return hashtableFromCommand;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Extracts a hashtable from an assignment statement's right-hand side.
+        /// </summary>
+        /// <param name="assignmentAst">The AssignmentStatementAst to analyze</param>
+        /// <returns>The HashtableAst if found, null otherwise</returns>
+        private static HashtableAst GetHashtableFromAssignment(AssignmentStatementAst assignmentAst)
+        {
+            var rightHandSide = assignmentAst.Right;
+
+            HashtableAst hashtable = ExtractHashtableFromStatement(rightHandSide);
+
+            if (hashtable != null)
+                return hashtable;
+
+            var hashtableNodes = rightHandSide.FindAll(ast => ast is HashtableAst, true);
+            return hashtableNodes.FirstOrDefault() as HashtableAst;
+        }
+
+        /// <summary>
+        /// Extracts the left-hand variable from an assignment statement.
+        /// </summary>
+        /// <param name="assignment">The assignment statement</param>
+        /// <returns>The variable expression, or null if not found</returns>
+        private static VariableExpressionAst GetLeftVariableFromAssignment(AssignmentStatementAst assignment)
+        {
+            if (assignment.Left is VariableExpressionAst leftVar)
+                return leftVar;
+
+            if (assignment.Left is ConvertExpressionAst convertAst &&
+                convertAst.Child is VariableExpressionAst typedVar)
+                return typedVar;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Extracts the source variable name from a variable-to-variable assignment.
+        /// </summary>
+        /// <param name="assignmentAst">The AssignmentStatementAst to analyze</param>
+        /// <returns>The name of the source variable, or null if not a variable assignment</returns>
+        private static string GetVariableFromAssignment(AssignmentStatementAst assignmentAst)
+        {
+            var rightHandSide = assignmentAst.Right;
+
+            if (rightHandSide is PipelineAst pipelineAst)
+            {
+                if (pipelineAst.PipelineElements.Count != 1)
+                    return null;
+
+                if (!(pipelineAst.PipelineElements[0] is CommandExpressionAst cmdExpr))
+                    return null;
+
+                if (!(cmdExpr.Expression is VariableExpressionAst varExpr))
+                    return null;
+
+                return GetVariableNameWithoutScope(varExpr);
+            }
+
+            if (rightHandSide is CommandExpressionAst commandExpr)
+            {
+                if (!(commandExpr.Expression is VariableExpressionAst directVarExpr))
+                    return null;
+
+                return GetVariableNameWithoutScope(directVarExpr);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Extracts the variable name without scope from a VariableExpressionAst.
+        /// Additionally, trims quotes from the variable name (required for expandable strings).
+        /// </summary>
+        /// <param name="variableAst">The VariableExpressionAst to extract the variable name from</param>
+        /// <returns>The variable name without scope</returns>
+        private static string GetVariableNameWithoutScope(VariableExpressionAst variableAst)
+        {
+            var variableName = Helper.Instance.VariableNameWithoutScope(variableAst.VariablePath);
+            return TrimQuotes(variableName);
+        }
+
+        /// <summary>
+        /// ExpandableStringExpressionAst's with quotes will not resolve to a non-quoted string.
+        /// It's necessary to trim the quotes from the input string in order to successfully lookup
+        /// the variable value.
+        /// </summary>
+        /// <param name="input">The input string to trim</param>
+        /// <returns>The trimmed string, or the original string if it doesn't contain quotes</returns>
+        private static string TrimQuotes(string input)
+        {
+            if (input.Length < 2)
+                return input;
+
+            char first = input[0];
+            char last = input[input.Length - 1];
+
+            if (first != last)
+                return input;
+
+            if (first == '"' || first == '\'')
+                return input.Substring(1, input.Length - 2);
+
+            return input;
+        }
+
+        #endregion
     }
 }
