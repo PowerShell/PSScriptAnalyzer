@@ -135,6 +135,12 @@
   <data name="AvoidUsingInvokeExpressionRuleCommonName" xml:space="preserve">
     <value>Avoid Using Invoke-Expression</value>
   </data>
+  <data name="AvoidUsingNewObjectDescription" xml:space="preserve">
+    <value>For creating .NET objects, prefer using type literals (e.g., [Some.Type]::new()) over the New-Object cmdlet. Type literals offer better performance, compile-time validation, and clearer intent, especially for well-known types.</value>
+  </data>
+  <data name="AvoidUsingNewObjectCommonName" xml:space="preserve">
+    <value>Avoid Using New-Object</value>
+  </data>
   <data name="AvoidUsingPositionalParametersDescription" xml:space="preserve">
     <value>Readability and clarity should be the goal of any script we expect to maintain over time. When calling a command that takes parameters, where possible consider using name parameters as opposed to positional parameters. To fix a violation of this rule, please use named parameters instead of positional parameters when calling a command.</value>
   </data>
@@ -381,6 +387,9 @@
   <data name="AvoidUsingInvokeExpressionRuleName" xml:space="preserve">
     <value>AvoidUsingInvokeExpression</value>
   </data>
+  <data name="AvoidUsingNewObjectName" xml:space="preserve">
+    <value>AvoidUsingNewObject</value>
+  </data>
   <data name="AvoidUsingPlainTextForPasswordName" xml:space="preserve">
     <value>AvoidUsingPlainTextForPassword</value>
   </data>
@@ -518,6 +527,9 @@
   </data>
   <data name="AvoidUsingInvokeExpressionError" xml:space="preserve">
     <value>Invoke-Expression is used. Please remove Invoke-Expression from script and find other options instead.</value>
+  </data>
+  <data name="AvoidUsingNewObjectError" xml:space="preserve">
+    <value>Consider replacing the 'New-Object' cmdlet with type literals (e.g., '[System.Object]::new()') for creating .NET objects. This approach is generally more performant and idiomatic.</value>
   </data>
   <data name="AvoidUsingPositionalParametersError" xml:space="preserve">
     <value>Cmdlet '{0}' has positional parameter. Please use named parameters instead of positional parameters when calling a command.</value>
