@@ -22,8 +22,12 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 #endif
     public class UseConsistentWhitespace : ConfigurableRule
     {
-        private enum ErrorKind { BeforeOpeningBrace, Paren, Operator, SeparatorComma, SeparatorSemi,
-            AfterOpeningBrace, BeforeClosingBrace, BeforePipe, AfterPipe, BetweenParameter };
+        private enum ErrorKind
+        {
+            BeforeOpeningBrace, Paren, Operator, SeparatorComma, SeparatorSemi,
+            AfterOpeningBrace, BeforeClosingBrace, BeforePipe, AfterPipe, BetweenParameter
+        };
+
         private const int whiteSpaceSize = 1;
         private const string whiteSpace = " ";
         private readonly SortedSet<TokenKind> openParenKeywordAllowList = new SortedSet<TokenKind>()
@@ -33,7 +37,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             TokenKind.Switch,
             TokenKind.For,
             TokenKind.Foreach,
-            TokenKind.While
+            TokenKind.While,
+            TokenKind.Until,
+            TokenKind.Do
         };
 
         private List<Func<TokenOperations, IEnumerable<DiagnosticRecord>>> violationFinders
@@ -72,6 +78,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             if (CheckOpenBrace)
             {
                 violationFinders.Add(FindOpenBraceViolations);
+                violationFinders.Add(FindKeywordAfterBraceViolations);
             }
 
             if (CheckInnerBrace)
@@ -194,6 +201,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             return TokenTraits.HasTrait(token.Kind, TokenFlags.AssignmentOperator)
                     || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceAdd)
                     || TokenTraits.HasTrait(token.Kind, TokenFlags.BinaryPrecedenceMultiply)
+                    || TokenTraits.HasTrait(token.Kind, TokenFlags.UnaryOperator)
                     || token.Kind == TokenKind.AndAnd
                     || token.Kind == TokenKind.OrOr;
         }
@@ -229,7 +237,6 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             foreach (var lcurly in tokenOperations.GetTokenNodes(TokenKind.LCurly))
             {
-
                 if (lcurly.Previous == null
                     || !IsPreviousTokenOnSameLine(lcurly)
                     || lcurly.Previous.Value.Kind == TokenKind.LCurly
@@ -239,11 +246,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
+                if (lcurly.Previous.Value.Kind == TokenKind.RCurly && lcurly.Previous.Previous != null)
+                {
+                    var keywordBeforeBrace = lcurly.Previous.Previous.Value;
+                    if (IsKeyword(keywordBeforeBrace) && !IsPreviousTokenApartByWhitespace(lcurly.Previous))
+                    {
+                        yield return new DiagnosticRecord(
+                            GetError(ErrorKind.BeforeOpeningBrace),
+                            lcurly.Previous.Value.Extent,
+                            GetName(),
+                            GetDiagnosticSeverity(),
+                            tokenOperations.Ast.Extent.File,
+                            null,
+                            GetCorrections(keywordBeforeBrace, lcurly.Previous.Value, lcurly.Value, false, true).ToList());
+                    }
+                    continue;
+                }
+
                 if (IsPreviousTokenApartByWhitespace(lcurly) || IsPreviousTokenLParen(lcurly))
                 {
                     continue;
                 }
-                
+
                 yield return new DiagnosticRecord(
                     GetError(ErrorKind.BeforeOpeningBrace),
                     lcurly.Value.Extent,
@@ -252,6 +276,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     tokenOperations.Ast.Extent.File,
                     null,
                     GetCorrections(lcurly.Previous.Value, lcurly.Value, lcurly.Next.Value, false, true).ToList());
+            }
+        }
+
+        private IEnumerable<DiagnosticRecord> FindKeywordAfterBraceViolations(TokenOperations tokenOperations)
+        {
+            foreach (var keywordNode in tokenOperations.GetTokenNodes(IsKeyword))
+            {
+                var keyword = keywordNode.Value;
+
+                if (keywordNode.Previous != null)
+                {
+                    if (keywordNode.Previous.Value.Kind == TokenKind.RCurly &&
+                        IsPreviousTokenOnSameLine(keywordNode))
+                    {
+                        var hasWhitespace = IsPreviousTokenApartByWhitespace(keywordNode);
+
+                        if (!hasWhitespace)
+                        {
+                            var corrections = new List<CorrectionExtent>
+                            {
+                                new CorrectionExtent(
+                                    keywordNode.Previous.Value.Extent.EndLineNumber,
+                                    keyword.Extent.StartLineNumber,
+                                    keywordNode.Previous.Value.Extent.EndColumnNumber,
+                                    keyword.Extent.StartColumnNumber,
+                                    " ",
+                                    keyword.Extent.File)
+                            };
+
+                            yield return new DiagnosticRecord(
+                                GetError(ErrorKind.BeforeOpeningBrace),
+                                keyword.Extent,
+                                GetName(),
+                                GetDiagnosticSeverity(),
+                                tokenOperations.Ast.Extent.File,
+                                null,
+                                corrections);
+                        }
+                    }
+                }
             }
         }
 
@@ -509,7 +573,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             hasRedundantWhitespace = actualWhitespaceSize - whiteSpaceSize > 0;
             return whiteSpaceSize == actualWhitespaceSize;
         }
-        
+
         private static bool IsPreviousTokenLParen(LinkedListNode<Token> tokenNode)
         {
             return tokenNode.Previous.Value.Kind == TokenKind.LParen;
@@ -536,17 +600,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             foreach (var tokenNode in tokenOperations.GetTokenNodes(IsOperator))
             {
-                if (tokenNode.Previous == null
-                    || tokenNode.Next == null
-                    || tokenNode.Value.Kind == TokenKind.DotDot)
+                var token = tokenNode.Value;
+
+                if (tokenNode.Previous == null || tokenNode.Next == null || token.Kind == TokenKind.DotDot)
                 {
                     continue;
                 }
 
-                // exclude unary operator for cases like $foo.bar(-$Var)
-                if (TokenTraits.HasTrait(tokenNode.Value.Kind, TokenFlags.UnaryOperator) &&
-                    tokenNode.Previous.Value.Kind == TokenKind.LParen &&
-                    tokenNode.Next.Value.Kind == TokenKind.Variable)
+                // Check unary operator handling
+                bool isUnaryInMethodCall = false;
+                if (TokenTraits.HasTrait(token.Kind, TokenFlags.UnaryOperator))
+                {
+                    // Only skip if it's a unary operator in a method call like $foo.bar(-$var)
+                    if (tokenNode.Previous.Value.Kind == TokenKind.LParen &&
+                        tokenNode.Next.Value.Kind == TokenKind.Variable &&
+                        tokenNode.Previous.Previous != null)
+                    {
+                        var beforeLParen = tokenNode.Previous.Previous.Value;
+
+                        isUnaryInMethodCall = beforeLParen.Kind == TokenKind.Dot ||
+                                    (beforeLParen.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName;
+                    }
+                }
+
+                if (isUnaryInMethodCall)
                 {
                     continue;
                 }
@@ -561,22 +638,30 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
 
+                // Check whitespace
                 var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
-                var hasWhitespaceAfter = tokenNode.Next.Value.Kind == TokenKind.NewLine
-                            || IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
+                var hasWhitespaceAfter = tokenNode.Next.Value.Kind == TokenKind.NewLine ||
+                                        IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
+
+                // Special case: Don't require space before unary operator if preceded by LParen
+                if (TokenTraits.HasTrait(token.Kind, TokenFlags.UnaryOperator) &&
+                    tokenNode.Previous.Value.Kind == TokenKind.LParen)
+                {
+                    hasWhitespaceBefore = true;
+                }
 
                 if (!hasWhitespaceAfter || !hasWhitespaceBefore)
                 {
                     yield return new DiagnosticRecord(
                         GetError(ErrorKind.Operator),
-                        tokenNode.Value.Extent,
+                        token.Extent,
                         GetName(),
                         GetDiagnosticSeverity(),
                         tokenOperations.Ast.Extent.File,
                         null,
                         GetCorrections(
                             tokenNode.Previous.Value,
-                            tokenNode.Value,
+                            token,
                             tokenNode.Next.Value,
                             hasWhitespaceBefore,
                             hasWhitespaceAfter));
@@ -614,7 +699,9 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
             var extent = new ScriptExtent(
                 new ScriptPosition(e1.File, e1.EndLineNumber, e1.EndColumnNumber, null),
-                new ScriptPosition(e2.File, e2.StartLineNumber, e2.StartColumnNumber, null));
+                new ScriptPosition(e2.File, e2.StartLineNumber, e2.StartColumnNumber, null)
+            );
+
             return new List<CorrectionExtent>()
             {
                 new CorrectionExtent(
@@ -630,6 +717,5 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             return lparen.Previous.Value.Extent.EndLineNumber == lparen.Value.Extent.StartLineNumber;
         }
-
     }
 }

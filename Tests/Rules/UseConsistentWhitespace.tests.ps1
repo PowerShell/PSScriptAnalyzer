@@ -684,4 +684,176 @@ bar -h i `
                 Should -Be $expected
         }
     }
+
+    Context "When keywords follow closing braces" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
+            $ruleConfiguration.CheckOpenBrace = $true
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOperator = $false
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $false
+        }
+
+        It "Should find a violation if no space between } and while" {
+            $def = 'do { "test" }while($true)'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should find a violation if no space between } and until" {
+            $def = 'do { "test" }until($false)'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should not find a violation if there is space between } and while" {
+            $def = 'do { "test" } while($true)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should not find a violation if there is space between } and until" {
+            $def = 'do { "test" } until($false)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "When checking unary operators" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
+            $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOperator = $true
+            $ruleConfiguration.CheckPipe = $false
+            $ruleConfiguration.CheckSeparator = $false
+        }
+
+        It "Should find a violation if no space after -not operator" {
+            $def = 'if (-not$true) { }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should find a violation if no space after -bnot operator" {
+            $def = '$x = -bnot$value'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+        }
+
+        It "Should not find a violation if space after -not operator" {
+            $def = 'if (-not $true) { }'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should not find a violation for unary operator in method call" {
+            $def = '$foo.bar(-$value)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should not find a violation for unary operator in property access" {
+            $def = '$object.Property(-$x)'
+            Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings | Should -BeNullOrEmpty
+        }
+
+        It "Should find a violation for unary operator not in method call context" {
+            $def = 'if(-not$x) { }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 1
+        }
+
+        It "Should handle multiple unary operators in same expression" {
+            $def = 'while(-not$a -and -not$b) { }'
+            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -Be 2
+        }
+    }
+
+    Context "Invoke-Formatter validates do-while/do-until and unary operator fixes" {
+        BeforeAll {
+            $settings = @{
+                Rules = @{
+                    PSUseConsistentWhitespace = @{
+                        Enable = $true
+                        CheckOpenBrace = $true
+                        CheckOpenParen = $true
+                        CheckOperator = $true
+                    }
+                }
+            }
+        }
+
+        It "Should format the original bug repro correctly" {
+            $def = @'
+if(-not$false) {
+    do{
+        "Hello!"
+    }until(
+        $True
+    )
+    do{
+        "Oh, hi!"
+    }while(
+        -not$True
+    )
+    while(-not$True) {
+        "This won't show up."
+    }
+}
+'@
+            $expected = @'
+if (-not $false) {
+    do {
+        "Hello!"
+    } until (
+        $True
+    )
+    do {
+        "Oh, hi!"
+    } while (
+        -not $True
+    )
+    while (-not $True) {
+        "This won't show up."
+    }
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should add space between } and while" {
+            $def = 'do { Get-Process }while($true)'
+            $expected = 'do { Get-Process } while ($true)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should add space between } and until" {
+            $def = 'do { Get-Process }until($false)'
+            $expected = 'do { Get-Process } until ($false)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should add space after -not operator" {
+            $def = 'if (-not$variable) { "test" }'
+            $expected = 'if (-not $variable) { "test" }'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should add space after -bnot operator" {
+            $def = '$result = -bnot$value'
+            $expected = '$result = -bnot $value'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should not add space after unary minus in method call" {
+            $def = '$object.Method(-$value)'
+            $expected = '$object.Method(-$value)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle all unary operators correctly" {
+            $def = 'if (-not$a -and -bnot$b -and $c.Method(-$d)) { }'
+            $expected = 'if (-not $a -and -bnot $b -and $c.Method(-$d)) { }'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+    }
 }
