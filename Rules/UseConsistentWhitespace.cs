@@ -556,7 +556,28 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                 {
                     IScriptExtent leftExtent = commandParameterAstElements[i].Extent;
                     IScriptExtent rightExtent = commandParameterAstElements[i + 1].Extent;
+
+                    // Skip if elements are on different lines
                     if (leftExtent.EndLineNumber != rightExtent.StartLineNumber)
+                    {
+                        continue;
+                    }
+
+                    // # 1561 - Skip if the whitespace is inside a string literal
+                    // Check if any string in the command contains this whitespace region
+                    var stringAsts = commandAst.FindAll(a => a is StringConstantExpressionAst || a is ExpandableStringExpressionAst, true);
+                    bool isInsideString = false;
+                    foreach (var stringAst in stringAsts)
+                    {
+                        if (stringAst.Extent.StartOffset < leftExtent.EndOffset && 
+                            stringAst.Extent.EndOffset > rightExtent.StartOffset)
+                        {
+                            isInsideString = true;
+                            break;
+                        }
+                    }
+                    
+                    if (isInsideString)
                     {
                         continue;
                     }

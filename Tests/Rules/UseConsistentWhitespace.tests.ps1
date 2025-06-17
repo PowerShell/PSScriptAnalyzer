@@ -681,6 +681,27 @@ bar -h i `
             Invoke-Formatter -ScriptDefinition $def -Settings $settings |
                 Should -Be $expected
         }
+
+        # Tests for #1561
+        It "Should not remove whitespace inside string literals" {
+            $def = @'
+        $InputList | ForEach-Object {
+            $_.Name
+        } | Select-Object -First 2 | Join-String -sep ", " -OutputPrefix 'Results: '
+'@
+            $expected = @'
+        $InputList | ForEach-Object {
+            $_.Name
+        } | Select-Object -First 2 | Join-String -sep ", " -OutputPrefix 'Results: '
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should not remove whitespace from string parameters with multiple arguments" {
+            $def = 'Get-Process | Out-String -Stream | Select-String -Pattern "chrome", "firefox" -SimpleMatch'
+            $expected = 'Get-Process | Out-String -Stream | Select-String -Pattern "chrome", "firefox" -SimpleMatch'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
     }
 
     Context "When keywords follow closing braces" {
