@@ -25,7 +25,6 @@ BeforeAll {
     }
 }
 
-
 Describe "UseWhitespace" {
     Context "When an open brace follows a keyword" {
         BeforeAll {
@@ -569,7 +568,6 @@ $Array = @(
 
     }
 
-
     Context "CheckParameter" {
         BeforeAll {
             $ruleConfiguration.CheckInnerBrace = $true
@@ -693,18 +691,25 @@ bar -h i `
             $ruleConfiguration.CheckOperator = $false
             $ruleConfiguration.CheckPipe = $false
             $ruleConfiguration.CheckSeparator = $false
+            $ruleConfiguration.CheckParameter = $false
         }
 
         It "Should find a violation if no space between } and while" {
             $def = 'do { "test" }while($true)'
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+
+            # 2114 changed $def to multiple violations rather than 1.
+            [Object[]] $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -BeGreaterThan 0
+            Test-CorrectionExtentFromContent $def $violations[0] 1 '' ' '
         }
 
         It "Should find a violation if no space between } and until" {
             $def = 'do { "test" }until($false)'
-            $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
-            Test-CorrectionExtentFromContent $def $violations 1 '' ' '
+
+            # 2114 changed $def to multiple violations rather than 1.
+            [Object[]] $violations = Invoke-ScriptAnalyzer -ScriptDefinition $def -Settings $settings
+            $violations.Count | Should -BeGreaterThan 0
+            Test-CorrectionExtentFromContent $def $violations[0] 1 '' ' '
         }
 
         It "Should not find a violation if there is space between } and while" {
@@ -721,11 +726,12 @@ bar -h i `
     Context "When checking unary operators" {
         BeforeAll {
             $ruleConfiguration.CheckInnerBrace = $false
-            $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOpenBrace = $false
+            $ruleConfiguration.CheckOpenParen = $false
             $ruleConfiguration.CheckOperator = $true
             $ruleConfiguration.CheckPipe = $false
             $ruleConfiguration.CheckSeparator = $false
+            $ruleConfiguration.CheckParameter = $false
         }
 
         It "Should find a violation if no space after -not operator" {
@@ -770,16 +776,13 @@ bar -h i `
 
     Context "Invoke-Formatter validates do-while/do-until and unary operator fixes" {
         BeforeAll {
-            $settings = @{
-                Rules = @{
-                    PSUseConsistentWhitespace = @{
-                        Enable = $true
-                        CheckOpenBrace = $true
-                        CheckOpenParen = $true
-                        CheckOperator = $true
-                    }
-                }
-            }
+            $ruleConfiguration.CheckInnerBrace = $true
+            $ruleConfiguration.CheckOpenBrace = $true
+            $ruleConfiguration.CheckOpenParen = $true
+            $ruleConfiguration.CheckOperator = $true
+            $ruleConfiguration.CheckPipe = $true
+            $ruleConfiguration.CheckSeparator = $true
+            $ruleConfiguration.CheckParameter = $false
         }
 
         It "Should format the original bug repro correctly" {
@@ -853,6 +856,179 @@ if (-not $false) {
         It "Should handle all unary operators correctly" {
             $def = 'if (-not$a -and -bnot$b -and $c.Method(-$d)) { }'
             $expected = 'if (-not $a -and -bnot $b -and $c.Method(-$d)) { }'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+    }
+
+    # 2114 Tests
+    Context "Invoke-Formatter comprehensive regression tests" {
+        BeforeAll {
+            $ruleConfiguration.CheckInnerBrace = $true
+            $ruleConfiguration.CheckOpenBrace = $true
+            $ruleConfiguration.CheckOpenParen = $true
+            $ruleConfiguration.CheckOperator = $true
+            $ruleConfiguration.CheckPipe = $true
+            $ruleConfiguration.CheckSeparator = $true
+            $ruleConfiguration.CheckParameter = $false
+        }
+
+        # Operator tests
+        It "Should format assignment operators correctly" {
+            $def = '$x=1;$y = 2;$z  =  3'
+            $expected = '$x = 1; $y = 2; $z = 3'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should format arithmetic operators correctly" {
+            $def = '$a+$b-$c*$d/$e%$f'
+            $expected = '$a + $b - $c * $d / $e % $f'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should format comparison operators correctly" {
+            $def = 'if($a-eq$b -and $c-ne$d){}'
+            $expected = 'if ($a -eq $b -and $c -ne $d) { }'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should not add spaces around .. operator" {
+            $def = '1..10 | ForEach-Object { $_ }'
+            $expected = '1..10 | ForEach-Object { $_ }'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        # Separator tests
+        It "Should format array separators correctly" {
+            $def = '@(1,2,3,4,5)'
+            $expected = '@(1, 2, 3, 4, 5)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should format hashtable separators correctly" {
+            $def = '@{a=1;b=2;c=3}'
+            $expected = '@{a = 1; b = 2; c = 3}'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should format parameter separators correctly" {
+            $def = 'Get-Process -Name notepad,explorer,cmd'
+            $expected = 'Get-Process -Name notepad,explorer,cmd'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle separators with existing spacing" {
+            $def = '$a = @(1 , 2, 3,4)'
+            $expected = '$a = @(1, 2, 3, 4)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        # Brace tests
+        It "Should format if/else statements correctly" {
+            $def = 'if($true){Write-Host "yes"}else{Write-Host "no"}'
+            $expected = 'if ($true) { Write-Host "yes" } else { Write-Host "no" }'
+            Invoke-Formatter $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should format switch statements correctly" {
+            $def = 'switch($x){1{"one"}2{"two"}}'
+            $expected = 'switch ($x) { 1 { "one" } 2 { "two" } }'
+            Invoke-Formatter $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should format try/catch/finally correctly" {
+            $def = 'try{Get-Item}catch{Write-Error $_}finally{Clean-Up}'
+            $expected = 'try { Get-Item } catch { Write-Error $_ } finally { Clean-Up }'
+            Invoke-Formatter $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        # Mixed scenarios
+        It "Should handle nested structures correctly" {
+            $def = '@{a=@(1,2,3);b=@{x=1;y=2}}'
+            $expected = '@{a = @(1, 2, 3); b = @{x = 1; y = 2} }'
+            Invoke-Formatter $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle complex expressions correctly" {
+            $def = 'if($a-eq$b-and($c-ne$d-or$e-like$f)){$result=$true}'
+            $expected = 'if ($a -eq $b -and ($c -ne $d -or $e -like $f)) { $result = $true }'
+            Invoke-Formatter $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should preserve newlines and not add spaces" {
+            $def = @'
+$hash = @{
+    Key1 = "Value1"
+    Key2 = "Value2"
+}
+'@
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $def
+        }
+
+        It "Should handle pipeline correctly" {
+            $def = 'Get-Process|Where-Object{$_.CPU -gt 10}|Sort-Object CPU'
+            $expected = 'Get-Process | Where-Object { $_.CPU -gt 10 } | Sort-Object CPU'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle member access correctly" {
+            $def = '$object.Method($param1,$param2)'
+            $expected = '$object.Method($param1, $param2)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should not modify method calls with unary operators" {
+            $def = '$result = $object.Calculate(-$value)'
+            $expected = '$result = $object.Calculate(-$value)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle splatting correctly" {
+            $def = 'Get-Process @PSBoundParameters -Name notepad, explorer'
+            $expected = 'Get-Process @PSBoundParameters -Name notepad, explorer'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle subexpressions correctly" {
+            $def = 'Result: $(1+2*3)'
+            $expected = 'Result: $(1 + 2 * 3)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle array indexing correctly" {
+            $def = '$array[0]+$array[1]-$array[2]'
+            $expected = '$array[0] + $array[1] - $array[2]'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle multiple statements on one line" {
+            $def = '$a=1;$b=2;if($a-eq$b){$c=3}'
+            $expected = '$a = 1; $b = 2; if ($a -eq $b) { $c = 3 }'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should only add space after comma, not before" {
+            $def = 'Get-ChildItem -Path ".",".\"'
+            $expected = 'Get-ChildItem -Path ".", ".\"'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        It "Should handle array with no spaces correctly" {
+            $def = '$arr = @(1,2,3,4)'
+            $expected = '$arr = @(1, 2, 3, 4)'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        # 2114 - Fixes #2094
+        It "Should not add space after comma" {
+            $def = 'docker build --secret id=NUGET_USER,env=NUGET_USER'
+            $expected = 'docker build --secret id=NUGET_USER,env=NUGET_USER'
+            Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
+        }
+
+        # 2114 - Fixes #2094
+        It "Should not remove space after comma if provided" {
+            $def = 'docker build --secret id=NUGET_USER, env=NUGET_USER'
+            $expected = 'docker build --secret id=NUGET_USER, env=NUGET_USER'
             Invoke-Formatter -ScriptDefinition $def -Settings $settings | Should -BeExactly $expected
         }
     }
