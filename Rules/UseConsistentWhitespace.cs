@@ -289,37 +289,36 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             {
                 var keyword = keywordNode.Value;
 
-                if (keywordNode.Previous != null)
+                if (keywordNode.Previous == null || keywordNode.Previous.Value.Kind != TokenKind.RCurly)
                 {
-                    if (keywordNode.Previous.Value.Kind == TokenKind.RCurly &&
-                        IsPreviousTokenOnSameLine(keywordNode))
-                    {
-                        var hasWhitespace = IsPreviousTokenApartByWhitespace(keywordNode);
-
-                        if (!hasWhitespace)
-                        {
-                            var corrections = new List<CorrectionExtent>
-                            {
-                                new CorrectionExtent(
-                                    keywordNode.Previous.Value.Extent.EndLineNumber,
-                                    keyword.Extent.StartLineNumber,
-                                    keywordNode.Previous.Value.Extent.EndColumnNumber,
-                                    keyword.Extent.StartColumnNumber,
-                                    whiteSpace,
-                                    keyword.Extent.File)
-                            };
-
-                            yield return new DiagnosticRecord(
-                                GetError(ErrorKind.BeforeOpeningBrace),
-                                keyword.Extent,
-                                GetName(),
-                                GetDiagnosticSeverity(),
-                                tokenOperations.Ast.Extent.File,
-                                null,
-                                corrections);
-                        }
-                    }
+                    continue;
                 }
+
+                if (!IsPreviousTokenOnSameLine(keywordNode) || IsPreviousTokenApartByWhitespace(keywordNode))
+                {
+                    continue;
+                }
+
+                // Whitespace required
+                var corrections = new List<CorrectionExtent>
+                {
+                    new CorrectionExtent(
+                        keywordNode.Previous.Value.Extent.EndLineNumber,
+                        keyword.Extent.StartLineNumber,
+                        keywordNode.Previous.Value.Extent.EndColumnNumber,
+                        keyword.Extent.StartColumnNumber,
+                        whiteSpace,
+                        keyword.Extent.File)
+                };
+
+                yield return new DiagnosticRecord(
+                    GetError(ErrorKind.BeforeOpeningBrace),
+                    keyword.Extent,
+                    GetName(),
+                    GetDiagnosticSeverity(),
+                    tokenOperations.Ast.Extent.File,
+                    null,
+                    corrections);
             }
         }
 
