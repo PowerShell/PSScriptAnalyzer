@@ -569,14 +569,14 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     bool isInsideString = false;
                     foreach (var stringAst in stringAsts)
                     {
-                        if (stringAst.Extent.StartOffset < leftExtent.EndOffset && 
+                        if (stringAst.Extent.StartOffset < leftExtent.EndOffset &&
                             stringAst.Extent.EndOffset > rightExtent.StartOffset)
                         {
                             isInsideString = true;
                             break;
                         }
                     }
-                    
+
                     if (isInsideString)
                     {
                         continue;
@@ -633,7 +633,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     {
                         var prevTok = tokenNode.Previous.Value;
                         var nextTok = tokenNode.Next.Value;
-                        
+
                         // Skip if comma appears to be within a parameter value (no spaces around it)
                         if ((prevTok.Kind == TokenKind.Identifier || prevTok.Kind == TokenKind.Generic) &&
                             (nextTok.Kind == TokenKind.Identifier || nextTok.Kind == TokenKind.Generic) &&
@@ -766,32 +766,16 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     continue;
                 }
 
-                if (tokenNode.Previous == null || tokenNode.Next == null || token.Kind == TokenKind.DotDot)
+                var skipNullOrDotDot = tokenNode.Previous == null ||
+                    tokenNode.Next == null ||
+                    token.Kind == TokenKind.DotDot;
+
+                if (skipNullOrDotDot)
                 {
                     continue;
                 }
 
-                // Check unary operator handling
-                bool isUnaryInMethodCall = false;
-                if (TokenTraits.HasTrait(token.Kind, TokenFlags.UnaryOperator))
-                {
-                    // Only skip if it's a unary operator in a method call like $foo.bar(-$var)
-                    if (tokenNode.Previous.Value.Kind == TokenKind.LParen &&
-                        tokenNode.Next.Value.Kind == TokenKind.Variable &&
-                        tokenNode.Previous.Previous != null)
-                    {
-                        var beforeLParen = tokenNode.Previous.Previous.Value;
-                        isUnaryInMethodCall = beforeLParen.Kind == TokenKind.Dot ||
-                                    (beforeLParen.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName;
-                    }
-                }
-
-                if (isUnaryInMethodCall)
-                {
-                    continue;
-                }
-
-                // exclude assignment operator inside of multi-line hash tables if requested
+                // Exclude assignment operator inside of multi-line hash tables if requested
                 if (IgnoreAssignmentOperatorInsideHashTable && tokenNode.Value.Kind == TokenKind.Equals)
                 {
                     Ast containingAst = tokenOperations.GetAstPosition(tokenNode.Value);
@@ -801,17 +785,29 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                     }
                 }
 
-                // Check whitespace
-                var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
-                var hasWhitespaceAfter = tokenNode.Next.Value.Kind == TokenKind.NewLine ||
-                                        IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
+                var isUnaryOperator = TokenTraits.HasTrait(token.Kind, TokenFlags.UnaryOperator);
 
-                // Special case: Don't require space before unary operator if preceded by LParen
-                if (TokenTraits.HasTrait(token.Kind, TokenFlags.UnaryOperator) &&
-                    tokenNode.Previous.Value.Kind == TokenKind.LParen)
+                // Check if we can skip Unary Method invocations or Unary Postfix invocations
+                // E.g., someObject.method(-$variable) or $A++, $B++
+                if (isUnaryOperator)
                 {
-                    hasWhitespaceBefore = true;
+                    if (IsUnaryOperatorInMethodCall(tokenNode) || IsUnaryPostfixOperator(tokenNode))
+                    {
+                        continue;
+                    }
                 }
+
+                // Check for 'before' and 'after' whitespaces
+                var hasWhitespaceBefore = IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode);
+
+                if (!hasWhitespaceBefore && isUnaryOperator)
+                {
+                    // Special case: Don't require space before unary operator if preceded by LParen
+                    hasWhitespaceBefore = IsPreviousTokenLParen(tokenNode);
+                }
+
+                var hasWhitespaceAfter = tokenNode.Next.Value.Kind == TokenKind.NewLine ||
+                    IsPreviousTokenOnSameLineAndApartByWhitespace(tokenNode.Next);
 
                 if (!hasWhitespaceAfter || !hasWhitespaceBefore)
                 {
@@ -830,6 +826,46 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
                             hasWhitespaceAfter));
                 }
             }
+        }
+
+        private bool IsUnaryOperatorInMethodCall(LinkedListNode<Token> tokenNode)
+        {
+            var prevToken = tokenNode.Previous;
+
+            if (prevToken == null || prevToken.Previous == null)
+            {
+                return false;
+            }
+
+            if (!IsPreviousTokenLParen(tokenNode) || tokenNode.Next?.Value.Kind != TokenKind.Variable)
+            {
+                return false;
+            }
+
+            var tokenBeforeLParam = prevToken.Previous.Value;
+
+            // Pattern: someObject.method(-$variable)
+            return tokenBeforeLParam.Kind == TokenKind.Dot ||
+                (tokenBeforeLParam.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName;
+        }
+
+        private bool IsUnaryPostfixOperator(LinkedListNode<Token> tokenNode)
+        {
+            var token = tokenNode.Value;
+
+            if (token.Kind != TokenKind.PlusPlus && token.Kind != TokenKind.MinusMinus)
+            {
+                return false;
+            }
+
+            // Postfix operators come after variables, identifiers, or closing brackets/parentheses
+            var prevToken = tokenNode.Previous.Value;
+
+            return prevToken.Kind == TokenKind.Variable ||
+                   prevToken.Kind == TokenKind.Identifier ||
+                   prevToken.Kind == TokenKind.RBracket ||  // for array access like $arr[0]++
+                   prevToken.Kind == TokenKind.RParen ||    // for expressions like ($x)++
+                   (prevToken.TokenFlags & TokenFlags.MemberName) == TokenFlags.MemberName;
         }
 
         private List<CorrectionExtent> GetCorrections(
