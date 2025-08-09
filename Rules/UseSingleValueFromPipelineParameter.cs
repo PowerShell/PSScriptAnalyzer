@@ -173,7 +173,11 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
 
         public string GetDescription() => Strings.UseSingleValueFromPipelineParameterDescription;
 
-        public string GetName() => Strings.UseSingleValueFromPipelineParameterName;
+        public string GetName() => string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.NameSpaceFormat,
+                GetSourceName(),
+                Strings.UseSingleValueFromPipelineParameterName);
 
         public RuleSeverity GetSeverity() => RuleSeverity.Warning;
 

@@ -69,7 +69,7 @@ attribute with the parameter set name:
 
 ```powershell
 function Process-Data {
-    [Diagnostics.CodeAnalysis.SuppressMessage('UseSingleValueFromPipelineParameter', 'MyParameterSet')]
+    [Diagnostics.CodeAnalysis.SuppressMessage('PSUseSingleValueFromPipelineParameter', 'MyParameterSet')]
     [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline, ParameterSetName='MyParameterSet')]
@@ -93,7 +93,7 @@ For the default parameter set, use `'default'` as the suppression target:
 ## Notes
 
 - This rule applies to both explicit `ValueFromPipeline=$true` and implicit 
-  `ValueFromPipeline` (which defaults to `$true`)
+  `ValueFromPipeline` (which is the same as using  `=$true`)
 - Parameters with `ValueFromPipeline=$false` are not flagged by this rule
 - The rule correctly handles the default parameter set (`__AllParameterSets`)
   and named parameter sets

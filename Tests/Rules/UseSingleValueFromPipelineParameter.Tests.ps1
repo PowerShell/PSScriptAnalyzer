@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 BeforeAll {
-    $ruleName = 'UseSingleValueFromPipelineParameter'
+    $ruleName = 'PSUseSingleValueFromPipelineParameter'
 }
 
 Describe 'UseSingleValueFromPipelineParameter' {
@@ -309,7 +309,7 @@ function Test-Function {
         It 'Should be suppressible by parameter set name' {
             $scriptDefinition = @'
 function Test-Function {
-    [Diagnostics.CodeAnalysis.SuppressMessage('UseSingleValueFromPipelineParameter', 'MySet')]
+    [Diagnostics.CodeAnalysis.SuppressMessage('PSUseSingleValueFromPipelineParameter', 'MySet')]
     param(
         [Parameter(ValueFromPipeline=$true, ParameterSetName='MySet')]
         $InputObject,
