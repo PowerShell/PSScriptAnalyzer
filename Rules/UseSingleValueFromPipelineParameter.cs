@@ -36,7 +36,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         {
             if (ast == null)
             {
-                yield break;
+                throw new ArgumentNullException(Strings.NullAstErrorMessage);
             }
             // Find all param blocks that have a Parameter attribute with
             // ValueFromPipeline set to true.
