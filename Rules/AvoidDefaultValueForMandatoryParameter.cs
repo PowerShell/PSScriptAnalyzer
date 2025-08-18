@@ -42,7 +42,7 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
             var mandatoryParametersWithDefaultValues =
                 ast.FindAll(testAst => testAst is ParamBlockAst, true)
                     .Cast<ParamBlockAst>()
-                    .Where(pb => pb.Parameters?.Count > 0) // Add null safety
+                    .Where(pb => pb.Parameters?.Count > 0)
                     .SelectMany(pb => pb.Parameters)
                     .Where(paramAst =>
                         paramAst.DefaultValue != null &&
@@ -182,3 +182,4 @@ namespace Microsoft.Windows.PowerShell.ScriptAnalyzer.BuiltinRules
         }
     }
 }
+
